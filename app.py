@@ -1,56 +1,44 @@
+from pathlib import Path
+
 import streamlit as st
-from openai import OpenAI
+from langchain_community.llms import OpenAI
+from common.cfg import *
 
-# Show title and description.
-st.title("💬 Chatbot v.1")
-st.write(
-    "This is a simple chatbot that uses OpenAI's GPT-3.5 model to generate responses. "
-    "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
-    "You can also learn how to build this app step by step by [following our tutorial](https://docs.streamlit.io/develop/tutorials/llms/build-conversational-apps)."
-)
 
-# Ask user for their OpenAI API key via `st.text_input`.
-# Alternatively, you can store the API key in `./.streamlit/secrets.toml` and access it
-# via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
-openai_api_key = st.text_input("OpenAI API Key", type="password")
-if not openai_api_key:
-    st.info("Please add your OpenAI API key to continue.", icon="🗝️")
-else:
 
-    # Create an OpenAI client.
-    client = OpenAI(api_key=openai_api_key)
+def get_openai_api_key():
+    openai_api_key = st.sidebar.text_input(
+        'OpenAI API Key [Optional]', type='password')
+    if openai_api_key:
+        if not openai_api_key.startswith('sk-'):
+            st.warning('Please enter your OpenAI API key!', icon='⚠')
+        else:
+            return openai_api_key
 
-    # Create a session state variable to store the chat messages. This ensures that the
-    # messages persist across reruns.
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
 
-    # Display the existing chat messages via `st.chat_message`.
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+st.title('GPT with langchain and streamlit')
 
-    # Create a chat input field to allow the user to enter a message. This will display
-    # automatically at the bottom of the page.
-    if prompt := st.chat_input("What is up?"):
+def generate_response(input_text, api_key):
+    llm = OpenAI(temperature=0.7, openai_api_key=api_key)
+    res = llm(input_text)
+    st.info(res)
+    return res
 
-        # Store and display the current prompt.
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
+def execute():
+    openai_api_key = get_openai_api_key()
+    with st.form('my_form'):
+        text = st.text_area('Enter text:', 'What is GenAI? 3 steps to learn.')
+        submitted = st.form_submit_button('Submit')
+        if submitted:
+            key = openai_api_key or OPENAI_API_KEY
+            generate_response(text, key)
 
-        # Generate a response using the OpenAI API.
-        stream = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
-            ],
-            stream=True,
-        )
-
-        # Stream the response to the chat using `st.write_stream`, then store it in 
-        # session state.
-        with st.chat_message("assistant"):
-            response = st.write_stream(stream)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+execute()
+# if __name__ == "__main__":
+#     # Check if the script is being run directly or via subprocess
+#     if len(sys.argv) > 1 and sys.argv[1] == "run":
+#         execute()
+#     else:
+#         # Re-run the script with Streamlit
+#         filename = Path(__file__).resolve()
+#         subprocess.run([sys.executable, "-m", "streamlit", "run", str(filename), "run"])
