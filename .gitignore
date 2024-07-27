@@ -166,3 +166,4 @@ cython_debug/
 /.github/
 /.github/
 tmp/
+*.pkl
