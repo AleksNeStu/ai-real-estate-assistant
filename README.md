@@ -13,10 +13,9 @@ The assistant should engage users in a conversation, asking questions about thei
 
 ## Init project for development
 ```sh
-# Install pip
+# Install pip and deps
 python -m ensurepip --upgrade
-# Install poetry
-curl -sSL https://install.python-poetry.org | python3 -
+pip install poetry==1.1.14 poetry-core==1.0.8
 # Init poetry virtual env
 poetry init
 poetry env use 3.11
