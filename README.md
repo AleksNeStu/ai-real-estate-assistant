@@ -11,15 +11,35 @@ The assistant should engage users in a conversation, asking questions about thei
 - desired amenities (parking, garden, pool)
 - proximity to schools or public transportation.
 
+## Init project for development
+```sh
+# Install pip
+python -m ensurepip --upgrade
+# Install poetry
+curl -sSL https://install.python-poetry.org | python3 -
+# Init poetry virtual env
+poetry init
+poetry env use 3.11
+poetry config virtualenvs.in-project true
+source .venv/bin/activate
+poetry config virtualenvs.prompt 'ai-real-estate-assistant'
+poetry config --list
+# Add deps
+poetry add ...
+poetry lock
+```
 
-### How to run locally
+## Run project for development
+```sh
+git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
+poetry install
+source .venv/bin/activate
+```
 
-1. Install the requirements
-   ```
-   $ pip install -r requirements.txt
-   ```
-2. 
-3. Run the app
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+## Run app
+
+[Local run](utils/run_local.sh)
+
+## Deploy app
+
+[Streamlit Deploy](https://docs.streamlit.io/deploy)
