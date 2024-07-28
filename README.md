@@ -11,6 +11,15 @@ The assistant should engage users in a conversation, asking questions about thei
 - desired amenities (parking, garden, pool)
 - proximity to schools or public transportation.
 
+
+## Description
+POC app will have simple UI and will use local [real csv dataset for Poland](https://www.kaggle.com/datasets/krzysztofjamroz/apartment-prices-in-poland) (github hosted [apartments_rent_pl_2024_06.csv](dataset%2Fapartments_rent_pl_2024_06.csv)).
+
+Formatted dataset will contain fake extra fields based on the task requirements, for demo purposes.
+Final header:
+
+
+
 ## Init project for development
 ```sh
 # Install pip and poetry
