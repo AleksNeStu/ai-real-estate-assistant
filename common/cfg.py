@@ -20,3 +20,5 @@ openai.api_key = OPENAI_API_KEY
 # Set paths and cfg parts
 current_dir = Path(__file__).parent.resolve()
 root_dir = Path(__file__).parent.parent.resolve()
+dataset_dir = root_dir / "dataset"
+poland_csv = dataset_dir / "apartments_rent_pl_2024_06.csv"

@@ -3,9 +3,14 @@ from pathlib import Path
 import streamlit as st
 from langchain_community.llms import OpenAI
 from common.cfg import *
+from data.csv_loader import DataLoaderLocalCsv
 
 
+# New
+dataloader = DataLoaderLocalCsv()
+df_data = dataloader.df_formatted
 
+# Legacy
 def get_openai_api_key():
     openai_api_key = st.sidebar.text_input(
         'OpenAI API Key [Optional]', type='password')
