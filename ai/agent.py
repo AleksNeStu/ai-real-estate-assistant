@@ -38,8 +38,8 @@ class RealEstateGPT:
             return answer
 
         except Exception as ex:
-            print(f"Error: {ex} for question: {query}")
-            return ''
+            err_msg = f"GPT Error: {ex} for question: {query}"
+            return err_msg
 
     def _format_history(self):
         formatted_history = ""
