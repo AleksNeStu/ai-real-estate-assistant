@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from faker import Faker
 import re
 from common.cfg import *
 
@@ -9,10 +8,6 @@ pd.options.mode.chained_assignment = None
 # Set the pandas option to opt into future behavior
 pd.options.future.no_silent_downcasting =True
 
-
-# NOTE: Can be used for data generation
-# https://faker.readthedocs.io/en/master/locales/pl_PL.html
-fake = Faker('pl_PL')  # for Poland
 
 
 class DataLoaderLocalCsv:
@@ -100,8 +95,8 @@ class DataLoaderLocalCsv:
         df_final['negotiation_rate'] = np.random.choice(
             ['high', 'middle', 'low'], p=[0.1, 0.6, 0.3], size=df_final_count)
         df_final['bathrooms'] = df_final['rooms'].apply(self.bathrooms_fake)
-        df_final['owner_name'] = [fake.name() for _ in range(df_final_count)]
-        df_final['owner_phone'] = [fake.phone_number() for _ in range(df_final_count)]
+        df_final['owner_name'] = [fake_pl.name() for _ in range(df_final_count)]
+        df_final['owner_phone'] = [fake_pl.phone_number() for _ in range(df_final_count)]
         for field in ['has_garden', 'has_pool', 'has_garage', 'has_bike_room']:
             df_final[field] = np.random.choice([True, False], size=len(df_final))
 
