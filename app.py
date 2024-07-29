@@ -86,7 +86,7 @@ def display_api_key():
     )
 
     openai_api_key = st.text_input(
-        'OpenAI API Key [Optional]', type='password', key='api_key_input', label_visibility='collapsed', value='sk-***'
+        'OpenAI API Key [Optional]', type='password', key='api_key_input', label_visibility='collapsed'
     )
     return openai_api_key
 
@@ -98,7 +98,11 @@ def process_query(query, use_test_data):
             response += fake_en.text(max_nb_chars=100)
         else:
             response = st.session_state['ai_agent'].ask_qn(query)
-        st.session_state['conversation_history'].insert(0, {'Client': query, 'AI': response})
+        if response.startswith('GPT Error:'):
+            st.warning(response, icon='⚠')
+            st.session_state['conversation_history'].insert(0, {'Client': query, 'AI': ''})
+        else:
+            st.session_state['conversation_history'].insert(0, {'Client': query, 'AI': response})
 
 def display_conversation():
     if st.session_state['conversation_history']:
@@ -182,12 +186,16 @@ def execute():
 
             submitted = st.form_submit_button('Submit')
             key = OPENAI_API_KEY
+
+            # TODO: Improve error handling for keys
             if submitted:
                 if openai_api_key:
                     if not openai_api_key.startswith('sk-'):
                         st.warning('Please enter a valid OpenAI API key starting with "sk-".', icon='⚠')
-                    else:
-                        key = openai_api_key
+                    key = openai_api_key
+                else:
+                    if not key.startswith('sk-'):
+                        st.warning('Please enter a valid OpenAI API key starting with "sk-".', icon='⚠')
 
                 if 'ai_agent' not in st.session_state:
                     st.session_state['ai_agent'] = RealEstateGPT(df_data, key)
