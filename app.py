@@ -6,6 +6,31 @@ from common.cfg import *
 from data.csv_loader import DataLoaderLocalCsv
 
 
+st.set_page_config(
+    page_title="🦾 AI Real Estate Assistant Poland 🇵🇱",
+    page_icon='💬',
+    layout='wide'
+)
+
+_MSG1 = (
+    'I am finding a cheap flat in Krakow.\n'
+    'Better to have 1-3 rooms, not 1st floor, more than 20 square meters, with parking, '
+    'also I would like to negotiate the final price.\n'
+    'Please provide properties with important details in json format\n'
+    'Do you have options for me?'
+)
+_MSG2 = (
+    'Thanks. Good selection. But please find only one from those, use provided last time, which has middle price for rent, but cheapest price for media')
+_MSG3 = 'Looks like you provided me property for Bialystok, but I need for Krakow and from the previous selection'
+
+MSG_MAP = {
+    0: _MSG1,
+    1: _MSG2,
+    2: _MSG3
+}
+
+
+
 @st.cache_data
 def load_data():
     dataloader = DataLoaderLocalCsv()
@@ -17,8 +42,12 @@ df_data = load_data()
 if 'conversation_history' not in st.session_state:
     st.session_state['conversation_history'] = []
 
+if 'iteration' not in st.session_state:
+    st.session_state['iteration'] = 0
+
 def generate_response(input_text, use_test_data):
     process_query(input_text, use_test_data)
+    st.session_state['iteration'] += 1
     st.rerun()
 
 def fix_dataframe(df):
@@ -57,12 +86,13 @@ def display_api_key():
     )
 
     openai_api_key = st.text_input(
-        'OpenAI API Key [Optional]', type='password', key='api_key_input', label_visibility='collapsed'
+        'OpenAI API Key [Optional]', type='password', key='api_key_input', label_visibility='collapsed', value='sk-***'
     )
     return openai_api_key
 
 def process_query(query, use_test_data):
     if query:
+        # TODO: Fix app behavior when switch btwn fake and real data
         response = 'FAKE: '
         if use_test_data:
             response += fake_en.text(max_nb_chars=100)
@@ -73,8 +103,8 @@ def process_query(query, use_test_data):
 def display_conversation():
     if st.session_state['conversation_history']:
         for idx, exchange in enumerate(st.session_state['conversation_history'], start=1):
-            st.text_area(f"Client ({idx})", value=exchange['Client'], height=100, disabled=True, key=f"client_{idx}")
-            st.text_area(f"AI ({idx})", value=exchange['AI'], height=100, disabled=True, key=f"ai_{idx}")
+            st.text_area(f"Client 🧑:", value=exchange['Client'], height=100, disabled=True, key=f"client_{idx}")
+            st.text_area(f"AI 🤖:", value=exchange['AI'], height=100, disabled=True, key=f"ai_{idx}")
 
 def execute():
     st.title('🦾 AI Real Estate Assistant Poland 🇵🇱')
@@ -128,6 +158,7 @@ def execute():
         if st.button("OpenAI API Key", key="api_key"):
             st.session_state.show_api_key = not st.session_state.get('show_api_key', False)
 
+        #TODO: Fix switch btwn buttons
         if st.session_state.get('show_filters', False):
             display_filters()
 
@@ -141,13 +172,12 @@ def execute():
         with st.form(key='full-width-form'):
             label = 'Talk to me about your dream property 😎:\n'
 
-            conversation_history = st.session_state.get('conversation_history', [])
-            msg_example = '' if conversation_history else (
-                'I am finding a cheap flat in Krakow.\n'
-                'Better to have 2 rooms, not 1st floor, more than 30 square meters, with garage and storage room, '
-                'also I would like to negotiate the final price.\n'
-                'Do you have options for me?'
-            )
+            # conversation_history = st.session_state.get('conversation_history', [])
+            # msg_example = '' if conversation_history else _MSG1
+
+            iteration = st.session_state.get('iteration')
+            msg_example = MSG_MAP.get(iteration, '')
+
             text = st.text_area(label=label, value=msg_example, height=200)
 
             submitted = st.form_submit_button('Submit')
