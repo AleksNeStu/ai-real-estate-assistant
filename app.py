@@ -16,8 +16,6 @@ df_data = load_data()
 
 if 'conversation_history' not in st.session_state:
     st.session_state['conversation_history'] = []
-if 'ai_agent' not in st.session_state:
-    st.session_state['ai_agent'] = RealEstateGPT(df_data)
 
 def generate_response(input_text, use_test_data):
     process_query(input_text, use_test_data)
@@ -161,6 +159,8 @@ def execute():
                     else:
                         key = openai_api_key
 
+                if 'ai_agent' not in st.session_state:
+                    st.session_state['ai_agent'] = RealEstateGPT(df_data, key)
                 generate_response(text, use_test_data)
 
     with col2:

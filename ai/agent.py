@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 from langchain.agents.agent_types import AgentType
 from langchain_experimental.agents import create_pandas_dataframe_agent
@@ -6,7 +8,7 @@ from langchain_openai import ChatOpenAI
 
 class RealEstateGPT:
 
-    def __init__(self, df: pd.DataFrame):
+    def __init__(self, df: pd.DataFrame, key: str):
         self.conversational_prompt = (
             "As a seasoned real estate agent, your role involves assisting the user in locating their ideal home, "
             "offering real estate advice, negotiating deals, and supplying expert knowledge on the property market. "
@@ -14,6 +16,7 @@ class RealEstateGPT:
             "Utilize the Price Cut to highlight properties with significant reductions in price. Engage in "
             "negotiations with the client. Here's how your conversation has unfolded so far:"
         )
+        os.environ["OPENAI_API_KEY"] = key
         # Initialize the agent
         self.agent = create_pandas_dataframe_agent(
             ChatOpenAI(temperature=0, model="gpt-3.5-turbo"),
