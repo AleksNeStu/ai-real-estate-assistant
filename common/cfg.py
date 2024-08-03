@@ -32,7 +32,6 @@ fake_pl = Faker('pl_PL')  # for Poland
 # https://faker.readthedocs.io/en/master/locales/en_US.html
 fake_en = Faker('en_US')  # for US
 
-GIT_FS_DATA_SET = URL("https://raw.githubusercontent.com/AleksNeStu/ai-real-estate-assistant/main/dataset/")
-GIT_FS_DATA_SET_PL1 = URL("https://github.com/AleksNeStu/ai-real-estate-assistant/blob/main/dataset/pl"
-                      U"/apartments_rent_pl_2024_06.csv")
-GIT_FS_DATA_SET_PL = GIT_FS_DATA_SET / 'pl/apartments_rent_pl_2024_04.csv'
+GIT_DATA_SET = "https://raw.githubusercontent.com/AleksNeStu/ai-real-estate-assistant/main/dataset/pl"
+GIT_DATA_SET_URLS_STR = '\n'.join([GIT_DATA_SET + f'/apartments_rent_pl_2024_0{i}.csv' for i in range(1, 7)])
+# GIT_DATA_SET_PL = GIT_DATA_SET / 'pl/apartments_rent_pl_2024_04.csv'
