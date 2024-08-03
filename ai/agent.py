@@ -5,7 +5,7 @@ from langchain.agents.agent_types import AgentType
 from langchain_experimental.agents import create_pandas_dataframe_agent
 from langchain_openai import ChatOpenAI
 
-
+# TODO: Improve, using (System vs. User Prompt), to fix issue with user brake system context
 class RealEstateGPT:
 
     def __init__(self, df: pd.DataFrame, key: str):
