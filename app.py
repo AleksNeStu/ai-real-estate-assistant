@@ -31,16 +31,30 @@ MSG_MAP = {
     2: _MSG3
 }
 
+def load_csv_data(url: str, format_data=False):
+    dataloader = DataLoaderCsv(URL(url))
+    df = dataloader.load_df()
+    df_formatted = dataloader.load_format_df(df)
+    return df_formatted
+
 # @st.cache_data
-def load_data(_url: URL):
-    try:
-        dataloader = DataLoaderCsv(_url)
-        df = dataloader.load_df()
-        df_formatted = dataloader.load_format_df(df)
-        return df_formatted
-    except Exception as e:
-        st.error(f"Error loading data: {e}")
-        return pd.DataFrame()  # Return an empty DataFrame in case of an error
+def load_data(urls):
+    all_data = []
+    empty_df = pd.DataFrame()
+    for url in urls:
+        try:
+            df_formatted = load_csv_data(url)
+            all_data.append(df_formatted)
+        except Exception as e:
+            st.error(f"Error loading data from {url}: {e}")
+            return empty_df # Return an empty DataFrame in case of an error
+
+    # Concatenate all DataFrames
+    if all_data:
+        all_data_merged = pd.concat(all_data, ignore_index=True)
+        return all_data_merged
+
+    return empty_df
 
 def fix_dataframe(df):
     for column in df.columns:
@@ -159,18 +173,19 @@ col1, col2 = st.columns([2, 2])  # Adjust column widths as needed
 with col1:
     st.write("### Input and Settings")
 
-    url_input = st.text_input('Enter CSV URL (Optional)', GIT_FS_DATA_SET_PL, key='csv_url')
+    # Input for multiple CSV URLs
+    urls_input = st.text_area('Enter CSV URLs (one per line)', GIT_DATA_SET_URLS_STR, key='csv_urls', height=200)
 
-    # Use a unique cache key for each URL to force cache invalidation
-    load_data_key = f"load_data_{url_input}"
+    # Convert URLs from input into a list
+    urls = [url.strip() for url in urls_input.split('\n') if url.strip()]
 
     load_data_button = st.button("Load Data")
 
-    if load_data_button and url_input:
-        st.session_state['df_data'] = load_data(_url=URL(url_input))
-        st.session_state['df_url'] = url_input
+    if load_data_button and urls:
+        st.session_state['df_data'] = load_data(urls)
+        st.session_state['df_urls'] = urls
         if not st.session_state['df_data'].empty:
-            st.write("Data loaded successfully.")
+            st.write(f"Data loaded successfully. rows count: {len(st.session_state['df_data'])}")
             # display_filters(st.session_state['df_data'])
         else:
             st.error("Failed to load data or the data is empty.")

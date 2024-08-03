@@ -18,7 +18,7 @@ pd.options.future.no_silent_downcasting =True
 class DataLoaderCsv:
 
     def __init__(
-            self, csv_path: Path | URL, rows_count=2000
+            self, csv_path: Path | URL
     ):
         if isinstance(csv_path, Path) and not csv_path.is_file():
             err_msg = f"The Path {csv_path} does not exists."
@@ -32,11 +32,9 @@ class DataLoaderCsv:
             csv_path = None
 
         self.csv_path = csv_path
-        self.rows_count = rows_count
-        # self._df: pd.DataFrame | None = None
-        # self._df_formatted: pd.DataFrame | None = None
 
-    def url_exists(self, url: URL):
+    @staticmethod
+    def url_exists(url: URL):
         parsed_url = urlparse(str(url))
         is_valid_url = all([parsed_url.scheme, parsed_url.netloc])
         if not is_valid_url:
@@ -58,25 +56,29 @@ class DataLoaderCsv:
         print(f"Data frame formatted from {self.csv_path}")
         return df_formatted
 
-    def bathrooms_fake(self, rooms: float):
+    @staticmethod
+    def bathrooms_fake(rooms: float):
         # Add 'bathrooms': Either 1 or 2, check consistency with 'rooms' (e.g., bathrooms should be realistic)
         if pd.isna(rooms) or rooms < 2:
             return 1.0
         return np.random.choice([1.0, 2.0])
 
-    def price_media_fake(self, price: float):
+    @staticmethod
+    def price_media_fake(price: float):
         # Add 'price_media': Fake values like internet, gas, electricity, not more than 20% of 'price'
         # Generate a fake price for utilities, up to 20% of the 'price'
         return round(np.random.uniform(0, 0.2 * price), 2)
 
-    def camel_to_snake(self, name):
+    @staticmethod
+    def camel_to_snake(name):
         """
         Convert camelCase to snake_case.
         """
         s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
         return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
-    def format_df(self, df: pd.DataFrame):
+    @staticmethod
+    def format_df(df: pd.DataFrame, rows_count=2000):
         # Get header
         header = df.columns.tolist()
         # print(f'Original header: ')
@@ -87,7 +89,7 @@ class DataLoaderCsv:
         df_cleaned = df_copy.dropna()
         # Camel case to snake for header
         df_cleaned.columns = [
-            self.camel_to_snake(col) for col in df_cleaned.columns]
+            DataLoaderCsv.camel_to_snake(col) for col in df_cleaned.columns]
 
         # Get unique cities
         cities = df_cleaned['city'].unique()
@@ -97,7 +99,7 @@ class DataLoaderCsv:
         df_shuffled = df_cleaned.sample(frac=1, random_state=1).reset_index(drop=True)
 
         # Limit the overall number of rows to 2000
-        df_final = df_shuffled.head(self.rows_count)
+        df_final = df_shuffled.head(rows_count)
 
         # Replace values with True/False
         df_final.replace({'yes': True, 'no': False}, inplace=True)
@@ -107,13 +109,13 @@ class DataLoaderCsv:
         df_final_count = len(df_final)
 
         # Add fake (closer to real) data
-        df_final['price_media'] = df_final['price'].apply(self.price_media_fake)
+        df_final['price_media'] = df_final['price'].apply(DataLoaderCsv.price_media_fake)
         df_final['price_delta'] = np.array(np.random.choice(
             np.linspace(0,0.05,10),
             size=len(df_final)) * df_final['price']).astype(int)
         df_final['negotiation_rate'] = np.random.choice(
             ['high', 'middle', 'low'], p=[0.1, 0.6, 0.3], size=df_final_count)
-        df_final['bathrooms'] = df_final['rooms'].apply(self.bathrooms_fake)
+        df_final['bathrooms'] = df_final['rooms'].apply(DataLoaderCsv.bathrooms_fake)
         df_final['owner_name'] = [fake_pl.name() for _ in range(df_final_count)]
         df_final['owner_phone'] = [fake_pl.phone_number() for _ in range(df_final_count)]
         for field in ['has_garden', 'has_pool', 'has_garage', 'has_bike_room']:
