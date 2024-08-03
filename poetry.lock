@@ -821,13 +821,13 @@ tenacity = ">=8.1.0,<8.4.0 || >8.4.0,<9.0.0"
 
 [[package]]
 name = "langchain-core"
-version = "0.2.24"
+version = "0.2.28"
 description = "Building applications with LLMs through composability"
 optional = false
 python-versions = "<4.0,>=3.8.1"
 files = [
-    {file = "langchain_core-0.2.24-py3-none-any.whl", hash = "sha256:9444fc082d21ef075d925590a684a73fe1f9688a3d90087580ec929751be55e7"},
-    {file = "langchain_core-0.2.24.tar.gz", hash = "sha256:f2e3fa200b124e8c45d270da9bf836bed9c09532612c96ff3225e59b9a232f5a"},
+    {file = "langchain_core-0.2.28-py3-none-any.whl", hash = "sha256:0728761d02ce696a1c6a57cfad18b874cf6c9566ba86120e2f542e442cb77a06"},
+    {file = "langchain_core-0.2.28.tar.gz", hash = "sha256:589f907fcb1f15acea55ea3f451a37faaa61c2e68b3d39d436cf73ca3dd23ef5"},
 ]
 
 [package.dependencies]
@@ -840,6 +840,7 @@ pydantic = [
 ]
 PyYAML = ">=5.3"
 tenacity = ">=8.1.0,<8.4.0 || >8.4.0,<9.0.0"
+typing-extensions = ">=4.7"
 
 [[package]]
 name = "langchain-experimental"
@@ -885,6 +886,22 @@ files = [
 
 [package.dependencies]
 langchain-core = ">=0.2.10,<0.3.0"
+
+[[package]]
+name = "langchainhub"
+version = "0.1.20"
+description = "The LangChain Hub API client"
+optional = false
+python-versions = "<4.0,>=3.8.1"
+files = [
+    {file = "langchainhub-0.1.20-py3-none-any.whl", hash = "sha256:b3cbb5b2d7d6f9c3f89748bcc74424d8030ed4ebca58b5f44e0b6d9f111e33eb"},
+    {file = "langchainhub-0.1.20.tar.gz", hash = "sha256:499fa8958233071f35750987f325005d16241bebd455163955b607c195c37f25"},
+]
+
+[package.dependencies]
+packaging = ">=23.2,<25"
+requests = ">=2,<3"
+types-requests = ">=2.31.0.2,<3.0.0.0"
 
 [[package]]
 name = "langsmith"
@@ -2372,6 +2389,20 @@ slack = ["slack-sdk"]
 telegram = ["requests"]
 
 [[package]]
+name = "types-requests"
+version = "2.32.0.20240712"
+description = "Typing stubs for requests"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-requests-2.32.0.20240712.tar.gz", hash = "sha256:90c079ff05e549f6bf50e02e910210b98b8ff1ebdd18e19c873cd237737c1358"},
+    {file = "types_requests-2.32.0.20240712-py3-none-any.whl", hash = "sha256:f754283e152c752e46e70942fa2a146b5bc70393522257bb85bd1ef7e019dcc3"},
+]
+
+[package.dependencies]
+urllib3 = ">=2"
+
+[[package]]
 name = "typing-extensions"
 version = "4.12.2"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -2586,4 +2617,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11.0"
-content-hash = "7ebfc56035cb32ef17e435864c76617b2f21551839e5ef16a2027580bab1ef4c"
+content-hash = "151a4774ffdef3838e57f2efe1d9d10e9ec028dab9d442102903dd537060015f"
