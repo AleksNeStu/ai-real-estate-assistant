@@ -31,12 +31,16 @@ MSG_MAP = {
     2: _MSG3
 }
 
-@st.cache_data
+# @st.cache_data
 def load_data(_url: URL):
-    dataloader = DataLoaderCsv(_url)
-    df = dataloader.load_df()
-    df_formatted = dataloader.load_format_df(df)
-    return df_formatted
+    try:
+        dataloader = DataLoaderCsv(_url)
+        df = dataloader.load_df()
+        df_formatted = dataloader.load_format_df(df)
+        return df_formatted
+    except Exception as e:
+        st.error(f"Error loading data: {e}")
+        return pd.DataFrame()  # Return an empty DataFrame in case of an error
 
 def fix_dataframe(df):
     for column in df.columns:
@@ -45,6 +49,10 @@ def fix_dataframe(df):
 
 @st.cache_data
 def display_filters(df_data):
+    if df_data.empty:
+        st.warning("Data is empty. No filters to display.")
+        return
+
     rows = []
     max_sample_size = 3
 
@@ -153,13 +161,19 @@ with col1:
 
     url_input = st.text_input('Enter CSV URL (Optional)', GIT_FS_DATA_SET_PL, key='csv_url')
 
+    # Use a unique cache key for each URL to force cache invalidation
+    load_data_key = f"load_data_{url_input}"
+
     load_data_button = st.button("Load Data")
 
     if load_data_button and url_input:
         st.session_state['df_data'] = load_data(_url=URL(url_input))
         st.session_state['df_url'] = url_input
-        st.write("Data loaded successfully.")
-        display_filters(st.session_state['df_data'])
+        if not st.session_state['df_data'].empty:
+            st.write("Data loaded successfully.")
+            # display_filters(st.session_state['df_data'])
+        else:
+            st.error("Failed to load data or the data is empty.")
 
     # OpenAI API Key section
     if st.button("OpenAI API Key", key="api_key"):
@@ -193,9 +207,14 @@ with col1:
             if not key.startswith('sk-'):
                 st.warning('Please enter a valid OpenAI API key starting with "sk-".', icon='⚠')
             else:
-                if 'ai_agent' not in st.session_state:
-                    st.session_state['ai_agent'] = RealEstateGPT(st.session_state['df_data'], key)
-                process_query(text, use_test_data)
+                df_data_act = st.session_state.get('df_data')
+                if df_data_act is None or df_data_act.empty:
+                    st.error('Please load data first.')
+                else:
+                    if 'ai_agent' not in st.session_state:
+                        st.session_state['ai_agent'] = RealEstateGPT(df_data_act, key)
+                    process_query(text, use_test_data)
+
                 st.session_state['iteration'] = (iteration + 1) % len(MSG_MAP)
 
 with col2:
