@@ -47,7 +47,7 @@ class DataLoaderCsv:
 
     def load_df(self):
         df = pd.read_csv(str(self.csv_path))
-        print(f"Data frame loaded from {self.csv_path}")
+        print(f"Data frame loaded from {self.csv_path}, rows: {len(df)}")
         return df
 
     def load_format_df(self, df: pd.DataFrame):
