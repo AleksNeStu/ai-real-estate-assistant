@@ -1,6 +1,11 @@
+from urllib.parse import urlparse
+import streamlit as st
 import numpy as np
 import pandas as pd
 import re
+
+import requests
+
 from common.cfg import *
 
 # SettingWithCopyWarning: A value is trying to be set on a copy of a slice from a DataFrame
@@ -10,34 +15,48 @@ pd.options.future.no_silent_downcasting =True
 
 
 
-class DataLoaderLocalCsv:
+class DataLoaderCsv:
 
     def __init__(
-            self, file_path: Path = poland_csv, rows_count = 2000
+            self, csv_path: Path | URL, rows_count=2000
     ):
-        if not file_path.is_file():
-            raise FileNotFoundError(f"The file at {file_path} does not exist.")
-        self.file_path = file_path
+        if isinstance(csv_path, Path) and not csv_path.is_file():
+            err_msg = f"The Path {csv_path} does not exists."
+            # raise FileNotFoundError(err_msg)
+            st.warning(err_msg, icon='⚠')
+            csv_path = None
+        elif isinstance(csv_path, URL) and not self.url_exists(csv_path):
+            err_msg = f"The URL at {csv_path} does not exist."
+            # raise FileNotFoundError(err_msg)
+            st.warning(err_msg, icon='⚠')
+            csv_path = None
+
+        self.csv_path = csv_path
         self.rows_count = rows_count
-        self._df: pd.DataFrame | None = None
-        self._df_formatted: pd.DataFrame | None = None
+        # self._df: pd.DataFrame | None = None
+        # self._df_formatted: pd.DataFrame | None = None
 
+    def url_exists(self, url: URL):
+        parsed_url = urlparse(str(url))
+        is_valid_url = all([parsed_url.scheme, parsed_url.netloc])
+        if not is_valid_url:
+            return False  # URL structure is not valid
+        try:
+            response = requests.head(url, allow_redirects=True)
+            return response.status_code < 400
+        except requests.RequestException:
+            return False  # Handle any exceptions during the request
 
-    @property
-    def df(self):
-        if not self._df:
-            self._df = pd.read_csv(self.file_path)
-            print(f"Data frame loaded from {self.file_path}")
-        return self._df
+    def load_df(self):
+        df = pd.read_csv(str(self.csv_path))
+        print(f"Data frame loaded from {self.csv_path}")
+        return df
 
-
-    @property
-    def df_formatted(self):
+    def load_format_df(self, df: pd.DataFrame):
         """Returns the DataFrame. If not loaded, loads and prepares the data first."""
-        if not self._df_formatted:
-            self._df_formatted = self.format_df(self.df)
-            print(f"Data frame formatted from {self.file_path}")
-        return self._df_formatted
+        df_formatted = self.format_df(df)
+        print(f"Data frame formatted from {self.csv_path}")
+        return df_formatted
 
     def bathrooms_fake(self, rooms: float):
         # Add 'bathrooms': Either 1 or 2, check consistency with 'rooms' (e.g., bathrooms should be realistic)
