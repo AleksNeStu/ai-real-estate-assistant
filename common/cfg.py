@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-
+from yarl import URL
 import openai
 from dotenv import find_dotenv, load_dotenv
 from faker import Faker
@@ -31,3 +31,8 @@ poland_csv = dataset_dir_pl / "apartments_rent_pl_2024_06.csv"
 fake_pl = Faker('pl_PL')  # for Poland
 # https://faker.readthedocs.io/en/master/locales/en_US.html
 fake_en = Faker('en_US')  # for US
+
+GIT_FS_DATA_SET = URL("https://raw.githubusercontent.com/AleksNeStu/ai-real-estate-assistant/main/dataset/")
+GIT_FS_DATA_SET_PL1 = URL("https://github.com/AleksNeStu/ai-real-estate-assistant/blob/main/dataset/pl"
+                      U"/apartments_rent_pl_2024_06.csv")
+GIT_FS_DATA_SET_PL = GIT_FS_DATA_SET / 'pl/apartments_rent_pl_2024_04.csv'

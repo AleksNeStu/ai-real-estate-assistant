@@ -19,7 +19,7 @@ POC app will have simple UI and will use local [real csv dataset for Poland](htt
 
 ![screen.png](assets/screen.png)
 
-![demo.gif](assets/demo.gif)
+[//]: # (![demo.gif]&#40;assets/demo.gif&#41;)
 
 
 Formatted dataset will contain fake extra fields based on the task requirements, for demo purposes.

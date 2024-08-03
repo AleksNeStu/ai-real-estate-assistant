@@ -1,13 +1,15 @@
 import pandas as pd
 import streamlit as st
+import io
+import requests
+from yarl import URL
 
 from ai.agent import RealEstateGPT
 from common.cfg import *
-from data.csv_loader import DataLoaderLocalCsv
-
+from data.csv_loader import DataLoaderCsv
 
 st.set_page_config(
-    page_title="🦾 AI Real Estate Assistant Poland 🇵🇱",
+    page_title="🦾 AI Real Estate Assistant Poland",
     page_icon='💬',
     layout='wide'
 )
@@ -29,26 +31,12 @@ MSG_MAP = {
     2: _MSG3
 }
 
-
-
 @st.cache_data
-def load_data():
-    dataloader = DataLoaderLocalCsv()
-    df_data = dataloader.df_formatted
-    return df_data
-
-df_data = load_data()
-
-if 'conversation_history' not in st.session_state:
-    st.session_state['conversation_history'] = []
-
-if 'iteration' not in st.session_state:
-    st.session_state['iteration'] = 0
-
-def generate_response(input_text, use_test_data):
-    process_query(input_text, use_test_data)
-    st.session_state['iteration'] += 1
-    st.rerun()
+def load_data(_url: URL):
+    dataloader = DataLoaderCsv(_url)
+    df = dataloader.load_df()
+    df_formatted = dataloader.load_format_df(df)
+    return df_formatted
 
 def fix_dataframe(df):
     for column in df.columns:
@@ -56,7 +44,7 @@ def fix_dataframe(df):
     return df
 
 @st.cache_data
-def display_filters():
+def display_filters(df_data):
     rows = []
     max_sample_size = 3
 
@@ -92,12 +80,12 @@ def display_api_key():
 
 def process_query(query, use_test_data):
     if query:
-        # TODO: Fix app behavior when switch btwn fake and real data
-        response = 'FAKE: '
         if use_test_data:
+            response = 'FAKE: '
             response += fake_en.text(max_nb_chars=100)
         else:
             response = st.session_state['ai_agent'].ask_qn(query)
+
         if response.startswith('GPT Error:'):
             st.warning(response, icon='⚠')
             st.session_state['conversation_history'].insert(0, {'Client': query, 'AI': ''})
@@ -105,107 +93,114 @@ def process_query(query, use_test_data):
             st.session_state['conversation_history'].insert(0, {'Client': query, 'AI': response})
 
 def display_conversation():
+    if 'conversation_history' not in st.session_state:
+        st.session_state['conversation_history'] = []
+
     if st.session_state['conversation_history']:
         for idx, exchange in enumerate(st.session_state['conversation_history'], start=1):
             st.text_area(f"Client 🧑:", value=exchange['Client'], height=100, disabled=True, key=f"client_{idx}")
             st.text_area(f"AI 🤖:", value=exchange['AI'], height=100, disabled=True, key=f"ai_{idx}")
 
-def execute():
-    st.title('🦾 AI Real Estate Assistant Poland 🇵🇱')
+# Initialize session state variables if not already present
+if 'conversation_history' not in st.session_state:
+    st.session_state['conversation_history'] = []
 
-    st.markdown("""
-        <style>
-        .full-width-form {
-            width: 100%;
-        }
-        .full-width-form .stTextArea {
-            width: 100%;
-        }
-        .full-width-form .stButton {
-            width: 100%;
-        }
-        .form-container {
-            margin: 20px;
-        }
-        .api-key-container {
-            margin-top: 20px;
-        }
-        .button-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .form-container {
-            flex: 1;
-        }
-        .api-key-container {
-            flex: 1;
-        }
-        .conversation-container {
-            max-height: 90vh; /* Adjust to fill more of the screen */
-            # width: 100%;
-            # overflow-y: auto;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+if 'iteration' not in st.session_state:
+    st.session_state['iteration'] = 0
 
-    col1, col2 = st.columns([2, 2])  # Adjust column widths as needed
-    # col1, col2 = st.columns([3, 1])  # Adjust column widths as needed
+st.title('🦾 AI Real Estate Assistant Poland 🇵🇱')
 
-    with col1:
-        st.write("### Input and Settings")
+st.markdown("""
+    <style>
+    .full-width-form {
+        width: 100%;
+    }
+    .full-width-form .stTextArea {
+        width: 100%;
+    }
+    .full-width-form .stButton {
+        width: 100%;
+    }
+    .form-container {
+        margin: 20px;
+    }
+    .api-key-container {
+        margin-top: 20px;
+    }
+    .button-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .form-container {
+        flex: 1;
+    }
+    .api-key-container {
+        flex: 1;
+    }
+    .conversation-container {
+        max-height: 90vh; /* Adjust to fill more of the screen */
+        overflow-y: auto;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-        if st.button("Filters", key="filters"):
-            st.session_state.show_filters = not st.session_state.get('show_filters', False)
+col1, col2 = st.columns([2, 2])  # Adjust column widths as needed
 
-        if st.button("OpenAI API Key", key="api_key"):
-            st.session_state.show_api_key = not st.session_state.get('show_api_key', False)
+with col1:
+    st.write("### Input and Settings")
 
-        #TODO: Fix switch btwn buttons
-        if st.session_state.get('show_filters', False):
-            display_filters()
+    url_input = st.text_input('Enter CSV URL (Optional)', GIT_FS_DATA_SET_PL, key='csv_url')
 
-        if st.session_state.get('show_api_key', False):
-            openai_api_key = display_api_key()
-        else:
-            openai_api_key = None
+    load_data_button = st.button("Load Data")
 
-        use_test_data = st.checkbox('Use Test Responses', value=True, key='use_test_data')
+    if load_data_button and url_input:
+        st.session_state['df_data'] = load_data(_url=URL(url_input))
+        st.session_state['df_url'] = url_input
+        st.write("Data loaded successfully.")
+        display_filters(st.session_state['df_data'])
 
-        with st.form(key='full-width-form'):
-            label = 'Talk to me about your dream property 😎:\n'
+    # OpenAI API Key section
+    if st.button("OpenAI API Key", key="api_key"):
+        st.session_state.show_api_key = not st.session_state.get('show_api_key', False)
 
-            # conversation_history = st.session_state.get('conversation_history', [])
-            # msg_example = '' if conversation_history else _MSG1
+    if st.session_state.get('show_api_key', False):
+        openai_api_key = display_api_key()
+    else:
+        openai_api_key = None
 
-            iteration = st.session_state.get('iteration')
-            msg_example = MSG_MAP.get(iteration, '')
+    use_test_data = st.checkbox('Use Test Responses', value=True, key='use_test_data')
 
-            text = st.text_area(label=label, value=msg_example, height=200)
+    with st.form(key='full-width-form'):
+        label = 'Talk to me about your dream property 😎:\n'
 
-            submitted = st.form_submit_button('Submit')
-            key = OPENAI_API_KEY
+        iteration = st.session_state.get('iteration', 0)
+        msg_example = MSG_MAP.get(iteration, '')
 
-            # TODO: Improve error handling for keys
-            if submitted:
-                if openai_api_key:
-                    if not openai_api_key.startswith('sk-'):
-                        st.warning('Please enter a valid OpenAI API key starting with "sk-".', icon='⚠')
-                    key = openai_api_key
-                else:
-                    if not key.startswith('sk-'):
-                        st.warning('Please enter a valid OpenAI API key starting with "sk-".', icon='⚠')
+        text = st.text_area(label=label, value=msg_example, height=200)
 
+        submitted = st.form_submit_button('Submit')
+
+        if submitted:
+            if openai_api_key:
+                if not openai_api_key.startswith('sk-'):
+                    st.warning('Please enter a valid OpenAI API key starting with "sk-".', icon='⚠')
+                key = openai_api_key
+            else:
+                key = OPENAI_API_KEY
+
+            if not key.startswith('sk-'):
+                st.warning('Please enter a valid OpenAI API key starting with "sk-".', icon='⚠')
+            else:
                 if 'ai_agent' not in st.session_state:
-                    st.session_state['ai_agent'] = RealEstateGPT(df_data, key)
-                generate_response(text, use_test_data)
+                    st.session_state['ai_agent'] = RealEstateGPT(st.session_state['df_data'], key)
+                process_query(text, use_test_data)
+                st.session_state['iteration'] = (iteration + 1) % len(MSG_MAP)
 
-    with col2:
-        st.write("### Conversation History")
-        with st.container():
-            st.markdown('<div class="conversation-container">', unsafe_allow_html=True)
-            display_conversation()
-            st.markdown('</div>', unsafe_allow_html=True)
-
-execute()
+with col2:
+    st.write("### Conversation History")
+    with st.container():
+        st.markdown('<div class="conversation-container">', unsafe_allow_html=True)
+        display_conversation()
+        st.markdown('</div>', unsafe_allow_html=True)
