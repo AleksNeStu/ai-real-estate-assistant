@@ -34,11 +34,10 @@ MSG_MAP = {
 def load_csv_data(url: str, format_data=False):
     dataloader = DataLoaderCsv(URL(url))
     df = dataloader.load_df()
-    df_formatted = dataloader.load_format_df(df)
+    df_formatted = dataloader.load_format_df(df) if format_data else df
     return df_formatted
 
-# @st.cache_data
-def load_data(urls):
+def load_data(urls, expected_rows = None):
     all_data = []
     empty_df = pd.DataFrame()
     for url in urls:
@@ -47,12 +46,15 @@ def load_data(urls):
             all_data.append(df_formatted)
         except Exception as e:
             st.error(f"Error loading data from {url}: {e}")
-            return empty_df # Return an empty DataFrame in case of an error
+            return empty_df
 
-    # Concatenate all DataFrames
     if all_data:
-        all_data_merged = pd.concat(all_data, ignore_index=True)
-        return all_data_merged
+        data_final = pd.concat(all_data, ignore_index=True)
+        print(f'Merged data rows: {len(data_final)}')
+        if expected_rows:
+            data_final = DataLoaderCsv.format_df(data_final, rows_count=expected_rows)
+            print(f'Concatenated data rows: {len(data_final)}')
+        return data_final
 
     return empty_df
 
@@ -123,7 +125,6 @@ def display_conversation():
             st.text_area(f"Client 🧑:", value=exchange['Client'], height=100, disabled=True, key=f"client_{idx}")
             st.text_area(f"AI 🤖:", value=exchange['AI'], height=100, disabled=True, key=f"ai_{idx}")
 
-# Initialize session state variables if not already present
 if 'conversation_history' not in st.session_state:
     st.session_state['conversation_history'] = []
 
@@ -181,16 +182,18 @@ with col1:
 
     load_data_button = st.button("Load Data")
 
+    format_data = st.checkbox('Concatenate Data', value=False, key='format_data')
+    expected_rows = st.number_input('Expected Rows Count', min_value=1, value=2000, step=500, key='expected_rows')
+
     if load_data_button and urls:
-        st.session_state['df_data'] = load_data(urls)
+        st.session_state['df_data'] = load_data(urls, expected_rows)
         st.session_state['df_urls'] = urls
         if not st.session_state['df_data'].empty:
-            st.write(f"Data loaded successfully. rows count: {len(st.session_state['df_data'])}")
-            # display_filters(st.session_state['df_data'])
+            st.write(f"Data loaded successfully.")
+            st.write(f"Rows count: {len(st.session_state['df_data'])}")
         else:
             st.error("Failed to load data or the data is empty.")
 
-    # OpenAI API Key section
     if st.button("OpenAI API Key", key="api_key"):
         st.session_state.show_api_key = not st.session_state.get('show_api_key', False)
 
