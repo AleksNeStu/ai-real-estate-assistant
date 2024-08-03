@@ -13,7 +13,7 @@ The assistant should engage users in a conversation, asking questions about thei
 
 
 ## Description
-POC app will have simple UI and will use local [real csv dataset for Poland](https://www.kaggle.com/datasets/krzysztofjamroz/apartment-prices-in-poland) (github hosted [apartments_rent_pl_2024_06.csv](dataset%2Fapartments_rent_pl_2024_06.csv)).
+POC app will have simple UI and will use local csv with possibility to specify list of external CSV files.
 
 ## Demo
 

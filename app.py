@@ -9,7 +9,7 @@ from common.cfg import *
 from data.csv_loader import DataLoaderCsv
 
 st.set_page_config(
-    page_title="🦾 AI Real Estate Assistant Poland",
+    page_title="🦾 AI Real Estate Assistant",
     page_icon='💬',
     layout='wide'
 )
@@ -134,7 +134,7 @@ if 'iteration' not in st.session_state:
 if 'test_msg' not in st.session_state:
     st.session_state['test_msg'] = _MSG1
 
-st.title('🦾 AI Real Estate Assistant Poland 🇵🇱')
+st.title('🦾 AI Real Estate Assistant')
 
 st.markdown("""
     <style>
@@ -212,7 +212,8 @@ with ((col1)):
 
         iteration = st.session_state.get('iteration', 0)
 
-        text = st.text_area(label=label, value=st.session_state['test_msg'], height=200)
+        test_msg = st.session_state['test_msg']
+        text = st.text_area(label=label, height=200)
 
         submitted = st.form_submit_button('Submit')
 
