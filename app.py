@@ -27,8 +27,8 @@ _MSG3 = 'Looks like you provided me property for Bialystok, but I need for Krako
 
 MSG_MAP = {
     0: _MSG1,
-    1: _MSG2,
-    2: _MSG3
+    # 1: _MSG2,
+    # 2: _MSG3
 }
 
 def load_csv_data(url: str, format_data=False):
@@ -37,7 +37,7 @@ def load_csv_data(url: str, format_data=False):
     df_formatted = dataloader.load_format_df(df) if format_data else df
     return df_formatted
 
-def load_data(urls, expected_rows = None):
+def load_data(urls, format_data = None, expected_rows = None):
     all_data = []
     empty_df = pd.DataFrame()
     for url in urls:
@@ -51,7 +51,7 @@ def load_data(urls, expected_rows = None):
     if all_data:
         data_final = pd.concat(all_data, ignore_index=True)
         print(f'Merged data rows: {len(data_final)}')
-        if expected_rows:
+        if format_data and expected_rows:
             data_final = DataLoaderCsv.format_df(data_final, rows_count=expected_rows)
             print(f'Concatenated data rows: {len(data_final)}')
         return data_final
@@ -131,6 +131,9 @@ if 'conversation_history' not in st.session_state:
 if 'iteration' not in st.session_state:
     st.session_state['iteration'] = 0
 
+if 'test_msg' not in st.session_state:
+    st.session_state['test_msg'] = _MSG1
+
 st.title('🦾 AI Real Estate Assistant Poland 🇵🇱')
 
 st.markdown("""
@@ -171,7 +174,7 @@ st.markdown("""
 
 col1, col2 = st.columns([2, 2])  # Adjust column widths as needed
 
-with col1:
+with ((col1)):
     st.write("### Input and Settings")
 
     # Input for multiple CSV URLs
@@ -182,11 +185,11 @@ with col1:
 
     load_data_button = st.button("Load Data")
 
-    format_data = st.checkbox('Concatenate Data', value=False, key='format_data')
+    format_data = st.checkbox('Concatenate & And format data', value=True, key='format_data')
     expected_rows = st.number_input('Expected Rows Count', min_value=1, value=2000, step=500, key='expected_rows')
 
     if load_data_button and urls:
-        st.session_state['df_data'] = load_data(urls, expected_rows)
+        st.session_state['df_data'] = load_data(urls, format_data, expected_rows)
         st.session_state['df_urls'] = urls
         if not st.session_state['df_data'].empty:
             st.write(f"Data loaded successfully.")
@@ -208,9 +211,8 @@ with col1:
         label = 'Talk to me about your dream property 😎:\n'
 
         iteration = st.session_state.get('iteration', 0)
-        msg_example = MSG_MAP.get(iteration, '')
 
-        text = st.text_area(label=label, value=msg_example, height=200)
+        text = st.text_area(label=label, value=st.session_state['test_msg'], height=200)
 
         submitted = st.form_submit_button('Submit')
 
@@ -233,7 +235,9 @@ with col1:
                         st.session_state['ai_agent'] = RealEstateGPT(df_data_act, key)
                     process_query(text, use_test_data)
 
-                st.session_state['iteration'] = (iteration + 1) % len(MSG_MAP)
+                    if st.session_state['iteration'] == 0:
+                        st.session_state['test_msg'] = ''
+                    st.session_state['iteration'] += 1
 
 with col2:
     st.write("### Conversation History")
