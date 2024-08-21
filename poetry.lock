@@ -2457,6 +2457,20 @@ socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
+name = "validators"
+version = "0.33.0"
+description = "Python Data Validation for Humans™"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "validators-0.33.0-py3-none-any.whl", hash = "sha256:134b586a98894f8139865953899fc2daeb3d0c35569552c5518f089ae43ed075"},
+    {file = "validators-0.33.0.tar.gz", hash = "sha256:535867e9617f0100e676a1257ba1e206b9bfd847ddc171e4d44811f07ff0bfbf"},
+]
+
+[package.extras]
+crypto-eth-addresses = ["eth-hash[pycryptodome] (>=0.7.0)"]
+
+[[package]]
 name = "watchdog"
 version = "4.0.1"
 description = "Filesystem events monitoring"
@@ -2617,4 +2631,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11.0"
-content-hash = "151a4774ffdef3838e57f2efe1d9d10e9ec028dab9d442102903dd537060015f"
+content-hash = "29485952b97fac3adf63506dfef7d6b36775e441ee7d434ce99dc85adb2625e6"
