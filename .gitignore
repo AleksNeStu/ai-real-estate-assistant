@@ -167,3 +167,4 @@ cython_debug/
 /.github/
 tmp/
 *.pkl
+/.vscode/
