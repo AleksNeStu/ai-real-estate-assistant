@@ -10,15 +10,15 @@ class RealEstateGPT:
 
     def __init__(self, df: pd.DataFrame | Sequence[pd.DataFrame], key: str):
         # Define system and user prompts for context
-        self.system_message = (
-            "You are a specialized real estate assistant. Your role is to help users find the perfect home, "
+        self.system_msg = (
+            "System: You are a specialized real estate assistant. Your role is to help users find the perfect home, "
             "provide real estate advice, and offer insights into property market trends. You should focus on the "
             "following aspects: assisting users in understanding property details, highlighting key features, and "
             "advising on price negotiations based on the 'Possibly to negotiate' column. Ensure all responses are "
             "relevant to real estate and property management. Do not respond to questions outside the real estate domain."
         )
-        self.user_prompt = "Client: {query}"  # Format for user queries
-        self.suffix = "Please keep responses relevant to real estate only."
+        self.user_msg = "User: {query}"  # Format for user queries
+        self.assistant_msg = "Assistant: Please keep responses relevant to real estate only."
 
         os.environ["OPENAI_API_KEY"] = key
 
@@ -29,18 +29,18 @@ class RealEstateGPT:
             verbose=True,
             agent_type=AgentType.OPENAI_FUNCTIONS,
             allow_dangerous_code=True,
-            prefix=self.system_message
+            prefix=self.system_msg
         )
         self.conversation_history = []
 
     def ask_qn(self, query):
         formatted_history = self._format_history()
         # Use the system message as a prefix and add suffix to reinforce the domain
-        dynamic_prompt = f'{self.system_message}\n\n{formatted_history}\n\n{self.user_prompt.format(query=query)}\n\n{self.suffix}'
+        dynamic_prompt = f'{self.system_msg}\n\n{formatted_history}\n\n{self.user_msg.format(query=query)}\n\n{self.assistant_msg}'
 
         try:
             answer = self.agent.run(dynamic_prompt)
-            history_item = {'Client': query, 'AI': answer}
+            history_item = {'User': query, 'Assistant': answer}
             self.conversation_history.append(history_item)
             return answer
 
@@ -51,5 +51,5 @@ class RealEstateGPT:
     def _format_history(self):
         formatted_history = ""
         for history_item in self.conversation_history:
-            formatted_history += f"Client: {history_item['Client']}\nAI: {history_item['AI']}\n"
+            formatted_history += f"User: {history_item['User']}\nAssistant: {history_item['Assistant']}\n"
         return formatted_history
