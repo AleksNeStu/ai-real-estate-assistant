@@ -15,9 +15,21 @@ The assistant should engage users in a conversation, asking questions about thei
 ## Description
 POC app will have simple UI and will use local csv with possibility to specify list of external CSV files.
 
-## Demo
+## Demos
 
+V1: Used langchain_experimental.agents.agent_toolkits.pandas.base.create_pandas_dataframe_agent
+[run_v1.sh](run_v1.sh)
+[app_v2.py](app_v2.py)
 ![screen.png](assets/screen.png)
+
+
+V2: Used different LLM models and RAG with ConversationalRetrievalChain
+#TODO:
+- Fix get db freeze
+- Test app
+[run_v2.sh](run_v2.sh)
+[app.py](app.py)
+![screen2.png](assets/screen2.png)
 
 [//]: # (![demo.gif]&#40;assets/demo.gif&#41;)
 

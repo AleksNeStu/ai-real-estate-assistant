@@ -27,7 +27,8 @@ def enable_chat_history(func):
 
         # to show chat history on ui
         if "messages" not in st.session_state:
-            st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
+            st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you with finding real "
+                                                                             "estate properties?"}]
         for msg in st.session_state["messages"]:
             st.chat_message(msg["role"]).write(msg["content"])
 
@@ -79,7 +80,13 @@ def choose_custom_openai_key():
     return model, openai_api_key
 
 def configure_llm():
-    available_llms = ["gpt-4o-mini","llama3.1:8b","llama3.2:3b","use your openai api key"]
+    available_llms = [
+        "gpt-3.5-turbo",
+        "gpt-4o-mini",
+        "llama3.1:8b",
+        "llama3.2:3b",
+        "use your openai api key"
+    ]
     llm_opt = st.sidebar.radio(
         label="LLM",
         options=available_llms,
@@ -91,6 +98,8 @@ def configure_llm():
     elif llm_opt == "llama3.2:3b":
         llm = ChatOllama(model="llama3.2", base_url=st.secrets["OLLAMA_ENDPOINT"])
     elif llm_opt == "gpt-4o-mini":
+        llm = ChatOpenAI(model_name=llm_opt, temperature=0, streaming=True, api_key=st.secrets["OPENAI_API_KEY"])
+    elif llm_opt == "gpt-3.5-turbo":
         llm = ChatOpenAI(model_name=llm_opt, temperature=0, streaming=True, api_key=st.secrets["OPENAI_API_KEY"])
     else:
         model, openai_api_key = choose_custom_openai_key()
