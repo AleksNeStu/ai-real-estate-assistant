@@ -111,8 +111,28 @@ case $TEST_MODE in
         pytest tests/unit/test_comparison_viz.py -v
         ;;
 
+    "phase4")
+        echo -e "${YELLOW}🚀 Running Phase 4 Tests Only${NC}"
+        echo ""
+        pytest tests/unit/test_radar_charts.py \
+               tests/unit/test_metrics.py \
+               -v
+        ;;
+
+    "radar")
+        echo -e "${YELLOW}📊 Testing Radar Charts${NC}"
+        echo ""
+        pytest tests/unit/test_radar_charts.py -v
+        ;;
+
+    "metrics")
+        echo -e "${YELLOW}📈 Testing Metrics${NC}"
+        echo ""
+        pytest tests/unit/test_metrics.py -v
+        ;;
+
     "full"|"all")
-        echo -e "${YELLOW}📊 Running Full Test Suite (Phase 2 + Phase 3)${NC}"
+        echo -e "${YELLOW}📊 Running Full Test Suite (Phase 2 + Phase 3 + Phase 4)${NC}"
         echo ""
         pytest tests/ -v
         ;;
@@ -145,6 +165,7 @@ case $TEST_MODE in
         echo "Phase-specific modes:"
         echo "  phase2      - Run Phase 2 tests only (Intelligence)"
         echo "  phase3      - Run Phase 3 tests only (Advanced Features)"
+        echo "  phase4      - Run Phase 4 tests only (Visualizations)"
         echo ""
         echo "Phase 2 component tests:"
         echo "  analyzer    - Test query analyzer only"
@@ -157,6 +178,10 @@ case $TEST_MODE in
         echo "  searches    - Test saved searches only"
         echo "  tracker     - Test session tracker only"
         echo "  comparison  - Test property comparison only"
+        echo ""
+        echo "Phase 4 component tests:"
+        echo "  radar       - Test radar charts only"
+        echo "  metrics     - Test metrics utilities only"
         echo ""
         echo "Help:"
         echo "  help        - Show this help message"
