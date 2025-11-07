@@ -87,7 +87,7 @@ def update_api_key(provider: str, api_key: str):
     Update API key for a provider.
 
     Args:
-        provider: Provider name ('openai', 'anthropic', 'google')
+        provider: Provider name ('openai', 'anthropic', 'google', 'grok', 'deepseek')
         api_key: API key value
     """
     global settings
@@ -101,3 +101,11 @@ def update_api_key(provider: str, api_key: str):
     elif provider == "google":
         settings.google_api_key = api_key
         os.environ["GOOGLE_API_KEY"] = api_key
+    elif provider == "grok":
+        os.environ["XAI_API_KEY"] = api_key
+    elif provider == "deepseek":
+        os.environ["DEEPSEEK_API_KEY"] = api_key
+
+    # Clear provider cache to pick up new API key
+    from models.provider_factory import ModelProviderFactory
+    ModelProviderFactory.clear_cache()

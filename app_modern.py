@@ -349,15 +349,17 @@ def render_sidebar():
         )
 
         if data_source_tab == "URL":
-            csv_url = st.text_input(
-                get_text('csv_url', lang),
-                placeholder=get_text('csv_url_placeholder', lang),
-                help=get_text('csv_url_help', lang)
+            csv_urls = st.text_area(
+                get_text('csv_urls', lang),
+                value="https://github.com/AleksNeStu/ai-real-estate-assistant/blob/main/dataset/pl/apartments_rent_pl_2024_01.csv",
+                placeholder=get_text('csv_urls_placeholder', lang),
+                help=get_text('csv_urls_help', lang),
+                height=100
             )
 
             if st.button(get_text('load_data', lang), type="primary"):
-                if csv_url:
-                    load_data_from_url(csv_url)
+                if csv_urls:
+                    load_data_from_urls(csv_urls)
                 else:
                     st.warning(get_text('please_enter_csv_url', lang))
 
@@ -404,49 +406,84 @@ def render_sidebar():
                 st.rerun()
 
 
-def load_data_from_url(url: str):
-    """Load property data from URL."""
+def load_data_from_urls(urls_text: str):
+    """Load property data from multiple URLs."""
     lang = st.session_state.language
 
-    try:
-        with st.spinner(get_text('loading_data_url', lang)):
-            # Load CSV
-            loader = DataLoaderCsv(url)
+    # Parse URLs (one per line)
+    urls = [url.strip() for url in urls_text.strip().split('\n') if url.strip()]
 
-            # Show converted URL if it's a GitHub URL
-            raw_url = DataLoaderCsv.convert_github_url_to_raw(url)
-            if raw_url != url:
-                st.info(f"🔗 Converting GitHub URL to raw format: {raw_url}")
+    if not urls:
+        st.warning(get_text('please_enter_csv_url', lang))
+        return
 
-            df = loader.load_df()
-            st.info(f"📊 Loaded {len(df)} rows from CSV")
+    all_properties = []
+    success_count = 0
+    failed_urls = []
 
-            df_formatted = loader.load_format_df(df)
-            st.info(f"✨ Formatted {len(df_formatted)} properties")
+    with st.spinner(get_text('loading_data_url', lang)):
+        for i, url in enumerate(urls, 1):
+            try:
+                st.info(f"{get_text('url_processing', lang)} {i}/{len(urls)}: {url[:80]}...")
 
-            # Convert to PropertyCollection
-            collection = PropertyCollection.from_dataframe(
-                df_formatted,
-                source=url
-            )
+                # Load CSV/data
+                loader = DataLoaderCsv(url)
 
-            st.session_state.property_collection = collection
+                # Show converted URL if it's a GitHub URL
+                raw_url = DataLoaderCsv.convert_github_url_to_raw(url)
+                if raw_url != url:
+                    st.info(f"🔗 Converting GitHub URL to raw format")
 
-            # Load into vector store
-            load_into_vector_store(collection)
+                df = loader.load_df()
+                st.info(f"📊 Loaded {len(df)} rows")
 
-            # Create market insights (Phase 3)
-            st.session_state.market_insights = MarketInsights(collection)
+                df_formatted = loader.load_format_df(df)
+                st.info(f"✨ Formatted {len(df_formatted)} properties")
 
-            st.success(f"✓ {get_text('data_loaded_success', lang)}: {len(collection.properties)} {get_text('properties', lang)}!")
-            st.session_state.data_loaded = True
+                # Convert to PropertyCollection
+                collection_part = PropertyCollection.from_dataframe(
+                    df_formatted,
+                    source=url
+                )
 
-    except Exception as e:
-        st.error(f"❌ {get_text('error_occurred', lang)}: {str(e)}")
-        # Show more details in an expander
-        with st.expander("🔍 Error Details"):
-            st.code(str(e))
-            st.write("**Tip:** Make sure the URL points to a valid CSV file. For GitHub, use the 'Raw' URL.")
+                all_properties.extend(collection_part.properties)
+                success_count += 1
+                st.success(f"✓ {get_text('url_success', lang)}: {len(collection_part.properties)} {get_text('properties', lang)}")
+
+            except Exception as e:
+                failed_urls.append((url, str(e)))
+                st.error(f"❌ {get_text('url_failed', lang)}: {url[:80]}")
+                st.error(f"Error: {str(e)}")
+                # Continue processing other URLs
+                continue
+
+    # Show summary
+    if all_properties:
+        combined_collection = PropertyCollection(properties=all_properties)
+        st.session_state.property_collection = combined_collection
+
+        # Load into vector store
+        load_into_vector_store(combined_collection)
+
+        # Create market insights (Phase 3)
+        st.session_state.market_insights = MarketInsights(combined_collection)
+
+        st.success(f"✓ {get_text('data_loaded_success', lang)}: {len(combined_collection.properties)} {get_text('properties', lang)} from {success_count}/{len(urls)} URLs!")
+        st.session_state.data_loaded = True
+
+        # Show failed URLs summary if any
+        if failed_urls:
+            with st.expander(f"⚠️ Failed URLs ({len(failed_urls)})"):
+                for url, error in failed_urls:
+                    st.write(f"**{url}**")
+                    st.code(error)
+    else:
+        st.error(f"❌ All URLs failed to load. Please check your URLs and try again.")
+        if failed_urls:
+            with st.expander("🔍 Error Details"):
+                for url, error in failed_urls:
+                    st.write(f"**{url}**")
+                    st.code(error)
 
 
 def load_local_files(uploaded_files):

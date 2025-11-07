@@ -60,10 +60,11 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "data_source": "Data Source",
         "url": "URL",
         "local_files": "Local Files",
-        "csv_url": "CSV URL",
+        "csv_urls": "Data URLs (one per line)",
         "csv_url_placeholder": "https://example.com/data.csv",
-        "csv_url_help": "Enter URL to CSV file with property data",
-        "please_enter_csv_url": "Please enter a CSV URL",
+        "csv_urls_placeholder": "https://example.com/data1.csv\nhttps://example.com/data2.csv",
+        "csv_urls_help": "Enter one or more URLs with property data (CSV, Excel, or any table format). One URL per line. If a URL fails, others will still be processed.",
+        "please_enter_csv_url": "Please enter at least one URL",
         "upload_csv_files": "Upload one or more CSV files with property data",
         "load_local_files": "Load Files",
         "please_upload_files": "Please upload at least one CSV file",
@@ -71,8 +72,11 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "properties": "properties",
         "vector_store": "Vector store",
         "documents": "documents",
-        "loading_data_url": "Loading data from URL...",
+        "loading_data_url": "Loading data from URLs...",
         "loading_local_files": "Loading files...",
+        "url_success": "Successfully loaded",
+        "url_failed": "Failed to load",
+        "url_processing": "Processing",
 
         # Session Management
         "session": "Session",
@@ -80,11 +84,14 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "reset_all": "Reset All",
 
         # Phase 2 Features
-        "intelligence_features": "Intelligence Features (Phase 2)",
-        "enable_intelligent_routing": "Enable intelligent routing between RAG and tools",
-        "display_query_intent": "Display query intent and routing decisions",
-        "rerank_better_relevance": "Rerank results for better relevance",
-        "agent_tools": "Agent tools: Mortgage calc, Comparator, Price analyzer",
+        "intelligence_features": "🧠 Intelligence Features",
+        "use_hybrid_agent": "Smart AI Assistant",
+        "enable_intelligent_routing": "Let AI decide which tools to use for your question (mortgage calculator, property comparison, price analysis). Better answers for complex questions.",
+        "show_query_analysis": "Show How AI Understood Your Question",
+        "display_query_intent": "See what AI thinks you're asking for and which tools it will use. Helpful for understanding the response.",
+        "use_reranking": "Better Search Results",
+        "rerank_better_relevance": "Re-order search results to show the most relevant properties first. Uses AI to understand your needs better.",
+        "agent_tools": "Available tools: Mortgage calculator, Property comparison, Price analysis",
 
         # Advanced Settings
         "advanced_settings": "Advanced Settings",
@@ -398,11 +405,14 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "reset_all": "Resetuj Wszystko",
 
         # Phase 2 Features
-        "intelligence_features": "Funkcje Inteligentne (Faza 2)",
-        "enable_intelligent_routing": "Włącz inteligentne kierowanie między RAG a narzędziami",
-        "display_query_intent": "Wyświetl intencję zapytania i decyzje kierowania",
-        "rerank_better_relevance": "Ponownie uszereguj wyniki dla lepszej trafności",
-        "agent_tools": "Narzędzia agenta: Kalkulator hipoteczny, Komparator, Analiza cen",
+        "intelligence_features": "🧠 Funkcje Inteligentne",
+        "use_hybrid_agent": "Inteligentny Asystent AI",
+        "enable_intelligent_routing": "Pozwól AI wybrać odpowiednie narzędzia do Twojego pytania (kalkulator hipoteczny, porównywanie nieruchomości, analiza cen). Lepsze odpowiedzi na złożone pytania.",
+        "show_query_analysis": "Pokaż Jak AI Zrozumiało Twoje Pytanie",
+        "display_query_intent": "Zobacz co AI myśli, że pytasz i jakie narzędzia użyje. Pomocne do zrozumienia odpowiedzi.",
+        "use_reranking": "Lepsze Wyniki Wyszukiwania",
+        "rerank_better_relevance": "Uporządkuj wyniki wyszukiwania, aby najpierw pokazać najbardziej odpowiednie nieruchomości. Używa AI do lepszego zrozumienia Twoich potrzeb.",
+        "agent_tools": "Dostępne narzędzia: Kalkulator hipoteczny, Porównywanie nieruchomości, Analiza cen",
 
         # Advanced Settings
         "advanced_settings": "Ustawienia Zaawansowane",
