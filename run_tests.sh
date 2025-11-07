@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Test runner script for AI Real Estate Assistant
-# Provides different testing modes for Phase 2 and Phase 3 validation
+# Provides different testing modes for all phases (2-5) validation
 
 set -e
 
-echo "🧪 AI Real Estate Assistant - Test Suite (Phase 2 + Phase 3)"
-echo "=============================================================="
+echo "🧪 AI Real Estate Assistant - Test Suite (All Phases)"
+echo "======================================================"
 echo ""
 
 # Colors for output
@@ -131,8 +131,20 @@ case $TEST_MODE in
         pytest tests/unit/test_metrics.py -v
         ;;
 
+    "phase5")
+        echo -e "${YELLOW}🚀 Running Phase 5 Tests Only${NC}"
+        echo ""
+        pytest tests/unit/test_notifications.py -v
+        ;;
+
+    "notifications")
+        echo -e "${YELLOW}🔔 Testing Notification System${NC}"
+        echo ""
+        pytest tests/unit/test_notifications.py -v
+        ;;
+
     "full"|"all")
-        echo -e "${YELLOW}📊 Running Full Test Suite (Phase 2 + Phase 3 + Phase 4)${NC}"
+        echo -e "${YELLOW}📊 Running Full Test Suite (All Phases)${NC}"
         echo ""
         pytest tests/ -v
         ;;
@@ -166,6 +178,7 @@ case $TEST_MODE in
         echo "  phase2      - Run Phase 2 tests only (Intelligence)"
         echo "  phase3      - Run Phase 3 tests only (Advanced Features)"
         echo "  phase4      - Run Phase 4 tests only (Visualizations)"
+        echo "  phase5      - Run Phase 5 tests only (Notification System)"
         echo ""
         echo "Phase 2 component tests:"
         echo "  analyzer    - Test query analyzer only"
@@ -182,6 +195,9 @@ case $TEST_MODE in
         echo "Phase 4 component tests:"
         echo "  radar       - Test radar charts only"
         echo "  metrics     - Test metrics utilities only"
+        echo ""
+        echo "Phase 5 component tests:"
+        echo "  notifications - Test notification system only"
         echo ""
         echo "Help:"
         echo "  help        - Show this help message"
