@@ -18,11 +18,13 @@ The AI Real Estate Assistant is a conversational AI application that helps users
 ## ✨ Key Features
 
 ### 🤖 Multiple AI Model Providers
-- **OpenAI**: GPT-4o, GPT-4o-mini, GPT-3.5-turbo
+- **OpenAI**: GPT-4o, GPT-4o-mini, O1, O1-mini, O3-mini, GPT-4 Turbo, GPT-4, GPT-3.5-turbo
 - **Anthropic**: Claude 3.5 Sonnet, Claude 3.5 Haiku, Claude 3 Opus
 - **Google**: Gemini 1.5 Pro, Gemini 1.5 Flash, Gemini 2.0 Flash
+- **Grok (xAI)**: Grok 2, Grok 2 Vision, Grok Beta
+- **DeepSeek**: DeepSeek Chat, DeepSeek Coder, DeepSeek Reasoner (R1)
 - **Ollama**: Local models (Llama 3.3, Mistral, Qwen, Phi-3)
-- **Total**: 15+ models across 4 providers
+- **Total**: 25+ models across 6 providers
 
 ### 🧠 Intelligent Query Processing (Phase 2)
 - **Query Analyzer**: Automatically classifies intent and complexity
@@ -636,8 +638,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👤 Author
 
-**Alexander Nesterovich**
+**Alex Nesterovich**
 - GitHub: [@AleksNeStu](https://github.com/AleksNeStu)
+- Repository: [ai-real-estate-assistant](https://github.com/AleksNeStu/ai-real-estate-assistant)
 
 ---
 
@@ -664,5 +667,7 @@ For questions or issues:
 **⭐ Star this repo if you find it helpful!**
 
 Made with ❤️ using Python, LangChain, and Streamlit
+
+Copyright © 2025 [Alex Nesterovich](https://github.com/AleksNeStu)
 
 </div>

@@ -11,6 +11,8 @@ from .providers.openai import OpenAIProvider
 from .providers.anthropic import AnthropicProvider
 from .providers.google import GoogleProvider
 from .providers.ollama import OllamaProvider
+from .providers.grok import GrokProvider
+from .providers.deepseek import DeepSeekProvider
 
 
 class ModelProviderFactory:
@@ -26,6 +28,8 @@ class ModelProviderFactory:
         "openai": OpenAIProvider,
         "anthropic": AnthropicProvider,
         "google": GoogleProvider,
+        "grok": GrokProvider,
+        "deepseek": DeepSeekProvider,
         "ollama": OllamaProvider,
     }
 

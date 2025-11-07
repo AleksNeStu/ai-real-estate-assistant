@@ -287,6 +287,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         # Footer
         "powered_by": "Powered by",
         "version": "Version",
+        "copyright": "Copyright",
+        "made_by": "Made by",
     },
 
     "pl": {

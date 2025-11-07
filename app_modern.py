@@ -2,19 +2,23 @@
 AI Real Estate Assistant - Modern Version (V3) - Phases 1-5
 
 A modernized real estate assistant with:
-- Multiple model providers (OpenAI, Anthropic, Google, Ollama)
+- Multiple model providers (OpenAI, Anthropic, Google, Grok, DeepSeek, Ollama)
+- 25+ AI models across 6 providers
 - Persistent vector storage with ChromaDB
 - Intelligent hybrid agent (RAG + Tools)
 - Query analysis and routing
 - Result reranking
 - Personalized recommendations
-- Modern UI with enhanced features
+- Modern UI with enhanced features (multi-language, dark/light themes)
 - Type-safe data models with Pydantic
 - Market insights and analytics (Phase 3)
 - Export functionality (Phase 3)
 - Saved searches and comparisons (Phase 3)
 - Advanced visualizations (Phase 4)
 - Notification system with email alerts (Phase 5)
+
+Copyright (c) 2025 Alex Nesterovich
+GitHub: https://github.com/AleksNeStu/ai-real-estate-assistant
 """
 
 import streamlit as st
@@ -209,6 +213,8 @@ def render_sidebar():
             "openai": "OpenAI",
             "anthropic": "Anthropic (Claude)",
             "google": "Google (Gemini)",
+            "grok": "Grok (xAI)",
+            "deepseek": "DeepSeek",
             "ollama": "Ollama (Local)",
         }
 
@@ -231,6 +237,8 @@ def render_sidebar():
                     "openai": settings.openai_api_key,
                     "anthropic": settings.anthropic_api_key,
                     "google": settings.google_api_key,
+                    "grok": None,  # Will use XAI_API_KEY or GROK_API_KEY from env
+                    "deepseek": None,  # Will use DEEPSEEK_API_KEY from env
                 }.get(selected_provider)
 
                 if not api_key_env:
@@ -1575,9 +1583,7 @@ def main():
     # Footer
     lang = st.session_state.language
     st.divider()
-    col1, col2, col3 = st.columns(3)
-    with col2:
-        st.caption(f"{get_text('powered_by', lang)} {st.session_state.get('selected_provider', 'AI').title()} | {get_text('version', lang)} {settings.version}")
+    st.caption(f"© 2025 [Alex Nesterovich](https://github.com/AleksNeStu) | {get_text('powered_by', lang)} {st.session_state.get('selected_provider', 'AI').title()} | {get_text('version', lang)} {settings.version}")
 
 
 if __name__ == "__main__":
