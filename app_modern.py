@@ -459,7 +459,10 @@ def load_data_from_urls(urls_text: str):
 
     # Show summary
     if all_properties:
-        combined_collection = PropertyCollection(properties=all_properties)
+        combined_collection = PropertyCollection(
+            properties=all_properties,
+            total_count=len(all_properties)
+        )
         st.session_state.property_collection = combined_collection
 
         # Load into vector store
@@ -517,7 +520,10 @@ def load_local_files(uploaded_files):
 
             # Combine all properties into one collection
             if all_properties:
-                combined_collection = PropertyCollection(properties=all_properties)
+                combined_collection = PropertyCollection(
+                    properties=all_properties,
+                    total_count=len(all_properties)
+                )
                 st.session_state.property_collection = combined_collection
 
                 # Load into vector store
