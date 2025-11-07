@@ -1,5 +1,5 @@
 """
-AI Real Estate Assistant - Modern Version (V3) - Phase 3
+AI Real Estate Assistant - Modern Version (V3) - Phases 1-5
 
 A modernized real estate assistant with:
 - Multiple model providers (OpenAI, Anthropic, Google, Ollama)
@@ -13,6 +13,8 @@ A modernized real estate assistant with:
 - Market insights and analytics (Phase 3)
 - Export functionality (Phase 3)
 - Saved searches and comparisons (Phase 3)
+- Advanced visualizations (Phase 4)
+- Notification system with email alerts (Phase 5)
 """
 
 import streamlit as st
@@ -41,6 +43,21 @@ from agents.recommendation_engine import create_recommendation_engine
 from analytics import MarketInsights, SessionTracker, EventType
 from utils import PropertyExporter, ExportFormat, SavedSearchManager
 from ui.comparison_viz import PropertyComparison, display_comparison_ui, display_market_insights_ui
+
+# Phase 5 imports
+from notifications import (
+    EmailService,
+    EmailConfig,
+    EmailProvider,
+    EmailServiceFactory,
+    NotificationPreferencesManager,
+    NotificationPreferences,
+    AlertFrequency,
+    DigestDay,
+    NotificationHistory,
+    PriceDropTemplate,
+    TestEmailTemplate
+)
 
 # LangChain imports
 from langchain.chains import ConversationalRetrievalChain
@@ -111,6 +128,19 @@ def initialize_session_state():
 
     if "selected_properties_for_comparison" not in st.session_state:
         st.session_state.selected_properties_for_comparison = []
+
+    # Phase 5 state variables
+    if "notification_prefs_manager" not in st.session_state:
+        st.session_state.notification_prefs_manager = NotificationPreferencesManager()
+
+    if "notification_history" not in st.session_state:
+        st.session_state.notification_history = NotificationHistory()
+
+    if "email_service" not in st.session_state:
+        st.session_state.email_service = None
+
+    if "user_email" not in st.session_state:
+        st.session_state.user_email = ""
 
 
 def render_sidebar():
@@ -1056,13 +1086,333 @@ def render_analytics_tab():
     st.caption(f"Session ID: {st.session_state.session_id}")
 
 
+def render_notifications_tab():
+    """Render notifications configuration and management tab."""
+    st.header("🔔 Notification Settings")
+
+    # User email input
+    st.subheader("📧 User Information")
+    user_email = st.text_input(
+        "Your Email Address",
+        value=st.session_state.user_email,
+        placeholder="your.email@example.com",
+        help="Enter your email to receive property alerts and notifications"
+    )
+
+    if user_email != st.session_state.user_email:
+        st.session_state.user_email = user_email
+
+    st.divider()
+
+    # Email Service Configuration
+    st.subheader("⚙️ Email Service Configuration")
+
+    with st.expander("Configure Email Service", expanded=st.session_state.email_service is None):
+        provider_options = {
+            "Gmail": EmailProvider.GMAIL,
+            "Outlook": EmailProvider.OUTLOOK,
+            "Custom SMTP": EmailProvider.CUSTOM
+        }
+
+        selected_provider = st.selectbox(
+            "Email Provider",
+            options=list(provider_options.keys()),
+            help="Select your email service provider"
+        )
+
+        provider = provider_options[selected_provider]
+
+        col1, col2 = st.columns(2)
+        with col1:
+            smtp_username = st.text_input(
+                "Email Username",
+                help="Your email address for SMTP authentication"
+            )
+        with col2:
+            smtp_password = st.text_input(
+                "Email Password/App Password",
+                type="password",
+                help="Use app-specific password for Gmail/Outlook"
+            )
+
+        if provider == EmailProvider.CUSTOM:
+            col1, col2 = st.columns(2)
+            with col1:
+                smtp_server = st.text_input("SMTP Server", value="smtp.example.com")
+            with col2:
+                smtp_port = st.number_input("SMTP Port", value=587, min_value=1, max_value=65535)
+
+            use_tls = st.checkbox("Use TLS", value=True)
+
+        if st.button("💾 Save Email Configuration", type="primary"):
+            if not smtp_username or not smtp_password:
+                st.error("Please provide email username and password")
+            else:
+                try:
+                    if provider == EmailProvider.GMAIL:
+                        email_service = EmailServiceFactory.create_gmail_service(
+                            username=smtp_username,
+                            password=smtp_password
+                        )
+                    elif provider == EmailProvider.OUTLOOK:
+                        email_service = EmailServiceFactory.create_outlook_service(
+                            username=smtp_username,
+                            password=smtp_password
+                        )
+                    else:  # Custom
+                        config = EmailConfig(
+                            provider=provider,
+                            smtp_server=smtp_server,
+                            smtp_port=smtp_port,
+                            username=smtp_username,
+                            password=smtp_password,
+                            from_email=smtp_username,
+                            use_tls=use_tls
+                        )
+                        email_service = EmailService(config)
+
+                    st.session_state.email_service = email_service
+                    st.success("✅ Email service configured successfully!")
+                except Exception as e:
+                    st.error(f"❌ Error configuring email service: {str(e)}")
+
+    # Test email configuration
+    if st.session_state.email_service and user_email:
+        if st.button("📧 Send Test Email"):
+            try:
+                subject, html = TestEmailTemplate.render(user_name=user_email.split('@')[0])
+                success = st.session_state.email_service.send_email(
+                    to_email=user_email,
+                    subject=subject,
+                    body=html,
+                    html=True
+                )
+                if success:
+                    st.success("✅ Test email sent successfully! Check your inbox.")
+                else:
+                    st.error("❌ Failed to send test email. Check your configuration.")
+            except Exception as e:
+                st.error(f"❌ Error sending test email: {str(e)}")
+
+    st.divider()
+
+    # Notification Preferences
+    if user_email:
+        st.subheader("🔔 Notification Preferences")
+
+        prefs_manager = st.session_state.notification_prefs_manager
+        prefs = prefs_manager.get_preferences(user_email)
+
+        # Enable/Disable notifications
+        enabled = st.checkbox(
+            "Enable Notifications",
+            value=prefs.enabled,
+            help="Turn notifications on or off"
+        )
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            # Alert frequency
+            frequency_options = {
+                "Instant": AlertFrequency.INSTANT,
+                "Hourly": AlertFrequency.HOURLY,
+                "Daily Digest": AlertFrequency.DAILY,
+                "Weekly Digest": AlertFrequency.WEEKLY
+            }
+
+            current_freq = next(k for k, v in frequency_options.items() if v == prefs.alert_frequency)
+
+            selected_frequency = st.selectbox(
+                "Alert Frequency",
+                options=list(frequency_options.keys()),
+                index=list(frequency_options.keys()).index(current_freq),
+                help="How often to receive notifications"
+            )
+
+            # Price drop threshold
+            price_threshold = st.slider(
+                "Price Drop Threshold (%)",
+                min_value=1.0,
+                max_value=20.0,
+                value=prefs.price_drop_threshold,
+                step=0.5,
+                help="Minimum price drop percentage to trigger alert"
+            )
+
+            # Max alerts per day
+            max_alerts = st.number_input(
+                "Max Alerts Per Day",
+                min_value=1,
+                max_value=100,
+                value=prefs.max_alerts_per_day,
+                help="Maximum number of alerts to receive per day"
+            )
+
+        with col2:
+            # Quiet hours
+            st.write("**Quiet Hours** (No alerts during these times)")
+            quiet_start = st.time_input(
+                "Quiet Hours Start",
+                value=datetime.strptime(prefs.quiet_hours_start or "22:00", "%H:%M").time()
+            )
+            quiet_end = st.time_input(
+                "Quiet Hours End",
+                value=datetime.strptime(prefs.quiet_hours_end or "08:00", "%H:%M").time()
+            )
+
+            # Digest time (if daily/weekly)
+            if frequency_options[selected_frequency] in [AlertFrequency.DAILY, AlertFrequency.WEEKLY]:
+                digest_time = st.time_input(
+                    "Digest Send Time",
+                    value=datetime.strptime(prefs.daily_digest_time, "%H:%M").time()
+                )
+
+                if frequency_options[selected_frequency] == AlertFrequency.WEEKLY:
+                    digest_day = st.selectbox(
+                        "Weekly Digest Day",
+                        options=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                        index=["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].index(prefs.weekly_digest_day.value)
+                    )
+
+        # Alert type toggles
+        st.write("**Alert Types**")
+        alert_col1, alert_col2 = st.columns(2)
+
+        with alert_col1:
+            enable_price_drops = st.checkbox(
+                "💰 Price Drop Alerts",
+                value="price_drop" in [a.value for a in prefs.enabled_alerts],
+                help="Get notified when property prices drop"
+            )
+            enable_new_properties = st.checkbox(
+                "🏠 New Property Alerts",
+                value="new_property" in [a.value for a in prefs.enabled_alerts],
+                help="Get notified about new properties"
+            )
+
+        with alert_col2:
+            enable_saved_searches = st.checkbox(
+                "🔍 Saved Search Matches",
+                value="saved_search_match" in [a.value for a in prefs.enabled_alerts],
+                help="Get notified when properties match your saved searches"
+            )
+            enable_market_updates = st.checkbox(
+                "📈 Market Updates",
+                value="market_update" in [a.value for a in prefs.enabled_alerts],
+                help="Get market insights and trends"
+            )
+
+        # Save preferences button
+        if st.button("💾 Save Notification Preferences", type="primary"):
+            try:
+                # Build enabled alerts set
+                enabled_alerts = set()
+                if enable_price_drops:
+                    from notifications.alert_manager import AlertType as AMAlertType
+                    enabled_alerts.add(AMAlertType.PRICE_DROP)
+                if enable_new_properties:
+                    from notifications.alert_manager import AlertType as AMAlertType
+                    enabled_alerts.add(AMAlertType.NEW_PROPERTY)
+                if enable_saved_searches:
+                    from notifications.alert_manager import AlertType as AMAlertType
+                    enabled_alerts.add(AMAlertType.SAVED_SEARCH_MATCH)
+                if enable_market_updates:
+                    from notifications.alert_manager import AlertType as AMAlertType
+                    enabled_alerts.add(AMAlertType.MARKET_UPDATE)
+
+                # Update preferences
+                prefs_manager.update_preferences(
+                    user_email,
+                    enabled=enabled,
+                    alert_frequency=frequency_options[selected_frequency],
+                    price_drop_threshold=price_threshold,
+                    max_alerts_per_day=max_alerts,
+                    quiet_hours_start=quiet_start.strftime("%H:%M"),
+                    quiet_hours_end=quiet_end.strftime("%H:%M"),
+                    enabled_alerts=enabled_alerts
+                )
+
+                if frequency_options[selected_frequency] in [AlertFrequency.DAILY, AlertFrequency.WEEKLY]:
+                    prefs_manager.update_preferences(
+                        user_email,
+                        daily_digest_time=digest_time.strftime("%H:%M")
+                    )
+
+                    if frequency_options[selected_frequency] == AlertFrequency.WEEKLY:
+                        day_map = {
+                            "Monday": DigestDay.MONDAY,
+                            "Tuesday": DigestDay.TUESDAY,
+                            "Wednesday": DigestDay.WEDNESDAY,
+                            "Thursday": DigestDay.THURSDAY,
+                            "Friday": DigestDay.FRIDAY,
+                            "Saturday": DigestDay.SATURDAY,
+                            "Sunday": DigestDay.SUNDAY
+                        }
+                        prefs_manager.update_preferences(
+                            user_email,
+                            weekly_digest_day=day_map[digest_day]
+                        )
+
+                st.success("✅ Notification preferences saved successfully!")
+            except Exception as e:
+                st.error(f"❌ Error saving preferences: {str(e)}")
+
+    st.divider()
+
+    # Notification History
+    if user_email:
+        st.subheader("📊 Notification History")
+
+        history = st.session_state.notification_history
+        user_notifications = history.get_user_notifications(user_email, limit=20)
+
+        if user_notifications:
+            st.write(f"**Recent Notifications** (Last 20)")
+
+            for notification in user_notifications:
+                with st.expander(
+                    f"{notification.subject} - {notification.status.value.title()} ({notification.created_at.strftime('%Y-%m-%d %H:%M')})"
+                ):
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.write(f"**Type:** {notification.notification_type.value}")
+                        st.write(f"**Status:** {notification.status.value}")
+                    with col2:
+                        if notification.sent_at:
+                            st.write(f"**Sent:** {notification.sent_at.strftime('%Y-%m-%d %H:%M')}")
+                        if notification.delivered_at:
+                            st.write(f"**Delivered:** {notification.delivered_at.strftime('%Y-%m-%d %H:%M')}")
+
+                    if notification.error_message:
+                        st.error(f"Error: {notification.error_message}")
+
+            # Statistics
+            stats = history.get_user_statistics(user_email)
+
+            st.divider()
+            st.write("**Your Notification Statistics**")
+
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Total Sent", stats['total_sent'])
+            with col2:
+                st.metric("Delivered", stats['total_delivered'])
+            with col3:
+                st.metric("Delivery Rate", f"{stats['delivery_rate']:.1f}%")
+            with col4:
+                st.metric("Failed", stats['total_failed'])
+        else:
+            st.info("No notifications sent yet. Configure your preferences above to start receiving alerts!")
+
+
 def render_main_content():
     """Render main content area with tabs."""
     st.title(f"{settings.app_icon} AI Real Estate Assistant")
     st.caption("Find your perfect property with AI-powered search")
 
     # Create tabs
-    tabs = st.tabs(["💬 Chat", "📈 Market Insights", "🔄 Compare", "💾 Export", "📊 Analytics"])
+    tabs = st.tabs(["💬 Chat", "📈 Market Insights", "🔄 Compare", "💾 Export", "📊 Analytics", "🔔 Notifications"])
 
     with tabs[0]:
         render_chat_tab()
@@ -1078,6 +1428,9 @@ def render_main_content():
 
     with tabs[4]:
         render_analytics_tab()
+
+    with tabs[5]:
+        render_notifications_tab()
 
 
 def main():
