@@ -9,7 +9,7 @@ from langchain_community.llms.fake import FakeListLLM
 from langchain_core.documents import Document
 
 from agents.query_analyzer import QueryAnalyzer
-from data.schemas import Property, PropertyCollection
+from data.schemas import Property, PropertyCollection, PropertyType
 from vector_store.reranker import PropertyReranker
 
 
@@ -32,7 +32,7 @@ def sample_properties():
             area_sqm=55,
             has_parking=True,
             has_garden=False,
-            property_type="apartment",
+            property_type=PropertyType.APARTMENT,
             source_url="http://example.com/1"
         ),
         Property(
@@ -44,7 +44,7 @@ def sample_properties():
             area_sqm=48,
             has_parking=False,
             has_garden=True,
-            property_type="apartment",
+            property_type=PropertyType.APARTMENT,
             source_url="http://example.com/2"
         ),
         Property(
@@ -56,7 +56,7 @@ def sample_properties():
             area_sqm=75,
             has_parking=True,
             has_garden=False,
-            property_type="apartment",
+            property_type=PropertyType.APARTMENT,
             source_url="http://example.com/3"
         ),
         Property(
@@ -68,7 +68,7 @@ def sample_properties():
             area_sqm=35,
             has_parking=False,
             has_garden=False,
-            property_type="studio",
+            property_type=PropertyType.STUDIO,
             source_url="http://example.com/4"
         ),
         Property(
@@ -80,7 +80,7 @@ def sample_properties():
             area_sqm=60,
             has_parking=True,
             has_garden=True,
-            property_type="apartment",
+            property_type=PropertyType.APARTMENT,
             source_url="http://example.com/5"
         ),
     ]

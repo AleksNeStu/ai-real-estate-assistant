@@ -178,8 +178,9 @@ class QueryAnalyzer:
         if any(kw in query_lower for kw in self.RECOMMENDATION_KEYWORDS):
             return QueryIntent.RECOMMENDATION
 
-        # Check for conversation
-        if any(word in query_lower for word in ["previous", "last", "that one", "it", "this"]):
+        # Check for conversation (use word boundaries to avoid false matches like "it" in "with")
+        conversation_patterns = [r'\bprevious\b', r'\blast\b', r'\bthat one\b', r'\bit\b', r'\bthis\b']
+        if any(re.search(pattern, query_lower) for pattern in conversation_patterns):
             return QueryIntent.CONVERSATION
 
         # Check for filtered search (has specific criteria)
@@ -251,8 +252,9 @@ class QueryAnalyzer:
         if intent == QueryIntent.RECOMMENDATION:
             return Complexity.COMPLEX
 
-        # Questions requiring explanation
-        if any(word in query_lower for word in ['why', 'how', 'explain', 'what is']):
+        # Questions requiring explanation (use word boundaries to avoid false matches like "show" matching "how")
+        question_patterns = [r'\bwhy\b', r'\bhow\b', r'\bexplain\b', r'\bwhat is\b']
+        if any(re.search(pattern, query_lower) for pattern in question_patterns):
             return Complexity.MEDIUM
 
         # Simple retrieval

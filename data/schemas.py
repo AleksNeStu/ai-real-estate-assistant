@@ -197,8 +197,11 @@ class Property(BaseModel):
         if self.neighborhood:
             text_parts.append(f", {self.neighborhood} neighborhood")
 
+        # Handle property_type as either enum or string (Pydantic might convert to string)
+        prop_type_str = self.property_type.value if hasattr(self.property_type, 'value') else str(self.property_type)
+
         text_parts.extend([
-            f". {self.property_type.value.title()} with {int(self.rooms)} rooms and {int(self.bathrooms)} bathrooms",
+            f". {prop_type_str.title()} with {int(self.rooms)} rooms and {int(self.bathrooms)} bathrooms",
             f". Monthly rent: ${self.price}"
         ])
 
