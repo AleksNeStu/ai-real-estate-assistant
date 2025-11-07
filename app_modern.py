@@ -149,6 +149,10 @@ def initialize_session_state():
     if "language" not in st.session_state:
         st.session_state.language = "en"
 
+    # Theme support
+    if "theme" not in st.session_state:
+        st.session_state.theme = "light"
+
 
 def render_sidebar():
     """Render sidebar with model selection and configuration."""
@@ -172,6 +176,26 @@ def render_sidebar():
         )
         if selected_lang != st.session_state.language:
             st.session_state.language = selected_lang
+            st.rerun()
+
+        st.divider()
+
+        # Theme Selection
+        st.subheader(f"🎨 {get_text('theme', lang)}")
+        theme_options = {
+            "light": get_text('light_theme', lang),
+            "dark": get_text('dark_theme', lang)
+        }
+        selected_theme = st.selectbox(
+            get_text('theme', lang),
+            options=list(theme_options.keys()),
+            format_func=lambda x: theme_options[x],
+            index=list(theme_options.keys()).index(st.session_state.theme),
+            key="theme_selector",
+            label_visibility="collapsed"
+        )
+        if selected_theme != st.session_state.theme:
+            st.session_state.theme = selected_theme
             st.rerun()
 
         st.divider()
@@ -1466,20 +1490,94 @@ def render_main_content():
         render_notifications_tab()
 
 
+def apply_theme():
+    """Apply custom CSS based on selected theme."""
+    theme = st.session_state.get('theme', 'light')
+
+    if theme == 'dark':
+        st.markdown("""
+        <style>
+            /* Dark theme colors */
+            .stApp {
+                background-color: #0e1117;
+                color: #fafafa;
+            }
+            .stSidebar {
+                background-color: #1a1d24;
+            }
+            .stTabs [data-baseweb="tab-list"] {
+                gap: 8px;
+                background-color: #1a1d24;
+            }
+            .stTabs [data-baseweb="tab"] {
+                background-color: #262730;
+                color: #fafafa;
+                border-radius: 4px 4px 0px 0px;
+            }
+            .stTabs [aria-selected="true"] {
+                background-color: #3a3f4b;
+            }
+            .stTextInput>div>div>input, .stSelectbox>div>div>div, .stTextArea>div>div>textarea {
+                background-color: #262730;
+                color: #fafafa;
+            }
+            .stButton>button {
+                background-color: #262730;
+                color: #fafafa;
+                border: 1px solid #3a3f4b;
+            }
+            .stButton>button:hover {
+                background-color: #3a3f4b;
+                border: 1px solid #4a4f5b;
+            }
+            .stMarkdown {
+                color: #fafafa;
+            }
+            .stChatMessage {
+                background-color: #1a1d24;
+            }
+            div[data-testid="stMetricValue"] {
+                color: #fafafa;
+            }
+            .css-1d391kg {
+                background-color: #1a1d24;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+    else:
+        # Light theme (default Streamlit theme)
+        st.markdown("""
+        <style>
+            /* Light theme colors (enhanced) */
+            .stApp {
+                background-color: #ffffff;
+                color: #31333F;
+            }
+            .stSidebar {
+                background-color: #f0f2f6;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+
+
 def main():
     """Main application entry point."""
     # Initialize session state
     initialize_session_state()
+
+    # Apply theme
+    apply_theme()
 
     # Render UI
     render_sidebar()
     render_main_content()
 
     # Footer
+    lang = st.session_state.language
     st.divider()
     col1, col2, col3 = st.columns(3)
     with col2:
-        st.caption(f"Powered by {st.session_state.get('selected_provider', 'AI').title()} | Version {settings.version}")
+        st.caption(f"{get_text('powered_by', lang)} {st.session_state.get('selected_provider', 'AI').title()} | {get_text('version', lang)} {settings.version}")
 
 
 if __name__ == "__main__":
