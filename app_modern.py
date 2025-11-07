@@ -59,6 +59,9 @@ from notifications import (
     TestEmailTemplate
 )
 
+# Internationalization
+from i18n import get_text, get_available_languages
+
 # LangChain imports
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
@@ -142,17 +145,39 @@ def initialize_session_state():
     if "user_email" not in st.session_state:
         st.session_state.user_email = ""
 
+    # Language support
+    if "language" not in st.session_state:
+        st.session_state.language = "en"
+
 
 def render_sidebar():
     """Render sidebar with model selection and configuration."""
     with st.sidebar:
-        st.title(f"{settings.app_icon} {settings.app_title}")
-        st.caption(f"Version {settings.version}")
+        lang = st.session_state.language
+        st.title(f"{settings.app_icon} {get_text('app_title', lang)}")
+        st.caption(f"{get_text('version', lang)} {settings.version}")
+
+        st.divider()
+
+        # Language Selection
+        st.subheader(f"🌍 {get_text('language', lang)}")
+        languages = get_available_languages()
+        selected_lang = st.selectbox(
+            get_text('language', lang),
+            options=list(languages.keys()),
+            format_func=lambda x: languages[x],
+            index=list(languages.keys()).index(st.session_state.language),
+            key="language_selector",
+            label_visibility="collapsed"
+        )
+        if selected_lang != st.session_state.language:
+            st.session_state.language = selected_lang
+            st.rerun()
 
         st.divider()
 
         # Model Provider Selection
-        st.subheader("🤖 Model Configuration")
+        st.subheader(f"🤖 {get_text('model_config', lang)}")
 
         # Get available providers
         providers = ModelProviderFactory.list_providers()
@@ -164,7 +189,7 @@ def render_sidebar():
         }
 
         selected_provider = st.selectbox(
-            "Provider",
+            get_text("provider", lang),
             options=providers,
             format_func=lambda x: provider_display.get(x, x),
             key="provider_select"
@@ -1408,11 +1433,19 @@ def render_notifications_tab():
 
 def render_main_content():
     """Render main content area with tabs."""
-    st.title(f"{settings.app_icon} AI Real Estate Assistant")
-    st.caption("Find your perfect property with AI-powered search")
+    lang = st.session_state.language
+    st.title(f"{settings.app_icon} {get_text('app_title', lang)}")
+    st.caption(get_text('app_subtitle', lang))
 
     # Create tabs
-    tabs = st.tabs(["💬 Chat", "📈 Market Insights", "🔄 Compare", "💾 Export", "📊 Analytics", "🔔 Notifications"])
+    tabs = st.tabs([
+        get_text('tab_chat', lang),
+        get_text('tab_insights', lang),
+        get_text('tab_compare', lang),
+        get_text('tab_export', lang),
+        get_text('tab_analytics', lang),
+        get_text('tab_notifications', lang)
+    ])
 
     with tabs[0]:
         render_chat_tab()
