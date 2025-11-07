@@ -37,6 +37,8 @@ from vector_store.reranker import create_reranker
 from data.csv_loader import DataLoaderCsv
 from data.schemas import PropertyCollection, Property, UserPreferences
 from streaming import StreamHandler
+from utils.ollama_detector import OllamaDetector
+from utils.api_key_validator import APIKeyValidator
 
 # Phase 2 imports
 from agents.hybrid_agent import create_hybrid_agent, HybridPropertyAgent
@@ -218,10 +220,19 @@ def render_sidebar():
             "ollama": "Ollama (Local)",
         }
 
+        # Auto-select Ollama if available and running (default for local models)
+        default_provider_index = 0
+        if "ollama" in providers and "selected_provider" not in st.session_state:
+            ollama_status = OllamaDetector.get_status()
+            if ollama_status.is_running and ollama_status.available_models:
+                default_provider_index = providers.index("ollama")
+                st.info("ℹ️ Ollama detected and set as default provider (free local AI models)")
+
         selected_provider = st.selectbox(
             get_text("provider", lang),
             options=providers,
             format_func=lambda x: provider_display.get(x, x),
+            index=default_provider_index,
             key="provider_select"
         )
 
@@ -231,8 +242,57 @@ def render_sidebar():
         try:
             provider = ModelProviderFactory.get_provider(selected_provider)
 
-            # API Key input for remote providers
-            if provider.requires_api_key:
+            # Ollama-specific: Detection and Installation Guidance
+            if selected_provider == "ollama":
+                with st.expander(f"🔧 {get_text('ollama_status', lang)}", expanded=False):
+                    ollama_status = OllamaDetector.get_status()
+
+                    if ollama_status.is_installed:
+                        st.success(get_text('ollama_installed', lang))
+                        if ollama_status.version:
+                            st.write(f"**{get_text('ollama_version', lang)}:** {ollama_status.version}")
+
+                        if ollama_status.is_running:
+                            st.success(get_text('ollama_running', lang))
+                            if ollama_status.available_models:
+                                st.write(f"**{get_text('ollama_models_available', lang)}:** {len(ollama_status.available_models)}")
+                                if len(ollama_status.available_models) <= 10:
+                                    st.write(", ".join(ollama_status.available_models))
+                        else:
+                            st.warning(get_text('ollama_not_running', lang))
+                            st.code(f"{get_text('ollama_start_service', lang)}: ollama serve")
+                    else:
+                        st.error(get_text('ollama_not_installed', lang))
+                        st.info(get_text('ollama_install_instructions', lang))
+
+                        # Get OS-specific installation instructions
+                        os_type = OllamaDetector.get_os_type()
+                        instructions = OllamaDetector.get_installation_instructions(os_type)
+
+                        st.markdown(f"### {instructions.get('title', 'Installation')}")
+
+                        # Method 1 (Recommended)
+                        method_1 = instructions.get('method_1', {})
+                        if method_1:
+                            st.markdown(f"**{method_1.get('name', 'Method 1')}:**")
+                            for step in method_1.get('steps', []):
+                                st.write(f"- {step}")
+                            if 'url' in method_1:
+                                st.link_button(get_text('ollama_download', lang), method_1['url'])
+                            if 'command' in method_1:
+                                st.code(method_1['command'], language='bash')
+
+                        # Show recommended models
+                        st.markdown(f"**{get_text('ollama_recommended_models', lang)}:**")
+                        recommended_models = OllamaDetector.get_recommended_models()
+                        for model in recommended_models:
+                            if model.get('recommended', False):
+                                st.write(f"- `{model['name']}` - {model['description']} ({model['size']}, RAM: {model['ram']})")
+                                st.code(f"{get_text('ollama_pull_model', lang)}: {model['command']}")
+
+            # API Key Management for remote providers
+            elif provider.requires_api_key:
+                # Check if API key exists
                 api_key_env = {
                     "openai": settings.openai_api_key,
                     "anthropic": settings.anthropic_api_key,
@@ -241,17 +301,96 @@ def render_sidebar():
                     "deepseek": None,  # Will use DEEPSEEK_API_KEY from env
                 }.get(selected_provider)
 
-                if not api_key_env:
-                    api_key = st.text_input(
-                        f"{provider.display_name} API Key",
-                        type="password",
-                        help=f"Enter your {provider.display_name} API key"
-                    )
-                    if api_key:
-                        update_api_key(selected_provider, api_key)
-                        st.success(get_text('api_key_updated_success', lang))
-                else:
-                    st.success(f"✓ {provider.display_name} API key configured")
+                # Initialize session state for API key management
+                if f"{selected_provider}_key_status" not in st.session_state:
+                    st.session_state[f"{selected_provider}_key_status"] = None
+
+                with st.expander(f"🔑 {get_text('api_key_settings', lang)}", expanded=not bool(api_key_env)):
+                    if api_key_env:
+                        # Show key status
+                        col1, col2, col3 = st.columns([2, 1, 1])
+                        with col1:
+                            st.success(f"✓ {provider.display_name} {get_text('api_key_configured', lang)}")
+                        with col2:
+                            if st.button(get_text('validate_api_key', lang), key=f"validate_{selected_provider}"):
+                                with st.spinner(get_text('validating_key', lang)):
+                                    result = APIKeyValidator.validate_key(selected_provider, api_key_env)
+                                    st.session_state[f"{selected_provider}_key_status"] = result
+                        with col3:
+                            if st.button(get_text('change_api_key', lang), key=f"change_{selected_provider}"):
+                                st.session_state[f"{selected_provider}_show_change"] = True
+
+                        # Show validation result
+                        if st.session_state[f"{selected_provider}_key_status"]:
+                            result = st.session_state[f"{selected_provider}_key_status"]
+                            if result.is_valid:
+                                st.success(f"{get_text('key_valid', lang)}: {result.message}")
+                            else:
+                                st.error(f"{get_text('key_invalid', lang)}: {result.message}")
+                                if result.error_details:
+                                    with st.expander("Error Details"):
+                                        st.code(result.error_details)
+
+                        # Show change API key form if requested
+                        if st.session_state.get(f"{selected_provider}_show_change", False):
+                            st.markdown(f"**{get_text('enter_new_api_key', lang)}:**")
+                            new_key = st.text_input(
+                                f"New {provider.display_name} API Key",
+                                type="password",
+                                key=f"new_key_{selected_provider}"
+                            )
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                if st.button(get_text('save_api_key', lang), key=f"save_{selected_provider}"):
+                                    if new_key:
+                                        # Validate before saving
+                                        with st.spinner(get_text('validating_key', lang)):
+                                            result = APIKeyValidator.validate_key(selected_provider, new_key)
+                                            if result.is_valid:
+                                                update_api_key(selected_provider, new_key)
+                                                ModelProviderFactory.clear_cache()
+                                                st.success(get_text('api_key_saved', lang))
+                                                st.session_state[f"{selected_provider}_show_change"] = False
+                                                st.session_state[f"{selected_provider}_key_status"] = result
+                                                st.rerun()
+                                            else:
+                                                st.error(f"{get_text('api_key_validation_failed', lang)}: {result.message}")
+                                    else:
+                                        st.warning(get_text('enter_new_api_key', lang))
+                            with col2:
+                                if st.button(get_text('cancel', lang), key=f"cancel_{selected_provider}"):
+                                    st.session_state[f"{selected_provider}_show_change"] = False
+                                    st.rerun()
+                    else:
+                        # No API key set - show input
+                        st.warning(f"{get_text('api_key_required', lang).format(provider=provider.display_name)}")
+                        api_key = st.text_input(
+                            f"{provider.display_name} API Key",
+                            type="password",
+                            help=f"Enter your {provider.display_name} API key",
+                            key=f"input_{selected_provider}"
+                        )
+                        if st.button(get_text('save_api_key', lang), key=f"save_new_{selected_provider}"):
+                            if api_key:
+                                # Validate before saving
+                                with st.spinner(get_text('validating_key', lang)):
+                                    result = APIKeyValidator.validate_key(selected_provider, api_key)
+                                    if result.is_valid:
+                                        update_api_key(selected_provider, api_key)
+                                        ModelProviderFactory.clear_cache()
+                                        st.success(get_text('api_key_saved', lang))
+                                        st.session_state[f"{selected_provider}_key_status"] = result
+                                        st.rerun()
+                                    else:
+                                        st.error(f"{get_text('api_key_validation_failed', lang)}: {result.message}")
+                                        if result.error_details:
+                                            with st.expander("Error Details"):
+                                                st.code(result.error_details)
+                            else:
+                                st.warning(get_text('enter_api_key', lang).format(provider=provider.display_name))
+            else:
+                # Local provider - no API key needed
+                st.info(f"ℹ️ {get_text('no_api_key_needed', lang)}")
 
             # Model selection
             models = provider.list_models()

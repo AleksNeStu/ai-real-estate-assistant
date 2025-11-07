@@ -1,5 +1,1 @@
-# System packages required for Streamlit Cloud deployment
-# These will be installed via apt-get
-
-# Required for chromadb and embeddings
 build-essential
