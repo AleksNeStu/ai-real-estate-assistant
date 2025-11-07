@@ -1,5 +1,5 @@
 """
-AI Real Estate Assistant - Modern Version (V3) - Phase 2
+AI Real Estate Assistant - Modern Version (V3) - Phase 3
 
 A modernized real estate assistant with:
 - Multiple model providers (OpenAI, Anthropic, Google, Ollama)
@@ -10,12 +10,17 @@ A modernized real estate assistant with:
 - Personalized recommendations
 - Modern UI with enhanced features
 - Type-safe data models with Pydantic
+- Market insights and analytics (Phase 3)
+- Export functionality (Phase 3)
+- Saved searches and comparisons (Phase 3)
 """
 
 import streamlit as st
 import pandas as pd
 from typing import Optional, List
 from pathlib import Path
+import uuid
+from datetime import datetime
 
 # Import our custom modules
 from config import settings, update_api_key
@@ -31,6 +36,11 @@ from streaming import StreamHandler
 from agents.hybrid_agent import create_hybrid_agent, HybridPropertyAgent
 from agents.query_analyzer import analyze_query
 from agents.recommendation_engine import create_recommendation_engine
+
+# Phase 3 imports
+from analytics import MarketInsights, SessionTracker, EventType
+from utils import PropertyExporter, ExportFormat, SavedSearchManager
+from ui.comparison_viz import PropertyComparison, display_comparison_ui, display_market_insights_ui
 
 # LangChain imports
 from langchain.chains import ConversationalRetrievalChain
@@ -85,6 +95,22 @@ def initialize_session_state():
 
     if "recommendation_engine" not in st.session_state:
         st.session_state.recommendation_engine = create_recommendation_engine()
+
+    # Phase 3 state variables
+    if "session_id" not in st.session_state:
+        st.session_state.session_id = str(uuid.uuid4())
+
+    if "session_tracker" not in st.session_state:
+        st.session_state.session_tracker = SessionTracker(st.session_state.session_id)
+
+    if "search_manager" not in st.session_state:
+        st.session_state.search_manager = SavedSearchManager()
+
+    if "market_insights" not in st.session_state:
+        st.session_state.market_insights = None
+
+    if "selected_properties_for_comparison" not in st.session_state:
+        st.session_state.selected_properties_for_comparison = []
 
 
 def render_sidebar():
@@ -301,6 +327,9 @@ def load_data_from_url(url: str):
             # Load into vector store
             load_into_vector_store(collection)
 
+            # Create market insights (Phase 3)
+            st.session_state.market_insights = MarketInsights(collection)
+
             st.success(f"✓ Loaded {len(collection.properties)} properties!")
             st.session_state.data_loaded = True
 
@@ -329,6 +358,9 @@ def load_sample_data():
 
             # Load into vector store
             load_into_vector_store(collection)
+
+            # Create market insights (Phase 3)
+            st.session_state.market_insights = MarketInsights(collection)
 
             st.success(f"✓ Loaded {len(collection.properties)} sample properties!")
             st.session_state.data_loaded = True
@@ -450,10 +482,8 @@ def create_hybrid_agent_instance():
         return None
 
 
-def render_main_content():
-    """Render main chat interface."""
-    st.title(f"{settings.app_icon} AI Real Estate Assistant")
-    st.caption("Find your perfect property with AI-powered search")
+def render_chat_tab():
+    """Render chat interface tab."""
 
     # Check if data is loaded
     if not st.session_state.data_loaded:
@@ -507,6 +537,10 @@ def render_main_content():
 
     # Chat input
     if prompt := st.chat_input("Ask about properties..."):
+        # Track query start time (Phase 3)
+        import time
+        query_start = time.time()
+
         # Add user message
         st.session_state.messages.append({"role": "user", "content": prompt})
 
@@ -595,6 +629,16 @@ def render_main_content():
                 # Display answer
                 response_placeholder.markdown(answer)
 
+                # Track query completion (Phase 3)
+                processing_time_ms = int((time.time() - query_start) * 1000)
+                intent_val = intent if use_hybrid else "unknown"
+                st.session_state.session_tracker.track_query(
+                    query=prompt,
+                    intent=intent_val,
+                    complexity="medium",
+                    processing_time_ms=processing_time_ms
+                )
+
                 # Save to history
                 st.session_state.messages.append({
                     "role": "assistant",
@@ -614,6 +658,426 @@ def render_main_content():
             except Exception as e:
                 st.error(f"Error generating response: {e}")
                 st.exception(e)
+
+                # Track error (Phase 3)
+                st.session_state.session_tracker.track_error(
+                    error_type=type(e).__name__,
+                    error_message=str(e)
+                )
+
+
+def render_market_insights_tab():
+    """Render market insights and analytics tab."""
+    if not st.session_state.data_loaded or st.session_state.market_insights is None:
+        st.info("👈 Please load property data from the sidebar to view market insights")
+        return
+
+    st.header("📈 Market Insights & Analytics")
+
+    insights = st.session_state.market_insights
+
+    # Overall statistics
+    stats = insights.get_overall_statistics()
+
+    st.subheader("Market Overview")
+
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Total Properties", stats.total_properties)
+    with col2:
+        st.metric("Average Price", f"${stats.average_price:.2f}")
+    with col3:
+        st.metric("Median Price", f"${stats.median_price:.2f}")
+    with col4:
+        st.metric("Avg Rooms", f"{stats.avg_rooms:.1f}")
+
+    st.divider()
+
+    # Price trends
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("Price Trend")
+        trend = insights.get_price_trend()
+        trend_emoji = {
+            "increasing": "📈",
+            "decreasing": "📉",
+            "stable": "➡️",
+            "insufficient_data": "❓"
+        }.get(trend.direction.value, "")
+
+        st.metric(
+            "Market Direction",
+            f"{trend_emoji} {trend.direction.value.title()}",
+            f"{trend.change_percent:+.1f}%"
+        )
+        st.caption(f"Confidence: {trend.confidence.title()}")
+        st.caption(f"Sample size: {trend.sample_size} properties")
+
+    with col2:
+        st.subheader("Price Distribution")
+        price_dist = insights.get_price_distribution(bins=8)
+        dist_df = pd.DataFrame({
+            'Price Range': price_dist['bins'],
+            'Count': price_dist['counts']
+        })
+        st.bar_chart(dist_df.set_index('Price Range'))
+
+    st.divider()
+
+    # Location insights
+    st.subheader("Location Analysis")
+
+    cities = list(stats.cities.keys())
+    if len(cities) >= 2:
+        col1, col2 = st.columns(2)
+
+        with col1:
+            selected_city = st.selectbox("Select City", cities)
+            if selected_city:
+                city_insights = insights.get_location_insights(selected_city)
+                if city_insights:
+                    st.write(f"**{city_insights.city}**")
+                    st.write(f"Properties: {city_insights.property_count}")
+                    st.write(f"Avg Price: ${city_insights.avg_price:.2f}")
+                    st.write(f"Median Price: ${city_insights.median_price:.2f}")
+                    if city_insights.avg_price_per_sqm:
+                        st.write(f"Price/sqm: ${city_insights.avg_price_per_sqm:.2f}")
+                    st.write(f"Market Position: {city_insights.price_comparison.replace('_', ' ').title()}")
+
+        with col2:
+            if len(cities) >= 2:
+                st.write("**City Comparison**")
+                compare_city1 = st.selectbox("Compare City 1", cities, key="compare1")
+                compare_city2 = st.selectbox("Compare City 2", [c for c in cities if c != compare_city1], key="compare2")
+
+                if compare_city1 and compare_city2:
+                    comparison = insights.compare_locations(compare_city1, compare_city2)
+                    if 'error' not in comparison:
+                        cheaper = comparison['cheaper_city']
+                        diff = abs(comparison['price_difference'])
+                        diff_pct = abs(comparison['price_difference_percent'])
+
+                        st.success(f"💰 **{cheaper}** is cheaper by ${diff:.2f} ({diff_pct:.1f}%)")
+    else:
+        st.info("Load data with multiple cities for location comparison")
+
+    st.divider()
+
+    # Best value properties
+    st.subheader("🏆 Best Value Properties")
+
+    best_values = insights.get_best_value_properties(top_n=5)
+    if best_values:
+        for i, prop in enumerate(best_values, 1):
+            col1, col2, col3, col4 = st.columns([3, 2, 2, 2])
+            with col1:
+                st.write(f"**{i}. {prop['city']}**")
+            with col2:
+                st.write(f"${prop['price']:.0f}/mo")
+            with col3:
+                st.write(f"{int(prop['rooms'])} rooms")
+            with col4:
+                st.write(f"⭐ {prop['value_score']:.2f}")
+
+    st.divider()
+
+    # Amenity impact
+    st.subheader("Amenity Impact on Price")
+
+    amenity_impact = insights.get_amenity_impact_on_price()
+    if amenity_impact:
+        impact_df = pd.DataFrame([
+            {'Amenity': amenity.replace('_', ' ').title(), 'Price Increase %': impact}
+            for amenity, impact in amenity_impact.items()
+        ]).sort_values('Price Increase %', ascending=False)
+
+        st.bar_chart(impact_df.set_index('Amenity'))
+        st.caption("Shows average % price increase for properties with each amenity")
+
+
+def render_export_tab():
+    """Render export functionality tab."""
+    if not st.session_state.data_loaded or st.session_state.property_collection is None:
+        st.info("👈 Please load property data from the sidebar to export")
+        return
+
+    st.header("💾 Export Properties")
+
+    st.write("Export your property data in multiple formats for further analysis or sharing.")
+
+    # Export options
+    col1, col2 = st.columns([2, 3])
+
+    with col1:
+        st.subheader("Export Settings")
+
+        format_choice = st.selectbox(
+            "Select Format",
+            options=[fmt.value for fmt in ExportFormat],
+            format_func=lambda x: {
+                'csv': '📄 CSV (Spreadsheet)',
+                'xlsx': '📊 Excel (Multi-sheet)',
+                'json': '🔧 JSON (Structured)',
+                'md': '📝 Markdown (Report)'
+            }.get(x, x)
+        )
+
+        include_summary = st.checkbox("Include summary statistics", value=True)
+
+        if format_choice == 'md':
+            max_props = st.number_input(
+                "Max properties in report",
+                min_value=5,
+                max_value=len(st.session_state.property_collection.properties),
+                value=min(20, len(st.session_state.property_collection.properties))
+            )
+
+    with col2:
+        st.subheader("Preview")
+
+        properties = st.session_state.property_collection
+        st.write(f"**Total Properties:** {len(properties.properties)}")
+
+        if properties.properties:
+            sample = properties.properties[0]
+            st.write(f"**Sample:** {sample.city} - ${sample.price}/mo - {int(sample.rooms)} rooms")
+
+        st.divider()
+
+        # Export button
+        if st.button("🚀 Generate Export", type="primary", use_container_width=True):
+            try:
+                with st.spinner(f"Generating {format_choice.upper()} export..."):
+                    exporter = PropertyExporter(properties)
+
+                    if format_choice == 'csv':
+                        data = exporter.export_to_csv()
+                        filename = exporter.get_filename(ExportFormat.CSV)
+                        mime = "text/csv"
+
+                    elif format_choice == 'xlsx':
+                        data = exporter.export_to_excel(
+                            include_summary=include_summary,
+                            include_statistics=True
+                        )
+                        filename = exporter.get_filename(ExportFormat.EXCEL)
+                        mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        data = data.getvalue()
+
+                    elif format_choice == 'json':
+                        data = exporter.export_to_json(
+                            pretty=True,
+                            include_metadata=include_summary
+                        )
+                        filename = exporter.get_filename(ExportFormat.JSON)
+                        mime = "application/json"
+
+                    else:  # markdown
+                        data = exporter.export_to_markdown(
+                            include_summary=include_summary,
+                            max_properties=max_props if format_choice == 'md' else None
+                        )
+                        filename = exporter.get_filename(ExportFormat.MARKDOWN)
+                        mime = "text/markdown"
+
+                    # Track export (Phase 3)
+                    st.session_state.session_tracker.track_export(
+                        format=format_choice,
+                        property_count=len(properties.properties)
+                    )
+
+                    st.success("✅ Export generated successfully!")
+
+                    st.download_button(
+                        label=f"📥 Download {format_choice.upper()}",
+                        data=data,
+                        file_name=filename,
+                        mime=mime,
+                        use_container_width=True
+                    )
+
+            except Exception as e:
+                st.error(f"Error generating export: {e}")
+                st.exception(e)
+
+    st.divider()
+
+    # Export format descriptions
+    with st.expander("ℹ️ Format Information"):
+        st.markdown("""
+        **CSV (Comma-Separated Values)**
+        - Simple spreadsheet format
+        - Compatible with Excel, Google Sheets
+        - Best for data import/export
+
+        **Excel (XLSX)**
+        - Multi-sheet workbook
+        - Includes summary and statistics sheets
+        - Best for comprehensive reports
+
+        **JSON (JavaScript Object Notation)**
+        - Structured data format
+        - Best for API integration
+        - Machine-readable
+
+        **Markdown (MD)**
+        - Human-readable report format
+        - Best for documentation
+        - Includes summaries and descriptions
+        """)
+
+
+def render_comparisons_tab():
+    """Render property comparison tab."""
+    if not st.session_state.data_loaded or st.session_state.property_collection is None:
+        st.info("👈 Please load property data from the sidebar to compare properties")
+        return
+
+    st.header("🔄 Property Comparison")
+
+    properties = st.session_state.property_collection.properties
+
+    st.write("Select 2-4 properties to compare side-by-side")
+
+    # Property selection
+    st.subheader("Select Properties")
+
+    # Create property display names
+    property_options = {
+        f"{i+1}. {prop.city} - ${prop.price} - {int(prop.rooms)}BR ({prop.id})": prop
+        for i, prop in enumerate(properties)
+    }
+
+    selected_names = st.multiselect(
+        "Choose properties (2-4)",
+        options=list(property_options.keys()),
+        max_selections=4
+    )
+
+    selected_properties = [property_options[name] for name in selected_names]
+
+    if len(selected_properties) < 2:
+        st.info("Please select at least 2 properties to compare")
+        return
+
+    if len(selected_properties) > 4:
+        st.warning("Maximum 4 properties can be compared at once")
+        return
+
+    st.divider()
+
+    # Display comparison
+    try:
+        display_comparison_ui(selected_properties)
+
+    except Exception as e:
+        st.error(f"Error creating comparison: {e}")
+        st.exception(e)
+
+
+def render_analytics_tab():
+    """Render session analytics tab."""
+    st.header("📊 Session Analytics")
+
+    tracker = st.session_state.session_tracker
+
+    # Session statistics
+    stats = tracker.get_session_stats()
+
+    st.subheader("Current Session")
+
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Queries", stats.total_queries)
+    with col2:
+        st.metric("Property Views", stats.total_property_views)
+    with col3:
+        st.metric("Exports", stats.total_exports)
+    with col4:
+        st.metric("Duration", f"{stats.total_duration_minutes:.1f} min")
+
+    st.divider()
+
+    # Popular queries
+    if stats.total_queries > 0:
+        st.subheader("Query Activity")
+
+        popular = tracker.get_popular_queries(top_n=5)
+        if popular:
+            st.write("**Most Common Intents:**")
+            for item in popular:
+                st.write(f"- {item['intent']}: {item['count']} queries")
+
+        # Average processing time
+        avg_time = tracker.get_avg_processing_time(EventType.QUERY)
+        if avg_time:
+            st.metric("Avg Query Processing Time", f"{avg_time:.0f}ms")
+
+    st.divider()
+
+    # Models used
+    if stats.unique_models_used:
+        st.subheader("Models Used")
+        for model in stats.unique_models_used:
+            st.write(f"- {model}")
+
+    # Tools used
+    if stats.tools_used:
+        st.subheader("Tools Used")
+        tool_counts = {}
+        for tool in stats.tools_used:
+            tool_counts[tool] = tool_counts.get(tool, 0) + 1
+
+        for tool, count in sorted(tool_counts.items(), key=lambda x: x[1], reverse=True):
+            st.write(f"- {tool}: {count} times")
+
+    st.divider()
+
+    # Aggregate statistics
+    try:
+        aggregate = SessionTracker.get_aggregate_stats()
+        if aggregate.get('total_sessions', 0) > 0:
+            st.subheader("All-Time Statistics")
+
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Total Sessions", aggregate.get('total_sessions', 0))
+            with col2:
+                st.metric("Total Queries", aggregate.get('total_queries', 0))
+            with col3:
+                st.metric("Total Exports", aggregate.get('total_exports', 0))
+
+    except Exception:
+        pass  # Aggregate stats not available
+
+    st.divider()
+
+    st.caption(f"Session ID: {st.session_state.session_id}")
+
+
+def render_main_content():
+    """Render main content area with tabs."""
+    st.title(f"{settings.app_icon} AI Real Estate Assistant")
+    st.caption("Find your perfect property with AI-powered search")
+
+    # Create tabs
+    tabs = st.tabs(["💬 Chat", "📈 Market Insights", "🔄 Compare", "💾 Export", "📊 Analytics"])
+
+    with tabs[0]:
+        render_chat_tab()
+
+    with tabs[1]:
+        render_market_insights_tab()
+
+    with tabs[2]:
+        render_comparisons_tab()
+
+    with tabs[3]:
+        render_export_tab()
+
+    with tabs[4]:
+        render_analytics_tab()
 
 
 def main():
