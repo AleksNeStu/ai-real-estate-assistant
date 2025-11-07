@@ -37,9 +37,31 @@ class GoogleProvider(RemoteModelProvider):
     def list_models(self) -> List[ModelInfo]:
         """List available Google models."""
         return [
+            # Latest Models (Gemini 2.0 Series - 2025)
+            ModelInfo(
+                id="gemini-2.0-flash-exp",
+                display_name="Gemini 2.0 Flash (Latest)",
+                provider_name=self.display_name,
+                context_window=1000000,
+                pricing=PricingInfo(
+                    input_price_per_1m=0.075,  # Pricing when GA
+                    output_price_per_1m=0.30
+                ),
+                capabilities=[
+                    ModelCapability.STREAMING,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.VISION,
+                    ModelCapability.JSON_MODE,
+                    ModelCapability.SYSTEM_MESSAGES,
+                ],
+                description="Next-generation model with improved capabilities",
+                recommended_for=["latest features", "fast responses", "general purpose"]
+            ),
+
+            # Gemini 1.5 Series - Proven and stable
             ModelInfo(
                 id="gemini-1.5-pro",
-                display_name="Gemini 1.5 Pro",
+                display_name="Gemini 1.5 Pro (Recommended)",
                 provider_name=self.display_name,
                 context_window=2000000,  # 2M tokens!
                 pricing=PricingInfo(
@@ -54,7 +76,7 @@ class GoogleProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Most capable Gemini model with massive 2M token context",
-                recommended_for=["long documents", "complex analysis", "multimodal tasks"]
+                recommended_for=["long documents", "complex analysis", "multimodal tasks", "large contexts"]
             ),
             ModelInfo(
                 id="gemini-1.5-flash",
@@ -73,26 +95,7 @@ class GoogleProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Fast and efficient model with 1M token context",
-                recommended_for=["fast responses", "cost-effective", "high volume"]
-            ),
-            ModelInfo(
-                id="gemini-2.0-flash-exp",
-                display_name="Gemini 2.0 Flash (Experimental)",
-                provider_name=self.display_name,
-                context_window=1000000,
-                pricing=PricingInfo(
-                    input_price_per_1m=0.00,  # Free during preview
-                    output_price_per_1m=0.00
-                ),
-                capabilities=[
-                    ModelCapability.STREAMING,
-                    ModelCapability.FUNCTION_CALLING,
-                    ModelCapability.VISION,
-                    ModelCapability.JSON_MODE,
-                    ModelCapability.SYSTEM_MESSAGES,
-                ],
-                description="Next-generation experimental model (free during preview)",
-                recommended_for=["testing", "experimentation", "free tier"]
+                recommended_for=["fast responses", "cost-effective", "high volume", "balanced performance"]
             ),
         ]
 

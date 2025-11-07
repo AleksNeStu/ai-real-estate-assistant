@@ -37,10 +37,32 @@ class OpenAIProvider(RemoteModelProvider):
     def list_models(self) -> List[ModelInfo]:
         """List available OpenAI models."""
         return [
+            # Latest Models (2025)
+
+            # O3-Series - Latest reasoning models
+            ModelInfo(
+                id="o3-mini",
+                display_name="O3 Mini (Latest)",
+                provider_name=self.display_name,
+                context_window=200000,
+                pricing=PricingInfo(
+                    input_price_per_1m=1.10,
+                    output_price_per_1m=4.40
+                ),
+                capabilities=[
+                    ModelCapability.STREAMING,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.JSON_MODE,
+                    ModelCapability.SYSTEM_MESSAGES,
+                ],
+                description="Latest efficient reasoning model with improved performance over o1",
+                recommended_for=["advanced reasoning", "cost-effective analysis", "coding tasks", "data analysis"]
+            ),
+
             # GPT-4o Series - Latest flagship models
             ModelInfo(
                 id="gpt-4o",
-                display_name="GPT-4o",
+                display_name="GPT-4o (Latest)",
                 provider_name=self.display_name,
                 context_window=128000,
                 pricing=PricingInfo(
@@ -59,7 +81,7 @@ class OpenAIProvider(RemoteModelProvider):
             ),
             ModelInfo(
                 id="gpt-4o-mini",
-                display_name="GPT-4o Mini",
+                display_name="GPT-4o Mini (Recommended)",
                 provider_name=self.display_name,
                 context_window=128000,
                 pricing=PricingInfo(
@@ -114,29 +136,13 @@ class OpenAIProvider(RemoteModelProvider):
                 description="Faster reasoning model for STEM tasks and coding",
                 recommended_for=["coding", "STEM problems", "math", "fast reasoning"]
             ),
-            ModelInfo(
-                id="o3-mini",
-                display_name="O3 Mini",
-                provider_name=self.display_name,
-                context_window=200000,
-                pricing=PricingInfo(
-                    input_price_per_1m=1.10,
-                    output_price_per_1m=4.40
-                ),
-                capabilities=[
-                    ModelCapability.STREAMING,
-                    ModelCapability.FUNCTION_CALLING,
-                    ModelCapability.JSON_MODE,
-                    ModelCapability.SYSTEM_MESSAGES,
-                ],
-                description="Latest efficient reasoning model with improved performance",
-                recommended_for=["balanced reasoning", "cost-effective analysis", "coding tasks", "data analysis"]
-            ),
 
-            # GPT-4 Series - Previous generation
+            # Legacy Models (Still supported but older)
+
+            # GPT-4 Series
             ModelInfo(
                 id="gpt-4-turbo",
-                display_name="GPT-4 Turbo",
+                display_name="GPT-4 Turbo (Legacy)",
                 provider_name=self.display_name,
                 context_window=128000,
                 pricing=PricingInfo(
@@ -150,12 +156,12 @@ class OpenAIProvider(RemoteModelProvider):
                     ModelCapability.JSON_MODE,
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
-                description="Previous generation high-capability model",
-                recommended_for=["complex analysis", "long documents", "detailed responses"]
+                description="Previous generation high-capability model - consider using GPT-4o instead",
+                recommended_for=["legacy compatibility", "long documents"]
             ),
             ModelInfo(
                 id="gpt-4",
-                display_name="GPT-4",
+                display_name="GPT-4 (Legacy)",
                 provider_name=self.display_name,
                 context_window=8192,
                 pricing=PricingInfo(
@@ -168,14 +174,14 @@ class OpenAIProvider(RemoteModelProvider):
                     ModelCapability.JSON_MODE,
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
-                description="Original GPT-4 model with strong performance",
-                recommended_for=["high-quality responses", "creative tasks", "detailed analysis"]
+                description="Original GPT-4 model - consider using GPT-4o for better performance",
+                recommended_for=["legacy compatibility"]
             ),
 
             # GPT-3.5 Series - Budget-friendly
             ModelInfo(
                 id="gpt-3.5-turbo",
-                display_name="GPT-3.5 Turbo",
+                display_name="GPT-3.5 Turbo (Budget)",
                 provider_name=self.display_name,
                 context_window=16385,
                 pricing=PricingInfo(
@@ -188,7 +194,7 @@ class OpenAIProvider(RemoteModelProvider):
                     ModelCapability.JSON_MODE,
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
-                description="Fast, efficient model for simpler tasks",
+                description="Fast, efficient model for simpler tasks - consider GPT-4o Mini for better quality",
                 recommended_for=["simple queries", "high volume", "budget-conscious", "chatbots"]
             ),
         ]

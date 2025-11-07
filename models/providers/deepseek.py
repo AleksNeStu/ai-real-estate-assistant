@@ -41,9 +41,28 @@ class DeepSeekProvider(RemoteModelProvider):
     def list_models(self) -> List[ModelInfo]:
         """List available DeepSeek models."""
         return [
+            # Latest Models (2025)
+            ModelInfo(
+                id="deepseek-reasoner",
+                display_name="DeepSeek R1 (Latest - Reasoning)",
+                provider_name=self.display_name,
+                context_window=64000,
+                pricing=PricingInfo(
+                    input_price_per_1m=0.55,
+                    output_price_per_1m=2.19
+                ),
+                capabilities=[
+                    ModelCapability.STREAMING,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.JSON_MODE,
+                    ModelCapability.SYSTEM_MESSAGES,
+                ],
+                description="Latest advanced reasoning model - competes with o1, shows chain-of-thought",
+                recommended_for=["complex reasoning", "math problems", "scientific analysis", "detailed explanations"]
+            ),
             ModelInfo(
                 id="deepseek-chat",
-                display_name="DeepSeek Chat",
+                display_name="DeepSeek V3 Chat (Recommended)",
                 provider_name=self.display_name,
                 context_window=64000,
                 pricing=PricingInfo(
@@ -56,8 +75,8 @@ class DeepSeekProvider(RemoteModelProvider):
                     ModelCapability.JSON_MODE,
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
-                description="General-purpose chat model with strong reasoning capabilities",
-                recommended_for=["general chat", "reasoning", "coding assistance", "balanced performance"]
+                description="Latest general-purpose chat model (V3) - strong reasoning at low cost",
+                recommended_for=["general chat", "reasoning", "coding assistance", "cost-effective"]
             ),
             ModelInfo(
                 id="deepseek-coder",
@@ -76,24 +95,6 @@ class DeepSeekProvider(RemoteModelProvider):
                 ],
                 description="Specialized coding model trained on code and technical documentation",
                 recommended_for=["code generation", "debugging", "code review", "technical documentation"]
-            ),
-            ModelInfo(
-                id="deepseek-reasoner",
-                display_name="DeepSeek Reasoner (R1)",
-                provider_name=self.display_name,
-                context_window=64000,
-                pricing=PricingInfo(
-                    input_price_per_1m=0.55,
-                    output_price_per_1m=2.19
-                ),
-                capabilities=[
-                    ModelCapability.STREAMING,
-                    ModelCapability.FUNCTION_CALLING,
-                    ModelCapability.JSON_MODE,
-                    ModelCapability.SYSTEM_MESSAGES,
-                ],
-                description="Advanced reasoning model for complex problem-solving with chain-of-thought",
-                recommended_for=["complex reasoning", "math problems", "scientific analysis", "detailed explanations"]
             ),
         ]
 

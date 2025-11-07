@@ -41,9 +41,10 @@ class GrokProvider(RemoteModelProvider):
     def list_models(self) -> List[ModelInfo]:
         """List available Grok models."""
         return [
+            # Latest Grok Models (2024-2025)
             ModelInfo(
                 id="grok-2-1212",
-                display_name="Grok 2 (Latest)",
+                display_name="Grok 2 (Latest - Recommended)",
                 provider_name=self.display_name,
                 context_window=131072,
                 pricing=PricingInfo(
@@ -56,12 +57,12 @@ class GrokProvider(RemoteModelProvider):
                     ModelCapability.JSON_MODE,
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
-                description="Latest Grok 2 model with enhanced reasoning and real-time information",
-                recommended_for=["real-time analysis", "current events", "reasoning", "creative tasks"]
+                description="Latest Grok model with enhanced reasoning and real-time information from X",
+                recommended_for=["real-time analysis", "current events", "reasoning", "creative tasks", "general purpose"]
             ),
             ModelInfo(
                 id="grok-2-vision-1212",
-                display_name="Grok 2 Vision",
+                display_name="Grok 2 Vision (Multimodal)",
                 provider_name=self.display_name,
                 context_window=32768,
                 pricing=PricingInfo(
@@ -75,12 +76,12 @@ class GrokProvider(RemoteModelProvider):
                     ModelCapability.JSON_MODE,
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
-                description="Grok 2 with vision capabilities for image analysis",
+                description="Grok 2 with vision capabilities for image analysis and understanding",
                 recommended_for=["image analysis", "visual reasoning", "multimodal tasks", "document understanding"]
             ),
             ModelInfo(
                 id="grok-beta",
-                display_name="Grok Beta",
+                display_name="Grok Beta (Experimental)",
                 provider_name=self.display_name,
                 context_window=131072,
                 pricing=PricingInfo(
@@ -93,8 +94,8 @@ class GrokProvider(RemoteModelProvider):
                     ModelCapability.JSON_MODE,
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
-                description="Experimental Grok model with cutting-edge features",
-                recommended_for=["experimental features", "advanced reasoning", "complex analysis"]
+                description="Experimental Grok model with cutting-edge features and improvements",
+                recommended_for=["experimental features", "advanced reasoning", "complex analysis", "testing"]
             ),
         ]
 

@@ -37,6 +37,28 @@ class AnthropicProvider(RemoteModelProvider):
     def list_models(self) -> List[ModelInfo]:
         """List available Anthropic models."""
         return [
+            # Latest Models (2025)
+            ModelInfo(
+                id="claude-sonnet-4-5-20250929",
+                display_name="Claude Sonnet 4.5 (Latest)",
+                provider_name=self.display_name,
+                context_window=200000,
+                pricing=PricingInfo(
+                    input_price_per_1m=3.00,
+                    output_price_per_1m=15.00
+                ),
+                capabilities=[
+                    ModelCapability.STREAMING,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.VISION,
+                    ModelCapability.JSON_MODE,
+                    ModelCapability.SYSTEM_MESSAGES,
+                ],
+                description="Latest and most advanced Claude model with improved reasoning and coding",
+                recommended_for=["complex reasoning", "code generation", "long documents", "agentic workflows"]
+            ),
+
+            # Claude 3.5 Generation
             ModelInfo(
                 id="claude-3-5-sonnet-20241022",
                 display_name="Claude 3.5 Sonnet",
@@ -53,12 +75,12 @@ class AnthropicProvider(RemoteModelProvider):
                     ModelCapability.JSON_MODE,
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
-                description="Most intelligent Claude model with extended context",
+                description="Powerful Claude model with extended context - consider Sonnet 4.5 for latest features",
                 recommended_for=["complex reasoning", "long documents", "code generation"]
             ),
             ModelInfo(
                 id="claude-3-5-haiku-20241022",
-                display_name="Claude 3.5 Haiku",
+                display_name="Claude 3.5 Haiku (Recommended)",
                 provider_name=self.display_name,
                 context_window=200000,
                 pricing=PricingInfo(
@@ -72,11 +94,13 @@ class AnthropicProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Fast and cost-effective model for simpler tasks",
-                recommended_for=["quick responses", "high volume", "cost-effective"]
+                recommended_for=["quick responses", "high volume", "cost-effective", "general purpose"]
             ),
+
+            # Legacy Models
             ModelInfo(
                 id="claude-3-opus-20240229",
-                display_name="Claude 3 Opus",
+                display_name="Claude 3 Opus (Legacy)",
                 provider_name=self.display_name,
                 context_window=200000,
                 pricing=PricingInfo(
@@ -89,8 +113,8 @@ class AnthropicProvider(RemoteModelProvider):
                     ModelCapability.VISION,
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
-                description="Most powerful Claude model for complex tasks",
-                recommended_for=["highest quality", "complex analysis", "research"]
+                description="Previous generation model - consider Claude Sonnet 4.5 for better performance and lower cost",
+                recommended_for=["legacy compatibility"]
             ),
         ]
 
