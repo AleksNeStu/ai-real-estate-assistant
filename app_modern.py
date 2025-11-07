@@ -396,12 +396,23 @@ def render_sidebar():
 
 def load_data_from_url(url: str):
     """Load property data from URL."""
+    lang = st.session_state.language
+
     try:
-        with st.spinner("Loading data from URL..."):
+        with st.spinner(get_text('loading_data_url', lang)):
             # Load CSV
             loader = DataLoaderCsv(url)
+
+            # Show converted URL if it's a GitHub URL
+            raw_url = DataLoaderCsv.convert_github_url_to_raw(url)
+            if raw_url != url:
+                st.info(f"🔗 Converting GitHub URL to raw format: {raw_url}")
+
             df = loader.load_df()
+            st.info(f"📊 Loaded {len(df)} rows from CSV")
+
             df_formatted = loader.load_format_df(df)
+            st.info(f"✨ Formatted {len(df_formatted)} properties")
 
             # Convert to PropertyCollection
             collection = PropertyCollection.from_dataframe(
@@ -417,17 +428,23 @@ def load_data_from_url(url: str):
             # Create market insights (Phase 3)
             st.session_state.market_insights = MarketInsights(collection)
 
-            st.success(f"✓ Loaded {len(collection.properties)} properties!")
+            st.success(f"✓ {get_text('data_loaded_success', lang)}: {len(collection.properties)} {get_text('properties', lang)}!")
             st.session_state.data_loaded = True
 
     except Exception as e:
-        st.error(f"Error loading data: {e}")
+        st.error(f"❌ {get_text('error_occurred', lang)}: {str(e)}")
+        # Show more details in an expander
+        with st.expander("🔍 Error Details"):
+            st.code(str(e))
+            st.write("**Tip:** Make sure the URL points to a valid CSV file. For GitHub, use the 'Raw' URL.")
 
 
 def load_sample_data():
     """Load sample datasets."""
+    lang = st.session_state.language
+
     try:
-        with st.spinner("Loading sample data..."):
+        with st.spinner(get_text('loading_sample_data', lang)):
             all_properties = []
 
             # Load first sample dataset
@@ -571,40 +588,41 @@ def create_hybrid_agent_instance():
 
 def render_chat_tab():
     """Render chat interface tab."""
+    lang = st.session_state.language
 
     # Check if data is loaded
     if not st.session_state.data_loaded:
-        st.info("👈 Please load property data from the sidebar to get started")
+        st.info(get_text('please_load_data', lang))
 
         # Show feature highlights
-        st.subheader("✨ Features")
+        st.subheader(get_text('features_title', lang))
         col1, col2, col3 = st.columns(3)
 
         with col1:
-            st.markdown("""
-            **🤖 Multiple AI Models**
-            - OpenAI (GPT-4o, GPT-3.5)
-            - Anthropic (Claude 3.5)
-            - Google (Gemini 1.5)
-            - Ollama (Local models)
+            st.markdown(f"""
+            **{get_text('multiple_ai_models', lang)}**
+            - {get_text('openai_models', lang)}
+            - {get_text('anthropic_models', lang)}
+            - {get_text('google_models', lang)}
+            - {get_text('ollama_models', lang)}
             """)
 
         with col2:
-            st.markdown("""
-            **🔍 Smart Search**
-            - Semantic search
-            - Metadata filtering
-            - Hybrid retrieval
-            - MMR diversity
+            st.markdown(f"""
+            **{get_text('smart_search', lang)}**
+            - {get_text('semantic_search', lang)}
+            - {get_text('metadata_filtering', lang)}
+            - {get_text('hybrid_retrieval', lang)}
+            - {get_text('mmr_diversity', lang)}
             """)
 
         with col3:
-            st.markdown("""
-            **💾 Persistent Storage**
-            - ChromaDB vector store
-            - Fast embeddings
-            - Incremental updates
-            - Source attribution
+            st.markdown(f"""
+            **{get_text('persistent_storage', lang)}**
+            - {get_text('chromadb_vector', lang)}
+            - {get_text('fast_embeddings', lang)}
+            - {get_text('incremental_updates', lang)}
+            - {get_text('source_attribution', lang)}
             """)
 
         return
@@ -755,8 +773,10 @@ def render_chat_tab():
 
 def render_market_insights_tab():
     """Render market insights and analytics tab."""
+    lang = st.session_state.language
+
     if not st.session_state.data_loaded or st.session_state.market_insights is None:
-        st.info("👈 Please load property data from the sidebar to view market insights")
+        st.info(get_text('please_load_data_insights', lang))
         return
 
     st.header("📈 Market Insights & Analytics")
@@ -885,8 +905,10 @@ def render_market_insights_tab():
 
 def render_export_tab():
     """Render export functionality tab."""
+    lang = st.session_state.language
+
     if not st.session_state.data_loaded or st.session_state.property_collection is None:
-        st.info("👈 Please load property data from the sidebar to export")
+        st.info(get_text('please_load_data_export', lang))
         return
 
     st.header("💾 Export Properties")
@@ -1017,8 +1039,10 @@ def render_export_tab():
 
 def render_comparisons_tab():
     """Render property comparison tab."""
+    lang = st.session_state.language
+
     if not st.session_state.data_loaded or st.session_state.property_collection is None:
-        st.info("👈 Please load property data from the sidebar to compare properties")
+        st.info(get_text('please_load_data_compare', lang))
         return
 
     st.header("🔄 Property Comparison")
@@ -1065,24 +1089,26 @@ def render_comparisons_tab():
 
 def render_analytics_tab():
     """Render session analytics tab."""
-    st.header("📊 Session Analytics")
+    lang = st.session_state.language
+
+    st.header(f"📊 {get_text('session_analytics', lang)}")
 
     tracker = st.session_state.session_tracker
 
     # Session statistics
     stats = tracker.get_session_stats()
 
-    st.subheader("Current Session")
+    st.subheader(get_text('current_session', lang))
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Queries", stats.total_queries)
+        st.metric(get_text('queries', lang), stats.total_queries)
     with col2:
-        st.metric("Property Views", stats.total_property_views)
+        st.metric(get_text('property_views', lang), stats.total_property_views)
     with col3:
-        st.metric("Exports", stats.total_exports)
+        st.metric(get_text('exports', lang), stats.total_exports)
     with col4:
-        st.metric("Duration", f"{stats.total_duration_minutes:.1f} min")
+        st.metric(get_text('duration', lang), f"{stats.total_duration_minutes:.1f} min")
 
     st.divider()
 
@@ -1145,15 +1171,17 @@ def render_analytics_tab():
 
 def render_notifications_tab():
     """Render notifications configuration and management tab."""
-    st.header("🔔 Notification Settings")
+    lang = st.session_state.language
+
+    st.header(f"🔔 {get_text('notification_settings', lang)}")
 
     # User email input
-    st.subheader("📧 User Information")
+    st.subheader(f"📧 {get_text('user_information', lang)}")
     user_email = st.text_input(
-        "Your Email Address",
+        get_text('your_email', lang),
         value=st.session_state.user_email,
-        placeholder="your.email@example.com",
-        help="Enter your email to receive property alerts and notifications"
+        placeholder=get_text('email_placeholder', lang),
+        help=get_text('email_help', lang)
     )
 
     if user_email != st.session_state.user_email:

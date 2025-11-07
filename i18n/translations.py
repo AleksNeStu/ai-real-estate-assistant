@@ -111,6 +111,23 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "tab_notifications": "🔔 Notifications",
 
         # Chat Tab
+        "please_load_data": "👈 Please load property data from the sidebar to get started",
+        "features_title": "✨ Features",
+        "multiple_ai_models": "🤖 Multiple AI Models",
+        "openai_models": "OpenAI (GPT-4o, GPT-3.5)",
+        "anthropic_models": "Anthropic (Claude 3.5)",
+        "google_models": "Google (Gemini 1.5)",
+        "ollama_models": "Ollama (Local models)",
+        "smart_search": "🔍 Smart Search",
+        "semantic_search": "Semantic search",
+        "metadata_filtering": "Metadata filtering",
+        "hybrid_retrieval": "Hybrid retrieval",
+        "mmr_diversity": "MMR diversity",
+        "persistent_storage": "💾 Persistent Storage",
+        "chromadb_vector": "ChromaDB vector store",
+        "fast_embeddings": "Fast embeddings",
+        "incremental_updates": "Incremental updates",
+        "source_attribution": "Source attribution",
         "chat_placeholder": "Ask me anything about properties...",
         "chat_examples": "Example Questions",
         "ex_search": "Show me 2-bedroom apartments in Krakow under $1000",
@@ -123,6 +140,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "sources_used": "Sources Used",
 
         # Market Insights Tab
+        "please_load_data_insights": "👈 Please load property data from the sidebar to view market insights",
         "market_insights": "Market Insights",
         "select_city": "Select City",
         "all_cities": "All Cities",
@@ -139,6 +157,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "by_city": "By City",
 
         # Compare Tab
+        "please_load_data_compare": "👈 Please load property data from the sidebar to compare properties",
         "property_comparison": "Property Comparison",
         "select_properties": "Select Properties to Compare",
         "compare_button": "Compare Selected Properties",
@@ -154,6 +173,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "amenities": "Amenities",
 
         # Export Tab
+        "please_load_data_export": "👈 Please load property data from the sidebar to export",
         "export_data": "Export Data",
         "export_format": "Export Format",
         "csv_format": "CSV (Spreadsheet)",
