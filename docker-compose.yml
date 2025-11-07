@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  ai-real-estate-assistant:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-real-estate-assistant
+    ports:
+      - "8501:8501"
+    environment:
+      # LLM Provider API Keys (set these in .env file or here)
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      # Optional: Ollama API base URL
+      - OLLAMA_API_BASE=${OLLAMA_API_BASE:-http://host.docker.internal:11434}
+      # Optional: Email configuration
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_PROVIDER=${SMTP_PROVIDER}
+    volumes:
+      # Persist data across container restarts
+      - ./chroma_db:/app/chroma_db
+      - ./data:/app/data
+      - ./.preferences:/app/.preferences
+      - ./.notifications:/app/.notifications
+      - ./.sessions:/app/.sessions
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Local Ollama service (uncomment to use)
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: ollama
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   restart: unless-stopped
+
+# volumes:
+#   ollama_data:

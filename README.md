@@ -53,45 +53,208 @@ The AI Real Estate Assistant is a conversational AI application that helps users
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Python 3.11+
-- pip (package manager)
-- At least one API key (OpenAI, Anthropic, or Google) OR Ollama installed locally
+Choose your preferred installation method:
 
-### Installation
+### 🐳 Option 1: Docker (Recommended - All Platforms)
+
+**Easiest way to run the app with zero configuration issues!**
 
 ```bash
-# Clone the repository
+# 1. Clone repository
 git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
 cd ai-real-estate-assistant
 
-# Create virtual environment (recommended)
+# 2. Set up environment
+cp .env.example .env
+# Edit .env and add your API keys
+
+# 3. Start with Docker Compose
+docker-compose up -d
+
+# 4. Open browser
+# Visit: http://localhost:8501
+```
+
+📚 **[Full Docker Guide →](DOCKER.md)**
+
+---
+
+### 💻 Option 2: Local Installation
+
+#### Prerequisites
+- Python 3.11 or higher
+- pip package manager
+- Git
+- At least one LLM API key (OpenAI, Anthropic, or Google) OR Ollama installed locally
+
+#### Windows
+
+**PowerShell (Recommended)**:
+```powershell
+# Clone repository
+git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
+cd ai-real-estate-assistant
+
+# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+.\venv\Scripts\Activate.ps1
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Set up API keys (at least one)
+# Set API keys (for current session)
+$env:OPENAI_API_KEY="your-openai-key"
+$env:ANTHROPIC_API_KEY="your-anthropic-key"  # optional
+$env:GOOGLE_API_KEY="your-google-key"        # optional
+
+# Run the app
+streamlit run app_modern.py
+```
+
+**Command Prompt (CMD)**:
+```cmd
+REM Activate virtual environment
+venv\Scripts\activate.bat
+
+REM Set API keys
+set OPENAI_API_KEY=your-openai-key
+set ANTHROPIC_API_KEY=your-anthropic-key
+set GOOGLE_API_KEY=your-google-key
+
+REM Run the app
+streamlit run app_modern.py
+```
+
+**Persistent API Keys (Windows)**:
+```powershell
+# Set permanently in User Environment Variables
+[System.Environment]::SetEnvironmentVariable("OPENAI_API_KEY", "your-key", "User")
+```
+
+#### macOS
+
+```bash
+# Clone repository
+git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
+cd ai-real-estate-assistant
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set API keys (for current session)
 export OPENAI_API_KEY="your-openai-key"
 export ANTHROPIC_API_KEY="your-anthropic-key"  # optional
 export GOOGLE_API_KEY="your-google-key"        # optional
 
-# For local models, install Ollama
-# https://ollama.ai/
+# Run the app
+streamlit run app_modern.py
 ```
+
+**Persistent API Keys (macOS)**:
+
+For **bash** (~/.bash_profile):
+```bash
+echo 'export OPENAI_API_KEY="your-openai-key"' >> ~/.bash_profile
+source ~/.bash_profile
+```
+
+For **zsh** (~/.zshrc):
+```bash
+echo 'export OPENAI_API_KEY="your-openai-key"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+#### Linux (Ubuntu/Debian)
+
+```bash
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install Python 3.11+ if needed
+sudo apt install python3.11 python3.11-venv python3-pip git -y
+
+# Clone repository
+git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
+cd ai-real-estate-assistant
+
+# Create virtual environment
+python3.11 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set API keys (for current session)
+export OPENAI_API_KEY="your-openai-key"
+export ANTHROPIC_API_KEY="your-anthropic-key"  # optional
+export GOOGLE_API_KEY="your-google-key"        # optional
+
+# Run the app
+streamlit run app_modern.py
+```
+
+**Persistent API Keys (Linux)**:
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+echo 'export OPENAI_API_KEY="your-openai-key"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+---
+
+### 🤖 Option 3: Using Local Models (Ollama)
+
+**No API keys needed!** Run models locally on your machine.
+
+#### Install Ollama
+
+**Windows/macOS**: Download from [ollama.ai](https://ollama.ai/)
+
+**Linux**:
+```bash
+curl -fsSL https://ollama.ai/install.sh | sh
+```
+
+#### Pull Models and Run
+
+```bash
+# Pull a model (one-time setup)
+ollama pull llama3.3  # or mistral, qwen2.5, phi3, etc.
+
+# Start Ollama service (runs in background)
+ollama serve
+
+# In another terminal, run the app
+streamlit run app_modern.py
+```
+
+Then in the app:
+1. Select "Ollama (Local)" as provider
+2. Choose your downloaded model
+3. Start chatting!
+
+---
 
 ### Running the App
 
+After installation, start the application:
+
 ```bash
-# Modern version (V3 - Recommended)
+# Direct command
 streamlit run app_modern.py
 
-# Or use the convenience scripts:
-./run_modern.sh  # V3: Modern with all phases
-./run_v1.sh      # V1: Pandas DataFrame Agent
-./run_v2.sh      # V2: Basic RAG
+# Or use convenience script (Unix/macOS/Linux)
+./run_modern.sh
 ```
+
+The app will open automatically in your default browser at:
+**http://localhost:8501**
+
+If it doesn't open automatically, click the URL shown in the terminal.
 
 ---
 
@@ -354,6 +517,66 @@ Edit `config/settings.py` to customize:
 
 ---
 
+## 🎯 Complete Feature Set (All Phases)
+
+This application includes **5 complete phases** of development:
+
+### Phase 1: Foundation ✅
+- Multi-provider LLM support (OpenAI, Anthropic, Google, Ollama)
+- ChromaDB persistent vector storage
+- Type-safe Pydantic data models
+- Modern Streamlit UI
+- CSV data loading
+
+### Phase 2: Intelligence ✅
+- Hybrid RAG + Agent architecture
+- Query intent classification
+- Mortgage calculator tool
+- Property comparison tool
+- Result reranking (30-40% improvement)
+- **Tests**: 88 unit tests
+
+### Phase 3: Advanced Features ✅
+- Market insights & analytics
+- Property comparison dashboard
+- Export to CSV/JSON/Markdown
+- Saved search management
+- Session tracking & analytics
+- **Tests**: 163 unit tests
+
+### Phase 4: Visualizations ✅
+- Interactive price charts (Plotly)
+- Radar charts for multi-property comparison
+- Geographic maps (Folium) with heatmaps
+- Market dashboards with KPIs
+- Comparison visualizations
+- **Tests**: 72 unit tests
+
+### Phase 5: Notifications ✅
+- Email notification system (SMTP)
+- Price drop alerts
+- New property notifications
+- Notification preferences management
+- Notification history & analytics
+- **Tests**: 50+ unit tests
+
+**Total**: 370+ unit tests covering all phases
+
+---
+
+## 📚 Documentation
+
+- **[Docker Setup Guide](DOCKER.md)**: Complete Docker deployment guide
+- **[Streamlit Cloud Deployment](DEPLOYMENT.md)**: Cloud deployment instructions
+- **[Product Requirements](PRD.MD)**: Project specifications
+- **[Modernization Proposal](MODERNIZATION_PROPOSAL.md)**: V3 architecture
+- **[Phase 3 README](PHASE3_README.md)**: Advanced features docs
+- **[Phase 4 README](PHASE4_README.md)**: Visualization docs
+- **[Phase 5 README](PHASE5_README.md)**: Notification system docs
+- **[Testing Guide](TESTING_GUIDE.md)**: Comprehensive testing procedures
+
+---
+
 ## 🧪 Development
 
 ### Project Setup
@@ -390,51 +613,6 @@ pytest tests/ -v
 2. **New Tool**: Add to `tools/property_tools.py`
 3. **New UI Component**: Add to `ui/components/`
 4. **New Data Schema**: Update `data/schemas.py`
-
----
-
-## 📚 Documentation
-
-- **[Product Requirements Document](PRD.MD)**: Detailed project specifications
-- **[Modernization Proposal](MODERNIZATION_PROPOSAL.md)**: V3 architecture and roadmap
-- **[Phase 2 README](PHASE2_README.md)**: Intelligence features documentation
-- **[TODO List](TODO.MD)**: Development tasks and future plans
-
----
-
-## 🗺️ Roadmap
-
-### ✅ Phase 1: Foundation (Complete)
-- [x] Modern app structure
-- [x] Multiple model providers (4 providers, 15+ models)
-- [x] Persistent ChromaDB vector storage
-- [x] Type-safe Pydantic data models
-- [x] Hybrid semantic search with MMR
-- [x] Enhanced Streamlit UI
-
-### ✅ Phase 2: Intelligence (Complete)
-- [x] Query analyzer with intent classification
-- [x] Hybrid agent (RAG + Tools orchestration)
-- [x] 4 specialized tools (mortgage, comparison, analysis)
-- [x] Result reranking (+30-40% relevance)
-- [x] Recommendation engine
-- [x] UI integration with toggles
-
-### 🔜 Phase 3: Advanced Features (Planned)
-- [ ] Property comparison visualization
-- [ ] Market insights dashboard with charts
-- [ ] Interactive mortgage calculator UI
-- [ ] Saved searches and alerts
-- [ ] Export functionality (PDF, CSV, JSON)
-- [ ] User preference profiles
-
-### 🔮 Phase 4: Production (Future)
-- [ ] Comprehensive testing suite (pytest)
-- [ ] Performance optimization
-- [ ] Docker containerization
-- [ ] CI/CD pipeline
-- [ ] API endpoint layer
-- [ ] Multi-language support
 
 ---
 
