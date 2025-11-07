@@ -1,10 +1,13 @@
 """
-AI Real Estate Assistant - Modern Version (V3)
+AI Real Estate Assistant - Modern Version (V3) - Phase 2
 
 A modernized real estate assistant with:
 - Multiple model providers (OpenAI, Anthropic, Google, Ollama)
 - Persistent vector storage with ChromaDB
-- Hybrid semantic search
+- Intelligent hybrid agent (RAG + Tools)
+- Query analysis and routing
+- Result reranking
+- Personalized recommendations
 - Modern UI with enhanced features
 - Type-safe data models with Pydantic
 """
@@ -19,9 +22,15 @@ from config import settings, update_api_key
 from models.provider_factory import ModelProviderFactory, get_model_display_info
 from vector_store.chroma_store import ChromaPropertyStore, get_vector_store
 from vector_store.hybrid_retriever import create_retriever
+from vector_store.reranker import create_reranker
 from data.csv_loader import DataLoaderCsv
-from data.schemas import PropertyCollection, Property
+from data.schemas import PropertyCollection, Property, UserPreferences
 from streaming import StreamHandler
+
+# Phase 2 imports
+from agents.hybrid_agent import create_hybrid_agent, HybridPropertyAgent
+from agents.query_analyzer import analyze_query
+from agents.recommendation_engine import create_recommendation_engine
 
 # LangChain imports
 from langchain.chains import ConversationalRetrievalChain
@@ -60,6 +69,22 @@ def initialize_session_state():
 
     if "data_loaded" not in st.session_state:
         st.session_state.data_loaded = False
+
+    # Phase 2 state variables
+    if "use_hybrid_agent" not in st.session_state:
+        st.session_state.use_hybrid_agent = True
+
+    if "show_query_analysis" not in st.session_state:
+        st.session_state.show_query_analysis = False
+
+    if "use_reranking" not in st.session_state:
+        st.session_state.use_reranking = True
+
+    if "hybrid_agent" not in st.session_state:
+        st.session_state.hybrid_agent = None
+
+    if "recommendation_engine" not in st.session_state:
+        st.session_state.recommendation_engine = create_recommendation_engine()
 
 
 def render_sidebar():
@@ -169,6 +194,32 @@ def render_sidebar():
                     help="Number of properties to search"
                 )
                 st.session_state.k_results = k_results
+
+            # Phase 2 settings
+            with st.expander("🧠 Intelligence Features (Phase 2)"):
+                use_hybrid_agent = st.checkbox(
+                    "Use Hybrid Agent",
+                    value=st.session_state.use_hybrid_agent,
+                    help="Enable intelligent routing between RAG and tools"
+                )
+                st.session_state.use_hybrid_agent = use_hybrid_agent
+
+                show_query_analysis = st.checkbox(
+                    "Show Query Analysis",
+                    value=st.session_state.show_query_analysis,
+                    help="Display query intent and routing decisions"
+                )
+                st.session_state.show_query_analysis = show_query_analysis
+
+                use_reranking = st.checkbox(
+                    "Use Result Reranking",
+                    value=st.session_state.use_reranking,
+                    help="Rerank results for better relevance"
+                )
+                st.session_state.use_reranking = use_reranking
+
+                if use_hybrid_agent:
+                    st.caption("✨ Agent tools: Mortgage calc, Comparator, Price analyzer")
 
         except Exception as e:
             st.error(f"Error configuring provider: {e}")
@@ -308,7 +359,7 @@ def load_into_vector_store(collection: PropertyCollection):
 
 
 def create_conversation_chain():
-    """Create conversational retrieval chain."""
+    """Create conversational retrieval chain (simple RAG mode)."""
     try:
         # Get model configuration
         provider_name = st.session_state.selected_provider
@@ -355,6 +406,47 @@ def create_conversation_chain():
 
     except Exception as e:
         st.error(f"Error creating conversation chain: {e}")
+        return None
+
+
+def create_hybrid_agent_instance():
+    """Create hybrid agent instance (Phase 2)."""
+    try:
+        # Get model configuration
+        provider_name = st.session_state.selected_provider
+        model_id = st.session_state.selected_model
+        temperature = st.session_state.get("temperature", settings.default_temperature)
+        max_tokens = st.session_state.get("max_tokens", settings.default_max_tokens)
+        k_results = st.session_state.get("k_results", settings.default_k_results)
+
+        # Create model
+        llm = ModelProviderFactory.create_model(
+            model_id=model_id,
+            provider_name=provider_name,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            streaming=False,  # Agent doesn't support streaming in same way
+        )
+
+        # Create retriever
+        retriever = create_retriever(
+            vector_store=st.session_state.vector_store,
+            k=k_results,
+            search_type="mmr"
+        )
+
+        # Create hybrid agent
+        agent = create_hybrid_agent(
+            llm=llm,
+            retriever=retriever,
+            use_tools=True,
+            verbose=True
+        )
+
+        return agent
+
+    except Exception as e:
+        st.error(f"Error creating hybrid agent: {e}")
         return None
 
 
@@ -421,27 +513,84 @@ def render_main_content():
         with st.chat_message("user"):
             st.markdown(prompt)
 
+        # Show query analysis if enabled
+        if st.session_state.show_query_analysis:
+            analysis = analyze_query(prompt)
+            with st.expander("🔍 Query Analysis", expanded=False):
+                st.write(f"**Intent:** {analysis.intent.value}")
+                st.write(f"**Complexity:** {analysis.complexity.value}")
+                st.write(f"**Tools needed:** {[t.value for t in analysis.tools_needed]}")
+                if analysis.extracted_filters:
+                    st.write(f"**Extracted filters:** {analysis.extracted_filters}")
+                st.write(f"**Should use agent:** {analysis.should_use_agent()}")
+
         # Generate response
         with st.chat_message("assistant"):
             response_placeholder = st.empty()
 
             try:
-                # Create or get conversation chain
-                if st.session_state.conversation_chain is None:
-                    st.session_state.conversation_chain = create_conversation_chain()
+                # Use hybrid agent or regular chain based on settings
+                use_hybrid = st.session_state.use_hybrid_agent
 
-                if st.session_state.conversation_chain is None:
-                    st.error("Failed to create conversation chain")
-                    return
+                if use_hybrid:
+                    # Create or get hybrid agent
+                    if st.session_state.hybrid_agent is None:
+                        with st.spinner("Initializing AI agent..."):
+                            st.session_state.hybrid_agent = create_hybrid_agent_instance()
 
-                # Get response
-                with st.spinner("Thinking..."):
-                    response = st.session_state.conversation_chain({
-                        "question": prompt
-                    })
+                    if st.session_state.hybrid_agent is None:
+                        st.error("Failed to create hybrid agent")
+                        return
 
-                answer = response["answer"]
-                source_docs = response.get("source_documents", [])
+                    # Get response from hybrid agent
+                    with st.spinner("🧠 Analyzing query and processing..."):
+                        response = st.session_state.hybrid_agent.process_query(
+                            query=prompt,
+                            return_analysis=True
+                        )
+
+                    answer = response["answer"]
+                    source_docs = response.get("source_documents", [])
+                    method = response.get("method", "unknown")
+                    intent = response.get("intent", "unknown")
+
+                    # Display method badge
+                    if method == "agent":
+                        st.caption("🛠️ Processed with AI Agent + Tools")
+                    elif method == "hybrid":
+                        st.caption("🔀 Processed with Hybrid (RAG + Agent)")
+                    else:
+                        st.caption("📚 Processed with RAG")
+
+                else:
+                    # Use regular RAG chain
+                    if st.session_state.conversation_chain is None:
+                        with st.spinner("Initializing conversation..."):
+                            st.session_state.conversation_chain = create_conversation_chain()
+
+                    if st.session_state.conversation_chain is None:
+                        st.error("Failed to create conversation chain")
+                        return
+
+                    # Get response
+                    with st.spinner("Thinking..."):
+                        response = st.session_state.conversation_chain({
+                            "question": prompt
+                        })
+
+                    answer = response["answer"]
+                    source_docs = response.get("source_documents", [])
+
+                # Apply reranking if enabled
+                if st.session_state.use_reranking and source_docs:
+                    reranker = create_reranker(advanced=True)
+                    reranked = reranker.rerank(
+                        query=prompt,
+                        documents=source_docs,
+                        k=min(5, len(source_docs))
+                    )
+                    source_docs = [doc for doc, score in reranked]
+                    st.caption("✨ Results reranked for relevance")
 
                 # Display answer
                 response_placeholder.markdown(answer)
