@@ -155,7 +155,7 @@ def initialize_session_state():
 
     # Theme support
     if "theme" not in st.session_state:
-        st.session_state.theme = "light"
+        st.session_state.theme = "dark"
 
 
 def render_sidebar():
@@ -600,29 +600,29 @@ def render_chat_tab():
 
         with col1:
             st.markdown(f"""
-            **{get_text('multiple_ai_models', lang)}**
-            - {get_text('openai_models', lang)}
-            - {get_text('anthropic_models', lang)}
-            - {get_text('google_models', lang)}
-            - {get_text('ollama_models', lang)}
+            **{get_text('chat_tab_features', lang)}**
+            - {get_text('chat_feature_1', lang)}
+            - {get_text('chat_feature_2', lang)}
+            - {get_text('chat_feature_3', lang)}
+            - {get_text('chat_feature_4', lang)}
             """)
 
         with col2:
             st.markdown(f"""
-            **{get_text('smart_search', lang)}**
-            - {get_text('semantic_search', lang)}
-            - {get_text('metadata_filtering', lang)}
-            - {get_text('hybrid_retrieval', lang)}
-            - {get_text('mmr_diversity', lang)}
+            **{get_text('compare_tab_features', lang)}**
+            - {get_text('compare_feature_1', lang)}
+            - {get_text('compare_feature_2', lang)}
+            - {get_text('compare_feature_3', lang)}
+            - {get_text('compare_feature_4', lang)}
             """)
 
         with col3:
             st.markdown(f"""
-            **{get_text('persistent_storage', lang)}**
-            - {get_text('chromadb_vector', lang)}
-            - {get_text('fast_embeddings', lang)}
-            - {get_text('incremental_updates', lang)}
-            - {get_text('source_attribution', lang)}
+            **{get_text('export_tab_features', lang)}**
+            - {get_text('export_feature_1', lang)}
+            - {get_text('export_feature_2', lang)}
+            - {get_text('export_feature_3', lang)}
+            - {get_text('export_feature_4', lang)}
             """)
 
         return
@@ -1528,7 +1528,7 @@ def render_main_content():
 
 def apply_theme():
     """Apply custom CSS based on selected theme."""
-    theme = st.session_state.get('theme', 'light')
+    theme = st.session_state.get('theme', 'dark')
 
     if theme == 'dark':
         st.markdown("""
@@ -1663,7 +1663,7 @@ def main():
     # Footer
     lang = st.session_state.language
     st.divider()
-    st.caption(f"© 2025 [Alex Nesterovich](https://github.com/AleksNeStu) | {get_text('powered_by', lang)} {st.session_state.get('selected_provider', 'AI').title()} | {get_text('version', lang)} {settings.version}")
+    st.caption(f"© 2025 [Alex Nesterovich](https://github.com/AleksNeStu) | {get_text('version', lang)} {settings.version}")
 
 
 if __name__ == "__main__":
