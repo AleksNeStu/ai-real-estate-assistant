@@ -38,8 +38,8 @@ class MortgageResult(BaseModel):
 class MortgageCalculatorTool(BaseTool):
     """Tool for calculating mortgage payments and costs."""
 
-    name = "mortgage_calculator"
-    description = (
+    name: str = "mortgage_calculator"
+    description: str = (
         "Calculate mortgage payments for a property. "
         "Input should be property price, down payment %, interest rate %, and loan years. "
         "Returns monthly payment, total interest, and breakdown."
@@ -122,8 +122,8 @@ Breakdown:
 class PropertyComparisonTool(BaseTool):
     """Tool for comparing properties side-by-side."""
 
-    name = "property_comparator"
-    description = (
+    name: str = "property_comparator"
+    description: str = (
         "Compare multiple properties based on various criteria. "
         "Input should be a list of property IDs or descriptions. "
         "Returns a detailed comparison with pros/cons."
@@ -164,8 +164,8 @@ Comparison features:
 class PriceAnalysisTool(BaseTool):
     """Tool for analyzing property prices and market trends."""
 
-    name = "price_analyzer"
-    description = (
+    name: str = "price_analyzer"
+    description: str = (
         "Analyze property prices, calculate averages, and identify trends. "
         "Input should be a city or property criteria. "
         "Returns statistical analysis of prices."
@@ -202,8 +202,8 @@ To generate accurate analysis, this tool needs access to the property database.
 class LocationAnalysisTool(BaseTool):
     """Tool for analyzing property locations and proximity."""
 
-    name = "location_analyzer"
-    description = (
+    name: str = "location_analyzer"
+    description: str = (
         "Analyze property locations, calculate distances, and assess neighborhood quality. "
         "Input should be property address or city. "
         "Returns location quality score and proximity information."
