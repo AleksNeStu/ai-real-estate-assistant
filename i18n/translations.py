@@ -55,6 +55,53 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "light_theme": "☀️ Light",
         "dark_theme": "🌙 Dark",
 
+        # Data Management
+        "data_sources": "Data Sources",
+        "data_source": "Data Source",
+        "url": "URL",
+        "sample_datasets": "Sample Datasets",
+        "csv_url": "CSV URL",
+        "csv_url_placeholder": "https://example.com/data.csv",
+        "csv_url_help": "Enter URL to CSV file with property data",
+        "please_enter_csv_url": "Please enter a CSV URL",
+        "quick_start_datasets": "Quick start with sample datasets:",
+        "load_sample_data": "Load Sample Data",
+        "data_loaded_success": "Data loaded",
+        "properties": "properties",
+        "vector_store": "Vector store",
+        "documents": "documents",
+        "loading_data_url": "Loading data from URL...",
+        "loading_sample_data": "Loading sample data...",
+
+        # Session Management
+        "session": "Session",
+        "clear_chat": "Clear Chat",
+        "reset_all": "Reset All",
+
+        # Phase 2 Features
+        "intelligence_features": "Intelligence Features (Phase 2)",
+        "enable_intelligent_routing": "Enable intelligent routing between RAG and tools",
+        "display_query_intent": "Display query intent and routing decisions",
+        "rerank_better_relevance": "Rerank results for better relevance",
+        "agent_tools": "Agent tools: Mortgage calc, Comparator, Price analyzer",
+
+        # Advanced Settings
+        "advanced_settings": "Advanced Settings",
+        "controls_randomness": "Controls randomness in responses",
+        "maximum_response_length": "Maximum length of response",
+        "results_to_retrieve": "Results to retrieve",
+        "num_properties_search": "Number of properties to search",
+        "model_details": "Model Details",
+        "context": "Context",
+        "cost": "Cost",
+        "description": "Description",
+        "best_for": "Best for",
+        "api_key": "API Key",
+        "enter_api_key": "Enter your {provider} API key",
+        "api_key_updated": "API key updated!",
+        "api_key_configured": "API key configured",
+        "error_configuring_provider": "Error configuring provider",
+
         # Tabs
         "tab_chat": "💬 Chat",
         "tab_insights": "📈 Market Insights",
@@ -266,6 +313,53 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "theme": "Motyw",
         "light_theme": "☀️ Jasny",
         "dark_theme": "🌙 Ciemny",
+
+        # Data Management
+        "data_sources": "Źródła Danych",
+        "data_source": "Źródło Danych",
+        "url": "URL",
+        "sample_datasets": "Przykładowe Zestawy",
+        "csv_url": "CSV URL",
+        "csv_url_placeholder": "https://example.com/data.csv",
+        "csv_url_help": "Wprowadź URL do pliku CSV z danymi nieruchomości",
+        "please_enter_csv_url": "Proszę wprowadzić URL CSV",
+        "quick_start_datasets": "Szybki start z przykładowymi zestawami:",
+        "load_sample_data": "Załaduj Przykładowe Dane",
+        "data_loaded_success": "Dane załadowane",
+        "properties": "nieruchomości",
+        "vector_store": "Magazyn wektorów",
+        "documents": "dokumenty",
+        "loading_data_url": "Ładowanie danych z URL...",
+        "loading_sample_data": "Ładowanie przykładowych danych...",
+
+        # Session Management
+        "session": "Sesja",
+        "clear_chat": "Wyczyść Czat",
+        "reset_all": "Resetuj Wszystko",
+
+        # Phase 2 Features
+        "intelligence_features": "Funkcje Inteligentne (Faza 2)",
+        "enable_intelligent_routing": "Włącz inteligentne kierowanie między RAG a narzędziami",
+        "display_query_intent": "Wyświetl intencję zapytania i decyzje kierowania",
+        "rerank_better_relevance": "Ponownie uszereguj wyniki dla lepszej trafności",
+        "agent_tools": "Narzędzia agenta: Kalkulator hipoteczny, Komparator, Analiza cen",
+
+        # Advanced Settings
+        "advanced_settings": "Ustawienia Zaawansowane",
+        "controls_randomness": "Kontroluje losowość odpowiedzi",
+        "maximum_response_length": "Maksymalna długość odpowiedzi",
+        "results_to_retrieve": "Wyniki do pobrania",
+        "num_properties_search": "Liczba nieruchomości do wyszukania",
+        "model_details": "Szczegóły Modelu",
+        "context": "Kontekst",
+        "cost": "Koszt",
+        "description": "Opis",
+        "best_for": "Najlepszy dla",
+        "api_key": "Klucz API",
+        "enter_api_key": "Wprowadź swój klucz API {provider}",
+        "api_key_updated": "Klucz API zaktualizowany!",
+        "api_key_configured": "Klucz API skonfigurowany",
+        "error_configuring_provider": "Błąd konfiguracji dostawcy",
 
         # Tabs
         "tab_chat": "💬 Czat",

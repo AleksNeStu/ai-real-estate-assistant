@@ -250,7 +250,7 @@ def render_sidebar():
             model_options = {m.id: m for m in models}
 
             selected_model_id = st.selectbox(
-                "Model",
+                get_text('model', lang),
                 options=list(model_options.keys()),
                 format_func=lambda x: model_options[x].display_name,
                 key="model_select"
@@ -260,71 +260,71 @@ def render_sidebar():
 
             # Display model info
             model_info = model_options[selected_model_id]
-            with st.expander("ℹ️ Model Details"):
+            with st.expander(f"ℹ️ {get_text('model_details', lang)}"):
                 info = get_model_display_info(model_info)
-                st.write(f"**Context:** {info['context']}")
-                st.write(f"**Cost:** {info['cost']}")
+                st.write(f"**{get_text('context', lang)}:** {info['context']}")
+                st.write(f"**{get_text('cost', lang)}:** {info['cost']}")
                 if 'description' in info:
-                    st.write(f"**Description:** {info['description']}")
+                    st.write(f"**{get_text('description', lang)}:** {info['description']}")
                 if 'recommended_for' in info:
-                    st.write("**Best for:**", ", ".join(info['recommended_for']))
+                    st.write(f"**{get_text('best_for', lang)}:**", ", ".join(info['recommended_for']))
 
             # Advanced settings
-            with st.expander("⚙️ Advanced Settings"):
+            with st.expander(f"⚙️ {get_text('advanced_settings', lang)}"):
                 temperature = st.slider(
-                    "Temperature",
+                    get_text('temperature', lang),
                     min_value=0.0,
                     max_value=2.0,
                     value=settings.default_temperature,
                     step=0.1,
-                    help="Controls randomness in responses"
+                    help=get_text('controls_randomness', lang)
                 )
                 st.session_state.temperature = temperature
 
                 max_tokens = st.number_input(
-                    "Max Tokens",
+                    get_text('max_tokens', lang),
                     min_value=256,
                     max_value=32000,
                     value=settings.default_max_tokens,
                     step=256,
-                    help="Maximum length of response"
+                    help=get_text('maximum_response_length', lang)
                 )
                 st.session_state.max_tokens = max_tokens
 
                 k_results = st.slider(
-                    "Results to retrieve",
+                    get_text('results_to_retrieve', lang),
                     min_value=1,
                     max_value=20,
                     value=settings.default_k_results,
-                    help="Number of properties to search"
+                    help=get_text('num_properties_search', lang)
                 )
                 st.session_state.k_results = k_results
 
             # Phase 2 settings
-            with st.expander("🧠 Intelligence Features (Phase 2)"):
+            with st.expander(f"🧠 {get_text('intelligence_features', lang)}"):
                 use_hybrid_agent = st.checkbox(
-                    "Use Hybrid Agent",
+                    get_text('use_hybrid_agent', lang),
                     value=st.session_state.use_hybrid_agent,
-                    help="Enable intelligent routing between RAG and tools"
+                    help=get_text('enable_intelligent_routing', lang)
                 )
                 st.session_state.use_hybrid_agent = use_hybrid_agent
 
                 show_query_analysis = st.checkbox(
-                    "Show Query Analysis",
+                    get_text('show_query_analysis', lang),
                     value=st.session_state.show_query_analysis,
-                    help="Display query intent and routing decisions"
+                    help=get_text('display_query_intent', lang)
                 )
                 st.session_state.show_query_analysis = show_query_analysis
 
                 use_reranking = st.checkbox(
-                    "Use Result Reranking",
+                    get_text('use_reranking', lang),
                     value=st.session_state.use_reranking,
-                    help="Rerank results for better relevance"
+                    help=get_text('rerank_better_relevance', lang)
                 )
                 st.session_state.use_reranking = use_reranking
 
                 if use_hybrid_agent:
-                    st.caption("✨ Agent tools: Mortgage calc, Comparator, Price analyzer")
+                    st.caption(f"✨ {get_text('agent_tools', lang)}")
 
         except Exception as e:
             st.error(f"Error configuring provider: {e}")
@@ -332,55 +332,55 @@ def render_sidebar():
         st.divider()
 
         # Data Source Management
-        st.subheader("📊 Data Sources")
+        st.subheader(f"📊 {get_text('data_sources', lang)}")
 
         data_source_tab = st.radio(
-            "Data Source",
-            options=["URL", "Sample Datasets"],
+            get_text('data_source', lang),
+            options=["URL", get_text('sample_datasets', lang)],
             horizontal=True
         )
 
         if data_source_tab == "URL":
             csv_url = st.text_input(
-                "CSV URL",
-                placeholder="https://example.com/data.csv",
-                help="Enter URL to CSV file with property data"
+                get_text('csv_url', lang),
+                placeholder=get_text('csv_url_placeholder', lang),
+                help=get_text('csv_url_help', lang)
             )
 
-            if st.button("Load Data", type="primary"):
+            if st.button(get_text('load_data', lang), type="primary"):
                 if csv_url:
                     load_data_from_url(csv_url)
                 else:
-                    st.warning("Please enter a CSV URL")
+                    st.warning(get_text('please_enter_csv_url', lang))
 
         else:
-            st.write("Quick start with sample datasets:")
-            if st.button("Load Sample Data", type="primary"):
+            st.write(get_text('quick_start_datasets', lang))
+            if st.button(get_text('load_sample_data', lang), type="primary"):
                 load_sample_data()
 
         # Data status
         if st.session_state.data_loaded:
-            st.success(f"✓ Data loaded: {len(st.session_state.property_collection.properties)} properties")
+            st.success(f"✓ {get_text('data_loaded_success', lang)}: {len(st.session_state.property_collection.properties)} {get_text('properties', lang)}")
 
             # Vector store stats
             if st.session_state.vector_store:
                 stats = st.session_state.vector_store.get_stats()
-                st.info(f"📦 Vector store: {stats.get('total_documents', 0)} documents")
+                st.info(f"📦 {get_text('vector_store', lang)}: {stats.get('total_documents', 0)} {get_text('documents', lang)}")
 
         st.divider()
 
         # Session Management
-        st.subheader("🔄 Session")
+        st.subheader(f"🔄 {get_text('session', lang)}")
 
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("Clear Chat", use_container_width=True):
+            if st.button(get_text('clear_chat', lang), use_container_width=True):
                 st.session_state.messages = []
                 st.session_state.conversation_chain = None
                 st.rerun()
 
         with col2:
-            if st.button("Reset All", use_container_width=True):
+            if st.button(get_text('reset_all', lang), use_container_width=True):
                 for key in list(st.session_state.keys()):
                     del st.session_state[key]
                 st.rerun()
