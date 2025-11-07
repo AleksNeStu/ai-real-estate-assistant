@@ -59,19 +59,20 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "data_sources": "Data Sources",
         "data_source": "Data Source",
         "url": "URL",
-        "sample_datasets": "Sample Datasets",
+        "local_files": "Local Files",
         "csv_url": "CSV URL",
         "csv_url_placeholder": "https://example.com/data.csv",
         "csv_url_help": "Enter URL to CSV file with property data",
         "please_enter_csv_url": "Please enter a CSV URL",
-        "quick_start_datasets": "Quick start with sample datasets:",
-        "load_sample_data": "Load Sample Data",
+        "upload_csv_files": "Upload one or more CSV files with property data",
+        "load_local_files": "Load Files",
+        "please_upload_files": "Please upload at least one CSV file",
         "data_loaded_success": "Data loaded",
         "properties": "properties",
         "vector_store": "Vector store",
         "documents": "documents",
         "loading_data_url": "Loading data from URL...",
-        "loading_sample_data": "Loading sample data...",
+        "loading_local_files": "Loading files...",
 
         # Session Management
         "session": "Session",
@@ -376,19 +377,20 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "data_sources": "Źródła Danych",
         "data_source": "Źródło Danych",
         "url": "URL",
-        "sample_datasets": "Przykładowe Zestawy",
+        "local_files": "Lokalne Pliki",
         "csv_url": "CSV URL",
         "csv_url_placeholder": "https://example.com/data.csv",
         "csv_url_help": "Wprowadź URL do pliku CSV z danymi nieruchomości",
         "please_enter_csv_url": "Proszę wprowadzić URL CSV",
-        "quick_start_datasets": "Szybki start z przykładowymi zestawami:",
-        "load_sample_data": "Załaduj Przykładowe Dane",
+        "upload_csv_files": "Prześlij jeden lub więcej plików CSV z danymi nieruchomości",
+        "load_local_files": "Załaduj Pliki",
+        "please_upload_files": "Proszę przesłać co najmniej jeden plik CSV",
         "data_loaded_success": "Dane załadowane",
         "properties": "nieruchomości",
         "vector_store": "Magazyn wektorów",
         "documents": "dokumenty",
         "loading_data_url": "Ładowanie danych z URL...",
-        "loading_sample_data": "Ładowanie przykładowych danych...",
+        "loading_local_files": "Ładowanie plików...",
 
         # Session Management
         "session": "Sesja",
@@ -928,6 +930,21 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         # Footer
         "powered_by": "Potenciado por",
         "version": "Versión",
+
+        # Data Management
+        "data_sources": "Fuentes de Datos",
+        "data_source": "Fuente de Datos",
+        "url": "URL",
+        "local_files": "Archivos Locales",
+        "csv_url": "URL CSV",
+        "csv_url_placeholder": "https://example.com/data.csv",
+        "csv_url_help": "Ingrese la URL del archivo CSV con datos inmobiliarios",
+        "please_enter_csv_url": "Por favor ingrese una URL CSV",
+        "upload_csv_files": "Suba uno o más archivos CSV con datos inmobiliarios",
+        "load_local_files": "Cargar Archivos",
+        "please_upload_files": "Por favor suba al menos un archivo CSV",
+        "loading_data_url": "Cargando datos desde URL...",
+        "loading_local_files": "Cargando archivos...",
     },
 }
 
@@ -1020,6 +1037,19 @@ TRANSLATIONS["de"] = {
     "max_properties_report": "Max. Immobilien im Bericht",
     "generate_export_button": "🚀 Export Generieren",
     "maximum_4_properties": "Maximal 4 Immobilien können gleichzeitig verglichen werden",
+    "data_sources": "Datenquellen",
+    "data_source": "Datenquelle",
+    "url": "URL",
+    "local_files": "Lokale Dateien",
+    "csv_url": "CSV URL",
+    "csv_url_placeholder": "https://example.com/data.csv",
+    "csv_url_help": "Geben Sie die URL zur CSV-Datei mit Immobiliendaten ein",
+    "please_enter_csv_url": "Bitte geben Sie eine CSV-URL ein",
+    "upload_csv_files": "Laden Sie eine oder mehrere CSV-Dateien mit Immobiliendaten hoch",
+    "load_local_files": "Dateien Laden",
+    "please_upload_files": "Bitte laden Sie mindestens eine CSV-Datei hoch",
+    "loading_data_url": "Daten von URL laden...",
+    "loading_local_files": "Dateien werden geladen...",
 }
 
 TRANSLATIONS["fr"] = {
@@ -1110,6 +1140,19 @@ TRANSLATIONS["fr"] = {
     "max_properties_report": "Max. propriétés dans le rapport",
     "generate_export_button": "🚀 Générer l'Export",
     "maximum_4_properties": "Maximum 4 propriétés peuvent être comparées à la fois",
+    "data_sources": "Sources de Données",
+    "data_source": "Source de Données",
+    "url": "URL",
+    "local_files": "Fichiers Locaux",
+    "csv_url": "URL CSV",
+    "csv_url_placeholder": "https://example.com/data.csv",
+    "csv_url_help": "Entrez l'URL du fichier CSV avec les données immobilières",
+    "please_enter_csv_url": "Veuillez entrer une URL CSV",
+    "upload_csv_files": "Téléchargez un ou plusieurs fichiers CSV avec des données immobilières",
+    "load_local_files": "Charger les Fichiers",
+    "please_upload_files": "Veuillez télécharger au moins un fichier CSV",
+    "loading_data_url": "Chargement des données depuis l'URL...",
+    "loading_local_files": "Chargement des fichiers...",
 }
 
 TRANSLATIONS["it"] = {
@@ -1200,6 +1243,19 @@ TRANSLATIONS["it"] = {
     "max_properties_report": "Max. proprietà nel rapporto",
     "generate_export_button": "🚀 Genera Esportazione",
     "maximum_4_properties": "Massimo 4 proprietà possono essere confrontate contemporaneamente",
+    "data_sources": "Fonti di Dati",
+    "data_source": "Fonte di Dati",
+    "url": "URL",
+    "local_files": "File Locali",
+    "csv_url": "URL CSV",
+    "csv_url_placeholder": "https://example.com/data.csv",
+    "csv_url_help": "Inserisci l'URL del file CSV con i dati immobiliari",
+    "please_enter_csv_url": "Per favore inserisci un URL CSV",
+    "upload_csv_files": "Carica uno o più file CSV con dati immobiliari",
+    "load_local_files": "Carica File",
+    "please_upload_files": "Per favore carica almeno un file CSV",
+    "loading_data_url": "Caricamento dati da URL...",
+    "loading_local_files": "Caricamento file...",
 }
 
 TRANSLATIONS["pt"] = {
@@ -1290,6 +1346,19 @@ TRANSLATIONS["pt"] = {
     "max_properties_report": "Máx. propriedades no relatório",
     "generate_export_button": "🚀 Gerar Exportação",
     "maximum_4_properties": "Máximo de 4 propriedades podem ser comparadas ao mesmo tempo",
+    "data_sources": "Fontes de Dados",
+    "data_source": "Fonte de Dados",
+    "url": "URL",
+    "local_files": "Arquivos Locais",
+    "csv_url": "URL CSV",
+    "csv_url_placeholder": "https://example.com/data.csv",
+    "csv_url_help": "Digite o URL do arquivo CSV com dados imobiliários",
+    "please_enter_csv_url": "Por favor, digite um URL CSV",
+    "upload_csv_files": "Faça upload de um ou mais arquivos CSV com dados imobiliários",
+    "load_local_files": "Carregar Arquivos",
+    "please_upload_files": "Por favor, faça upload de pelo menos um arquivo CSV",
+    "loading_data_url": "Carregando dados do URL...",
+    "loading_local_files": "Carregando arquivos...",
 }
 
 # Russian translations
@@ -1559,6 +1628,21 @@ TRANSLATIONS["ru"] = {
     # Footer
     "powered_by": "Работает на",
     "version": "Версия",
+
+    # Data Management
+    "data_sources": "Источники Данных",
+    "data_source": "Источник Данных",
+    "url": "URL",
+    "local_files": "Локальные Файлы",
+    "csv_url": "CSV URL",
+    "csv_url_placeholder": "https://example.com/data.csv",
+    "csv_url_help": "Введите URL к CSV файлу с данными недвижимости",
+    "please_enter_csv_url": "Пожалуйста, введите URL CSV",
+    "upload_csv_files": "Загрузите один или несколько CSV файлов с данными недвижимости",
+    "load_local_files": "Загрузить Файлы",
+    "please_upload_files": "Пожалуйста, загрузите хотя бы один CSV файл",
+    "loading_data_url": "Загрузка данных с URL...",
+    "loading_local_files": "Загрузка файлов...",
 }
 
 # Chinese translations
@@ -1828,6 +1912,21 @@ TRANSLATIONS["zh"] = {
     # Footer
     "powered_by": "技术支持",
     "version": "版本",
+
+    # Data Management
+    "data_sources": "数据源",
+    "data_source": "数据源",
+    "url": "URL",
+    "local_files": "本地文件",
+    "csv_url": "CSV URL",
+    "csv_url_placeholder": "https://example.com/data.csv",
+    "csv_url_help": "输入包含房产数据的CSV文件URL",
+    "please_enter_csv_url": "请输入CSV URL",
+    "upload_csv_files": "上传一个或多个包含房产数据的CSV文件",
+    "load_local_files": "加载文件",
+    "please_upload_files": "请至少上传一个CSV文件",
+    "loading_data_url": "正在从URL加载数据...",
+    "loading_local_files": "正在加载文件...",
 }
 
 

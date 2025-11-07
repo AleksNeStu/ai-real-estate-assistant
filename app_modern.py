@@ -344,7 +344,7 @@ def render_sidebar():
 
         data_source_tab = st.radio(
             get_text('data_source', lang),
-            options=["URL", get_text('sample_datasets', lang)],
+            options=["URL", get_text('local_files', lang)],
             horizontal=True
         )
 
@@ -362,9 +362,19 @@ def render_sidebar():
                     st.warning(get_text('please_enter_csv_url', lang))
 
         else:
-            st.write(get_text('quick_start_datasets', lang))
-            if st.button(get_text('load_sample_data', lang), type="primary"):
-                load_sample_data()
+            st.write(get_text('upload_csv_files', lang))
+            uploaded_files = st.file_uploader(
+                "Choose CSV files",
+                type=['csv'],
+                accept_multiple_files=True,
+                label_visibility="collapsed"
+            )
+
+            if st.button(get_text('load_local_files', lang), type="primary"):
+                if uploaded_files:
+                    load_local_files(uploaded_files)
+                else:
+                    st.warning(get_text('please_upload_files', lang))
 
         # Data status
         if st.session_state.data_loaded:
@@ -439,38 +449,57 @@ def load_data_from_url(url: str):
             st.write("**Tip:** Make sure the URL points to a valid CSV file. For GitHub, use the 'Raw' URL.")
 
 
-def load_sample_data():
-    """Load sample datasets."""
+def load_local_files(uploaded_files):
+    """Load property data from uploaded CSV files."""
     lang = st.session_state.language
 
     try:
-        with st.spinner(get_text('loading_sample_data', lang)):
+        with st.spinner(get_text('loading_local_files', lang)):
             all_properties = []
 
-            # Load first sample dataset
-            url = settings.default_datasets[0]
-            loader = DataLoaderCsv(url)
-            df = loader.load_df()
-            df_formatted = loader.load_format_df(df)
+            # Process each uploaded file
+            for uploaded_file in uploaded_files:
+                st.info(f"📄 Processing: {uploaded_file.name}")
 
-            collection = PropertyCollection.from_dataframe(
-                df_formatted,
-                source="sample_data"
-            )
+                # Read CSV from uploaded file
+                import pandas as pd
+                df = pd.read_csv(uploaded_file)
+                st.info(f"📊 Loaded {len(df)} rows from {uploaded_file.name}")
 
-            st.session_state.property_collection = collection
+                # Use DataLoaderCsv static method to format the data
+                df_formatted = DataLoaderCsv.format_df(df)
+                st.info(f"✨ Formatted {len(df_formatted)} properties from {uploaded_file.name}")
 
-            # Load into vector store
-            load_into_vector_store(collection)
+                # Convert to PropertyCollection
+                collection_part = PropertyCollection.from_dataframe(
+                    df_formatted,
+                    source=uploaded_file.name
+                )
 
-            # Create market insights (Phase 3)
-            st.session_state.market_insights = MarketInsights(collection)
+                all_properties.extend(collection_part.properties)
 
-            st.success(f"✓ Loaded {len(collection.properties)} sample properties!")
-            st.session_state.data_loaded = True
+            # Combine all properties into one collection
+            if all_properties:
+                combined_collection = PropertyCollection(properties=all_properties)
+                st.session_state.property_collection = combined_collection
+
+                # Load into vector store
+                load_into_vector_store(combined_collection)
+
+                # Create market insights (Phase 3)
+                st.session_state.market_insights = MarketInsights(combined_collection)
+
+                st.success(f"✓ {get_text('data_loaded_success', lang)}: {len(combined_collection.properties)} {get_text('properties', lang)}!")
+                st.session_state.data_loaded = True
+            else:
+                st.warning(f"{get_text('no_data', lang)}")
 
     except Exception as e:
-        st.error(f"Error loading sample data: {e}")
+        st.error(f"❌ {get_text('error_occurred', lang)}: {str(e)}")
+        # Show more details in an expander
+        with st.expander("🔍 Error Details"):
+            st.code(str(e))
+            st.write("**Tip:** Make sure the CSV file has proper property data columns.")
 
 
 def load_into_vector_store(collection: PropertyCollection):
