@@ -1652,8 +1652,14 @@ def apply_theme():
                 background-color: #1a1d24 !important;
                 color: #fafafa !important;
             }
-            /* Metrics */
-            div[data-testid="stMetricValue"], div[data-testid="stMetricLabel"] {
+            /* Metrics - comprehensive visibility */
+            div[data-testid="stMetric"] {
+                background-color: #1a1d24 !important;
+            }
+            div[data-testid="stMetricValue"], div[data-testid="stMetricLabel"],
+            div[data-testid="stMetricDelta"], [data-testid="stMetric"] label,
+            [data-testid="stMetric"] p, [data-testid="stMetric"] span,
+            [data-testid="stMetric"] div {
                 color: #fafafa !important;
             }
             /* Expanders */
