@@ -249,7 +249,7 @@ def render_sidebar():
                     )
                     if api_key:
                         update_api_key(selected_provider, api_key)
-                        st.success("API key updated!")
+                        st.success(get_text('api_key_updated_success', lang))
                 else:
                     st.success(f"✓ {provider.display_name} API key configured")
 
@@ -678,7 +678,7 @@ def render_chat_tab():
                             st.session_state.hybrid_agent = create_hybrid_agent_instance()
 
                     if st.session_state.hybrid_agent is None:
-                        st.error("Failed to create hybrid agent")
+                        st.error(get_text('failed_create_agent', lang))
                         return
 
                     # Get response from hybrid agent
@@ -708,7 +708,7 @@ def render_chat_tab():
                             st.session_state.conversation_chain = create_conversation_chain()
 
                     if st.session_state.conversation_chain is None:
-                        st.error("Failed to create conversation chain")
+                        st.error(get_text('failed_create_chain', lang))
                         return
 
                     # Get response
@@ -867,7 +867,7 @@ def render_market_insights_tab():
 
                         st.success(f"💰 **{cheaper}** {get_text('is_cheaper_by', lang)} ${diff:.2f} ({diff_pct:.1f}%)")
     else:
-        st.info("Load data with multiple cities for location comparison")
+        st.info(get_text('load_multiple_cities', lang))
 
     st.divider()
 
@@ -890,7 +890,7 @@ def render_market_insights_tab():
     st.divider()
 
     # Amenity impact
-    st.subheader("Amenity Impact on Price")
+    st.subheader(get_text('amenity_impact_title', lang))
 
     amenity_impact = insights.get_amenity_impact_on_price()
     if amenity_impact:
@@ -900,7 +900,7 @@ def render_market_insights_tab():
         ]).sort_values('Price Increase %', ascending=False)
 
         st.bar_chart(impact_df.set_index('Amenity'))
-        st.caption("Shows average % price increase for properties with each amenity")
+        st.caption(get_text('amenity_impact_caption', lang))
 
 
 def render_export_tab():
@@ -932,11 +932,11 @@ def render_export_tab():
             }.get(x, x)
         )
 
-        include_summary = st.checkbox("Include summary statistics", value=True)
+        include_summary = st.checkbox(get_text('include_summary_stats', lang), value=True)
 
         if format_choice == 'md':
             max_props = st.number_input(
-                "Max properties in report",
+                get_text('max_properties_report', lang),
                 min_value=5,
                 max_value=len(st.session_state.property_collection.properties),
                 value=min(20, len(st.session_state.property_collection.properties))
@@ -955,7 +955,7 @@ def render_export_tab():
         st.divider()
 
         # Export button
-        if st.button("🚀 Generate Export", type="primary", use_container_width=True):
+        if st.button(get_text('generate_export_button', lang), type="primary", use_container_width=True):
             try:
                 with st.spinner(f"Generating {format_choice.upper()} export..."):
                     exporter = PropertyExporter(properties)
@@ -1073,7 +1073,7 @@ def render_comparisons_tab():
         return
 
     if len(selected_properties) > 4:
-        st.warning("Maximum 4 properties can be compared at once")
+        st.warning(get_text('maximum_4_properties', lang))
         return
 
     st.divider()
@@ -1114,7 +1114,7 @@ def render_analytics_tab():
 
     # Popular queries
     if stats.total_queries > 0:
-        st.subheader("Query Activity")
+        st.subheader(get_text('query_activity', lang))
 
         popular = tracker.get_popular_queries(top_n=5)
         if popular:
@@ -1131,13 +1131,13 @@ def render_analytics_tab():
 
     # Models used
     if stats.unique_models_used:
-        st.subheader("Models Used")
+        st.subheader(get_text('models_used', lang))
         for model in stats.unique_models_used:
             st.write(f"- {model}")
 
     # Tools used
     if stats.tools_used:
-        st.subheader("Tools Used")
+        st.subheader(get_text('tools_used', lang))
         tool_counts = {}
         for tool in stats.tools_used:
             tool_counts[tool] = tool_counts.get(tool, 0) + 1
@@ -1151,7 +1151,7 @@ def render_analytics_tab():
     try:
         aggregate = SessionTracker.get_aggregate_stats()
         if aggregate.get('total_sessions', 0) > 0:
-            st.subheader("All-Time Statistics")
+            st.subheader(get_text('all_time_stats', lang))
 
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -1190,9 +1190,9 @@ def render_notifications_tab():
     st.divider()
 
     # Email Service Configuration
-    st.subheader("⚙️ Email Service Configuration")
+    st.subheader(f"⚙️ {get_text('email_service_config', lang)}")
 
-    with st.expander("Configure Email Service", expanded=st.session_state.email_service is None):
+    with st.expander(get_text('configure_email', lang), expanded=st.session_state.email_service is None):
         provider_options = {
             "Gmail": EmailProvider.GMAIL,
             "Outlook": EmailProvider.OUTLOOK,
@@ -1231,7 +1231,7 @@ def render_notifications_tab():
 
         if st.button("💾 Save Email Configuration", type="primary"):
             if not smtp_username or not smtp_password:
-                st.error("Please provide email username and password")
+                st.error(get_text('provide_credentials', lang))
             else:
                 try:
                     if provider == EmailProvider.GMAIL:
@@ -1488,7 +1488,7 @@ def render_notifications_tab():
             with col4:
                 st.metric("Failed", stats['total_failed'])
         else:
-            st.info("No notifications sent yet. Configure your preferences above to start receiving alerts!")
+            st.info(get_text('no_notifications_yet', lang))
 
 
 def render_main_content():

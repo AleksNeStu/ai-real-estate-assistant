@@ -225,6 +225,18 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "total_exports": "Total Exports",
         "session_id": "Session ID",
 
+        # Additional UI elements
+        "api_key_updated_success": "API key updated!",
+        "failed_create_agent": "Failed to create hybrid agent",
+        "failed_create_chain": "Failed to create conversation chain",
+        "load_multiple_cities": "Load data with multiple cities for location comparison",
+        "amenity_impact_title": "Amenity Impact on Price",
+        "amenity_impact_caption": "Shows average % price increase for properties with each amenity",
+        "include_summary_stats": "Include summary statistics",
+        "max_properties_report": "Max properties in report",
+        "generate_export_button": "🚀 Generate Export",
+        "maximum_4_properties": "Maximum 4 properties can be compared at once",
+
         # Notifications Tab
         "notification_settings": "Notification Settings",
         "user_information": "User Information",
@@ -530,6 +542,18 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "total_exports": "Wszystkie Eksporty",
         "session_id": "ID Sesji",
 
+        # Additional UI elements
+        "api_key_updated_success": "Klucz API zaktualizowany!",
+        "failed_create_agent": "Nie udało się utworzyć agenta hybrydowego",
+        "failed_create_chain": "Nie udało się utworzyć łańcucha konwersacji",
+        "load_multiple_cities": "Załaduj dane z wieloma miastami do porównania lokalizacji",
+        "amenity_impact_title": "Wpływ Udogodnień na Cenę",
+        "amenity_impact_caption": "Pokazuje średni % wzrost ceny dla nieruchomości z każdym udogodnieniem",
+        "include_summary_stats": "Uwzględnij statystyki podsumowania",
+        "max_properties_report": "Maks nieruchomości w raporcie",
+        "generate_export_button": "🚀 Generuj Eksport",
+        "maximum_4_properties": "Maksymalnie 4 nieruchomości mogą być porównane na raz",
+
         # Notifications Tab
         "notification_settings": "Ustawienia Powiadomień",
         "user_information": "Informacje Użytkownika",
@@ -786,6 +810,18 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "total_exports": "Total de Exportaciones",
         "session_id": "ID de Sesión",
 
+        # Additional UI elements
+        "api_key_updated_success": "¡Clave API actualizada!",
+        "failed_create_agent": "Error al crear agente híbrido",
+        "failed_create_chain": "Error al crear cadena de conversación",
+        "load_multiple_cities": "Cargar datos con múltiples ciudades para comparación de ubicaciones",
+        "amenity_impact_title": "Impacto de Comodidades en el Precio",
+        "amenity_impact_caption": "Muestra el aumento de precio promedio % para propiedades con cada comodidad",
+        "include_summary_stats": "Incluir estadísticas de resumen",
+        "max_properties_report": "Máx propiedades en informe",
+        "generate_export_button": "🚀 Generar Exportación",
+        "maximum_4_properties": "Máximo 4 propiedades pueden ser comparadas a la vez",
+
         # Notifications Tab
         "notification_settings": "Configuración de Notificaciones",
         "user_information": "Información del Usuario",
@@ -974,6 +1010,16 @@ TRANSLATIONS["de"] = {
     "success": "Erfolg!",
     "powered_by": "Angetrieben von",
     "version": "Version",
+    "api_key_updated_success": "API-Schlüssel aktualisiert!",
+    "failed_create_agent": "Hybrid-Agent konnte nicht erstellt werden",
+    "failed_create_chain": "Konversationskette konnte nicht erstellt werden",
+    "load_multiple_cities": "Daten mit mehreren Städten laden für Standortvergleich",
+    "amenity_impact_title": "Ausstattungseinfluss auf Preis",
+    "amenity_impact_caption": "Zeigt durchschnittliche % Preissteigerung für Immobilien mit jeder Ausstattung",
+    "include_summary_stats": "Zusammenfassungsstatistiken einbeziehen",
+    "max_properties_report": "Max. Immobilien im Bericht",
+    "generate_export_button": "🚀 Export Generieren",
+    "maximum_4_properties": "Maximal 4 Immobilien können gleichzeitig verglichen werden",
 }
 
 TRANSLATIONS["fr"] = {
@@ -1054,6 +1100,16 @@ TRANSLATIONS["fr"] = {
     "success": "Succès!",
     "powered_by": "Propulsé par",
     "version": "Version",
+    "api_key_updated_success": "Clé API mise à jour!",
+    "failed_create_agent": "Échec de création de l'agent hybride",
+    "failed_create_chain": "Échec de création de la chaîne de conversation",
+    "load_multiple_cities": "Chargez des données avec plusieurs villes pour la comparaison de localisation",
+    "amenity_impact_title": "Impact des Équipements sur le Prix",
+    "amenity_impact_caption": "Affiche l'augmentation moyenne en % du prix pour les propriétés avec chaque équipement",
+    "include_summary_stats": "Inclure les statistiques récapitulatives",
+    "max_properties_report": "Max. propriétés dans le rapport",
+    "generate_export_button": "🚀 Générer l'Export",
+    "maximum_4_properties": "Maximum 4 propriétés peuvent être comparées à la fois",
 }
 
 TRANSLATIONS["it"] = {
@@ -1134,6 +1190,16 @@ TRANSLATIONS["it"] = {
     "success": "Successo!",
     "powered_by": "Alimentato da",
     "version": "Versione",
+    "api_key_updated_success": "Chiave API aggiornata!",
+    "failed_create_agent": "Impossibile creare agente ibrido",
+    "failed_create_chain": "Impossibile creare catena di conversazione",
+    "load_multiple_cities": "Carica dati con più città per il confronto di posizione",
+    "amenity_impact_title": "Impatto dei Servizi sul Prezzo",
+    "amenity_impact_caption": "Mostra l'aumento medio in % del prezzo per proprietà con ciascun servizio",
+    "include_summary_stats": "Includi statistiche riassuntive",
+    "max_properties_report": "Max. proprietà nel rapporto",
+    "generate_export_button": "🚀 Genera Esportazione",
+    "maximum_4_properties": "Massimo 4 proprietà possono essere confrontate contemporaneamente",
 }
 
 TRANSLATIONS["pt"] = {
@@ -1214,6 +1280,16 @@ TRANSLATIONS["pt"] = {
     "success": "Sucesso!",
     "powered_by": "Desenvolvido por",
     "version": "Versão",
+    "api_key_updated_success": "Chave API atualizada!",
+    "failed_create_agent": "Falha ao criar agente híbrido",
+    "failed_create_chain": "Falha ao criar cadeia de conversação",
+    "load_multiple_cities": "Carregue dados com várias cidades para comparação de localização",
+    "amenity_impact_title": "Impacto das Comodidades no Preço",
+    "amenity_impact_caption": "Mostra aumento médio em % do preço para propriedades com cada comodidade",
+    "include_summary_stats": "Incluir estatísticas resumidas",
+    "max_properties_report": "Máx. propriedades no relatório",
+    "generate_export_button": "🚀 Gerar Exportação",
+    "maximum_4_properties": "Máximo de 4 propriedades podem ser comparadas ao mesmo tempo",
 }
 
 # Russian translations
@@ -1364,6 +1440,18 @@ TRANSLATIONS["ru"] = {
     "total_queries": "Всего Запросов",
     "total_exports": "Всего Экспортов",
     "session_id": "ID Сессии",
+
+    # Additional UI elements
+    "api_key_updated_success": "Ключ API обновлён!",
+    "failed_create_agent": "Не удалось создать гибридного агента",
+    "failed_create_chain": "Не удалось создать цепь разговора",
+    "load_multiple_cities": "Загрузить данные с несколькими городами для сравнения локаций",
+    "amenity_impact_title": "Влияние Удобств на Цену",
+    "amenity_impact_caption": "Показывает среднее % увеличение цены для объектов с каждым удобством",
+    "include_summary_stats": "Включить итоговую статистику",
+    "max_properties_report": "Макс объектов в отчёте",
+    "generate_export_button": "🚀 Создать Экспорт",
+    "maximum_4_properties": "Максимум 4 объекта можно сравнивать одновременно",
 
     # Notifications Tab
     "notification_settings": "Настройки Уведомлений",
@@ -1621,6 +1709,18 @@ TRANSLATIONS["zh"] = {
     "total_queries": "总查询数",
     "total_exports": "总导出数",
     "session_id": "会话ID",
+
+    # Additional UI elements
+    "api_key_updated_success": "API密钥已更新!",
+    "failed_create_agent": "无法创建混合代理",
+    "failed_create_chain": "无法创建对话链",
+    "load_multiple_cities": "使用多个城市加载数据以进行位置比较",
+    "amenity_impact_title": "便利设施对价格的影响",
+    "amenity_impact_caption": "显示具有每项便利设施的房产的平均%价格上升",
+    "include_summary_stats": "包括汇总统计信息",
+    "max_properties_report": "报告中的最大房产数",
+    "generate_export_button": "🚀 生成导出",
+    "maximum_4_properties": "最多可以同时比较4个房产",
 
     # Notifications Tab
     "notification_settings": "通知设置",
