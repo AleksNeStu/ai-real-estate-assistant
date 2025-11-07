@@ -662,22 +662,19 @@ with st.form("new_search"):
 
 ### Dependencies
 
-Update `pyproject.toml`:
+All required dependencies are already in `requirements.txt`:
 
-```toml
-[tool.poetry.dependencies]
-pandas = "^2.1.0"
-openpyxl = "^3.1.0"  # For Excel export
-streamlit = "^1.37.0"
-pydantic = "^2.5.0"
+```txt
+pandas>=2.1.0
+openpyxl>=3.1.0  # For Excel export
+streamlit>=1.37.0
+pydantic>=2.5.0
 ```
 
 Install dependencies:
 
 ```bash
-poetry install
-# or
-poetry lock && poetry install
+pip install -r requirements.txt
 ```
 
 ### Storage Directories

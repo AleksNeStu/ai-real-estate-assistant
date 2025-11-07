@@ -197,8 +197,11 @@ display_metrics_row([
 ## 📊 Implementation Plan
 
 ### Step 1: Add Dependencies ✅
+Dependencies already included in `requirements.txt`:
 ```bash
-poetry add plotly kaleido
+pip install plotly kaleido
+# or install all dependencies:
+pip install -r requirements.txt
 ```
 
 ### Step 2: Create Visualization Modules

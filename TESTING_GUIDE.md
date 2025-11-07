@@ -11,13 +11,15 @@ This guide provides comprehensive testing procedures for all Phase 2 (Intelligen
 ### Prerequisites
 ```bash
 # 1. Ensure dependencies are installed
-poetry install
+pip install -r requirements.txt
 
 # 2. Set API key (at least one)
 export OPENAI_API_KEY="your-key"
 
 # 3. Run the modern app
 ./run_modern.sh
+# or directly:
+streamlit run app_modern.py
 ```
 
 ### Initial Configuration

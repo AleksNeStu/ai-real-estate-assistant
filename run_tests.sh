@@ -18,7 +18,7 @@ NC='\033[0m' # No Color
 # Check if pytest is available
 if ! command -v pytest &> /dev/null; then
     echo -e "${RED}❌ pytest not found. Installing test dependencies...${NC}"
-    poetry install --with dev
+    pip install pytest pytest-cov pytest-asyncio pytest-mock
 fi
 
 # Parse command line arguments

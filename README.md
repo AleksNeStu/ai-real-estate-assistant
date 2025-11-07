@@ -55,7 +55,7 @@ The AI Real Estate Assistant is a conversational AI application that helps users
 
 ### Prerequisites
 - Python 3.11+
-- Poetry (package manager)
+- pip (package manager)
 - At least one API key (OpenAI, Anthropic, or Google) OR Ollama installed locally
 
 ### Installation
@@ -65,8 +65,12 @@ The AI Real Estate Assistant is a conversational AI application that helps users
 git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
 cd ai-real-estate-assistant
 
+# Create virtual environment (recommended)
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
 # Install dependencies
-poetry install
+pip install -r requirements.txt
 
 # Set up API keys (at least one)
 export OPENAI_API_KEY="your-openai-key"
@@ -81,13 +85,12 @@ export GOOGLE_API_KEY="your-google-key"        # optional
 
 ```bash
 # Modern version (V3 - Recommended)
-./run_modern.sh
-# or
-poetry run streamlit run app_modern.py
+streamlit run app_modern.py
 
-# Legacy versions
-./run_v1.sh  # V1: Pandas DataFrame Agent
-./run_v2.sh  # V2: Basic RAG
+# Or use the convenience scripts:
+./run_modern.sh  # V3: Modern with all phases
+./run_v1.sh      # V1: Pandas DataFrame Agent
+./run_v2.sh      # V2: Basic RAG
 ```
 
 ---
@@ -355,14 +358,12 @@ Edit `config/settings.py` to customize:
 
 ### Project Setup
 ```bash
-# Install Poetry if not already installed
-curl -sSL https://install.python-poetry.org | python3 -
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
-poetry install
-
-# Activate virtual environment
-poetry shell
+pip install -r requirements.txt
 
 # Run development server
 streamlit run app_modern.py
@@ -371,13 +372,17 @@ streamlit run app_modern.py
 ### Running Tests
 ```bash
 # Install test dependencies
-poetry install --with dev
+pip install pytest pytest-cov pytest-asyncio pytest-mock
 
-# Run tests (when available)
-poetry run pytest
+# Run tests using the test script
+./run_tests.sh
 
-# Run linting
-poetry run ruff check .
+# Or run pytest directly
+pytest tests/ -v
+
+# Run specific test modes
+./run_tests.sh phase5  # Test Phase 5 only
+./run_tests.sh full    # Run all tests
 ```
 
 ### Adding New Features

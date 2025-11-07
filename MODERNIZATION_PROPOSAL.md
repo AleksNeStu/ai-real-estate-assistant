@@ -886,22 +886,19 @@ ai-real-estate-assistant/
 ```
 
 ### Dependencies Update
-```toml
-[tool.poetry.dependencies]
+```txt
+# requirements.txt format
 # Core
-python = ">=3.11,<3.13"
-streamlit = "^1.37.0"
+streamlit>=1.37.0
 
 # LLM Providers
-langchain = "^0.2.10"
-langchain-openai = "^0.1.19"
-langchain-anthropic = "^0.1.20"        # NEW
-langchain-google-genai = "^1.0.8"     # NEW
-langchain-groq = "^0.1.6"             # NEW
-langchain-community = "^0.2.10"
+langchain-openai>=0.1.19
+langchain-anthropic>=0.1.20        # NEW
+langchain-google-genai>=1.0.8      # NEW
+langchain-community>=0.2.10
 
 # Vector Store
-chromadb = "^0.5.21"
+chromadb>=0.5.21
 qdrant-client = "^1.7.0"              # NEW (optional)
 
 # Embeddings
