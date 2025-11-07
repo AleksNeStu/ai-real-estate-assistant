@@ -779,24 +779,24 @@ def render_market_insights_tab():
         st.info(get_text('please_load_data_insights', lang))
         return
 
-    st.header("📈 Market Insights & Analytics")
+    st.header(f"📈 {get_text('market_insights_analytics', lang)}")
 
     insights = st.session_state.market_insights
 
     # Overall statistics
     stats = insights.get_overall_statistics()
 
-    st.subheader("Market Overview")
+    st.subheader(get_text('market_overview', lang))
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Total Properties", stats.total_properties)
+        st.metric(get_text('total_properties', lang), stats.total_properties)
     with col2:
-        st.metric("Average Price", f"${stats.average_price:.2f}")
+        st.metric(get_text('average_price', lang), f"${stats.average_price:.2f}")
     with col3:
-        st.metric("Median Price", f"${stats.median_price:.2f}")
+        st.metric(get_text('median_price', lang), f"${stats.median_price:.2f}")
     with col4:
-        st.metric("Avg Rooms", f"{stats.avg_rooms:.1f}")
+        st.metric(get_text('avg_rooms', lang), f"{stats.avg_rooms:.1f}")
 
     st.divider()
 
@@ -804,7 +804,7 @@ def render_market_insights_tab():
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("Price Trend")
+        st.subheader(get_text('price_trend', lang))
         trend = insights.get_price_trend()
         trend_emoji = {
             "increasing": "📈",
@@ -814,15 +814,15 @@ def render_market_insights_tab():
         }.get(trend.direction.value, "")
 
         st.metric(
-            "Market Direction",
+            get_text('market_direction', lang),
             f"{trend_emoji} {trend.direction.value.title()}",
             f"{trend.change_percent:+.1f}%"
         )
-        st.caption(f"Confidence: {trend.confidence.title()}")
-        st.caption(f"Sample size: {trend.sample_size} properties")
+        st.caption(f"{get_text('confidence_high', lang).split(':')[0]}: {trend.confidence.title()}")
+        st.caption(f"{get_text('sample_size', lang)}: {trend.sample_size} {get_text('properties', lang).lower()}")
 
     with col2:
-        st.subheader("Price Distribution")
+        st.subheader(get_text('price_distribution', lang))
         price_dist = insights.get_price_distribution(bins=8)
         dist_df = pd.DataFrame({
             'Price Range': price_dist['bins'],
@@ -833,30 +833,30 @@ def render_market_insights_tab():
     st.divider()
 
     # Location insights
-    st.subheader("Location Analysis")
+    st.subheader(get_text('location_analysis', lang))
 
     cities = list(stats.cities.keys())
     if len(cities) >= 2:
         col1, col2 = st.columns(2)
 
         with col1:
-            selected_city = st.selectbox("Select City", cities)
+            selected_city = st.selectbox(get_text('select_city', lang), cities)
             if selected_city:
                 city_insights = insights.get_location_insights(selected_city)
                 if city_insights:
                     st.write(f"**{city_insights.city}**")
-                    st.write(f"Properties: {city_insights.property_count}")
-                    st.write(f"Avg Price: ${city_insights.avg_price:.2f}")
-                    st.write(f"Median Price: ${city_insights.median_price:.2f}")
+                    st.write(f"{get_text('properties', lang)}: {city_insights.property_count}")
+                    st.write(f"{get_text('average_price', lang).split()[0]}: ${city_insights.avg_price:.2f}")
+                    st.write(f"{get_text('median_price', lang)}: ${city_insights.median_price:.2f}")
                     if city_insights.avg_price_per_sqm:
                         st.write(f"Price/sqm: ${city_insights.avg_price_per_sqm:.2f}")
-                    st.write(f"Market Position: {city_insights.price_comparison.replace('_', ' ').title()}")
+                    st.write(f"{get_text('market_position', lang)} {city_insights.price_comparison.replace('_', ' ').title()}")
 
         with col2:
             if len(cities) >= 2:
-                st.write("**City Comparison**")
-                compare_city1 = st.selectbox("Compare City 1", cities, key="compare1")
-                compare_city2 = st.selectbox("Compare City 2", [c for c in cities if c != compare_city1], key="compare2")
+                st.write(f"**{get_text('city_comparison', lang)}**")
+                compare_city1 = st.selectbox(get_text('compare_city_1', lang), cities, key="compare1")
+                compare_city2 = st.selectbox(get_text('compare_city_2', lang), [c for c in cities if c != compare_city1], key="compare2")
 
                 if compare_city1 and compare_city2:
                     comparison = insights.compare_locations(compare_city1, compare_city2)
@@ -865,14 +865,14 @@ def render_market_insights_tab():
                         diff = abs(comparison['price_difference'])
                         diff_pct = abs(comparison['price_difference_percent'])
 
-                        st.success(f"💰 **{cheaper}** is cheaper by ${diff:.2f} ({diff_pct:.1f}%)")
+                        st.success(f"💰 **{cheaper}** {get_text('is_cheaper_by', lang)} ${diff:.2f} ({diff_pct:.1f}%)")
     else:
         st.info("Load data with multiple cities for location comparison")
 
     st.divider()
 
     # Best value properties
-    st.subheader("🏆 Best Value Properties")
+    st.subheader(f"🏆 {get_text('best_value_properties', lang)}")
 
     best_values = insights.get_best_value_properties(top_n=5)
     if best_values:
@@ -911,18 +911,18 @@ def render_export_tab():
         st.info(get_text('please_load_data_export', lang))
         return
 
-    st.header("💾 Export Properties")
+    st.header(f"💾 {get_text('export_properties', lang)}")
 
-    st.write("Export your property data in multiple formats for further analysis or sharing.")
+    st.write(get_text('export_subtitle', lang))
 
     # Export options
     col1, col2 = st.columns([2, 3])
 
     with col1:
-        st.subheader("Export Settings")
+        st.subheader(get_text('export_settings', lang))
 
         format_choice = st.selectbox(
-            "Select Format",
+            get_text('select_format', lang),
             options=[fmt.value for fmt in ExportFormat],
             format_func=lambda x: {
                 'csv': '📄 CSV (Spreadsheet)',
@@ -943,14 +943,14 @@ def render_export_tab():
             )
 
     with col2:
-        st.subheader("Preview")
+        st.subheader(get_text('preview', lang))
 
         properties = st.session_state.property_collection
-        st.write(f"**Total Properties:** {len(properties.properties)}")
+        st.write(f"**{get_text('total_properties', lang)}:** {len(properties.properties)}")
 
         if properties.properties:
             sample = properties.properties[0]
-            st.write(f"**Sample:** {sample.city} - ${sample.price}/mo - {int(sample.rooms)} rooms")
+            st.write(f"**{get_text('sample', lang)}** {sample.city} - ${sample.price}/mo - {int(sample.rooms)} {get_text('rooms', lang).lower()}")
 
         st.divider()
 
@@ -1013,7 +1013,7 @@ def render_export_tab():
     st.divider()
 
     # Export format descriptions
-    with st.expander("ℹ️ Format Information"):
+    with st.expander(f"ℹ️ {get_text('format_information', lang)}"):
         st.markdown("""
         **CSV (Comma-Separated Values)**
         - Simple spreadsheet format
@@ -1045,14 +1045,14 @@ def render_comparisons_tab():
         st.info(get_text('please_load_data_compare', lang))
         return
 
-    st.header("🔄 Property Comparison")
+    st.header(f"🔄 {get_text('property_comparison', lang)}")
 
     properties = st.session_state.property_collection.properties
 
-    st.write("Select 2-4 properties to compare side-by-side")
+    st.write(get_text('select_2_4_properties', lang))
 
     # Property selection
-    st.subheader("Select Properties")
+    st.subheader(get_text('select_properties', lang))
 
     # Create property display names
     property_options = {
@@ -1061,7 +1061,7 @@ def render_comparisons_tab():
     }
 
     selected_names = st.multiselect(
-        "Choose properties (2-4)",
+        get_text('choose_properties_2_4', lang),
         options=list(property_options.keys()),
         max_selections=4
     )
@@ -1069,7 +1069,7 @@ def render_comparisons_tab():
     selected_properties = [property_options[name] for name in selected_names]
 
     if len(selected_properties) < 2:
-        st.info("Please select at least 2 properties to compare")
+        st.info(get_text('select_at_least_2', lang))
         return
 
     if len(selected_properties) > 4:
@@ -1533,50 +1533,102 @@ def apply_theme():
     if theme == 'dark':
         st.markdown("""
         <style>
-            /* Dark theme colors */
+            /* Dark theme colors - Comprehensive */
             .stApp {
-                background-color: #0e1117;
-                color: #fafafa;
+                background-color: #0e1117 !important;
+                color: #fafafa !important;
             }
             .stSidebar {
-                background-color: #1a1d24;
+                background-color: #1a1d24 !important;
             }
+            /* Sidebar text elements */
+            .stSidebar .stMarkdown, .stSidebar h1, .stSidebar h2, .stSidebar h3,
+            .stSidebar p, .stSidebar span, .stSidebar label, .stSidebar .stCaption {
+                color: #fafafa !important;
+            }
+            /* Tabs */
             .stTabs [data-baseweb="tab-list"] {
                 gap: 8px;
-                background-color: #1a1d24;
+                background-color: #1a1d24 !important;
             }
             .stTabs [data-baseweb="tab"] {
-                background-color: #262730;
-                color: #fafafa;
+                background-color: #262730 !important;
+                color: #fafafa !important;
                 border-radius: 4px 4px 0px 0px;
             }
             .stTabs [aria-selected="true"] {
-                background-color: #3a3f4b;
+                background-color: #3a3f4b !important;
+                color: #fafafa !important;
             }
-            .stTextInput>div>div>input, .stSelectbox>div>div>div, .stTextArea>div>div>textarea {
-                background-color: #262730;
-                color: #fafafa;
+            /* Form inputs */
+            .stTextInput>div>div>input, .stSelectbox>div>div>div,
+            .stTextArea>div>div>textarea, .stNumberInput>div>div>input {
+                background-color: #262730 !important;
+                color: #fafafa !important;
+                border-color: #3a3f4b !important;
             }
+            /* Buttons */
             .stButton>button {
-                background-color: #262730;
-                color: #fafafa;
-                border: 1px solid #3a3f4b;
+                background-color: #262730 !important;
+                color: #fafafa !important;
+                border: 1px solid #3a3f4b !important;
             }
             .stButton>button:hover {
-                background-color: #3a3f4b;
-                border: 1px solid #4a4f5b;
+                background-color: #3a3f4b !important;
+                border: 1px solid #4a4f5b !important;
             }
-            .stMarkdown {
-                color: #fafafa;
+            /* All text elements */
+            .stMarkdown, .stMarkdown p, .stMarkdown span, .stMarkdown li {
+                color: #fafafa !important;
             }
+            /* Chat messages */
             .stChatMessage {
-                background-color: #1a1d24;
+                background-color: #1a1d24 !important;
+                color: #fafafa !important;
             }
-            div[data-testid="stMetricValue"] {
-                color: #fafafa;
+            /* Metrics */
+            div[data-testid="stMetricValue"], div[data-testid="stMetricLabel"] {
+                color: #fafafa !important;
             }
-            .css-1d391kg {
-                background-color: #1a1d24;
+            /* Expanders */
+            .stExpander {
+                background-color: #262730 !important;
+                border-color: #3a3f4b !important;
+            }
+            .stExpander p, .stExpander span, .stExpander label {
+                color: #fafafa !important;
+            }
+            /* Headers */
+            h1, h2, h3, h4, h5, h6 {
+                color: #fafafa !important;
+            }
+            /* Form controls */
+            .stRadio label, .stCheckbox label {
+                color: #fafafa !important;
+            }
+            .stSlider label, .stSlider p {
+                color: #fafafa !important;
+            }
+            /* Header bar */
+            [data-testid="stHeader"] {
+                background-color: #0e1117 !important;
+            }
+            /* Captions */
+            .stCaption {
+                color: #b0b0b0 !important;
+            }
+            /* Alerts */
+            .stAlert {
+                background-color: #262730 !important;
+                color: #fafafa !important;
+            }
+            /* Dataframes */
+            .stDataFrame {
+                color: #fafafa !important;
+            }
+            /* Multiselect */
+            .stMultiSelect label {
+                color: #fafafa !important;
             }
         </style>
         """, unsafe_allow_html=True)
