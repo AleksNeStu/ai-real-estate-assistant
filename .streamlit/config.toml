@@ -1,19 +1,19 @@
 [theme]
-# Primary theme color (used for buttons, links, etc.)
-primaryColor = "#4a9eff"
+# Primary theme color - Professional Trust Blue
+primaryColor = "#0066cc"
 
-# Background colors
-backgroundColor = "#0e1117"
-secondaryBackgroundColor = "#1a1d24"
+# Background colors - Clean Light Theme
+backgroundColor = "#f8f9fa"
+secondaryBackgroundColor = "#ffffff"
 
-# Text color with WCAG AA compliance (15.8:1 contrast ratio)
-textColor = "#fafafa"
+# Text color - Dark for readability
+textColor = "#1a1a1a"
 
 # Font family
 font = "sans serif"
 
-# Base theme (dark or light)
-base = "dark"
+# Base theme - Light for professional real estate UI
+base = "light"
 
 [server]
 maxUploadSize = 200
