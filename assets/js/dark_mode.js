@@ -1,104 +1,113 @@
 /**
- * Dark Mode Toggle with System Preference Detection
- * Provides automatic theme detection and manual override functionality
- * Ensures accessibility and smooth transitions
+ * Professional Theme Toggle System
+ * Supports light and dark modes with smooth transitions
  */
 
 (function() {
     'use strict';
 
-    // Configuration
-    const STORAGE_KEY = 'theme-preference';
-    const THEME_ATTRIBUTE = 'data-theme';
-    const SYSTEM_PREFERENCE = window.matchMedia('(prefers-color-scheme: dark)');
+    const STORAGE_KEY = 'ai-real-estate-theme';
+    const THEME_ATTR = 'data-theme';
 
     /**
-     * Get the current theme preference
-     * Priority: Manual override > System preference > Default (light)
+     * Get current theme preference
      */
     function getThemePreference() {
+        // Check localStorage first
         const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
+        if (stored && (stored === 'light' || stored === 'dark')) {
             return stored;
         }
-        return SYSTEM_PREFERENCE.matches ? 'dark' : 'light';
+
+        // Default to dark theme
+        return 'dark';
     }
 
     /**
-     * Set theme preference and apply to DOM
+     * Apply theme to document
      */
-    function setTheme(theme) {
+    function applyTheme(theme) {
+        console.log('Applying theme:', theme);
+
+        // Set on html element
+        document.documentElement.setAttribute(THEME_ATTR, theme);
+
+        // Set on body
+        document.body.setAttribute(THEME_ATTR, theme);
+
+        // Find and set on stApp
+        const stApp = document.querySelector('.stApp');
+        if (stApp) {
+            stApp.setAttribute(THEME_ATTR, theme);
+        }
+
+        // Find and set on main
+        const main = document.querySelector('.main');
+        if (main) {
+            main.setAttribute(THEME_ATTR, theme);
+        }
+
         // Store preference
         localStorage.setItem(STORAGE_KEY, theme);
 
-        // Apply to document
-        document.documentElement.setAttribute(THEME_ATTRIBUTE, theme);
-
-        // Also apply to Streamlit app container if it exists
-        const stApp = document.querySelector('.stApp');
-        if (stApp) {
-            stApp.setAttribute(THEME_ATTRIBUTE, theme);
-        }
-
-        // Update toggle button if it exists
+        // Update toggle button
         updateToggleButton(theme);
 
-        // Dispatch custom event for other components
+        // Dispatch event
         window.dispatchEvent(new CustomEvent('themechange', {
             detail: { theme }
         }));
 
-        console.log(`Theme changed to: ${theme}`);
+        console.log('Theme applied:', theme);
     }
 
     /**
-     * Toggle between light and dark themes
+     * Toggle theme
      */
     function toggleTheme() {
-        const currentTheme = getThemePreference();
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        setTheme(newTheme);
+        const current = getThemePreference();
+        const newTheme = current === 'dark' ? 'light' : 'dark';
+        applyTheme(newTheme);
     }
 
     /**
      * Update toggle button appearance
      */
     function updateToggleButton(theme) {
-        const toggleBtn = document.getElementById('theme-toggle');
-        if (!toggleBtn) return;
-
-        const icon = toggleBtn.querySelector('.theme-icon');
-        if (!icon) return;
+        const btn = document.getElementById('theme-toggle');
+        if (!btn) return;
 
         if (theme === 'dark') {
-            icon.textContent = '☀️';
-            toggleBtn.setAttribute('aria-label', 'Switch to light mode');
-            toggleBtn.setAttribute('title', 'Switch to light mode');
+            btn.innerHTML = '☀️';
+            btn.setAttribute('aria-label', 'Switch to light mode');
+            btn.setAttribute('title', 'Switch to light mode');
         } else {
-            icon.textContent = '🌙';
-            toggleBtn.setAttribute('aria-label', 'Switch to dark mode');
-            toggleBtn.setAttribute('title', 'Switch to dark mode');
+            btn.innerHTML = '🌙';
+            btn.setAttribute('aria-label', 'Switch to dark mode');
+            btn.setAttribute('title', 'Switch to dark mode');
         }
     }
 
     /**
-     * Create and inject toggle button
+     * Create toggle button
      */
     function createToggleButton() {
-        // Check if button already exists
-        if (document.getElementById('theme-toggle')) {
-            return;
+        // Remove existing button if any
+        const existing = document.getElementById('theme-toggle-container');
+        if (existing) {
+            existing.remove();
         }
 
+        // Create container
+        const container = document.createElement('div');
+        container.id = 'theme-toggle-container';
+
+        // Create button
         const button = document.createElement('button');
         button.id = 'theme-toggle';
         button.className = 'theme-toggle-btn';
         button.setAttribute('aria-label', 'Toggle theme');
         button.style.cssText = `
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 9999;
             background-color: var(--background-secondary);
             border: 1px solid var(--border-color);
             border-radius: 50%;
@@ -113,90 +122,60 @@
             font-size: 1.5rem;
         `;
 
-        const icon = document.createElement('span');
-        icon.className = 'theme-icon';
-        button.appendChild(icon);
-
         button.addEventListener('click', toggleTheme);
 
-        // Add hover effect
-        button.addEventListener('mouseenter', function() {
-            this.style.transform = 'scale(1.1)';
-        });
+        container.appendChild(button);
+        document.body.appendChild(container);
 
-        button.addEventListener('mouseleave', function() {
-            this.style.transform = 'scale(1)';
-        });
-
-        document.body.appendChild(button);
-
-        // Initial button state
+        // Initial state
         updateToggleButton(getThemePreference());
     }
 
     /**
-     * Listen for system theme changes
+     * Re-apply theme (for Streamlit re-runs)
      */
-    function watchSystemTheme() {
-        SYSTEM_PREFERENCE.addEventListener('change', (e) => {
-            // Only auto-update if user hasn't manually set a preference
-            if (!localStorage.getItem(STORAGE_KEY)) {
-                const newTheme = e.matches ? 'dark' : 'light';
-                setTheme(newTheme);
-            }
-        });
-    }
+    function reapplyTheme() {
+        const theme = getThemePreference();
+        applyTheme(theme);
 
-    /**
-     * Apply theme to chart elements (Plotly, etc.)
-     */
-    function applyThemeToCharts(theme) {
-        // This will be called by Streamlit components
-        const plotlyElements = document.querySelectorAll('.js-plotly-plot');
-        plotlyElements.forEach(plot => {
-            if (window.Plotly && plot.data) {
-                const layout = plot.layout || {};
-                if (theme === 'dark') {
-                    layout.paper_bgcolor = '#1a1d24';
-                    layout.plot_bgcolor = '#1a1d24';
-                    layout.font = { color: '#fafafa' };
-                } else {
-                    layout.paper_bgcolor = '#ffffff';
-                    layout.plot_bgcolor = '#ffffff';
-                    layout.font = { color: '#262730' };
-                }
-                window.Plotly.relayout(plot, layout);
-            }
-        });
+        // Recreate button if it doesn't exist
+        if (!document.getElementById('theme-toggle')) {
+            createToggleButton();
+        }
     }
 
     /**
      * Initialize theme system
      */
-    function initTheme() {
+    function init() {
+        console.log('Initializing theme system...');
+
         // Apply initial theme
         const initialTheme = getThemePreference();
-        setTheme(initialTheme);
+        applyTheme(initialTheme);
 
-        // Watch for system preference changes
-        watchSystemTheme();
+        // Create toggle button
+        createToggleButton();
 
-        // Create toggle button after DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', createToggleButton);
-        } else {
-            createToggleButton();
-        }
-
-        // Listen for theme changes to update charts
-        window.addEventListener('themechange', (e) => {
-            applyThemeToCharts(e.detail.theme);
-        });
-
-        // Re-inject button when Streamlit reruns (use MutationObserver)
+        // Watch for Streamlit re-runs
         const observer = new MutationObserver((mutations) => {
-            const hasToggle = document.getElementById('theme-toggle');
-            if (!hasToggle) {
+            // Check if stApp was re-rendered
+            const stAppChanged = mutations.some(mutation =>
+                Array.from(mutation.addedNodes).some(node =>
+                    node.classList && (
+                        node.classList.contains('stApp') ||
+                        node.classList.contains('main')
+                    )
+                )
+            );
+
+            if (stAppChanged) {
+                console.log('Streamlit re-render detected, re-applying theme');
+                setTimeout(reapplyTheme, 100);
+            }
+
+            // Recreate button if needed
+            if (!document.getElementById('theme-toggle')) {
                 createToggleButton();
             }
         });
@@ -205,25 +184,40 @@
             childList: true,
             subtree: true
         });
+
+        console.log('Theme system initialized');
     }
 
     /**
-     * Expose API for Streamlit components
+     * Expose API
      */
     window.ThemeManager = {
         getTheme: getThemePreference,
-        setTheme: setTheme,
+        setTheme: applyTheme,
         toggleTheme: toggleTheme,
-        applyToCharts: applyThemeToCharts
+        init: init,
+        reapply: reapplyTheme
     };
 
-    // Initialize on load
-    initTheme();
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 
-    // Also initialize when Streamlit finishes loading
+    // Also initialize after page load (for Streamlit)
     window.addEventListener('load', () => {
-        setTimeout(initTheme, 100); // Small delay to ensure Streamlit is ready
+        setTimeout(init, 500);
     });
 
-    console.log('Dark mode system initialized');
+    // Re-apply theme periodically (for Streamlit hot reloads)
+    setInterval(() => {
+        const btn = document.getElementById('theme-toggle');
+        if (!btn) {
+            createToggleButton();
+        }
+        reapplyTheme();
+    }, 2000);
+
 })();

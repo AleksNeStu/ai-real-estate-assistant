@@ -98,165 +98,11 @@ def load_and_inject_styles():
 
 def inject_enhanced_form_styles():
     """
-    Inject enhanced styles specifically for form elements
-    to ensure proper visibility in both light and dark modes
+    Inject minimal enhanced styles for form elements
+    Most styles are now in dark_mode.css
     """
-    enhanced_css = """
-    <style>
-    /* Enhanced form label visibility */
-    .stTextInput > label,
-    .stTextArea > label,
-    .stSelectbox > label,
-    .stMultiSelect > label,
-    .stNumberInput > label,
-    .stDateInput > label,
-    .stTimeInput > label,
-    .stFileUploader > label,
-    .stRadio > label {
-        color: var(--text-primary) !important;
-        font-weight: 500 !important;
-        font-size: 0.95rem !important;
-        margin-bottom: 0.5rem !important;
-        display: block !important;
-    }
-
-    /* Specific enhancement for "Your Email Address" and similar labels */
-    .stTextInput label[data-testid="stWidgetLabel"],
-    label:contains("Email"),
-    label:contains("email") {
-        color: #fafafa !important;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    }
-
-    /* Enhanced input field visibility */
-    input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    input[type="number"],
-    textarea,
-    select {
-        background-color: var(--input-background) !important;
-        color: var(--text-primary) !important;
-        border: 1px solid var(--input-border) !important;
-        padding: 0.625rem 0.875rem !important;
-        border-radius: 0.375rem !important;
-    }
-
-    /* Focus states */
-    input:focus,
-    textarea:focus,
-    select:focus {
-        border-color: var(--input-focus) !important;
-        box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.1) !important;
-        outline: none !important;
-    }
-
-    /* Placeholder text */
-    input::placeholder,
-    textarea::placeholder {
-        color: var(--text-tertiary) !important;
-        opacity: 0.7 !important;
-    }
-
-    /* Help text */
-    .stTextInput > div > div > p,
-    .stTextArea > div > div > p {
-        color: var(--text-secondary) !important;
-        font-size: 0.875rem !important;
-    }
-
-    /* ========================================
-       Comprehensive Dropdown Styling
-       ======================================== */
-
-    /* Base select styling */
-    [data-baseweb="select"],
-    [data-baseweb="select"] * {
-        color: var(--text-primary) !important;
-    }
-
-    /* Select control (the main input) */
-    [data-baseweb="select"] [data-baseweb="input"] {
-        background-color: var(--input-background) !important;
-    }
-
-    /* Dropdown menu container */
-    [data-baseweb="popover"] [data-baseweb="menu"],
-    ul[role="listbox"] {
-        background-color: var(--background-tertiary) !important;
-        border: 1px solid var(--border-color) !important;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
-        max-height: 300px !important;
-        overflow-y: auto !important;
-    }
-
-    /* Dropdown options */
-    [data-baseweb="menu"] [role="option"],
-    li[role="option"] {
-        background-color: transparent !important;
-        color: var(--text-primary) !important;
-        padding: 0.5rem 1rem !important;
-        cursor: pointer !important;
-    }
-
-    /* Dropdown option hover */
-    [data-baseweb="menu"] [role="option"]:hover,
-    li[role="option"]:hover {
-        background-color: rgba(74, 158, 255, 0.15) !important;
-        color: var(--text-primary) !important;
-    }
-
-    /* Selected dropdown option */
-    [data-baseweb="menu"] [role="option"][aria-selected="true"],
-    li[role="option"][aria-selected="true"] {
-        background-color: rgba(74, 158, 255, 0.25) !important;
-        color: var(--text-primary) !important;
-        font-weight: 500 !important;
-    }
-
-    /* Radio button options */
-    [role="radiogroup"] {
-        background-color: transparent !important;
-    }
-
-    [role="radiogroup"] label,
-    [role="radio"] + label {
-        color: var(--text-primary) !important;
-    }
-
-    /* Streamlit native select */
-    .stSelectbox select option {
-        background-color: var(--background-tertiary) !important;
-        color: var(--text-primary) !important;
-        padding: 0.5rem !important;
-    }
-
-    /* MultiSelect specific */
-    .stMultiSelect [data-baseweb="tag"] {
-        background-color: var(--primary-color) !important;
-        color: white !important;
-    }
-
-    .stMultiSelect [data-baseweb="tag"] svg {
-        fill: white !important;
-    }
-
-    /* Ensure dropdown arrows are visible */
-    [data-baseweb="select"] svg,
-    .stSelectbox svg {
-        fill: var(--text-primary) !important;
-        opacity: 0.7;
-    }
-
-    /* Search input within dropdowns */
-    [data-baseweb="menu"] input {
-        background-color: var(--input-background) !important;
-        color: var(--text-primary) !important;
-        border: 1px solid var(--border-color) !important;
-    }
-    </style>
-    """
-    st.markdown(enhanced_css, unsafe_allow_html=True)
+    # Minimal additional styles that complement dark_mode.css
+    pass
 
 
 def create_metric_card(label: str, value: str, delta: Optional[str] = None,
@@ -301,8 +147,9 @@ def create_info_box(title: str, content: str, box_type: str = "info"):
         padding: 1rem;
         border-radius: 0.375rem;
         margin-bottom: 1rem;
+        background-color: var(--background-secondary);
         border-left: 4px solid var(--{box_type}-color);
-        background-color: rgba(var(--{box_type}-color-rgb), 0.1);
+        color: var(--text-primary);
     ">
         <div style="display: flex; align-items: start; gap: 0.75rem;">
             <span style="font-size: 1.5rem;">{icon}</span>
