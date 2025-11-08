@@ -163,6 +163,10 @@ def initialize_session_state():
     if "language" not in st.session_state:
         st.session_state.language = "en"
 
+    # Theme support
+    if "theme" not in st.session_state:
+        st.session_state.theme = "dark"
+
 
 def render_sidebar():
     """Render sidebar with model selection and configuration."""
@@ -186,6 +190,26 @@ def render_sidebar():
         )
         if selected_lang != st.session_state.language:
             st.session_state.language = selected_lang
+            st.rerun()
+
+        st.divider()
+
+        # Theme Selection
+        st.subheader(f"🎨 {get_text('theme', lang)}")
+        theme_options = {
+            "light": get_text('light_theme', lang),
+            "dark": get_text('dark_theme', lang)
+        }
+        selected_theme = st.selectbox(
+            get_text('theme', lang),
+            options=list(theme_options.keys()),
+            format_func=lambda x: theme_options[x],
+            index=list(theme_options.keys()).index(st.session_state.theme),
+            key="theme_selector",
+            label_visibility="collapsed"
+        )
+        if selected_theme != st.session_state.theme:
+            st.session_state.theme = selected_theme
             st.rerun()
 
         st.divider()
