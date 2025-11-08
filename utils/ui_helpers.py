@@ -111,7 +111,8 @@ def inject_enhanced_form_styles():
     .stNumberInput > label,
     .stDateInput > label,
     .stTimeInput > label,
-    .stFileUploader > label {
+    .stFileUploader > label,
+    .stRadio > label {
         color: var(--text-primary) !important;
         font-weight: 500 !important;
         font-size: 0.95rem !important;
@@ -162,6 +163,96 @@ def inject_enhanced_form_styles():
     .stTextArea > div > div > p {
         color: var(--text-secondary) !important;
         font-size: 0.875rem !important;
+    }
+
+    /* ========================================
+       Comprehensive Dropdown Styling
+       ======================================== */
+
+    /* Base select styling */
+    [data-baseweb="select"],
+    [data-baseweb="select"] * {
+        color: var(--text-primary) !important;
+    }
+
+    /* Select control (the main input) */
+    [data-baseweb="select"] [data-baseweb="input"] {
+        background-color: var(--input-background) !important;
+    }
+
+    /* Dropdown menu container */
+    [data-baseweb="popover"] [data-baseweb="menu"],
+    ul[role="listbox"] {
+        background-color: var(--background-tertiary) !important;
+        border: 1px solid var(--border-color) !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+        max-height: 300px !important;
+        overflow-y: auto !important;
+    }
+
+    /* Dropdown options */
+    [data-baseweb="menu"] [role="option"],
+    li[role="option"] {
+        background-color: transparent !important;
+        color: var(--text-primary) !important;
+        padding: 0.5rem 1rem !important;
+        cursor: pointer !important;
+    }
+
+    /* Dropdown option hover */
+    [data-baseweb="menu"] [role="option"]:hover,
+    li[role="option"]:hover {
+        background-color: rgba(74, 158, 255, 0.15) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Selected dropdown option */
+    [data-baseweb="menu"] [role="option"][aria-selected="true"],
+    li[role="option"][aria-selected="true"] {
+        background-color: rgba(74, 158, 255, 0.25) !important;
+        color: var(--text-primary) !important;
+        font-weight: 500 !important;
+    }
+
+    /* Radio button options */
+    [role="radiogroup"] {
+        background-color: transparent !important;
+    }
+
+    [role="radiogroup"] label,
+    [role="radio"] + label {
+        color: var(--text-primary) !important;
+    }
+
+    /* Streamlit native select */
+    .stSelectbox select option {
+        background-color: var(--background-tertiary) !important;
+        color: var(--text-primary) !important;
+        padding: 0.5rem !important;
+    }
+
+    /* MultiSelect specific */
+    .stMultiSelect [data-baseweb="tag"] {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+    }
+
+    .stMultiSelect [data-baseweb="tag"] svg {
+        fill: white !important;
+    }
+
+    /* Ensure dropdown arrows are visible */
+    [data-baseweb="select"] svg,
+    .stSelectbox svg {
+        fill: var(--text-primary) !important;
+        opacity: 0.7;
+    }
+
+    /* Search input within dropdowns */
+    [data-baseweb="menu"] input {
+        background-color: var(--input-background) !important;
+        color: var(--text-primary) !important;
+        border: 1px solid var(--border-color) !important;
     }
     </style>
     """

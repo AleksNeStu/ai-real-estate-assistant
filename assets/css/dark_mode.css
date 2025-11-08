@@ -148,13 +148,71 @@ p, span, div, label {
     opacity: 0.7;
 }
 
-/* Select boxes */
+/* Select boxes and dropdowns */
 .stSelectbox select,
+.stSelectbox > div > div,
 .stMultiSelect > div > div {
     background-color: var(--input-background) !important;
     color: var(--text-primary) !important;
     border: 1px solid var(--input-border) !important;
     border-radius: 0.375rem;
+}
+
+/* Streamlit selectbox dropdown menu */
+.stSelectbox [data-baseweb="select"] > div {
+    background-color: var(--input-background) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Dropdown menu container */
+.stSelectbox ul[role="listbox"],
+.stMultiSelect ul[role="listbox"],
+[data-baseweb="menu"] {
+    background-color: var(--background-tertiary) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+/* Dropdown menu items */
+.stSelectbox li[role="option"],
+.stMultiSelect li[role="option"],
+[data-baseweb="menu"] li {
+    background-color: transparent !important;
+    color: var(--text-primary) !important;
+    padding: 0.5rem 1rem !important;
+}
+
+/* Dropdown menu items hover state */
+.stSelectbox li[role="option"]:hover,
+.stMultiSelect li[role="option"]:hover,
+[data-baseweb="menu"] li:hover {
+    background-color: var(--background-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Selected dropdown item */
+.stSelectbox li[role="option"][aria-selected="true"],
+.stMultiSelect li[role="option"][aria-selected="true"],
+[data-baseweb="menu"] li[aria-selected="true"] {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+/* Dropdown arrow/icon */
+.stSelectbox svg,
+.stMultiSelect svg {
+    fill: var(--text-primary) !important;
+}
+
+/* MultiSelect tags */
+.stMultiSelect [data-baseweb="tag"] {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+/* MultiSelect clear button */
+.stMultiSelect button[aria-label*="Clear"] {
+    color: var(--text-primary) !important;
 }
 
 /* Checkboxes and Radio Buttons */
@@ -167,6 +225,50 @@ p, span, div, label {
 .stCheckbox input[type="checkbox"],
 .stRadio input[type="radio"] {
     accent-color: var(--primary-color);
+}
+
+/* Additional dropdown styling for modern Streamlit */
+[data-baseweb="select"] {
+    background-color: var(--input-background) !important;
+}
+
+[data-baseweb="select"] > div {
+    background-color: var(--input-background) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--input-border) !important;
+}
+
+[data-baseweb="select"] input {
+    color: var(--text-primary) !important;
+}
+
+/* Dropdown popover */
+[data-baseweb="popover"] {
+    background-color: var(--background-tertiary) !important;
+}
+
+/* Radio and select option lists */
+[role="listbox"],
+[role="radiogroup"] {
+    background-color: var(--background-tertiary) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+/* Options within dropdowns */
+[role="option"],
+[role="radio"] {
+    color: var(--text-primary) !important;
+    background-color: transparent !important;
+}
+
+[role="option"]:hover,
+[role="radio"]:hover {
+    background-color: rgba(74, 158, 255, 0.1) !important;
+}
+
+/* Selected state */
+[aria-selected="true"] {
+    background-color: rgba(74, 158, 255, 0.2) !important;
 }
 
 /* ========================================
