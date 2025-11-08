@@ -1,102 +1,122 @@
 /*
  * AI Real Estate Assistant - Professional Theme System
- * Full support for light and dark themes with proper contrast
+ * Light theme: Clean and modern
+ * Dark theme: Monokai-inspired (comfortable for eyes)
  * WCAG 2.1 AA compliant
  */
 
 /* ========================================
-   Light Theme (Default)
+   Light Theme - Clean & Professional
    ======================================== */
 
 :root,
 [data-theme="light"],
 .stApp[data-theme="light"] {
-    /* Colors */
-    --primary-color: #1f77b4;
-    --primary-hover: #1565a8;
+    /* Primary colors */
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-light: #dbeafe;
 
     /* Backgrounds */
     --background-primary: #ffffff;
-    --background-secondary: #f5f7fa;
-    --background-tertiary: #e8ecf1;
+    --background-secondary: #f8fafc;
+    --background-tertiary: #f1f5f9;
+    --background-hover: #e2e8f0;
 
-    /* Text */
-    --text-primary: #1a1a1a;
-    --text-secondary: #4a4a4a;
-    --text-tertiary: #6b6b6b;
+    /* Text colors */
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #64748b;
+    --text-muted: #94a3b8;
 
     /* Borders */
-    --border-color: #d1d5db;
-    --border-hover: #9ca3af;
+    --border-color: #cbd5e1;
+    --border-hover: #94a3b8;
+    --border-focus: #2563eb;
 
     /* Inputs */
     --input-background: #ffffff;
-    --input-border: #d1d5db;
-    --input-focus: #1f77b4;
-    --input-text: #1a1a1a;
+    --input-border: #cbd5e1;
+    --input-text: #0f172a;
+    --input-placeholder: #94a3b8;
 
     /* Status colors */
-    --success-color: #10b981;
-    --warning-color: #f59e0b;
-    --error-color: #ef4444;
-    --info-color: #3b82f6;
+    --success-color: #059669;
+    --success-bg: #d1fae5;
+    --warning-color: #d97706;
+    --warning-bg: #fef3c7;
+    --error-color: #dc2626;
+    --error-bg: #fee2e2;
+    --info-color: #0284c7;
+    --info-bg: #e0f2fe;
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 /* ========================================
-   Dark Theme
+   Dark Theme - Monokai Inspired
    ======================================== */
 
 [data-theme="dark"],
 .stApp[data-theme="dark"] {
-    /* Colors */
-    --primary-color: #4a9eff;
-    --primary-hover: #3a8eef;
+    /* Primary colors - Monokai blue */
+    --primary-color: #66d9ef;
+    --primary-hover: #52c5db;
+    --primary-light: #1e3a44;
 
-    /* Backgrounds */
-    --background-primary: #0e1117;
-    --background-secondary: #1a1d24;
-    --background-tertiary: #262a33;
+    /* Backgrounds - Monokai palette */
+    --background-primary: #272822;
+    --background-secondary: #2d2e27;
+    --background-tertiary: #3a3b35;
+    --background-hover: #434440;
 
-    /* Text */
-    --text-primary: #fafafa;
-    --text-secondary: #e0e0e0;
-    --text-tertiary: #b0b0b0;
+    /* Text colors - Monokai */
+    --text-primary: #f8f8f2;
+    --text-secondary: #cfcfc2;
+    --text-tertiary: #a6a695;
+    --text-muted: #75715e;
 
     /* Borders */
-    --border-color: #3a3f4b;
-    --border-hover: #4a5568;
+    --border-color: #4a4b45;
+    --border-hover: #5a5b55;
+    --border-focus: #66d9ef;
 
     /* Inputs */
-    --input-background: #1a1d24;
-    --input-border: #3a3f4b;
-    --input-focus: #4a9eff;
-    --input-text: #fafafa;
+    --input-background: #3a3b35;
+    --input-border: #4a4b45;
+    --input-text: #f8f8f2;
+    --input-placeholder: #75715e;
 
-    /* Status colors */
-    --success-color: #4ade80;
-    --warning-color: #fb923c;
-    --error-color: #f87171;
-    --info-color: #60a5fa;
+    /* Status colors - Monokai palette */
+    --success-color: #a6e22e;
+    --success-bg: #2d3b1f;
+    --warning-color: #e6db74;
+    --warning-bg: #3b3a1f;
+    --error-color: #f92672;
+    --error-bg: #3b1f2d;
+    --info-color: #66d9ef;
+    --info-bg: #1f2d3b;
 
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    /* Shadows - softer in dark mode */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
 }
 
 /* ========================================
    Global Styles
    ======================================== */
 
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
 .stApp {
     background-color: var(--background-primary) !important;
     color: var(--text-primary) !important;
-    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body {
@@ -105,6 +125,7 @@ body {
 
 .main .block-container {
     background-color: var(--background-primary) !important;
+    padding: 2rem 1rem !important;
 }
 
 /* ========================================
@@ -115,29 +136,41 @@ h1, h2, h3, h4, h5, h6,
 .stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
 .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {
     color: var(--text-primary) !important;
+    font-weight: 600 !important;
 }
 
-p, span, div, label {
+p {
+    color: var(--text-secondary) !important;
+}
+
+span, div, label {
     color: var(--text-primary) !important;
+}
+
+.stMarkdown p {
+    color: var(--text-secondary) !important;
 }
 
 /* ========================================
    Form Labels
    ======================================== */
 
-.stTextInput label,
-.stTextArea label,
-.stSelectbox label,
-.stMultiSelect label,
-.stNumberInput label,
-.stDateInput label,
-.stTimeInput label,
-.stFileUploader label,
-.stRadio label,
-.stCheckbox label {
+.stTextInput > label,
+.stTextArea > label,
+.stSelectbox > label,
+.stMultiSelect > label,
+.stNumberInput > label,
+.stDateInput > label,
+.stTimeInput > label,
+.stFileUploader > label,
+.stRadio > label,
+.stCheckbox > label {
     color: var(--text-primary) !important;
-    font-weight: 500 !important;
-    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    margin-bottom: 0.5rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
 }
 
 /* ========================================
@@ -154,62 +187,91 @@ input[type="number"],
 textarea {
     background-color: var(--input-background) !important;
     color: var(--input-text) !important;
-    border: 1px solid var(--input-border) !important;
-    border-radius: 0.375rem !important;
+    border: 2px solid var(--input-border) !important;
+    border-radius: 0.5rem !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.938rem !important;
+}
+
+.stTextInput input:hover,
+.stTextArea textarea:hover,
+.stNumberInput input:hover {
+    border-color: var(--border-hover) !important;
 }
 
 .stTextInput input:focus,
 .stTextArea textarea:focus,
 .stNumberInput input:focus {
-    border-color: var(--input-focus) !important;
-    box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.15) !important;
+    border-color: var(--border-focus) !important;
+    box-shadow: 0 0 0 3px var(--primary-light) !important;
     outline: none !important;
 }
 
 input::placeholder,
 textarea::placeholder {
-    color: var(--text-tertiary) !important;
-    opacity: 0.6 !important;
+    color: var(--input-placeholder) !important;
+    opacity: 1 !important;
 }
 
 /* ========================================
-   Select Boxes & Dropdowns - FIXED
+   Select Boxes & Dropdowns - PERFECT FIX
    ======================================== */
 
-/* Select box main control */
+/* Select container */
+.stSelectbox,
+.stMultiSelect {
+    margin-bottom: 1rem;
+}
+
+/* Select control */
 .stSelectbox [data-baseweb="select"],
 .stMultiSelect [data-baseweb="select"] {
     background-color: var(--input-background) !important;
+    border-radius: 0.5rem !important;
 }
 
 .stSelectbox [data-baseweb="select"] > div,
 .stMultiSelect [data-baseweb="select"] > div {
     background-color: var(--input-background) !important;
-    border-color: var(--input-border) !important;
+    border: 2px solid var(--input-border) !important;
+    border-radius: 0.5rem !important;
+    min-height: 3rem !important;
 }
 
+.stSelectbox [data-baseweb="select"] > div:hover,
+.stMultiSelect [data-baseweb="select"] > div:hover {
+    border-color: var(--border-hover) !important;
+}
+
+/* Selected value text */
 .stSelectbox [data-baseweb="select"] input,
-.stMultiSelect [data-baseweb="select"] input {
+.stMultiSelect [data-baseweb="select"] input,
+.stSelectbox [data-baseweb="select"] > div > div,
+.stMultiSelect [data-baseweb="select"] > div > div {
     color: var(--input-text) !important;
 }
 
+/* Dropdown arrow */
 .stSelectbox [data-baseweb="select"] svg,
 .stMultiSelect [data-baseweb="select"] svg {
     fill: var(--text-primary) !important;
 }
 
-/* Dropdown popover container */
+/* Popover/Dropdown container */
 [data-baseweb="popover"] {
-    z-index: 9999 !important;
+    z-index: 999999 !important;
 }
 
 /* Dropdown menu */
-[data-baseweb="popover"] [data-baseweb="menu"],
+[data-baseweb="popover"] > div,
+[data-baseweb="menu"],
 ul[role="listbox"] {
     background-color: var(--background-tertiary) !important;
-    border: 1px solid var(--border-color) !important;
+    border: 2px solid var(--border-color) !important;
+    border-radius: 0.5rem !important;
     box-shadow: var(--shadow-lg) !important;
-    border-radius: 0.375rem !important;
+    margin-top: 0.25rem !important;
+    padding: 0.5rem !important;
 }
 
 /* Dropdown options */
@@ -217,13 +279,17 @@ ul[role="listbox"] {
 li[role="option"] {
     background-color: transparent !important;
     color: var(--text-primary) !important;
-    padding: 0.625rem 1rem !important;
+    padding: 0.75rem 1rem !important;
+    border-radius: 0.375rem !important;
+    margin-bottom: 0.25rem !important;
+    font-weight: 500 !important;
 }
 
-/* Dropdown option hover */
+/* Option hover */
 [data-baseweb="menu"] [role="option"]:hover,
 li[role="option"]:hover {
-    background-color: var(--background-secondary) !important;
+    background-color: var(--background-hover) !important;
+    color: var(--text-primary) !important;
 }
 
 /* Selected option */
@@ -231,42 +297,38 @@ li[role="option"]:hover {
 li[role="option"][aria-selected="true"] {
     background-color: var(--primary-color) !important;
     color: #ffffff !important;
+}
+
+/* MultiSelect tags */
+.stMultiSelect [data-baseweb="tag"] {
+    background-color: var(--primary-color) !important;
+    color: #ffffff !important;
+    border-radius: 0.375rem !important;
+    padding: 0.25rem 0.75rem !important;
     font-weight: 500 !important;
 }
 
-/* Native select element */
-.stSelectbox select,
-.stSelectbox select option {
-    background-color: var(--background-tertiary) !important;
-    color: var(--text-primary) !important;
-}
-
 /* ========================================
-   Radio Buttons
+   Radio Buttons & Checkboxes
    ======================================== */
 
-.stRadio [role="radiogroup"] {
-    background-color: transparent !important;
+.stRadio [role="radiogroup"],
+.stCheckbox {
+    padding: 0.5rem 0;
 }
 
-.stRadio label {
-    color: var(--text-primary) !important;
-}
-
-.stRadio input[type="radio"] {
-    accent-color: var(--primary-color) !important;
-}
-
-/* ========================================
-   Checkboxes
-   ======================================== */
-
+.stRadio label,
 .stCheckbox label {
     color: var(--text-primary) !important;
+    font-weight: 500 !important;
+    padding: 0.5rem 0 !important;
 }
 
+.stRadio input[type="radio"],
 .stCheckbox input[type="checkbox"] {
     accent-color: var(--primary-color) !important;
+    width: 1.25rem !important;
+    height: 1.25rem !important;
 }
 
 /* ========================================
@@ -277,66 +339,73 @@ li[role="option"][aria-selected="true"] {
     background-color: var(--primary-color) !important;
     color: #ffffff !important;
     border: none !important;
-    border-radius: 0.375rem !important;
-    font-weight: 500 !important;
+    border-radius: 0.5rem !important;
+    padding: 0.75rem 1.5rem !important;
+    font-weight: 600 !important;
+    font-size: 0.938rem !important;
     transition: all 0.2s ease !important;
+    box-shadow: var(--shadow-sm) !important;
 }
 
 .stButton button:hover {
     background-color: var(--primary-hover) !important;
-    transform: translateY(-1px);
+    transform: translateY(-2px) !important;
     box-shadow: var(--shadow-md) !important;
 }
 
-/* Secondary buttons */
+.stButton button:active {
+    transform: translateY(0) !important;
+}
+
 .stButton button[kind="secondary"] {
     background-color: var(--background-tertiary) !important;
     color: var(--text-primary) !important;
-    border: 1px solid var(--border-color) !important;
+    border: 2px solid var(--border-color) !important;
 }
 
 .stButton button[kind="secondary"]:hover {
-    background-color: var(--background-secondary) !important;
+    background-color: var(--background-hover) !important;
+    border-color: var(--border-hover) !important;
 }
 
 /* ========================================
-   Tabs - FIXED
+   Tabs - Beautiful Design
    ======================================== */
 
-/* Tab container */
+.stTabs {
+    margin-bottom: 1.5rem;
+}
+
 .stTabs [data-baseweb="tab-list"] {
     background-color: transparent !important;
     gap: 0.5rem !important;
     border-bottom: 2px solid var(--border-color) !important;
+    padding: 0 !important;
 }
 
-/* Individual tab */
 .stTabs [data-baseweb="tab"] {
     background-color: transparent !important;
     color: var(--text-secondary) !important;
     border: none !important;
-    padding: 0.75rem 1.5rem !important;
-    font-weight: 500 !important;
-    border-radius: 0.375rem 0.375rem 0 0 !important;
-    transition: all 0.2s ease !important;
+    padding: 0.875rem 1.5rem !important;
+    font-weight: 600 !important;
+    font-size: 0.938rem !important;
+    border-radius: 0.5rem 0.5rem 0 0 !important;
+    margin-bottom: -2px !important;
 }
 
-/* Tab hover */
 .stTabs [data-baseweb="tab"]:hover {
     background-color: var(--background-secondary) !important;
     color: var(--text-primary) !important;
 }
 
-/* Active tab */
 .stTabs [aria-selected="true"] {
     background-color: transparent !important;
     color: var(--primary-color) !important;
     border-bottom: 3px solid var(--primary-color) !important;
 }
 
-/* Tab content */
 .stTabs [data-baseweb="tab-panel"] {
-    background-color: transparent !important;
     padding: 1.5rem 0 !important;
 }
 
@@ -346,17 +415,18 @@ li[role="option"][aria-selected="true"] {
 
 [data-testid="stSidebar"] {
     background-color: var(--background-secondary) !important;
-    border-right: 1px solid var(--border-color) !important;
-}
-
-[data-testid="stSidebar"] * {
-    color: var(--text-primary) !important;
+    border-right: 2px solid var(--border-color) !important;
+    padding: 2rem 1rem !important;
 }
 
 [data-testid="stSidebar"] h1,
 [data-testid="stSidebar"] h2,
 [data-testid="stSidebar"] h3 {
     color: var(--text-primary) !important;
+}
+
+[data-testid="stSidebar"] .stMarkdown p {
+    color: var(--text-secondary) !important;
 }
 
 /* ========================================
@@ -366,60 +436,85 @@ li[role="option"][aria-selected="true"] {
 .streamlit-expanderHeader {
     background-color: var(--background-secondary) !important;
     color: var(--text-primary) !important;
-    border: 1px solid var(--border-color) !important;
+    border: 2px solid var(--border-color) !important;
+    border-radius: 0.5rem !important;
+    padding: 1rem !important;
+    font-weight: 600 !important;
+}
+
+.streamlit-expanderHeader:hover {
+    background-color: var(--background-hover) !important;
+    border-color: var(--border-hover) !important;
 }
 
 .streamlit-expanderContent {
     background-color: var(--background-secondary) !important;
-    border: 1px solid var(--border-color) !important;
+    border: 2px solid var(--border-color) !important;
     border-top: none !important;
+    border-radius: 0 0 0.5rem 0.5rem !important;
+    padding: 1rem !important;
 }
 
 /* ========================================
-   Metrics
+   Metrics & Cards
    ======================================== */
 
 [data-testid="stMetric"] {
     background-color: var(--background-secondary) !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: 0.5rem !important;
-    padding: 1rem !important;
+    border: 2px solid var(--border-color) !important;
+    border-radius: 0.75rem !important;
+    padding: 1.5rem !important;
+    box-shadow: var(--shadow-sm) !important;
 }
 
 [data-testid="stMetricLabel"] {
     color: var(--text-secondary) !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.025em !important;
 }
 
 [data-testid="stMetricValue"] {
     color: var(--text-primary) !important;
+    font-size: 2rem !important;
+    font-weight: 700 !important;
 }
 
 /* ========================================
-   Alerts
+   Alerts & Messages
    ======================================== */
 
 .stSuccess {
-    background-color: var(--background-secondary) !important;
+    background-color: var(--success-bg) !important;
     color: var(--success-color) !important;
     border-left: 4px solid var(--success-color) !important;
+    border-radius: 0.5rem !important;
+    padding: 1rem !important;
 }
 
 .stWarning {
-    background-color: var(--background-secondary) !important;
+    background-color: var(--warning-bg) !important;
     color: var(--warning-color) !important;
     border-left: 4px solid var(--warning-color) !important;
+    border-radius: 0.5rem !important;
+    padding: 1rem !important;
 }
 
 .stError {
-    background-color: var(--background-secondary) !important;
+    background-color: var(--error-bg) !important;
     color: var(--error-color) !important;
     border-left: 4px solid var(--error-color) !important;
+    border-radius: 0.5rem !important;
+    padding: 1rem !important;
 }
 
 .stInfo {
-    background-color: var(--background-secondary) !important;
+    background-color: var(--info-bg) !important;
     color: var(--info-color) !important;
     border-left: 4px solid var(--info-color) !important;
+    border-radius: 0.5rem !important;
+    padding: 1rem !important;
 }
 
 /* ========================================
@@ -428,31 +523,40 @@ li[role="option"][aria-selected="true"] {
 
 .dataframe {
     background-color: var(--background-secondary) !important;
-    color: var(--text-primary) !important;
-    border: 1px solid var(--border-color) !important;
+    border: 2px solid var(--border-color) !important;
+    border-radius: 0.5rem !important;
+    overflow: hidden !important;
 }
 
 .dataframe thead th {
     background-color: var(--background-tertiary) !important;
     color: var(--text-primary) !important;
+    font-weight: 600 !important;
+    padding: 0.75rem !important;
 }
 
 .dataframe tbody td {
     color: var(--text-primary) !important;
+    padding: 0.75rem !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+.dataframe tbody tr:hover {
+    background-color: var(--background-hover) !important;
 }
 
 /* ========================================
    Code Blocks
    ======================================== */
 
-.stCodeBlock {
-    background-color: var(--background-tertiary) !important;
-    border: 1px solid var(--border-color) !important;
-}
-
+.stCodeBlock,
 code {
     background-color: var(--background-tertiary) !important;
     color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 0.375rem !important;
+    padding: 0.25rem 0.5rem !important;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
 }
 
 /* ========================================
@@ -461,6 +565,7 @@ code {
 
 hr {
     border-color: var(--border-color) !important;
+    margin: 2rem 0 !important;
 }
 
 /* ========================================
@@ -470,10 +575,13 @@ hr {
 .stFileUploader {
     background-color: var(--background-secondary) !important;
     border: 2px dashed var(--border-color) !important;
+    border-radius: 0.75rem !important;
+    padding: 2rem !important;
 }
 
 .stFileUploader:hover {
     border-color: var(--primary-color) !important;
+    background-color: var(--background-hover) !important;
 }
 
 /* ========================================
@@ -481,17 +589,18 @@ hr {
    ======================================== */
 
 ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
 }
 
 ::-webkit-scrollbar-track {
     background: var(--background-secondary);
+    border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
     background: var(--border-color);
-    border-radius: 5px;
+    border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -506,29 +615,39 @@ hr {
     position: fixed;
     top: 1rem;
     right: 1rem;
-    z-index: 999999;
+    z-index: 9999999;
 }
 
 .theme-toggle-btn {
-    background-color: var(--background-secondary) !important;
-    border: 1px solid var(--border-color) !important;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)) !important;
+    border: none !important;
     border-radius: 50% !important;
-    width: 3rem !important;
-    height: 3rem !important;
+    width: 3.5rem !important;
+    height: 3.5rem !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     cursor: pointer !important;
     transition: all 0.3s ease !important;
-    box-shadow: var(--shadow-md) !important;
-    font-size: 1.5rem !important;
-    color: var(--text-primary) !important;
+    box-shadow: var(--shadow-lg) !important;
+    font-size: 1.75rem !important;
 }
 
 .theme-toggle-btn:hover {
-    transform: scale(1.1) !important;
-    box-shadow: var(--shadow-lg) !important;
-    background-color: var(--background-tertiary) !important;
+    transform: scale(1.1) rotate(15deg) !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3) !important;
+}
+
+.theme-toggle-btn:active {
+    transform: scale(0.95) !important;
+}
+
+/* ========================================
+   Loading Spinner
+   ======================================== */
+
+.stSpinner > div {
+    border-color: var(--primary-color) transparent transparent transparent !important;
 }
 
 /* ========================================
@@ -536,7 +655,7 @@ hr {
    ======================================== */
 
 *:focus-visible {
-    outline: 2px solid var(--primary-color) !important;
+    outline: 3px solid var(--primary-color) !important;
     outline-offset: 2px !important;
 }
 
@@ -552,14 +671,26 @@ hr {
    ======================================== */
 
 @media (max-width: 768px) {
+    .main .block-container {
+        padding: 1rem 0.5rem !important;
+    }
+
     #theme-toggle-container {
         top: 0.5rem;
         right: 0.5rem;
     }
 
     .theme-toggle-btn {
-        width: 2.5rem !important;
-        height: 2.5rem !important;
-        font-size: 1.25rem !important;
+        width: 3rem !important;
+        height: 3rem !important;
+        font-size: 1.5rem !important;
     }
+}
+
+/* ========================================
+   Fix Popper.js warnings
+   ======================================== */
+
+[data-baseweb="popover"] [data-popper-placement] {
+    will-change: transform;
 }
