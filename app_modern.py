@@ -1722,16 +1722,131 @@ def render_main_content():
 
 
 def apply_theme():
-    """
-    Apply custom CSS based on selected theme.
+    """Apply custom CSS based on selected theme."""
+    theme = st.session_state.get('theme', 'dark')
 
-    Note: Theme styling is now handled by external CSS files loaded via
-    load_and_inject_styles() in utils/ui_helpers.py. This function is
-    kept for backward compatibility but does nothing.
-    """
-    # All styling is now handled by assets/css/dark_mode.css
-    # which contains the modern light theme for real estate
-    pass
+    if theme == 'dark':
+        st.markdown("""
+        <style>
+            /* Dark theme colors - Comprehensive */
+            .stApp {
+                background-color: #0e1117 !important;
+                color: #fafafa !important;
+            }
+            .stSidebar {
+                background-color: #1a1d24 !important;
+            }
+            /* Sidebar text elements */
+            .stSidebar .stMarkdown, .stSidebar h1, .stSidebar h2, .stSidebar h3,
+            .stSidebar p, .stSidebar span, .stSidebar label, .stSidebar .stCaption {
+                color: #fafafa !important;
+            }
+            /* Tabs */
+            .stTabs [data-baseweb="tab-list"] {
+                gap: 8px;
+                background-color: #1a1d24 !important;
+            }
+            .stTabs [data-baseweb="tab"] {
+                background-color: #262730 !important;
+                color: #fafafa !important;
+                border-radius: 4px 4px 0px 0px;
+            }
+            .stTabs [aria-selected="true"] {
+                background-color: #3a3f4b !important;
+                color: #fafafa !important;
+            }
+            /* Form inputs */
+            .stTextInput>div>div>input, .stSelectbox>div>div>div,
+            .stTextArea>div>div>textarea, .stNumberInput>div>div>input {
+                background-color: #262730 !important;
+                color: #fafafa !important;
+                border-color: #3a3f4b !important;
+            }
+            /* Buttons */
+            .stButton>button {
+                background-color: #262730 !important;
+                color: #fafafa !important;
+                border: 1px solid #3a3f4b !important;
+            }
+            .stButton>button:hover {
+                background-color: #3a3f4b !important;
+                border: 1px solid #4a4f5b !important;
+            }
+            /* All text elements */
+            .stMarkdown, .stMarkdown p, .stMarkdown span, .stMarkdown li {
+                color: #fafafa !important;
+            }
+            /* Chat messages */
+            .stChatMessage {
+                background-color: #1a1d24 !important;
+                color: #fafafa !important;
+            }
+            /* Metrics - comprehensive visibility */
+            div[data-testid="stMetric"] {
+                background-color: #1a1d24 !important;
+            }
+            div[data-testid="stMetricValue"], div[data-testid="stMetricLabel"],
+            div[data-testid="stMetricDelta"], [data-testid="stMetric"] label,
+            [data-testid="stMetric"] p, [data-testid="stMetric"] span,
+            [data-testid="stMetric"] div {
+                color: #fafafa !important;
+            }
+            /* Expanders */
+            .stExpander {
+                background-color: #262730 !important;
+                border-color: #3a3f4b !important;
+            }
+            .stExpander p, .stExpander span, .stExpander label {
+                color: #fafafa !important;
+            }
+            /* Headers */
+            h1, h2, h3, h4, h5, h6 {
+                color: #fafafa !important;
+            }
+            /* Form controls */
+            .stRadio label, .stCheckbox label {
+                color: #fafafa !important;
+            }
+            .stSlider label, .stSlider p {
+                color: #fafafa !important;
+            }
+            /* Header bar */
+            [data-testid="stHeader"] {
+                background-color: #0e1117 !important;
+            }
+            /* Captions */
+            .stCaption {
+                color: #b0b0b0 !important;
+            }
+            /* Alerts */
+            .stAlert {
+                background-color: #262730 !important;
+                color: #fafafa !important;
+            }
+            /* Dataframes */
+            .stDataFrame {
+                color: #fafafa !important;
+            }
+            /* Multiselect */
+            .stMultiSelect label {
+                color: #fafafa !important;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+    else:
+        # Light theme (default Streamlit theme)
+        st.markdown("""
+        <style>
+            /* Light theme colors (enhanced) */
+            .stApp {
+                background-color: #ffffff;
+                color: #31333F;
+            }
+            .stSidebar {
+                background-color: #f0f2f6;
+            }
+        </style>
+        """, unsafe_allow_html=True)
 
 
 def main():
