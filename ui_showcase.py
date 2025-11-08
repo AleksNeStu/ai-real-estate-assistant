@@ -44,7 +44,7 @@ st.markdown("---")
 st.header("Statistics Display")
 display_stats_row([
     {"value": "1,868", "label": "Total Properties"},
-    {"value": "$4,250", "label": "Avg Monthly Rent"},
+    {"value": "$425K", "label": "Average Price"},
     {"value": "12", "label": "Cities Covered"},
     {"value": "4.8★", "label": "User Rating"}
 ])
@@ -81,11 +81,11 @@ display_gold_divider()
 # Property Cards
 st.header("Property Cards")
 
-# Create sample properties (using rental prices)
+# Create sample properties
 sample_properties = [
     Property(
         city="Warsaw",
-        price=4500,
+        price=450000,
         rooms=3,
         bathrooms=2,
         area_sqm=85,
@@ -97,7 +97,7 @@ sample_properties = [
     ),
     Property(
         city="Krakow",
-        price=3800,
+        price=380000,
         rooms=4,
         bathrooms=2,
         area_sqm=110,
@@ -109,7 +109,7 @@ sample_properties = [
     ),
     Property(
         city="Gdansk",
-        price=5200,
+        price=520000,
         rooms=2,
         bathrooms=1,
         area_sqm=65,
@@ -153,15 +153,15 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("Price Comparison Badges")
-    st.markdown(create_price_badge(3500, 4000), unsafe_allow_html=True)
+    st.markdown(create_price_badge(350000, 400000), unsafe_allow_html=True)
     st.caption("Below Market Average")
     st.markdown("<br>", unsafe_allow_html=True)
 
-    st.markdown(create_price_badge(4200, 4000), unsafe_allow_html=True)
+    st.markdown(create_price_badge(420000, 400000), unsafe_allow_html=True)
     st.caption("Market Average")
     st.markdown("<br>", unsafe_allow_html=True)
 
-    st.markdown(create_price_badge(5000, 4000), unsafe_allow_html=True)
+    st.markdown(create_price_badge(500000, 400000), unsafe_allow_html=True)
     st.caption("Above Market Average")
 
 with col2:
@@ -191,10 +191,10 @@ luxury_content = """
 <p style="color: var(--text-medium); line-height: 1.6;">
     This exceptional property features panoramic city views,
     state-of-the-art amenities, and unparalleled luxury finishes.
-    Available only to pre-qualified tenants.
+    Available only to pre-qualified buyers.
 </p>
 <div style="margin-top: 1.5rem;">
-    <span class="property-price" style="margin: 0;">$12,500/mo</span>
+    <span class="property-price" style="margin: 0;">$1,250,000</span>
 </div>
 """
 
