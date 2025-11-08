@@ -47,7 +47,10 @@ from agents.recommendation_engine import create_recommendation_engine
 
 # Phase 3 imports
 from analytics import MarketInsights, SessionTracker, EventType
-from utils import PropertyExporter, ExportFormat, SavedSearchManager
+from utils import (
+    PropertyExporter, ExportFormat, SavedSearchManager,
+    load_and_inject_styles, inject_enhanced_form_styles, inject_tailwind_cdn
+)
 from ui.comparison_viz import PropertyComparison, display_comparison_ui, display_market_insights_ui
 
 # Phase 5 imports
@@ -81,6 +84,11 @@ st.set_page_config(
     layout=settings.page_layout,
     initial_sidebar_state=settings.initial_sidebar_state,
 )
+
+# Load and inject custom styles for dark mode and modern UI
+load_and_inject_styles()
+inject_enhanced_form_styles()
+inject_tailwind_cdn()
 
 
 def initialize_session_state():

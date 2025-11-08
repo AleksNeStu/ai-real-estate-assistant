@@ -167,13 +167,59 @@ cython_debug/
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
-/.idea/
-/.github/
-/.github/
+.idea/
+
+# IDE and Editor files
+.vscode/
+.history/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Temporary files
 tmp/
+temp/
+*.tmp
+*.bak
 *.pkl
-/.vscode/
-/.history/
-/.github/
-/.devcontainer/
+
+# Node modules (if using any Node.js tools)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build artifacts
+*.min.css
+*.min.js
+dist/
+build/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Backup files
+*.backup
+*~
+
+# Logs and databases
+*.sqlite
+*.sqlite3
+*.db
+
+# Generated files
+*.generated.*
+
+# Large data files (optional - uncomment if needed)
+# *.csv
+# *.parquet
+# *.feather
+
+# Assets cache (keep source files, ignore compiled/minified)
+# assets/**/*.min.*
+
+# Keep important directories but ignore their contents
+.claude/
+!.claude/settings.local.json

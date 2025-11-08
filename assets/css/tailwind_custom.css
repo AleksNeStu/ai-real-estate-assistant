@@ -1,0 +1,351 @@
+/**
+ * Tailwind CSS Custom Configuration for AI Real Estate Assistant
+ * Extends Tailwind with custom utilities and components
+ */
+
+/* Import Tailwind base, components, and utilities */
+@import url('https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css');
+
+/* ========================================
+   Custom Utility Classes
+   ======================================== */
+
+/* Container utilities */
+.container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Card components */
+.card {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700;
+}
+
+.card-header {
+    @apply text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100;
+}
+
+.card-body {
+    @apply text-gray-700 dark:text-gray-300;
+}
+
+/* Button utilities */
+.btn {
+    @apply px-4 py-2 rounded-md font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600;
+}
+
+.btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-900 focus:ring-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100;
+}
+
+.btn-success {
+    @apply bg-green-600 hover:bg-green-700 text-white focus:ring-green-500 dark:bg-green-500 dark:hover:bg-green-600;
+}
+
+.btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 dark:bg-red-500 dark:hover:bg-red-600;
+}
+
+/* Form utilities */
+.form-input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
+           focus:ring-blue-500 focus:border-blue-500
+           dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100
+           dark:focus:ring-blue-400 dark:focus:border-blue-400;
+}
+
+.form-label {
+    @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2;
+}
+
+.form-help {
+    @apply mt-1 text-sm text-gray-500 dark:text-gray-400;
+}
+
+.form-error {
+    @apply mt-1 text-sm text-red-600 dark:text-red-400;
+}
+
+/* Badge components */
+.badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-primary {
+    @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200;
+}
+
+.badge-success {
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+}
+
+.badge-warning {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
+}
+
+.badge-danger {
+    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+}
+
+/* Alert components */
+.alert {
+    @apply p-4 rounded-md mb-4;
+}
+
+.alert-info {
+    @apply bg-blue-50 border-l-4 border-blue-400 text-blue-700
+           dark:bg-blue-900 dark:border-blue-500 dark:text-blue-200;
+}
+
+.alert-success {
+    @apply bg-green-50 border-l-4 border-green-400 text-green-700
+           dark:bg-green-900 dark:border-green-500 dark:text-green-200;
+}
+
+.alert-warning {
+    @apply bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700
+           dark:bg-yellow-900 dark:border-yellow-500 dark:text-yellow-200;
+}
+
+.alert-error {
+    @apply bg-red-50 border-l-4 border-red-400 text-red-700
+           dark:bg-red-900 dark:border-red-500 dark:text-red-200;
+}
+
+/* Typography utilities */
+.heading-1 {
+    @apply text-4xl font-bold text-gray-900 dark:text-gray-100;
+}
+
+.heading-2 {
+    @apply text-3xl font-bold text-gray-900 dark:text-gray-100;
+}
+
+.heading-3 {
+    @apply text-2xl font-semibold text-gray-900 dark:text-gray-100;
+}
+
+.heading-4 {
+    @apply text-xl font-semibold text-gray-900 dark:text-gray-100;
+}
+
+.text-body {
+    @apply text-base text-gray-700 dark:text-gray-300;
+}
+
+.text-muted {
+    @apply text-sm text-gray-500 dark:text-gray-400;
+}
+
+/* Layout utilities */
+.section {
+    @apply py-8;
+}
+
+.divider {
+    @apply border-t border-gray-200 dark:border-gray-700 my-6;
+}
+
+/* Grid utilities for property cards */
+.property-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+}
+
+/* Responsive utilities */
+.responsive-container {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Shadow utilities with dark mode support */
+.shadow-custom {
+    @apply shadow-lg dark:shadow-2xl;
+}
+
+/* Transition utilities */
+.transition-custom {
+    @apply transition-all duration-300 ease-in-out;
+}
+
+/* ========================================
+   Component-Specific Styles
+   ======================================== */
+
+/* Property card component */
+.property-card {
+    @apply bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md hover:shadow-xl
+           transition-shadow duration-300 border border-gray-200 dark:border-gray-700;
+}
+
+.property-card-image {
+    @apply w-full h-48 object-cover;
+}
+
+.property-card-content {
+    @apply p-6;
+}
+
+.property-card-title {
+    @apply text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2;
+}
+
+.property-card-description {
+    @apply text-sm text-gray-600 dark:text-gray-400 mb-4;
+}
+
+.property-card-price {
+    @apply text-2xl font-bold text-blue-600 dark:text-blue-400;
+}
+
+/* Metric card component */
+.metric-card {
+    @apply bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-900
+           rounded-lg p-6 border border-blue-200 dark:border-gray-700;
+}
+
+.metric-label {
+    @apply text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider;
+}
+
+.metric-value {
+    @apply text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2;
+}
+
+.metric-change {
+    @apply text-sm font-medium mt-2;
+}
+
+.metric-change-positive {
+    @apply text-green-600 dark:text-green-400;
+}
+
+.metric-change-negative {
+    @apply text-red-600 dark:text-red-400;
+}
+
+/* Table utilities */
+.table-custom {
+    @apply min-w-full divide-y divide-gray-200 dark:divide-gray-700;
+}
+
+.table-header {
+    @apply bg-gray-50 dark:bg-gray-800;
+}
+
+.table-header-cell {
+    @apply px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider;
+}
+
+.table-body {
+    @apply bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800;
+}
+
+.table-cell {
+    @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100;
+}
+
+/* Loading states */
+.skeleton {
+    @apply animate-pulse bg-gray-200 dark:bg-gray-700 rounded;
+}
+
+.skeleton-text {
+    @apply h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4;
+}
+
+.skeleton-circle {
+    @apply rounded-full bg-gray-200 dark:bg-gray-700;
+}
+
+/* ========================================
+   Accessibility Utilities
+   ======================================== */
+
+/* Screen reader only */
+.sr-only {
+    @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+}
+
+/* Focus visible */
+.focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400;
+}
+
+/* ========================================
+   Animation Utilities
+   ======================================== */
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.3s ease-in-out;
+}
+
+@keyframes slide-in {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.animate-slide-in {
+    animation: slide-in 0.3s ease-in-out;
+}
+
+/* ========================================
+   Responsive Design Breakpoints
+   ======================================== */
+
+/* Mobile-first approach with Tailwind's breakpoints:
+   - sm: 640px
+   - md: 768px
+   - lg: 1024px
+   - xl: 1280px
+   - 2xl: 1536px
+*/
+
+/* Hide on mobile */
+@media (max-width: 640px) {
+    .hide-mobile {
+        display: none;
+    }
+}
+
+/* Hide on desktop */
+@media (min-width: 641px) {
+    .hide-desktop {
+        display: none;
+    }
+}
+
+/* ========================================
+   Print Styles
+   ======================================== */
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    .print-only {
+        display: block !important;
+    }
+
+    body {
+        background: white;
+        color: black;
+    }
+}
