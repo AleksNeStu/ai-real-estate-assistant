@@ -14,6 +14,18 @@ from .ui_helpers import (
     create_badge,
     add_vertical_space
 )
+from .property_display import (
+    display_property_card,
+    display_property_simple,
+    display_property_grid,
+    display_hero_section,
+    display_feature_highlight,
+    display_stats_row,
+    display_gold_divider,
+    display_luxury_card,
+    create_price_badge,
+    create_status_badge
+)
 
 __all__ = [
     'PropertyExporter',
@@ -29,5 +41,16 @@ __all__ = [
     'create_info_box',
     'create_card',
     'create_badge',
-    'add_vertical_space'
+    'add_vertical_space',
+    # Property display utilities
+    'display_property_card',
+    'display_property_simple',
+    'display_property_grid',
+    'display_hero_section',
+    'display_feature_highlight',
+    'display_stats_row',
+    'display_gold_divider',
+    'display_luxury_card',
+    'create_price_badge',
+    'create_status_badge'
 ]
