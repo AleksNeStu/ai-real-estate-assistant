@@ -16,6 +16,7 @@
     --primary-color: #2563eb;
     --primary-hover: #1d4ed8;
     --primary-light: #dbeafe;
+    --primary-text: #ffffff;  /* White text on dark blue primary color */
 
     /* Backgrounds */
     --background-primary: #ffffff;
@@ -66,6 +67,7 @@
     --primary-color: #66d9ef;
     --primary-hover: #52c5db;
     --primary-light: #1e3a44;
+    --primary-text: #0f172a;  /* Dark text on light blue primary color */
 
     /* Backgrounds - Monokai palette */
     --background-primary: #272822;
@@ -296,13 +298,13 @@ li[role="option"]:hover {
 [data-baseweb="menu"] [role="option"][aria-selected="true"],
 li[role="option"][aria-selected="true"] {
     background-color: var(--primary-color) !important;
-    color: #ffffff !important;
+    color: var(--primary-text) !important;
 }
 
 /* MultiSelect tags */
 .stMultiSelect [data-baseweb="tag"] {
     background-color: var(--primary-color) !important;
-    color: #ffffff !important;
+    color: var(--primary-text) !important;
     border-radius: 0.375rem !important;
     padding: 0.25rem 0.75rem !important;
     font-weight: 500 !important;
@@ -337,7 +339,7 @@ li[role="option"][aria-selected="true"] {
 
 .stButton button {
     background-color: var(--primary-color) !important;
-    color: #ffffff !important;
+    color: var(--primary-text) !important;
     border: none !important;
     border-radius: 0.5rem !important;
     padding: 0.75rem 1.5rem !important;
