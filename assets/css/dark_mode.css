@@ -418,7 +418,7 @@ li[role="option"][aria-selected="true"] {
 [data-testid="stSidebar"] {
     background-color: var(--background-secondary) !important;
     border-right: 2px solid var(--border-color) !important;
-    padding: 2rem 1rem !important;
+    padding: 1rem 0.75rem !important; /* compact sidebar */
 }
 
 [data-testid="stSidebar"] h1,
@@ -429,6 +429,32 @@ li[role="option"][aria-selected="true"] {
 
 [data-testid="stSidebar"] .stMarkdown p {
     color: var(--text-secondary) !important;
+}
+
+/* Compact inner container */
+[data-testid="stSidebar"] .block-container,
+[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+    padding: 0.75rem !important;
+}
+
+/* Reduce vertical spacing between sidebar elements */
+[data-testid="stSidebar"] .stSelectbox,
+[data-testid="stSidebar"] .stMultiSelect,
+[data-testid="stSidebar"] .stTextInput,
+[data-testid="stSidebar"] .stNumberInput,
+[data-testid="stSidebar"] .stRadio,
+[data-testid="stSidebar"] .stCheckbox {
+    margin-bottom: 0.5rem !important;
+}
+
+/* Smaller controls for compact layout */
+[data-testid="stSidebar"] [data-baseweb="select"] > div {
+    min-height: 2.5rem !important;
+}
+
+[data-testid="stSidebar"] .stButton button {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem !important;
 }
 
 /* ========================================

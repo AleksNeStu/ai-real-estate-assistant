@@ -19,8 +19,8 @@
             return stored;
         }
 
-        // Default to dark theme
-        return 'dark';
+        // Default to light theme
+        return 'light';
     }
 
     /**

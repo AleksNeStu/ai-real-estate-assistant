@@ -165,7 +165,8 @@ def initialize_session_state():
 
     # Theme support
     if "theme" not in st.session_state:
-        st.session_state.theme = "dark"
+        # Default to light theme
+        st.session_state.theme = "light"
 
 
 def render_sidebar():
@@ -175,79 +176,78 @@ def render_sidebar():
         st.title(f"{settings.app_icon} {get_text('app_title', lang)}")
         st.caption(f"{get_text('version', lang)} {settings.version}")
 
+        # Compact preferences: Language + Theme
+        with st.expander("⚙️ Preferences", expanded=False):
+            languages = get_available_languages()
+            theme_options = {
+                "light": get_text('light_theme', lang),
+                "dark": get_text('dark_theme', lang)
+            }
+
+            col1, col2 = st.columns(2)
+            with col1:
+                selected_lang = st.selectbox(
+                    get_text('language', lang),
+                    options=list(languages.keys()),
+                    format_func=lambda x: languages[x],
+                    index=list(languages.keys()).index(st.session_state.language),
+                    key="language_selector",
+                    label_visibility="collapsed"
+                )
+            with col2:
+                selected_theme = st.selectbox(
+                    get_text('theme', lang),
+                    options=list(theme_options.keys()),
+                    format_func=lambda x: theme_options[x],
+                    index=list(theme_options.keys()).index(st.session_state.theme),
+                    key="theme_selector",
+                    label_visibility="collapsed"
+                )
+
+            rerun_needed = False
+            if selected_lang != st.session_state.language:
+                st.session_state.language = selected_lang
+                rerun_needed = True
+            if selected_theme != st.session_state.theme:
+                st.session_state.theme = selected_theme
+                rerun_needed = True
+            if rerun_needed:
+                st.rerun()
+
         st.divider()
 
-        # Language Selection
-        st.subheader(f"🌍 {get_text('language', lang)}")
-        languages = get_available_languages()
-        selected_lang = st.selectbox(
-            get_text('language', lang),
-            options=list(languages.keys()),
-            format_func=lambda x: languages[x],
-            index=list(languages.keys()).index(st.session_state.language),
-            key="language_selector",
-            label_visibility="collapsed"
-        )
-        if selected_lang != st.session_state.language:
-            st.session_state.language = selected_lang
-            st.rerun()
+        # Model Provider Selection (compact grouping)
+        with st.expander(f"🧩 {get_text('model_config', lang)}", expanded=False):
+            # Get available providers
+            providers = ModelProviderFactory.list_providers()
+            provider_display = {
+                "openai": "OpenAI",
+                "anthropic": "Anthropic (Claude)",
+                "google": "Google (Gemini)",
+                "grok": "Grok (xAI)",
+                "deepseek": "DeepSeek",
+                "ollama": "Ollama (Local)",
+            }
 
-        st.divider()
+            # Auto-select Ollama if available and running (default for local models)
+            default_provider_index = 0
+            if "ollama" in providers and "selected_provider" not in st.session_state:
+                ollama_status = OllamaDetector.get_status()
+                if ollama_status.is_running and ollama_status.available_models:
+                    default_provider_index = providers.index("ollama")
+                    st.info("ℹ️ Ollama detected and set as default provider (free local AI models)")
 
-        # Theme Selection
-        st.subheader(f"🎨 {get_text('theme', lang)}")
-        theme_options = {
-            "light": get_text('light_theme', lang),
-            "dark": get_text('dark_theme', lang)
-        }
-        selected_theme = st.selectbox(
-            get_text('theme', lang),
-            options=list(theme_options.keys()),
-            format_func=lambda x: theme_options[x],
-            index=list(theme_options.keys()).index(st.session_state.theme),
-            key="theme_selector",
-            label_visibility="collapsed"
-        )
-        if selected_theme != st.session_state.theme:
-            st.session_state.theme = selected_theme
-            st.rerun()
+            selected_provider = st.selectbox(
+                get_text("provider", lang),
+                options=providers,
+                format_func=lambda x: provider_display.get(x, x),
+                index=default_provider_index,
+                key="provider_select"
+            )
 
-        st.divider()
+            st.session_state.selected_provider = selected_provider
 
-        # Model Provider Selection
-        st.subheader(f"🤖 {get_text('model_config', lang)}")
-
-        # Get available providers
-        providers = ModelProviderFactory.list_providers()
-        provider_display = {
-            "openai": "OpenAI",
-            "anthropic": "Anthropic (Claude)",
-            "google": "Google (Gemini)",
-            "grok": "Grok (xAI)",
-            "deepseek": "DeepSeek",
-            "ollama": "Ollama (Local)",
-        }
-
-        # Auto-select Ollama if available and running (default for local models)
-        default_provider_index = 0
-        if "ollama" in providers and "selected_provider" not in st.session_state:
-            ollama_status = OllamaDetector.get_status()
-            if ollama_status.is_running and ollama_status.available_models:
-                default_provider_index = providers.index("ollama")
-                st.info("ℹ️ Ollama detected and set as default provider (free local AI models)")
-
-        selected_provider = st.selectbox(
-            get_text("provider", lang),
-            options=providers,
-            format_func=lambda x: provider_display.get(x, x),
-            index=default_provider_index,
-            key="provider_select"
-        )
-
-        st.session_state.selected_provider = selected_provider
-
-        # Get provider instance
-        try:
+            # Get provider instance
             provider = ModelProviderFactory.get_provider(selected_provider)
 
             # Ollama-specific: Detection and Installation Guidance
@@ -424,6 +424,8 @@ def render_sidebar():
                 if 'recommended_for' in info:
                     st.write(f"**{get_text('best_for', lang)}:**", ", ".join(info['recommended_for']))
 
+            
+
             # Advanced settings
             with st.expander(f"⚙️ {get_text('advanced_settings', lang)}"):
                 temperature = st.slider(
@@ -480,9 +482,6 @@ def render_sidebar():
 
                 if use_hybrid_agent:
                     st.caption(f"✨ {get_text('agent_tools', lang)}")
-
-        except Exception as e:
-            st.error(f"Error configuring provider: {e}")
 
         st.divider()
 
