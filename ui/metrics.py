@@ -149,13 +149,13 @@ def display_stat_box(
     '>
         {icon_html}
         <div style='margin-top: 0.5rem;'>
-            <div style='font-size: 0.875rem; color: #666; font-weight: 500;'>
+            <div style='font-size: 0.875rem; color: var(--text-secondary); font-weight: 500;'>
                 {title}
             </div>
-            <div style='font-size: 2rem; font-weight: 700; color: #222; margin-top: 0.25rem;'>
+            <div style='font-size: 2rem; font-weight: 700; color: var(--text-primary); margin-top: 0.25rem;'>
                 {value}
             </div>
-            {f"<div style='font-size: 0.875rem; color: #666; margin-top: 0.25rem;'>{subtitle}</div>" if subtitle else ""}
+            {f"<div style='font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;'>{subtitle}</div>" if subtitle else ""}
         </div>
     </div>
     """

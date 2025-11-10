@@ -293,7 +293,7 @@ def _display_property_card(prop: Property, index: int):
         <div style="margin-bottom: 8px;">
             <strong>📍 {prop.city}</strong>
         </div>
-        <div style="font-size: 14px; color: #666;">
+        <div style="font-size: 14px; color: var(--text-secondary);">
             🏠 {prop.property_type}<br>
             🛏️ {prop.rooms} bed | 🚿 {prop.bathrooms} bath<br>
             {f'📐 {prop.area_sqm} sqm' if prop.area_sqm else ''}
