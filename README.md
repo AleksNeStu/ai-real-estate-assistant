@@ -92,7 +92,7 @@ docker-compose up -d
 ### 💻 Option 2: Local Installation
 
 #### Prerequisites
-- Python 3.11 or higher
+- Python 3.11 or higher (use Python 3.11 to create the virtual environment and install dependencies)
 - pip package manager
 - Git
 - At least one LLM API key (OpenAI, Anthropic, or Google) OR Ollama installed locally
@@ -106,16 +106,12 @@ git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
 cd ai-real-estate-assistant
 
 # Create virtual environment
-python -m venv venv
+py -3.11 -m venv venv
 .\venv\Scripts\Activate.ps1
 
 # Install dependencies
-pip install -r requirements.txt
-
-# Set API keys (for current session)
-$env:OPENAI_API_KEY="your-openai-key"
-$env:ANTHROPIC_API_KEY="your-anthropic-key"  # optional
-$env:GOOGLE_API_KEY="your-google-key"        # optional
+python -m pip install --upgrade pip wheel
+python -m pip install -r requirements.txt
 
 # Run the app
 streamlit run app_modern.py
@@ -123,23 +119,20 @@ streamlit run app_modern.py
 
 **Command Prompt (CMD)**:
 ```cmd
+REM Create virtual environment with Python 3.11
+py -3.11 -m venv venv
 REM Activate virtual environment
 venv\Scripts\activate.bat
 
-REM Set API keys
-set OPENAI_API_KEY=your-openai-key
-set ANTHROPIC_API_KEY=your-anthropic-key
-set GOOGLE_API_KEY=your-google-key
+REM Upgrade pip and install dependencies
+python -m pip install --upgrade pip wheel
+python -m pip install -r requirements.txt
 
 REM Run the app
 streamlit run app_modern.py
 ```
 
-**Persistent API Keys (Windows)**:
-```powershell
-# Set permanently in User Environment Variables
-[System.Environment]::SetEnvironmentVariable("OPENAI_API_KEY", "your-key", "User")
-```
+ 
 
 #### macOS
 
@@ -148,35 +141,24 @@ streamlit run app_modern.py
 git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
 cd ai-real-estate-assistant
 
-# Create virtual environment
-python3 -m venv venv
+# Ensure Python 3.11 is installed (Homebrew)
+brew install python@3.11
+echo 'export PATH="/opt/homebrew/opt/python@3.11/bin:$PATH"' >> ~/.zprofile
+source ~/.zprofile
+
+# Create virtual environment with Python 3.11
+python3.11 -m venv venv
 source venv/bin/activate
 
 # Install dependencies
-pip install -r requirements.txt
-
-# Set API keys (for current session)
-export OPENAI_API_KEY="your-openai-key"
-export ANTHROPIC_API_KEY="your-anthropic-key"  # optional
-export GOOGLE_API_KEY="your-google-key"        # optional
+python -m pip install --upgrade pip wheel
+python -m pip install -r requirements.txt
 
 # Run the app
 streamlit run app_modern.py
 ```
 
-**Persistent API Keys (macOS)**:
-
-For **bash** (~/.bash_profile):
-```bash
-echo 'export OPENAI_API_KEY="your-openai-key"' >> ~/.bash_profile
-source ~/.bash_profile
-```
-
-For **zsh** (~/.zshrc):
-```bash
-echo 'export OPENAI_API_KEY="your-openai-key"' >> ~/.zshrc
-source ~/.zshrc
-```
+ 
 
 #### Linux (Ubuntu/Debian)
 
@@ -184,7 +166,7 @@ source ~/.zshrc
 # Update system
 sudo apt update && sudo apt upgrade -y
 
-# Install Python 3.11+ if needed
+# Install Python 3.11 and essentials
 sudo apt install python3.11 python3.11-venv python3-pip git -y
 
 # Clone repository
@@ -196,22 +178,54 @@ python3.11 -m venv venv
 source venv/bin/activate
 
 # Install dependencies
-pip install -r requirements.txt
-
-# Set API keys (for current session)
-export OPENAI_API_KEY="your-openai-key"
-export ANTHROPIC_API_KEY="your-anthropic-key"  # optional
-export GOOGLE_API_KEY="your-google-key"        # optional
+python -m pip install --upgrade pip wheel
+python -m pip install -r requirements.txt
 
 # Run the app
 streamlit run app_modern.py
 ```
 
-**Persistent API Keys (Linux)**:
-```bash
-# Add to ~/.bashrc or ~/.zshrc
-echo 'export OPENAI_API_KEY="your-openai-key"' >> ~/.bashrc
-source ~/.bashrc
+ 
+
+#### Configure API Keys (all platforms)
+- Required: At least one of OPENAI_API_KEY, ANTHROPIC_API_KEY, GOOGLE_API_KEY
+- Optional: OLLAMA_BASE_URL for local models
+
+Set for current session:
+- Windows (PowerShell):
+  ```powershell
+  $env:OPENAI_API_KEY="your-openai-key"
+  $env:ANTHROPIC_API_KEY="your-anthropic-key"
+  $env:GOOGLE_API_KEY="your-google-key"
+  ```
+- macOS/Linux:
+  ```bash
+  export OPENAI_API_KEY="your-openai-key"
+  export ANTHROPIC_API_KEY="your-anthropic-key"
+  export GOOGLE_API_KEY="your-google-key"
+  ```
+
+Set persistently:
+- Windows (User Environment Variables):
+  ```powershell
+  [System.Environment]::SetEnvironmentVariable("OPENAI_API_KEY", "your-key", "User")
+  [System.Environment]::SetEnvironmentVariable("ANTHROPIC_API_KEY", "your-key", "User")
+  [System.Environment]::SetEnvironmentVariable("GOOGLE_API_KEY", "your-key", "User")
+  ```
+- macOS (zsh) and Linux:
+  ```bash
+  echo 'export OPENAI_API_KEY="your-key"' >> ~/.zshrc
+  echo 'export ANTHROPIC_API_KEY="your-key"' >> ~/.zshrc
+  echo 'export GOOGLE_API_KEY="your-key"' >> ~/.zshrc
+  source ~/.zshrc
+  ```
+
+Alternative: `.streamlit/secrets.toml`
+```toml
+# Copy .streamlit/secrets.toml.example to .streamlit/secrets.toml and fill values
+OPENAI_API_KEY = "sk-..."
+ANTHROPIC_API_KEY = "sk-ant-..."
+GOOGLE_API_KEY = "AI-..."
 ```
 
 ---
