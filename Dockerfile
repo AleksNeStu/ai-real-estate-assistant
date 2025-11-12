@@ -14,8 +14,13 @@ RUN apt-get update && apt-get install -y \
 # Copy requirements first for better caching
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies in stages for better compatibility
+# Install critical packages with C extensions first
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir "numpy>=1.24.0,<2.0.0" && \
+    pip install --no-cache-dir "pydantic-core>=2.14.0,<3.0.0" && \
+    pip install --no-cache-dir "pandas>=2.2.0,<2.3.0" && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .

@@ -46,9 +46,30 @@ else
 fi
 
 # Upgrade pip and install dependencies
-python -m pip install --upgrade pip wheel
+echo "Upgrading pip and setuptools..."
+python -m pip install --upgrade pip setuptools wheel --quiet
+
 if [ -f "requirements.txt" ]; then
-  python -m pip install -r requirements.txt
+  echo "Installing dependencies (this may take a few minutes)..."
+  echo "Installing critical packages with C extensions first..."
+  echo ""
+
+  # Install critical packages in order for cross-platform compatibility
+  echo "  [1/4] Installing numpy..."
+  python -m pip install "numpy>=1.24.0,<2.0.0" --quiet
+
+  echo "  [2/4] Installing pydantic-core..."
+  python -m pip install --no-cache-dir "pydantic-core>=2.14.0,<3.0.0" --quiet
+
+  echo "  [3/4] Installing pandas..."
+  python -m pip install --no-cache-dir "pandas>=2.2.0,<2.3.0" --quiet
+
+  echo "  [4/4] Installing remaining packages..."
+  python -m pip install -r requirements.txt --quiet
+
+  echo ""
+  echo "✓ Dependencies installed successfully"
+  echo ""
 fi
 
 # Run the app using the venv Python
