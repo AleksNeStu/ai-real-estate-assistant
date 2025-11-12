@@ -715,6 +715,82 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
+## 🔧 Troubleshooting
+
+### Windows: NumPy Import Error
+
+**Problem:**
+```
+ImportError: Unable to import required dependencies:
+numpy: Error importing numpy: you should not try to import numpy from
+        its source directory
+```
+
+**Solution:**
+
+1. **Clean reinstall (Recommended)**:
+```powershell
+# Deactivate and remove virtual environment
+deactivate
+Remove-Item -Recurse -Force venv
+
+# Create fresh virtual environment
+py -3.11 -m venv venv
+.\venv\Scripts\Activate.ps1
+
+# Upgrade pip and setuptools
+python -m pip install --upgrade pip setuptools wheel
+
+# Install numpy first
+python -m pip install "numpy>=1.24.0,<2.0.0"
+
+# Install remaining dependencies
+python -m pip install -r requirements.txt
+
+# Verify installation
+python -c "import numpy; print(f'NumPy {numpy.__version__} installed successfully')"
+```
+
+2. **Alternative: Install with cache clearing**:
+```powershell
+python -m pip cache purge
+python -m pip install --no-cache-dir -r requirements.txt
+```
+
+3. **Check for conflicts**:
+```powershell
+# Ensure no numpy folder in project directory
+Get-ChildItem -Path . -Filter "numpy" -Recurse -Directory | Remove-Item -Recurse -Force
+
+# Restart terminal and try again
+```
+
+### Common Issues
+
+**Port already in use (8501)**:
+```bash
+# Windows
+netstat -ano | findstr :8501
+taskkill /PID <PID> /F
+
+# Linux/macOS
+lsof -ti:8501 | xargs kill -9
+```
+
+**API Key not recognized**:
+- Ensure `.env` file is in project root
+- Check for extra spaces or quotes in `.env`
+- Restart the application after editing `.env`
+
+**ChromaDB persistence issues**:
+```bash
+# Remove and recreate vector store
+rm -rf chroma_db/
+# Restart app - it will recreate the database
+```
+
+---
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
