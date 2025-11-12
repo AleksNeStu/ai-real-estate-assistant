@@ -815,6 +815,63 @@ python -c "import numpy; import pandas; print(f'NumPy {numpy.__version__}, Panda
 # Then follow the clean reinstall steps above
 ```
 
+### Windows: Pydantic C Extension Error
+
+**Problem:**
+```
+ModuleNotFoundError: No module named 'pydantic_core._pydantic_core'
+```
+
+**Root Cause:** Pydantic-core C extensions failed to load. This is another binary extension issue on Windows.
+
+**Solution:**
+
+**Quick Fix - Use Updated Launcher:**
+```powershell
+# Pull latest changes
+git pull origin claude/v3-bugfixes-011CUvYhiJ4s65j5cb7uPUyk
+
+# Run updated launcher (handles all C extensions automatically)
+.\run_modern.ps1
+```
+
+The updated `run_modern.ps1` script now installs packages in the correct order:
+1. numpy (math operations)
+2. pydantic-core (data validation core)
+3. pandas (data processing)
+4. Everything else
+
+**Manual Fix:**
+```powershell
+# Remove virtual environment
+deactivate
+Remove-Item -Recurse -Force venv
+
+# Create fresh environment
+py -3.11 -m venv venv
+.\venv\Scripts\Activate.ps1
+
+# Upgrade tools
+python -m pip install --upgrade pip setuptools wheel
+
+# Install in correct order (IMPORTANT!)
+python -m pip install "numpy>=1.24.0,<2.0.0"
+python -m pip install --no-cache-dir "pydantic-core>=2.14.0,<3.0.0"
+python -m pip install --no-cache-dir "pandas>=2.2.0,<2.3.0"
+python -m pip install -r requirements.txt
+
+# Verify
+python -c "import numpy; import pandas; import pydantic; print('All OK!')"
+
+# Run app
+streamlit run app_modern.py
+```
+
+**Why this happens:**
+- Python packages with C extensions (numpy, pandas, pydantic-core) need to be compiled for Windows
+- pip tries to use pre-built wheels, but sometimes they conflict
+- Installing them separately with `--no-cache-dir` ensures clean installation
+
 ### Common Issues
 
 **Port already in use (8501)**:

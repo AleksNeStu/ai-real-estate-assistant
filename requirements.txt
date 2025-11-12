@@ -22,7 +22,8 @@ fastembed>=0.4.2
 docarray>=0.40.0
 
 # Data Validation & Processing
-pydantic>=2.5.0
+pydantic>=2.5.0,<3.0.0  # Pinned for stability and Windows compatibility
+pydantic-core>=2.14.0,<3.0.0  # Explicit core for Windows C extensions
 validators>=0.33.0
 numpy>=1.24.0,<2.0.0  # Explicit numpy for Windows compatibility
 pandas>=2.2.0,<2.3.0  # Pinned for Windows compatibility

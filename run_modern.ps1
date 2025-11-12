@@ -81,17 +81,23 @@ Write-Host ""
 # Install dependencies
 if (Test-Path "requirements.txt") {
     Write-Host "Installing dependencies (this may take a few minutes)..." -ForegroundColor Yellow
+    Write-Host "Installing critical packages with C extensions first..." -ForegroundColor Gray
+    Write-Host ""
 
     # Install numpy first for Windows compatibility
-    Write-Host "  Installing numpy..." -ForegroundColor Gray
+    Write-Host "  [1/4] Installing numpy..." -ForegroundColor Gray
     python -m pip install "numpy>=1.24.0,<2.0.0" --quiet
 
+    # Install pydantic-core (C extensions)
+    Write-Host "  [2/4] Installing pydantic-core..." -ForegroundColor Gray
+    python -m pip install --no-cache-dir "pydantic-core>=2.14.0,<3.0.0" --quiet
+
     # Install pandas separately to ensure C extensions work
-    Write-Host "  Installing pandas (this may take a moment)..." -ForegroundColor Gray
+    Write-Host "  [3/4] Installing pandas..." -ForegroundColor Gray
     python -m pip install --no-cache-dir "pandas>=2.2.0,<2.3.0" --quiet
 
     # Install remaining dependencies
-    Write-Host "  Installing remaining packages..." -ForegroundColor Gray
+    Write-Host "  [4/4] Installing remaining packages..." -ForegroundColor Gray
     python -m pip install -r requirements.txt --quiet
 
     if ($LASTEXITCODE -ne 0) {
@@ -107,13 +113,20 @@ if (Test-Path "requirements.txt") {
     }
 
     # Verify critical imports
-    Write-Host "  Verifying installations..." -ForegroundColor Gray
-    $verifyResult = python -c "import numpy; import pandas; print('OK')" 2>&1
+    Write-Host ""
+    Write-Host "Verifying critical packages..." -ForegroundColor Yellow
+    $verifyResult = python -c "import numpy; import pandas; import pydantic; print('OK')" 2>&1
     if ($verifyResult -match "OK") {
-        Write-Host "✓ Dependencies installed successfully" -ForegroundColor Green
+        Write-Host "✓ All critical packages imported successfully" -ForegroundColor Green
+        Write-Host "  ✓ numpy" -ForegroundColor Gray
+        Write-Host "  ✓ pandas" -ForegroundColor Gray
+        Write-Host "  ✓ pydantic" -ForegroundColor Gray
     } else {
         Write-Host "⚠️  Warning: Import verification failed" -ForegroundColor Yellow
         Write-Host "The app may not work correctly. Check README.md Troubleshooting section." -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "Error details:" -ForegroundColor Red
+        Write-Host $verifyResult -ForegroundColor Red
     }
     Write-Host ""
 } else {
