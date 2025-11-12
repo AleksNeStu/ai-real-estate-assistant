@@ -1,0 +1,80 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Python cache
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+tests/
+*.test
+
+# Documentation
+docs/
+*.md
+!README.md
+LICENSE
+
+# Local data (will be mounted as volumes)
+chroma_db/
+.preferences/
+.notifications/
+.sessions/
+dataset/
+
+# Environment files (sensitive)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Development scripts
+run_tests.sh
+test_*.sh
+*.ps1
+!run_modern.ps1
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Other
+*.sqlite
+*.db
+node_modules/

@@ -1,0 +1,45 @@
+[Unit]
+Description=AI Real Estate Assistant - Modern Version
+After=network.target
+Documentation=https://github.com/AleksNeStu/ai-real-estate-assistant
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/ai-real-estate-assistant
+Environment="PATH=/opt/ai-real-estate-assistant/venv/bin"
+Environment="PYTHONUNBUFFERED=1"
+
+# Load environment variables from .env file
+EnvironmentFile=/opt/ai-real-estate-assistant/.env
+
+# Start the application
+ExecStart=/opt/ai-real-estate-assistant/venv/bin/streamlit run app_modern.py \
+    --server.port=8501 \
+    --server.address=0.0.0.0 \
+    --server.headless=true
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=200
+StartLimitBurst=5
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/ai-real-estate-assistant/chroma_db
+ReadWritePaths=/opt/ai-real-estate-assistant/.preferences
+ReadWritePaths=/opt/ai-real-estate-assistant/.notifications
+ReadWritePaths=/opt/ai-real-estate-assistant/.sessions
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ai-real-estate-assistant
+
+[Install]
+WantedBy=multi-user.target

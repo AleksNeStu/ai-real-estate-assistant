@@ -765,6 +765,56 @@ Get-ChildItem -Path . -Filter "numpy" -Recurse -Directory | Remove-Item -Recurse
 # Restart terminal and try again
 ```
 
+### Windows: Pandas C Extension Error
+
+**Problem:**
+```
+ModuleNotFoundError: No module named 'pandas._libs.pandas_parser'
+```
+
+**Root Cause:** Pandas C extensions failed to compile or load properly on Windows.
+
+**Solution:**
+
+1. **Install Microsoft C++ Build Tools** (if not installed):
+   - Download from: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+   - Install "Desktop development with C++" workload
+   - Restart your computer after installation
+
+2. **Clean reinstall with pre-built wheels**:
+```powershell
+# Deactivate and remove virtual environment
+deactivate
+Remove-Item -Recurse -Force venv
+
+# Create fresh virtual environment
+py -3.11 -m venv venv
+.\venv\Scripts\Activate.ps1
+
+# Upgrade pip and tools
+python -m pip install --upgrade pip setuptools wheel
+
+# Install numpy first (IMPORTANT!)
+python -m pip install "numpy>=1.24.0,<2.0.0"
+
+# Install pandas separately with no cache
+python -m pip install --no-cache-dir --force-reinstall "pandas>=2.2.0,<2.3.0"
+
+# Install remaining dependencies
+python -m pip install -r requirements.txt
+
+# Verify installations
+python -c "import numpy; import pandas; print(f'NumPy {numpy.__version__}, Pandas {pandas.__version__} OK')"
+```
+
+3. **Alternative: Use Microsoft Store Python** (often more compatible):
+```powershell
+# Install Python from Microsoft Store
+# Search "Python 3.11" in Microsoft Store and install
+
+# Then follow the clean reinstall steps above
+```
+
 ### Common Issues
 
 **Port already in use (8501)**:
