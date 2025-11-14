@@ -6,6 +6,7 @@ using ChromaDB with FastEmbed embeddings.
 """
 
 import os
+import logging
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from datetime import datetime
@@ -17,6 +18,9 @@ from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from data.schemas import Property, PropertyCollection
+
+# Configure logger
+logger = logging.getLogger(__name__)
 
 
 class ChromaPropertyStore:
@@ -84,12 +88,12 @@ class ChromaPropertyStore:
 
             # Check if collection has any documents
             collection_stats = vector_store._collection.count()
-            print(f"Loaded existing ChromaDB collection with {collection_stats} documents")
+            logger.info(f"Loaded existing ChromaDB collection with {collection_stats} documents")
 
             return vector_store
 
         except Exception as e:
-            print(f"Creating new ChromaDB collection: {e}")
+            logger.info(f"Creating new ChromaDB collection: {e}")
 
             # Create new store
             vector_store = Chroma(
@@ -168,11 +172,11 @@ class ChromaPropertyStore:
                 doc = self.property_to_document(prop)
                 documents.append(doc)
             except Exception as e:
-                print(f"Warning: Skipping property {prop.id}: {e}")
+                logger.warning(f"Skipping property {prop.id}: {e}")
                 continue
 
         if not documents:
-            print("No valid documents to add")
+            logger.warning("No valid documents to add")
             return 0
 
         # Add documents in batches
@@ -183,13 +187,13 @@ class ChromaPropertyStore:
             try:
                 self.vector_store.add_documents(batch)
                 total_added += len(batch)
-                print(f"Added batch {i // batch_size + 1}: {len(batch)} properties")
+                logger.info(f"Added batch {i // batch_size + 1}: {len(batch)} properties")
 
             except Exception as e:
-                print(f"Error adding batch: {e}")
+                logger.error(f"Error adding batch: {e}")
                 continue
 
-        print(f"Total properties added to vector store: {total_added}")
+        logger.info(f"Total properties added to vector store: {total_added}")
         return total_added
 
     def add_property_collection(
@@ -241,7 +245,7 @@ class ChromaPropertyStore:
             return results
 
         except Exception as e:
-            print(f"Search error: {e}")
+            logger.error(f"Search error: {e}")
             return []
 
     def search_by_metadata(
@@ -342,10 +346,10 @@ class ChromaPropertyStore:
             # Reinitialize
             self.vector_store = self._initialize_vector_store()
 
-            print("Vector store cleared")
+            logger.info("Vector store cleared")
 
         except Exception as e:
-            print(f"Error clearing vector store: {e}")
+            logger.error(f"Error clearing vector store: {e}")
 
     def get_stats(self) -> Dict[str, Any]:
         """
@@ -378,10 +382,10 @@ class ChromaPropertyStore:
             self.vector_store.delete(
                 filter={"source_url": source_url}
             )
-            print(f"Deleted properties from source: {source_url}")
+            logger.info(f"Deleted properties from source: {source_url}")
 
         except Exception as e:
-            print(f"Error deleting by source: {e}")
+            logger.error(f"Error deleting by source: {e}")
 
     def __repr__(self) -> str:
         stats = self.get_stats()

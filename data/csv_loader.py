@@ -1,12 +1,16 @@
 from urllib.parse import urlparse
 from pathlib import Path
 from yarl import URL
+import logging
 import streamlit as st
 import numpy as np
 import pandas as pd
 import re
 import requests
 from faker import Faker
+
+# Configure logger
+logger = logging.getLogger(__name__)
 
 # Initialize Faker for Poland locale (for generating fake owner data)
 fake_pl = Faker('pl_PL')
@@ -86,13 +90,13 @@ class DataLoaderCsv:
                 except Exception as e3:
                     raise Exception(f"Failed to load CSV: {str(e)}. Additional attempts failed: {str(e2)}, {str(e3)}")
 
-        print(f"Data frame loaded from {csv_url}, rows: {len(df)}")
+        logger.info(f"Data frame loaded from {csv_url}, rows: {len(df)}")
         return df
 
     def load_format_df(self, df: pd.DataFrame):
         """Returns the DataFrame. If not loaded, loads and prepares the data first."""
         df_formatted = self.format_df(df)
-        print(f"Data frame formatted from {self.csv_path}")
+        logger.info(f"Data frame formatted from {self.csv_path}")
         return df_formatted
 
     @staticmethod
@@ -120,11 +124,10 @@ class DataLoaderCsv:
     def format_df(df: pd.DataFrame, rows_count=2000):
         # Get header
         header = df.columns.tolist()
-        # print(f'Original header: ')
 
         # Drop rows with any NaN values
         df_copy = df.copy()
-        print(f'Original data frame rows: {len(df_copy)}')
+        logger.info(f'Original data frame rows: {len(df_copy)}')
 
         # Camel case to snake for header first
         df_copy.columns = [
@@ -213,13 +216,13 @@ class DataLoaderCsv:
             if field not in df_final.columns:
                 df_final[field] = np.random.choice([True, False], size=len(df_final))
 
-        #TODO: Add logic form expected header to generate missing values for any type of src data
+        # Log added columns and final row count
         header_final = df_final.columns.tolist()
-        # print(f'Final header: {header_final}')
         diff_header = set(header_final) - set(header)
 
-        print(f'Added header with fake data: {diff_header}')
-        print(f'Formatted data frame rows: {len(df_final)}')
+        if diff_header:
+            logger.info(f'Added columns with generated data: {diff_header}')
+        logger.info(f'Formatted data frame rows: {len(df_final)}')
 
         return df_final
 

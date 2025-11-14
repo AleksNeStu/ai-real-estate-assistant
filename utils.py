@@ -22,7 +22,8 @@ def enable_chat_history(func):
                 st.cache_resource.clear()
                 del st.session_state["current_page"]
                 del st.session_state["messages"]
-            except:
+            except KeyError:
+                # Session state keys may not exist
                 pass
 
         # to show chat history on ui
@@ -74,7 +75,7 @@ def choose_custom_openai_key():
         st.error(e.body["message"])
         st.stop()
     except Exception as e:
-        print(e)
+        logger.error(f"Error configuring OpenAI: {e}")
         st.error("Something went wrong. Please try again later.")
         st.stop()
     return model, openai_api_key
