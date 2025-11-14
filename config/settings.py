@@ -33,6 +33,12 @@ class AppSettings(BaseModel):
     google_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("GOOGLE_API_KEY")
     )
+    grok_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("XAI_API_KEY")
+    )
+    deepseek_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("DEEPSEEK_API_KEY")
+    )
 
     # Model Defaults
     default_temperature: float = 0.0
@@ -102,8 +108,10 @@ def update_api_key(provider: str, api_key: str):
         settings.google_api_key = api_key
         os.environ["GOOGLE_API_KEY"] = api_key
     elif provider == "grok":
+        settings.grok_api_key = api_key
         os.environ["XAI_API_KEY"] = api_key
     elif provider == "deepseek":
+        settings.deepseek_api_key = api_key
         os.environ["DEEPSEEK_API_KEY"] = api_key
 
     # Clear provider cache to pick up new API key

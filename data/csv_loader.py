@@ -1,17 +1,18 @@
 from urllib.parse import urlparse
+from pathlib import Path
+from yarl import URL
 import streamlit as st
 import numpy as np
 import pandas as pd
 import re
-
 import requests
+from faker import Faker
 
-from common.cfg import *
+# Initialize Faker for Poland locale (for generating fake owner data)
+fake_pl = Faker('pl_PL')
 
-# SettingWithCopyWarning: A value is trying to be set on a copy of a slice from a DataFrame
-pd.options.mode.chained_assignment = None
 # Set the pandas option to opt into future behavior
-pd.options.future.no_silent_downcasting =True
+pd.options.future.no_silent_downcasting = True
 
 
 
