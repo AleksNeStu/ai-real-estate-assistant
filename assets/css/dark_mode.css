@@ -698,6 +698,7 @@ hr {
    Responsive Design
    ======================================== */
 
+/* Tablet and below */
 @media (max-width: 768px) {
     .main .block-container {
         padding: 1rem 0.5rem !important;
@@ -712,6 +713,103 @@ hr {
         width: 3rem !important;
         height: 3rem !important;
         font-size: 1.5rem !important;
+    }
+
+    /* Adjust font sizes for mobile */
+    h1, .stMarkdown h1 {
+        font-size: 1.75rem !important;
+    }
+
+    h2, .stMarkdown h2 {
+        font-size: 1.5rem !important;
+    }
+
+    h3, .stMarkdown h3 {
+        font-size: 1.25rem !important;
+    }
+
+    /* Make sidebar more compact on mobile */
+    [data-testid="stSidebar"] {
+        padding: 0.5rem !important;
+    }
+
+    /* Reduce spacing in form elements */
+    .stTextInput, .stSelectbox, .stMultiSelect, .stNumberInput {
+        margin-bottom: 0.75rem !important;
+    }
+
+    /* Make buttons full width on mobile */
+    .stButton button {
+        width: 100% !important;
+        padding: 0.625rem 1rem !important;
+    }
+
+    /* Improve data table readability */
+    .dataframe {
+        font-size: 0.875rem !important;
+    }
+
+    .dataframe thead th, .dataframe tbody td {
+        padding: 0.5rem !important;
+    }
+
+    /* Adjust metric cards for mobile */
+    [data-testid="stMetric"] {
+        padding: 1rem !important;
+    }
+
+    [data-testid="stMetricValue"] {
+        font-size: 1.5rem !important;
+    }
+}
+
+/* Mobile phones */
+@media (max-width: 480px) {
+    .main .block-container {
+        padding: 0.75rem 0.25rem !important;
+    }
+
+    /* Further reduce font sizes on small screens */
+    h1, .stMarkdown h1 {
+        font-size: 1.5rem !important;
+    }
+
+    h2, .stMarkdown h2 {
+        font-size: 1.25rem !important;
+    }
+
+    h3, .stMarkdown h3 {
+        font-size: 1.125rem !important;
+    }
+
+    /* Make inputs more touch-friendly */
+    .stTextInput input,
+    .stTextArea textarea,
+    .stNumberInput input,
+    .stSelectbox [data-baseweb="select"] > div {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        min-height: 44px !important; /* Better touch target */
+    }
+
+    /* Stack columns vertically on very small screens */
+    .stColumn {
+        min-width: 100% !important;
+    }
+
+    /* Compact expanders */
+    .streamlit-expanderHeader {
+        padding: 0.75rem !important;
+        font-size: 0.938rem !important;
+    }
+
+    .streamlit-expanderContent {
+        padding: 0.75rem !important;
+    }
+
+    /* Adjust tabs for mobile */
+    .stTabs [data-baseweb="tab"] {
+        padding: 0.75rem 1rem !important;
+        font-size: 0.875rem !important;
     }
 }
 

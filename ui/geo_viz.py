@@ -289,24 +289,24 @@ def create_city_overview_map(
 
         # Create popup content
         popup_html = f"""
-        <div style="font-family: Arial; width: 200px;">
-            <h4 style="margin: 0 0 10px 0;">{row['city']}</h4>
-            <table style="width: 100%; font-size: 12px;">
+        <div style="font-family: Arial, sans-serif; width: 200px; background-color: #ffffff; color: #0f172a; padding: 8px; border-radius: 4px;">
+            <h4 style="margin: 0 0 10px 0; color: #2563eb; font-size: 16px;">{row['city']}</h4>
+            <table style="width: 100%; font-size: 12px; color: #0f172a;">
                 <tr>
-                    <td><b>Properties:</b></td>
-                    <td>{int(row['count'])}</td>
+                    <td style="padding: 2px 0;"><b>Properties:</b></td>
+                    <td style="padding: 2px 0;">{int(row['count'])}</td>
                 </tr>
                 <tr>
-                    <td><b>Avg Price:</b></td>
-                    <td>${row['avg_price']:.0f}</td>
+                    <td style="padding: 2px 0;"><b>Avg Price:</b></td>
+                    <td style="padding: 2px 0;">${row['avg_price']:.0f}</td>
                 </tr>
                 <tr>
-                    <td><b>Median Price:</b></td>
-                    <td>${row['median_price']:.0f}</td>
+                    <td style="padding: 2px 0;"><b>Median Price:</b></td>
+                    <td style="padding: 2px 0;">${row['median_price']:.0f}</td>
                 </tr>
                 <tr>
-                    <td><b>Avg Rooms:</b></td>
-                    <td>{row['avg_rooms']:.1f}</td>
+                    <td style="padding: 2px 0;"><b>Avg Rooms:</b></td>
+                    <td style="padding: 2px 0;">{row['avg_rooms']:.1f}</td>
                 </tr>
             </table>
         </div>
@@ -354,27 +354,27 @@ def _create_property_popup(prop: Property) -> str:
     amenities_html = "<br>".join(amenities) if amenities else "None"
 
     html = f"""
-    <div style="font-family: Arial; width: 250px;">
-        <h4 style="margin: 0 0 10px 0; color: #1f77b4;">{prop.city}</h4>
-        <table style="width: 100%; font-size: 12px;">
+    <div style="font-family: Arial, sans-serif; width: 250px; background-color: #ffffff; color: #0f172a; padding: 8px; border-radius: 4px;">
+        <h4 style="margin: 0 0 10px 0; color: #2563eb; font-size: 16px;">{prop.city}</h4>
+        <table style="width: 100%; font-size: 12px; color: #0f172a;">
             <tr>
-                <td><b>Price:</b></td>
-                <td style="color: #d62728; font-weight: bold;">${prop.price}/month</td>
+                <td style="padding: 2px 0;"><b>Price:</b></td>
+                <td style="padding: 2px 0; color: #dc2626; font-weight: bold;">${prop.price}/month</td>
             </tr>
             <tr>
-                <td><b>Type:</b></td>
-                <td>{prop.property_type}</td>
+                <td style="padding: 2px 0;"><b>Type:</b></td>
+                <td style="padding: 2px 0;">{prop.property_type}</td>
             </tr>
             <tr>
-                <td><b>Rooms:</b></td>
-                <td>{prop.rooms} bed, {prop.bathrooms} bath</td>
+                <td style="padding: 2px 0;"><b>Rooms:</b></td>
+                <td style="padding: 2px 0;">{prop.rooms} bed, {prop.bathrooms} bath</td>
             </tr>
-            {f'<tr><td><b>Area:</b></td><td>{prop.area_sqm} sqm</td></tr>' if prop.area_sqm else ''}
-            {f'<tr><td><b>Price/sqm:</b></td><td>${(prop.price/prop.area_sqm):.2f}</td></tr>' if prop.area_sqm else ''}
+            {f'<tr><td style="padding: 2px 0;"><b>Area:</b></td><td style="padding: 2px 0;">{prop.area_sqm} sqm</td></tr>' if prop.area_sqm else ''}
+            {f'<tr><td style="padding: 2px 0;"><b>Price/sqm:</b></td><td style="padding: 2px 0;">${(prop.price/prop.area_sqm):.2f}</td></tr>' if prop.area_sqm else ''}
         </table>
-        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ccc;">
-            <b>Amenities:</b><br>
-            <div style="margin-top: 5px; font-size: 11px;">
+        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #cbd5e1;">
+            <b style="font-size: 12px;">Amenities:</b><br>
+            <div style="margin-top: 5px; font-size: 11px; color: #475569;">
                 {amenities_html}
             </div>
         </div>
@@ -392,31 +392,32 @@ def _create_legend_html() -> str:
         bottom: 50px;
         left: 50px;
         width: 180px;
-        background-color: white;
-        border: 2px solid #ccc;
-        border-radius: 5px;
-        padding: 10px;
-        font-family: Arial;
+        background-color: #ffffff;
+        color: #0f172a;
+        border: 2px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 12px;
+        font-family: Arial, sans-serif;
         font-size: 12px;
         z-index: 1000;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     ">
-        <h4 style="margin: 0 0 10px 0; font-size: 14px;">Price Range</h4>
-        <div style="margin-bottom: 5px;">
-            <span style="display: inline-block; width: 15px; height: 15px; background-color: #2ca02c; margin-right: 5px; border-radius: 50%;"></span>
-            < $800/mo
+        <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #0f172a; font-weight: 600;">Price Range</h4>
+        <div style="margin-bottom: 6px; display: flex; align-items: center;">
+            <span style="display: inline-block; width: 16px; height: 16px; background-color: #2ca02c; margin-right: 8px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1);"></span>
+            <span>< $800/mo</span>
         </div>
-        <div style="margin-bottom: 5px;">
-            <span style="display: inline-block; width: 15px; height: 15px; background-color: #ffbb00; margin-right: 5px; border-radius: 50%;"></span>
-            $800-$1200/mo
+        <div style="margin-bottom: 6px; display: flex; align-items: center;">
+            <span style="display: inline-block; width: 16px; height: 16px; background-color: #ffbb00; margin-right: 8px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1);"></span>
+            <span>$800-$1200/mo</span>
         </div>
-        <div style="margin-bottom: 5px;">
-            <span style="display: inline-block; width: 15px; height: 15px; background-color: #ff7f0e; margin-right: 5px; border-radius: 50%;"></span>
-            $1200-$1600/mo
+        <div style="margin-bottom: 6px; display: flex; align-items: center;">
+            <span style="display: inline-block; width: 16px; height: 16px; background-color: #ff7f0e; margin-right: 8px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1);"></span>
+            <span>$1200-$1600/mo</span>
         </div>
-        <div>
-            <span style="display: inline-block; width: 15px; height: 15px; background-color: #d62728; margin-right: 5px; border-radius: 50%;"></span>
-            > $1600/mo
+        <div style="display: flex; align-items: center;">
+            <span style="display: inline-block; width: 16px; height: 16px; background-color: #d62728; margin-right: 8px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1);"></span>
+            <span>> $1600/mo</span>
         </div>
     </div>
     """
