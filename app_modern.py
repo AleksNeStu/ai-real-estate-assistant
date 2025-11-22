@@ -82,7 +82,7 @@ st.set_page_config(
     page_title=settings.app_title,
     page_icon=settings.app_icon,
     layout=settings.page_layout,
-    initial_sidebar_state=settings.initial_sidebar_state,
+    initial_sidebar_state="expanded",
 )
 
 # Load and inject custom styles for dark mode and modern UI
@@ -1755,7 +1755,7 @@ def render_main_content():
 
 def apply_theme():
     """Apply custom CSS based on selected theme."""
-    theme = st.session_state.get('theme', 'dark')
+    theme = st.session_state.get('theme', 'light')
 
     if theme == 'dark':
         st.markdown("""
@@ -1770,6 +1770,9 @@ def apply_theme():
                 background-color: #1a1d24 !important;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif !important;
             }
+            /* Prevent stray scrollbars/columns */
+            [data-testid="stSidebar"] { overflow-y: auto !important; }
+            [data-testid="stAppViewContainer"] { overflow-x: hidden !important; }
             /* Sidebar text elements */
             .stSidebar .stMarkdown, .stSidebar h1, .stSidebar h2, .stSidebar h3,
             .stSidebar p, .stSidebar span, .stSidebar label, .stSidebar .stCaption {
@@ -1880,6 +1883,235 @@ def apply_theme():
             .stSidebar {
                 background-color: #f0f2f6;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif !important;
+            }
+            /* Prevent stray scrollbars/columns */
+            [data-testid="stSidebar"] { overflow-y: auto !important; }
+            [data-testid="stAppViewContainer"] { overflow-x: hidden !important; }
+            /* Sidebar text elements */
+            .stSidebar .stMarkdown, .stSidebar h1, .stSidebar h2, .stSidebar h3,
+            .stSidebar p, .stSidebar span, .stSidebar label, .stSidebar .stCaption {
+                color: #31333F !important;
+            }
+            /* Tabs */
+            .stTabs [data-baseweb="tab-list"] {
+                gap: 8px;
+                background-color: #f0f2f6 !important;
+            }
+            .stTabs [data-baseweb="tab"] {
+                background-color: #eef2f7 !important;
+                color: #31333F !important;
+                border-radius: 4px 4px 0px 0px;
+            }
+            .stTabs [aria-selected="true"] {
+                background-color: #e2e8f0 !important;
+                color: #31333F !important;
+            }
+            /* Form inputs */
+            .stTextInput>div>div>input, .stSelectbox>div>div>div,
+            .stTextArea>div>div>textarea, .stNumberInput>div>div>input {
+                background-color: #ffffff !important;
+                color: #31333F !important;
+                border-color: #d1d5db !important;
+            }
+            .stTextInput>div>div,
+            .stSelectbox>div>div,
+            .stTextArea>div>div,
+            .stNumberInput>div>div {
+                background-color: #ffffff !important;
+                border-color: #d1d5db !important;
+            }
+            /* Password visibility toggle */
+            .stTextInput button[aria-label*="password"],
+            .stTextInput button[aria-label*="Password"],
+            .stTextInput button[aria-label*="Show"],
+            .stTextInput button[aria-label*="Hide"] {
+                background-color: #ffffff !important;
+                color: #31333F !important;
+                border: 1px solid #d1d5db !important;
+            }
+            .stTextInput button[aria-label*="password"] svg path,
+            .stTextInput button[aria-label*="Password"] svg path,
+            .stTextInput button[aria-label*="Show"] svg path,
+            .stTextInput button[aria-label*="Hide"] svg path {
+                fill: #31333F !important;
+            }
+            /* Select popover/list */
+            div[data-baseweb="popover"],
+            div[data-baseweb="menu"],
+            [role="listbox"],
+            div[data-baseweb="select"] div[role="listbox"] {
+                background-color: #ffffff !important;
+                color: #31333F !important;
+                border: 1px solid #e5e7eb !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+            }
+            /* Streamlit virtualized dropdown */
+            ul[data-testid="stVirtualDropdown"] {
+                background-color: #ffffff !important;
+                color: #31333F !important;
+                border: 1px solid #e5e7eb !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+            }
+            ul[data-testid="stVirtualDropdown"] li[role="option"] {
+                background-color: #ffffff !important;
+                color: #31333F !important;
+            }
+            ul[data-testid="stVirtualDropdown"] li[role="option"][aria-selected="true"] {
+                background-color: #e2e8f0 !important;
+                color: #1f2937 !important;
+            }
+            ul[data-testid="stVirtualDropdown"] li[role="option"]:hover {
+                background-color: #f1f5f9 !important;
+                color: #1f2937 !important;
+            }
+            [role="listbox"] [role="option"],
+            div[data-baseweb="menu"] li,
+            .stSelectbox [role="option"],
+            .stSelectbox li {
+                color: #31333F !important;
+                background-color: #ffffff !important;
+            }
+            [role="listbox"] [aria-selected="true"],
+            div[data-baseweb="menu"] li[aria-selected="true"],
+            .stSelectbox [role="option"][aria-selected="true"] {
+                background-color: #e2e8f0 !important;
+                color: #1f2937 !important;
+            }
+            [role="listbox"] [role="option"]:hover,
+            div[data-baseweb="menu"] li:hover,
+            .stSelectbox [role="option"]:hover {
+                background-color: #f1f5f9 !important;
+                color: #1f2937 !important;
+            }
+            /* Select trigger */
+            .stSelectbox div[role="button"],
+            div[data-baseweb="select"] div[role="button"] {
+                background-color: #ffffff !important;
+                color: #31333F !important;
+                border-color: #d1d5db !important;
+            }
+            /* Prevent editable typing visuals in select input */
+            div[data-baseweb="select"] input {
+                caret-color: transparent !important;
+                color: transparent !important;
+                text-shadow: 0 0 0 #31333F !important; /* preserves selected label rendering */
+            }
+            div[data-baseweb="popover"] *, div[data-baseweb="menu"] * {
+                background-color: #ffffff !important;
+                color: #31333F !important;
+            }
+            .stSelectbox svg,
+            div[data-baseweb="select"] svg {
+                color: #31333F !important;
+                fill: #31333F !important;
+            }
+            /* Buttons */
+            .stButton>button {
+                background-color: #eef2f7 !important;
+                color: #31333F !important;
+                border: 1px solid #d1d5db !important;
+            }
+            .stButton>button:hover {
+                background-color: #e2e8f0 !important;
+                border: 1px solid #cbd5e1 !important;
+            }
+            /* Number input stepper buttons */
+            .stNumberInput button {
+                background-color: #f8fafc !important;
+                color: #31333F !important;
+                border: 1px solid #d1d5db !important;
+            }
+            .stNumberInput button:hover {
+                background-color: #e2e8f0 !important;
+                border-color: #cbd5e1 !important;
+            }
+            .stNumberInput button svg path {
+                fill: #31333F !important;
+            }
+            .stNumberInput>div>div {
+                background-color: #ffffff !important;
+                border-color: #d1d5db !important;
+            }
+            /* All text elements */
+            .stMarkdown, .stMarkdown p, .stMarkdown span, .stMarkdown li {
+                color: #31333F !important;
+            }
+            /* Chat messages */
+            .stChatMessage {
+                background-color: #f8fafc !important;
+                color: #31333F !important;
+            }
+            /* Metrics */
+            div[data-testid="stMetric"] {
+                background-color: #f8fafc !important;
+            }
+            div[data-testid="stMetricValue"], div[data-testid="stMetricLabel"],
+            div[data-testid="stMetricDelta"], [data-testid="stMetric"] label,
+            [data-testid="stMetric"] p, [data-testid="stMetric"] span,
+            [data-testid="stMetric"] div {
+                color: #31333F !important;
+            }
+            /* Expanders */
+            .stExpander {
+                background-color: #f8fafc !important;
+                border-color: #e5e7eb !important;
+            }
+            .stExpander p, .stExpander span, .stExpander label {
+                color: #31333F !important;
+            }
+            /* Headers */
+            h1, h2, h3, h4, h5, h6 {
+                color: #1f2937 !important;
+            }
+            /* Form controls */
+            .stRadio label, .stCheckbox label {
+                color: #31333F !important;
+            }
+            /* Checkbox visual */
+            .stCheckbox div[role="checkbox"] {
+                background-color: #ffffff !important;
+                border: 1px solid #d1d5db !important;
+            }
+            .stCheckbox div[role="checkbox"][aria-checked="true"] {
+                background-color: #e2e8f0 !important;
+                border-color: #cbd5e1 !important;
+            }
+            .stCheckbox div[role="checkbox"] svg path {
+                fill: #31333F !important;
+            }
+            .stSlider label, .stSlider p {
+                color: #31333F !important;
+            }
+            /* Header bar */
+            [data-testid="stHeader"] {
+                background-color: #ffffff !important;
+            }
+            [data-testid="stToolbar"], [data-testid="stTopLeftToolBar"] {
+                background-color: #ffffff !important;
+                color: #31333F !important;
+            }
+            [data-testid="stToolbar"] svg path,
+            [data-testid="stToolbar"] svg,
+            [data-testid="stToolbar"] button {
+                color: #31333F !important;
+                fill: #31333F !important;
+            }
+            /* Captions */
+            .stCaption {
+                color: #64748b !important;
+            }
+            /* Alerts */
+            .stAlert {
+                background-color: #eef2f7 !important;
+                color: #31333F !important;
+            }
+            /* Dataframes */
+            .stDataFrame {
+                color: #31333F !important;
+            }
+            /* Multiselect */
+            .stMultiSelect label {
+                color: #31333F !important;
             }
         </style>
         """, unsafe_allow_html=True)
