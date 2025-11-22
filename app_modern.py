@@ -177,7 +177,8 @@ def render_sidebar():
         st.caption(f"{get_text('version', lang)} {settings.version}")
 
         # Compact preferences: Language + Theme
-        with st.expander("⚙️ Preferences", expanded=False):
+        st.subheader("⚙️ Preferences")
+        with st.container():
             languages = get_available_languages()
             theme_options = {
                 "light": get_text('light_theme', lang),
@@ -217,7 +218,8 @@ def render_sidebar():
         st.divider()
 
         # Model Provider Selection (compact grouping)
-        with st.expander(f"🧩 {get_text('model_config', lang)}", expanded=False):
+        st.subheader(f"🧩 {get_text('model_config', lang)}")
+        with st.container():
             # Get available providers
             providers = ModelProviderFactory.list_providers()
             provider_display = {
@@ -252,7 +254,8 @@ def render_sidebar():
 
             # Ollama-specific: Detection and Installation Guidance
             if selected_provider == "ollama":
-                with st.expander(f"🔧 {get_text('ollama_status', lang)}", expanded=False):
+                st.subheader(f"🔧 {get_text('ollama_status', lang)}")
+                with st.container():
                     ollama_status = OllamaDetector.get_status()
 
                     if ollama_status.is_installed:
@@ -313,7 +316,8 @@ def render_sidebar():
                 if f"{selected_provider}_key_status" not in st.session_state:
                     st.session_state[f"{selected_provider}_key_status"] = None
 
-                with st.expander(f"🔑 {get_text('api_key_settings', lang)}", expanded=not bool(api_key_env)):
+                st.subheader(f"🔑 {get_text('api_key_settings', lang)}")
+                with st.container():
                     if api_key_env:
                         # Show key status
                         col1, col2, col3 = st.columns([2, 1, 1])
@@ -336,7 +340,8 @@ def render_sidebar():
                             else:
                                 st.error(f"{get_text('key_invalid', lang)}: {result.message}")
                                 if result.error_details:
-                                    with st.expander("Error Details"):
+                                    show_details = st.checkbox("Error Details", key=f"err_details_{selected_provider}")
+                                    if show_details:
                                         st.code(result.error_details)
 
                         # Show change API key form if requested
@@ -392,7 +397,8 @@ def render_sidebar():
                                     else:
                                         st.error(f"{get_text('api_key_validation_failed', lang)}: {result.message}")
                                         if result.error_details:
-                                            with st.expander("Error Details"):
+                                            show_details_new = st.checkbox("Error Details", key=f"err_details_new_{selected_provider}")
+                                            if show_details_new:
                                                 st.code(result.error_details)
                             else:
                                 st.warning(get_text('enter_api_key', lang).format(provider=provider.display_name))
@@ -415,7 +421,8 @@ def render_sidebar():
 
             # Display model info
             model_info = model_options[selected_model_id]
-            with st.expander(f"ℹ️ {get_text('model_details', lang)}"):
+            st.subheader(f"ℹ️ {get_text('model_details', lang)}")
+            with st.container():
                 info = get_model_display_info(model_info)
                 st.write(f"**{get_text('context', lang)}:** {info['context']}")
                 st.write(f"**{get_text('cost', lang)}:** {info['cost']}")
@@ -427,7 +434,8 @@ def render_sidebar():
             
 
             # Advanced settings
-            with st.expander(f"⚙️ {get_text('advanced_settings', lang)}"):
+            st.subheader(f"⚙️ {get_text('advanced_settings', lang)}")
+            with st.container():
                 temperature = st.slider(
                     get_text('temperature', lang),
                     min_value=0.0,
@@ -458,7 +466,8 @@ def render_sidebar():
                 st.session_state.k_results = k_results
 
             # Phase 2 settings
-            with st.expander(f"🧠 {get_text('intelligence_features', lang)}"):
+            st.subheader(f"🧠 {get_text('intelligence_features', lang)}")
+            with st.container():
                 use_hybrid_agent = st.checkbox(
                     get_text('use_hybrid_agent', lang),
                     value=st.session_state.use_hybrid_agent,
@@ -1755,9 +1764,11 @@ def apply_theme():
             .stApp {
                 background-color: #0e1117 !important;
                 color: #fafafa !important;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif !important;
             }
             .stSidebar {
                 background-color: #1a1d24 !important;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif !important;
             }
             /* Sidebar text elements */
             .stSidebar .stMarkdown, .stSidebar h1, .stSidebar h2, .stSidebar h3,
@@ -1864,9 +1875,11 @@ def apply_theme():
             .stApp {
                 background-color: #ffffff;
                 color: #31333F;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif !important;
             }
             .stSidebar {
                 background-color: #f0f2f6;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif !important;
             }
         </style>
         """, unsafe_allow_html=True)

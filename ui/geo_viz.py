@@ -289,7 +289,7 @@ def create_city_overview_map(
 
         # Create popup content
         popup_html = f"""
-        <div style="font-family: Arial, sans-serif; width: 200px; background-color: #ffffff; color: #0f172a; padding: 8px; border-radius: 4px;">
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif; width: 200px; background-color: #ffffff; color: #0f172a; padding: 8px; border-radius: 4px;">
             <h4 style="margin: 0 0 10px 0; color: #2563eb; font-size: 16px;">{row['city']}</h4>
             <table style="width: 100%; font-size: 12px; color: #0f172a;">
                 <tr>
@@ -354,7 +354,7 @@ def _create_property_popup(prop: Property) -> str:
     amenities_html = "<br>".join(amenities) if amenities else "None"
 
     html = f"""
-    <div style="font-family: Arial, sans-serif; width: 250px; background-color: #ffffff; color: #0f172a; padding: 8px; border-radius: 4px;">
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif; width: 250px; background-color: #ffffff; color: #0f172a; padding: 8px; border-radius: 4px;">
         <h4 style="margin: 0 0 10px 0; color: #2563eb; font-size: 16px;">{prop.city}</h4>
         <table style="width: 100%; font-size: 12px; color: #0f172a;">
             <tr>
@@ -397,7 +397,7 @@ def _create_legend_html() -> str:
         border: 2px solid #cbd5e1;
         border-radius: 8px;
         padding: 12px;
-        font-family: Arial, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
         font-size: 12px;
         z-index: 1000;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);

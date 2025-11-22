@@ -203,7 +203,7 @@ class EmailService:
         subject = "Test Email - Real Estate Assistant"
         body = """
         <html>
-        <body style="font-family: Arial, sans-serif;">
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;">
             <h2>Test Email</h2>
             <p>This is a test email to verify your email configuration.</p>
             <p>If you're receiving this, your email service is working correctly!</p>
