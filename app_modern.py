@@ -2034,8 +2034,8 @@ def apply_theme():
                 color: #31333F !important;
             }
             ul[data-testid="stVirtualDropdown"] li[role="option"][aria-selected="true"] {
-                background-color: #e2e8f0 !important;
-                color: #1f2937 !important;
+                background-color: #2563eb !important;
+                color: #ffffff !important;
             }
             ul[data-testid="stVirtualDropdown"] li[role="option"]:hover {
                 background-color: #f1f5f9 !important;
@@ -2051,8 +2051,8 @@ def apply_theme():
             [role="listbox"] [aria-selected="true"],
             div[data-baseweb="menu"] li[aria-selected="true"],
             .stSelectbox [role="option"][aria-selected="true"] {
-                background-color: #e2e8f0 !important;
-                color: #1f2937 !important;
+                background-color: #2563eb !important;
+                color: #ffffff !important;
             }
             [role="listbox"] [role="option"]:hover,
             div[data-baseweb="menu"] li:hover,
@@ -2066,12 +2066,6 @@ def apply_theme():
                 background-color: #ffffff !important;
                 color: #31333F !important;
                 border-color: #d1d5db !important;
-            }
-            /* Prevent editable typing visuals in select input */
-            div[data-baseweb="select"] input {
-                caret-color: transparent !important;
-                color: transparent !important;
-                text-shadow: 0 0 0 #31333F !important; /* preserves selected label rendering */
             }
             div[data-baseweb="popover"] *, div[data-baseweb="menu"] * {
                 background-color: #ffffff !important;
@@ -2334,6 +2328,42 @@ def apply_theme():
           document.body.setAttribute('data-theme','light');
           var stApp = document.querySelector('.stApp'); if (stApp) stApp.setAttribute('data-theme','light');
         } catch(e) {}
+        </script>
+        """, unsafe_allow_html=True)
+        st.markdown("""
+        <script>
+        (function(){
+          function markReadonly(){
+            document.querySelectorAll('div[data-baseweb="select"] input').forEach(function(inp){
+              try { inp.setAttribute('readonly','readonly'); inp.style.caretColor='transparent'; inp.style.userSelect='none'; } catch(_) {}
+            });
+          }
+          document.addEventListener('keydown', function(e){
+            const t = e.target;
+            if (t && t.tagName === 'INPUT' && t.closest('div[data-baseweb="select"]')) {
+              const allowed = ['Tab','Enter','Escape','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End','PageUp','PageDown'];
+              if (allowed.indexOf(e.key) === -1 && e.key && e.key.length === 1) { e.preventDefault(); }
+            }
+          }, true);
+          document.addEventListener('input', function(e){
+            const t = e.target;
+            if (t && t.tagName === 'INPUT' && t.closest('div[data-baseweb="select"]')) { try { t.value=''; } catch(_) {} }
+          }, true);
+          document.addEventListener('beforeinput', function(e){
+            const t = e.target;
+            if (t && t.tagName === 'INPUT' && t.closest('div[data-baseweb="select"]')) {
+              if (e.data && e.data.length > 0) { try { e.preventDefault(); } catch(_) {} }
+            }
+          }, true);
+          document.addEventListener('focusin', function(e){
+            const t = e.target;
+            if (t && t.tagName === 'INPUT' && t.closest('div[data-baseweb="select"]')) { try { t.blur(); } catch(_) {} }
+          }, true);
+          const observer = new MutationObserver(function(){ markReadonly(); });
+          observer.observe(document.body, {childList:true, subtree:true});
+          markReadonly();
+          setInterval(markReadonly, 500);
+        })();
         </script>
         """, unsafe_allow_html=True)
 
