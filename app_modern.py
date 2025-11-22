@@ -176,43 +176,20 @@ def render_sidebar():
         st.title(f"{settings.app_icon} {get_text('app_title', lang)}")
         st.caption(f"{get_text('version', lang)} {settings.version}")
 
-        # Compact preferences: Language + Theme
+        # Compact preferences: Language only
         st.subheader("⚙️ Preferences")
         with st.container():
             languages = get_available_languages()
-            theme_options = {
-                "light": get_text('light_theme', lang),
-                "dark": get_text('dark_theme', lang)
-            }
-
-            col1, col2 = st.columns(2)
-            with col1:
-                selected_lang = st.selectbox(
-                    get_text('language', lang),
-                    options=list(languages.keys()),
-                    format_func=lambda x: languages[x],
-                    index=list(languages.keys()).index(st.session_state.language),
-                    key="language_selector",
-                    label_visibility="collapsed"
-                )
-            with col2:
-                selected_theme = st.selectbox(
-                    get_text('theme', lang),
-                    options=list(theme_options.keys()),
-                    format_func=lambda x: theme_options[x],
-                    index=list(theme_options.keys()).index(st.session_state.theme),
-                    key="theme_selector",
-                    label_visibility="collapsed"
-                )
-
-            rerun_needed = False
+            selected_lang = st.selectbox(
+                get_text('language', lang),
+                options=list(languages.keys()),
+                format_func=lambda x: languages[x],
+                index=list(languages.keys()).index(st.session_state.language),
+                key="language_selector",
+                label_visibility="collapsed"
+            )
             if selected_lang != st.session_state.language:
                 st.session_state.language = selected_lang
-                rerun_needed = True
-            if selected_theme != st.session_state.theme:
-                st.session_state.theme = selected_theme
-                rerun_needed = True
-            if rerun_needed:
                 st.rerun()
 
         st.divider()
@@ -1754,8 +1731,8 @@ def render_main_content():
 
 
 def apply_theme():
-    """Apply custom CSS based on selected theme."""
-    theme = st.session_state.get('theme', 'light')
+    """Apply custom CSS for light theme only."""
+    theme = 'light'
 
     if theme == 'dark':
         st.markdown("""
@@ -1769,6 +1746,70 @@ def apply_theme():
             .stSidebar {
                 background-color: #1a1d24 !important;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif !important;
+            }
+            /* BaseWeb token overrides for dark palette */
+            [data-baseweb] {
+                --colorsBackgroundPrimary: #0f172a !important;
+                --colorsBackgroundSecondary: #111827 !important;
+                --colorsBackgroundTertiary: #1f2937 !important;
+                --colorsContentPrimary: #f9fafb !important;
+                --colorsContentSecondary: #e5e7eb !important;
+                --colorsContentInversePrimary: #f9fafb !important;
+                --colorsBorderOpaque: #374151 !important;
+                --colorsButtonPrimaryFill: #1f2937 !important;
+                --colorsButtonPrimaryText: #e5e7eb !important;
+            }
+            /* Form inputs - dark */
+            .stTextInput>div>div>input, .stSelectbox>div>div>div,
+            .stTextArea>div>div>textarea, .stNumberInput>div>div>input {
+                background-color: #0f172a !important;
+                color: #f9fafb !important;
+                border-color: #374151 !important;
+            }
+            .stTextInput>div>div,
+            .stSelectbox>div>div,
+            .stTextArea>div>div,
+            .stNumberInput>div>div {
+                background-color: #0f172a !important;
+                border-color: #374151 !important;
+            }
+            /* Checkbox & radio - dark */
+            .stCheckbox div[role="checkbox"], div[data-baseweb="checkbox"] div:first-child {
+                background-color: #0f172a !important;
+                border: 1px solid #374151 !important;
+            }
+            .stCheckbox div[role="checkbox"][aria-checked="true"],
+            div[data-baseweb="checkbox"][aria-checked="true"] div:first-child {
+                background-color: #1f2937 !important;
+                border-color: #60a5fa !important;
+            }
+            div[data-baseweb="checkbox"] svg rect { fill: #0f172a !important; stroke: #374151 !important; }
+            div[data-baseweb="checkbox"][aria-checked="true"] svg rect { fill: #60a5fa !important; stroke: #60a5fa !important; }
+            .stRadio div[role="radiogroup"] div[data-baseweb="radio"] div:first-child { background-color: #0f172a !important; border: 1px solid #374151 !important; }
+            .stRadio div[role="radiogroup"] div[data-baseweb="radio"][aria-checked="true"] div:first-child { background-color: #1f2937 !important; border-color: #60a5fa !important; }
+            div[data-baseweb="radio"] svg circle { fill: #0f172a !important; stroke: #374151 !important; }
+            div[data-baseweb="radio"][aria-checked="true"] svg circle { fill: #60a5fa !important; stroke: #60a5fa !important; }
+            /* Select popover/list - dark */
+            div[data-baseweb="popover"], div[data-baseweb="menu"], [role="listbox"], div[data-baseweb="select"] div[role="listbox"] {
+                background-color: #0f172a !important;
+                color: #f9fafb !important;
+                border: 1px solid #374151 !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+            }
+            /* File uploader dropzone - dark */
+            [data-testid="stFileUploadDropzone"] {
+                background-color: #0f172a !important;
+                border: 1px solid #374151 !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+            }
+            [data-testid="stFileUploadDropzone"] * { color: #f9fafb !important; }
+            [data-testid="stFileUploadDropzone"] button { background-color: #1f2937 !important; color: #e5e7eb !important; border: 1px solid #374151 !important; }
+            /* Toolbar menu - dark */
+            [data-testid="stToolbar"] [data-baseweb="popover"], [data-testid="stToolbar"] [data-baseweb="menu"] {
+                background-color: #0f172a !important;
+                color: #f9fafb !important;
+                border: 1px solid #374151 !important;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
             }
             /* Prevent stray scrollbars/columns */
             [data-testid="stSidebar"] { overflow-y: auto !important; }
@@ -2244,6 +2285,27 @@ def apply_theme():
             [data-testid="stToolbar"] button {
                 color: #31333F !important;
                 fill: #31333F !important;
+            }
+            [data-testid="stToolbar"] [data-baseweb="popover"],
+            [data-testid="stToolbar"] [data-baseweb="menu"] {
+                background-color: #ffffff !important;
+                color: #0f172a !important;
+                border: 1px solid #e5e7eb !important;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important;
+            }
+            [data-testid="stToolbar"] [data-baseweb="menu"] li {
+                padding: 10px 14px !important;
+                color: #0f172a !important;
+                border-bottom: 1px solid #e5e7eb !important;
+            }
+            [data-testid="stToolbar"] [data-baseweb="menu"] li:hover {
+                background-color: #f1f5f9 !important;
+            }
+            [data-testid="stToolbar"] [data-baseweb="menu"] li:focus,
+            [data-testid="stToolbar"] [data-baseweb="menu"] li:focus-visible {
+                outline: none !important;
+                box-shadow: none !important;
+                background-color: #e2e8f0 !important;
             }
             /* Captions */
             .stCaption {
