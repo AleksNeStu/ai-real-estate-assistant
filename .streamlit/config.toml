@@ -1,24 +1,5 @@
 [theme]
-# Primary theme color (used for buttons, links, etc.)
-primaryColor = "#4a9eff"
-
-# Background colors
-backgroundColor = "#0e1117"
-secondaryBackgroundColor = "#1a1d24"
-
-# Text color with WCAG AA compliance (15.8:1 contrast ratio)
-textColor = "#fafafa"
-
-# Font family
-font = "sans serif"
-
-# Base theme (dark or light)
-base = "dark"
-
-[server]
-maxUploadSize = 200
-enableXsrfProtection = true
-enableCORS = true
-
-[browser]
-gatherUsageStats = false
+primaryColor = "#2563eb"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f8fafc"
+textColor = "#0f172a"

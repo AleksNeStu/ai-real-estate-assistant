@@ -92,8 +92,7 @@ def load_and_inject_styles():
     # Load dark mode JavaScript
     dark_mode_js_path = js_dir / 'dark_mode.js'
     if dark_mode_js_path.exists():
-        dark_mode_js = load_js_file(str(dark_mode_js_path))
-        inject_custom_js(dark_mode_js)
+        _ = load_js_file(str(dark_mode_js_path))
 
 
 def inject_enhanced_form_styles():

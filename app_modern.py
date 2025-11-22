@@ -1870,6 +1870,30 @@ def apply_theme():
             }
         </style>
         """, unsafe_allow_html=True)
+        st.markdown("""
+        <script>
+        try {
+          localStorage.setItem('ai-real-estate-theme','dark');
+          document.documentElement.setAttribute('data-theme','dark');
+          document.body.setAttribute('data-theme','dark');
+          var stApp = document.querySelector('.stApp'); if (stApp) stApp.setAttribute('data-theme','dark');
+        } catch(e) {}
+        </script>
+        """, unsafe_allow_html=True)
+        st.markdown("""
+        <script>
+        setTimeout(() => {
+          document.querySelectorAll('input').forEach(el => {
+            const label = (el.getAttribute('aria-label') || '').toLowerCase();
+            if (label.includes('api key') || label.includes('password')) {
+              el.setAttribute('autocomplete','off');
+              el.setAttribute('autocapitalize','off');
+              el.setAttribute('spellcheck','false');
+            }
+          });
+        }, 0);
+        </script>
+        """, unsafe_allow_html=True)
     else:
         # Light theme (default Streamlit theme)
         st.markdown("""
@@ -1879,6 +1903,18 @@ def apply_theme():
                 background-color: #ffffff;
                 color: #31333F;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif !important;
+            }
+            /* BaseWeb token overrides to enforce light palette */
+            [data-baseweb] {
+                --colorsBackgroundPrimary: #ffffff !important;
+                --colorsBackgroundSecondary: #f8fafc !important;
+                --colorsBackgroundTertiary: #eef2f7 !important;
+                --colorsContentPrimary: #1f2937 !important;
+                --colorsContentSecondary: #31333F !important;
+                --colorsContentInversePrimary: #31333F !important;
+                --colorsBorderOpaque: #d1d5db !important;
+                --colorsButtonPrimaryFill: #e2e8f0 !important;
+                --colorsButtonPrimaryText: #1f2937 !important;
             }
             .stSidebar {
                 background-color: #f0f2f6;
@@ -2000,6 +2036,10 @@ def apply_theme():
                 background-color: #ffffff !important;
                 color: #31333F !important;
             }
+            div[data-baseweb="input"] div[data-baseweb="input-enhancer"] {
+                background-color: #ffffff !important;
+                border-left: 1px solid #d1d5db !important;
+            }
             .stSelectbox svg,
             div[data-baseweb="select"] svg {
                 color: #31333F !important;
@@ -2082,6 +2122,115 @@ def apply_theme():
             .stSlider label, .stSlider p {
                 color: #31333F !important;
             }
+            .stCheckbox div[role="checkbox"],
+            div[data-baseweb="checkbox"] div:first-child {
+                background-color: #ffffff !important;
+                border: 1px solid #d1d5db !important;
+            }
+            .stCheckbox div[role="checkbox"][aria-checked="true"],
+            div[data-baseweb="checkbox"][aria-checked="true"] div:first-child {
+                background-color: #e2e8f0 !important;
+                border-color: #cbd5e1 !important;
+            }
+            .stCheckbox div[role="checkbox"] svg path,
+            div[data-baseweb="checkbox"] svg path {
+                fill: #31333F !important;
+            }
+            /* Strong checkbox override on container */
+            div[data-baseweb="checkbox"] {
+                background-color: #ffffff !important;
+                border: 1px solid #d1d5db !important;
+            }
+            div[data-baseweb="checkbox"][aria-checked="true"] {
+                background-color: #e2e8f0 !important;
+                border-color: #60a5fa !important;
+            }
+            div[data-baseweb="checkbox"] svg,
+            div[data-baseweb="checkbox"] svg path {
+                color: #31333F !important;
+                fill: #31333F !important;
+            }
+            /* Strong radio override */
+            div[data-baseweb="radio"] {
+                background-color: #ffffff !important;
+                border: 1px solid #d1d5db !important;
+            }
+            div[data-baseweb="radio"][aria-checked="true"] {
+                background-color: #e2e8f0 !important;
+                border-color: #60a5fa !important;
+            }
+            div[data-baseweb="radio"] svg,
+            div[data-baseweb="radio"] svg path,
+            div[data-baseweb="radio"][aria-checked="true"] svg path {
+                color: #31333F !important;
+                fill: #31333F !important;
+            }
+            /* Increase specificity using emotion class pattern */
+            [class*="st-emotion-cache"][data-baseweb="checkbox"],
+            [class*="st-emotion-cache"][data-baseweb="radio"] {
+                background-color: #ffffff !important;
+                border: 1px solid #d1d5db !important;
+            }
+            /* BaseWeb checkbox/radio SVG fallback */
+            div[data-baseweb="checkbox"] svg rect {
+                fill: #ffffff !important;
+                stroke: #d1d5db !important;
+            }
+            div[data-baseweb="checkbox"][aria-checked="true"] svg rect {
+                fill: #e2e8f0 !important;
+                stroke: #60a5fa !important;
+            }
+            div[data-baseweb="radio"] svg circle {
+                fill: #ffffff !important;
+                stroke: #d1d5db !important;
+            }
+            div[data-baseweb="radio"][aria-checked="true"] svg circle {
+                fill: #60a5fa !important;
+                stroke: #60a5fa !important;
+            }
+            /* Radio visual */
+            .stRadio div[role="radiogroup"] div[data-baseweb="radio"] div:first-child {
+                background-color: #ffffff !important;
+                border: 1px solid #d1d5db !important;
+            }
+            .stRadio div[role="radiogroup"] div[data-baseweb="radio"][aria-checked="true"] div:first-child {
+                background-color: #e2e8f0 !important;
+                border-color: #60a5fa !important; /* blue accent for selected */
+            }
+            .stTabs [data-baseweb="tab-list"]::after,
+            .stTabs [data-baseweb="tab-list"]::before {
+                background: none !important;
+            }
+            div[data-baseweb="tooltip"], div[data-baseweb="tooltip"] * {
+                background-color: #ffffff !important;
+                color: #31333F !important;
+            }
+            #root > div:nth-child(1) > div.withScreencast > div > div > div > section.st-emotion-cache-1dwdiz2.eczjsme18 > div.st-emotion-cache-6qob1r.eczjsme11 > div.st-emotion-cache-1gwvy71.eczjsme12 > div > div > div > div > div:nth-child(12) {
+                background-color: #ffffff !important;
+                color: #31333F !important;
+                border-color: #d1d5db !important;
+            }
+            /* File uploader dropzone (strong override) */
+            [data-testid="stFileUploadDropzone"] {
+                background-color: #ffffff !important;
+                border: 1px solid #d1d5db !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
+            }
+            [data-testid="stFileUploadDropzone"] * {
+                color: #31333F !important;
+            }
+            [data-testid="stFileUploadDropzone"] [data-testid="stFileUploadBrowseButton"],
+            [data-testid="stFileUploadDropzone"] button {
+                background-color: #eef2f7 !important;
+                color: #31333F !important;
+                border: 1px solid #d1d5db !important;
+            }
+            /* BaseWeb dropzone containers */
+            div[data-baseweb="file-uploader"], div[data-baseweb="dropzone"],
+            div[data-baseweb="file-uploader"] *, div[data-baseweb="dropzone"] * {
+                background-color: #ffffff !important;
+                color: #31333F !important;
+            }
             /* Header bar */
             [data-testid="stHeader"] {
                 background-color: #ffffff !important;
@@ -2115,6 +2264,16 @@ def apply_theme():
             }
         </style>
         """, unsafe_allow_html=True)
+        st.markdown("""
+        <script>
+        try {
+          localStorage.setItem('ai-real-estate-theme','light');
+          document.documentElement.setAttribute('data-theme','light');
+          document.body.setAttribute('data-theme','light');
+          var stApp = document.querySelector('.stApp'); if (stApp) stApp.setAttribute('data-theme','light');
+        } catch(e) {}
+        </script>
+        """, unsafe_allow_html=True)
 
 
 def main():
@@ -2124,6 +2283,8 @@ def main():
 
     # Apply theme
     apply_theme()
+
+    # Styles already injected globally to ensure consistency
 
     # Render UI
     render_sidebar()
