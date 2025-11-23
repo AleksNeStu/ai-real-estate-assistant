@@ -1547,39 +1547,11 @@ def apply_theme() -> None:
     .stButton [data-testid^="baseButton-"]:hover { background-color: #e2e8f0 !important; box-shadow: var(--md-shadow-2) !important; }
     .stButton [data-testid^="baseButton-"]:active { transform: translateY(0.5px) !important; box-shadow: var(--md-shadow-1) !important; }
     .stButton [data-testid^="baseButton-"]:focus, .stButton [data-testid^="baseButton-"]:focus-visible { outline: 3px solid rgba(37,99,235,0.45) !important; outline-offset: 2px !important; box-shadow: var(--md-shadow-2), 0 0 0 3px rgba(37,99,235,0.35) !important; }
-    div[data-baseweb="popover"], div[data-baseweb="menu"], [role="listbox"], div[data-baseweb="select"] div[role="listbox"], ul[data-testid="stVirtualDropdown"] {
-      background-color: #ffffff !important;
-      color: var(--md-color-on-surface) !important;
-      border: 1px solid #cbd5e1 !important;
-      box-shadow: var(--md-shadow-3) !important;
-      border-radius: var(--md-radius) !important;
-    }
-    [role="listbox"] [role="option"], div[data-baseweb="menu"] li, .stSelectbox [role="option"], .stSelectbox li {
-      padding:10px 12px; min-height:40px;
-    }
-    [role="listbox"] [aria-selected="true"], div[data-baseweb="menu"] li[aria-selected="true"], .stSelectbox [role="option"][aria-selected="true"], ul[data-testid="stVirtualDropdown"] li[role="option"][aria-selected="true"] {
-      background-color: #dbeafe !important; /* blue-100 */
-      color: #1e3a8a !important; /* blue-800 */
-    }
-    [role="listbox"] [role="option"]:hover, div[data-baseweb="menu"] li:hover, .stSelectbox [role="option"]:hover, ul[data-testid="stVirtualDropdown"] li[role="option"]:hover {
-      background-color: #eff6ff !important; /* blue-50 */
-    }
-    .stSelectbox div[role="button"], div[data-baseweb="select"] div[role="button"] {
-      background-color: #ffffff !important;
-      color: var(--md-color-on-surface) !important;
-      border-color: #cbd5e1 !important;
-      border-radius: var(--md-radius) !important;
-      min-height:44px;
-      box-shadow: var(--md-shadow-1) !important;
-    }
-    .stSelectbox div[role="button"]:hover, div[data-baseweb="select"] div[role="button"]:hover {
-      background-color: #f8fafc !important; /* slate-50 */
-      box-shadow: var(--md-shadow-2) !important;
-    }
-    .stSelectbox div[role="button"][aria-expanded="true"], div[data-baseweb="select"] div[role="button"][aria-expanded="true"] {
-      border-color: #93c5fd !important; /* blue-300 */
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.25) !important;
-    }
+    div[data-baseweb="popover"], div[data-baseweb="menu"], [role="listbox"], div[data-baseweb="select"] div[role="listbox"], ul[data-testid="stVirtualDropdown"] { background-color: var(--md-color-surface) !important; color: var(--md-color-on-surface) !important; border: 1px solid var(--md-color-outline) !important; box-shadow: var(--md-shadow-3) !important; border-radius: var(--md-radius) !important; }
+    [role="listbox"] [role="option"], div[data-baseweb="menu"] li, .stSelectbox [role="option"], .stSelectbox li { padding:10px 12px; min-height:40px; }
+    [role="listbox"] [aria-selected="true"], div[data-baseweb="menu"] li[aria-selected="true"], .stSelectbox [role="option"][aria-selected="true"], ul[data-testid="stVirtualDropdown"] li[role="option"][aria-selected="true"] { background-color: var(--md-color-primary) !important; color: var(--md-color-on-primary) !important; }
+    [role="listbox"] [role="option"]:hover, div[data-baseweb="menu"] li:hover, .stSelectbox [role="option"]:hover, ul[data-testid="stVirtualDropdown"] li[role="option"]:hover { background-color: #f1f5f9 !important; }
+    .stSelectbox div[role="button"], div[data-baseweb="select"] div[role="button"] { background-color: var(--md-color-surface) !important; color: var(--md-color-on-surface) !important; border-color: var(--md-color-outline) !important; border-radius: var(--md-radius) !important; min-height:44px; }
     .stCheckbox div[role="checkbox"], div[data-baseweb="checkbox"] div:first-child, div[data-baseweb="radio"] div:first-child { background-color: var(--md-color-surface) !important; border: 1px solid var(--md-color-outline) !important; border-radius: calc(var(--md-radius) - 4px) !important; }
     .stCheckbox div[role="checkbox"][aria-checked="true"], div[data-baseweb="checkbox"][aria-checked="true"] div:first-child { border-color: var(--md-color-primary) !important; }
     .stRadio div[role="radiogroup"] div[data-baseweb="radio"][aria-checked="true"] div:first-child { border-color: var(--md-color-primary) !important; }
@@ -1600,7 +1572,20 @@ def apply_theme() -> None:
     try { localStorage.setItem('ai-real-estate-theme','light'); document.documentElement.setAttribute('data-theme','light'); document.body.setAttribute('data-theme','light'); var stApp = document.querySelector('.stApp'); if (stApp) stApp.setAttribute('data-theme','light'); } catch(e) {}
     </script>
     """, unsafe_allow_html=True)
-    
+    st.markdown("""
+    <script>
+    (function(){
+      function markReadonly(){
+        document.querySelectorAll('div[data-baseweb="select"] input').forEach(function(inp){ try { inp.setAttribute('readonly','readonly'); inp.style.caretColor='transparent'; inp.style.userSelect='none'; } catch(_) {} });
+      }
+      document.addEventListener('keydown', function(e){ const t = e.target; if (t && t.tagName === 'INPUT' && t.closest('div[data-baseweb="select"]')) { const allowed = ['Tab','Enter','Escape','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End','PageUp','PageDown']; if (allowed.indexOf(e.key) === -1 && e.key && e.key.length === 1) { e.preventDefault(); } } }, true);
+      document.addEventListener('input', function(e){ const t = e.target; if (t && t.tagName === 'INPUT' && t.closest('div[data-baseweb="select"]')) { try { t.value=''; } catch(_) {} } }, true);
+      document.addEventListener('beforeinput', function(e){ const t = e.target; if (t && t.tagName === 'INPUT' && t.closest('div[data-baseweb="select"]')) { if (e.data && e.data.length > 0) { try { e.preventDefault(); } catch(_) {} } } }, true);
+      document.addEventListener('focusin', function(e){ const t = e.target; if (t && t.tagName === 'INPUT' && t.closest('div[data-baseweb="select"]')) { try { t.blur(); } catch(_) {} } }, true);
+      const observer = new MutationObserver(function(){ markReadonly(); }); observer.observe(document.body, {childList:true, subtree:true}); markReadonly(); setInterval(markReadonly, 500);
+    })();
+    </script>
+    """, unsafe_allow_html=True)
 
     st.markdown("""
     <script>
