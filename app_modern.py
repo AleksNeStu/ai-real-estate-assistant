@@ -166,7 +166,7 @@ def initialize_session_state() -> None:
         st.session_state.theme = "light"
 
     if "compact_ui" not in st.session_state:
-        st.session_state.compact_ui = False
+        st.session_state.compact_ui = True
 
 
 def render_sidebar() -> None:
@@ -194,8 +194,9 @@ def render_sidebar() -> None:
 
         st.divider()
 
-        st.markdown(f'<h3 class="md-section-title"><span class="material-icons">smart_toy</span> {get_text("model_config", lang)}</h3>', unsafe_allow_html=True)
-        with st.container():
+        if not st.session_state.compact_ui:
+            st.markdown(f'<h3 class="md-section-title"><span class="material-icons">smart_toy</span> {get_text("model_config", lang)}</h3>', unsafe_allow_html=True)
+            with st.container():
                 providers = ModelProviderFactory.list_providers()
                 provider_display = {
                     "openai": "OpenAI",
@@ -269,7 +270,7 @@ def render_sidebar() -> None:
                                     st.code(f"{get_text('ollama_pull_model', lang)}: {model['command']}")
 
                 elif provider.requires_api_key:
-                    st.info("Manage API keys in the sidebar below")
+                    st.info("Open Settings tab to manage API keys")
                 else:
                     st.info(f"ℹ️ {get_text('no_api_key_needed', lang)}")
 
@@ -297,208 +298,7 @@ def render_sidebar() -> None:
                         st.write(f"**{get_text('best_for', lang)}:**", ", ".join(info['recommended_for']))
 
         st.divider()
-        st.markdown(f'<h3 class="md-section-title"><span class="material-icons">vpn_key</span> {get_text("api_key_settings", lang)}</h3>', unsafe_allow_html=True)
-        selected_provider = st.session_state.selected_provider
-        provider = ModelProviderFactory.get_provider(selected_provider)
-        if provider.requires_api_key:
-            api_key_env = {
-                "openai": settings.openai_api_key,
-                "anthropic": settings.anthropic_api_key,
-                "google": settings.google_api_key,
-                "grok": None,
-                "deepseek": None,
-            }.get(selected_provider)
-
-            if f"{selected_provider}_key_status" not in st.session_state:
-                st.session_state[f"{selected_provider}_key_status"] = None
-
-            with st.container():
-                if api_key_env:
-                    col1, col2, col3 = st.columns([2, 1, 1])
-                    with col1:
-                        st.success(f"✓ {provider.display_name} {get_text('api_key_configured', lang)}")
-                    with col2:
-                        if st.button(get_text('validate_api_key', lang), key=f"validate_{selected_provider}_sidebar"):
-                            with st.spinner(get_text('validating_key', lang)):
-                                result = APIKeyValidator.validate_key(selected_provider, api_key_env)
-                                st.session_state[f"{selected_provider}_key_status"] = result
-                    with col3:
-                        if st.button(get_text('change_api_key', lang), key=f"change_{selected_provider}_sidebar"):
-                            st.session_state[f"{selected_provider}_show_change"] = True
-
-                    if st.session_state[f"{selected_provider}_key_status"]:
-                        result = st.session_state[f"{selected_provider}_key_status"]
-                        if result.is_valid:
-                            st.success(f"{get_text('key_valid', lang)}: {result.message}")
-                        else:
-                            st.error(f"{get_text('key_invalid', lang)}: {result.message}")
-                            if result.error_details:
-                                show_details = st.checkbox("Error Details", key=f"err_details_{selected_provider}_sidebar")
-                                if show_details:
-                                    st.code(result.error_details)
-
-                    if st.session_state.get(f"{selected_provider}_show_change", False):
-                        st.markdown(f"**{get_text('enter_new_api_key', lang)}:**")
-                        new_key = st.text_input(
-                            f"New {provider.display_name} API Key",
-                            type="password",
-                            key=f"new_key_{selected_provider}_sidebar"
-                        )
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            if st.button(get_text('save_api_key', lang), key=f"save_{selected_provider}_sidebar"):
-                                if new_key:
-                                    with st.spinner(get_text('validating_key', lang)):
-                                        result = APIKeyValidator.validate_key(selected_provider, new_key)
-                                        if result.is_valid:
-                                            update_api_key(selected_provider, new_key)
-                                            ModelProviderFactory.clear_cache()
-                                            st.success(get_text('api_key_saved', lang))
-                                            st.session_state[f"{selected_provider}_show_change"] = False
-                                            st.session_state[f"{selected_provider}_key_status"] = result
-                                            st.rerun()
-                                        else:
-                                            st.error(f"{get_text('api_key_validation_failed', lang)}: {result.message}")
-                                else:
-                                    st.warning(get_text('enter_new_api_key', lang))
-                        with col2:
-                            if st.button(get_text('cancel', lang), key=f"cancel_{selected_provider}_sidebar"):
-                                st.session_state[f"{selected_provider}_show_change"] = False
-                                st.rerun()
-                else:
-                    st.warning(f"{get_text('api_key_required', lang).format(provider=provider.display_name)}")
-                    api_key = st.text_input(
-                        f"{provider.display_name} API Key",
-                        type="password",
-                        help=f"Enter your {provider.display_name} API key",
-                        key=f"input_{selected_provider}_sidebar"
-                    )
-                    if st.button(get_text('save_api_key', lang), key=f"save_new_{selected_provider}_sidebar"):
-                        if api_key:
-                            with st.spinner(get_text('validating_key', lang)):
-                                result = APIKeyValidator.validate_key(selected_provider, api_key)
-                                if result.is_valid:
-                                    update_api_key(selected_provider, api_key)
-                                    ModelProviderFactory.clear_cache()
-                                    st.success(get_text('api_key_saved', lang))
-                                    st.session_state[f"{selected_provider}_key_status"] = result
-                                    st.rerun()
-                                else:
-                                    st.error(f"{get_text('api_key_validation_failed', lang)}: {result.message}")
-                        else:
-                            st.warning(get_text('enter_api_key', lang).format(provider=provider.display_name))
-
-        st.divider()
-        st.markdown(f'<h3 class="md-section-title"><span class="material-icons">tune</span> {get_text("advanced_settings", lang)}</h3>', unsafe_allow_html=True)
-        with st.container():
-            temperature = st.slider(
-                get_text('temperature', lang),
-                min_value=0.0,
-                max_value=2.0,
-                value=settings.default_temperature,
-                step=0.1,
-                help=get_text('controls_randomness', lang)
-            )
-            st.session_state.temperature = temperature
-
-            max_tokens = st.number_input(
-                get_text('max_tokens', lang),
-                min_value=256,
-                max_value=32000,
-                value=settings.default_max_tokens,
-                step=256,
-                help=get_text('maximum_response_length', lang)
-            )
-            st.session_state.max_tokens = max_tokens
-
-            k_results = st.slider(
-                get_text('results_to_retrieve', lang),
-                min_value=1,
-                max_value=20,
-                value=settings.default_k_results,
-                help=get_text('num_properties_search', lang)
-            )
-            st.session_state.k_results = k_results
-
-        st.markdown(f'<h3 class="md-section-title"><span class="material-icons">psychology</span> {get_text("intelligence_features", lang)}</h3>', unsafe_allow_html=True)
-        with st.container():
-            use_hybrid_agent = st.checkbox(
-                get_text('use_hybrid_agent', lang),
-                value=st.session_state.use_hybrid_agent,
-                help=get_text('enable_intelligent_routing', lang)
-            )
-            st.session_state.use_hybrid_agent = use_hybrid_agent
-
-            show_query_analysis = st.checkbox(
-                get_text('show_query_analysis', lang),
-                value=st.session_state.show_query_analysis,
-                help=get_text('display_query_intent', lang)
-            )
-            st.session_state.show_query_analysis = show_query_analysis
-
-            use_reranking = st.checkbox(
-                get_text('use_reranking', lang),
-                value=st.session_state.use_reranking,
-                help=get_text('rerank_better_relevance', lang)
-            )
-            st.session_state.use_reranking = use_reranking
-
-        st.divider()
-        st.markdown(f'<h3 class="md-section-title"><span class="material-icons">dataset</span> {get_text("data_sources", lang)}</h3>', unsafe_allow_html=True)
-        data_source_tab = st.radio(
-            get_text('data_source', lang),
-            options=["URL", get_text('local_files', lang)],
-            horizontal=True,
-            key="data_source_radio_sidebar"
-        )
-        if data_source_tab == "URL":
-            csv_urls = st.text_area(
-                get_text('csv_urls', lang),
-                value="https://github.com/AleksNeStu/ai-real-estate-assistant/blob/main/dataset/pl/apartments_rent_pl_2024_01.csv",
-                placeholder=get_text('csv_urls_placeholder', lang),
-                help=get_text('csv_urls_help', lang),
-                height=100,
-                key="csv_urls_sidebar"
-            )
-            if st.button(get_text('load_data', lang), type="primary", key="load_data_sidebar"):
-                if csv_urls:
-                    load_data_from_urls(csv_urls)
-                else:
-                    st.warning(get_text('please_enter_csv_url', lang))
-        else:
-            st.write(get_text('upload_csv_files', lang))
-            uploaded_files = st.file_uploader(
-                "Choose CSV files",
-                type=['csv'],
-                accept_multiple_files=True,
-                label_visibility="collapsed",
-                key="file_uploader_sidebar"
-            )
-            if st.button(get_text('load_local_files', lang), type="primary", key="load_local_files_sidebar"):
-                if uploaded_files:
-                    load_local_files(uploaded_files)
-                else:
-                    st.warning(get_text('please_upload_files', lang))
-
-        if st.session_state.data_loaded:
-            st.success(f"✓ {get_text('data_loaded_success', lang)}: {len(st.session_state.property_collection.properties)} {get_text('properties', lang)}")
-            if st.session_state.vector_store:
-                stats = st.session_state.vector_store.get_stats()
-                st.info(f"📦 {get_text('vector_store', lang)}: {stats.get('total_documents', 0)} {get_text('documents', lang)}")
-
-        st.divider()
-        st.markdown(f'<h3 class="md-section-title"><span class="material-icons">cached</span> {get_text("session", lang)}</h3>', unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button(get_text('clear_chat', lang), use_container_width=True, key="clear_chat_sidebar"):
-                st.session_state.messages = []
-                st.session_state.conversation_chain = None
-                st.rerun()
-        with col2:
-            if st.button(get_text('reset_all', lang), use_container_width=True, key="reset_all_sidebar"):
-                for key in list(st.session_state.keys()):
-                    del st.session_state[key]
-                st.rerun()
+        st.caption("Open Settings tab to configure advanced options, data and session")
 
 
 def load_data_from_urls(urls_text: str) -> None:
@@ -1662,26 +1462,39 @@ def render_main_content() -> None:
     st.title(f"{settings.app_icon} {get_text('app_title', lang)}")
     st.caption(get_text('app_subtitle', lang))
 
-    tabs = st.tabs([
-        get_text('tab_chat', lang),
-        get_text('tab_insights', lang),
-        get_text('tab_compare', lang),
-        get_text('tab_export', lang),
-        get_text('tab_analytics', lang),
-        get_text('tab_notifications', lang)
-    ])
-    with tabs[0]:
-        render_chat_tab()
-    with tabs[1]:
-        render_market_insights_tab()
-    with tabs[2]:
-        render_comparisons_tab()
-    with tabs[3]:
-        render_export_tab()
-    with tabs[4]:
-        render_analytics_tab()
-    with tabs[5]:
-        render_notifications_tab()
+    if st.session_state.compact_ui:
+        tabs = st.tabs([
+            get_text('tab_chat', lang),
+            'Settings'
+        ])
+        with tabs[0]:
+            render_chat_tab()
+        with tabs[1]:
+            render_settings_tab()
+    else:
+        tabs = st.tabs([
+            get_text('tab_chat', lang),
+            get_text('tab_insights', lang),
+            get_text('tab_compare', lang),
+            get_text('tab_export', lang),
+            get_text('tab_analytics', lang),
+            get_text('tab_notifications', lang),
+            'Settings'
+        ])
+        with tabs[0]:
+            render_chat_tab()
+        with tabs[1]:
+            render_market_insights_tab()
+        with tabs[2]:
+            render_comparisons_tab()
+        with tabs[3]:
+            render_export_tab()
+        with tabs[4]:
+            render_analytics_tab()
+        with tabs[5]:
+            render_notifications_tab()
+        with tabs[6]:
+            render_settings_tab()
 
 
 def apply_theme() -> None:
@@ -1745,8 +1558,8 @@ def apply_theme() -> None:
       padding:10px 12px; min-height:40px;
     }
     [role="listbox"] [aria-selected="true"], div[data-baseweb="menu"] li[aria-selected="true"], .stSelectbox [role="option"][aria-selected="true"], ul[data-testid="stVirtualDropdown"] li[role="option"][aria-selected="true"] {
-      background-color: #f1f5f9 !important; /* slate-100 */
-      color: var(--md-color-on-surface) !important;
+      background-color: #dbeafe !important; /* blue-100 */
+      color: #1e3a8a !important; /* blue-800 */
     }
     [role="listbox"] [role="option"]:hover, div[data-baseweb="menu"] li:hover, .stSelectbox [role="option"]:hover, ul[data-testid="stVirtualDropdown"] li[role="option"]:hover {
       background-color: #eff6ff !important; /* blue-50 */
@@ -1764,8 +1577,8 @@ def apply_theme() -> None:
       box-shadow: var(--md-shadow-2) !important;
     }
     .stSelectbox div[role="button"][aria-expanded="true"], div[data-baseweb="select"] div[role="button"][aria-expanded="true"] {
-      border-color: var(--md-color-secondary) !important; /* design secondary */
-      box-shadow: 0 0 0 3px rgba(107,114,128,0.25) !important; /* slate-500 alpha */
+      border-color: #93c5fd !important; /* blue-300 */
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.25) !important;
     }
     .stCheckbox div[role="checkbox"], div[data-baseweb="checkbox"] div:first-child, div[data-baseweb="radio"] div:first-child { background-color: var(--md-color-surface) !important; border: 1px solid var(--md-color-outline) !important; border-radius: calc(var(--md-radius) - 4px) !important; }
     .stCheckbox div[role="checkbox"][aria-checked="true"], div[data-baseweb="checkbox"][aria-checked="true"] div:first-child { border-color: var(--md-color-primary) !important; }
@@ -1780,9 +1593,6 @@ def apply_theme() -> None:
     .stColumns { gap: 16px !important; }
     * { transition: background-color var(--md-transition), color var(--md-transition), border-color var(--md-transition); }
     @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
-    #MainMenu { display: none !important; }
-    [data-testid="stDeployButton"] { display: none !important; }
-    [data-testid="stToolbar"] { display: none !important; }
     </style>
     """, unsafe_allow_html=True)
     st.markdown("""
