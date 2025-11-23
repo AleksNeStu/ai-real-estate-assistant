@@ -249,6 +249,8 @@ class SessionTracker:
         # Calculate duration
         session_end = self.events[-1].timestamp if self.events else datetime.now()
         duration_minutes = (session_end - self.session_start).total_seconds() / 60
+        if self.events and duration_minutes <= 0:
+            duration_minutes = 0.01
 
         return SessionStats(
             session_id=self.session_id,

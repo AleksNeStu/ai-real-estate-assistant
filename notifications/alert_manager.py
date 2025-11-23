@@ -352,8 +352,21 @@ class AlertManager:
             return True
 
     def _get_property_key(self, prop: Property) -> str:
-        """Generate unique key for a property."""
-        return f"{prop.city}_{prop.property_type}_{prop.price}_{prop.rooms}"
+        """Generate stable unique key for a property independent of price.
+
+        Prefer the `id` if available; otherwise use non-price attributes that
+        remain stable across price updates.
+        """
+        if prop.id:
+            return str(prop.id)
+        key_parts = [
+            prop.city,
+            str(prop.property_type),
+            str(int(prop.rooms)) if prop.rooms is not None else "rooms",
+            str(int(prop.bathrooms)) if prop.bathrooms is not None else "baths",
+            str(int(prop.area_sqm)) if prop.area_sqm is not None else "area"
+        ]
+        return "_".join(key_parts)
 
     def _format_amenities(self, prop: Property) -> str:
         """Format amenities as string."""
