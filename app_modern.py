@@ -194,9 +194,8 @@ def render_sidebar():
 
         st.divider()
 
-        # Model Provider Selection (compact grouping)
-        st.subheader(f"🧩 {get_text('model_config', lang)}")
-        with st.container():
+        # Model Provider Selection (collapsible)
+        with st.expander(f"🧩 {get_text('model_config', lang)}", expanded=True):
             # Get available providers
             providers = ModelProviderFactory.list_providers()
             provider_display = {
@@ -410,9 +409,8 @@ def render_sidebar():
 
             
 
-            # Advanced settings
-            st.subheader(f"⚙️ {get_text('advanced_settings', lang)}")
-            with st.container():
+            # Advanced settings (collapsible)
+            with st.expander(f"⚙️ {get_text('advanced_settings', lang)}"):
                 temperature = st.slider(
                     get_text('temperature', lang),
                     min_value=0.0,
@@ -442,9 +440,8 @@ def render_sidebar():
                 )
                 st.session_state.k_results = k_results
 
-            # Phase 2 settings
-            st.subheader(f"🧠 {get_text('intelligence_features', lang)}")
-            with st.container():
+            # Intelligence features (collapsible)
+            with st.expander(f"🧠 {get_text('intelligence_features', lang)}"):
                 use_hybrid_agent = st.checkbox(
                     get_text('use_hybrid_agent', lang),
                     value=st.session_state.use_hybrid_agent,
@@ -471,53 +468,53 @@ def render_sidebar():
 
         st.divider()
 
-        # Data Source Management
-        st.subheader(f"📊 {get_text('data_sources', lang)}")
+        # Data Source Management (collapsible)
+        with st.expander(f"📊 {get_text('data_sources', lang)}"):
 
-        data_source_tab = st.radio(
-            get_text('data_source', lang),
-            options=["URL", get_text('local_files', lang)],
-            horizontal=True
-        )
-
-        if data_source_tab == "URL":
-            csv_urls = st.text_area(
-                get_text('csv_urls', lang),
-                value="https://github.com/AleksNeStu/ai-real-estate-assistant/blob/main/dataset/pl/apartments_rent_pl_2024_01.csv",
-                placeholder=get_text('csv_urls_placeholder', lang),
-                help=get_text('csv_urls_help', lang),
-                height=100
+            data_source_tab = st.radio(
+                get_text('data_source', lang),
+                options=["URL", get_text('local_files', lang)],
+                horizontal=True
             )
 
-            if st.button(get_text('load_data', lang), type="primary"):
-                if csv_urls:
-                    load_data_from_urls(csv_urls)
-                else:
-                    st.warning(get_text('please_enter_csv_url', lang))
+            if data_source_tab == "URL":
+                csv_urls = st.text_area(
+                    get_text('csv_urls', lang),
+                    value="https://github.com/AleksNeStu/ai-real-estate-assistant/blob/main/dataset/pl/apartments_rent_pl_2024_01.csv",
+                    placeholder=get_text('csv_urls_placeholder', lang),
+                    help=get_text('csv_urls_help', lang),
+                    height=100
+                )
 
-        else:
-            st.write(get_text('upload_csv_files', lang))
-            uploaded_files = st.file_uploader(
-                "Choose CSV files",
-                type=['csv'],
-                accept_multiple_files=True,
-                label_visibility="collapsed"
-            )
+                if st.button(get_text('load_data', lang), type="primary"):
+                    if csv_urls:
+                        load_data_from_urls(csv_urls)
+                    else:
+                        st.warning(get_text('please_enter_csv_url', lang))
 
-            if st.button(get_text('load_local_files', lang), type="primary"):
-                if uploaded_files:
-                    load_local_files(uploaded_files)
-                else:
-                    st.warning(get_text('please_upload_files', lang))
+            else:
+                st.write(get_text('upload_csv_files', lang))
+                uploaded_files = st.file_uploader(
+                    "Choose CSV files",
+                    type=['csv'],
+                    accept_multiple_files=True,
+                    label_visibility="collapsed"
+                )
 
-        # Data status
-        if st.session_state.data_loaded:
-            st.success(f"✓ {get_text('data_loaded_success', lang)}: {len(st.session_state.property_collection.properties)} {get_text('properties', lang)}")
+                if st.button(get_text('load_local_files', lang), type="primary"):
+                    if uploaded_files:
+                        load_local_files(uploaded_files)
+                    else:
+                        st.warning(get_text('please_upload_files', lang))
 
-            # Vector store stats
-            if st.session_state.vector_store:
-                stats = st.session_state.vector_store.get_stats()
-                st.info(f"📦 {get_text('vector_store', lang)}: {stats.get('total_documents', 0)} {get_text('documents', lang)}")
+            # Data status
+            if st.session_state.data_loaded:
+                st.success(f"✓ {get_text('data_loaded_success', lang)}: {len(st.session_state.property_collection.properties)} {get_text('properties', lang)}")
+
+                # Vector store stats
+                if st.session_state.vector_store:
+                    stats = st.session_state.vector_store.get_stats()
+                    st.info(f"📦 {get_text('vector_store', lang)}: {stats.get('total_documents', 0)} {get_text('documents', lang)}")
 
         st.divider()
 
