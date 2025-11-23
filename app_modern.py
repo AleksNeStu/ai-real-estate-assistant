@@ -2148,6 +2148,7 @@ def apply_theme():
             .stRadio label, .stCheckbox label {
                 color: #31333F !important;
             }
+            .stTextInput, .stSelectbox, .stTextArea, .stNumberInput, .stMultiSelect, .stSlider, .stCheckbox, .stRadio, .stButton { margin-bottom: 0.75rem !important; }
             /* Checkbox visual */
             .stCheckbox div[role="checkbox"] {
                 background-color: #ffffff !important;
@@ -2343,6 +2344,33 @@ def apply_theme():
             div[data-baseweb="modal"] label,
             div[data-baseweb="drawer"] label {
                 color: #31333F !important;
+            }
+            div[data-baseweb="modal"] [data-baseweb="checkbox"] {
+                background-color: #ffffff !important;
+                border: 1px solid #d1d5db !important;
+            }
+            div[data-baseweb="modal"] [data-baseweb="checkbox"][aria-checked="true"] {
+                background-color: #e2e8f0 !important;
+                border-color: #60a5fa !important;
+            }
+            div[data-baseweb="modal"] [data-baseweb="radio"] {
+                background-color: #ffffff !important;
+                border: 1px solid #d1d5db !important;
+            }
+            div[data-baseweb="modal"] [data-baseweb="radio"][aria-checked="true"] {
+                background-color: #e2e8f0 !important;
+                border-color: #60a5fa !important;
+            }
+            div[data-baseweb="modal"] [data-baseweb="checkbox"] svg rect,
+            div[data-baseweb="modal"] [data-baseweb="radio"] svg circle {
+                color: #31333F !important;
+                fill: #31333F !important;
+                stroke: #d1d5db !important;
+            }
+            div[data-baseweb="modal"] [data-baseweb="select"] div[role="button"] {
+                background-color: #ffffff !important;
+                color: #31333F !important;
+                border-color: #d1d5db !important;
             }
             /* Captions */
             .stCaption {
