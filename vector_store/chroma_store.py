@@ -14,8 +14,11 @@ from datetime import datetime
 import streamlit as st
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
-from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+try:
+    from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
+except Exception:
+    FastEmbedEmbeddings = None
 
 from data.schemas import Property, PropertyCollection
 
@@ -73,11 +76,28 @@ class ChromaPropertyStore:
 
     @st.cache_resource
     def _create_embeddings(_self, model_name: str):
-        """Create FastEmbed embeddings (cached)."""
-        return FastEmbedEmbeddings(model_name=model_name)
+        try:
+            if FastEmbedEmbeddings is not None:
+                return FastEmbedEmbeddings(model_name=model_name)
+        except Exception as e:
+            st.warning(f"FastEmbed initialization failed: {e}")
+
+        try:
+            from config import settings
+            if settings.openai_api_key:
+                from langchain_openai import OpenAIEmbeddings
+                return OpenAIEmbeddings()
+        except Exception as e:
+            st.warning(f"OpenAI embeddings unavailable: {e}")
+
+        return None
 
     def _initialize_vector_store(self) -> Chroma:
         """Initialize or load existing ChromaDB vector store."""
+        if self.embeddings is None:
+            st.warning("Embeddings unavailable; vector store features are disabled")
+            return None
+
         try:
             # Try to load existing store
             vector_store = Chroma(

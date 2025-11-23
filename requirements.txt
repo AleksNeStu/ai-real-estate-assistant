@@ -39,3 +39,4 @@ typing-inspection==0.4.2
 requests==2.32.5
 regex==2025.11.3
 rpds-py==0.20.0
+onnxruntime==1.18.1

@@ -409,62 +409,62 @@ def render_sidebar():
 
             
 
-            # Advanced settings (collapsible)
-            with st.expander(f"⚙️ {get_text('advanced_settings', lang)}"):
-                temperature = st.slider(
-                    get_text('temperature', lang),
-                    min_value=0.0,
-                    max_value=2.0,
-                    value=settings.default_temperature,
-                    step=0.1,
-                    help=get_text('controls_randomness', lang)
-                )
-                st.session_state.temperature = temperature
+        # Advanced settings (collapsible)
+        with st.expander(f"⚙️ {get_text('advanced_settings', lang)}"):
+            temperature = st.slider(
+                get_text('temperature', lang),
+                min_value=0.0,
+                max_value=2.0,
+                value=settings.default_temperature,
+                step=0.1,
+                help=get_text('controls_randomness', lang)
+            )
+            st.session_state.temperature = temperature
 
-                max_tokens = st.number_input(
-                    get_text('max_tokens', lang),
-                    min_value=256,
-                    max_value=32000,
-                    value=settings.default_max_tokens,
-                    step=256,
-                    help=get_text('maximum_response_length', lang)
-                )
-                st.session_state.max_tokens = max_tokens
+            max_tokens = st.number_input(
+                get_text('max_tokens', lang),
+                min_value=256,
+                max_value=32000,
+                value=settings.default_max_tokens,
+                step=256,
+                help=get_text('maximum_response_length', lang)
+            )
+            st.session_state.max_tokens = max_tokens
 
-                k_results = st.slider(
-                    get_text('results_to_retrieve', lang),
-                    min_value=1,
-                    max_value=20,
-                    value=settings.default_k_results,
-                    help=get_text('num_properties_search', lang)
-                )
-                st.session_state.k_results = k_results
+            k_results = st.slider(
+                get_text('results_to_retrieve', lang),
+                min_value=1,
+                max_value=20,
+                value=settings.default_k_results,
+                help=get_text('num_properties_search', lang)
+            )
+            st.session_state.k_results = k_results
 
-            # Intelligence features (collapsible)
-            with st.expander(f"🧠 {get_text('intelligence_features', lang)}"):
-                use_hybrid_agent = st.checkbox(
-                    get_text('use_hybrid_agent', lang),
-                    value=st.session_state.use_hybrid_agent,
-                    help=get_text('enable_intelligent_routing', lang)
-                )
-                st.session_state.use_hybrid_agent = use_hybrid_agent
+        # Intelligence features (collapsible)
+        with st.expander(f"🧠 {get_text('intelligence_features', lang)}"):
+            use_hybrid_agent = st.checkbox(
+                get_text('use_hybrid_agent', lang),
+                value=st.session_state.use_hybrid_agent,
+                help=get_text('enable_intelligent_routing', lang)
+            )
+            st.session_state.use_hybrid_agent = use_hybrid_agent
 
-                show_query_analysis = st.checkbox(
-                    get_text('show_query_analysis', lang),
-                    value=st.session_state.show_query_analysis,
-                    help=get_text('display_query_intent', lang)
-                )
-                st.session_state.show_query_analysis = show_query_analysis
+            show_query_analysis = st.checkbox(
+                get_text('show_query_analysis', lang),
+                value=st.session_state.show_query_analysis,
+                help=get_text('display_query_intent', lang)
+            )
+            st.session_state.show_query_analysis = show_query_analysis
 
-                use_reranking = st.checkbox(
-                    get_text('use_reranking', lang),
-                    value=st.session_state.use_reranking,
-                    help=get_text('rerank_better_relevance', lang)
-                )
-                st.session_state.use_reranking = use_reranking
+            use_reranking = st.checkbox(
+                get_text('use_reranking', lang),
+                value=st.session_state.use_reranking,
+                help=get_text('rerank_better_relevance', lang)
+            )
+            st.session_state.use_reranking = use_reranking
 
-                if use_hybrid_agent:
-                    st.caption(f"✨ {get_text('agent_tools', lang)}")
+            if use_hybrid_agent:
+                st.caption(f"✨ {get_text('agent_tools', lang)}")
 
         st.divider()
 
