@@ -176,9 +176,8 @@ def render_sidebar():
         st.title(f"{settings.app_icon} {get_text('app_title', lang)}")
         st.caption(f"{get_text('version', lang)} {settings.version}")
 
-        # Compact preferences: Language only
-        st.subheader("⚙️ Preferences")
-        with st.container():
+        # Preferences (collapsible)
+        with st.expander("⚙️ Preferences", expanded=True):
             languages = get_available_languages()
             selected_lang = st.selectbox(
                 get_text('language', lang),
@@ -441,7 +440,7 @@ def render_sidebar():
             st.session_state.k_results = k_results
 
         # Intelligence features (collapsible)
-        with st.expander(f"🧠 {get_text('intelligence_features', lang)}"):
+        with st.expander(get_text('intelligence_features', lang)):
             use_hybrid_agent = st.checkbox(
                 get_text('use_hybrid_agent', lang),
                 value=st.session_state.use_hybrid_agent,
@@ -518,21 +517,20 @@ def render_sidebar():
 
         st.divider()
 
-        # Session Management
-        st.subheader(f"🔄 {get_text('session', lang)}")
+        # Session Management (collapsible)
+        with st.expander(f"🔄 {get_text('session', lang)}"):
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button(get_text('clear_chat', lang), use_container_width=True):
+                    st.session_state.messages = []
+                    st.session_state.conversation_chain = None
+                    st.rerun()
 
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button(get_text('clear_chat', lang), use_container_width=True):
-                st.session_state.messages = []
-                st.session_state.conversation_chain = None
-                st.rerun()
-
-        with col2:
-            if st.button(get_text('reset_all', lang), use_container_width=True):
-                for key in list(st.session_state.keys()):
-                    del st.session_state[key]
-                st.rerun()
+            with col2:
+                if st.button(get_text('reset_all', lang), use_container_width=True):
+                    for key in list(st.session_state.keys()):
+                        del st.session_state[key]
+                    st.rerun()
 
 
 def load_data_from_urls(urls_text: str):
