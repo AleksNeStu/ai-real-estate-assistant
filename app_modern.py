@@ -1997,6 +1997,12 @@ def apply_theme():
                 background-color: #ffffff !important;
                 border-color: #d1d5db !important;
             }
+            .stTextInput>div>div,
+            .stSelectbox>div>div,
+            .stTextArea>div>div,
+            .stNumberInput>div>div {
+                border-radius: 0.375rem !important;
+            }
             /* Password visibility toggle */
             .stTextInput button[aria-label*="password"],
             .stTextInput button[aria-label*="Password"],
@@ -2300,6 +2306,43 @@ def apply_theme():
                 outline: none !important;
                 box-shadow: none !important;
                 background-color: #e2e8f0 !important;
+            }
+            div[data-baseweb="modal"],
+            div[data-baseweb="modal"] *,
+            div[data-baseweb="drawer"],
+            div[data-baseweb="drawer"] * {
+                background-color: #ffffff !important;
+                color: #31333F !important;
+                border-color: #e5e7eb !important;
+            }
+            div[data-baseweb="modal"] [data-baseweb="select"] [role="listbox"],
+            div[data-baseweb="drawer"] [data-baseweb="select"] [role="listbox"] {
+                background-color: #ffffff !important;
+                color: #31333F !important;
+                border: 1px solid #e5e7eb !important;
+            }
+            div[data-baseweb="modal"] [data-baseweb="button"] > button,
+            div[data-baseweb="drawer"] [data-baseweb="button"] > button {
+                background-color: #eef2f7 !important;
+                color: #31333F !important;
+                border: 1px solid #d1d5db !important;
+            }
+            div[data-baseweb="modal"] [data-baseweb="button"] > button:hover,
+            div[data-baseweb="drawer"] [data-baseweb="button"] > button:hover {
+                background-color: #e2e8f0 !important;
+                border-color: #cbd5e1 !important;
+            }
+            div[data-baseweb="modal"] h1,
+            div[data-baseweb="modal"] h2,
+            div[data-baseweb="modal"] h3,
+            div[data-baseweb="modal"] h4,
+            div[data-baseweb="modal"] h5,
+            div[data-baseweb="modal"] h6 {
+                color: #1f2937 !important;
+            }
+            div[data-baseweb="modal"] label,
+            div[data-baseweb="drawer"] label {
+                color: #31333F !important;
             }
             /* Captions */
             .stCaption {
