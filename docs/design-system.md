@@ -38,3 +38,9 @@
 - Maintain minimum AA contrast; validate custom additions with WCAG tools
 - Avoid dark-mode classes; ensure neutral defaults render correctly on light theme
 - Keep borders subtle; avoid low-contrast light-on-light for form controls
+
+## Spacing
+- Vertical rhythm: 0.75rem bottom margin on core controls
+- Applies to: inputs, selects, text areas, number inputs, multiselects, sliders, checkboxes, radios, buttons
+- Components: add 0.75rem bottom margin to expanders, metrics, dataframes, file upload dropzone
+- Tabs: 0.5rem vertical padding inside tab panels for content breathing room

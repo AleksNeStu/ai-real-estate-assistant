@@ -2149,6 +2149,11 @@ def apply_theme():
                 color: #31333F !important;
             }
             .stTextInput, .stSelectbox, .stTextArea, .stNumberInput, .stMultiSelect, .stSlider, .stCheckbox, .stRadio, .stButton { margin-bottom: 0.75rem !important; }
+            .stExpander { margin-bottom: 0.75rem !important; }
+            div[data-testid="stMetric"] { margin-bottom: 0.75rem !important; }
+            .stDataFrame { margin-bottom: 0.75rem !important; }
+            [data-testid="stFileUploadDropzone"] { margin-bottom: 0.75rem !important; }
+            .stTabs [data-baseweb="tab-panel"] { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
             /* Checkbox visual */
             .stCheckbox div[role="checkbox"] {
                 background-color: #ffffff !important;
