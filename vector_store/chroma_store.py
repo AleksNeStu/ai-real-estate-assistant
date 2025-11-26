@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 import platform
+import pandas as pd
 
 import streamlit as st
 from langchain_chroma import Chroma
@@ -20,6 +21,7 @@ except Exception:
     ChromaSettings = None
 from langchain_core.documents import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_core.retrievers import BaseRetriever
 try:
     from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 except Exception:
@@ -80,6 +82,8 @@ class ChromaPropertyStore:
             length_function=len,
         )
 
+        self._documents: List[Document] = []
+
     @st.cache_resource
     def _create_embeddings(_self, model_name: str):
         try:
@@ -122,11 +126,19 @@ class ChromaPropertyStore:
                     client_settings=client_settings,
                 )
 
-            # Check if collection has any documents
-            collection_stats = vector_store._collection.count()
-            logger.info(f"Loaded existing ChromaDB collection with {collection_stats} documents")
-
-            return vector_store
+                # Check if collection has any documents
+                collection_stats = vector_store._collection.count()
+                logger.info(f"Loaded existing ChromaDB collection with {collection_stats} documents")
+                return vector_store
+            else:
+                # Directly use in-memory on platforms where persistence is disabled
+                vector_store = Chroma(
+                    collection_name=self.collection_name,
+                    embedding_function=self.embeddings,
+                )
+                logger.info("Using in-memory Chroma vector store (persistence disabled for this platform)")
+                st.warning("Persistent vector store unavailable; using in-memory store")
+                return vector_store
 
         except BaseException as e:
             logger.warning(f"Persistent Chroma init failed: {e}")
@@ -171,6 +183,7 @@ class ChromaPropertyStore:
             "has_garden": property.has_garden,
             "has_pool": property.has_pool,
             "has_garage": property.has_garage,
+            "has_elevator": property.has_elevator,
             "property_type": property.property_type.value if hasattr(property.property_type, "value") else str(property.property_type),
             "source_url": property.source_url or "",
         }
@@ -214,6 +227,7 @@ class ChromaPropertyStore:
             try:
                 doc = self.property_to_document(prop)
                 documents.append(doc)
+                self._documents.append(doc)
             except Exception as e:
                 logger.warning(f"Skipping property {prop.id}: {e}")
                 continue
@@ -236,8 +250,12 @@ class ChromaPropertyStore:
                 logger.error(f"Error adding batch: {e}")
                 continue
 
-        logger.info(f"Total properties added to vector store: {total_added}")
-        return total_added
+        if total_added > 0:
+            logger.info(f"Total properties added to vector store: {total_added}")
+            return total_added
+        else:
+            logger.info(f"Stored {len(documents)} properties in fallback cache")
+            return len(documents)
 
     def add_property_collection(
         self,
@@ -279,17 +297,30 @@ class ChromaPropertyStore:
             List of (Document, score) tuples
         """
         try:
-            results = self.vector_store.similarity_search_with_score(
-                query=query,
-                k=k,
-                filter=filter,
-                **kwargs
-            )
-            return results
-
+            if self.vector_store is not None:
+                results = self.vector_store.similarity_search_with_score(
+                    query=query,
+                    k=k,
+                    filter=filter,
+                    **kwargs
+                )
+                return results
+            else:
+                raise RuntimeError("no_vector_store")
         except Exception as e:
-            logger.error(f"Search error: {e}")
-            return []
+            try:
+                q = [t for t in query.lower().split() if t]
+                scored: List[tuple[Document, float]] = []
+                for d in self._documents:
+                    txt = d.page_content.lower()
+                    s = float(sum(1 for t in q if t in txt))
+                    if s > 0:
+                        scored.append((d, s))
+                scored.sort(key=lambda x: x[1], reverse=True)
+                return scored[:k]
+            except Exception:
+                logger.error(f"Search error: {e}")
+                return []
 
     def search_by_metadata(
         self,
@@ -371,14 +402,33 @@ class ChromaPropertyStore:
         Returns:
             LangChain retriever instance
         """
-        return self.vector_store.as_retriever(
-            search_type=search_type,
-            search_kwargs={
-                "k": k,
-                "fetch_k": fetch_k,
-                **kwargs
-            }
-        )
+        stats = self.get_stats()
+        total = stats.get("total_documents", 0)
+        if self.vector_store is not None and total > 0:
+            return self.vector_store.as_retriever(
+                search_type=search_type,
+                search_kwargs={
+                    "k": k,
+                    "fetch_k": fetch_k,
+                    **kwargs
+                }
+            )
+        else:
+            class FallbackRetriever(BaseRetriever):
+                def __init__(self, docs: List[Document], kk: int):
+                    self.docs = docs
+                    self.kk = kk
+                def get_relevant_documents(self, query: str) -> List[Document]:
+                    q = [t for t in query.lower().split() if t]
+                    scored: List[tuple[Document, float]] = []
+                    for d in self.docs:
+                        txt = d.page_content.lower()
+                        s = float(sum(1 for t in q if t in txt))
+                        if s > 0:
+                            scored.append((d, s))
+                    scored.sort(key=lambda x: x[1], reverse=True)
+                    return [d for d, _s in scored[:self.kk]]
+            return FallbackRetriever(self._documents, k)
 
     def clear(self):
         """Clear all documents from the vector store."""
@@ -402,7 +452,12 @@ class ChromaPropertyStore:
             Dictionary with store statistics
         """
         try:
-            count = self.vector_store._collection.count()
+            if self.vector_store is not None:
+                count = self.vector_store._collection.count()
+                if count == 0:
+                    count = len(self._documents)
+            else:
+                count = len(self._documents)
 
             return {
                 "total_documents": count,
@@ -410,9 +465,8 @@ class ChromaPropertyStore:
                 "persist_directory": str(self.persist_directory),
                 "embedding_model": "BAAI/bge-small-en-v1.5",
             }
-
         except Exception as e:
-            return {"error": str(e)}
+            return {"error": str(e), "total_documents": len(self._documents)}
 
     def delete_by_source(self, source_url: str):
         """

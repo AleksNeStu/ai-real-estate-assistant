@@ -184,11 +184,22 @@ class DataLoaderCsv:
         # Shuffle the DataFrame to ensure randomness
         df_shuffled = df_cleaned.sample(frac=1, random_state=1).reset_index(drop=True)
 
-        # Limit the overall number of rows to 2000
-        df_final = df_shuffled.head(rows_count)
+        # Limit the overall number of rows to 2000 (ensure copy to avoid chained assignment warnings)
+        df_final = df_shuffled.head(rows_count).copy()
 
         # Replace values with True/False
-        df_final.replace({'yes': True, 'no': False}, inplace=True)
+        df_final = df_final.replace({'yes': True, 'no': False})
+
+        # Normalize boolean columns: fill NaN -> False and coerce to bool
+        bool_cols = [
+            'has_parking', 'has_garden', 'has_pool', 'has_garage', 'has_bike_room',
+            'is_furnished', 'pets_allowed', 'has_balcony', 'has_elevator'
+        ]
+        for col in bool_cols:
+            if col in df_final.columns:
+                series = df_final[col].fillna(False)
+                series = series.map(lambda v: bool(v) if not pd.isna(v) else False)
+                df_final.loc[:, col] = series
 
         # Replace int to float
         df_final = df_final.apply(lambda x: x.astype(float) if pd.api.types.is_integer_dtype(x) else x)
@@ -221,6 +232,8 @@ class DataLoaderCsv:
         for field in ['has_garden', 'has_pool', 'has_garage', 'has_bike_room']:
             if field not in df_final.columns:
                 df_final[field] = np.random.choice([True, False], size=len(df_final))
+        if 'has_elevator' not in df_final.columns:
+            df_final['has_elevator'] = np.random.choice([True, False], size=len(df_final))
 
         # Log added columns and final row count
         header_final = df_final.columns.tolist()
