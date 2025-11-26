@@ -10,9 +10,14 @@ import logging
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from datetime import datetime
+import platform
 
 import streamlit as st
 from langchain_chroma import Chroma
+try:
+    from chromadb.config import Settings as ChromaSettings
+except Exception:
+    ChromaSettings = None
 from langchain_core.documents import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 try:
@@ -100,12 +105,22 @@ class ChromaPropertyStore:
             return None
 
         try:
-            # Try to load existing store
-            vector_store = Chroma(
-                collection_name=self.collection_name,
-                embedding_function=self.embeddings,
-                persist_directory=str(self.persist_directory)
-            )
+            client_settings = None
+            if ChromaSettings is not None:
+                # Disable telemetry, allow local init; leave other defaults
+                client_settings = ChromaSettings(anonymized_telemetry=False)
+
+            force_persist = os.getenv("CHROMA_FORCE_PERSIST") == "1"
+            is_windows = platform.system().lower() == "windows"
+            use_persist = force_persist or not is_windows
+
+            if use_persist:
+                vector_store = Chroma(
+                    collection_name=self.collection_name,
+                    embedding_function=self.embeddings,
+                    persist_directory=str(self.persist_directory),
+                    client_settings=client_settings,
+                )
 
             # Check if collection has any documents
             collection_stats = vector_store._collection.count()
@@ -113,17 +128,21 @@ class ChromaPropertyStore:
 
             return vector_store
 
-        except Exception as e:
-            logger.info(f"Creating new ChromaDB collection: {e}")
+        except BaseException as e:
+            logger.warning(f"Persistent Chroma init failed: {e}")
 
-            # Create new store
-            vector_store = Chroma(
-                collection_name=self.collection_name,
-                embedding_function=self.embeddings,
-                persist_directory=str(self.persist_directory)
-            )
-
-            return vector_store
+            # Fallback: in-memory Chroma (no persistence)
+            try:
+                vector_store = Chroma(
+                    collection_name=self.collection_name,
+                    embedding_function=self.embeddings,
+                )
+                logger.info("Initialized in-memory Chroma vector store (no persistence)")
+                st.warning("Persistent vector store unavailable; using in-memory store")
+                return vector_store
+            except BaseException as e2:
+                logger.error(f"In-memory Chroma init failed: {e2}")
+                raise
 
     def property_to_document(self, property: Property) -> Document:
         """
@@ -139,12 +158,15 @@ class ChromaPropertyStore:
         text = property.to_search_text()
 
         # Create metadata (must be JSON-serializable)
+        def _nf(x):
+            return float(x) if (x is not None and not pd.isna(x)) else None
+
         metadata = {
             "id": property.id or "unknown",
             "city": property.city,
-            "price": float(property.price),
-            "rooms": float(property.rooms),
-            "bathrooms": float(property.bathrooms),
+            "price": _nf(property.price),
+            "rooms": (_nf(property.rooms) or 0.0),
+            "bathrooms": (_nf(property.bathrooms) or 0.0),
             "has_parking": property.has_parking,
             "has_garden": property.has_garden,
             "has_pool": property.has_pool,
@@ -157,10 +179,10 @@ class ChromaPropertyStore:
         if property.neighborhood:
             metadata["neighborhood"] = property.neighborhood
 
-        if property.area_sqm:
+        if property.area_sqm is not None and not pd.isna(property.area_sqm):
             metadata["area_sqm"] = float(property.area_sqm)
 
-        if property.price_per_sqm:
+        if property.price_per_sqm is not None and not pd.isna(property.price_per_sqm):
             metadata["price_per_sqm"] = float(property.price_per_sqm)
 
         if property.negotiation_rate:

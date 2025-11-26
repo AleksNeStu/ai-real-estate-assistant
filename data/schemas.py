@@ -200,18 +200,24 @@ class Property(BaseModel):
         # Handle property_type as either enum or string (Pydantic might convert to string)
         prop_type_str = self.property_type.value if hasattr(self.property_type, 'value') else str(self.property_type)
 
+        rooms_str = str(int(self.rooms)) if (self.rooms is not None and not pd.isna(self.rooms)) else "unknown"
+        baths_str = str(int(self.bathrooms)) if (self.bathrooms is not None and not pd.isna(self.bathrooms)) else "unknown"
+
         text_parts.extend([
-            f". {prop_type_str.title()} with {int(self.rooms)} rooms and {int(self.bathrooms)} bathrooms",
+            f". {prop_type_str.title()} with {rooms_str} rooms and {baths_str} bathrooms",
             f". Monthly rent: ${self.price}"
         ])
 
         if self.area_sqm:
             text_parts.append(f", area: {self.area_sqm} square meters")
 
-        if self.floor is not None:
-            text_parts.append(f", floor {int(self.floor)}")
-            if self.total_floors:
-                text_parts[-1] += f" of {int(self.total_floors)}"
+        if self.floor is not None and not pd.isna(self.floor):
+            floor_str = str(int(self.floor))
+            tf = self.total_floors if (self.total_floors is not None and not pd.isna(self.total_floors)) else None
+            if tf is not None:
+                text_parts.append(f", floor {floor_str} of {int(tf)}")
+            else:
+                text_parts.append(f", floor {floor_str}")
 
         text_parts.extend([
             f". Amenities: {amenities_str}",

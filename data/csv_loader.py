@@ -161,6 +161,8 @@ class DataLoaderCsv:
                 df_copy = df_copy.rename(columns={room_cols[0]: 'rooms'})
             else:
                 df_copy['rooms'] = 2.0
+        else:
+            df_copy['rooms'] = df_copy['rooms'].fillna(2.0)
 
         if 'area' not in df_copy.columns:
             # Try to find area column
@@ -169,6 +171,8 @@ class DataLoaderCsv:
                 df_copy = df_copy.rename(columns={area_cols[0]: 'area'})
             else:
                 df_copy['area'] = 50.0
+        else:
+            df_copy['area'] = df_copy['area'].fillna(50.0)
 
         # Drop rows where price is NaN (essential column)
         df_cleaned = df_copy.dropna(subset=['price'])
@@ -205,6 +209,8 @@ class DataLoaderCsv:
 
         if 'bathrooms' not in df_final.columns:
             df_final['bathrooms'] = df_final['rooms'].apply(DataLoaderCsv.bathrooms_fake)
+        else:
+            df_final['bathrooms'] = df_final['bathrooms'].fillna(1.0)
 
         if 'owner_name' not in df_final.columns:
             df_final['owner_name'] = [fake_pl.name() for _ in range(df_final_count)]
