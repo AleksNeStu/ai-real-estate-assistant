@@ -100,7 +100,12 @@ def initialize_session_state():
         st.session_state.vector_store = None
 
     if "property_collection" not in st.session_state:
-        st.session_state.property_collection = None
+        try:
+            from utils.property_cache import load_collection
+            cached = load_collection()
+        except Exception:
+            cached = None
+        st.session_state.property_collection = cached
 
     if "selected_provider" not in st.session_state:
         st.session_state.selected_provider = "openai"
@@ -112,7 +117,13 @@ def initialize_session_state():
         st.session_state.conversation_chain = None
 
     if "data_loaded" not in st.session_state:
-        st.session_state.data_loaded = False
+        st.session_state.data_loaded = bool(st.session_state.property_collection)
+
+    if st.session_state.property_collection is not None and st.session_state.vector_store is None:
+        try:
+            load_into_vector_store(st.session_state.property_collection)
+        except Exception:
+            pass
 
     # Phase 2 state variables
     if "use_hybrid_agent" not in st.session_state:
@@ -141,7 +152,10 @@ def initialize_session_state():
         st.session_state.search_manager = SavedSearchManager()
 
     if "market_insights" not in st.session_state:
-        st.session_state.market_insights = None
+        if st.session_state.property_collection is not None:
+            st.session_state.market_insights = MarketInsights(st.session_state.property_collection)
+        else:
+            st.session_state.market_insights = None
 
     if "selected_properties_for_comparison" not in st.session_state:
         st.session_state.selected_properties_for_comparison = []
@@ -591,6 +605,11 @@ def load_data_from_urls(urls_text: str):
             total_count=len(all_properties)
         )
         st.session_state.property_collection = combined_collection
+        try:
+            from utils.property_cache import save_collection
+            save_collection(combined_collection)
+        except Exception:
+            pass
 
         # Load into vector store
         load_into_vector_store(combined_collection)
@@ -652,6 +671,11 @@ def load_local_files(uploaded_files):
                     total_count=len(all_properties)
                 )
                 st.session_state.property_collection = combined_collection
+                try:
+                    from utils.property_cache import save_collection
+                    save_collection(combined_collection)
+                except Exception:
+                    pass
 
                 # Load into vector store
                 load_into_vector_store(combined_collection)

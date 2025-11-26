@@ -121,7 +121,7 @@ class DataLoaderCsv:
         return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
     @staticmethod
-    def format_df(df: pd.DataFrame, rows_count=2000):
+    def format_df(df: pd.DataFrame, rows_count: int | None = None):
         # Get header
         header = df.columns.tolist()
 
@@ -184,8 +184,7 @@ class DataLoaderCsv:
         # Shuffle the DataFrame to ensure randomness
         df_shuffled = df_cleaned.sample(frac=1, random_state=1).reset_index(drop=True)
 
-        # Limit the overall number of rows to 2000 (ensure copy to avoid chained assignment warnings)
-        df_final = df_shuffled.head(rows_count).copy()
+        df_final = (df_shuffled.head(rows_count).copy() if rows_count else df_shuffled.copy())
 
         # Replace values with True/False
         df_final = df_final.replace({'yes': True, 'no': False})
