@@ -4,6 +4,7 @@ numpy==1.26.4
 plotly==5.18.0
 folium==0.17.0
 streamlit-folium==0.22.0
+pyarrow==16.1.0
 
 # Vector store / embeddings
 chromadb==1.0.21

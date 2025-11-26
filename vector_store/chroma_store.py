@@ -148,7 +148,7 @@ class ChromaPropertyStore:
             "has_garden": property.has_garden,
             "has_pool": property.has_pool,
             "has_garage": property.has_garage,
-            "property_type": property.property_type.value,
+            "property_type": property.property_type.value if hasattr(property.property_type, "value") else str(property.property_type),
             "source_url": property.source_url or "",
         }
 
@@ -163,7 +163,7 @@ class ChromaPropertyStore:
             metadata["price_per_sqm"] = float(property.price_per_sqm)
 
         if property.negotiation_rate:
-            metadata["negotiation_rate"] = property.negotiation_rate.value
+            metadata["negotiation_rate"] = property.negotiation_rate.value if hasattr(property.negotiation_rate, "value") else str(property.negotiation_rate)
 
         return Document(
             page_content=text,

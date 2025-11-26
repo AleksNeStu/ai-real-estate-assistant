@@ -1027,7 +1027,20 @@ def render_market_insights_tab():
             'Price Range': price_dist['bins'],
             'Count': price_dist['counts']
         })
-        st.bar_chart(dist_df.set_index('Price Range'))
+        try:
+            import pyarrow as pa  # noqa: F401
+            st.bar_chart(dist_df.set_index('Price Range'))
+        except Exception:
+            try:
+                import matplotlib.pyplot as plt
+                fig, ax = plt.subplots()
+                s = dist_df.set_index('Price Range')['Count']
+                s.plot(kind='bar', ax=ax)
+                ax.set_xlabel('Price Range')
+                ax.set_ylabel('Count')
+                st.pyplot(fig)
+            except Exception:
+                st.dataframe(dist_df)
 
     st.divider()
 
@@ -1098,7 +1111,20 @@ def render_market_insights_tab():
             for amenity, impact in amenity_impact.items()
         ]).sort_values('Price Increase %', ascending=False)
 
-        st.bar_chart(impact_df.set_index('Amenity'))
+        try:
+            import pyarrow as pa  # noqa: F401
+            st.bar_chart(impact_df.set_index('Amenity'))
+        except Exception:
+            try:
+                import matplotlib.pyplot as plt
+                fig, ax = plt.subplots()
+                s = impact_df.set_index('Amenity')['Price Increase %']
+                s.plot(kind='bar', ax=ax)
+                ax.set_xlabel('Amenity')
+                ax.set_ylabel('Price Increase %')
+                st.pyplot(fig)
+            except Exception:
+                st.dataframe(impact_df)
         st.caption(get_text('amenity_impact_caption', lang))
 
 
