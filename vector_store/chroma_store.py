@@ -21,6 +21,7 @@ except Exception:
     FastEmbedEmbeddings = None
 
 from data.schemas import Property, PropertyCollection
+from config.settings import settings
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -418,7 +419,8 @@ class ChromaPropertyStore:
 @st.cache_resource
 def get_vector_store(
     persist_directory: Optional[str] = None,
-    collection_name: str = "properties"
+    collection_name: str = "properties",
+    embedding_model: Optional[str] = None,
 ) -> ChromaPropertyStore:
     """
     Get cached vector store instance.
@@ -426,11 +428,13 @@ def get_vector_store(
     Args:
         persist_directory: Directory for persistent storage
         collection_name: Collection name
+        embedding_model: Embedding model identifier
 
     Returns:
         ChromaPropertyStore instance
     """
     return ChromaPropertyStore(
         persist_directory=persist_directory,
-        collection_name=collection_name
+        collection_name=collection_name,
+        embedding_model=embedding_model or settings.embedding_model,
     )

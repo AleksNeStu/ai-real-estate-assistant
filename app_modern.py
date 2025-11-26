@@ -679,6 +679,14 @@ def load_into_vector_store(collection: PropertyCollection):
         if st.session_state.vector_store is None:
             st.session_state.vector_store = get_vector_store()
 
+        # If embeddings were previously unavailable, try to reinitialize cache
+        if getattr(st.session_state.vector_store, "vector_store", None) is None:
+            try:
+                st.cache_resource.clear()
+            except Exception:
+                pass
+            st.session_state.vector_store = get_vector_store()
+
         # Add properties
         vector_store = st.session_state.vector_store
         added = vector_store.add_property_collection(
