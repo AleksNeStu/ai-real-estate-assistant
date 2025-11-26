@@ -87,8 +87,14 @@ class ChromaPropertyStore:
     @st.cache_resource
     def _create_embeddings(_self, model_name: str):
         try:
-            if FastEmbedEmbeddings is not None:
+            is_windows = platform.system().lower() == "windows"
+            force_fastembed = os.getenv("CHROMA_FORCE_FASTEMBED") == "1" or os.getenv("FORCE_FASTEMBED") == "1"
+            if FastEmbedEmbeddings is not None and not is_windows:
                 return FastEmbedEmbeddings(model_name=model_name)
+            elif FastEmbedEmbeddings is not None and is_windows and force_fastembed:
+                return FastEmbedEmbeddings(model_name=model_name)
+            elif FastEmbedEmbeddings is not None and is_windows:
+                st.warning("FastEmbed is disabled on Windows for stability. Set CHROMA_FORCE_FASTEMBED=1 to force enable.")
         except Exception as e:
             st.warning(f"FastEmbed initialization failed: {e}")
 
@@ -235,6 +241,11 @@ class ChromaPropertyStore:
         if not documents:
             logger.warning("No valid documents to add")
             return 0
+
+        # If vector store is unavailable, keep documents in fallback cache only
+        if self.vector_store is None:
+            logger.info(f"Vector store disabled; cached {len(documents)} properties in memory")
+            return len(documents)
 
         # Add documents in batches
         total_added = 0
@@ -433,16 +444,15 @@ class ChromaPropertyStore:
     def clear(self):
         """Clear all documents from the vector store."""
         try:
-            # Delete the collection
-            self.vector_store.delete_collection()
-
-            # Reinitialize
-            self.vector_store = self._initialize_vector_store()
-
+            if self.vector_store is not None:
+                self.vector_store.delete_collection()
+                self.vector_store = self._initialize_vector_store()
+            self._documents = []
             logger.info("Vector store cleared")
 
         except Exception as e:
             logger.error(f"Error clearing vector store: {e}")
+            self._documents = []
 
     def get_stats(self) -> Dict[str, Any]:
         """
