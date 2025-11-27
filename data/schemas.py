@@ -257,9 +257,11 @@ class PropertyCollection(BaseModel):
                 # Convert row to dict and create Property
                 row_dict = row.to_dict()
 
-                # Add ID if not present
+                src = source or "unknown"
                 if 'id' not in row_dict or pd.isna(row_dict.get('id')):
-                    row_dict['id'] = f"prop_{idx}"
+                    row_dict['id'] = f"{src}#{idx}"
+                if source and ('source_url' not in row_dict or pd.isna(row_dict.get('source_url'))):
+                    row_dict['source_url'] = source
 
                 # Create Property instance (will validate automatically)
                 prop = Property(**row_dict)

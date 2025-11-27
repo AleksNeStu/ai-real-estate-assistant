@@ -479,11 +479,23 @@ class ChromaPropertyStore:
             else:
                 count = len(self._documents)
 
+            emb_cls = type(self.embeddings).__name__ if self.embeddings is not None else "None"
+            if "OpenAIEmbeddings" in emb_cls:
+                emb_provider = "openai"
+                emb_model = getattr(self.embeddings, "model", "openai")
+            elif "FastEmbedEmbeddings" in emb_cls:
+                emb_provider = "fastembed"
+                emb_model = getattr(self.embeddings, "model_name", "BAAI/bge-small-en-v1.5")
+            else:
+                emb_provider = "none"
+                emb_model = "none"
+
             return {
                 "total_documents": count,
                 "collection_name": self.collection_name,
                 "persist_directory": str(self.persist_directory),
-                "embedding_model": "BAAI/bge-small-en-v1.5",
+                "embedding_model": emb_model,
+                "embedding_provider": emb_provider,
             }
         except Exception as e:
             return {"error": str(e), "total_documents": len(self._documents)}

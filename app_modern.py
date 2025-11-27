@@ -600,9 +600,21 @@ def load_data_from_urls(urls_text: str):
 
     # Show summary
     if all_properties:
+        if st.session_state.property_collection:
+            existing_props = st.session_state.property_collection.properties
+        else:
+            existing_props = []
+
+        merged_map = {}
+        for p in existing_props:
+            merged_map[p.id or str(uuid.uuid4())] = p
+        for p in all_properties:
+            merged_map[p.id or str(uuid.uuid4())] = p
+
+        merged_list = list(merged_map.values())
         combined_collection = PropertyCollection(
-            properties=all_properties,
-            total_count=len(all_properties)
+            properties=merged_list,
+            total_count=len(merged_list)
         )
         st.session_state.property_collection = combined_collection
         try:
@@ -611,7 +623,6 @@ def load_data_from_urls(urls_text: str):
         except Exception:
             pass
 
-        # Load into vector store
         load_into_vector_store(combined_collection)
 
         # Create market insights (Phase 3)
@@ -664,11 +675,22 @@ def load_local_files(uploaded_files):
 
                 all_properties.extend(collection_part.properties)
 
-            # Combine all properties into one collection
             if all_properties:
+                if st.session_state.property_collection:
+                    existing_props = st.session_state.property_collection.properties
+                else:
+                    existing_props = []
+
+                merged_map = {}
+                for p in existing_props:
+                    merged_map[p.id or str(uuid.uuid4())] = p
+                for p in all_properties:
+                    merged_map[p.id or str(uuid.uuid4())] = p
+
+                merged_list = list(merged_map.values())
                 combined_collection = PropertyCollection(
-                    properties=all_properties,
-                    total_count=len(all_properties)
+                    properties=merged_list,
+                    total_count=len(merged_list)
                 )
                 st.session_state.property_collection = combined_collection
                 try:
@@ -677,7 +699,6 @@ def load_local_files(uploaded_files):
                 except Exception:
                     pass
 
-                # Load into vector store
                 load_into_vector_store(combined_collection)
 
                 # Create market insights (Phase 3)
@@ -703,19 +724,14 @@ def load_into_vector_store(collection: PropertyCollection):
         if st.session_state.vector_store is None:
             st.session_state.vector_store = get_vector_store()
 
-        # If embeddings were previously unavailable, try to reinitialize cache
         if getattr(st.session_state.vector_store, "vector_store", None) is None:
-            try:
-                st.cache_resource.clear()
-            except Exception:
-                pass
             st.session_state.vector_store = get_vector_store()
 
         # Add properties
         vector_store = st.session_state.vector_store
         added = vector_store.add_property_collection(
             collection,
-            replace_existing=True
+            replace_existing=False
         )
 
         print(f"Added {added} properties to vector store")

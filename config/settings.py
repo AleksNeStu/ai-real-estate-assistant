@@ -64,6 +64,8 @@ class AppSettings(BaseModel):
             "https://raw.githubusercontent.com/AleksNeStu/projects-data/main/dataset/pl/apartments_pl_2024_01.csv",
             "https://raw.githubusercontent.com/AleksNeStu/projects-data/main/dataset/pl/apartments_pl_2024_02.csv",
             "https://raw.githubusercontent.com/AleksNeStu/projects-data/main/dataset/pl/apartments_pl_2024_03.csv",
+            "https://raw.githubusercontent.com/AleksNeStu/projects-data/main/dataset/pl/apartments_pl_2024_04.csv",
+            "https://raw.githubusercontent.com/AleksNeStu/projects-data/main/dataset/pl/apartments_pl_2024_05.csv",
         ]
     )
 
