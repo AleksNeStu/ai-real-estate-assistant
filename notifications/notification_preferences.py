@@ -169,8 +169,8 @@ class NotificationPreferences:
         if not self.is_alert_enabled(alert_type):
             return False
 
-        # Check quiet hours
-        if self.is_in_quiet_hours(check_time):
+        # Respect quiet hours only for non-instant delivery modes
+        if self.alert_frequency != AlertFrequency.INSTANT and self.is_in_quiet_hours(check_time):
             return False
 
         # Check daily limit

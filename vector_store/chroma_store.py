@@ -207,6 +207,16 @@ class ChromaPropertyStore:
         if property.negotiation_rate:
             metadata["negotiation_rate"] = property.negotiation_rate.value if hasattr(property.negotiation_rate, "value") else str(property.negotiation_rate)
 
+        # Capture extra fields from the original row to preserve information
+        try:
+            all_data = property.model_dump(exclude_none=True)
+            base_keys = set(metadata.keys()) | {"neighborhood", "price_per_sqm"}
+            extras = {k: v for k, v in all_data.items() if k not in base_keys}
+            if extras:
+                metadata["chroma_dp"] = extras
+        except Exception:
+            pass
+
         return Document(
             page_content=text,
             metadata=metadata

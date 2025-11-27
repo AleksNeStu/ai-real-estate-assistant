@@ -56,14 +56,14 @@ class Property(BaseModel):
     )
 
     # Physical Characteristics
-    rooms: float = Field(..., ge=0, le=50, description="Number of rooms")
-    bathrooms: float = Field(default=1.0, ge=0, le=20, description="Number of bathrooms")
+    rooms: Optional[float] = Field(None, ge=0, le=50, description="Number of rooms")
+    bathrooms: Optional[float] = Field(default=1.0, ge=0, le=20, description="Number of bathrooms")
     area_sqm: Optional[float] = Field(None, gt=0, description="Area in square meters")
     floor: Optional[float] = Field(None, description="Floor number")
     total_floors: Optional[float] = Field(None, description="Total floors in building")
 
     # Financial Information
-    price: float = Field(..., gt=0, description="Monthly rental price")
+    price: Optional[float] = Field(None, ge=0, description="Monthly rental price")
     price_media: Optional[float] = Field(None, ge=0, description="Estimated utility costs")
     price_delta: Optional[float] = Field(None, description="Price variation/negotiation room")
     deposit: Optional[float] = Field(None, ge=0, description="Security deposit amount")
@@ -203,9 +203,10 @@ class Property(BaseModel):
         rooms_str = str(int(self.rooms)) if (self.rooms is not None and not pd.isna(self.rooms)) else "unknown"
         baths_str = str(int(self.bathrooms)) if (self.bathrooms is not None and not pd.isna(self.bathrooms)) else "unknown"
 
+        price_str = f"${int(self.price)}" if (self.price is not None and not pd.isna(self.price)) else "unknown"
         text_parts.extend([
             f". {prop_type_str.title()} with {rooms_str} rooms and {baths_str} bathrooms",
-            f". Monthly rent: ${self.price}"
+            f". Monthly rent: {price_str}"
         ])
 
         if self.area_sqm:

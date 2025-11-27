@@ -133,17 +133,11 @@ class DataLoaderCsv:
         df_copy.columns = [
             DataLoaderCsv.camel_to_snake(col) for col in df_copy.columns]
 
-        # Required columns - we need at least these for the app to work
-        required_columns = ['price']
-
-        # Check if we have at least price column
+        # Map common synonyms to canonical schema keys (best effort)
         if 'price' not in df_copy.columns:
-            # Try to find a price-like column
-            price_cols = [col for col in df_copy.columns if 'price' in col.lower() or 'cost' in col.lower() or 'rent' in col.lower()]
+            price_cols = [col for col in df_copy.columns if any(x in col.lower() for x in ['price', 'cost', 'rent'])]
             if price_cols:
                 df_copy = df_copy.rename(columns={price_cols[0]: 'price'})
-            else:
-                raise ValueError("CSV must have a price or rent column")
 
         # Add missing essential columns with default values
         if 'city' not in df_copy.columns:
@@ -164,18 +158,14 @@ class DataLoaderCsv:
         else:
             df_copy['rooms'] = df_copy['rooms'].fillna(2.0)
 
-        if 'area' not in df_copy.columns:
-            # Try to find area column
-            area_cols = [col for col in df_copy.columns if any(x in col.lower() for x in ['area', 'size', 'sqm', 'square'])]
+        # Prefer canonical 'area_sqm'
+        if 'area_sqm' not in df_copy.columns:
+            area_cols = [col for col in df_copy.columns if any(x in col.lower() for x in ['area_sqm', 'area', 'size', 'sqm', 'square'])]
             if area_cols:
-                df_copy = df_copy.rename(columns={area_cols[0]: 'area'})
-            else:
-                df_copy['area'] = 50.0
-        else:
-            df_copy['area'] = df_copy['area'].fillna(50.0)
+                df_copy = df_copy.rename(columns={area_cols[0]: 'area_sqm'})
 
-        # Drop rows where price is NaN (essential column)
-        df_cleaned = df_copy.dropna(subset=['price'])
+        # Do not drop rows; allow missing values (schema-agnostic ingestion)
+        df_cleaned = df_copy
 
         # Get unique cities
         cities = df_cleaned['city'].unique() if 'city' in df_cleaned.columns else ['Unknown']
@@ -200,33 +190,20 @@ class DataLoaderCsv:
                 series = series.map(lambda v: bool(v) if not pd.isna(v) else False)
                 df_final.loc[:, col] = series
 
-        # Replace int to float
-        df_final = df_final.apply(lambda x: x.astype(float) if pd.api.types.is_integer_dtype(x) else x)
+        # Replace int to float where applicable (avoid silent downcasting)
+        def _to_float_series(s: pd.Series) -> pd.Series:
+            try:
+                return s.astype(float)
+            except Exception:
+                return s
+        df_final = df_final.apply(lambda x: _to_float_series(x) if pd.api.types.is_integer_dtype(x) else x)
         df_final_count = len(df_final)
 
-        # Add fake (closer to real) data only if columns don't exist
-        if 'price_media' not in df_final.columns:
-            df_final['price_media'] = df_final['price'].apply(DataLoaderCsv.price_media_fake)
-
-        if 'price_delta' not in df_final.columns:
-            df_final['price_delta'] = np.array(np.random.choice(
-                np.linspace(0,0.05,10),
-                size=len(df_final)) * df_final['price']).astype(int)
-
-        if 'negotiation_rate' not in df_final.columns:
-            df_final['negotiation_rate'] = np.random.choice(
-                ['high', 'middle', 'low'], p=[0.1, 0.6, 0.3], size=df_final_count)
-
-        if 'bathrooms' not in df_final.columns:
+        # Bathrooms normalization (best effort)
+        if 'bathrooms' not in df_final.columns and 'rooms' in df_final.columns:
             df_final['bathrooms'] = df_final['rooms'].apply(DataLoaderCsv.bathrooms_fake)
-        else:
+        elif 'bathrooms' in df_final.columns:
             df_final['bathrooms'] = df_final['bathrooms'].fillna(1.0)
-
-        if 'owner_name' not in df_final.columns:
-            df_final['owner_name'] = [fake_pl.name() for _ in range(df_final_count)]
-
-        if 'owner_phone' not in df_final.columns:
-            df_final['owner_phone'] = [fake_pl.phone_number() for _ in range(df_final_count)]
 
         for field in ['has_garden', 'has_pool', 'has_garage', 'has_bike_room']:
             if field not in df_final.columns:
