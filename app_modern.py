@@ -182,6 +182,20 @@ def initialize_session_state():
         # Default to light theme
         st.session_state.theme = "light"
 
+    # Auto-load default datasets on first run
+    try:
+        if "autoload_default_datasets" not in st.session_state:
+            st.session_state.autoload_default_datasets = settings.autoload_default_datasets
+        if (
+            not st.session_state.data_loaded
+            and st.session_state.autoload_default_datasets
+            and settings.default_datasets
+        ):
+            urls_text = "\n".join(settings.default_datasets)
+            load_data_from_urls(urls_text)
+    except Exception:
+        pass
+
 
 def render_sidebar():
     """Render sidebar with model selection and configuration."""
@@ -204,6 +218,8 @@ def render_sidebar():
             if selected_lang != st.session_state.language:
                 st.session_state.language = selected_lang
                 st.rerun()
+
+            # removed: autoload toggle moved to Data Sources
 
         st.divider()
 
@@ -483,6 +499,11 @@ def render_sidebar():
 
         # Data Source Management (collapsible)
         with st.expander(f"📊 {get_text('data_sources', lang)}"):
+            autoload_flag = st.checkbox(
+                "autoload_default_at_seton_start",
+                value=st.session_state.get("autoload_default_datasets", settings.autoload_default_datasets)
+            )
+            st.session_state.autoload_default_datasets = autoload_flag
 
             data_source_tab = st.radio(
                 get_text('data_source', lang),
@@ -493,7 +514,7 @@ def render_sidebar():
             if data_source_tab == "URL":
                 csv_urls = st.text_area(
                     get_text('csv_urls', lang),
-                    value="https://github.com/AleksNeStu/ai-real-estate-assistant/blob/main/dataset/pl/apartments_rent_pl_2024_01.csv",
+                    value="\n".join(settings.default_datasets),
                     placeholder=get_text('csv_urls_placeholder', lang),
                     help=get_text('csv_urls_help', lang),
                     height=100

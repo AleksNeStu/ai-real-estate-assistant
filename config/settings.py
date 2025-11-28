@@ -53,6 +53,8 @@ class AppSettings(BaseModel):
     # Data Loading
     max_properties: int = 2000
     batch_size: int = 100
+    autoload_default_datasets: bool = False
+    vector_persist_enabled: bool = False
 
     # UI Settings
     page_layout: str = "wide"
@@ -61,11 +63,11 @@ class AppSettings(BaseModel):
     # Dataset URLs
     default_datasets: list = Field(
         default_factory=lambda: [
-            "https://raw.githubusercontent.com/AleksNeStu/projects-data/main/dataset/pl/apartments_pl_2024_01.csv",
-            "https://raw.githubusercontent.com/AleksNeStu/projects-data/main/dataset/pl/apartments_pl_2024_02.csv",
-            "https://raw.githubusercontent.com/AleksNeStu/projects-data/main/dataset/pl/apartments_pl_2024_03.csv",
-            "https://raw.githubusercontent.com/AleksNeStu/projects-data/main/dataset/pl/apartments_pl_2024_04.csv",
-            "https://raw.githubusercontent.com/AleksNeStu/projects-data/main/dataset/pl/apartments_pl_2024_05.csv",
+            "dataset/pl/apartments_rent_pl_2024_01.csv",
+            "dataset/pl/apartments_rent_pl_2024_02.csv",
+            "dataset/pl/apartments_rent_pl_2024_03.csv",
+            "dataset/pl/apartments_rent_pl_2024_04.csv",
+            "dataset/pl/apartments_rent_pl_2024_05.csv",
         ]
     )
 

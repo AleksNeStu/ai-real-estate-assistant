@@ -83,6 +83,7 @@ class ChromaPropertyStore:
         )
 
         self._documents: List[Document] = []
+        self._doc_ids: set[str] = set()
 
     @st.cache_resource
     def _create_embeddings(_self, model_name: str):
@@ -117,12 +118,10 @@ class ChromaPropertyStore:
         try:
             client_settings = None
             if ChromaSettings is not None:
-                # Disable telemetry, allow local init; leave other defaults
                 client_settings = ChromaSettings(anonymized_telemetry=False)
 
             force_persist = os.getenv("CHROMA_FORCE_PERSIST") == "1"
-            is_windows = platform.system().lower() == "windows"
-            use_persist = force_persist or not is_windows
+            use_persist = force_persist or bool(settings.vector_persist_enabled)
 
             if use_persist:
                 vector_store = Chroma(
@@ -135,6 +134,12 @@ class ChromaPropertyStore:
                 # Check if collection has any documents
                 collection_stats = vector_store._collection.count()
                 logger.info(f"Loaded existing ChromaDB collection with {collection_stats} documents")
+                try:
+                    existing = vector_store._collection.get(include=[], limit=None)
+                    for _id in existing.get("ids", []) or []:
+                        self._doc_ids.add(str(_id))
+                except Exception:
+                    pass
                 return vector_store
             else:
                 # Directly use in-memory on platforms where persistence is disabled
@@ -144,6 +149,12 @@ class ChromaPropertyStore:
                 )
                 logger.info("Using in-memory Chroma vector store (persistence disabled for this platform)")
                 st.warning("Persistent vector store unavailable; using in-memory store")
+                try:
+                    existing = vector_store._collection.get(include=[], limit=None)
+                    for _id in existing.get("ids", []) or []:
+                        self._doc_ids.add(str(_id))
+                except Exception:
+                    pass
                 return vector_store
 
         except BaseException as e:
@@ -157,6 +168,12 @@ class ChromaPropertyStore:
                 )
                 logger.info("Initialized in-memory Chroma vector store (no persistence)")
                 st.warning("Persistent vector store unavailable; using in-memory store")
+                try:
+                    existing = vector_store._collection.get(include=[], limit=None)
+                    for _id in existing.get("ids", []) or []:
+                        self._doc_ids.add(str(_id))
+                except Exception:
+                    pass
                 return vector_store
             except BaseException as e2:
                 logger.error(f"In-memory Chroma init failed: {e2}")
@@ -242,6 +259,11 @@ class ChromaPropertyStore:
         for prop in properties:
             try:
                 doc = self.property_to_document(prop)
+                doc_id = str(doc.metadata.get("id", ""))
+                if doc_id:
+                    if doc_id in self._doc_ids:
+                        continue
+                    self._doc_ids.add(doc_id)
                 documents.append(doc)
                 self._documents.append(doc)
             except Exception as e:
@@ -263,7 +285,8 @@ class ChromaPropertyStore:
             batch = documents[i:i + batch_size]
 
             try:
-                self.vector_store.add_documents(batch)
+                ids = [str(d.metadata.get("id", f"doc-{i+j}")) for j, d in enumerate(batch)]
+                self.vector_store.add_documents(batch, ids=ids)
                 total_added += len(batch)
                 logger.info(f"Added batch {i // batch_size + 1}: {len(batch)} properties")
 
@@ -458,6 +481,7 @@ class ChromaPropertyStore:
                 self.vector_store.delete_collection()
                 self.vector_store = self._initialize_vector_store()
             self._documents = []
+            self._doc_ids = set()
             logger.info("Vector store cleared")
 
         except Exception as e:
