@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [ver3]
+  pull_request:
+    branches: [ver3]
+
+jobs:
+  python-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Run tests
+        run: pytest -q
+
+  pdf-export:
+    runs-on: ubuntu-latest
+    needs: python-tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install md-to-pdf
+        run: npm i -g md-to-pdf
+
+      - name: Generate PDF report if present
+        if: ${{ hashFiles('artifacts/**/test_report.md') != '' }}
+        run: |
+          REPORT_MD=$(ls artifacts/**/test_report.md | head -n 1)
+          md-to-pdf "$REPORT_MD"
+
+      - name: Upload PDF artifact if generated
+        if: ${{ hashFiles('artifacts/**/test_report.pdf') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report-pdf
+          path: artifacts/**/test_report.pdf
+
