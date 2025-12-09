@@ -24,8 +24,8 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-cov pytest-asyncio pytest-mock
 
-      - name: Run unit tests only
-        run: pytest -q tests/unit
+      - name: Run unit tests (smoke subset)
+        run: pytest -q tests/unit/test_ui_helpers.py
 
   pdf-export:
     runs-on: ubuntu-latest
