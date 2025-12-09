@@ -32,28 +32,7 @@ test('collect console and network metrics', async ({ page }) => {
     return { navigation: nav, resources: res };
   });
 
-  const errorsCount = logs.filter(l => l.level === 'error' || l.level === 'pageerror').length;
-  const warningsCount = logs.filter(l => l.level === 'warning').length;
-  const statusSummary = { '2xx': 0, '3xx': 0, '4xx': 0, '5xx': 0 } as Record<string, number>;
-  for (const r of responses) {
-    if (r.status >= 500) statusSummary['5xx']++;
-    else if (r.status >= 400) statusSummary['4xx']++;
-    else if (r.status >= 300) statusSummary['3xx']++;
-    else if (r.status >= 200) statusSummary['2xx']++;
-  }
-  const slowResources = (perf.resources as any[]).filter((e: any) => (e.duration ?? 0) > 500);
-  const navigation = (perf.navigation as any[])[0] ?? {};
-  const summary = {
-    errors: errorsCount,
-    warnings: warningsCount,
-    statuses: statusSummary,
-    slowResourcesCount: slowResources.length,
-    navigation: {
-      duration: navigation.duration ?? null,
-      domContentLoaded: navigation.domContentLoadedEventEnd ?? null,
-      loadEventEnd: navigation.loadEventEnd ?? null,
-    }
-  };
+  // keep raw logs and performance, omit derived summary for minimal footprint
 
   await writeFile(
     'artifacts/test_run_2025-12-09/logs/browser_console.json',
@@ -66,9 +45,5 @@ test('collect console and network metrics', async ({ page }) => {
   await writeFile(
     'artifacts/test_run_2025-12-09/logs/browser_performance.json',
     JSON.stringify(perf, null, 2)
-  );
-  await writeFile(
-    'artifacts/test_run_2025-12-09/logs/browser_summary.json',
-    JSON.stringify(summary, null, 2)
   );
 });
