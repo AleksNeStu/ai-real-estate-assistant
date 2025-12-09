@@ -54,4 +54,3 @@ jobs:
         with:
           name: test-report-pdf
           path: artifacts/**/test_report.pdf
-
