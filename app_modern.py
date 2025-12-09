@@ -1494,9 +1494,9 @@ def render_notifications_tab():
         }
 
         selected_provider = st.selectbox(
-            "Email Provider",
+            get_text('email_provider', lang),
             options=list(provider_options.keys()),
-            help="Select your email service provider"
+            help=get_text('email_provider', lang)
         )
 
         provider = provider_options[selected_provider]
@@ -1504,26 +1504,28 @@ def render_notifications_tab():
         col1, col2 = st.columns(2)
         with col1:
             smtp_username = st.text_input(
-                "Email Username",
-                help="Your email address for SMTP authentication"
+                get_text('email_username', lang),
+                help=get_text('email_username', lang),
+                label_visibility="visible"
             )
         with col2:
             smtp_password = st.text_input(
-                "Email Password/App Password",
+                get_text('email_password', lang),
                 type="password",
-                help="Use app-specific password for Gmail/Outlook"
+                help=get_text('app_password_help', lang),
+                label_visibility="visible"
             )
 
         if provider == EmailProvider.CUSTOM:
             col1, col2 = st.columns(2)
             with col1:
-                smtp_server = st.text_input("SMTP Server", value="smtp.example.com")
+                smtp_server = st.text_input(get_text('smtp_server', lang), value="smtp.example.com")
             with col2:
-                smtp_port = st.number_input("SMTP Port", value=587, min_value=1, max_value=65535)
+                smtp_port = st.number_input(get_text('smtp_port', lang), value=587, min_value=1, max_value=65535)
 
-            use_tls = st.checkbox("Use TLS", value=True)
+            use_tls = st.checkbox(get_text('use_tls', lang), value=True)
 
-        if st.button("💾 Save Email Configuration", type="primary"):
+        if st.button(get_text('save_email_config', lang), type="primary"):
             if not smtp_username or not smtp_password:
                 st.error(get_text('provide_credentials', lang))
             else:
@@ -1551,13 +1553,13 @@ def render_notifications_tab():
                         email_service = EmailService(config)
 
                     st.session_state.email_service = email_service
-                    st.success("✅ Email service configured successfully!")
+                    st.success(get_text('email_config_success', lang))
                 except Exception as e:
-                    st.error(f"❌ Error configuring email service: {str(e)}")
+                    st.error(get_text('email_config_error', lang))
 
     # Test email configuration
     if st.session_state.email_service and user_email:
-        if st.button("📧 Send Test Email"):
+        if st.button(get_text('send_test_email', lang)):
             try:
                 subject, html = TestEmailTemplate.render(user_name=user_email.split('@')[0])
                 success = st.session_state.email_service.send_email(
@@ -1567,9 +1569,9 @@ def render_notifications_tab():
                     html=True
                 )
                 if success:
-                    st.success("✅ Test email sent successfully! Check your inbox.")
+                    st.success(get_text('test_email_success', lang))
                 else:
-                    st.error("❌ Failed to send test email. Check your configuration.")
+                    st.error(get_text('test_email_error', lang))
             except Exception as e:
                 st.error(f"❌ Error sending test email: {str(e)}")
 
@@ -1577,7 +1579,7 @@ def render_notifications_tab():
 
     # Notification Preferences
     if user_email:
-        st.subheader("🔔 Notification Preferences")
+        st.subheader(get_text('notification_preferences', lang))
 
         prefs_manager = st.session_state.notification_prefs_manager
         prefs = prefs_manager.get_preferences(user_email)
