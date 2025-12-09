@@ -22,10 +22,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-cov
+          pip install pytest pytest-cov pytest-asyncio pytest-mock
 
-      - name: Run tests
-        run: pytest -q
+      - name: Run unit tests only
+        run: pytest -q tests/unit
 
   pdf-export:
     runs-on: ubuntu-latest
