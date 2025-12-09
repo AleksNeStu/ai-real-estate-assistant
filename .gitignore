@@ -189,6 +189,10 @@ node_modules/
 package-lock.json
 yarn.lock
 
+# Test artifacts
+artifacts/
+playwright-report/
+
 # Build artifacts
 *.min.css
 *.min.js
