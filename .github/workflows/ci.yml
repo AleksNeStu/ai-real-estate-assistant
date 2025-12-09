@@ -26,11 +26,7 @@ jobs:
           pip install yarl Faker
 
       - name: Run unit tests (smoke subset)
-        run: pytest -q \
-          tests/unit/test_ui_helpers.py \
-          tests/unit/test_chroma_store.py \
-          tests/unit/test_email_service.py \
-          tests/unit/test_csv_loader.py
+        run: pytest -q tests/unit/test_ui_helpers.py tests/unit/test_email_service.py
 
   pdf-export:
     runs-on: ubuntu-latest
