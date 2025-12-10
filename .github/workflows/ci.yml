@@ -71,12 +71,27 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-asyncio pytest-mock Faker yarl
+          pip install pytest pytest-asyncio pytest-mock pytest-cov Faker yarl
 
-      - name: Run extended unit tests
+      - name: Run extended unit tests with coverage
         run: |
           pytest -q \
+            --cov=. \
+            --cov-report=xml:coverage.xml \
+            --cov-report=html:coverage_html \
             tests/unit/test_chroma_store.py \
             tests/unit/test_csv_loader.py \
             tests/unit/test_property_collection.py \
             tests/unit/test_vector_retriever.py
+
+      - name: Upload coverage XML
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-extended-xml
+          path: coverage.xml
+
+      - name: Upload coverage HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-extended-html
+          path: coverage_html
