@@ -164,6 +164,17 @@ class DataLoaderCsv:
             if area_cols:
                 df_copy = df_copy.rename(columns={area_cols[0]: 'area_sqm'})
 
+        # Currency handling: normalize currency column if present, set defaults
+        if 'currency' not in df_copy.columns:
+            currency_cols = [col for col in df_copy.columns if 'currency' in col.lower() or 'curr' in col.lower()]
+            if currency_cols:
+                df_copy = df_copy.rename(columns={currency_cols[0]: 'currency'})
+            else:
+                # Heuristic default: PLN for common Polish cities, else Unknown
+                pl_cities = {'warsaw','warszawa','krakow','wroclaw','poznan','gdansk','szczecin','lublin','katowice','bydgoszcz','lodz'}
+                default_curr = 'PLN' if ('city' in df_copy.columns and any(str(c).lower() in pl_cities for c in df_copy['city'].dropna().astype(str).unique())) else 'Unknown'
+                df_copy['currency'] = default_curr
+
         # Do not drop rows; allow missing values (schema-agnostic ingestion)
         df_cleaned = df_copy
 

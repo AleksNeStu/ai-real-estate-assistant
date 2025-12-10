@@ -43,7 +43,10 @@ class Property(BaseModel):
     description: Optional[str] = Field(None, description="Detailed property description")
 
     # Location Information
+    country: Optional[str] = Field(None, description="Country where property is located")
+    region: Optional[str] = Field(None, description="Region/State/Voivodeship")
     city: str = Field(..., description="City where property is located")
+    district: Optional[str] = Field(None, description="City district/borough")
     neighborhood: Optional[str] = Field(None, description="Neighborhood or district")
     address: Optional[str] = Field(None, description="Full street address")
     latitude: Optional[float] = Field(None, ge=-90, le=90, description="Latitude coordinate")
@@ -63,7 +66,8 @@ class Property(BaseModel):
     total_floors: Optional[float] = Field(None, description="Total floors in building")
 
     # Financial Information
-    price: Optional[float] = Field(None, ge=0, description="Monthly rental price")
+    price: Optional[float] = Field(None, ge=0, description="Monthly rental price or listing price")
+    currency: Optional[str] = Field(None, description="Currency code for price (e.g., PLN, EUR, USD)")
     price_media: Optional[float] = Field(None, ge=0, description="Estimated utility costs")
     price_delta: Optional[float] = Field(None, description="Price variation/negotiation room")
     deposit: Optional[float] = Field(None, ge=0, description="Security deposit amount")
@@ -109,6 +113,7 @@ class Property(BaseModel):
 
     # Computed/Derived Fields
     price_per_sqm: Optional[float] = Field(None, description="Price per square meter")
+    price_in_eur: Optional[float] = Field(None, description="Price converted to EUR for normalization")
     total_monthly_cost: Optional[float] = Field(None, description="Total monthly cost (rent + utilities)")
 
     class Config:
@@ -138,8 +143,9 @@ class Property(BaseModel):
     def model_post_init(self, __context: Any) -> None:
         """Post-initialization processing to compute derived fields."""
         # Calculate price per square meter
-        if self.area_sqm and self.area_sqm > 0:
-            self.price_per_sqm = round(self.price / self.area_sqm, 2)
+        if self.area_sqm and self.area_sqm > 0 and self.price is not None:
+            base_price = self.price_in_eur if (self.price_in_eur is not None) else self.price
+            self.price_per_sqm = round(base_price / self.area_sqm, 2)
 
         # Calculate total monthly cost
         if self.price_media:

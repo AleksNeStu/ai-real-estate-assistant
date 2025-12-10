@@ -198,10 +198,15 @@ class ChromaPropertyStore:
 
         metadata = {
             "id": property.id or "unknown",
+            "country": getattr(property, "country", None),
+            "region": getattr(property, "region", None),
             "city": property.city,
+            "district": getattr(property, "district", None),
             "price": _nf(property.price),
             "rooms": (_nf(property.rooms) or 0.0),
             "bathrooms": (_nf(property.bathrooms) or 0.0),
+            "price_per_sqm": _nf(getattr(property, "price_per_sqm", None)),
+            "currency": getattr(property, "currency", None),
             "has_parking": property.has_parking,
             "has_garden": property.has_garden,
             "has_pool": property.has_pool,
@@ -209,6 +214,8 @@ class ChromaPropertyStore:
             "has_elevator": property.has_elevator,
             "property_type": property.property_type.value if hasattr(property.property_type, "value") else str(property.property_type),
             "source_url": property.source_url or "",
+            "lat": _nf(getattr(property, "latitude", None)),
+            "lon": _nf(getattr(property, "longitude", None)),
         }
 
         # Add optional fields if present

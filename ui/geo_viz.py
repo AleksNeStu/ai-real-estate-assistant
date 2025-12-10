@@ -75,12 +75,20 @@ def _get_city_coordinates(city: str) -> Tuple[float, float]:
     return DEFAULT_CENTER
 
 
+def get_property_coords(prop: Property) -> Tuple[float, float]:
+    """Return coordinates for a property: prefer lat/lon, fallback to city center."""
+    if prop.latitude is not None and prop.longitude is not None:
+        return float(prop.latitude), float(prop.longitude)
+    return tuple(_get_city_coordinates(prop.city))
+
+
 def create_property_map(
     properties: PropertyCollection,
     center_city: Optional[str] = None,
     zoom_start: int = 7,
     add_clusters: bool = True,
-    show_legend: bool = True
+    show_legend: bool = True,
+    jitter: bool = True
 ) -> folium.Map:
     """
     Create an interactive map with property markers.
@@ -125,15 +133,14 @@ def create_property_map(
         marker_group = m
 
     # Add markers for each property
+    import random
     for prop in properties.properties:
-        coords = _get_city_coordinates(prop.city)
-
-        # Add small random offset to prevent exact overlaps
-        import random
-        coords = [
-            coords[0] + random.uniform(-0.01, 0.01),
-            coords[1] + random.uniform(-0.01, 0.01)
-        ]
+        coords = list(get_property_coords(prop))
+        if jitter:
+            coords = [
+                coords[0] + random.uniform(-0.01, 0.01),
+                coords[1] + random.uniform(-0.01, 0.01)
+            ]
 
         # Create popup content
         popup_html = _create_property_popup(prop)
@@ -169,7 +176,8 @@ def create_price_heatmap(
     center_city: Optional[str] = None,
     zoom_start: int = 7,
     radius: int = 15,
-    blur: int = 25
+    blur: int = 25,
+    jitter: bool = True
 ) -> folium.Map:
     """
     Create a heatmap showing price distribution.
@@ -207,15 +215,14 @@ def create_price_heatmap(
 
     # Prepare heatmap data
     heat_data = []
+    import random
     for prop in properties.properties:
-        coords = _get_city_coordinates(prop.city)
-
-        # Add small random offset
-        import random
-        coords = [
-            coords[0] + random.uniform(-0.01, 0.01),
-            coords[1] + random.uniform(-0.01, 0.01)
-        ]
+        coords = list(get_property_coords(prop))
+        if jitter:
+            coords = [
+                coords[0] + random.uniform(-0.01, 0.01),
+                coords[1] + random.uniform(-0.01, 0.01)
+            ]
 
         # Weight by price (normalized)
         weight = prop.price / 2000  # Normalize to reasonable range
