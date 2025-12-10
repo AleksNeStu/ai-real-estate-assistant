@@ -76,7 +76,10 @@ jobs:
       - name: Run extended unit tests with coverage
         run: |
           pytest -q \
-            --cov=. \
+            --cov=vector_store \
+            --cov=data \
+            --cov=notifications \
+            --cov=utils \
             --cov-fail-under=30 \
             --cov-report=xml:coverage.xml \
             --cov-report=html:coverage_html \
