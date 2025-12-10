@@ -45,31 +45,49 @@ else
   exit 1
 fi
 
-# Upgrade pip and install dependencies
-echo "Upgrading pip and setuptools..."
-python -m pip install --upgrade pip setuptools wheel --quiet
+# Dependency installation with caching (skip if up-to-date)
+REQ_FILE="requirements.txt"
+HASH_FILE="venv/.requirements.sha256"
 
-if [ -f "requirements.txt" ]; then
-  echo "Installing dependencies (this may take a few minutes)..."
-  echo "Installing critical packages with C extensions first..."
-  echo ""
+if [ -f "$REQ_FILE" ]; then
+  REQ_HASH=$(python -c "import hashlib,sys;print(hashlib.sha256(open('$REQ_FILE','rb').read()).hexdigest())")
+  EXISTING_HASH=""
+  if [ -f "$HASH_FILE" ]; then
+    EXISTING_HASH=$(cat "$HASH_FILE" 2>/dev/null || echo "")
+  fi
 
-  # Install critical packages in order for cross-platform compatibility
-  echo "  [1/4] Installing numpy..."
-  python -m pip install "numpy>=1.24.0,<2.0.0" --quiet
-
-  echo "  [2/4] Installing pydantic-core..."
-  python -m pip install --no-cache-dir "pydantic-core>=2.14.0,<3.0.0" --quiet
-
-  echo "  [3/4] Installing pandas..."
-  python -m pip install --no-cache-dir "pandas>=2.2.0,<2.3.0" --quiet
-
-  echo "  [4/4] Installing remaining packages..."
-  python -m pip install -r requirements.txt --quiet
-
-  echo ""
-  echo "✓ Dependencies installed successfully"
-  echo ""
+  if [ "$REQ_HASH" = "$EXISTING_HASH" ]; then
+    echo "✓ Dependencies up-to-date (no reinstall)"
+  else
+    echo "Checking installed packages..."
+    CHECK=$(python - <<'PY'
+try:
+    import streamlit, pandas, numpy, pydantic, langchain, chromadb
+    print("OK")
+except Exception as e:
+    print("FAIL")
+PY
+)
+    if [ "$CHECK" = "OK" ]; then
+      echo "✓ Required packages already present; skipping reinstall"
+      echo "$REQ_HASH" > "$HASH_FILE"
+    else
+      echo "Installing dependencies (first run or changed requirements)..."
+      echo "Upgrading pip and setuptools..."
+      python -m pip install --upgrade pip setuptools wheel --quiet
+      echo "  [1/4] Installing numpy..."
+      python -m pip install "numpy>=1.24.0,<2.0.0" --quiet
+      echo "  [2/4] Installing pydantic-core..."
+      python -m pip install --no-cache-dir "pydantic-core>=2.14.0,<3.0.0" --quiet
+      echo "  [3/4] Installing pandas..."
+      python -m pip install --no-cache-dir "pandas>=2.2.0,<2.3.0" --quiet
+      echo "  [4/4] Installing remaining packages..."
+      python -m pip install -r "$REQ_FILE" --quiet
+      echo ""
+      echo "✓ Dependencies installed successfully"
+      echo "$REQ_HASH" > "$HASH_FILE"
+    fi
+  fi
 fi
 
 # Run the app using the venv Python

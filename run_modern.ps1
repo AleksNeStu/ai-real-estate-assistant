@@ -72,66 +72,84 @@ if (-not $?) {
 Write-Host "✓ Virtual environment activated" -ForegroundColor Green
 Write-Host ""
 
-# Upgrade pip and install wheel
-Write-Host "Upgrading pip and setuptools..." -ForegroundColor Yellow
-python -m pip install --upgrade pip setuptools wheel --quiet
-Write-Host "✓ Tools upgraded" -ForegroundColor Green
-Write-Host ""
+# Dependency installation with caching (skip if up-to-date)
+$reqFile = "requirements.txt"
+$hashFile = "venv\.requirements.sha256"
 
-# Install dependencies
-if (Test-Path "requirements.txt") {
-    Write-Host "Installing dependencies (this may take a few minutes)..." -ForegroundColor Yellow
-    Write-Host "Installing critical packages with C extensions first..." -ForegroundColor Gray
-    Write-Host ""
-
-    # Install numpy first for Windows compatibility
-    Write-Host "  [1/4] Installing numpy..." -ForegroundColor Gray
-    python -m pip install "numpy>=1.24.0,<2.0.0" --quiet
-
-    # Install pydantic-core (C extensions)
-    Write-Host "  [2/4] Installing pydantic-core..." -ForegroundColor Gray
-    python -m pip install --no-cache-dir "pydantic-core>=2.14.0,<3.0.0" --quiet
-
-    # Install pandas separately to ensure C extensions work
-    Write-Host "  [3/4] Installing pandas..." -ForegroundColor Gray
-    python -m pip install --no-cache-dir "pandas>=2.2.0,<2.3.0" --quiet
-
-    # Install remaining dependencies
-    Write-Host "  [4/4] Installing remaining packages..." -ForegroundColor Gray
-    python -m pip install -r requirements.txt --quiet
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "❌ Failed to install dependencies" -ForegroundColor Red
-        Write-Host ""
-        Write-Host "Troubleshooting steps:" -ForegroundColor Yellow
-        Write-Host "1. Ensure Microsoft C++ Build Tools are installed" -ForegroundColor Yellow
-        Write-Host "   Download: https://visualstudio.microsoft.com/visual-cpp-build-tools/" -ForegroundColor Cyan
-        Write-Host "2. Try manual installation:" -ForegroundColor Yellow
-        Write-Host "   python -m pip install --no-cache-dir -r requirements.txt" -ForegroundColor Cyan
-        Write-Host "3. See README.md Troubleshooting section" -ForegroundColor Yellow
-        exit 1
+if (Test-Path $reqFile) {
+    # Compute SHA256 of requirements.txt
+    try {
+        $reqHash = (Get-FileHash -Algorithm SHA256 -Path $reqFile).Hash
+    } catch {
+        $reqHash = ""
     }
 
-    # Verify critical imports
-    Write-Host ""
-    Write-Host "Verifying critical packages..." -ForegroundColor Yellow
-    $verifyResult = python -c "import numpy; import pandas; import pydantic; print('OK')" 2>&1
-    if ($verifyResult -match "OK") {
-        Write-Host "✓ All critical packages imported successfully" -ForegroundColor Green
-        Write-Host "  ✓ numpy" -ForegroundColor Gray
-        Write-Host "  ✓ pandas" -ForegroundColor Gray
-        Write-Host "  ✓ pydantic" -ForegroundColor Gray
+    $existingHash = ""
+    if (Test-Path $hashFile) {
+        try { $existingHash = Get-Content $hashFile -ErrorAction SilentlyContinue } catch { $existingHash = "" }
+    }
+
+    if ($reqHash -ne "" -and $reqHash -eq $existingHash) {
+        Write-Host "✓ Dependencies up-to-date (no reinstall)" -ForegroundColor Green
     } else {
-        Write-Host "⚠️  Warning: Import verification failed" -ForegroundColor Yellow
-        Write-Host "The app may not work correctly. Check README.md Troubleshooting section." -ForegroundColor Yellow
-        Write-Host ""
-        Write-Host "Error details:" -ForegroundColor Red
-        Write-Host $verifyResult -ForegroundColor Red
+        Write-Host "Checking installed packages..." -ForegroundColor Yellow
+        $check = python -c "import streamlit, pandas, numpy, pydantic, langchain, chromadb; print('OK')" 2>&1
+        if ($check -match "OK") {
+            Write-Host "✓ Required packages already present; skipping reinstall" -ForegroundColor Green
+            if ($reqHash -ne "") { $reqHash | Out-File -FilePath $hashFile -Encoding ascii }
+        } else {
+            Write-Host "Installing dependencies (first run or changed requirements)..." -ForegroundColor Yellow
+            Write-Host "Upgrading pip and setuptools..." -ForegroundColor Gray
+            python -m pip install --upgrade pip setuptools wheel --quiet
+
+            Write-Host "  [1/4] Installing numpy..." -ForegroundColor Gray
+            python -m pip install "numpy>=1.24.0,<2.0.0" --quiet
+
+            Write-Host "  [2/4] Installing pydantic-core..." -ForegroundColor Gray
+            python -m pip install --no-cache-dir "pydantic-core>=2.14.0,<3.0.0" --quiet
+
+            Write-Host "  [3/4] Installing pandas..." -ForegroundColor Gray
+            python -m pip install --no-cache-dir "pandas>=2.2.0,<2.3.0" --quiet
+
+            Write-Host "  [4/4] Installing remaining packages..." -ForegroundColor Gray
+            python -m pip install -r $reqFile --quiet
+
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "❌ Failed to install dependencies" -ForegroundColor Red
+                Write-Host "" 
+                Write-Host "Troubleshooting steps:" -ForegroundColor Yellow
+                Write-Host "1. Ensure Microsoft C++ Build Tools are installed" -ForegroundColor Yellow
+                Write-Host "   Download: https://visualstudio.microsoft.com/visual-cpp-build-tools/" -ForegroundColor Cyan
+                Write-Host "2. Try manual installation:" -ForegroundColor Yellow
+                Write-Host "   python -m pip install --no-cache-dir -r requirements.txt" -ForegroundColor Cyan
+                Write-Host "3. See README.md Troubleshooting section" -ForegroundColor Yellow
+                exit 1
+            }
+
+            # Verify critical imports
+            Write-Host "" 
+            Write-Host "Verifying critical packages..." -ForegroundColor Yellow
+            $verifyResult = python -c "import numpy; import pandas; import pydantic; print('OK')" 2>&1
+            if ($verifyResult -match "OK") {
+                Write-Host "✓ All critical packages imported successfully" -ForegroundColor Green
+                Write-Host "  ✓ numpy" -ForegroundColor Gray
+                Write-Host "  ✓ pandas" -ForegroundColor Gray
+                Write-Host "  ✓ pydantic" -ForegroundColor Gray
+            } else {
+                Write-Host "⚠️  Warning: Import verification failed" -ForegroundColor Yellow
+                Write-Host "The app may not work correctly. Check README.md Troubleshooting section." -ForegroundColor Yellow
+                Write-Host "" 
+                Write-Host "Error details:" -ForegroundColor Red
+                Write-Host $verifyResult -ForegroundColor Red
+            }
+            Write-Host "" 
+
+            if ($reqHash -ne "") { $reqHash | Out-File -FilePath $hashFile -Encoding ascii }
+        }
     }
-    Write-Host ""
 } else {
     Write-Host "⚠️  Warning: requirements.txt not found" -ForegroundColor Yellow
-    Write-Host ""
+    Write-Host "" 
 }
 
 # Check for .env file
