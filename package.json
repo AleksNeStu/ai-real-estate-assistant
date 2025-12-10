@@ -8,7 +8,9 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:e2e": "playwright test",
+    "prepare": "npx playwright install"
   },
   "repository": {
     "type": "git",
@@ -16,7 +18,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "type": "commonjs",
   "bugs": {
     "url": "https://github.com/AleksNeStu/ai-real-estate-assistant/issues"

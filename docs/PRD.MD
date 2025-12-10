@@ -78,10 +78,10 @@ Real estate agents often spend significant time manually matching clients with p
 | TR002 | Backend Framework | LangChain with support for multiple LLM models (OpenAI GPT, Llama) |
 | TR003 | Data Processing | Pandas for data manipulation, FastEmbed for embeddings |
 | TR004 | Frontend | Streamlit-based responsive web interface |
-| TR005 | Data Storage | In-memory database and vector stores (DocArrayInMemorySearch, ChromaDB) |
+| TR005 | Data Storage | Persistent vector store (ChromaDB) |
 | TR006 | Data Format | Support for various CSV data formats with standardized schema |
 | TR007 | Deployment | Streamlit Cloud, Docker containerization |
-| TR008 | Package Management | Poetry for dependency management |
+| TR008 | Package Management | pip with requirements.txt |
 | TR009 | Environment | Support for local development and cloud environments |
 | TR010 | Conversation Memory | Multi-turn conversation with history retention |
 
@@ -110,9 +110,9 @@ Real estate agents often spend significant time manually matching clients with p
 - **Backend**: Python
 - **AI/ML**: LangChain, OpenAI GPT models, Llama models
 - **Data Processing**: Pandas, FastEmbed
-- **Vector Storage**: DocArrayInMemorySearch
+- **Vector Storage**: ChromaDB
 - **Deployment**: Streamlit Cloud, Docker
-- **Package Management**: Poetry
+- **Package Management**: pip (requirements.txt)
 
 ## Version History & Roadmap
 

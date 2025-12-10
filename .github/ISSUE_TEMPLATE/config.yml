@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/AleksNeStu/ai-real-estate-assistant/tree/main/docs
+    about: Read the documentation before filing an issue.

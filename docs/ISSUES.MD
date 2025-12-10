@@ -31,5 +31,3 @@
 - Where are keys stored?
   - Locally: in OS environment variables accessed via `config/settings.py` (`openai_api_key`, etc.). Optionally `.env` during development, but `.env` must never be committed.
   - Deployment: in Streamlit Cloud "Secrets" (or other secret managers). Keys are injected into the environment at runtime.
-
-

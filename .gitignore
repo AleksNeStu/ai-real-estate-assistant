@@ -184,35 +184,29 @@ temp/
 *.bak
 *.pkl
 
+# AI agents configs and secrets
+*.agent.json
+*.versal.json
+versal.json
+.vercel/
+secrets/
+*.key
+*.pem
+*.p12
+
 # Node modules (if using any Node.js tools)
 node_modules/
 package-lock.json
 yarn.lock
-
-# Test artifacts
-artifacts/
-playwright-report/
-
-# CI coverage artifacts
-coverage_html/
-
-# Cloud validation snapshot
-resp.html
-
-# Local server log
-server.log
-
-# Deprecated run scripts (keep modern only)
-run_streamlit.ps1
-run_streamlit.sh
-run_v1.ps1
-run_v2.ps1
 
 # Build artifacts
 *.min.css
 *.min.js
 dist/
 build/
+
+# Additional build and artifacts
+artifacts/
 
 # OS-specific files
 .DS_Store

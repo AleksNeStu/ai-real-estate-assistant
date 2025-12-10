@@ -407,7 +407,7 @@ For OVH-specific issues:
 
 For application issues:
 - GitHub Issues: https://github.com/AleksNeStu/ai-real-estate-assistant/issues
-- Documentation: See README.md and docs/
+- Documentation: See ../README.md and ./
 
 ---
 
@@ -426,4 +426,4 @@ For application issues:
 
 ---
 
-**Need Help?** Check the main [README.md](README.md) or create an [issue](https://github.com/AleksNeStu/ai-real-estate-assistant/issues).
+**Need Help?** Check the main [README.md](../README.md) or create an [issue](https://github.com/AleksNeStu/ai-real-estate-assistant/issues).

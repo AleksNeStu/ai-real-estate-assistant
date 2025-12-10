@@ -5,7 +5,8 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white)](https://streamlit.io)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat&logo=python&logoColor=white)](https://python.org)
 [![LangChain](https://img.shields.io/badge/LangChain-0.2+-green?style=flat)](https://langchain.com)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 ## 🌟 Overview
 
@@ -85,7 +86,7 @@ docker-compose up -d
 # Visit: http://localhost:8501
 ```
 
-📚 **[Full Docker Guide →](DOCKER.md)**
+📚 **[Full Docker Guide →](docs/DOCKER.md)**
 
 ---
 
@@ -653,14 +654,14 @@ This application includes **5 complete phases** of development:
 
 ## 📚 Documentation
 
-- **[Docker Setup Guide](DOCKER.md)**: Complete Docker deployment guide
-- **[Streamlit Cloud Deployment](DEPLOYMENT.md)**: Cloud deployment instructions
-- **[Product Requirements](PRD.MD)**: Project specifications
-- **[Modernization Proposal](MODERNIZATION_PROPOSAL.md)**: V3 architecture
-- **[Phase 3 README](PHASE3_README.md)**: Advanced features docs
-- **[Phase 4 README](PHASE4_README.md)**: Visualization docs
-- **[Phase 5 README](PHASE5_README.md)**: Notification system docs
-- **[Testing Guide](TESTING_GUIDE.md)**: Comprehensive testing procedures
+- **[Docker Setup Guide](docs/DOCKER.md)**: Complete Docker deployment guide
+- **[Streamlit Cloud Deployment](docs/DEPLOYMENT.md)**: Cloud deployment instructions
+- **[Product Requirements](docs/PRD.MD)**: Project specifications
+- **[Modernization Proposal](docs/MODERNIZATION_PROPOSAL.md)**: V3 architecture
+- **[Phase 3 README](docs/PHASE3_README.md)**: Advanced features docs
+- **[Phase 4 README](docs/PHASE4_README.md)**: Visualization docs
+- **[Phase 5 README](docs/PHASE5_README.md)**: Notification system docs
+- **[Testing Guide](docs/TESTING_GUIDE.md)**: Comprehensive testing procedures
 
 ---
 
@@ -900,7 +901,7 @@ rm -rf chroma_db/
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache 2.0 License — see the [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -926,7 +927,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 For questions or issues:
 - Create an [Issue](https://github.com/AleksNeStu/ai-real-estate-assistant/issues)
 - Check existing [Discussions](https://github.com/AleksNeStu/ai-real-estate-assistant/discussions)
-- Review the [PRD](PRD.MD) for detailed specifications
+- Review the [PRD](docs/PRD.MD) for detailed specifications
 
 ---
 
