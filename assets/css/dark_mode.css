@@ -259,6 +259,18 @@ textarea::placeholder {
     fill: var(--text-primary) !important;
 }
 
+/* Input selection and caret color (remove blue selection) */
+.stSelectbox [data-baseweb="select"] input::selection,
+.stMultiSelect [data-baseweb="select"] input::selection {
+    background: var(--background-hover) !important;
+    color: var(--text-primary) !important;
+}
+
+.stSelectbox [data-baseweb="select"] input,
+.stMultiSelect [data-baseweb="select"] input {
+    caret-color: var(--text-primary) !important;
+}
+
 /* Popover/Dropdown container */
 [data-baseweb="popover"] {
     z-index: 999999 !important;
@@ -297,6 +309,16 @@ li[role="option"]:hover {
 /* Selected option */
 [data-baseweb="menu"] [role="option"][aria-selected="true"],
 li[role="option"][aria-selected="true"] {
+    background-color: var(--background-hover) !important;
+    color: var(--text-primary) !important;
+    border-left: 3px solid var(--primary-color) !important;
+}
+
+/* Highlighted/keyboard-focused option (override default blue) */
+[data-baseweb="menu"] [role="option"][data-selected="true"],
+[data-baseweb="menu"] [role="option"][data-focus="true"],
+[data-baseweb="menu"] [role="option"][data-highlighted="true"],
+[data-baseweb="menu"] [role="option"]:focus {
     background-color: var(--background-hover) !important;
     color: var(--text-primary) !important;
     border-left: 3px solid var(--primary-color) !important;
