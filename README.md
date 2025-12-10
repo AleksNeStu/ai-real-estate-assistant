@@ -8,6 +8,9 @@
 [![CI](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
+> Note: Version 3 (V3) is under active development. Bugs and behavior changes may occur.
+> For a stable, non-evolving release, please use the V2 branch: https://github.com/AleksNeStu/ai-real-estate-assistant/tree/ver2
+
 ## 🌟 Overview
 
 The AI Real Estate Assistant is a conversational AI application that helps users find their ideal properties through natural language interaction. The modern version (V3) features intelligent query understanding, multi-provider AI model support, sophisticated search capabilities, and a completely modernized UI with dark mode support.

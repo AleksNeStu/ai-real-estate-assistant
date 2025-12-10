@@ -2,6 +2,9 @@
 
 Welcome to the comprehensive documentation for the AI Real Estate Assistant project. This directory contains all the technical documentation, guides, and project information.
 
+> Status: Version 3 (V3) is under active development. Bugs and UI changes may occur.
+> For a stable release without ongoing improvements, use the V2 branch: https://github.com/AleksNeStu/ai-real-estate-assistant/tree/ver2
+
 ## 📚 Documentation Structure
 
 ### Core Documentation

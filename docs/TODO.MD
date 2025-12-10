@@ -1,78 +1,78 @@
-# Глобальный Roadmap: Польша, ЕС, СНГ, Россия, Турция, Африка, США
+# Global Roadmap: Poland, EU, CIS (incl. Russia), Turkey, Africa, USA
 
-## Цели
-- Единая платформа поиска недвижимости и аналитики для любых регионов
-- Пользовательский режим (простой поиск, карта, сравнения, калькуляторы)
-- Экспертный режим (индексы, компараблы, доходность, риски, экспорт)
+## Goals
+- Unified platform for real‑estate search and analytics across regions
+- Consumer mode (simple search, map, comparisons, calculators)
+- Expert mode (indices, comparables, yield, risk, export)
 
-## Архитектура данных
-- Расширить `Property` и метаданные:
+## Data Architecture
+- Extend `Property` and metadata:
   - `country`, `region`, `city`, `district`, `lat`, `lon`
   - `currency`, `price_original`, `price_converted`, `price_per_sqm`
   - `listing_type` (rent/sale), `transaction_type`, `property_type`
-  - опционально: `year_built`, `energy_cert`, `floor`, `amenities`
-- Нормализация валют: PLN/EUR/USD/TRY/RUB/ZAR/…
-  - Провайдеры курсов: ECB/NBP/Fed/…; кэширование (суточное)
-- Геокодирование: batch через OpenStreetMap/Nominatim (rate‑limit), хранить lat/lon
-- Хранение: отдельные коллекции Chroma per‑region, схема имени `properties_<country>`
+  - optional: `year_built`, `energy_cert`, `floor`, `amenities`
+- FX normalization: PLN/EUR/USD/TRY/RUB/ZAR/…
+  - Providers: ECB/NBP/Fed/…; daily cache
+- Geocoding: batch via OpenStreetMap/Nominatim (rate‑limited), store lat/lon
+- Storage: separate Chroma collections per region, naming `properties_<country>`
 
-## Интеграции данных
-- Источники: CSV‑файлы, открытые датасеты (HuggingFace, гос.статистика), ручной импорт
-- Агрегация по городам/районам, валидация/очистка, дедупликация
-- Планировщик обновлений: инкрементальные дозагрузки, переиндексация по расписанию
+## Data Integrations
+- Sources: CSV files, open datasets (HuggingFace, government stats), manual import
+- Aggregation by city/district, validation/cleaning, deduplication
+- Scheduler: incremental loads and reindexing on schedule
 
-## Поиск и ретривер
-- Геопространственные фильтры: bounding box, радиус от точки
-- Фасеты: `country/city/type/rooms/price_per_sqm` и др.
-- Мультиязычная нормализация запросов (синонимы, translit)
-- Реранкер: приоритеты пользователя (семья/инвестор), признаки локации/цены/площади
+## Search & Retrieval
+- Geospatial filters: bounding box, distance from point
+- Facets: `country/city/type/rooms/price_per_sqm`, etc.
+- Multilingual query normalization (synonyms, transliteration)
+- Reranker: user priorities (family/investor), location/price/area signals
 
-## Аналитика и индексы
-- Индекс цен по городам/странам (медиана, средняя, YoY/YoM)
-- Доходность аренды (gross/net yield), ROI, срок окупаемости
-- Компараблы: похожие объекты + корректировка справедливой цены
-- Риск‑метрики: волатильность, ликвидность, вакантность (если доступно)
-- Таймсерии: сглаживание, тренды, аномалии
+## Analytics & Indices
+- City/country price indices (median, average, YoY/YoM)
+- Rental yield (gross/net), ROI, payback period
+- Comparables: similar properties + fair‑price adjustments
+- Risk metrics: volatility, liquidity, vacancy (where available)
+- Time series: smoothing, trends, anomalies
 
-## Карта и визуализация
-- Мировая карта: центровка по выбранной стране/городу, слои данных
-- Тепловые карты цен и доходности, кластеры точек
-- Фильтры на карте: цена/м², комнаты, тип, год, энергия
+## Map & Visualization
+- World map: center by selected country/city, data layers
+- Heatmaps for price and yield, clustered points
+- Map filters: price/m², rooms, type, year, energy
 
 ## UX/UI
-- Быстрый поиск с понятными пресетами (семья/инвестор/офис)
-- «Экспертный режим»: панели индексов, компараблы, экспорт PDF/CSV
-- Локаль/валюта: выбор языка (EN/PL/RU/TR/AR/FR/DE/ES/IT/PT) и валюты
-- Доступность: контраст, клавиатурная навигация, нейтральные состояния
+- Quick presets (family/investor/office)
+- Expert mode: index panels, comparables, export to PDF/CSV
+- Locale/currency: choose language (EN/PL/RU/TR/AR/FR/DE/ES/IT/PT) and currency
+- Accessibility: contrast, keyboard navigation, neutral states
 
-## Уведомления и подписки
-- Частный digest: новые объекты, снижение цен, топ‑5 вариантов
-- Экспертный digest: индексы, тренды, лучшие локации по доходности
-- Каналы: Email (есть), расширение шаблонов и критериев
+## Notifications & Subscriptions
+- Consumer digest: new listings, price drops, top‑5 picks
+- Expert digest: indices, trends, top locations by yield
+- Channels: Email (existing), extend templates and criteria
 
-## DevOps и качество
-- Валидаторы данных: схемы/диапазоны/валидность координат
-- Тесты: unit для аналитики, интеграция для ретривера, e2e UI
-- Quality‑gates: ruff/mypy/bandit (включены в CI)
+## DevOps & Quality
+- Data validators: schemas/ranges/coordinate validity
+- Tests: unit for analytics, integration for retriever, e2e UI
+- Quality gates: ruff/mypy/bandit (enabled in CI)
 
-## Спринты
-- Спринт 1 (1–2 недели)
-  - Расширение схемы, валюты, lat/lon, коллекции per‑region
-  - Гео‑фильтры, базовые индексы по Польше и ключевым городам ЕС
-  - Карта с фильтрами, нейтральные состояния UI
-  - Базовый digest (частный/экспертный)
-- Спринт 2 (2–3 недели)
-  - Индексы и компараблы для СНГ/Россия/Турция/США/Африка
-  - Доходность/ROI, сценарии ставок и расходов
-  - PRO‑фильтры (энергия/год/лифт/парковка), мультиязычные тексты
-- Спринт 3 (3–4 недели)
-  - Hedonic‑оценка справедливой цены и стратегический реранкер
-  - Исторические слои карты, точки интереса, экспорт отчётов
-  - Производительность/кэш/параллельные загрузки
-- Спринт 4 (2 недели)
-  - Уведомления/расписания/расширенные шаблоны
-  - Полные e2e тесты, статические проверки, стабилизация
+## Sprints
+- Sprint 1 (1–2 weeks)
+  - [DONE] Schema extension (country/region/district/currency, lat/lon)
+  - Geospatial filters, base indices for Poland and key EU cities
+  - Map with filters, neutral UI states
+  - Base digest (consumer/expert)
+- Sprint 2 (2–3 weeks)
+  - Indices and comparables for CIS/Russia/Turkey/USA/Africa
+  - Yield/ROI, rate/expense scenarios
+  - PRO filters (energy/year/elevator/parking), multilingual texts
+- Sprint 3 (3–4 weeks)
+  - Hedonic fair‑price model and strategic reranker
+  - Historical map layers, points of interest, report export
+  - Performance/cache/parallel ingestion
+- Sprint 4 (2 weeks)
+  - Notifications/scheduling/advanced templates
+  - Full e2e tests, static checks, stabilization
 
-## Метрики успеха
-- CTR «похожие объекты», конверсия в сохранённые поиски, открытие digest
-- Точность компараблов и оценок (±%), активность на карте, время в приложении
+## Success Metrics
+- CTR for comparables, saved‑search conversions, digest opens
+- Fair‑price accuracy (±%), map engagement, session duration
