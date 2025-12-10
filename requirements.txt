@@ -41,3 +41,5 @@ requests==2.32.5
 regex==2025.11.3
 rpds-py==0.20.0
 onnxruntime==1.18.1
+yarl==1.9.4
+faker==27.0.0
