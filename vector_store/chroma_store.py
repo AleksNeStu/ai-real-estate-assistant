@@ -459,9 +459,8 @@ class ChromaPropertyStore:
             )
         else:
             class FallbackRetriever(BaseRetriever):
-                def __init__(self, docs: List[Document], kk: int):
-                    self.docs = docs
-                    self.kk = kk
+                docs: List[Document]
+                kk: int
                 def get_relevant_documents(self, query: str) -> List[Document]:
                     q = [t for t in query.lower().split() if t]
                     scored: List[tuple[Document, float]] = []
@@ -472,7 +471,7 @@ class ChromaPropertyStore:
                             scored.append((d, s))
                     scored.sort(key=lambda x: x[1], reverse=True)
                     return [d for d, _s in scored[:self.kk]]
-            return FallbackRetriever(self._documents, k)
+            return FallbackRetriever(docs=self._documents, kk=k)
 
     def clear(self):
         """Clear all documents from the vector store."""
