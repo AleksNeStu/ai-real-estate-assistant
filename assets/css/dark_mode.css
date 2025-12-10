@@ -297,8 +297,9 @@ li[role="option"]:hover {
 /* Selected option */
 [data-baseweb="menu"] [role="option"][aria-selected="true"],
 li[role="option"][aria-selected="true"] {
-    background-color: var(--primary-color) !important;
-    color: var(--primary-text) !important;
+    background-color: var(--background-hover) !important;
+    color: var(--text-primary) !important;
+    border-left: 3px solid var(--primary-color) !important;
 }
 
 /* MultiSelect tags */
@@ -683,8 +684,9 @@ hr {
    ======================================== */
 
 *:focus-visible {
-    outline: 3px solid var(--primary-color) !important;
+    outline: 2px solid var(--border-hover) !important;
     outline-offset: 2px !important;
+    box-shadow: 0 0 0 2px var(--primary-light) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
