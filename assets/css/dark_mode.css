@@ -262,13 +262,22 @@ textarea::placeholder {
 /* Input selection and caret color (remove blue selection) */
 .stSelectbox [data-baseweb="select"] input::selection,
 .stMultiSelect [data-baseweb="select"] input::selection {
-    background: var(--background-hover) !important;
+    background: var(--background-secondary) !important;
     color: var(--text-primary) !important;
 }
 
 .stSelectbox [data-baseweb="select"] input,
 .stMultiSelect [data-baseweb="select"] input {
-    caret-color: var(--text-primary) !important;
+    caret-color: transparent !important; /* remove visible caret to avoid floating cursor */
+}
+
+/* Select control focus (neutral, remove glow) */
+.stSelectbox [data-baseweb="select"] > div:focus-within,
+.stMultiSelect [data-baseweb="select"] > div:focus-within {
+    border-color: var(--border-hover) !important;
+    box-shadow: none !important;
+    outline: 2px solid var(--border-hover) !important;
+    outline-offset: 2px !important;
 }
 
 /* Popover/Dropdown container */
@@ -297,6 +306,7 @@ li[role="option"] {
     border-radius: 0.375rem !important;
     margin-bottom: 0.25rem !important;
     font-weight: 500 !important;
+    outline: none !important;
 }
 
 /* Option hover */
@@ -311,7 +321,7 @@ li[role="option"]:hover {
 li[role="option"][aria-selected="true"] {
     background-color: var(--background-hover) !important;
     color: var(--text-primary) !important;
-    border-left: 3px solid var(--primary-color) !important;
+    border-left: none !important;
 }
 
 /* Highlighted/keyboard-focused option (override default blue) */
@@ -321,7 +331,7 @@ li[role="option"][aria-selected="true"] {
 [data-baseweb="menu"] [role="option"]:focus {
     background-color: var(--background-hover) !important;
     color: var(--text-primary) !important;
-    border-left: 3px solid var(--primary-color) !important;
+    border-left: none !important;
 }
 
 /* MultiSelect tags */
