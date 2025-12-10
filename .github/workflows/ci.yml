@@ -100,3 +100,37 @@ jobs:
         with:
           name: coverage-extended-html
           path: coverage_html
+  cloud-validate:
+    runs-on: ubuntu-latest
+    needs: [python-tests, unit-extended]
+    continue-on-error: true
+    steps:
+      - name: Validate Streamlit Cloud deployment endpoint
+        run: |
+          URL="https://ai-real-estate-assistant.streamlit.app/"
+          echo "Checking $URL"
+          for i in {1..20}; do
+            CODE=$(curl -sS -o resp.html -w "%{http_code}" "$URL" || true)
+            echo "Attempt $i: HTTP $CODE"
+            if [ "$CODE" = "200" ]; then
+              if grep -q "Error: Received no response from server" resp.html || grep -q "ModuleNotFoundError" resp.html || grep -q "Traceback" resp.html; then
+                echo "Deployment error content detected"
+                cat resp.html
+                exit 1
+              else
+                echo "Deployment OK"
+                exit 0
+              fi
+            fi
+            sleep 15
+          done
+          echo "Streamlit app not responding with 200 within timeout"
+          [ -f resp.html ] && tail -n +1 resp.html || true
+          exit 1
+
+      - name: Upload response snapshot on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-response
+          path: resp.html
