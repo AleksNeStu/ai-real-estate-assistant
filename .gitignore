@@ -193,6 +193,21 @@ yarn.lock
 artifacts/
 playwright-report/
 
+# CI coverage artifacts
+coverage_html/
+
+# Cloud validation snapshot
+resp.html
+
+# Local server log
+server.log
+
+# Deprecated run scripts (keep modern only)
+run_streamlit.ps1
+run_streamlit.sh
+run_v1.ps1
+run_v2.ps1
+
 # Build artifacts
 *.min.css
 *.min.js
