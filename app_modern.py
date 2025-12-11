@@ -1250,22 +1250,10 @@ def render_market_insights_tab():
                 if gen_digest:
                     if digest_format == 'md':
                         digest_md = exp.generate_digest_markdown(selected_cities or None)
-                        st.download_button(
-                            label="Download Expert Digest (MD)",
-                            data=digest_md,
-                            file_name="expert_digest.md",
-                            mime="text/markdown",
-                            use_container_width=True
-                        )
+                        st.download_button(label="Download Expert Digest (MD)", data=digest_md, file_name="expert_digest.md", mime="text/markdown", use_container_width=True)
                     else:
                         digest_pdf = exp.generate_digest_pdf(selected_cities or None)
-                        st.download_button(
-                            label="Download Expert Digest (PDF)",
-                            data=digest_pdf.getvalue(),
-                            file_name="expert_digest.pdf",
-                            mime="application/pdf",
-                            use_container_width=True
-                        )
+                        st.download_button(label="Download Expert Digest (PDF)", data=digest_pdf.getvalue(), file_name="expert_digest.pdf", mime="application/pdf", use_container_width=True)
                 else:
                     if export_kind == "City Indices":
                         if export_format == 'csv':
@@ -1305,13 +1293,7 @@ def render_market_insights_tab():
                             mime = 'text/markdown'
                             filename = 'monthly_index.md'
 
-                    st.download_button(
-                        label=f"Download {export_format.upper()}",
-                        data=data,
-                        file_name=filename,
-                        mime=mime,
-                        use_container_width=True
-                    )
+                    st.download_button(label=f"Download {export_format.upper()}", data=data, file_name=filename, mime=mime, use_container_width=True)
             except Exception as e:
                 st.error(f"Failed to export indices: {e}")
     
