@@ -178,6 +178,9 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "property_distribution": "Property Distribution",
         "by_type": "By Type",
         "by_city": "By City",
+        "yoy_by_city_latest": "YoY by City (Latest)",
+        "top_gainers": "Top Gainers",
+        "top_decliners": "Top Decliners",
 
         # Compare Tab
         "please_load_data_compare": "👈 Please load property data from the sidebar to compare properties",
@@ -1754,8 +1757,11 @@ TRANSLATIONS["ru"] = {
     "max_price": "Макс. Цена",
     "total_properties": "Всего Объектов",
     "property_distribution": "Распределение Объектов",
-    "by_type": "По Типу",
-    "by_city": "По Городу",
+        "by_type": "По Типу",
+        "by_city": "По Городу",
+        "yoy_by_city_latest": "YoY по городам (последние)",
+        "top_gainers": "Лидеры роста",
+        "top_decliners": "Лидеры падения",
 
     # Compare Tab
     "please_load_data_compare": "👈 Загрузите данные об объектах из боковой панели для сравнения объектов",

@@ -1221,15 +1221,15 @@ def render_market_insights_tab():
                 st.line_chart(chart_df)
                 st.dataframe(ts_df)
 
-        st.caption("YoY by City (Latest)")
+        st.caption(get_text('yoy_by_city_latest', lang))
         yoy_df = insights.get_cities_yoy(selected_cities or None)
         if len(yoy_df) > 0:
             st.dataframe(yoy_df)
             top_up = yoy_df.sort_values('yoy_pct', ascending=False).head(5)
             top_down = yoy_df.sort_values('yoy_pct', ascending=True).head(5)
-            st.caption("Top Gainers")
+            st.caption(get_text('top_gainers', lang))
             st.dataframe(top_up)
-            st.caption("Top Decliners")
+            st.caption(get_text('top_decliners', lang))
             st.dataframe(top_down)
 
         st.divider()
