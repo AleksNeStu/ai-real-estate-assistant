@@ -63,6 +63,7 @@
   - [DONE] Moving average smoothing and anomaly detection (z-score)
   - [DONE] Map picker (click to set radius center) wired to retriever
   - [DONE] Multi-city YoY latest with UI table and leaders
+  - [DONE] Deterministic lat/lon fill at ingestion for known cities
   - Map with filters, neutral UI states
   - Base digest (consumer/expert)
 - Sprint 2 (2–3 weeks)
