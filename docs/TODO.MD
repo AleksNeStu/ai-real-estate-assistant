@@ -58,7 +58,7 @@
 ## Sprints
 - Sprint 1 (1–2 weeks)
   - [DONE] Schema extension (country/region/district/currency, lat/lon)
-  - Geospatial filters, base indices for Poland and key EU cities
+  - [DONE] Geospatial filters (radius) and base city price indices
   - Map with filters, neutral UI states
   - Base digest (consumer/expert)
 - Sprint 2 (2–3 weeks)
