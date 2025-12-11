@@ -332,6 +332,51 @@ class MarketInsights:
         dist = earth_radius_km * c
         return df[dist <= radius_km]
 
+    def get_monthly_price_index(self, city: Optional[str] = None) -> pd.DataFrame:
+        """Compute monthly average/median price and YoY change.
+
+        Uses `scraped_at` timestamps where available; falls back to `last_updated` if needed.
+        """
+        df = self.df.copy()
+        # Attach timestamps from original properties if missing in df
+        if 'scraped_at' not in df.columns:
+            # Rebuild from properties list
+            scraped = []
+            for p in self.properties.properties:
+                scraped.append(getattr(p, 'scraped_at', None))
+            # pad to length of df
+            while len(scraped) < len(df):
+                scraped.append(None)
+            df['scraped_at'] = scraped[:len(df)]
+        if 'scraped_at' in df.columns and df['scraped_at'].isnull().all():
+            # fallback to last_updated
+            if 'last_updated' in df.columns:
+                df['scraped_at'] = df['last_updated']
+        # Drop rows without timestamps
+        df = df.dropna(subset=['scraped_at'])
+        # Convert to pandas datetime
+        df['dt'] = pd.to_datetime(df['scraped_at'])
+        if city:
+            df = df[df['city'] == city]
+        if len(df) == 0:
+            return pd.DataFrame(columns=['month', 'avg_price', 'median_price', 'count', 'yoy_pct'])
+        df['month'] = df['dt'].dt.to_period('M').dt.to_timestamp()
+        grouped = df.groupby('month').agg(
+            avg_price=('price', 'mean'),
+            median_price=('price', 'median'),
+            count=('price', 'count')
+        ).reset_index()
+        # YoY percent: compare same month last year
+        grouped['yoy_pct'] = None
+        try:
+            grouped = grouped.sort_values('month')
+            # Build lookup of last year values
+            prev = grouped.set_index('month')['avg_price'].shift(12)
+            grouped['yoy_pct'] = ((grouped['avg_price'] - prev) / prev) * 100
+        except Exception:
+            pass
+        return grouped
+
     def get_property_type_insights(self, property_type: str) -> Optional[PropertyTypeInsights]:
         """
         Get insights for a specific property type.
