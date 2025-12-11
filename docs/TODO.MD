@@ -61,6 +61,7 @@
   - [DONE] Geospatial filters (radius) and base city price indices
   - [DONE] Monthly price index with YoY (Expert Panel)
   - [DONE] Moving average smoothing and anomaly detection (z-score)
+  - [DONE] Map picker (click to set radius center) wired to retriever
   - Map with filters, neutral UI states
   - Base digest (consumer/expert)
 - Sprint 2 (2–3 weeks)
