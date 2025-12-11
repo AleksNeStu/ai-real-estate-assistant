@@ -60,6 +60,7 @@
   - [DONE] Schema extension (country/region/district/currency, lat/lon)
   - [DONE] Geospatial filters (radius) and base city price indices
   - [DONE] Monthly price index with YoY (Expert Panel)
+  - [DONE] Moving average smoothing and anomaly detection (z-score)
   - Map with filters, neutral UI states
   - Base digest (consumer/expert)
 - Sprint 2 (2–3 weeks)
