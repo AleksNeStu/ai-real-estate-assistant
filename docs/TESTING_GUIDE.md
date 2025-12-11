@@ -824,3 +824,12 @@ Run after any code changes to ensure nothing broke
 ---
 
 **Happy Testing! 🧪**
+### Playwright E2E Setup
+```bash
+# Install Playwright browsers (required for MCP/CLI)
+npx playwright install
+npx playwright install chromium
+
+# Run e2e tests
+npx playwright test -c playwright.config.ts --reporter=list
+```

@@ -1952,21 +1952,27 @@ def render_main_content():
     ])
 
     with tabs[0]:
+        st.markdown('<div data-testid="tab-chat"></div>', unsafe_allow_html=True)
         render_chat_tab()
 
     with tabs[1]:
+        st.markdown('<div data-testid="tab-insights"></div>', unsafe_allow_html=True)
         render_market_insights_tab()
 
     with tabs[2]:
+        st.markdown('<div data-testid="tab-compare"></div>', unsafe_allow_html=True)
         render_comparisons_tab()
 
     with tabs[3]:
+        st.markdown('<div data-testid="tab-export"></div>', unsafe_allow_html=True)
         render_export_tab()
 
     with tabs[4]:
+        st.markdown('<div data-testid="tab-analytics"></div>', unsafe_allow_html=True)
         render_analytics_tab()
 
     with tabs[5]:
+        st.markdown('<div data-testid="tab-notifications"></div>', unsafe_allow_html=True)
         render_notifications_tab()
 
 
