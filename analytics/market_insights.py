@@ -110,6 +110,8 @@ class MarketInsights:
         data = []
         for prop in self.properties.properties:
             data.append({
+                'country': getattr(prop, 'country', None),
+                'region': getattr(prop, 'region', None),
                 'city': prop.city,
                 'price': prop.price,
                 'rooms': prop.rooms,
@@ -122,6 +124,9 @@ class MarketInsights:
                 'is_furnished': prop.is_furnished,
                 'has_balcony': prop.has_balcony,
                 'has_elevator': prop.has_elevator,
+                'lat': getattr(prop, 'latitude', None),
+                'lon': getattr(prop, 'longitude', None),
+                'currency': getattr(prop, 'currency', None),
             })
         return pd.DataFrame(data)
 
@@ -290,6 +295,42 @@ class MarketInsights:
             amenity_availability=amenity_availability,
             price_comparison=price_comparison
         )
+
+    def get_city_price_indices(self, cities: Optional[List[str]] = None) -> pd.DataFrame:
+        """Compute basic price indices per city."""
+        df = self.df.copy()
+        if cities:
+            df = df[df['city'].isin(cities)]
+        group = df.groupby('city')
+        res = group.agg(
+            avg_price=('price', 'mean'),
+            median_price=('price', 'median'),
+            count=('price', 'count')
+        ).reset_index()
+        if df['area_sqm'].notna().any():
+            res['avg_price_per_sqm'] = group.apply(lambda g: (g['price'] / g['area_sqm']).dropna().mean()).values
+        else:
+            res['avg_price_per_sqm'] = np.nan
+        return res
+
+    def filter_by_geo_radius(self, center_lat: float, center_lon: float, radius_km: float) -> pd.DataFrame:
+        """Filter properties within radius from a center point."""
+        df = self.df.copy()
+        if df[['lat','lon']].isnull().any().any():
+            df = df.dropna(subset=['lat','lon'])
+        if len(df) == 0:
+            return df
+        lat1 = np.radians(center_lat)
+        lon1 = np.radians(center_lon)
+        lat2 = np.radians(df['lat'].astype(float))
+        lon2 = np.radians(df['lon'].astype(float))
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        a = np.sin(dlat/2)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon/2)**2
+        c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
+        earth_radius_km = 6371.0
+        dist = earth_radius_km * c
+        return df[dist <= radius_km]
 
     def get_property_type_insights(self, property_type: str) -> Optional[PropertyTypeInsights]:
         """
