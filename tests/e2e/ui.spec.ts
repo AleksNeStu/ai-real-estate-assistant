@@ -3,18 +3,17 @@ import { test, expect } from '@playwright/test';
 test.describe('UI Smoke', () => {
   test('home renders and app title visible @smoke', async ({ page }) => {
     await page.goto('/');
+    await expect(page.locator('[data-testid="stAppViewBlockContainer"]')).toBeVisible({ timeout: 10000 });
     await expect(page.getByRole('heading', { name: /AI Real Estate Assistant/i }).first()).toBeVisible();
     await page.screenshot({ path: 'artifacts/test_run_2025-12-09/screenshots/home.png', fullPage: true });
   });
 
   test('load data from default URLs via sidebar @smoke', async ({ page }) => {
     await page.goto('/');
-    const dsDetails = page.locator('details:has(summary:has-text("Data Sources"))');
-    const dsHandle = await dsDetails.elementHandle();
-    if (dsHandle) {
-      await page.evaluate((el) => el.setAttribute('open', ''), dsHandle);
-    }
-    const sidebar = page.locator('body');
+    await expect(page.locator('[data-testid="stAppViewBlockContainer"]')).toBeVisible({ timeout: 10000 });
+    const dsMarker = page.locator('[data-testid="expander-data-sources"]');
+    await expect(dsMarker).toBeVisible();
+    const sidebar = page.locator('[data-testid="stSidebar"]');
     await sidebar.getByRole('radio', { name: 'URL' }).click({ force: true });
     const ta = sidebar.getByLabel(/Data URLs/);
     await expect(ta).toBeVisible();
@@ -24,6 +23,7 @@ test.describe('UI Smoke', () => {
 
   test('notifications tab shows email inputs @smoke', async ({ page }) => {
     await page.goto('/');
+    await expect(page.locator('[data-testid="stAppViewBlockContainer"]')).toBeVisible({ timeout: 10000 });
     const tabs = page.locator('.stTabs [data-baseweb="tab"]');
     await tabs.nth(5).click({ force: true });
     const configDetails = page.locator('details:has(summary:has-text("Configure Email"))');
@@ -37,6 +37,7 @@ test.describe('UI Smoke', () => {
   });
   test('tabs navigate and render content @smoke', async ({ page }) => {
     await page.goto('/');
+    await expect(page.locator('[data-testid="stAppViewBlockContainer"]')).toBeVisible({ timeout: 10000 });
     const tabs = page.locator('.stTabs [data-baseweb="tab"]');
     await tabs.nth(0).click({ force: true });
     await expect(page.getByTestId('tab-chat')).toBeVisible();

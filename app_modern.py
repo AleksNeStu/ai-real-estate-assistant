@@ -228,6 +228,7 @@ def render_sidebar():
 
         # Model Provider Selection (collapsible)
         with st.expander(f"🧩 {get_text('model_config', lang)}", expanded=True):
+            st.markdown('<div data-testid="expander-model-config"></div>', unsafe_allow_html=True)
             # Get available providers
             providers = ModelProviderFactory.list_providers()
             provider_display = {
@@ -502,6 +503,7 @@ def render_sidebar():
 
         # Data Source Management (collapsible)
         with st.expander(f"📊 {get_text('data_sources', lang)}"):
+            st.markdown('<div data-testid="expander-data-sources"></div>', unsafe_allow_html=True)
             autoload_flag = st.checkbox(
                 "autoload_default_at_seton_start",
                 value=st.session_state.get("autoload_default_datasets", settings.autoload_default_datasets)
