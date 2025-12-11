@@ -52,6 +52,7 @@ from utils import (
     load_and_inject_styles, inject_enhanced_form_styles, inject_tailwind_cdn
 )
 from ui.comparison_viz import PropertyComparison, display_comparison_ui, display_market_insights_ui
+from ui.geo_viz import _get_city_coordinates
 
 # Phase 5 imports
 from notifications import (
@@ -1145,8 +1146,34 @@ def render_market_insights_tab():
                         cheaper = comparison['cheaper_city']
                         diff = abs(comparison['price_difference'])
                         diff_pct = abs(comparison['price_difference_percent'])
+                        st.write(f"{cheaper} {get_text('is_cheaper_by', lang)} ${diff:,.0f} ({diff_pct:.1f}%)")
 
-                        st.success(f"💰 **{cheaper}** {get_text('is_cheaper_by', lang)} ${diff:.2f} ({diff_pct:.1f}%)")
+    st.divider()
+
+    with st.expander("🧠 Expert Panel", expanded=False):
+        cities = list(stats.cities.keys())
+        colA, colB = st.columns(2)
+        with colA:
+            st.caption("Geospatial Filter (radius)")
+            center_city = st.selectbox("Center City", options=cities or [""], index=0 if cities else 0)
+            radius_km = st.slider("Radius (km)", min_value=1, max_value=50, value=10)
+        with colB:
+            st.caption("City Price Indices")
+            selected_cities = st.multiselect("Cities", options=cities, default=cities[:3] if len(cities) >= 3 else cities)
+
+        if center_city:
+            lat, lon = _get_city_coordinates(center_city)
+            filtered_df = insights.filter_by_geo_radius(lat, lon, float(radius_km))
+            st.write(f"Filtered properties: {len(filtered_df)}")
+            if len(filtered_df) > 0:
+                idx = MarketInsights(PropertyCollection(properties=[p for p in st.session_state.property_collection.properties if p.city == center_city or True]))
+                idx.df = filtered_df
+                city_idx = idx.get_city_price_indices()
+                st.dataframe(city_idx)
+
+        if selected_cities:
+            indices_df = insights.get_city_price_indices(selected_cities)
+            st.dataframe(indices_df)
     else:
         st.info(get_text('load_multiple_cities', lang))
 
