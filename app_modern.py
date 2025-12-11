@@ -48,7 +48,7 @@ from agents.recommendation_engine import create_recommendation_engine
 # Phase 3 imports
 from analytics import MarketInsights, SessionTracker, EventType
 from utils import (
-    PropertyExporter, ExportFormat, SavedSearchManager,
+    PropertyExporter, ExportFormat, SavedSearchManager, InsightsExporter,
     load_and_inject_styles, inject_enhanced_form_styles, inject_tailwind_cdn
 )
 from ui.comparison_viz import PropertyComparison, display_comparison_ui, display_market_insights_ui
@@ -1193,12 +1193,73 @@ def render_market_insights_tab():
 
         st.caption("Monthly Price Index (YoY)")
         ts_city = st.selectbox("Time Series City", options=cities or [""], index=0 if cities else 0, key="ts_city")
+        ts_window = st.slider("Moving Average (months)", min_value=1, max_value=12, value=3, key="ts_window")
+        ts_anom = st.checkbox("Highlight anomalies (z-score)", value=True, key="ts_anom")
         if ts_city:
-            ts_df = insights.get_monthly_price_index(ts_city)
+            ts_df = insights.get_monthly_price_index(ts_city, window=int(ts_window), detect_anomalies=bool(ts_anom))
             if len(ts_df) > 0:
-                chart_df = ts_df[['month','avg_price']].set_index('month')
+                # Prefer smoothed line if selected
+                chart_cols = ['avg_price']
+                if 'avg_price_ma' in ts_df.columns:
+                    chart_cols = ['avg_price_ma']
+                chart_df = ts_df[['month'] + chart_cols].set_index('month')
                 st.line_chart(chart_df)
                 st.dataframe(ts_df)
+
+        st.divider()
+        st.caption("Export Indices")
+        export_kind = st.radio("Dataset", options=["City Indices","Monthly Index"], horizontal=True)
+        export_format = st.selectbox("Format", options=["csv","xlsx","json","md"], index=0)
+        if st.button("Generate Indices Export"):
+            exp = InsightsExporter(insights)
+            try:
+                if export_kind == "City Indices":
+                    if export_format == 'csv':
+                        data = exp.export_city_indices_csv(selected_cities or None)
+                        mime = 'text/csv'
+                        filename = 'city_indices.csv'
+                    elif export_format == 'xlsx':
+                        buf = exp.export_city_indices_excel(selected_cities or None)
+                        data = buf.getvalue()
+                        mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                        filename = 'city_indices.xlsx'
+                    elif export_format == 'json':
+                        data = exp.export_city_indices_json(selected_cities or None)
+                        mime = 'application/json'
+                        filename = 'city_indices.json'
+                    else:
+                        data = exp.export_city_indices_markdown(selected_cities or None)
+                        mime = 'text/markdown'
+                        filename = 'city_indices.md'
+                else:
+                    city = ts_city if ts_city else None
+                    if export_format == 'csv':
+                        data = exp.export_monthly_index_csv(city)
+                        mime = 'text/csv'
+                        filename = 'monthly_index.csv'
+                    elif export_format == 'xlsx':
+                        buf = exp.export_monthly_index_excel(city)
+                        data = buf.getvalue()
+                        mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                        filename = 'monthly_index.xlsx'
+                    elif export_format == 'json':
+                        data = exp.export_monthly_index_json(city)
+                        mime = 'application/json'
+                        filename = 'monthly_index.json'
+                    else:
+                        data = exp.export_monthly_index_markdown(city)
+                        mime = 'text/markdown'
+                        filename = 'monthly_index.md'
+
+                st.download_button(
+                    label=f"Download {export_format.upper()}",
+                    data=data,
+                    file_name=filename,
+                    mime=mime,
+                    use_container_width=True
+                )
+            except Exception as e:
+                st.error(f"Failed to export indices: {e}")
     else:
         st.info(get_text('load_multiple_cities', lang))
 
