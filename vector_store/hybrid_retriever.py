@@ -115,6 +115,14 @@ class HybridPropertyRetriever(BaseRetriever):
         if "pool" in query_lower:
             filters["has_pool"] = True
 
+        # Extract listing type (rent/sale) from common phrases
+        rent_keywords = ["rent", "rental", "for rent", "lease", "wynajem"]
+        sale_keywords = ["sale", "for sale", "buy", "purchase", "sprzedaż"]
+        if any(word in query_lower for word in rent_keywords):
+            filters["listing_type"] = "rent"
+        elif any(word in query_lower for word in sale_keywords):
+            filters["listing_type"] = "sale"
+
         return filters
 
     def _apply_filters(

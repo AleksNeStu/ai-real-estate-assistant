@@ -220,11 +220,18 @@ class Property(BaseModel):
         rooms_str = str(int(self.rooms)) if (self.rooms is not None and not pd.isna(self.rooms)) else "unknown"
         baths_str = str(int(self.bathrooms)) if (self.bathrooms is not None and not pd.isna(self.bathrooms)) else "unknown"
 
-        price_str = f"${int(self.price)}" if (self.price is not None and not pd.isna(self.price)) else "unknown"
+        price_num_str = f"{int(self.price)}" if (self.price is not None and not pd.isna(self.price)) else "unknown"
+        curr = self.currency if (self.currency is not None and not pd.isna(self.currency)) else None
+        price_str = f"${price_num_str}" if curr is None else f"{price_num_str} {curr}"
+        listing = self.listing_type.value if hasattr(self.listing_type, 'value') else str(self.listing_type)
         text_parts.extend([
             f". {prop_type_str.title()} with {rooms_str} rooms and {baths_str} bathrooms",
-            f". Monthly rent: {price_str}"
+            f". Listing: {listing.title()}"
         ])
+        if listing == 'sale':
+            text_parts.append(f", Price: {price_str}")
+        else:
+            text_parts.append(f", Monthly rent: {price_str}")
 
         if self.area_sqm:
             text_parts.append(f", area: {self.area_sqm} square meters")
