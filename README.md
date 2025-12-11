@@ -48,6 +48,10 @@ The AI Real Estate Assistant is a conversational AI application that helps users
   - System preference detection with manual override
   - Smooth theme transitions
   - Enhanced form label visibility
+- **Geospatial Filters & Expert Panel**:
+  - Radius-based filters around selected city
+  - City price indices (avg/median, price per sqm)
+  - Dedicated Expert Panel UI in Market Insights
 - **Tailwind CSS Integration**: Modern utility-first CSS framework
 - **Responsive Design**: Mobile-first approach for all screen sizes
 - **Accessibility**: Full keyboard navigation and screen reader support
@@ -277,6 +281,9 @@ streamlit run app_modern.py
 
 # Or use convenience script (Unix/macOS/Linux)
 ./run_modern.sh
+
+# Or use convenience script (Windows PowerShell)
+./run_modern.ps1
 ```
 
 The app will open automatically in your default browser at:
@@ -286,7 +293,20 @@ If it doesn't open automatically, click the URL shown in the terminal.
 
 ---
 
-## 📖 Usage Examples
+## �️ Visual Gallery
+
+Below are screenshots demonstrating core features and the modern dark mode.
+
+![Home — Dark Mode with Preferences](assets/screen.png "Home screen in dark mode: language preferences, model selector, and sidebar controls")
+
+![Market Insights — Expert Panel](assets/screen2.png "Market Insights with Expert Panel: city price indices and geospatial radius filter")
+
+Notes:
+- Images include alt text and captions for accessibility.
+- The gallery focuses on key flows: preferences, market insights, and expert tools.
+- Verified layout on desktop and responsive view; mobile users may scroll to reveal full content.
+
+## �📖 Usage Examples
 
 ### Example 1: Simple Property Search
 ```
@@ -649,9 +669,8 @@ This application includes **5 complete phases** of development:
 - New property notifications
 - Notification preferences management
 - Notification history & analytics
-- **Tests**: 50+ unit tests
 
-**Total**: 370+ unit tests covering all phases
+Tests: Covered by unit/integration tests across modules (see `tests/`).
 
 ---
 
@@ -665,6 +684,17 @@ This application includes **5 complete phases** of development:
 - **[Phase 4 README](docs/PHASE4_README.md)**: Visualization docs
 - **[Phase 5 README](docs/PHASE5_README.md)**: Notification system docs
 - **[Testing Guide](docs/TESTING_GUIDE.md)**: Comprehensive testing procedures
+
+---
+
+## 📝 Changelog
+
+Recent changes in V3:
+- Geospatial radius filter for property selection (Expert Panel)
+- City price indices in Market Insights (avg/median, price per sqm)
+- Dropdown UI polish — removed blue accents, unified neutral states
+- Documentation restructured under `docs/` and updated status notices
+- Launchers improved to skip redundant installs on subsequent runs
 
 ---
 
@@ -830,16 +860,13 @@ ModuleNotFoundError: No module named 'pydantic_core._pydantic_core'
 
 **Solution:**
 
-**Quick Fix - Use Updated Launcher:**
+**Quick Fix — Use the updated launcher:**
 ```powershell
-# Pull latest changes
-git pull origin claude/v3-bugfixes-011CUvYhiJ4s65j5cb7uPUyk
-
-# Run updated launcher (handles all C extensions automatically)
+# Run the modern launcher (handles C extensions order automatically)
 .\run_modern.ps1
 ```
 
-The updated `run_modern.ps1` script now installs packages in the correct order:
+The updated `run_modern.ps1` script installs packages in the correct order:
 1. numpy (math operations)
 2. pydantic-core (data validation core)
 3. pandas (data processing)
