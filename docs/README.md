@@ -24,6 +24,8 @@ The project is organized into 5 development phases, each with dedicated document
 
 ### Deployment & Operations
 
+- **[Installation Guide](INSTALLATION.md)** - Platform-specific installation and setup
+- **[Troubleshooting](TROUBLESHOOTING.md)** - Common issues and fixes
 - **[Deployment Guide](DEPLOYMENT.md)** - Production deployment instructions and best practices
 - **[Docker Setup](DOCKER.md)** - Container-based deployment and development
 - **[Testing Guide](TESTING_GUIDE.md)** - Comprehensive testing documentation and coverage
@@ -38,7 +40,7 @@ New to the project? Start here:
 
 1. Read the [main README](../README.md) for project overview and setup
 2. Review the [PRD](PRD.MD) to understand product requirements
-3. Follow the [Deployment Guide](DEPLOYMENT.md) for installation
+3. Follow the [Installation Guide](INSTALLATION.md) for setup
 4. Check the [Testing Guide](TESTING_GUIDE.md) for running tests
 
 ## 📖 Documentation Categories
