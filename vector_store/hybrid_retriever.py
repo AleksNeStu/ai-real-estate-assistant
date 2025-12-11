@@ -162,6 +162,9 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
     max_price: Optional[float] = None
     sort_by: Optional[str] = None  # 'price', 'price_per_sqm', 'rooms'
     sort_ascending: bool = True
+    center_lat: Optional[float] = None
+    center_lon: Optional[float] = None
+    radius_km: Optional[float] = None
 
     def _get_relevant_documents(
         self,
@@ -177,6 +180,10 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
         # Apply price filters
         if self.min_price is not None or self.max_price is not None:
             results = self._filter_by_price(results)
+
+        # Apply geospatial radius filter
+        if self.center_lat is not None and self.center_lon is not None and self.radius_km is not None:
+            results = self._filter_by_geo(results)
 
         # Sort results if requested
         if self.sort_by:
@@ -219,6 +226,27 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
             print(f"Warning: Could not sort results: {e}")
             return documents
 
+    def _filter_by_geo(self, documents: List[Document]) -> List[Document]:
+        filtered = []
+        import math
+        lat1 = math.radians(float(self.center_lat))
+        lon1 = math.radians(float(self.center_lon))
+        for doc in documents:
+            lat = doc.metadata.get('lat')
+            lon = doc.metadata.get('lon')
+            if lat is None or lon is None:
+                continue
+            lat2 = math.radians(float(lat))
+            lon2 = math.radians(float(lon))
+            dlat = lat2 - lat1
+            dlon = lon2 - lon1
+            a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+            dist_km = 6371.0 * c
+            if dist_km <= float(self.radius_km):
+                filtered.append(doc)
+        return filtered
+
 
 def create_retriever(
     vector_store: ChromaPropertyStore,
@@ -227,6 +255,9 @@ def create_retriever(
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
     sort_by: Optional[str] = None,
+    center_lat: Optional[float] = None,
+    center_lon: Optional[float] = None,
+    radius_km: Optional[float] = None,
     **kwargs
 ) -> BaseRetriever:
     """
@@ -245,7 +276,10 @@ def create_retriever(
         Configured retriever instance
     """
     # Use advanced retriever if price filters or sorting specified
-    if min_price is not None or max_price is not None or sort_by is not None:
+    if (
+        min_price is not None or max_price is not None or sort_by is not None or
+        (center_lat is not None and center_lon is not None and radius_km is not None)
+    ):
         return AdvancedPropertyRetriever(
             vector_store=vector_store,
             k=k,
@@ -253,6 +287,9 @@ def create_retriever(
             min_price=min_price,
             max_price=max_price,
             sort_by=sort_by,
+            center_lat=center_lat,
+            center_lon=center_lon,
+            radius_km=radius_km,
             **kwargs
         )
 
