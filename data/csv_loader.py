@@ -194,6 +194,44 @@ class DataLoaderCsv:
             'sublet': 'sublease'
         })
 
+        # Geocoordinates: fill latitude/longitude deterministically by city where missing
+        city_coords = {
+            'warsaw': (52.2297, 21.0122),
+            'krakow': (50.0647, 19.9450),
+            'wroclaw': (51.1079, 17.0385),
+            'poznan': (52.4064, 16.9252),
+            'gdansk': (54.3520, 18.6466),
+            'szczecin': (53.4285, 14.5528),
+            'lublin': (51.2465, 22.5684),
+            'katowice': (50.2649, 19.0238),
+            'bydgoszcz': (53.1235, 18.0084),
+            'lodz': (51.7592, 19.4560)
+        }
+        # Ensure columns exist
+        if 'latitude' not in df_copy.columns:
+            df_copy['latitude'] = None
+        if 'longitude' not in df_copy.columns:
+            df_copy['longitude'] = None
+        if 'city' in df_copy.columns:
+            def _fill_lat(row):
+                if pd.isna(row.get('latitude')) and pd.notna(row.get('city')):
+                    c = str(row['city']).strip().lower()
+                    return city_coords.get(c, (None, None))[0]
+                return row.get('latitude')
+            def _fill_lon(row):
+                if pd.isna(row.get('longitude')) and pd.notna(row.get('city')):
+                    c = str(row['city']).strip().lower()
+                    return city_coords.get(c, (None, None))[1]
+                return row.get('longitude')
+            df_copy['latitude'] = df_copy.apply(_fill_lat, axis=1)
+            df_copy['longitude'] = df_copy.apply(_fill_lon, axis=1)
+            # Coerce to float where available
+            try:
+                df_copy['latitude'] = df_copy['latitude'].astype(float)
+                df_copy['longitude'] = df_copy['longitude'].astype(float)
+            except Exception:
+                pass
+
         # Do not drop rows; allow missing values (schema-agnostic ingestion)
         df_cleaned = df_copy
 
