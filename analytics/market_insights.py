@@ -543,3 +543,32 @@ class MarketInsights:
             'cheaper_city': city1 if insights1.avg_price < insights2.avg_price else city2,
             'more_properties': city1 if insights1.property_count > insights2.property_count else city2
         }
+    def get_cities_yoy(self, cities: Optional[List[str]] = None) -> pd.DataFrame:
+        df = self.df.copy()
+        if cities:
+            df = df[df['city'].isin(cities)]
+        if 'scraped_at' not in df.columns:
+            scraped = []
+            for p in self.properties.properties:
+                scraped.append(getattr(p, 'scraped_at', None))
+            while len(scraped) < len(df):
+                scraped.append(None)
+            df['scraped_at'] = scraped[:len(df)]
+        df = df.dropna(subset=['scraped_at'])
+        if len(df) == 0:
+            return pd.DataFrame(columns=['city','month','avg_price','yoy_pct','count'])
+        df['dt'] = pd.to_datetime(df['scraped_at'])
+        df['month'] = df['dt'].dt.to_period('M').dt.to_timestamp()
+        grouped = df.groupby(['city','month']).agg(
+            avg_price=('price','mean'),
+            count=('price','count')
+        ).reset_index().sort_values(['city','month'])
+        grouped['yoy_pct'] = None
+        try:
+            grouped['yoy_pct'] = (
+                grouped.groupby('city')['avg_price'].transform(lambda s: (s - s.shift(12)) / s.shift(12) * 100)
+            )
+        except Exception:
+            pass
+        latest = grouped.groupby('city').tail(1)
+        return latest[['city','month','avg_price','yoy_pct','count']]
