@@ -306,6 +306,12 @@ Notes:
 - The gallery focuses on key flows: preferences, market insights, and expert tools.
 - Verified layout on desktop and responsive view; mobile users may scroll to reveal full content.
 
+Refresh screenshots locally:
+- Start the app: `streamlit run app_modern.py`
+- Install browsers (first time): `npx playwright install`
+- Capture: `npm run screenshots` (saves to `assets/screen.png` and `assets/screen2.png`)
+- Override app URL: `APP_URL=http://localhost:8502 npm run screenshots`
+
 ## 📖 Usage Examples
 
 ### Example 1: Simple Property Search
