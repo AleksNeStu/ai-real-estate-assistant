@@ -62,6 +62,7 @@
   - [DONE] Monthly price index with YoY (Expert Panel)
   - [DONE] Moving average smoothing and anomaly detection (z-score)
   - [DONE] Map picker (click to set radius center) wired to retriever
+  - [DONE] Multi-city YoY latest with UI table and leaders
   - Map with filters, neutral UI states
   - Base digest (consumer/expert)
 - Sprint 2 (2–3 weeks)
