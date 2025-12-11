@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('UI Smoke', () => {
   test('home renders and app title visible @smoke', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByText('AI Real Estate Assistant')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /AI Real Estate Assistant/i }).first()).toBeVisible();
     await page.screenshot({ path: 'artifacts/test_run_2025-12-09/screenshots/home.png', fullPage: true });
   });
 
@@ -24,7 +24,8 @@ test.describe('UI Smoke', () => {
 
   test('notifications tab shows email inputs @smoke', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: /Notifications/i }).click({ force: true });
+    const tabs = page.locator('.stTabs [data-baseweb="tab"]');
+    await tabs.nth(5).click({ force: true });
     const configDetails = page.locator('details:has(summary:has-text("Configure Email"))');
     const handle = await configDetails.elementHandle();
     if (handle) {
@@ -36,27 +37,28 @@ test.describe('UI Smoke', () => {
   });
   test('tabs navigate and render content @smoke', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: /Chat/i }).click({ force: true });
+    const tabs = page.locator('.stTabs [data-baseweb="tab"]');
+    await tabs.nth(0).click({ force: true });
     await expect(page.getByTestId('tab-chat')).toBeVisible();
     await page.screenshot({ path: 'artifacts/test_run_2025-12-09/screenshots/tab_chat.png', fullPage: true });
 
-    await page.getByRole('button', { name: /Market Insights/i }).click({ force: true });
+    await tabs.nth(1).click({ force: true });
     await expect(page.getByTestId('tab-insights')).toBeVisible();
     await page.screenshot({ path: 'artifacts/test_run_2025-12-09/screenshots/tab_insights.png', fullPage: true });
 
-    await page.getByRole('button', { name: /Compare/i }).click({ force: true });
+    await tabs.nth(2).click({ force: true });
     await expect(page.getByTestId('tab-compare')).toBeVisible();
     await page.screenshot({ path: 'artifacts/test_run_2025-12-09/screenshots/tab_compare.png', fullPage: true });
 
-    await page.getByRole('button', { name: /Export/i }).click({ force: true });
+    await tabs.nth(3).click({ force: true });
     await expect(page.getByTestId('tab-export')).toBeVisible();
     await page.screenshot({ path: 'artifacts/test_run_2025-12-09/screenshots/tab_export.png', fullPage: true });
 
-    await page.getByRole('button', { name: /Analytics/i }).click({ force: true });
+    await tabs.nth(4).click({ force: true });
     await expect(page.getByTestId('tab-analytics')).toBeVisible();
     await page.screenshot({ path: 'artifacts/test_run_2025-12-09/screenshots/tab_analytics.png', fullPage: true });
 
-    await page.getByRole('button', { name: /Notifications/i }).click({ force: true });
+    await tabs.nth(5).click({ force: true });
     await expect(page.getByTestId('tab-notifications')).toBeVisible();
     await page.screenshot({ path: 'artifacts/test_run_2025-12-09/screenshots/tab_notifications.png', fullPage: true });
   });
