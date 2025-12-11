@@ -14,6 +14,10 @@ from io import BytesIO, StringIO
 import json
 from datetime import datetime
 import pandas as pd
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
 
 from data.schemas import Property, PropertyCollection
 from analytics import MarketInsights
@@ -378,3 +382,47 @@ class InsightsExporter:
         buf.write("\n\n## YoY — Top Decliners\n\n")
         buf.write(top_down.to_markdown(index=False))
         return buf.getvalue()
+
+    def generate_digest_pdf(self, cities: List[str] | None = None) -> BytesIO:
+        city_idx = self.insights.get_city_price_indices(cities)
+        yoy_latest = self.insights.get_cities_yoy(cities)
+        top_up = yoy_latest.sort_values('yoy_pct', ascending=False).head(5)
+        top_down = yoy_latest.sort_values('yoy_pct', ascending=True).head(5)
+
+        output = BytesIO()
+        doc = SimpleDocTemplate(output, pagesize=A4)
+        styles = getSampleStyleSheet()
+        story = []
+
+        story.append(Paragraph("Expert Digest", styles['Title']))
+        story.append(Spacer(1, 12))
+
+        story.append(Paragraph("City Price Indices", styles['Heading2']))
+        t1 = Table([city_idx.columns.tolist()] + city_idx.values.tolist())
+        t1.setStyle(TableStyle([
+            ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+            ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+        ]))
+        story.append(t1)
+        story.append(Spacer(1, 12))
+
+        story.append(Paragraph("YoY — Top Gainers", styles['Heading2']))
+        t2 = Table([top_up.columns.tolist()] + top_up.values.tolist())
+        t2.setStyle(TableStyle([
+            ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+            ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+        ]))
+        story.append(t2)
+        story.append(Spacer(1, 12))
+
+        story.append(Paragraph("YoY — Top Decliners", styles['Heading2']))
+        t3 = Table([top_down.columns.tolist()] + top_down.values.tolist())
+        t3.setStyle(TableStyle([
+            ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+            ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+        ]))
+        story.append(t3)
+
+        doc.build(story)
+        output.seek(0)
+        return output

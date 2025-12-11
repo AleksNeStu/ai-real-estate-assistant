@@ -1225,19 +1225,30 @@ def render_market_insights_tab():
         st.caption("Export Indices")
         export_kind = st.radio("Dataset", options=["City Indices","Monthly Index"], horizontal=True)
         export_format = st.selectbox("Format", options=["csv","xlsx","json","md"], index=0)
-        gen_digest = st.checkbox("Generate Expert Digest (Markdown)")
+        gen_digest = st.checkbox("Generate Expert Digest")
+        digest_format = st.selectbox("Digest Format", options=["md","pdf"], index=0)
         if st.button("Generate Indices Export"):
             exp = InsightsExporter(insights)
             try:
                 if gen_digest:
-                    digest_md = exp.generate_digest_markdown(selected_cities or None)
-                    st.download_button(
-                        label="Download Expert Digest (MD)",
-                        data=digest_md,
-                        file_name="expert_digest.md",
-                        mime="text/markdown",
-                        use_container_width=True
-                    )
+                    if digest_format == 'md':
+                        digest_md = exp.generate_digest_markdown(selected_cities or None)
+                        st.download_button(
+                            label="Download Expert Digest (MD)",
+                            data=digest_md,
+                            file_name="expert_digest.md",
+                            mime="text/markdown",
+                            use_container_width=True
+                        )
+                    else:
+                        digest_pdf = exp.generate_digest_pdf(selected_cities or None)
+                        st.download_button(
+                            label="Download Expert Digest (PDF)",
+                            data=digest_pdf.getvalue(),
+                            file_name="expert_digest.pdf",
+                            mime="application/pdf",
+                            use_container_width=True
+                        )
                 else:
                 if export_kind == "City Indices":
                     if export_format == 'csv':
