@@ -232,15 +232,32 @@ class ChromaPropertyStore:
         if property.negotiation_rate:
             metadata["negotiation_rate"] = property.negotiation_rate.value if hasattr(property.negotiation_rate, "value") else str(property.negotiation_rate)
 
-        # Capture extra fields from the original row to preserve information
-        try:
-            all_data = property.model_dump(exclude_none=True)
-            base_keys = set(metadata.keys()) | {"neighborhood", "price_per_sqm"}
-            extras = {k: v for k, v in all_data.items() if k not in base_keys}
-            if extras:
-                metadata["chroma_dp"] = extras
-        except Exception:
-            pass
+        # Sanitize metadata: only primitives (str, int, float, bool, None); convert datetimes
+        def _sanitize_val(v: Any) -> Any:
+            try:
+                if v is None:
+                    return None
+                if isinstance(v, (str, int, float, bool)):
+                    if isinstance(v, float):
+                        return None if (pd.isna(v) or v != v) else float(v)
+                    return v
+                if isinstance(v, (datetime, pd.Timestamp)):
+                    return v.isoformat()
+                # numpy types
+                if hasattr(v, "item"):
+                    return _sanitize_val(v.item())
+                # lists/dicts or other complex types are not allowed in Chroma metadata
+                return None
+            except Exception:
+                return None
+
+        sanitized = {}
+        for k, v in metadata.items():
+            sv = _sanitize_val(v)
+            if sv is not None or v is None:
+                sanitized[k] = sv
+
+        metadata = sanitized
 
         return Document(
             page_content=text,

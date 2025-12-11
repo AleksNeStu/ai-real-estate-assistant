@@ -60,3 +60,14 @@ lsof -ti:8501 | xargs kill -9
 rm -rf chroma_db/
 # Restart app — database will be recreated
 ```
+### ChromaDB metadata errors
+
+Symptoms:
+- Messages like "Error adding batch: Expected metadata value of type 'string', 'number', 'boolean' or 'null'".
+
+Cause:
+- Non‑primitive values (lists, dicts, complex objects, raw numpy types) in document metadata.
+
+Fix:
+- Ensure only primitives go into metadata (str/int/float/bool/None). Convert datetimes to ISO 8601 strings. Avoid nesting dicts/lists.
+- The vector store layer sanitizes metadata before insertion.
