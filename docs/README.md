@@ -67,20 +67,9 @@ New to the project? Start here:
 
 ## 🏗️ Architecture Overview
 
-The AI Real Estate Assistant is built with a modular architecture:
-
-```
-ai-real-estate-assistant/
-├── models/          # AI model providers (6 providers, 25+ models)
-├── agents/          # Intelligent agents (hybrid, query analysis)
-├── vector_store/    # ChromaDB integration and retrieval
-├── data/            # Data loading and schemas
-├── ui/              # Visualization components
-├── analytics/       # Market insights and tracking
-├── notifications/   # Email alerts and preferences
-├── i18n/            # Internationalization (9 languages)
-└── utils/           # Utility functions
-```
+See dedicated documents:
+- **[Architecture](ARCHITECTURE.md)** — system overview and technology stack
+- **[Project Structure](PROJECT_STRUCTURE.md)** — layout and directories
 
 ## 🎯 Key Features
 

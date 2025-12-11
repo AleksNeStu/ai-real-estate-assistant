@@ -15,7 +15,7 @@
 
 The AI Real Estate Assistant is a conversational AI application that helps users find their ideal properties through natural language interaction. The modern version (V3) features intelligent query understanding, multi-provider AI model support, sophisticated search capabilities, and a completely modernized UI with dark mode support.
 
-**[Live Demo](https://ai-real-estate-assistant.streamlit.app/)** | **[Documentation](docs/)** | **[Contributing](CONTRIBUTING.md)**
+**[Live Demo](https://ai-real-estate-assistant.streamlit.app/)** | **[Documentation](docs/)** | **[Installation](docs/INSTALLATION.md)** | **[Troubleshooting](docs/TROUBLESHOOTING.md)** | **[Contributing](CONTRIBUTING.md)**
 
 ---
 
@@ -310,163 +310,13 @@ See the app and `docs/PHASE3_README.md` for practical scenarios (search, mortgag
 
 ---
 
-## 🏗️ Architecture
-
-### System Overview
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Streamlit UI                         │
-│  (Model Selection, Settings, Chat Interface)            │
-└──────────────────┬──────────────────────────────────────┘
-                   │
-        ┌──────────▼──────────┐
-        │  Query Analyzer     │
-        │  (Intent, Filters)  │
-        └──────────┬──────────┘
-                   │
-      ┌────────────┴────────────┐
-      │                         │
-┌─────▼─────┐           ┌──────▼──────┐
-│    RAG    │           │    Agent    │
-│  (Simple) │           │  (Complex)  │
-└─────┬─────┘           └──────┬──────┘
-      │                        │
-      │                ┌───────▼────────┐
-      │                │     Tools      │
-      │                │ - Mortgage     │
-      │                │ - Comparison   │
-      │                │ - Analysis     │
-      │                └───────┬────────┘
-      │                        │
-      └────────────┬───────────┘
-                   │
-         ┌─────────▼─────────┐
-         │  Result Reranker  │
-         └─────────┬─────────┘
-                   │
-         ┌─────────▼─────────┐
-         │ Response Formatter│
-         └───────────────────┘
-```
-
-### Technology Stack
-
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| **UI** | Streamlit 1.37+ | Modern web interface |
-| **AI Models** | OpenAI, Anthropic, Google, Ollama | Multiple LLM providers |
-| **Framework** | LangChain 0.2+ | AI orchestration |
-| **Vector Store** | ChromaDB 0.5+ | Persistent semantic search |
-| **Embeddings** | FastEmbed (BGE) | Efficient vector generation |
-| **Data Validation** | Pydantic 2.5+ | Type-safe schemas |
-| **Data Processing** | Pandas 2.1+ | DataFrame operations |
-| **Language** | Python 3.11+ | Core development |
+## 🏗️ Architecture & Structure
+See `docs/ARCHITECTURE.md` and `docs/PROJECT_STRUCTURE.md` for up‑to‑date details.
 
 ---
 
-## 📁 Project Structure (V3)
-
-```
-ai-real-estate-assistant/
-├── app_modern.py              # 🆕 Modern V3 app (Recommended)
-├── run_modern.sh              # 🆕 Launch modern app
-├── CONTRIBUTING.md            # 🆕 V3: Contribution guidelines
-├── .gitignore                 # 🆕 V3: Enhanced gitignore
-│
-├── agents/                    # 🆕 Phase 2: Intelligent agents
-│   ├── query_analyzer.py      #     Intent classification
-│   ├── hybrid_agent.py        #     RAG + Agent orchestration
-│   └── recommendation_engine.py #   Personalized recommendations
-│
-├── analytics/                 # 🆕 Phase 3: Analytics & insights
-│   ├── market_insights.py     #     Market trend analysis
-│   └── session_tracker.py     #     User behavior tracking
-│
-├── assets/                    # 🆕 V3: Static assets
-│   ├── css/                   #     Stylesheets
-│   │   ├── dark_mode.css      #     🆕 Dark mode styles (WCAG AA)
-│   │   └── tailwind_custom.css #    🆕 Tailwind utilities
-│   ├── js/                    #     JavaScript files
-│   │   └── dark_mode.js       #     🆕 Theme toggle & system detection
-│   └── *.png                  #     Screenshots
-│
-├── config/                    # 🆕 Phase 1: Configuration
-│   └── settings.py            #     Centralized settings
-│
-├── data/                      # Data processing
-│   ├── schemas.py             # 🆕 Pydantic models
-│   └── csv_loader.py          #     CSV data loading
-│
-├── dataset/                   # Sample property datasets
-│   └── pl/                    #     Polish apartment data (6 months)
-│
-├── docs/                      # 🆕 V3: Documentation (restructured)
-│   ├── README.md              #     Documentation navigation
-│   ├── PRD.MD                 #     Product requirements
-│   ├── MODERNIZATION_PROPOSAL.md # Modernization plan
-│   ├── PHASE2_README.md       #     Phase 2: Hybrid agent
-│   ├── PHASE3_README.md       #     Phase 3: Analytics & export
-│   ├── PHASE4_README.md       #     Phase 4: Advanced visualizations
-│   ├── PHASE5_README.md       #     Phase 5: Notifications
-│   ├── DEPLOYMENT.md          #     Deployment guide
-│   ├── DOCKER.md              #     Docker setup
-│   ├── TESTING_GUIDE.md       #     Testing documentation
-│   └── TODO.MD                #     Development roadmap
-│
-├── i18n/                      # 🆕 Phase 1: Internationalization
-│   └── translations.py        #     9 language support
-│
-├── models/                    # 🆕 Phase 1: Model providers
-│   ├── provider_factory.py    #     Multi-provider management
-│   └── providers/             #     6 providers (OpenAI, Anthropic, etc.)
-│       ├── openai.py
-│       ├── anthropic.py
-│       ├── google.py
-│       ├── grok.py
-│       ├── deepseek.py
-│       └── ollama.py
-│
-├── notifications/             # 🆕 Phase 5: Alert system
-│   ├── email_service.py       #     Email configuration
-│   ├── alert_manager.py       #     Alert management
-│   └── notification_history.py #    Notification tracking
-│
-├── tests/                     # Test suite
-│   ├── unit/                  #     Unit tests
-│   └── integration/           #     Integration tests
-│
-├── tools/                     # 🆕 Phase 2: Agent tools
-│   └── property_tools.py      #     Mortgage, comparison, analysis
-│
-├── ui/                        # 🆕 Phase 3-4: UI components
-│   ├── comparison_viz.py      #     Property comparison
-│   ├── price_charts.py        #     Price visualizations
-│   ├── radar_charts.py        #     Amenity radar charts
-│   ├── metrics.py             #     Metric displays
-│   ├── market_dashboard.py    #     Market overview
-│   ├── geo_viz.py             #     Map visualizations
-│   └── components/            #     Reusable components
-│
-├── utils/                     # Utility functions
-│   ├── ui_helpers.py          # 🆕 V3: UI styling & dark mode
-│   ├── exporters.py           # 🆕 Phase 3: PDF, CSV, Excel export
-│   ├── saved_searches.py      # 🆕 Phase 3: Search management
-│   ├── api_key_validator.py   # 🆕 API key validation
-│   └── ollama_detector.py     # 🆕 Local Ollama detection
-│
-├── vector_store/              # 🆕 Phase 1: Vector storage
-│   ├── chroma_store.py        #     Persistent ChromaDB
-│   ├── hybrid_retriever.py    #     Advanced retrieval
-│   └── reranker.py            #     Result reranking
-│
-├── .streamlit/                # Streamlit configuration
-│   └── config.toml            # 🆕 V3: Dark mode theme
-│
-├── requirements.txt           # Python dependencies
-├── Dockerfile                 # Docker build configuration
-└── docker-compose.yml         # Docker Compose setup
-```
+## 📁 Project Structure
+See `docs/PROJECT_STRUCTURE.md` for an up‑to‑date layout.
 
 ---
 
