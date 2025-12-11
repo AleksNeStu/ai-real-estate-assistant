@@ -1,5 +1,5 @@
 # AI Real Estate Assistant - Docker Image
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 # Set working directory
 WORKDIR /app
@@ -17,9 +17,9 @@ COPY requirements.txt .
 # Install Python dependencies in stages for better compatibility
 # Install critical packages with C extensions first
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir "numpy>=1.24.0,<2.0.0" && \
+    pip install --no-cache-dir "numpy>=1.26.4,<2.0.0" && \
     pip install --no-cache-dir "pydantic-core>=2.14.0,<3.0.0" && \
-    pip install --no-cache-dir "pandas>=2.2.0,<2.3.0" && \
+    pip install --no-cache-dir "pandas>=2.2.3,<2.3.0" && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy application code

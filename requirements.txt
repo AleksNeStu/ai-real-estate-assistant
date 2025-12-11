@@ -43,4 +43,4 @@ rpds-py==0.20.0
 onnxruntime==1.18.1
 yarl==1.9.4
 faker==27.0.0
-reportlab==4.1.0
+reportlab==4.4.6

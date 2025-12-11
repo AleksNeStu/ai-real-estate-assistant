@@ -3,7 +3,7 @@
 This guide provides platform‑specific installation steps and best practices for running the AI Real Estate Assistant.
 
 ## Prerequisites
-- Python 3.11+
+- Python 3.12+
 - pip
 - Git
 - At least one API key: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, or `GOOGLE_API_KEY`
@@ -34,7 +34,7 @@ git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
 cd ai-real-estate-assistant
 
 # Virtual environment
-py -3.11 -m venv venv
+py -3.12 -m venv venv
 .\venv\Scripts\Activate.ps1
 
 # Dependencies
@@ -51,9 +51,9 @@ streamlit run app_modern.py
 git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
 cd ai-real-estate-assistant
 
-# Python 3.11 (Homebrew)
-brew install python@3.11
-python3.11 -m venv venv
+# Python 3.12 (Homebrew)
+brew install python@3.12
+python3.12 -m venv venv
 source venv/bin/activate
 
 # Dependencies
@@ -67,14 +67,14 @@ streamlit run app_modern.py
 ### Linux (Ubuntu/Debian)
 ```bash
 sudo apt update && sudo apt upgrade -y
-sudo apt install python3.11 python3.11-venv python3-pip git -y
+sudo apt install python3.12 python3.12-venv python3-pip git -y
 
 # Clone
 git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
 cd ai-real-estate-assistant
 
 # Virtual environment
-python3.11 -m venv venv
+python3.12 -m venv venv
 source venv/bin/activate
 
 # Dependencies
@@ -144,4 +144,3 @@ npm run screenshots
 - RAM: 4GB minimum (8GB recommended)
 - Disk: ≥1GB free (more for ChromaDB)
 - Browser: Chromium/Firefox/WebKit
-

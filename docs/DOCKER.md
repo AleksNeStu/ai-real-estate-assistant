@@ -20,7 +20,7 @@ docker-compose up -d
 # Visit: http://localhost:8501
 ```
 
-### Option 2: Docker Build & Run
+### Option 2: Docker Build & Run (Python 3.12 base)
 
 ```bash
 # 1. Build the image
