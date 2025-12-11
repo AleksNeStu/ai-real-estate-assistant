@@ -1265,7 +1265,7 @@ def render_market_insights_tab():
                             use_container_width=True
                         )
                 else:
-                if export_kind == "City Indices":
+                    if export_kind == "City Indices":
                     if export_format == 'csv':
                         data = exp.export_city_indices_csv(selected_cities or None)
                         mime = 'text/csv'
@@ -1283,25 +1283,25 @@ def render_market_insights_tab():
                         data = exp.export_city_indices_markdown(selected_cities or None)
                         mime = 'text/markdown'
                         filename = 'city_indices.md'
-                else:
-                    city = ts_city if ts_city else None
-                    if export_format == 'csv':
-                        data = exp.export_monthly_index_csv(city)
-                        mime = 'text/csv'
-                        filename = 'monthly_index.csv'
-                    elif export_format == 'xlsx':
-                        buf = exp.export_monthly_index_excel(city)
-                        data = buf.getvalue()
-                        mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                        filename = 'monthly_index.xlsx'
-                    elif export_format == 'json':
-                        data = exp.export_monthly_index_json(city)
-                        mime = 'application/json'
-                        filename = 'monthly_index.json'
                     else:
-                        data = exp.export_monthly_index_markdown(city)
-                        mime = 'text/markdown'
-                        filename = 'monthly_index.md'
+                        city = ts_city if ts_city else None
+                        if export_format == 'csv':
+                            data = exp.export_monthly_index_csv(city)
+                            mime = 'text/csv'
+                            filename = 'monthly_index.csv'
+                        elif export_format == 'xlsx':
+                            buf = exp.export_monthly_index_excel(city)
+                            data = buf.getvalue()
+                            mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                            filename = 'monthly_index.xlsx'
+                        elif export_format == 'json':
+                            data = exp.export_monthly_index_json(city)
+                            mime = 'application/json'
+                            filename = 'monthly_index.json'
+                        else:
+                            data = exp.export_monthly_index_markdown(city)
+                            mime = 'text/markdown'
+                            filename = 'monthly_index.md'
 
                 st.download_button(
                     label=f"Download {export_format.upper()}",
