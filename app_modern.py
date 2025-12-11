@@ -1209,6 +1209,8 @@ def render_market_insights_tab():
         if selected_cities:
             indices_df = insights.get_city_price_indices(selected_cities)
             st.dataframe(indices_df)
+        else:
+            st.info(get_text('load_multiple_cities', lang))
 
         st.caption("Monthly Price Index (YoY)")
         ts_city = st.selectbox("Time Series City", options=cities or [""], index=0 if cities else 0, key="ts_city")
@@ -1266,23 +1268,23 @@ def render_market_insights_tab():
                         )
                 else:
                     if export_kind == "City Indices":
-                    if export_format == 'csv':
-                        data = exp.export_city_indices_csv(selected_cities or None)
-                        mime = 'text/csv'
-                        filename = 'city_indices.csv'
-                    elif export_format == 'xlsx':
-                        buf = exp.export_city_indices_excel(selected_cities or None)
-                        data = buf.getvalue()
-                        mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                        filename = 'city_indices.xlsx'
-                    elif export_format == 'json':
-                        data = exp.export_city_indices_json(selected_cities or None)
-                        mime = 'application/json'
-                        filename = 'city_indices.json'
-                    else:
-                        data = exp.export_city_indices_markdown(selected_cities or None)
-                        mime = 'text/markdown'
-                        filename = 'city_indices.md'
+                        if export_format == 'csv':
+                            data = exp.export_city_indices_csv(selected_cities or None)
+                            mime = 'text/csv'
+                            filename = 'city_indices.csv'
+                        elif export_format == 'xlsx':
+                            buf = exp.export_city_indices_excel(selected_cities or None)
+                            data = buf.getvalue()
+                            mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                            filename = 'city_indices.xlsx'
+                        elif export_format == 'json':
+                            data = exp.export_city_indices_json(selected_cities or None)
+                            mime = 'application/json'
+                            filename = 'city_indices.json'
+                        else:
+                            data = exp.export_city_indices_markdown(selected_cities or None)
+                            mime = 'text/markdown'
+                            filename = 'city_indices.md'
                     else:
                         city = ts_city if ts_city else None
                         if export_format == 'csv':
@@ -1303,17 +1305,16 @@ def render_market_insights_tab():
                             mime = 'text/markdown'
                             filename = 'monthly_index.md'
 
-                st.download_button(
-                    label=f"Download {export_format.upper()}",
-                    data=data,
-                    file_name=filename,
-                    mime=mime,
-                    use_container_width=True
-                )
+                    st.download_button(
+                        label=f"Download {export_format.upper()}",
+                        data=data,
+                        file_name=filename,
+                        mime=mime,
+                        use_container_width=True
+                    )
             except Exception as e:
                 st.error(f"Failed to export indices: {e}")
-    else:
-        st.info(get_text('load_multiple_cities', lang))
+    
 
     st.divider()
 
