@@ -16,6 +16,7 @@ from datetime import datetime
 import pandas as pd
 
 from data.schemas import Property, PropertyCollection
+from analytics import MarketInsights
 
 
 class ExportFormat(str, Enum):
@@ -305,3 +306,60 @@ class PropertyExporter:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         extension = format.value
         return f"{prefix}_{timestamp}.{extension}"
+
+
+class InsightsExporter:
+    def __init__(self, insights: MarketInsights):
+        self.insights = insights
+
+    def export_city_indices_csv(self, cities: List[str] | None = None) -> str:
+        df = self.insights.get_city_price_indices(cities)
+        return df.to_csv(index=False)
+
+    def export_city_indices_json(self, cities: List[str] | None = None, pretty: bool = True) -> str:
+        df = self.insights.get_city_price_indices(cities)
+        obj = {"indices": df.to_dict(orient="records")}
+        return json.dumps(obj, indent=2 if pretty else None)
+
+    def export_city_indices_markdown(self, cities: List[str] | None = None) -> str:
+        df = self.insights.get_city_price_indices(cities)
+        buf = StringIO()
+        buf.write("# City Price Indices\n\n")
+        buf.write(df.to_markdown(index=False))
+        return buf.getvalue()
+
+    def export_city_indices_excel(self, cities: List[str] | None = None) -> BytesIO:
+        df = self.insights.get_city_price_indices(cities)
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+            df.to_excel(writer, sheet_name="CityIndices", index=False)
+        output.seek(0)
+        return output
+
+    def export_monthly_index_csv(self, city: str | None = None) -> str:
+        df = self.insights.get_monthly_price_index(city)
+        return df.to_csv(index=False)
+
+    def export_monthly_index_json(self, city: str | None = None, pretty: bool = True) -> str:
+        df = self.insights.get_monthly_price_index(city)
+        df = df.copy()
+        if 'month' in df.columns:
+            df['month'] = df['month'].astype(str)
+        obj = {"monthly_index": df.to_dict(orient="records")}
+        return json.dumps(obj, indent=2 if pretty else None)
+
+    def export_monthly_index_markdown(self, city: str | None = None) -> str:
+        df = self.insights.get_monthly_price_index(city)
+        buf = StringIO()
+        title = f"# Monthly Price Index{f' — {city}' if city else ''}\n\n"
+        buf.write(title)
+        buf.write(df.to_markdown(index=False))
+        return buf.getvalue()
+
+    def export_monthly_index_excel(self, city: str | None = None) -> BytesIO:
+        df = self.insights.get_monthly_price_index(city)
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+            df.to_excel(writer, sheet_name="MonthlyIndex", index=False)
+        output.seek(0)
+        return output
