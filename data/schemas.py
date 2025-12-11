@@ -29,6 +29,13 @@ class NegotiationRate(str, Enum):
     LOW = "low"
 
 
+class ListingType(str, Enum):
+    RENT = "rent"
+    SALE = "sale"
+    ROOM = "room"
+    SUBLEASE = "sublease"
+
+
 class Property(BaseModel):
     """
     Comprehensive property data model with validation.
@@ -56,6 +63,10 @@ class Property(BaseModel):
     property_type: PropertyType = Field(
         default=PropertyType.APARTMENT,
         description="Type of property"
+    )
+    listing_type: ListingType = Field(
+        default=ListingType.RENT,
+        description="Listing type: rent/sale/room/sublease"
     )
 
     # Physical Characteristics

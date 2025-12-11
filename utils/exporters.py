@@ -58,6 +58,9 @@ class PropertyExporter:
             if 'property_type' in prop_dict:
                 prop_type = prop_dict['property_type']
                 prop_dict['property_type'] = prop_type.value if hasattr(prop_type, 'value') else str(prop_type)
+            if 'listing_type' in prop_dict and prop_dict['listing_type']:
+                lt = prop_dict['listing_type']
+                prop_dict['listing_type'] = lt.value if hasattr(lt, 'value') else str(lt)
             if 'negotiation_rate' in prop_dict and prop_dict['negotiation_rate']:
                 neg_rate = prop_dict['negotiation_rate']
                 prop_dict['negotiation_rate'] = neg_rate.value if hasattr(neg_rate, 'value') else str(neg_rate)
