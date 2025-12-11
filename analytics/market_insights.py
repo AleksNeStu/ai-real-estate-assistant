@@ -371,25 +371,18 @@ class MarketInsights:
         if len(df) == 0:
             return pd.DataFrame(columns=['month', 'avg_price', 'median_price', 'count', 'yoy_pct'])
         df['month'] = df['dt'].dt.to_period('M').dt.to_timestamp()
-        grouped = df.groupby('month').agg(
+        grouped = df.groupby('month', sort=True).agg(
             avg_price=('price', 'mean'),
             median_price=('price', 'median'),
             count=('price', 'count')
         ).reset_index()
-        # YoY percent: compare same month last year
-        grouped['yoy_pct'] = None
-        try:
-            grouped = grouped.sort_values('month')
-            # Build lookup of last year values
-            prev = grouped.set_index('month')['avg_price'].shift(12)
+        # YoY percent: compare same month last year using row-wise shift
+        grouped = grouped.sort_values('month')
+        prev = grouped['avg_price'].shift(12)
+        with np.errstate(divide='ignore', invalid='ignore'):
             grouped['yoy_pct'] = ((grouped['avg_price'] - prev) / prev) * 100
-        except Exception:
-            pass
         # Moving average
-        try:
-            grouped['avg_price_ma'] = grouped['avg_price'].rolling(window=window, min_periods=1).mean()
-        except Exception:
-            grouped['avg_price_ma'] = np.nan
+        grouped['avg_price_ma'] = grouped['avg_price'].rolling(window=window, min_periods=1).mean()
         # Anomalies via z-score
         if detect_anomalies and len(grouped) > 0:
             mu = float(np.nanmean(grouped['avg_price']))

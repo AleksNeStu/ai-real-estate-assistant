@@ -345,6 +345,9 @@ class InsightsExporter:
 
     def export_monthly_index_csv(self, city: str | None = None) -> str:
         df = self.insights.get_monthly_price_index(city)
+        df = df.copy()
+        if 'month' in df.columns:
+            df['month'] = df['month'].astype(str)
         return df.to_csv(index=False)
 
     def export_monthly_index_json(self, city: str | None = None, pretty: bool = True) -> str:
