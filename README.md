@@ -3,7 +3,7 @@
 > **A modern, intelligent real estate assistant powered by advanced AI**
 
 [![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white)](https://streamlit.io)
-[![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat&logo=python&logoColor=white)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.12+-blue?style=flat&logo=python&logoColor=white)](https://python.org)
 [![LangChain](https://img.shields.io/badge/LangChain-0.2+-green?style=flat)](https://langchain.com)
 [![CI](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
@@ -100,7 +100,7 @@ docker-compose up -d
 ### 💻 Option 2: Local Installation
 
 #### Prerequisites
-- Python 3.11 or higher (use Python 3.11 to create the virtual environment and install dependencies)
+- Python 3.12 or higher (Python 3.11 is fully supported; 3.12 is recommended)
 - pip package manager
 - Git
 - At least one LLM API key (OpenAI, Anthropic, or Google) OR Ollama installed locally
@@ -113,8 +113,8 @@ docker-compose up -d
 git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
 cd ai-real-estate-assistant
 
-# Create virtual environment
-py -3.11 -m venv venv
+# Create virtual environment (Python 3.12 recommended)
+py -3.12 -m venv venv
 .\venv\Scripts\Activate.ps1
 
 # Install dependencies
@@ -149,13 +149,13 @@ streamlit run app_modern.py
 git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
 cd ai-real-estate-assistant
 
-# Ensure Python 3.11 is installed (Homebrew)
-brew install python@3.11
-echo 'export PATH="/opt/homebrew/opt/python@3.11/bin:$PATH"' >> ~/.zprofile
+# Ensure Python 3.12 is installed (Homebrew)
+brew install python@3.12
+echo 'export PATH="/opt/homebrew/opt/python@3.12/bin:$PATH"' >> ~/.zprofile
 source ~/.zprofile
 
-# Create virtual environment with Python 3.11
-python3.11 -m venv venv
+# Create virtual environment with Python 3.12
+python3.12 -m venv venv
 source venv/bin/activate
 
 # Install dependencies
@@ -174,15 +174,15 @@ streamlit run app_modern.py
 # Update system
 sudo apt update && sudo apt upgrade -y
 
-# Install Python 3.11 and essentials
-sudo apt install python3.11 python3.11-venv python3-pip git -y
+# Install Python 3.12 and essentials
+sudo apt install python3.12 python3.12-venv python3-pip git -y
 
 # Clone repository
 git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
 cd ai-real-estate-assistant
 
 # Create virtual environment
-python3.11 -m venv venv
+python3.12 -m venv venv
 source venv/bin/activate
 
 # Install dependencies
