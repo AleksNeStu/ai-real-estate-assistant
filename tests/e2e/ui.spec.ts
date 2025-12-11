@@ -11,8 +11,6 @@ test.describe('UI Smoke', () => {
   test('load data from default URLs via sidebar @smoke', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('[data-testid="stAppViewBlockContainer"]')).toBeVisible({ timeout: 10000 });
-    const dsMarker = page.locator('[data-testid="expander-data-sources"]');
-    await expect(dsMarker).toBeVisible();
     const sidebar = page.locator('[data-testid="stSidebar"]');
     await sidebar.getByRole('radio', { name: 'URL' }).click({ force: true });
     const ta = sidebar.getByLabel(/Data URLs/);
@@ -40,27 +38,27 @@ test.describe('UI Smoke', () => {
     await expect(page.locator('[data-testid="stAppViewBlockContainer"]')).toBeVisible({ timeout: 10000 });
     const tabs = page.locator('.stTabs [data-baseweb="tab"]');
     await tabs.nth(0).click({ force: true });
-    await expect(page.getByTestId('tab-chat')).toBeVisible();
+    await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true');
     await page.screenshot({ path: 'artifacts/test_run_2025-12-09/screenshots/tab_chat.png', fullPage: true });
 
     await tabs.nth(1).click({ force: true });
-    await expect(page.getByTestId('tab-insights')).toBeVisible();
+    await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
     await page.screenshot({ path: 'artifacts/test_run_2025-12-09/screenshots/tab_insights.png', fullPage: true });
 
     await tabs.nth(2).click({ force: true });
-    await expect(page.getByTestId('tab-compare')).toBeVisible();
+    await expect(tabs.nth(2)).toHaveAttribute('aria-selected', 'true');
     await page.screenshot({ path: 'artifacts/test_run_2025-12-09/screenshots/tab_compare.png', fullPage: true });
 
     await tabs.nth(3).click({ force: true });
-    await expect(page.getByTestId('tab-export')).toBeVisible();
+    await expect(tabs.nth(3)).toHaveAttribute('aria-selected', 'true');
     await page.screenshot({ path: 'artifacts/test_run_2025-12-09/screenshots/tab_export.png', fullPage: true });
 
     await tabs.nth(4).click({ force: true });
-    await expect(page.getByTestId('tab-analytics')).toBeVisible();
+    await expect(tabs.nth(4)).toHaveAttribute('aria-selected', 'true');
     await page.screenshot({ path: 'artifacts/test_run_2025-12-09/screenshots/tab_analytics.png', fullPage: true });
 
     await tabs.nth(5).click({ force: true });
-    await expect(page.getByTestId('tab-notifications')).toBeVisible();
+    await expect(tabs.nth(5)).toHaveAttribute('aria-selected', 'true');
     await page.screenshot({ path: 'artifacts/test_run_2025-12-09/screenshots/tab_notifications.png', fullPage: true });
   });
 

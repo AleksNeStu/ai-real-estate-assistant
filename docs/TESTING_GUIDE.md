@@ -833,3 +833,4 @@ npx playwright install chromium
 # Run e2e tests
 npx playwright test -c playwright.config.ts --reporter=list
 ```
+Note: Playwright is used for CI and local debugging only. The application does not include any MCP Playwright integrations or test‑specific DOM markers.

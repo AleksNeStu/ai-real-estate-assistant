@@ -202,7 +202,6 @@ def initialize_session_state():
 def render_sidebar():
     """Render sidebar with model selection and configuration."""
     with st.sidebar:
-        st.markdown('<section data-testid="stSidebar"></section>', unsafe_allow_html=True)
         lang = st.session_state.language
         st.title(f"{settings.app_icon} {get_text('app_title', lang)}")
         st.caption(f"{get_text('version', lang)} {settings.version}")
@@ -228,7 +227,6 @@ def render_sidebar():
 
         # Model Provider Selection (collapsible)
         with st.expander(f"🧩 {get_text('model_config', lang)}", expanded=True):
-            st.markdown('<div data-testid="expander-model-config"></div>', unsafe_allow_html=True)
             # Get available providers
             providers = ModelProviderFactory.list_providers()
             provider_display = {
@@ -503,7 +501,6 @@ def render_sidebar():
 
         # Data Source Management (collapsible)
         with st.expander(f"📊 {get_text('data_sources', lang)}"):
-            st.markdown('<div data-testid="expander-data-sources"></div>', unsafe_allow_html=True)
             autoload_flag = st.checkbox(
                 "autoload_default_at_seton_start",
                 value=st.session_state.get("autoload_default_datasets", settings.autoload_default_datasets)
@@ -1954,27 +1951,21 @@ def render_main_content():
     ])
 
     with tabs[0]:
-        st.markdown('<div data-testid="tab-chat"></div>', unsafe_allow_html=True)
         render_chat_tab()
 
     with tabs[1]:
-        st.markdown('<div data-testid="tab-insights"></div>', unsafe_allow_html=True)
         render_market_insights_tab()
 
     with tabs[2]:
-        st.markdown('<div data-testid="tab-compare"></div>', unsafe_allow_html=True)
         render_comparisons_tab()
 
     with tabs[3]:
-        st.markdown('<div data-testid="tab-export"></div>', unsafe_allow_html=True)
         render_export_tab()
 
     with tabs[4]:
-        st.markdown('<div data-testid="tab-analytics"></div>', unsafe_allow_html=True)
         render_analytics_tab()
 
     with tabs[5]:
-        st.markdown('<div data-testid="tab-notifications"></div>', unsafe_allow_html=True)
         render_notifications_tab()
 
 
