@@ -360,13 +360,24 @@ def _create_property_popup(prop: Property) -> str:
 
     amenities_html = "<br>".join(amenities) if amenities else "None"
 
+    price_label = "Price"
+    price_value = f"${prop.price}/month" if getattr(prop, 'listing_type', None) in (None, 'rent') else f"${prop.price}"
+    currency = getattr(prop, 'currency', None)
+    if currency:
+        price_value = price_value.replace("$", "")
+        price_value = f"{price_value} {currency}"
+    listing_str = str(getattr(prop, 'listing_type', 'rent')).title()
     html = f"""
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif; width: 250px; background-color: #ffffff; color: #0f172a; padding: 8px; border-radius: 4px;">
         <h4 style="margin: 0 0 10px 0; color: #2563eb; font-size: 16px;">{prop.city}</h4>
         <table style="width: 100%; font-size: 12px; color: #0f172a;">
             <tr>
-                <td style="padding: 2px 0;"><b>Price:</b></td>
-                <td style="padding: 2px 0; color: #dc2626; font-weight: bold;">${prop.price}/month</td>
+                <td style="padding: 2px 0;"><b>{price_label}:</b></td>
+                <td style="padding: 2px 0; color: #dc2626; font-weight: bold;">{price_value}</td>
+            </tr>
+            <tr>
+                <td style="padding: 2px 0;"><b>Listing:</b></td>
+                <td style="padding: 2px 0;">{listing_str}</td>
             </tr>
             <tr>
                 <td style="padding: 2px 0;"><b>Type:</b></td>
