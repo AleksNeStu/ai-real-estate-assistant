@@ -293,92 +293,20 @@ If it doesn't open automatically, click the URL shown in the terminal.
 
 ---
 
-## 🖼️ Visual Gallery
+## 🖼️ Screenshots
 
-Below are screenshots demonstrating core features and the modern dark mode.
+Screenshots are generated on demand to match the latest V3 UI.
 
-![Home — Dark Mode with Preferences](assets/screen.png "Home screen in dark mode: language preferences, model selector, and sidebar controls. Captured with Playwright on Windows 11 (Desktop). App Version: 3.0.x")
-
-![Market Insights — Expert Panel](assets/screen2.png "Market Insights with Expert Panel: city price indices and geospatial radius filter. Captured with Playwright on Windows 11 (Desktop). App Version: 3.0.x")
-
-Notes:
-- Images include alt text and captions for accessibility.
-- The gallery focuses on key flows: preferences, market insights, and expert tools.
-- Verified layout on desktop and responsive view; mobile users may scroll to reveal full content.
-
-Refresh screenshots locally:
 - Start the app: `streamlit run app_modern.py`
 - Install browsers (first time): `npx playwright install`
-- Capture: `npm run screenshots` (saves to `assets/screen.png` and `assets/screen2.png`)
-- Override app URL: `APP_URL=http://localhost:8502 npm run screenshots`
+- Capture: `npm run screenshots`
+- Optional: `APP_URL=http://localhost:8502 npm run screenshots`
+
+The generated images are not embedded here to avoid stale visuals. Refer to the app directly for the most up‑to‑date UI.
 
 ## 📖 Usage Examples
 
-### Example 1: Simple Property Search
-```
-You: "Show me 2-bedroom apartments in Krakow under $1000"
-
-AI: 📚 Processed with RAG
-
-Found 3 properties matching your criteria:
-
-1. Modern 2-bed in City Center
-   - Price: $950/month
-   - Area: 55 sqm
-   - Features: Parking, Balcony
-   - Location: Kazimierz, Krakow
-
-2. Cozy 2-bed near Old Town
-   - Price: $890/month
-   - Area: 48 sqm
-   - Features: Garden access, Bike room
-   - Location: Stare Miasto, Krakow
-   ...
-```
-
-### Example 2: Mortgage Calculation
-```
-You: "Calculate mortgage for $180,000 property with 20% down at 4.5% for 30 years"
-
-AI: 🛠️ Processed with AI Agent + Tools
-
-Mortgage Calculation for $180,000 Property:
-
-Down Payment (20%): $36,000
-Loan Amount: $144,000
-
-Monthly Payment: $730
-Annual Payment: $8,760
-
-Total Interest (30 years): $118,800
-Total Amount Paid: $262,800
-Total Cost (with down payment): $298,800
-```
-
-### Example 3: Property Comparison
-```
-You: "Compare average rental prices in Krakow vs Warsaw for 2-bedroom apartments"
-
-AI: 🔀 Processed with Hybrid (RAG + Agent)
-
-Based on 112 current listings:
-
-**Krakow (2-bedroom):**
-- Average: $980/month
-- Range: $750 - $1,300
-- Median: $950/month
-- Properties: 45 listings
-
-**Warsaw (2-bedroom):**
-- Average: $1,350/month
-- Range: $1,000 - $1,800
-- Median: $1,300/month
-- Properties: 67 listings
-
-**Analysis:** Warsaw is approximately 38% more expensive than Krakow for
-2-bedroom apartments. The higher cost in Warsaw reflects its status as
-the capital with more job opportunities and higher demand.
-```
+See the app and `docs/PHASE3_README.md` for practical scenarios (search, mortgage, comparison, market insights). Examples are kept in documentation to avoid duplication and ensure accuracy.
 
 ---
 
@@ -593,21 +521,12 @@ ai-real-estate-assistant/
 
 ---
 
-## 📊 Performance Metrics
+## 📊 Performance
 
-| Query Type | Processing Method | Avg Response Time | Accuracy |
-|------------|-------------------|-------------------|----------|
-| Simple Retrieval | RAG | 1-2s | 95% |
-| Filtered Search | RAG + Reranking | 2-3s | 92% |
-| Mortgage Calculation | Agent + Tools | 3-5s | 99% |
-| Price Analysis | Hybrid | 5-10s | 88% |
-| Property Comparison | Hybrid | 6-12s | 90% |
-
-**Key Improvements:**
-- **Relevance**: +30-40% with reranking
-- **Intent Recognition**: 92% accuracy
-- **Tool Selection**: 95% accuracy
-- **User Satisfaction**: High (based on conversational flow)
+- Simple RAG queries: 1–2s (typical)
+- Filtered search + reranking: 2–3s
+- Analysis/Comparison (hybrid): 5–12s depending on dataset and model
+- Relevance improves by ~30–40% with reranking
 
 ---
 
