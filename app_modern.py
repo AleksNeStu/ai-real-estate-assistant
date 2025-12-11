@@ -53,6 +53,7 @@ from utils import (
 )
 from ui.comparison_viz import PropertyComparison, display_comparison_ui, display_market_insights_ui
 from ui.geo_viz import _get_city_coordinates
+from streamlit_folium import st_folium
 
 # Phase 5 imports
 from notifications import (
@@ -1169,6 +1170,20 @@ def render_market_insights_tab():
             st.caption("Geospatial Filter (radius)")
             center_city = st.selectbox("Center City", options=cities or [""], index=0 if cities else 0)
             radius_km = st.slider("Radius (km)", min_value=1, max_value=50, value=10)
+            m_center = st.session_state.get("geo_center_lat"), st.session_state.get("geo_center_lon")
+            if m_center[0] is None or m_center[1] is None:
+                lat, lon = _get_city_coordinates(center_city)
+            else:
+                lat, lon = float(m_center[0]), float(m_center[1])
+            import folium
+            fmap = folium.Map(location=[lat, lon], zoom_start=11)
+            folium.Circle(location=[lat, lon], radius=float(radius_km) * 1000.0, color="#4B5563", fill=True, fill_opacity=0.2).add_to(fmap)
+            folium.Marker(location=[lat, lon]).add_to(fmap)
+            r = st_folium(fmap, height=350, use_container_width=True)
+            click = r.get("last_clicked")
+            if click and "lat" in click and "lng" in click:
+                st.session_state.geo_center_lat = float(click["lat"])
+                st.session_state.geo_center_lon = float(click["lng"])
         with colB:
             st.caption("City Price Indices")
             selected_cities = st.multiselect("Cities", options=cities, default=cities[:3] if len(cities) >= 3 else cities)
