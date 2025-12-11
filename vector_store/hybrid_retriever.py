@@ -31,6 +31,7 @@ class HybridPropertyRetriever(BaseRetriever):
     search_type: str = "mmr"  # Maximum Marginal Relevance
     fetch_k: int = 20
     lambda_mult: float = 0.5  # Diversity parameter for MMR
+    forced_filters: Optional[Dict[str, Any]] = None
 
     class Config:
         arbitrary_types_allowed = True
@@ -53,6 +54,9 @@ class HybridPropertyRetriever(BaseRetriever):
         """
         # Extract metadata filters from query (simple keyword-based)
         filters = self._extract_filters(query)
+        if self.forced_filters:
+            for k, v in self.forced_filters.items():
+                filters[k] = v
 
         # Perform semantic search
         if self.search_type == "mmr":
@@ -266,6 +270,7 @@ def create_retriever(
     center_lat: Optional[float] = None,
     center_lon: Optional[float] = None,
     radius_km: Optional[float] = None,
+    forced_filters: Optional[Dict[str, Any]] = None,
     **kwargs
 ) -> BaseRetriever:
     """
@@ -298,6 +303,7 @@ def create_retriever(
             center_lat=center_lat,
             center_lon=center_lon,
             radius_km=radius_km,
+            forced_filters=forced_filters,
             **kwargs
         )
 
@@ -306,5 +312,6 @@ def create_retriever(
         vector_store=vector_store,
         k=k,
         search_type=search_type,
+        forced_filters=forced_filters,
         **kwargs
     )

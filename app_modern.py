@@ -795,7 +795,8 @@ def create_conversation_chain():
             search_type="mmr",
             center_lat=center_lat,
             center_lon=center_lon,
-            radius_km=radius_km
+            radius_km=radius_km,
+            forced_filters={("listing_type"): ("rent" if st.session_state.get("listing_type_filter") == "Rent" else ("sale" if st.session_state.get("listing_type_filter") == "Sale" else None))} if st.session_state.get("listing_type_filter") in ("Rent","Sale") else None
         )
 
         # Create memory
@@ -850,7 +851,8 @@ def create_hybrid_agent_instance():
             search_type="mmr",
             center_lat=center_lat,
             center_lon=center_lon,
-            radius_km=radius_km
+            radius_km=radius_km,
+            forced_filters={("listing_type"): ("rent" if st.session_state.get("listing_type_filter") == "Rent" else ("sale" if st.session_state.get("listing_type_filter") == "Sale" else None))} if st.session_state.get("listing_type_filter") in ("Rent","Sale") else None
         )
 
         # Create hybrid agent
@@ -1187,6 +1189,7 @@ def render_market_insights_tab():
         with colB:
             st.caption("City Price Indices")
             selected_cities = st.multiselect("Cities", options=cities, default=cities[:3] if len(cities) >= 3 else cities)
+            listing_choice = st.radio("Listing Type", options=["Any","Rent","Sale"], horizontal=True, key="listing_type_filter")
 
         if center_city:
             lat, lon = _get_city_coordinates(center_city)
