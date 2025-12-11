@@ -1210,9 +1210,20 @@ def render_market_insights_tab():
         st.caption("Export Indices")
         export_kind = st.radio("Dataset", options=["City Indices","Monthly Index"], horizontal=True)
         export_format = st.selectbox("Format", options=["csv","xlsx","json","md"], index=0)
+        gen_digest = st.checkbox("Generate Expert Digest (Markdown)")
         if st.button("Generate Indices Export"):
             exp = InsightsExporter(insights)
             try:
+                if gen_digest:
+                    digest_md = exp.generate_digest_markdown(selected_cities or None)
+                    st.download_button(
+                        label="Download Expert Digest (MD)",
+                        data=digest_md,
+                        file_name="expert_digest.md",
+                        mime="text/markdown",
+                        use_container_width=True
+                    )
+                else:
                 if export_kind == "City Indices":
                     if export_format == 'csv':
                         data = exp.export_city_indices_csv(selected_cities or None)

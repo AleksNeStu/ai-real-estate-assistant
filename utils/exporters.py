@@ -363,3 +363,18 @@ class InsightsExporter:
             df.to_excel(writer, sheet_name="MonthlyIndex", index=False)
         output.seek(0)
         return output
+
+    def generate_digest_markdown(self, cities: List[str] | None = None) -> str:
+        city_idx = self.insights.get_city_price_indices(cities)
+        yoy_latest = self.insights.get_cities_yoy(cities)
+        top_up = yoy_latest.sort_values('yoy_pct', ascending=False).head(5)
+        top_down = yoy_latest.sort_values('yoy_pct', ascending=True).head(5)
+        buf = StringIO()
+        buf.write("# Expert Digest\n\n")
+        buf.write("## City Price Indices\n\n")
+        buf.write(city_idx.to_markdown(index=False))
+        buf.write("\n\n## YoY — Top Gainers\n\n")
+        buf.write(top_up.to_markdown(index=False))
+        buf.write("\n\n## YoY — Top Decliners\n\n")
+        buf.write(top_down.to_markdown(index=False))
+        return buf.getvalue()
