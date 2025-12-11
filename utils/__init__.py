@@ -2,7 +2,7 @@
 Utility modules for export, saved searches, and UI helpers.
 """
 
-from .exporters import PropertyExporter, ExportFormat
+from .exporters import PropertyExporter, ExportFormat, InsightsExporter
 from .saved_searches import SavedSearchManager, SavedSearch, UserPreferences, FavoriteProperty
 from .ui_helpers import (
     load_and_inject_styles,
@@ -17,6 +17,7 @@ from .ui_helpers import (
 
 __all__ = [
     'PropertyExporter',
+    'InsightsExporter',
     'ExportFormat',
     'SavedSearchManager',
     'SavedSearch',
