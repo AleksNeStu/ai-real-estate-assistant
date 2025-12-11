@@ -332,10 +332,20 @@ class MarketInsights:
         dist = earth_radius_km * c
         return df[dist <= radius_km]
 
-    def get_monthly_price_index(self, city: Optional[str] = None) -> pd.DataFrame:
-        """Compute monthly average/median price and YoY change.
+    def get_monthly_price_index(
+        self,
+        city: Optional[str] = None,
+        window: int = 3,
+        detect_anomalies: bool = False,
+        z_threshold: float = 2.0,
+    ) -> pd.DataFrame:
+        """Compute monthly average/median price, moving average and YoY change.
 
-        Uses `scraped_at` timestamps where available; falls back to `last_updated` if needed.
+        Args:
+            city: Optional city to filter.
+            window: Moving average window (months).
+            detect_anomalies: If True, compute z-score anomalies on avg_price.
+            z_threshold: Absolute z-score threshold to mark anomalies.
         """
         df = self.df.copy()
         # Attach timestamps from original properties if missing in df
@@ -375,6 +385,18 @@ class MarketInsights:
             grouped['yoy_pct'] = ((grouped['avg_price'] - prev) / prev) * 100
         except Exception:
             pass
+        # Moving average
+        try:
+            grouped['avg_price_ma'] = grouped['avg_price'].rolling(window=window, min_periods=1).mean()
+        except Exception:
+            grouped['avg_price_ma'] = np.nan
+        # Anomalies via z-score
+        if detect_anomalies and len(grouped) > 0:
+            mu = float(np.nanmean(grouped['avg_price']))
+            sd = float(np.nanstd(grouped['avg_price'])) or 1.0
+            grouped['zscore'] = (grouped['avg_price'] - mu) / sd
+            grouped['anomaly'] = grouped['zscore'].abs() >= z_threshold
+        return grouped
         return grouped
 
     def get_property_type_insights(self, property_type: str) -> Optional[PropertyTypeInsights]:
