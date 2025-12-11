@@ -1174,6 +1174,15 @@ def render_market_insights_tab():
         if selected_cities:
             indices_df = insights.get_city_price_indices(selected_cities)
             st.dataframe(indices_df)
+
+        st.caption("Monthly Price Index (YoY)")
+        ts_city = st.selectbox("Time Series City", options=cities or [""], index=0 if cities else 0, key="ts_city")
+        if ts_city:
+            ts_df = insights.get_monthly_price_index(ts_city)
+            if len(ts_df) > 0:
+                chart_df = ts_df[['month','avg_price']].set_index('month')
+                st.line_chart(chart_df)
+                st.dataframe(ts_df)
     else:
         st.info(get_text('load_multiple_cities', lang))
 
