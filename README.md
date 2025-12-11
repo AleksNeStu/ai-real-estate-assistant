@@ -293,20 +293,20 @@ If it doesn't open automatically, click the URL shown in the terminal.
 
 ---
 
-## �️ Visual Gallery
+## 🖼️ Visual Gallery
 
 Below are screenshots demonstrating core features and the modern dark mode.
 
-![Home — Dark Mode with Preferences](assets/screen.png "Home screen in dark mode: language preferences, model selector, and sidebar controls")
+![Home — Dark Mode with Preferences](assets/screen.png "Home screen in dark mode: language preferences, model selector, and sidebar controls. Captured with Playwright on Windows 11 (Desktop). App Version: 3.0.x")
 
-![Market Insights — Expert Panel](assets/screen2.png "Market Insights with Expert Panel: city price indices and geospatial radius filter")
+![Market Insights — Expert Panel](assets/screen2.png "Market Insights with Expert Panel: city price indices and geospatial radius filter. Captured with Playwright on Windows 11 (Desktop). App Version: 3.0.x")
 
 Notes:
 - Images include alt text and captions for accessibility.
 - The gallery focuses on key flows: preferences, market insights, and expert tools.
 - Verified layout on desktop and responsive view; mobile users may scroll to reveal full content.
 
-## �📖 Usage Examples
+## 📖 Usage Examples
 
 ### Example 1: Simple Property Search
 ```
@@ -970,3 +970,45 @@ Made with ❤️ using Python, LangChain, and Streamlit
 Copyright © 2025 [Alex Nesterovich](https://github.com/AleksNeStu)
 
 </div>
+---
+
+## 📦 Downloads
+
+You can download source archives directly from GitHub for the latest development branch (V3) and the stable legacy branch (V2).
+
+| Version | Branch | Download | SHA256 | Notes |
+|--------:|:------:|:---------|:------:|:------|
+| V3 (Dev) | main | https://github.com/AleksNeStu/ai-real-estate-assistant/archive/refs/heads/main.zip | compute locally | Active development; breaking changes possible |
+| V2 (Stable) | ver2 | https://github.com/AleksNeStu/ai-real-estate-assistant/archive/refs/heads/ver2.zip | compute locally | Stable legacy version without ongoing improvements |
+
+Verify integrity:
+- Windows PowerShell: `Get-FileHash .\ai-real-estate-assistant-main.zip -Algorithm SHA256`
+- macOS/Linux: `shasum -a 256 ai-real-estate-assistant-main.zip`
+
+---
+
+## 📈 Statistics
+
+- Performance (indicative, varies by dataset and model):
+  - Simple RAG queries: 1–2s
+  - Filtered search + reranking: 2–3s
+  - Price analysis (hybrid): 5–10s
+  - Comparison (hybrid): 6–12s
+- Resource usage (typical dev machine):
+  - Memory: 300–800MB (Streamlit server + Python + Chroma, depends on dataset size)
+  - Disk: ChromaDB persist directory grows with dataset size
+  - CPU: spikes during embedding and analytics; steady during interaction
+- Market Insights:
+  - City price indices (avg/median, price per sqm)
+  - Geospatial radius filters around selected city
+
+---
+
+## ⚙️ System Requirements & Compatibility
+
+- OS: Windows 11, macOS 13+, Ubuntu 22.04+
+- Python: 3.11+
+- Optional: Node.js for Playwright screenshots (`npx playwright install`)
+- RAM: 4GB minimum (8GB recommended; 16GB for large datasets)
+- Disk: ≥1GB free (increase for persistent ChromaDB)
+- Browser: Modern Chromium/Firefox/WebKit
