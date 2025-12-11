@@ -403,49 +403,13 @@ Edit `config/settings.py` to customize:
 
 ---
 
-## 🎯 Complete Feature Set (All Phases)
+## 🎯 Feature Phases
 
-This application includes **5 complete phases** of development:
-
-### Phase 1: Foundation ✅
-- Multi-provider LLM support (OpenAI, Anthropic, Google, Ollama)
-- ChromaDB persistent vector storage
-- Type-safe Pydantic data models
-- Modern Streamlit UI
-- CSV data loading
-
-### Phase 2: Intelligence ✅
-- Hybrid RAG + Agent architecture
-- Query intent classification
-- Mortgage calculator tool
-- Property comparison tool
-- Result reranking (30-40% improvement)
-- **Tests**: 88 unit tests
-
-### Phase 3: Advanced Features ✅
-- Market insights & analytics
-- Property comparison dashboard
-- Export to CSV/JSON/Markdown
-- Saved search management
-- Session tracking & analytics
-- **Tests**: 163 unit tests
-
-### Phase 4: Visualizations ✅
-- Interactive price charts (Plotly)
-- Radar charts for multi-property comparison
-- Geographic maps (Folium) with heatmaps
-- Market dashboards with KPIs
-- Comparison visualizations
-- **Tests**: 72 unit tests
-
-### Phase 5: Notifications ✅
-- Email notification system (SMTP)
-- Price drop alerts
-- New property notifications
-- Notification preferences management
-- Notification history & analytics
-
-Tests: Covered by unit/integration tests across modules (see `tests/`).
+See detailed phase docs:
+- Phase 2 — `docs/PHASE2_README.md`
+- Phase 3 — `docs/PHASE3_README.md`
+- Phase 4 — `docs/PHASE4_README.md`
+- Phase 5 — `docs/PHASE5_README.md`
 
 ---
 
@@ -473,42 +437,10 @@ Recent changes in V3:
 
 ---
 
-## 🧪 Development
-
-### Project Setup
-```bash
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run development server
-streamlit run app_modern.py
-```
-
-### Running Tests
-```bash
-# Install test dependencies
-pip install pytest pytest-cov pytest-asyncio pytest-mock
-
-# Run tests using the test script
-./run_tests.sh
-
-# Or run pytest directly
-pytest tests/ -v
-
-# Run specific test modes
-./run_tests.sh phase5  # Test Phase 5 only
-./run_tests.sh full    # Run all tests
-```
-
-### Adding New Features
-1. **New Model Provider**: Add to `models/providers/`
-2. **New Tool**: Add to `tools/property_tools.py`
-3. **New UI Component**: Add to `ui/components/`
-4. **New Data Schema**: Update `data/schemas.py`
+## 🧪 Development & Testing
+- Development setup: see `docs/INSTALLATION.md`
+- Testing guide: see `docs/TESTING_GUIDE.md`
+- Contribution workflow: see `CONTRIBUTING.md`
 
 ---
 
