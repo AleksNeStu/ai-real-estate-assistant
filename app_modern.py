@@ -785,10 +785,16 @@ def create_conversation_chain():
         )
 
         # Create retriever
+        center_lat = st.session_state.get("geo_center_lat")
+        center_lon = st.session_state.get("geo_center_lon")
+        radius_km = st.session_state.get("geo_radius_km")
         retriever = create_retriever(
             vector_store=st.session_state.vector_store,
             k=k_results,
-            search_type="mmr"
+            search_type="mmr",
+            center_lat=center_lat,
+            center_lon=center_lon,
+            radius_km=radius_km
         )
 
         # Create memory
@@ -834,10 +840,16 @@ def create_hybrid_agent_instance():
         )
 
         # Create retriever
+        center_lat = st.session_state.get("geo_center_lat")
+        center_lon = st.session_state.get("geo_center_lon")
+        radius_km = st.session_state.get("geo_radius_km")
         retriever = create_retriever(
             vector_store=st.session_state.vector_store,
             k=k_results,
-            search_type="mmr"
+            search_type="mmr",
+            center_lat=center_lat,
+            center_lon=center_lon,
+            radius_km=radius_km
         )
 
         # Create hybrid agent
@@ -1165,6 +1177,10 @@ def render_market_insights_tab():
             lat, lon = _get_city_coordinates(center_city)
             filtered_df = insights.filter_by_geo_radius(lat, lon, float(radius_km))
             st.write(f"Filtered properties: {len(filtered_df)}")
+            st.session_state.geo_center_city = center_city
+            st.session_state.geo_center_lat = float(lat)
+            st.session_state.geo_center_lon = float(lon)
+            st.session_state.geo_radius_km = float(radius_km)
             if len(filtered_df) > 0:
                 idx = MarketInsights(PropertyCollection(properties=[p for p in st.session_state.property_collection.properties if p.city == center_city or True]))
                 idx.df = filtered_df
