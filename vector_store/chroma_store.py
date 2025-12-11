@@ -213,6 +213,7 @@ class ChromaPropertyStore:
             "has_garage": property.has_garage,
             "has_elevator": property.has_elevator,
             "property_type": property.property_type.value if hasattr(property.property_type, "value") else str(property.property_type),
+            "listing_type": property.listing_type.value if hasattr(property.listing_type, "value") else str(property.listing_type),
             "source_url": property.source_url or "",
             "lat": _nf(getattr(property, "latitude", None)),
             "lon": _nf(getattr(property, "longitude", None)),
