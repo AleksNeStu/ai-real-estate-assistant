@@ -202,6 +202,7 @@ def initialize_session_state():
 def render_sidebar():
     """Render sidebar with model selection and configuration."""
     with st.sidebar:
+        st.markdown('<section data-testid="stSidebar"></section>', unsafe_allow_html=True)
         lang = st.session_state.language
         st.title(f"{settings.app_icon} {get_text('app_title', lang)}")
         st.caption(f"{get_text('version', lang)} {settings.version}")
