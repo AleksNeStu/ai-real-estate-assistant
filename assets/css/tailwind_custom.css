@@ -3,8 +3,7 @@
  * Extends Tailwind with custom utilities and components
  */
 
-/* Import Tailwind base, components, and utilities */
-@import url('https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css');
+
 
 /* ========================================
    Custom Utility Classes
