@@ -26,6 +26,10 @@ try:
     from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 except Exception:
     FastEmbedEmbeddings = None
+try:
+    from langchain_community.vectorstores.utils import filter_complex_metadata
+except Exception:
+    filter_complex_metadata = None
 
 from data.schemas import Property, PropertyCollection
 from config.settings import settings
@@ -86,7 +90,7 @@ class ChromaPropertyStore:
         self._doc_ids: set[str] = set()
 
     @st.cache_resource
-    def _create_embeddings(self, model_name: str):
+    def _create_embeddings(_self, model_name: str):
         try:
             is_windows = platform.system().lower() == "windows"
             force_fastembed = os.getenv("CHROMA_FORCE_FASTEMBED") == "1" or os.getenv("FORCE_FASTEMBED") == "1"
@@ -310,8 +314,14 @@ class ChromaPropertyStore:
             batch = documents[i:i + batch_size]
 
             try:
-                ids = [str(d.metadata.get("id", f"doc-{i+j}")) for j, d in enumerate(batch)]
-                self.vector_store.add_documents(batch, ids=ids)
+                cleaned_batch: List[Document] = []
+                for d in batch:
+                    if filter_complex_metadata is not None:
+                        md = filter_complex_metadata(d.metadata)
+                        d = Document(page_content=d.page_content, metadata=md)
+                    cleaned_batch.append(d)
+                ids = [str(d.metadata.get("id", f"doc-{i+j}")) for j, d in enumerate(cleaned_batch)]
+                self.vector_store.add_documents(cleaned_batch, ids=ids)
                 total_added += len(batch)
                 logger.info(f"Added batch {i // batch_size + 1}: {len(batch)} properties")
 
