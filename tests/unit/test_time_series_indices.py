@@ -34,3 +34,25 @@ def test_monthly_price_index_basic_and_yoy():
     # Check that yoy values exist for months >= 12
     assert df['yoy_pct'].iloc[-1] is None or isinstance(df['yoy_pct'].iloc[-1], float)
 
+
+def test_monthly_price_index_yoy_handles_missing_prev():
+    # Create 11 months only so previous year's value is missing
+    from datetime import datetime, timedelta
+    now = datetime.now()
+    props = []
+    for i in range(11):
+        dt = now - timedelta(days=30*(10 - i))
+        p = Property(
+            city="Warsaw",
+            area_sqm=50,
+            price=1000 + i * 10,
+            property_type=PropertyType.APARTMENT,
+            scraped_at=dt,
+        )
+        props.append(p)
+    coll = PropertyCollection(properties=props, total_count=len(props))
+    insights = MarketInsights(coll)
+    df = insights.get_monthly_price_index(city="Warsaw")
+    # The YoY for the last month should be NaN due to missing previous value
+    import pandas as pd
+    assert pd.isna(df['yoy_pct'].iloc[-1])
