@@ -71,3 +71,16 @@ Cause:
 Fix:
 - Ensure only primitives go into metadata (str/int/float/bool/None). Convert datetimes to ISO 8601 strings. Avoid nesting dicts/lists.
 - The vector store layer sanitizes metadata before insertion.
+
+## Analytics: Pandas RuntimeWarning in YoY calculation
+
+```
+RuntimeWarning: '<' not supported between instances of 'Timestamp' and 'int', sort order is undefined for incomparable objects.
+```
+
+Cause:
+- YoY percentage was computed without guarding for missing or zero previous values, which could trigger invalid operations during series calculations.
+
+Fix:
+- Ensure `avg_price` is numeric and compute YoY safely with guards for missing and zero previous values.
+- This is implemented in `analytics/market_insights.py` and avoids invalid comparisons during calculation.
