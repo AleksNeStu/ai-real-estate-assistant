@@ -5,9 +5,8 @@ Provides interactive radar (spider) charts to visualize and compare
 properties across multiple dimensions simultaneously.
 """
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 import plotly.graph_objects as go
-import numpy as np
 from data.schemas import Property
 
 

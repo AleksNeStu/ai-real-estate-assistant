@@ -5,8 +5,7 @@ Provides functionality to validate API keys for different providers
 by making test requests to their APIs.
 """
 
-import os
-from typing import Tuple, Optional
+from typing import Optional
 from dataclasses import dataclass
 
 
@@ -47,7 +46,10 @@ class APIKeyValidator:
             )
         except Exception as e:
             error_msg = str(e)
-            if "authentication" in error_msg.lower() or "api key" in error_msg.lower():
+            if (
+                "authentication" in error_msg.lower()
+                or "api_key" in error_msg.lower()
+            ):
                 return ValidationResult(
                     is_valid=False,
                     provider="OpenAI",
@@ -132,7 +134,12 @@ class APIKeyValidator:
             )
         except Exception as e:
             error_msg = str(e)
-            if "api key" in error_msg.lower() or "authentication" in error_msg.lower() or "401" in error_msg or "403" in error_msg:
+            if (
+                "api key" in error_msg.lower()
+                or "authentication" in error_msg.lower()
+                or "401" in error_msg
+                or "403" in error_msg
+            ):
                 return ValidationResult(
                     is_valid=False,
                     provider="Google",

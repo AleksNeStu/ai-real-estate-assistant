@@ -11,7 +11,7 @@ Provides functionality to:
 import platform
 import subprocess
 import requests
-from typing import Tuple, Optional, List, Dict
+from typing import Optional, List, Dict
 from dataclasses import dataclass
 
 
@@ -273,7 +273,10 @@ class OllamaDetector:
             },
             'unknown': {
                 'title': '❓ Installation Instructions',
-                'message': 'Visit https://ollama.com/download for installation instructions for your platform.',
+                'message': (
+                    'Visit https://ollama.com/download for installation '
+                    'instructions for your platform.'
+                ),
                 'url': 'https://ollama.com/download'
             }
         }

@@ -86,7 +86,7 @@ class ChromaPropertyStore:
         self._doc_ids: set[str] = set()
 
     @st.cache_resource
-    def _create_embeddings(_self, model_name: str):
+    def _create_embeddings(self, model_name: str):
         try:
             is_windows = platform.system().lower() == "windows"
             force_fastembed = os.getenv("CHROMA_FORCE_FASTEMBED") == "1" or os.getenv("FORCE_FASTEMBED") == "1"

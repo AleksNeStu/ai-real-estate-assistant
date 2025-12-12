@@ -9,7 +9,7 @@ Supports exporting properties to multiple formats:
 """
 
 from enum import Enum
-from typing import List, Optional, BinaryIO
+from typing import List, Optional
 from io import BytesIO, StringIO
 import json
 from datetime import datetime
@@ -19,7 +19,7 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 
-from data.schemas import Property, PropertyCollection
+from data.schemas import PropertyCollection
 from analytics import MarketInsights
 
 
@@ -128,9 +128,18 @@ class PropertyExporter:
                         f"${self.df['price'].min():.2f}",
                         f"${self.df['price'].max():.2f}",
                         f"{self.df['rooms'].mean():.1f}",
-                        f"{self.df['has_parking'].sum()} ({self.df['has_parking'].mean()*100:.1f}%)",
-                        f"{self.df['has_garden'].sum()} ({self.df['has_garden'].mean()*100:.1f}%)",
-                        f"{self.df['is_furnished'].sum()} ({self.df['is_furnished'].mean()*100:.1f}%)"
+                        (
+                            f"{self.df['has_parking'].sum()} "
+                            f"({self.df['has_parking'].mean()*100:.1f}%)"
+                        ),
+                        (
+                            f"{self.df['has_garden'].sum()} "
+                            f"({self.df['has_garden'].mean()*100:.1f}%)"
+                        ),
+                        (
+                            f"{self.df['is_furnished'].sum()} "
+                            f"({self.df['is_furnished'].mean()*100:.1f}%)"
+                        )
                     ]
                 }
                 pd.DataFrame(summary_data).to_excel(writer, sheet_name='Summary', index=False)
@@ -212,10 +221,18 @@ class PropertyExporter:
             lines.append("## Summary Statistics\n")
             lines.append(f"- **Average Price**: ${self.df['price'].mean():.2f}")
             lines.append(f"- **Median Price**: ${self.df['price'].median():.2f}")
-            lines.append(f"- **Price Range**: ${self.df['price'].min():.2f} - ${self.df['price'].max():.2f}")
+            lines.append(
+                f"- **Price Range**: ${self.df['price'].min():.2f} - ${self.df['price'].max():.2f}"
+            )
             lines.append(f"- **Average Rooms**: {self.df['rooms'].mean():.1f}")
-            lines.append(f"- **Properties with Parking**: {self.df['has_parking'].sum()} ({self.df['has_parking'].mean()*100:.1f}%)")
-            lines.append(f"- **Properties with Garden**: {self.df['has_garden'].sum()} ({self.df['has_garden'].mean()*100:.1f}%)\n")
+            lines.append(
+                f"- **Properties with Parking**: {self.df['has_parking'].sum()} "
+                f"({self.df['has_parking'].mean()*100:.1f}%)"
+            )
+            lines.append(
+                f"- **Properties with Garden**: {self.df['has_garden'].sum()} "
+                f"({self.df['has_garden'].mean()*100:.1f}%)\n"
+            )
 
             # By city
             lines.append("### By City\n")
@@ -228,7 +245,11 @@ class PropertyExporter:
         # Properties
         lines.append("## Property Listings\n")
 
-        properties_to_show = self.properties.properties[:max_properties] if max_properties else self.properties.properties
+        properties_to_show = (
+            self.properties.properties[:max_properties]
+            if max_properties
+            else self.properties.properties
+        )
 
         for i, prop in enumerate(properties_to_show, 1):
             lines.append(f"### {i}. Property in {prop.city}")
@@ -236,8 +257,12 @@ class PropertyExporter:
                 lines.append(f"**{prop.title}**\n")
 
             lines.append(f"- **Price**: ${prop.price}/month")
-            lines.append(f"- **Type**: {prop.property_type.value if hasattr(prop.property_type, 'value') else str(prop.property_type)}")
-            lines.append(f"- **Rooms**: {int(prop.rooms)} bedrooms, {int(prop.bathrooms)} bathrooms")
+            lines.append(
+                f"- **Type**: {prop.property_type.value if hasattr(prop.property_type, 'value') else str(prop.property_type)}"
+            )
+            lines.append(
+                f"- **Rooms**: {int(prop.rooms)} bedrooms, {int(prop.bathrooms)} bathrooms"
+            )
 
             if prop.area_sqm:
                 lines.append(f"- **Area**: {prop.area_sqm} sqm")
@@ -269,7 +294,9 @@ class PropertyExporter:
             lines.append("\n---\n")
 
         if max_properties and len(self.properties.properties) > max_properties:
-            lines.append(f"\n*Showing {max_properties} of {len(self.properties.properties)} properties*\n")
+            lines.append(
+                f"\n*Showing {max_properties} of {len(self.properties.properties)} properties*\n"
+            )
 
         return '\n'.join(lines)
 
