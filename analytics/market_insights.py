@@ -378,9 +378,14 @@ class MarketInsights:
         ).reset_index()
         # YoY percent: compare same month last year using row-wise shift
         grouped = grouped.sort_values('month')
+        # Ensure numeric dtype for calculation
+        grouped['avg_price'] = grouped['avg_price'].astype(float)
         prev = grouped['avg_price'].shift(12)
+        # Compute YoY safely, avoiding divide-by-zero and missing previous values
         with np.errstate(divide='ignore', invalid='ignore'):
-            grouped['yoy_pct'] = ((grouped['avg_price'] - prev) / prev) * 100
+            yoy_raw = ((grouped['avg_price'] - prev) / prev) * 100
+        # Replace invalid values with NaN where previous value is missing or zero
+        grouped['yoy_pct'] = yoy_raw.where(prev.notna() & (prev != 0))
         # Moving average
         grouped['avg_price_ma'] = grouped['avg_price'].rolling(window=window, min_periods=1).mean()
         # Anomalies via z-score
@@ -389,7 +394,6 @@ class MarketInsights:
             sd = float(np.nanstd(grouped['avg_price'])) or 1.0
             grouped['zscore'] = (grouped['avg_price'] - mu) / sd
             grouped['anomaly'] = grouped['zscore'].abs() >= z_threshold
-        return grouped
         return grouped
 
     def get_property_type_insights(self, property_type: str) -> Optional[PropertyTypeInsights]:
