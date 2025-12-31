@@ -23,25 +23,23 @@ GitHub: https://github.com/AleksNeStu/ai-real-estate-assistant
 
 import streamlit as st
 import pandas as pd
-from typing import Optional, List
-from pathlib import Path
 import uuid
 from datetime import datetime
 
 # Import our custom modules
 from config import settings, update_api_key
 from models.provider_factory import ModelProviderFactory, get_model_display_info
-from vector_store.chroma_store import ChromaPropertyStore, get_vector_store
+from vector_store.chroma_store import get_vector_store
 from vector_store.hybrid_retriever import create_retriever
 from vector_store.reranker import create_reranker
 from data.csv_loader import DataLoaderCsv
-from data.schemas import PropertyCollection, Property, UserPreferences
+from data.schemas import PropertyCollection
 from streaming import StreamHandler
 from utils.ollama_detector import OllamaDetector
 from utils.api_key_validator import APIKeyValidator
 
 # Phase 2 imports
-from agents.hybrid_agent import create_hybrid_agent, HybridPropertyAgent
+from agents.hybrid_agent import create_hybrid_agent
 from agents.query_analyzer import analyze_query
 from agents.recommendation_engine import create_recommendation_engine
 
@@ -51,7 +49,7 @@ from utils import (
     PropertyExporter, ExportFormat, SavedSearchManager, InsightsExporter,
     load_and_inject_styles, inject_enhanced_form_styles, inject_tailwind_cdn
 )
-from ui.comparison_viz import PropertyComparison, display_comparison_ui, display_market_insights_ui
+from ui.comparison_viz import display_comparison_ui
 from ui.geo_viz import _get_city_coordinates
 from streamlit_folium import st_folium
 
@@ -62,11 +60,9 @@ from notifications import (
     EmailProvider,
     EmailServiceFactory,
     NotificationPreferencesManager,
-    NotificationPreferences,
     AlertFrequency,
     DigestDay,
     NotificationHistory,
-    PriceDropTemplate,
     TestEmailTemplate
 )
 
@@ -76,7 +72,6 @@ from i18n import get_text, get_available_languages
 # LangChain imports
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
-from langchain_core.messages import HumanMessage, AIMessage
 
 
 # Page configuration
@@ -531,8 +526,8 @@ def render_sidebar():
             else:
                 st.write(get_text('upload_csv_files', lang))
                 uploaded_files = st.file_uploader(
-                    "Choose CSV files",
-                    type=['csv'],
+                    "Choose CSV or Excel files",
+                    type=['csv', 'xlsx', 'xls'],
                     accept_multiple_files=True,
                     label_visibility="collapsed"
                 )
@@ -596,7 +591,7 @@ def load_data_from_urls(urls_text: str):
                 # Show converted URL if it's a GitHub URL
                 raw_url = DataLoaderCsv.convert_github_url_to_raw(url)
                 if raw_url != url:
-                    st.info(f"🔗 Converting GitHub URL to raw format")
+                    st.info("🔗 Converting GitHub URL to raw format")
 
                 df = loader.load_df()
                 st.info(f"📊 Loaded {len(df)} rows")
@@ -661,7 +656,7 @@ def load_data_from_urls(urls_text: str):
                     st.write(f"**{url}**")
                     st.code(error)
     else:
-        st.error(f"❌ All URLs failed to load. Please check your URLs and try again.")
+        st.error("❌ All URLs failed to load. Please check your URLs and try again.")
         if failed_urls:
             with st.expander("🔍 Error Details"):
                 for url, error in failed_urls:
@@ -670,20 +665,28 @@ def load_data_from_urls(urls_text: str):
 
 
 def load_local_files(uploaded_files):
-    """Load property data from uploaded CSV files."""
+    """Load property data from uploaded CSV/Excel files."""
     lang = st.session_state.language
 
     try:
         with st.spinner(get_text('loading_local_files', lang)):
             all_properties = []
 
-            # Process each uploaded file
+            import pandas as pd
+
             for uploaded_file in uploaded_files:
                 st.info(f"📄 Processing: {uploaded_file.name}")
 
-                # Read CSV from uploaded file
-                import pandas as pd
-                df = pd.read_csv(uploaded_file)
+                name_lower = uploaded_file.name.lower()
+                try:
+                    if name_lower.endswith(".xlsx") or name_lower.endswith(".xls"):
+                        df = pd.read_excel(uploaded_file)
+                    else:
+                        df = pd.read_csv(uploaded_file)
+                except ImportError as e:
+                    raise ImportError(
+                        "Excel input requires optional dependencies: openpyxl (.xlsx) or xlrd (.xls)."
+                    ) from e
                 st.info(f"📊 Loaded {len(df)} rows from {uploaded_file.name}")
 
                 # Use DataLoaderCsv static method to format the data
@@ -1189,7 +1192,7 @@ def render_market_insights_tab():
         with colB:
             st.caption("City Price Indices")
             selected_cities = st.multiselect("Cities", options=cities, default=cities[:3] if len(cities) >= 3 else cities)
-            listing_choice = st.radio("Listing Type", options=["Any","Rent","Sale"], horizontal=True, key="listing_type_filter")
+            st.radio("Listing Type", options=["Any","Rent","Sale"], horizontal=True, key="listing_type_filter")
 
         if center_city:
             lat, lon = _get_city_coordinates(center_city)
@@ -1701,7 +1704,7 @@ def render_notifications_tab():
 
                     st.session_state.email_service = email_service
                     st.success(get_text('email_config_success', lang))
-                except Exception as e:
+                except Exception:
                     st.error(get_text('email_config_error', lang))
 
     # Test email configuration
@@ -1896,7 +1899,7 @@ def render_notifications_tab():
         user_notifications = history.get_user_notifications(user_email, limit=20)
 
         if user_notifications:
-            st.write(f"**Recent Notifications** (Last 20)")
+            st.write("**Recent Notifications** (Last 20)")
 
             for notification in user_notifications:
                 with st.expander(

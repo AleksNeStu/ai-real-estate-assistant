@@ -8,6 +8,7 @@ import pandas as pd
 import re
 import requests
 from faker import Faker
+from typing import Any
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -23,8 +24,12 @@ pd.options.future.no_silent_downcasting = True
 class DataLoaderCsv:
 
     def __init__(
-            self, csv_path: Path | URL
+            self, csv_path: Path | URL | str | None
     ):
+        if csv_path is None:
+            self.csv_path = None
+            return
+
         if isinstance(csv_path, Path) and not csv_path.is_file():
             err_msg = f"The Path {csv_path} does not exists."
             # raise FileNotFoundError(err_msg)
@@ -39,13 +44,13 @@ class DataLoaderCsv:
         self.csv_path = csv_path
 
     @staticmethod
-    def url_exists(url: URL):
+    def url_exists(url: URL) -> bool:
         parsed_url = urlparse(str(url))
         is_valid_url = all([parsed_url.scheme, parsed_url.netloc])
         if not is_valid_url:
             return False  # URL structure is not valid
         try:
-            response = requests.head(url, allow_redirects=True)
+            response = requests.head(str(url), allow_redirects=True)
             return response.status_code < 400
         except requests.RequestException:
             return False  # Handle any exceptions during the request
@@ -58,70 +63,89 @@ class DataLoaderCsv:
             return url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/')
         return url
 
-    def load_df(self):
-        """Load CSV with flexible parsing to handle various formats."""
+    def load_df(self) -> pd.DataFrame:
+        """Load tabular data (CSV/Excel) with flexible parsing."""
+        if self.csv_path is None:
+            raise ValueError("No CSV/Excel path provided")
+
         csv_url = str(self.csv_path)
 
-        # Convert GitHub URLs to raw format
         if isinstance(self.csv_path, (str, URL)):
             csv_url = self.convert_github_url_to_raw(csv_url)
 
+        parsed = urlparse(csv_url)
+        path_for_suffix = parsed.path if parsed.scheme and parsed.netloc else csv_url
+        suffix = Path(path_for_suffix).suffix.lower()
+        is_excel = suffix in {".xlsx", ".xls"}
+
         try:
-            # Try loading with default settings first
-            df = pd.read_csv(csv_url)
+            if is_excel:
+                try:
+                    if suffix == ".xls":
+                        df = pd.read_excel(csv_url, engine="xlrd")
+                    else:
+                        df = pd.read_excel(csv_url, engine="openpyxl")
+                except ValueError:
+                    df = pd.read_excel(csv_url)
+            else:
+                df = pd.read_csv(csv_url)
+        except ImportError as e:
+            raise ImportError(
+                "Excel input requires optional dependencies: openpyxl (.xlsx) or xlrd (.xls)."
+            ) from e
         except Exception as e:
-            # If default fails, try with more flexible settings
+            if is_excel:
+                raise Exception(f"Failed to load Excel file: {str(e)}") from e
+
             try:
                 df = pd.read_csv(
                     csv_url,
-                    encoding='utf-8',
-                    on_bad_lines='skip',  # Skip bad lines instead of failing
-                    engine='python'  # Use python engine for more flexibility
+                    encoding="utf-8",
+                    on_bad_lines="skip",
+                    engine="python",
                 )
             except Exception as e2:
-                # Try with different encoding
                 try:
                     df = pd.read_csv(
                         csv_url,
-                        encoding='latin-1',
-                        on_bad_lines='skip',
-                        engine='python'
+                        encoding="latin-1",
+                        on_bad_lines="skip",
+                        engine="python",
                     )
                 except Exception as e3:
-                    raise Exception(f"Failed to load CSV: {str(e)}. Additional attempts failed: {str(e2)}, {str(e3)}")
+                    raise Exception(
+                        f"Failed to load CSV: {str(e)}. Additional attempts failed: {str(e2)}, {str(e3)}"
+                    ) from e3
 
         logger.info(f"Data frame loaded from {csv_url}, rows: {len(df)}")
         return df
 
-    def load_format_df(self, df: pd.DataFrame):
+    def load_format_df(self, df: pd.DataFrame) -> pd.DataFrame:
         """Returns the DataFrame. If not loaded, loads and prepares the data first."""
         df_formatted = self.format_df(df)
         logger.info(f"Data frame formatted from {self.csv_path}")
         return df_formatted
 
     @staticmethod
-    def bathrooms_fake(rooms: float):
+    def bathrooms_fake(rooms: float) -> float:
         # Add 'bathrooms': Either 1 or 2, check consistency with 'rooms' (e.g., bathrooms should be realistic)
         if pd.isna(rooms) or rooms < 2:
             return 1.0
-        return np.random.choice([1.0, 2.0])
+        return float(np.random.choice([1.0, 2.0]))
 
     @staticmethod
-    def price_media_fake(price: float):
+    def price_media_fake(price: float) -> float:
         # Add 'price_media': Fake values like internet, gas, electricity, not more than 20% of 'price'
         # Generate a fake price for utilities, up to 20% of the 'price'
         return round(np.random.uniform(0, 0.2 * price), 2)
 
     @staticmethod
-    def camel_to_snake(name):
-        """
-        Convert camelCase to snake_case.
-        """
+    def camel_to_snake(name: str) -> str:
         s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
         return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
     @staticmethod
-    def format_df(df: pd.DataFrame, rows_count: int | None = None):
+    def format_df(df: pd.DataFrame, rows_count: int | None = None) -> pd.DataFrame:
         # Get header
         header = df.columns.tolist()
 
@@ -213,16 +237,28 @@ class DataLoaderCsv:
         if 'longitude' not in df_copy.columns:
             df_copy['longitude'] = None
         if 'city' in df_copy.columns:
-            def _fill_lat(row):
+            def _fill_lat(row: pd.Series) -> float | None:
                 if pd.isna(row.get('latitude')) and pd.notna(row.get('city')):
                     c = str(row['city']).strip().lower()
                     return city_coords.get(c, (None, None))[0]
-                return row.get('latitude')
-            def _fill_lon(row):
+                val: Any = row.get('latitude')
+                if val is None or pd.isna(val):
+                    return None
+                try:
+                    return float(val)
+                except Exception:
+                    return None
+            def _fill_lon(row: pd.Series) -> float | None:
                 if pd.isna(row.get('longitude')) and pd.notna(row.get('city')):
                     c = str(row['city']).strip().lower()
                     return city_coords.get(c, (None, None))[1]
-                return row.get('longitude')
+                val: Any = row.get('longitude')
+                if val is None or pd.isna(val):
+                    return None
+                try:
+                    return float(val)
+                except Exception:
+                    return None
             df_copy['latitude'] = df_copy.apply(_fill_lat, axis=1)
             df_copy['longitude'] = df_copy.apply(_fill_lon, axis=1)
             # Coerce to float where available
@@ -234,10 +270,6 @@ class DataLoaderCsv:
 
         # Do not drop rows; allow missing values (schema-agnostic ingestion)
         df_cleaned = df_copy
-
-        # Get unique cities
-        cities = df_cleaned['city'].unique() if 'city' in df_cleaned.columns else ['Unknown']
-        cities_count = len(cities)
 
         # Shuffle the DataFrame to ensure randomness
         df_shuffled = df_cleaned.sample(frac=1, random_state=1).reset_index(drop=True)
@@ -265,7 +297,6 @@ class DataLoaderCsv:
             except Exception:
                 return s
         df_final = df_final.apply(lambda x: _to_float_series(x) if pd.api.types.is_integer_dtype(x) else x)
-        df_final_count = len(df_final)
 
         # Bathrooms normalization (best effort)
         if 'bathrooms' not in df_final.columns and 'rooms' in df_final.columns:
