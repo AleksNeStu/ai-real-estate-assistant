@@ -8,6 +8,7 @@ Handles:
 - Alert prioritization
 """
 
+import logging
 from typing import List, Dict, Any, Optional, Set
 from datetime import datetime, timedelta
 from dataclasses import dataclass
@@ -18,6 +19,8 @@ from pathlib import Path
 from data.schemas import Property, PropertyCollection
 from utils import SavedSearch
 from notifications.email_service import EmailService
+
+logger = logging.getLogger(__name__)
 
 
 class AlertType(str, Enum):
@@ -215,7 +218,7 @@ class AlertManager:
                 self._mark_alert_sent(alert_key)
                 return True
             except Exception as e:
-                print(f"Failed to send price drop alert: {e}")
+                logger.warning("Failed to send price drop alert: %s", e)
                 return False
         else:
             # Testing mode - just mark as sent
@@ -282,7 +285,7 @@ class AlertManager:
                 self._mark_alert_sent(alert_key)
                 return True
             except Exception as e:
-                print(f"Failed to send new property alert: {e}")
+                logger.warning("Failed to send new property alert: %s", e)
                 return False
         else:
             self._mark_alert_sent(alert_key)
@@ -346,7 +349,7 @@ class AlertManager:
                 )
                 return True
             except Exception as e:
-                print(f"Failed to send digest: {e}")
+                logger.warning("Failed to send digest: %s", e)
                 return False
         else:
             return True

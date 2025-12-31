@@ -7,6 +7,7 @@ This module provides intelligent orchestration between:
 - Hybrid approach combining both
 """
 
+import logging
 from typing import Dict, Any, List, Optional
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -18,6 +19,8 @@ from langchain.memory import ConversationBufferMemory
 
 from agents.query_analyzer import QueryAnalyzer, QueryAnalysis, QueryIntent, Complexity
 from tools.property_tools import create_property_tools
+
+logger = logging.getLogger(__name__)
 
 
 class HybridPropertyAgent:
@@ -140,8 +143,8 @@ Context from property database will be provided when relevant."""),
         analysis = self.analyzer.analyze(query)
 
         if self.verbose:
-            print(f"Query Analysis: {analysis.reasoning}")
-            print(f"Should use agent: {analysis.should_use_agent()}")
+            logger.info("Query Analysis: %s", analysis.reasoning)
+            logger.info("Should use agent: %s", analysis.should_use_agent())
 
         # Route to appropriate processor
         if analysis.should_use_rag_only():
@@ -165,7 +168,7 @@ Context from property database will be provided when relevant."""),
     ) -> Dict[str, Any]:
         """Process simple query with RAG only."""
         if self.verbose:
-            print("Processing with RAG only")
+            logger.info("Processing with RAG only")
 
         try:
             response = self.rag_chain({"question": query})
@@ -192,7 +195,7 @@ Context from property database will be provided when relevant."""),
     ) -> Dict[str, Any]:
         """Process complex query with tool agent."""
         if self.verbose:
-            print("Processing with tool agent")
+            logger.info("Processing with tool agent")
 
         try:
             # First, get relevant context from RAG if needed
@@ -238,7 +241,7 @@ Context from property database will be provided when relevant."""),
     ) -> Dict[str, Any]:
         """Process with hybrid approach - RAG + agent capabilities."""
         if self.verbose:
-            print("Processing with hybrid approach")
+            logger.info("Processing with hybrid approach")
 
         try:
             # Start with RAG for property retrieval

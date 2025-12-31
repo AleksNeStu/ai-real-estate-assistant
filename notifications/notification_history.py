@@ -9,6 +9,7 @@ Handles:
 - Notification analytics
 """
 
+import logging
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timedelta
@@ -16,6 +17,8 @@ from enum import Enum
 import json
 from pathlib import Path
 from collections import defaultdict
+
+logger = logging.getLogger(__name__)
 
 
 class NotificationStatus(str, Enum):
@@ -453,7 +456,7 @@ class NotificationHistory:
                 self._history[notification_id] = record
 
         except Exception as e:
-            print(f"Error loading notification history: {e}")
+            logger.warning("Error loading notification history: %s", e)
 
     def _save_history(self):
         """Save notification history to disk."""
@@ -480,7 +483,7 @@ class NotificationHistory:
             ]
 
         except Exception as e:
-            print(f"Error loading failed queue: {e}")
+            logger.warning("Error loading failed queue: %s", e)
 
     def _save_failed_queue(self):
         """Save failed notifications queue to disk."""

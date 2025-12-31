@@ -47,9 +47,9 @@ class RealEstateGPT:
         self.agent = create_pandas_dataframe_agent(
             ChatOpenAI(temperature=0, model="gpt-3.5-turbo"),
             df,
-            verbose=True,
+            verbose=False,
             agent_type=AgentType.OPENAI_FUNCTIONS,
-            allow_dangerous_code=True,
+            allow_dangerous_code=False,
             prefix=self.system_msg
         )
         self.conversation_history = []

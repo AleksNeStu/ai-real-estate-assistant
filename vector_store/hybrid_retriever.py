@@ -8,12 +8,15 @@ This module provides advanced retrieval capabilities by combining:
 - Result reranking
 """
 
+import logging
 from typing import List, Optional, Dict, Any
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
 
 from .chroma_store import ChromaPropertyStore
+
+logger = logging.getLogger(__name__)
 
 
 class HybridPropertyRetriever(BaseRetriever):
@@ -235,7 +238,7 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
             return sorted_docs
 
         except Exception as e:
-            print(f"Warning: Could not sort results: {e}")
+            logger.warning("Could not sort results: %s", e)
             return documents
 
     def _filter_by_geo(self, documents: List[Document]) -> List[Document]:

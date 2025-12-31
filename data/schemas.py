@@ -5,11 +5,14 @@ This module provides comprehensive schemas for property listings with validation
 ensuring data quality and consistency across the application.
 """
 
+import logging
 from datetime import datetime
 from enum import Enum
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field, validator, field_validator
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 
 class PropertyType(str, Enum):
@@ -292,7 +295,7 @@ class PropertyCollection(BaseModel):
                 properties.append(prop)
 
             except Exception as e:
-                print(f"Warning: Skipping row {idx} due to validation error: {e}")
+                logger.warning("Skipping row %s due to validation error: %s", idx, e)
                 continue
 
         return cls(

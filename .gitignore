@@ -227,3 +227,4 @@ desktop.ini
 # Local test artifacts and snapshots
 artifacts/
 resp.html
+tmp

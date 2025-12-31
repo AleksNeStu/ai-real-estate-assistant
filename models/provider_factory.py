@@ -5,6 +5,7 @@ This module provides a unified interface for accessing different model providers
 and their models.
 """
 
+import logging
 from typing import Dict, List, Optional, Type
 from .providers.base import ModelProvider, ModelInfo
 from .providers.openai import OpenAIProvider
@@ -13,6 +14,8 @@ from .providers.google import GoogleProvider
 from .providers.ollama import OllamaProvider
 from .providers.grok import GrokProvider
 from .providers.deepseek import DeepSeekProvider
+
+logger = logging.getLogger(__name__)
 
 
 class ModelProviderFactory:
@@ -116,7 +119,7 @@ class ModelProviderFactory:
                 all_models.extend(models)
 
             except Exception as e:
-                print(f"Warning: Could not load models from {provider_name}: {e}")
+                logger.warning("Could not load models from %s: %s", provider_name, e)
                 continue
 
         return all_models

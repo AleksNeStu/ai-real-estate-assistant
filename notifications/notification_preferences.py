@@ -8,12 +8,15 @@ Handles:
 - Per-search notification settings
 """
 
+import logging
 from typing import List, Dict, Any, Optional, Set
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, time
 from enum import Enum
 import json
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 class AlertFrequency(str, Enum):
@@ -378,7 +381,7 @@ class NotificationPreferencesManager:
                 self._preferences_cache[user_email] = prefs
 
         except Exception as e:
-            print(f"Error loading preferences: {e}")
+            logger.warning("Error loading preferences: %s", e)
 
     def _save_all_preferences(self):
         """Save all preferences to disk."""
