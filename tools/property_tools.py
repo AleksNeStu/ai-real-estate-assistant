@@ -6,27 +6,28 @@ and calculations.
 """
 
 import math
-from typing import List, Dict, Any, Optional
+from typing import Any, List, Dict
 from pydantic import BaseModel, Field
 from langchain.tools import BaseTool
 
 
 class MortgageInput(BaseModel):
     """Input for mortgage calculator."""
+
     property_price: float = Field(description="Total property price")
     down_payment_percent: float = Field(
-        default=20.0,
-        description="Down payment as percentage (e.g., 20 for 20%)"
+        default=20.0, description="Down payment as percentage (e.g., 20 for 20%)"
     )
     interest_rate: float = Field(
         default=4.5,
-        description="Annual interest rate as percentage (e.g., 4.5 for 4.5%)"
+        description="Annual interest rate as percentage (e.g., 4.5 for 4.5%)",
     )
     loan_years: int = Field(default=30, description="Loan term in years")
 
 
 class MortgageResult(BaseModel):
     """Result from mortgage calculator."""
+
     monthly_payment: float
     total_interest: float
     total_cost: float
@@ -50,7 +51,7 @@ class MortgageCalculatorTool(BaseTool):
         property_price: float,
         down_payment_percent: float = 20.0,
         interest_rate: float = 4.5,
-        loan_years: int = 30
+        loan_years: int = 30,
     ) -> str:
         """Execute mortgage calculation."""
         try:
@@ -114,7 +115,7 @@ Breakdown:
         except Exception as e:
             return f"Error calculating mortgage: {str(e)}"
 
-    async def _arun(self, *args, **kwargs) -> str:
+    async def _arun(self, *args: Any, **kwargs: Any) -> str:
         """Async version."""
         return self._run(*args, **kwargs)
 

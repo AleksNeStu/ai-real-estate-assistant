@@ -9,11 +9,9 @@ This module provides intelligent recommendations based on:
 """
 
 from typing import List, Dict, Any, Optional, Tuple
-from collections import defaultdict
-import math
 from langchain_core.documents import Document
 
-from data.schemas import Property, UserPreferences
+from data.schemas import UserPreferences
 
 
 class PropertyRecommendationEngine:
@@ -27,7 +25,7 @@ class PropertyRecommendationEngine:
     4. Popularity signals
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize recommendation engine."""
         self.weight_explicit = 0.4
         self.weight_value = 0.3
@@ -40,7 +38,7 @@ class PropertyRecommendationEngine:
         user_preferences: Optional[UserPreferences] = None,
         viewed_properties: Optional[List[str]] = None,
         favorited_properties: Optional[List[str]] = None,
-        k: int = 5
+        k: int = 5,
     ) -> List[Tuple[Document, float, Dict[str, Any]]]:
         """
         Generate personalized recommendations.
@@ -63,10 +61,7 @@ class PropertyRecommendationEngine:
         for doc in documents:
             # Calculate recommendation score
             score, explanation = self._score_property(
-                doc,
-                user_preferences,
-                viewed_properties,
-                favorited_properties
+                doc, user_preferences, viewed_properties, favorited_properties
             )
 
             scored_docs.append((doc, score, explanation))
@@ -82,7 +77,7 @@ class PropertyRecommendationEngine:
         doc: Document,
         user_preferences: Optional[UserPreferences],
         viewed_properties: Optional[List[str]],
-        favorited_properties: Optional[List[str]]
+        favorited_properties: Optional[List[str]],
     ) -> Tuple[float, Dict[str, Any]]:
         """
         Score a property for recommendation.
@@ -90,67 +85,62 @@ class PropertyRecommendationEngine:
         Returns:
             (score, explanation dict)
         """
-        metadata = doc.metadata
-        explanation = {}
+        metadata: dict[str, Any] = doc.metadata
+        explanation: dict[str, Any] = {}
 
         # 1. Explicit preference score
         explicit_score = 0.0
         if user_preferences:
             explicit_score = self._calculate_explicit_score(metadata, user_preferences)
-            explanation['preference_match'] = f"{explicit_score:.2f}"
+            explanation["preference_match"] = f"{explicit_score:.2f}"
 
         # 2. Value score
         value_score = self._calculate_value_score(metadata)
-        explanation['value_score'] = f"{value_score:.2f}"
+        explanation["value_score"] = f"{value_score:.2f}"
 
         # 3. Implicit preference score (similarity to viewed/favorited)
         implicit_score = 0.0
         if viewed_properties or favorited_properties:
             implicit_score = self._calculate_implicit_score(
-                metadata,
-                viewed_properties,
-                favorited_properties
+                metadata, viewed_properties, favorited_properties
             )
-            explanation['similar_to_favorites'] = implicit_score > 0.7
+            explanation["similar_to_favorites"] = implicit_score > 0.7
 
         # 4. Popularity score (placeholder - would use actual data)
         popularity_score = 0.5  # Neutral
-        explanation['trending'] = False
+        explanation["trending"] = False
 
         # Combine scores
         final_score = (
-            self.weight_explicit * explicit_score +
-            self.weight_value * value_score +
-            self.weight_implicit * implicit_score +
-            self.weight_popularity * popularity_score
+            self.weight_explicit * explicit_score
+            + self.weight_value * value_score
+            + self.weight_implicit * implicit_score
+            + self.weight_popularity * popularity_score
         )
 
         # Add quality boost
-        has_quality_amenities = sum([
-            metadata.get('has_parking', False),
-            metadata.get('has_garden', False),
-            metadata.get('has_elevator', False),
-            metadata.get('has_balcony', False),
-        ])
+        has_quality_amenities = sum(
+            [
+                bool(metadata.get("has_parking", False)),
+                bool(metadata.get("has_garden", False)),
+                bool(metadata.get("has_elevator", False)),
+                bool(metadata.get("has_balcony", False)),
+            ]
+        )
         if has_quality_amenities >= 3:
             final_score *= 1.1
-            explanation['premium_amenities'] = True
+            explanation["premium_amenities"] = True
 
         # Explanation summary
-        explanation['recommendation_score'] = f"{final_score:.2f}"
-        explanation['why_recommended'] = self._generate_recommendation_reason(
-            explicit_score,
-            value_score,
-            implicit_score,
-            metadata
+        explanation["recommendation_score"] = f"{final_score:.2f}"
+        explanation["why_recommended"] = self._generate_recommendation_reason(
+            explicit_score, value_score, implicit_score, metadata
         )
 
         return final_score, explanation
 
     def _calculate_explicit_score(
-        self,
-        metadata: dict,
-        preferences: UserPreferences
+        self, metadata: dict[str, Any], preferences: UserPreferences
     ) -> float:
         """Score based on explicit user preferences."""
         score = 0.0
@@ -158,7 +148,7 @@ class PropertyRecommendationEngine:
 
         # Budget match
         min_budget, max_budget = preferences.budget_range
-        property_price = metadata.get('price', 0)
+        property_price = metadata.get("price", 0)
 
         if min_budget <= property_price <= max_budget:
             score += 1.0
@@ -172,13 +162,13 @@ class PropertyRecommendationEngine:
         # City match
         if preferences.preferred_cities:
             checks += 1
-            if metadata.get('city', '') in preferences.preferred_cities:
+            if metadata.get("city", "") in preferences.preferred_cities:
                 score += 1.0
 
         # Rooms match
         if preferences.preferred_rooms:
             checks += 1
-            if metadata.get('rooms') in preferences.preferred_rooms:
+            if metadata.get("rooms") in preferences.preferred_rooms:
                 score += 1.0
 
         # Must-have amenities
@@ -191,13 +181,13 @@ class PropertyRecommendationEngine:
         # Neighborhood match
         if preferences.preferred_neighborhoods:
             checks += 1
-            if metadata.get('neighborhood', '') in preferences.preferred_neighborhoods:
+            if metadata.get("neighborhood", "") in preferences.preferred_neighborhoods:
                 score += 1.0
 
         # Normalize
         return score / checks if checks > 0 else 0.5
 
-    def _calculate_value_score(self, metadata: dict) -> float:
+    def _calculate_value_score(self, metadata: dict[str, Any]) -> float:
         """
         Score based on value for money.
 
@@ -209,8 +199,9 @@ class PropertyRecommendationEngine:
         score = 0.5  # Neutral start
 
         # Price per sqm analysis
-        if 'price_per_sqm' in metadata:
-            price_per_sqm = metadata['price_per_sqm']
+        price_per_sqm_raw = metadata.get("price_per_sqm")
+        if isinstance(price_per_sqm_raw, (int, float)):
+            price_per_sqm = float(price_per_sqm_raw)
 
             # Excellent value: under $20/sqm
             if price_per_sqm < 20:
@@ -226,15 +217,17 @@ class PropertyRecommendationEngine:
                 score -= 0.1
 
         # Amenity value
-        amenity_count = sum([
-            metadata.get('has_parking', False),
-            metadata.get('has_garden', False),
-            metadata.get('has_pool', False),
-            metadata.get('has_garage', False),
-            metadata.get('has_bike_room', False),
-            metadata.get('has_elevator', False),
-            metadata.get('has_balcony', False),
-        ])
+        amenity_count = sum(
+            [
+                bool(metadata.get("has_parking", False)),
+                bool(metadata.get("has_garden", False)),
+                bool(metadata.get("has_pool", False)),
+                bool(metadata.get("has_garage", False)),
+                bool(metadata.get("has_bike_room", False)),
+                bool(metadata.get("has_elevator", False)),
+                bool(metadata.get("has_balcony", False)),
+            ]
+        )
 
         # Normalize amenities (0-7 range to 0-0.3)
         score += (amenity_count / 7) * 0.3
@@ -244,9 +237,9 @@ class PropertyRecommendationEngine:
 
     def _calculate_implicit_score(
         self,
-        metadata: dict,
+        metadata: dict[str, Any],
         viewed_properties: Optional[List[str]],
-        favorited_properties: Optional[List[str]]
+        favorited_properties: Optional[List[str]],
     ) -> float:
         """
         Score based on similarity to viewed/favorited properties.
@@ -270,7 +263,7 @@ class PropertyRecommendationEngine:
         explicit_score: float,
         value_score: float,
         implicit_score: float,
-        metadata: dict
+        metadata: dict[str, Any],
     ) -> str:
         """Generate human-readable recommendation reason."""
         reasons = []
@@ -290,11 +283,11 @@ class PropertyRecommendationEngine:
 
         # Feature highlights
         highlights = []
-        if metadata.get('has_parking'):
+        if metadata.get("has_parking"):
             highlights.append("parking")
-        if metadata.get('has_garden'):
+        if metadata.get("has_garden"):
             highlights.append("garden")
-        if metadata.get('has_pool'):
+        if metadata.get("has_pool"):
             highlights.append("pool")
 
         if highlights:

@@ -6,13 +6,7 @@ and tool selection.
 """
 
 import pytest
-from agents.query_analyzer import (
-    QueryAnalyzer,
-    QueryIntent,
-    Complexity,
-    Tool,
-    analyze_query
-)
+from agents.query_analyzer import QueryIntent, Complexity, Tool, analyze_query
 
 
 class TestQueryAnalyzer:
@@ -88,59 +82,59 @@ class TestQueryAnalyzer:
         query = "Find apartments under $1000"
         analysis = query_analyzer.analyze(query)
 
-        assert 'max_price' in analysis.extracted_filters
-        assert analysis.extracted_filters['max_price'] == 1000.0
+        assert "max_price" in analysis.extracted_filters
+        assert analysis.extracted_filters["max_price"] == 1000.0
 
     def test_filter_extraction_rooms(self, query_analyzer):
         """Test rooms filter extraction."""
         query = "Find 2-bedroom apartments"
         analysis = query_analyzer.analyze(query)
 
-        assert 'rooms' in analysis.extracted_filters
-        assert analysis.extracted_filters['rooms'] == 2
+        assert "rooms" in analysis.extracted_filters
+        assert analysis.extracted_filters["rooms"] == 2
 
     def test_filter_extraction_city(self, query_analyzer):
         """Test city filter extraction."""
         query = "Show me apartments in Krakow"
         analysis = query_analyzer.analyze(query)
 
-        assert 'city' in analysis.extracted_filters
-        assert analysis.extracted_filters['city'] == "Krakow"
+        assert "city" in analysis.extracted_filters
+        assert analysis.extracted_filters["city"] == "Krakow"
 
     def test_filter_extraction_amenities(self, query_analyzer):
         """Test amenities filter extraction."""
         query = "Find apartments with parking and garden"
         analysis = query_analyzer.analyze(query)
 
-        assert 'has_parking' in analysis.extracted_filters
-        assert 'has_garden' in analysis.extracted_filters
-        assert analysis.extracted_filters['has_parking'] is True
-        assert analysis.extracted_filters['has_garden'] is True
+        assert "has_parking" in analysis.extracted_filters
+        assert "has_garden" in analysis.extracted_filters
+        assert analysis.extracted_filters["has_parking"] is True
+        assert analysis.extracted_filters["has_garden"] is True
 
     def test_multi_filter_extraction(self, query_analyzer):
         """Test multiple filter extraction."""
         query = "Find 2-bedroom apartments in Krakow under $1000 with parking"
         analysis = query_analyzer.analyze(query)
 
-        assert 'rooms' in analysis.extracted_filters
-        assert 'city' in analysis.extracted_filters
-        assert 'max_price' in analysis.extracted_filters
-        assert 'has_parking' in analysis.extracted_filters
+        assert "rooms" in analysis.extracted_filters
+        assert "city" in analysis.extracted_filters
+        assert "max_price" in analysis.extracted_filters
+        assert "has_parking" in analysis.extracted_filters
 
-        assert analysis.extracted_filters['rooms'] == 2
-        assert analysis.extracted_filters['city'] == "Krakow"
-        assert analysis.extracted_filters['max_price'] == 1000.0
-        assert analysis.extracted_filters['has_parking'] is True
+        assert analysis.extracted_filters["rooms"] == 2
+        assert analysis.extracted_filters["city"] == "Krakow"
+        assert analysis.extracted_filters["max_price"] == 1000.0
+        assert analysis.extracted_filters["has_parking"] is True
 
     def test_price_range_extraction(self, query_analyzer):
         """Test price range extraction."""
         query = "Find apartments between $800 and $1200"
         analysis = query_analyzer.analyze(query)
 
-        assert 'min_price' in analysis.extracted_filters
-        assert 'max_price' in analysis.extracted_filters
-        assert analysis.extracted_filters['min_price'] == 800.0
-        assert analysis.extracted_filters['max_price'] == 1200.0
+        assert "min_price" in analysis.extracted_filters
+        assert "max_price" in analysis.extracted_filters
+        assert analysis.extracted_filters["min_price"] == 800.0
+        assert analysis.extracted_filters["max_price"] == 1200.0
 
     def test_mortgage_tool_selection(self, query_analyzer):
         """Test mortgage calculator tool selection."""
@@ -226,28 +220,31 @@ class TestQueryAnalyzer:
 
         assert analysis.complexity in [Complexity.MEDIUM, Complexity.COMPLEX]
         assert len(analysis.extracted_filters) >= 3
-        assert 'city' in analysis.extracted_filters
-        assert 'has_parking' in analysis.extracted_filters
+        assert "city" in analysis.extracted_filters
+        assert "has_parking" in analysis.extracted_filters
 
 
 class TestQueryIntentClassification:
     """Test intent classification accuracy."""
 
-    @pytest.mark.parametrize("query,expected_intent", [
-        ("Show me apartments", QueryIntent.SIMPLE_RETRIEVAL),
-        ("Find properties in Warsaw", QueryIntent.SIMPLE_RETRIEVAL),
-        ("List available apartments", QueryIntent.SIMPLE_RETRIEVAL),
-        ("Find 2-bed under $1000", QueryIntent.FILTERED_SEARCH),
-        ("Search apartments with parking", QueryIntent.FILTERED_SEARCH),
-        ("Calculate mortgage", QueryIntent.CALCULATION),
-        ("How much is monthly payment", QueryIntent.CALCULATION),
-        ("Compare Warsaw vs Krakow", QueryIntent.COMPARISON),
-        ("What's the difference between", QueryIntent.COMPARISON),
-        ("Average price analysis", QueryIntent.ANALYSIS),
-        ("What's the mean price", QueryIntent.ANALYSIS),
-        ("Recommend best value", QueryIntent.RECOMMENDATION),
-        ("What's the best apartment", QueryIntent.RECOMMENDATION),
-    ])
+    @pytest.mark.parametrize(
+        "query,expected_intent",
+        [
+            ("Show me apartments", QueryIntent.SIMPLE_RETRIEVAL),
+            ("Find properties in Warsaw", QueryIntent.SIMPLE_RETRIEVAL),
+            ("List available apartments", QueryIntent.SIMPLE_RETRIEVAL),
+            ("Find 2-bed under $1000", QueryIntent.FILTERED_SEARCH),
+            ("Search apartments with parking", QueryIntent.FILTERED_SEARCH),
+            ("Calculate mortgage", QueryIntent.CALCULATION),
+            ("How much is monthly payment", QueryIntent.CALCULATION),
+            ("Compare Warsaw vs Krakow", QueryIntent.COMPARISON),
+            ("What's the difference between", QueryIntent.COMPARISON),
+            ("Average price analysis", QueryIntent.ANALYSIS),
+            ("What's the mean price", QueryIntent.ANALYSIS),
+            ("Recommend best value", QueryIntent.RECOMMENDATION),
+            ("What's the best apartment", QueryIntent.RECOMMENDATION),
+        ],
+    )
     def test_intent_classification(self, query_analyzer, query, expected_intent):
         """Test various query intents."""
         analysis = query_analyzer.analyze(query)
@@ -257,14 +254,17 @@ class TestQueryIntentClassification:
 class TestFilterExtraction:
     """Test filter extraction accuracy."""
 
-    @pytest.mark.parametrize("query,expected_filters", [
-        ("Find apartments in Krakow", {'city': 'Krakow'}),
-        ("2-bedroom apartments", {'rooms': 2}),
-        ("Under $1000", {'max_price': 1000.0}),
-        ("With parking", {'has_parking': True}),
-        ("With garden", {'has_garden': True}),
-        ("Furnished apartment", {'is_furnished': True}),
-    ])
+    @pytest.mark.parametrize(
+        "query,expected_filters",
+        [
+            ("Find apartments in Krakow", {"city": "Krakow"}),
+            ("2-bedroom apartments", {"rooms": 2}),
+            ("Under $1000", {"max_price": 1000.0}),
+            ("With parking", {"has_parking": True}),
+            ("With garden", {"has_garden": True}),
+            ("Furnished apartment", {"is_furnished": True}),
+        ],
+    )
     def test_filter_extraction(self, query_analyzer, query, expected_filters):
         """Test filter extraction for various queries."""
         analysis = query_analyzer.analyze(query)

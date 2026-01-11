@@ -3,8 +3,6 @@ Pytest configuration and shared fixtures.
 """
 
 import pytest
-from pathlib import Path
-import pandas as pd
 from langchain_community.llms.fake import FakeListLLM
 from langchain_core.documents import Document
 
@@ -33,7 +31,7 @@ def sample_properties():
             has_parking=True,
             has_garden=False,
             property_type=PropertyType.APARTMENT,
-            source_url="http://example.com/1"
+            source_url="http://example.com/1",
         ),
         Property(
             id="prop2",
@@ -45,7 +43,7 @@ def sample_properties():
             has_parking=False,
             has_garden=True,
             property_type=PropertyType.APARTMENT,
-            source_url="http://example.com/2"
+            source_url="http://example.com/2",
         ),
         Property(
             id="prop3",
@@ -57,7 +55,7 @@ def sample_properties():
             has_parking=True,
             has_garden=False,
             property_type=PropertyType.APARTMENT,
-            source_url="http://example.com/3"
+            source_url="http://example.com/3",
         ),
         Property(
             id="prop4",
@@ -69,7 +67,7 @@ def sample_properties():
             has_parking=False,
             has_garden=False,
             property_type=PropertyType.STUDIO,
-            source_url="http://example.com/4"
+            source_url="http://example.com/4",
         ),
         Property(
             id="prop5",
@@ -81,7 +79,7 @@ def sample_properties():
             has_parking=True,
             has_garden=True,
             property_type=PropertyType.APARTMENT,
-            source_url="http://example.com/5"
+            source_url="http://example.com/5",
         ),
     ]
     return PropertyCollection(properties=properties, total_count=5)
@@ -92,10 +90,7 @@ def sample_documents(sample_properties):
     """Fixture for sample documents from properties."""
     documents = []
     for prop in sample_properties.properties:
-        doc = Document(
-            page_content=prop.to_search_text(),
-            metadata=prop.to_dict()
-        )
+        doc = Document(page_content=prop.to_search_text(), metadata=prop.to_dict())
         documents.append(doc)
     return documents
 

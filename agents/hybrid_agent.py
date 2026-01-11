@@ -40,7 +40,7 @@ class HybridPropertyAgent:
         retriever: BaseRetriever,
         memory: Optional[ConversationBufferMemory] = None,
         tools: Optional[List[BaseTool]] = None,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         """
         Initialize hybrid agent.
@@ -55,9 +55,7 @@ class HybridPropertyAgent:
         self.llm = llm
         self.retriever = retriever
         self.memory = memory or ConversationBufferMemory(
-            memory_key="chat_history",
-            return_messages=True,
-            output_key="output"
+            memory_key="chat_history", return_messages=True, output_key="output"
         )
         self.tools = tools or create_property_tools()
         self.verbose = verbose
@@ -78,15 +76,18 @@ class HybridPropertyAgent:
             retriever=self.retriever,
             memory=self.memory,
             return_source_documents=True,
-            verbose=self.verbose
+            verbose=self.verbose,
         )
 
     def _create_tool_agent(self) -> AgentExecutor:
         """Create tool-based agent for complex queries."""
 
         # Create prompt template for tool agent
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are an intelligent real estate assistant with access to specialized tools.
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    """You are an intelligent real estate assistant with access to specialized tools.
 
 Your capabilities:
 - Search property database for listings
@@ -102,18 +103,16 @@ When answering:
 4. Be concise but thorough
 5. Always cite sources when using property data
 
-Context from property database will be provided when relevant."""),
-            MessagesPlaceholder(variable_name="chat_history", optional=True),
-            ("human", "{input}"),
-            MessagesPlaceholder(variable_name="agent_scratchpad"),
-        ])
+Context from property database will be provided when relevant.""",
+                ),
+                MessagesPlaceholder(variable_name="chat_history", optional=True),
+                ("human", "{input}"),
+                MessagesPlaceholder(variable_name="agent_scratchpad"),
+            ]
+        )
 
         # Create agent
-        agent = create_openai_tools_agent(
-            llm=self.llm,
-            tools=self.tools,
-            prompt=prompt
-        )
+        agent = create_openai_tools_agent(llm=self.llm, tools=self.tools, prompt=prompt)
 
         # Create executor
         return AgentExecutor(
@@ -121,13 +120,11 @@ Context from property database will be provided when relevant."""),
             tools=self.tools,
             memory=self.memory,
             verbose=self.verbose,
-            return_intermediate_steps=True
+            return_intermediate_steps=True,
         )
 
     def process_query(
-        self,
-        query: str,
-        return_analysis: bool = False
+        self, query: str, return_analysis: bool = False
     ) -> Dict[str, Any]:
         """
         Process a query using the hybrid approach.
@@ -161,11 +158,7 @@ Context from property database will be provided when relevant."""),
 
         return result
 
-    def _process_with_rag(
-        self,
-        query: str,
-        analysis: QueryAnalysis
-    ) -> Dict[str, Any]:
+    def _process_with_rag(self, query: str, analysis: QueryAnalysis) -> Dict[str, Any]:
         """Process simple query with RAG only."""
         if self.verbose:
             logger.info("Processing with RAG only")
@@ -177,7 +170,7 @@ Context from property database will be provided when relevant."""),
                 "answer": response["answer"],
                 "source_documents": response.get("source_documents", []),
                 "method": "rag",
-                "intent": analysis.intent.value
+                "intent": analysis.intent.value,
             }
 
         except Exception as e:
@@ -185,13 +178,11 @@ Context from property database will be provided when relevant."""),
                 "answer": f"Error processing query with RAG: {str(e)}",
                 "source_documents": [],
                 "method": "rag",
-                "error": str(e)
+                "error": str(e),
             }
 
     def _process_with_agent(
-        self,
-        query: str,
-        analysis: QueryAnalysis
+        self, query: str, analysis: QueryAnalysis
     ) -> Dict[str, Any]:
         """Process complex query with tool agent."""
         if self.verbose:
@@ -200,30 +191,33 @@ Context from property database will be provided when relevant."""),
         try:
             # First, get relevant context from RAG if needed
             context_docs = []
-            if analysis.intent not in [QueryIntent.CALCULATION, QueryIntent.GENERAL_QUESTION]:
+            if analysis.intent not in [
+                QueryIntent.CALCULATION,
+                QueryIntent.GENERAL_QUESTION,
+            ]:
                 rag_results = self.retriever.get_relevant_documents(query)
                 context_docs = rag_results[:3]  # Top 3 for context
 
             # Add context to query if available
             enhanced_query = query
             if context_docs:
-                context_text = "\n\n".join([
-                    f"Property {i+1}: {doc.page_content[:200]}..."
-                    for i, doc in enumerate(context_docs)
-                ])
+                context_text = "\n\n".join(
+                    [
+                        f"Property {i+1}: {doc.page_content[:200]}..."
+                        for i, doc in enumerate(context_docs)
+                    ]
+                )
                 enhanced_query = f"{query}\n\nRelevant properties:\n{context_text}"
 
             # Run agent
-            response = self.tool_agent.invoke({
-                "input": enhanced_query
-            })
+            response = self.tool_agent.invoke({"input": enhanced_query})
 
             return {
                 "answer": response["output"],
                 "source_documents": context_docs,
                 "method": "agent",
                 "intent": analysis.intent.value,
-                "intermediate_steps": response.get("intermediate_steps", [])
+                "intermediate_steps": response.get("intermediate_steps", []),
             }
 
         except Exception as e:
@@ -231,14 +225,10 @@ Context from property database will be provided when relevant."""),
                 "answer": f"Error processing query with agent: {str(e)}",
                 "source_documents": [],
                 "method": "agent",
-                "error": str(e)
+                "error": str(e),
             }
 
-    def _process_hybrid(
-        self,
-        query: str,
-        analysis: QueryAnalysis
-    ) -> Dict[str, Any]:
+    def _process_hybrid(self, query: str, analysis: QueryAnalysis) -> Dict[str, Any]:
         """Process with hybrid approach - RAG + agent capabilities."""
         if self.verbose:
             logger.info("Processing with hybrid approach")
@@ -252,7 +242,10 @@ Context from property database will be provided when relevant."""),
             source_docs = rag_response.get("source_documents", [])
 
             # If query needs computation or deeper analysis, enhance with agent
-            if analysis.requires_computation or analysis.complexity == Complexity.COMPLEX:
+            if (
+                analysis.requires_computation
+                or analysis.complexity == Complexity.COMPLEX
+            ):
                 # Use agent to enhance the answer
                 enhanced_query = (
                     f"Based on this information about properties:\n\n"
@@ -260,9 +253,7 @@ Context from property database will be provided when relevant."""),
                     f"Now answer this: {query}"
                 )
 
-                agent_response = self.tool_agent.invoke({
-                    "input": enhanced_query
-                })
+                agent_response = self.tool_agent.invoke({"input": enhanced_query})
 
                 answer = agent_response["output"]
 
@@ -270,14 +261,14 @@ Context from property database will be provided when relevant."""),
                 "answer": answer,
                 "source_documents": source_docs,
                 "method": "hybrid",
-                "intent": analysis.intent.value
+                "intent": analysis.intent.value,
             }
 
-        except Exception as e:
+        except Exception:
             # Fallback to RAG-only
             return self._process_with_rag(query, analysis)
 
-    def clear_memory(self):
+    def clear_memory(self) -> None:
         """Clear conversation memory."""
         self.memory.clear()
 
@@ -298,15 +289,13 @@ class SimpleRAGAgent:
         llm: BaseChatModel,
         retriever: BaseRetriever,
         memory: Optional[ConversationBufferMemory] = None,
-        verbose: bool = False
-    ):
+        verbose: bool = False,
+    ) -> None:
         """Initialize simple RAG agent."""
         self.llm = llm
         self.retriever = retriever
         self.memory = memory or ConversationBufferMemory(
-            memory_key="chat_history",
-            return_messages=True,
-            output_key="answer"
+            memory_key="chat_history", return_messages=True, output_key="answer"
         )
         self.verbose = verbose
 
@@ -315,7 +304,7 @@ class SimpleRAGAgent:
             retriever=retriever,
             memory=self.memory,
             return_source_documents=True,
-            verbose=verbose
+            verbose=verbose,
         )
 
     def process_query(self, query: str) -> Dict[str, Any]:
@@ -326,7 +315,7 @@ class SimpleRAGAgent:
             return {
                 "answer": response["answer"],
                 "source_documents": response.get("source_documents", []),
-                "method": "rag_only"
+                "method": "rag_only",
             }
 
         except Exception as e:
@@ -334,10 +323,10 @@ class SimpleRAGAgent:
                 "answer": f"Error: {str(e)}",
                 "source_documents": [],
                 "method": "rag_only",
-                "error": str(e)
+                "error": str(e),
             }
 
-    def clear_memory(self):
+    def clear_memory(self) -> None:
         """Clear conversation memory."""
         self.memory.clear()
 
@@ -346,7 +335,7 @@ def create_hybrid_agent(
     llm: BaseChatModel,
     retriever: BaseRetriever,
     use_tools: bool = True,
-    verbose: bool = False
+    verbose: bool = False,
 ) -> Any:
     """
     Factory function to create an agent.
@@ -361,14 +350,6 @@ def create_hybrid_agent(
         HybridPropertyAgent or SimpleRAGAgent
     """
     if use_tools:
-        return HybridPropertyAgent(
-            llm=llm,
-            retriever=retriever,
-            verbose=verbose
-        )
+        return HybridPropertyAgent(llm=llm, retriever=retriever, verbose=verbose)
     else:
-        return SimpleRAGAgent(
-            llm=llm,
-            retriever=retriever,
-            verbose=verbose
-        )
+        return SimpleRAGAgent(llm=llm, retriever=retriever, verbose=verbose)
