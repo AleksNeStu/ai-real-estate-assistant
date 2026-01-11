@@ -5,6 +5,15 @@ Welcome to the comprehensive documentation for the AI Real Estate Assistant proj
 > Status: Version 3 (V3) is under active development. Bugs and UI changes may occur.
 > For a stable release without ongoing improvements, use the V2 branch: https://github.com/AleksNeStu/ai-real-estate-assistant/tree/ver2
 
+## 🧭 Versions
+
+| Version | Branch | Status | UI | Notes |
+|---:|---|---|---|---|
+| v1 | — | historical | Streamlit | Early prototype (basic search/chat). |
+| v2 | `ver2` | stable | Streamlit | Stable baseline. |
+| v3 | `ver3` | latest working | Streamlit | Latest working version and primary docs target. |
+| v4 | `ver4` | in progress | new stack | Active migration from Streamlit to a separate frontend + backend API. |
+
 ## 📚 Documentation Structure
 
 ### Core Documentation

@@ -1,4 +1,48 @@
-# Deploying to Streamlit Cloud
+# Deployment and Versions
+
+## Version History
+
+- Version 1: Early Streamlit prototype (basic search/chat).
+- Version 2: Feature expansion and modularization (agents/providers/vector store/analytics).
+- Version 3: Latest stable working version (branch `ver3`), Streamlit UI.
+- Version 4: Active development (branch `ver4`) — migration from Streamlit to a new frontend stack and service separation.
+
+## Version 3 Status (Latest Working)
+
+- Streamlit app entrypoint: `app_modern.py`
+- Multi-provider LLM support (OpenAI/Anthropic/Google/Ollama)
+- ChromaDB vector store + hybrid retrieval + filters + optional reranking
+- Market analytics, charts/maps, exports (CSV/JSON/Markdown)
+- Email notifications/digests, user preferences, notification history
+
+## Version 4 Status (In Progress)
+
+- UI is being migrated from Streamlit to a new stack (separate frontend + backend API).
+- A dedicated frontend workspace (`frontend/`) exists during migration and should be ignored on `ver3` (see `.gitignore`).
+- Goal: clearer separation of concerns (API/agents/vector store/frontend) and independent deployment of components.
+
+## Deployment Options (V3)
+
+### Docker (Recommended)
+
+Docker is the easiest path for reproducibility and upgrades: one command starts the app and persists data via mounted volumes.
+
+```bash
+cp .env.example .env
+docker-compose up -d --build
+```
+
+Persistent directories: `chroma_db/`, `.preferences/`, `.notifications/`, `.sessions/`.
+
+### VPS without Docker (systemd)
+
+Use this if you prefer not to containerize and are comfortable managing Python and dependencies directly on the server:
+
+- Create a virtual environment
+- Install dependencies
+- Run `streamlit run app_modern.py` under a systemd unit
+
+### Streamlit Cloud (V3)
 
 This guide will walk you through deploying the AI Real Estate Assistant to Streamlit Cloud.
 
@@ -22,7 +66,7 @@ The repository is already configured with all necessary files:
 Make sure your branch is pushed to GitHub:
 
 ```bash
-git push -u origin claude/modernize-app-ui-models-011CUtSCBMxZ4kbtT7n6SzCK
+git push -u origin ver3
 ```
 
 ## Step 3: Deploy to Streamlit Cloud
@@ -34,7 +78,7 @@ git push -u origin claude/modernize-app-ui-models-011CUtSCBMxZ4kbtT7n6SzCK
 2. **Create New App**
    - Click "New app" button
    - Select your repository: `AleksNeStu/ai-real-estate-assistant`
-   - Select branch: `claude/modernize-app-ui-models-011CUtSCBMxZ4kbtT7n6SzCK`
+   - Select branch: `ver3`
    - Main file path: `app_modern.py`
    - App URL: Choose a custom URL (optional)
 

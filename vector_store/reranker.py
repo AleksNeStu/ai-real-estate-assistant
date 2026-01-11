@@ -6,7 +6,7 @@ of retrieved documents by considering additional factors beyond
 just vector similarity.
 """
 
-from typing import List, Tuple, Optional
+from typing import Any, List, Optional, Tuple
 from langchain_core.documents import Document
 import re
 
@@ -28,8 +28,8 @@ class PropertyReranker:
         boost_exact_matches: float = 1.5,
         boost_metadata_match: float = 1.3,
         boost_quality_signals: float = 1.2,
-        diversity_penalty: float = 0.9
-    ):
+        diversity_penalty: float = 0.9,
+    ) -> None:
         """
         Initialize reranker.
 
@@ -49,8 +49,8 @@ class PropertyReranker:
         query: str,
         documents: List[Document],
         initial_scores: Optional[List[float]] = None,
-        user_preferences: Optional[dict] = None,
-        k: Optional[int] = None
+        user_preferences: Optional[dict[str, Any]] = None,
+        k: Optional[int] = None,
     ) -> List[Tuple[Document, float]]:
         """
         Rerank documents based on multiple relevance signals.
@@ -85,16 +85,16 @@ class PropertyReranker:
 
             # Boost for exact keyword matches
             exact_match_boost = self._calculate_exact_match_boost(query, doc)
-            score *= (1.0 + exact_match_boost * self.boost_exact_matches)
+            score *= 1.0 + exact_match_boost * self.boost_exact_matches
 
             # Boost for metadata alignment
             if user_preferences:
                 metadata_boost = self._calculate_metadata_boost(doc, user_preferences)
-                score *= (1.0 + metadata_boost * self.boost_metadata_match)
+                score *= 1.0 + metadata_boost * self.boost_metadata_match
 
             # Boost for quality signals
             quality_boost = self._calculate_quality_boost(doc)
-            score *= (1.0 + quality_boost * self.boost_quality_signals)
+            score *= 1.0 + quality_boost * self.boost_quality_signals
 
             reranked.append((doc, score))
 
@@ -124,14 +124,33 @@ class PropertyReranker:
         """
         # Extract important keywords from query (remove common words)
         stop_words = {
-            'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at',
-            'to', 'for', 'of', 'with', 'by', 'from', 'show', 'find',
-            'me', 'i', 'want', 'need', 'looking'
+            "the",
+            "a",
+            "an",
+            "and",
+            "or",
+            "but",
+            "in",
+            "on",
+            "at",
+            "to",
+            "for",
+            "of",
+            "with",
+            "by",
+            "from",
+            "show",
+            "find",
+            "me",
+            "i",
+            "want",
+            "need",
+            "looking",
         }
 
         query_words = set(
             word.lower()
-            for word in re.findall(r'\b\w+\b', query)
+            for word in re.findall(r"\b\w+\b", query)
             if word.lower() not in stop_words and len(word) > 2
         )
 
@@ -140,15 +159,17 @@ class PropertyReranker:
 
         # Check for matches in document content and metadata
         content = doc.page_content.lower()
-        metadata_str = ' '.join(str(v).lower() for v in doc.metadata.values())
-        combined_text = content + ' ' + metadata_str
+        metadata_str = " ".join(str(v).lower() for v in doc.metadata.values())
+        combined_text = content + " " + metadata_str
 
         matches = sum(1 for word in query_words if word in combined_text)
         boost = matches / len(query_words)
 
         return min(boost, 1.0)  # Cap at 1.0
 
-    def _calculate_metadata_boost(self, doc: Document, preferences: dict) -> float:
+    def _calculate_metadata_boost(
+        self, doc: Document, preferences: dict[str, Any]
+    ) -> float:
         """
         Calculate boost for metadata alignment with user preferences.
 
@@ -164,32 +185,32 @@ class PropertyReranker:
         total_preferences = 0
 
         # Check price preference
-        if 'max_price' in preferences:
+        if "max_price" in preferences:
             total_preferences += 1
-            doc_price = metadata.get('price', float('inf'))
-            if doc_price <= preferences['max_price']:
+            doc_price = metadata.get("price", float("inf"))
+            if doc_price <= preferences["max_price"]:
                 matches += 1
 
-        if 'min_price' in preferences:
+        if "min_price" in preferences:
             total_preferences += 1
-            doc_price = metadata.get('price', 0)
-            if doc_price >= preferences['min_price']:
+            doc_price = metadata.get("price", 0)
+            if doc_price >= preferences["min_price"]:
                 matches += 1
 
         # Check city preference
-        if 'city' in preferences:
+        if "city" in preferences:
             total_preferences += 1
-            if metadata.get('city', '').lower() == preferences['city'].lower():
+            if metadata.get("city", "").lower() == preferences["city"].lower():
                 matches += 1
 
         # Check rooms preference
-        if 'rooms' in preferences:
+        if "rooms" in preferences:
             total_preferences += 1
-            if metadata.get('rooms') == preferences['rooms']:
+            if metadata.get("rooms") == preferences["rooms"]:
                 matches += 1
 
         # Check amenities
-        amenity_prefs = ['has_parking', 'has_garden', 'has_pool', 'has_garage']
+        amenity_prefs = ["has_parking", "has_garden", "has_pool", "has_garage"]
         for amenity in amenity_prefs:
             if amenity in preferences and preferences[amenity]:
                 total_preferences += 1
@@ -217,16 +238,16 @@ class PropertyReranker:
         max_score = 0.0
 
         # Has important amenities
-        amenities = ['has_parking', 'has_garden', 'has_balcony', 'has_elevator']
+        amenities = ["has_parking", "has_garden", "has_balcony", "has_elevator"]
         for amenity in amenities:
             max_score += 0.1
             if metadata.get(amenity, False):
                 quality_score += 0.1
 
         # Good price per sqm (if available)
-        if 'price_per_sqm' in metadata and 'price' in metadata:
+        if "price_per_sqm" in metadata and "price" in metadata:
             max_score += 0.2
-            price_per_sqm = metadata['price_per_sqm']
+            price_per_sqm = metadata["price_per_sqm"]
             # Lower price per sqm is better (assuming reasonable range)
             if 10 <= price_per_sqm <= 30:  # Reasonable range
                 quality_score += 0.2
@@ -245,8 +266,7 @@ class PropertyReranker:
         return 0.0
 
     def _apply_diversity_penalty(
-        self,
-        reranked: List[Tuple[Document, float]]
+        self, reranked: List[Tuple[Document, float]]
     ) -> List[Tuple[Document, float]]:
         """
         Apply diversity penalty to avoid too many similar results.
@@ -261,8 +281,8 @@ class PropertyReranker:
             return reranked
 
         # Track seen values for diversity
-        seen_cities = set()
-        seen_price_ranges = set()
+        seen_cities: set[str] = set()
+        seen_price_ranges: set[str] = set()
 
         adjusted = []
 
@@ -271,14 +291,14 @@ class PropertyReranker:
             metadata = doc.metadata
 
             # Penalize if we've seen this city multiple times
-            city = metadata.get('city', '').lower()
+            city = metadata.get("city", "").lower()
             if city in seen_cities:
                 adjusted_score *= self.diversity_penalty
             else:
                 seen_cities.add(city)
 
             # Penalize if we've seen this price range
-            price = metadata.get('price', 0)
+            price = metadata.get("price", 0)
             price_range = f"{int(price // 500) * 500}-{int(price // 500 + 1) * 500}"
             if price_range in seen_price_ranges and len(seen_price_ranges) > 2:
                 adjusted_score *= self.diversity_penalty
@@ -300,7 +320,7 @@ class SimpleReranker:
     This is a lightweight alternative when full reranking isn't needed.
     """
 
-    def __init__(self, boost_factor: float = 1.5):
+    def __init__(self, boost_factor: float = 1.5) -> None:
         """
         Initialize simple reranker.
 
@@ -314,7 +334,7 @@ class SimpleReranker:
         query: str,
         documents: List[Document],
         initial_scores: Optional[List[float]] = None,
-        k: Optional[int] = None
+        k: Optional[int] = None,
     ) -> List[Tuple[Document, float]]:
         """Simple reranking based on exact matches."""
         if not documents:

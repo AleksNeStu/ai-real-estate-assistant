@@ -11,7 +11,7 @@ Handles:
 import logging
 from typing import List, Dict, Any, Optional, Set
 from dataclasses import dataclass, field, asdict
-from datetime import datetime, time
+from datetime import datetime
 from enum import Enum
 import json
 from pathlib import Path
@@ -21,14 +21,16 @@ logger = logging.getLogger(__name__)
 
 class AlertFrequency(str, Enum):
     """Alert delivery frequency options."""
+
     INSTANT = "instant"  # Send immediately when triggered
-    HOURLY = "hourly"    # Batch and send hourly
-    DAILY = "daily"      # Daily digest at specified time
-    WEEKLY = "weekly"    # Weekly digest on specified day
+    HOURLY = "hourly"  # Batch and send hourly
+    DAILY = "daily"  # Daily digest at specified time
+    WEEKLY = "weekly"  # Weekly digest on specified day
 
 
 class AlertType(str, Enum):
     """Types of alerts that can be enabled/disabled."""
+
     PRICE_DROP = "price_drop"
     NEW_PROPERTY = "new_property"
     SAVED_SEARCH_MATCH = "saved_search_match"
@@ -38,6 +40,7 @@ class AlertType(str, Enum):
 
 class DigestDay(str, Enum):
     """Days of week for weekly digests."""
+
     MONDAY = "monday"
     TUESDAY = "tuesday"
     WEDNESDAY = "wednesday"
@@ -65,16 +68,19 @@ class NotificationPreferences:
         per_search_settings: Custom settings for specific saved searches
         enabled: Whether notifications are enabled at all
     """
+
     user_email: str
     alert_frequency: AlertFrequency = AlertFrequency.INSTANT
-    enabled_alerts: Set[AlertType] = field(default_factory=lambda: {
-        AlertType.PRICE_DROP,
-        AlertType.NEW_PROPERTY,
-        AlertType.SAVED_SEARCH_MATCH
-    })
+    enabled_alerts: Set[AlertType] = field(
+        default_factory=lambda: {
+            AlertType.PRICE_DROP,
+            AlertType.NEW_PROPERTY,
+            AlertType.SAVED_SEARCH_MATCH,
+        }
+    )
     price_drop_threshold: float = 5.0  # Minimum % drop
     quiet_hours_start: Optional[str] = "22:00"  # 10 PM
-    quiet_hours_end: Optional[str] = "08:00"    # 8 AM
+    quiet_hours_end: Optional[str] = "08:00"  # 8 AM
     daily_digest_time: str = "09:00"  # 9 AM
     weekly_digest_day: DigestDay = DigestDay.MONDAY
     max_alerts_per_day: int = 10
@@ -87,33 +93,33 @@ class NotificationPreferences:
         """Convert preferences to dictionary for serialization."""
         data = asdict(self)
         # Convert sets to lists for JSON serialization
-        data['enabled_alerts'] = [alert.value for alert in self.enabled_alerts]
-        data['alert_frequency'] = self.alert_frequency.value
-        data['weekly_digest_day'] = self.weekly_digest_day.value
-        data['created_at'] = self.created_at.isoformat()
-        data['updated_at'] = self.updated_at.isoformat()
+        data["enabled_alerts"] = [alert.value for alert in self.enabled_alerts]
+        data["alert_frequency"] = self.alert_frequency.value
+        data["weekly_digest_day"] = self.weekly_digest_day.value
+        data["created_at"] = self.created_at.isoformat()
+        data["updated_at"] = self.updated_at.isoformat()
         return data
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'NotificationPreferences':
+    def from_dict(cls, data: Dict[str, Any]) -> "NotificationPreferences":
         """Create preferences from dictionary."""
         # Convert alert types back to set
-        if 'enabled_alerts' in data:
-            data['enabled_alerts'] = {AlertType(a) for a in data['enabled_alerts']}
+        if "enabled_alerts" in data:
+            data["enabled_alerts"] = {AlertType(a) for a in data["enabled_alerts"]}
 
         # Convert enums
-        if 'alert_frequency' in data:
-            data['alert_frequency'] = AlertFrequency(data['alert_frequency'])
+        if "alert_frequency" in data:
+            data["alert_frequency"] = AlertFrequency(data["alert_frequency"])
 
-        if 'weekly_digest_day' in data:
-            data['weekly_digest_day'] = DigestDay(data['weekly_digest_day'])
+        if "weekly_digest_day" in data:
+            data["weekly_digest_day"] = DigestDay(data["weekly_digest_day"])
 
         # Convert datetime strings
-        if 'created_at' in data and isinstance(data['created_at'], str):
-            data['created_at'] = datetime.fromisoformat(data['created_at'])
+        if "created_at" in data and isinstance(data["created_at"], str):
+            data["created_at"] = datetime.fromisoformat(data["created_at"])
 
-        if 'updated_at' in data and isinstance(data['updated_at'], str):
-            data['updated_at'] = datetime.fromisoformat(data['updated_at'])
+        if "updated_at" in data and isinstance(data["updated_at"], str):
+            data["updated_at"] = datetime.fromisoformat(data["updated_at"])
 
         return cls(**data)
 
@@ -151,7 +157,7 @@ class NotificationPreferences:
         self,
         alert_type: AlertType,
         alerts_sent_today: int = 0,
-        check_time: Optional[datetime] = None
+        check_time: Optional[datetime] = None,
     ) -> bool:
         """
         Determine if an alert should be sent based on preferences.
@@ -173,7 +179,9 @@ class NotificationPreferences:
             return False
 
         # Respect quiet hours only for non-instant delivery modes
-        if self.alert_frequency != AlertFrequency.INSTANT and self.is_in_quiet_hours(check_time):
+        if self.alert_frequency != AlertFrequency.INSTANT and self.is_in_quiet_hours(
+            check_time
+        ):
             return False
 
         # Check daily limit
@@ -208,7 +216,7 @@ class NotificationPreferences:
         search_id: str,
         enabled: Optional[bool] = None,
         alert_frequency: Optional[AlertFrequency] = None,
-        price_threshold: Optional[float] = None
+        price_threshold: Optional[float] = None,
     ):
         """
         Set preferences for a specific saved search.
@@ -223,13 +231,15 @@ class NotificationPreferences:
             self.per_search_settings[search_id] = {}
 
         if enabled is not None:
-            self.per_search_settings[search_id]['enabled'] = enabled
+            self.per_search_settings[search_id]["enabled"] = enabled
 
         if alert_frequency is not None:
-            self.per_search_settings[search_id]['alert_frequency'] = alert_frequency.value
+            self.per_search_settings[search_id][
+                "alert_frequency"
+            ] = alert_frequency.value
 
         if price_threshold is not None:
-            self.per_search_settings[search_id]['price_threshold'] = price_threshold
+            self.per_search_settings[search_id]["price_threshold"] = price_threshold
 
         self.updated_at = datetime.now()
 
@@ -285,11 +295,7 @@ class NotificationPreferencesManager:
         self._preferences_cache[preferences.user_email] = preferences
         self._save_all_preferences()
 
-    def update_preferences(
-        self,
-        user_email: str,
-        **kwargs
-    ) -> NotificationPreferences:
+    def update_preferences(self, user_email: str, **kwargs) -> NotificationPreferences:
         """
         Update specific preference fields for a user.
 
@@ -332,8 +338,7 @@ class NotificationPreferencesManager:
         return list(self._preferences_cache.values())
 
     def get_users_by_frequency(
-        self,
-        frequency: AlertFrequency
+        self, frequency: AlertFrequency
     ) -> List[NotificationPreferences]:
         """
         Get all users with a specific alert frequency.
@@ -345,13 +350,13 @@ class NotificationPreferencesManager:
             List of user preferences matching frequency
         """
         return [
-            prefs for prefs in self._preferences_cache.values()
+            prefs
+            for prefs in self._preferences_cache.values()
             if prefs.alert_frequency == frequency and prefs.enabled
         ]
 
     def get_users_with_alert_enabled(
-        self,
-        alert_type: AlertType
+        self, alert_type: AlertType
     ) -> List[NotificationPreferences]:
         """
         Get all users who have a specific alert type enabled.
@@ -363,7 +368,8 @@ class NotificationPreferencesManager:
             List of user preferences with alert enabled
         """
         return [
-            prefs for prefs in self._preferences_cache.values()
+            prefs
+            for prefs in self._preferences_cache.values()
             if prefs.is_alert_enabled(alert_type)
         ]
 
@@ -373,7 +379,7 @@ class NotificationPreferencesManager:
             return
 
         try:
-            with open(self.preferences_file, 'r') as f:
+            with open(self.preferences_file, "r") as f:
                 data = json.load(f)
 
             for user_email, prefs_data in data.items():
@@ -386,11 +392,10 @@ class NotificationPreferencesManager:
     def _save_all_preferences(self):
         """Save all preferences to disk."""
         data = {
-            email: prefs.to_dict()
-            for email, prefs in self._preferences_cache.items()
+            email: prefs.to_dict() for email, prefs in self._preferences_cache.items()
         }
 
-        with open(self.preferences_file, 'w') as f:
+        with open(self.preferences_file, "w") as f:
             json.dump(data, f, indent=2)
 
     def get_statistics(self) -> Dict[str, Any]:
@@ -414,11 +419,11 @@ class NotificationPreferencesManager:
             )
 
         return {
-            'total_users': total_users,
-            'enabled_users': enabled_users,
-            'disabled_users': total_users - enabled_users,
-            'by_frequency': frequency_counts,
-            'by_alert_type': alert_type_counts
+            "total_users": total_users,
+            "enabled_users": enabled_users,
+            "disabled_users": total_users - enabled_users,
+            "by_frequency": frequency_counts,
+            "by_alert_type": alert_type_counts,
         }
 
 
@@ -438,7 +443,7 @@ def create_default_preferences(user_email: str) -> NotificationPreferences:
         enabled_alerts={
             AlertType.PRICE_DROP,
             AlertType.NEW_PROPERTY,
-            AlertType.SAVED_SEARCH_MATCH
+            AlertType.SAVED_SEARCH_MATCH,
         },
         price_drop_threshold=5.0,
         quiet_hours_start="22:00",
@@ -446,5 +451,5 @@ def create_default_preferences(user_email: str) -> NotificationPreferences:
         daily_digest_time="09:00",
         weekly_digest_day=DigestDay.MONDAY,
         max_alerts_per_day=10,
-        enabled=True
+        enabled=True,
     )

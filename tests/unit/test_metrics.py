@@ -4,7 +4,6 @@ Unit tests for metrics utility functions.
 Tests metric formatting and calculation functions in ui/metrics.py
 """
 
-import pytest
 from ui.metrics import format_number, format_delta
 
 
@@ -61,6 +60,7 @@ class TestFormatNumber:
         assert format_number(1234.9999) == "1,235"  # Rounds to integer
         assert format_number(1234.567, "currency") == "$1,234.57"  # 2 decimals
         assert format_number(12.3456, "percentage") == "12.3%"  # 1 decimal
+
 
 class TestFormatDelta:
     """Tests for delta formatting function."""

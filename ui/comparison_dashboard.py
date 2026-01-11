@@ -10,20 +10,19 @@ Provides comprehensive side-by-side property comparisons with:
 - Export functionality
 """
 
-from typing import List, Optional
+from typing import List
 import streamlit as st
 from data.schemas import Property
 from ui.comparison_viz import PropertyComparison
 from ui.radar_charts import create_property_radar_chart, create_amenity_radar_chart
 from ui.price_charts import create_price_comparison_chart
-from ui.metrics import display_metric_card
 
 
 def display_comparison_dashboard(
     properties: List[Property],
     show_radar: bool = True,
     show_recommendations: bool = True,
-    show_export: bool = False
+    show_export: bool = False,
 ):
     """
     Display a comprehensive property comparison dashboard.
@@ -57,7 +56,7 @@ def display_comparison_dashboard(
 
     for i, (prop, col) in enumerate(zip(properties, cols)):
         with col:
-            _display_property_card(prop, index=i+1)
+            _display_property_card(prop, index=i + 1)
 
     st.divider()
 
@@ -75,21 +74,21 @@ def display_comparison_dashboard(
         st.metric(
             "Cheapest",
             f"${price_comp['cheapest']['price']:,.0f}",
-            help=f"{price_comp['cheapest']['city']}"
+            help=f"{price_comp['cheapest']['city']}",
         )
 
     with col2:
         st.metric(
             "Most Expensive",
             f"${price_comp['most_expensive']['price']:,.0f}",
-            help=f"{price_comp['most_expensive']['city']}"
+            help=f"{price_comp['most_expensive']['city']}",
         )
 
     with col3:
         st.metric(
             "Price Range",
             f"${price_comp['price_range']:,.0f}",
-            help="Difference between min and max"
+            help="Difference between min and max",
         )
 
     # Price comparison chart
@@ -116,7 +115,9 @@ def display_comparison_dashboard(
             try:
                 fig_radar = create_property_radar_chart(properties)
                 st.plotly_chart(fig_radar, use_container_width=True)
-                st.caption("📌 Values are normalized for fair comparison. Larger area = better value.")
+                st.caption(
+                    "📌 Values are normalized for fair comparison. Larger area = better value."
+                )
             except ValueError as e:
                 st.error(str(e))
 
@@ -145,7 +146,9 @@ def display_comparison_dashboard(
         best_value = comparison.get_best_value()
 
         # Display best value prominently
-        st.success(f"**🏆 Best Value: {best_value['city']}** (Score: {best_value['value_score']:.2f}/1.0)")
+        st.success(
+            f"**🏆 Best Value: {best_value['city']}** (Score: {best_value['value_score']:.2f}/1.0)"
+        )
 
         st.markdown(f"**Why?** {best_value['reasoning']}")
 
@@ -156,26 +159,41 @@ def display_comparison_dashboard(
         prop_scores = []
         for prop in properties:
             # Calculate value score for each
-            comp_temp = PropertyComparison([prop])
             # We need to get the score somehow - let's recalculate
-            price_norm = (max(p.price for p in properties) - prop.price) / (max(p.price for p in properties) - min(p.price for p in properties)) if len(properties) > 1 else 0.5
-            rooms_norm = (prop.rooms - min(p.rooms for p in properties)) / (max(p.rooms for p in properties) - min(p.rooms for p in properties)) if len(properties) > 1 and max(p.rooms for p in properties) != min(p.rooms for p in properties) else 0.5
+            price_norm = (
+                (max(p.price for p in properties) - prop.price)
+                / (max(p.price for p in properties) - min(p.price for p in properties))
+                if len(properties) > 1
+                else 0.5
+            )
+            rooms_norm = (
+                (prop.rooms - min(p.rooms for p in properties))
+                / (max(p.rooms for p in properties) - min(p.rooms for p in properties))
+                if len(properties) > 1
+                and max(p.rooms for p in properties) != min(p.rooms for p in properties)
+                else 0.5
+            )
 
-            amenity_count = sum([
-                prop.has_parking, prop.has_garden, prop.has_pool,
-                prop.is_furnished, prop.has_balcony, prop.has_elevator
-            ])
+            amenity_count = sum(
+                [
+                    prop.has_parking,
+                    prop.has_garden,
+                    prop.has_pool,
+                    prop.is_furnished,
+                    prop.has_balcony,
+                    prop.has_elevator,
+                ]
+            )
             amenity_norm = amenity_count / 6
 
             score = price_norm * 0.4 + rooms_norm * 0.3 + amenity_norm * 0.3
 
-            prop_scores.append({
-                'property': f"{prop.city} - ${prop.price}",
-                'score': score
-            })
+            prop_scores.append(
+                {"property": f"{prop.city} - ${prop.price}", "score": score}
+            )
 
         # Sort by score
-        prop_scores.sort(key=lambda x: x['score'], reverse=True)
+        prop_scores.sort(key=lambda x: x["score"], reverse=True)
 
         # Display as a simple table
         for i, item in enumerate(prop_scores, 1):
@@ -221,7 +239,7 @@ def display_comparison_dashboard(
                     "Download Markdown",
                     data=markdown,
                     file_name="property_comparison.md",
-                    mime="text/markdown"
+                    mime="text/markdown",
                 )
 
         with col2:
@@ -231,7 +249,7 @@ def display_comparison_dashboard(
                     "Download CSV",
                     data=csv_data,
                     file_name="property_comparison.csv",
-                    mime="text/csv"
+                    mime="text/csv",
                 )
 
 
@@ -249,8 +267,6 @@ def display_compact_comparison(properties: List[Property]):
     comparison = PropertyComparison(properties)
 
     # Price comparison
-    price_comp = comparison.get_price_comparison()
-
     cols = st.columns(len(properties))
 
     for prop, col in zip(properties, cols):
@@ -260,10 +276,16 @@ def display_compact_comparison(properties: List[Property]):
             st.write(f"{prop.rooms} bed, {prop.bathrooms} bath")
 
             # Amenity count
-            amenity_count = sum([
-                prop.has_parking, prop.has_garden, prop.has_pool,
-                prop.is_furnished, prop.has_balcony, prop.has_elevator
-            ])
+            amenity_count = sum(
+                [
+                    prop.has_parking,
+                    prop.has_garden,
+                    prop.has_pool,
+                    prop.is_furnished,
+                    prop.has_balcony,
+                    prop.has_elevator,
+                ]
+            )
             st.write(f"✨ {amenity_count}/6 amenities")
 
     # Best value
@@ -274,7 +296,7 @@ def display_compact_comparison(properties: List[Property]):
 def _display_property_card(prop: Property, index: int):
     """Display a single property card."""
     # Color based on index
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']
+    colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b"]
     color = colors[(index - 1) % len(colors)]
 
     # Card HTML
@@ -339,13 +361,28 @@ def _get_property_pros(prop: Property, all_properties: List[Property]) -> List[s
         pros.append(f"Most rooms ({prop.rooms})")
 
     # Amenities
-    amenity_count = sum([
-        prop.has_parking, prop.has_garden, prop.has_pool,
-        prop.is_furnished, prop.has_balcony, prop.has_elevator
-    ])
+    amenity_count = sum(
+        [
+            prop.has_parking,
+            prop.has_garden,
+            prop.has_pool,
+            prop.is_furnished,
+            prop.has_balcony,
+            prop.has_elevator,
+        ]
+    )
 
     max_amenities = max(
-        sum([p.has_parking, p.has_garden, p.has_pool, p.is_furnished, p.has_balcony, p.has_elevator])
+        sum(
+            [
+                p.has_parking,
+                p.has_garden,
+                p.has_pool,
+                p.is_furnished,
+                p.has_balcony,
+                p.has_elevator,
+            ]
+        )
         for p in all_properties
     )
 
@@ -383,10 +420,16 @@ def _get_property_cons(prop: Property, all_properties: List[Property]) -> List[s
         cons.append(f"Fewest rooms ({prop.rooms})")
 
     # Amenities
-    amenity_count = sum([
-        prop.has_parking, prop.has_garden, prop.has_pool,
-        prop.is_furnished, prop.has_balcony, prop.has_elevator
-    ])
+    amenity_count = sum(
+        [
+            prop.has_parking,
+            prop.has_garden,
+            prop.has_pool,
+            prop.is_furnished,
+            prop.has_balcony,
+            prop.has_elevator,
+        ]
+    )
 
     if amenity_count == 0:
         cons.append("No amenities")
@@ -403,14 +446,16 @@ def _get_property_cons(prop: Property, all_properties: List[Property]) -> List[s
     return cons
 
 
-def _export_comparison_markdown(properties: List[Property], comparison: PropertyComparison) -> str:
+def _export_comparison_markdown(
+    properties: List[Property], comparison: PropertyComparison
+) -> str:
     """Export comparison as Markdown."""
-    md = f"# Property Comparison Report\n\n"
+    md = "# Property Comparison Report\n\n"
     md += f"Comparing {len(properties)} properties\n\n"
 
     # Price comparison
     price_comp = comparison.get_price_comparison()
-    md += f"## Price Overview\n\n"
+    md += "## Price Overview\n\n"
     md += f"- **Cheapest**: {price_comp['cheapest']['city']} - ${price_comp['cheapest']['price']:,.0f}\n"
     md += f"- **Most Expensive**: {price_comp['most_expensive']['city']} - ${price_comp['most_expensive']['price']:,.0f}\n"
     md += f"- **Average**: ${price_comp['avg_price']:,.0f}\n"
@@ -418,12 +463,12 @@ def _export_comparison_markdown(properties: List[Property], comparison: Property
 
     # Best value
     best_value = comparison.get_best_value()
-    md += f"## Best Value\n\n"
+    md += "## Best Value\n\n"
     md += f"**{best_value['city']}** (Score: {best_value['value_score']:.2f})\n\n"
     md += f"{best_value['reasoning']}\n\n"
 
     # Individual properties
-    md += f"## Property Details\n\n"
+    md += "## Property Details\n\n"
     for i, prop in enumerate(properties, 1):
         md += f"### {i}. {prop.city}\n\n"
         md += f"- **Price**: ${prop.price:,.0f}/month\n"
@@ -432,7 +477,7 @@ def _export_comparison_markdown(properties: List[Property], comparison: Property
         if prop.area_sqm:
             md += f"- **Area**: {prop.area_sqm} sqm (${prop.price/prop.area_sqm:.2f}/sqm)\n"
 
-        md += f"- **Amenities**: "
+        md += "- **Amenities**: "
         amenities = []
         if prop.has_parking:
             amenities.append("Parking")

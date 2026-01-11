@@ -17,16 +17,16 @@ from ui.price_charts import (
     create_price_distribution_chart,
     create_price_by_location_chart,
     create_price_amenity_scatter,
-    create_price_per_sqm_chart
+    create_price_per_sqm_chart,
 )
-from ui.metrics import display_metrics_row, display_stat_box, format_number
+from ui.metrics import display_metrics_row, display_stat_box
 
 
 def display_market_dashboard(
     properties: PropertyCollection,
     insights: Optional[MarketInsights] = None,
     show_charts: bool = True,
-    show_kpis: bool = True
+    show_kpis: bool = True,
 ):
     """
     Display a comprehensive market dashboard.
@@ -52,31 +52,31 @@ def display_market_dashboard(
         # Prepare metrics
         metrics = [
             {
-                'title': 'Total Properties',
-                'value': f"{stats.total_properties:,}",
-                'icon': '🏠',
-                'help_text': 'Total number of properties in the market'
+                "title": "Total Properties",
+                "value": f"{stats.total_properties:,}",
+                "icon": "🏠",
+                "help_text": "Total number of properties in the market",
             },
             {
-                'title': 'Average Price',
-                'value': f"${stats.average_price:,.0f}",
-                'delta': _format_trend_delta(trend),
-                'delta_color': _get_trend_color(trend),
-                'icon': '💵',
-                'help_text': 'Mean price across all properties'
+                "title": "Average Price",
+                "value": f"${stats.average_price:,.0f}",
+                "delta": _format_trend_delta(trend),
+                "delta_color": _get_trend_color(trend),
+                "icon": "💵",
+                "help_text": "Mean price across all properties",
             },
             {
-                'title': 'Median Price',
-                'value': f"${stats.median_price:,.0f}",
-                'icon': '📊',
-                'help_text': 'Middle value - less affected by outliers'
+                "title": "Median Price",
+                "value": f"${stats.median_price:,.0f}",
+                "icon": "📊",
+                "help_text": "Middle value - less affected by outliers",
             },
             {
-                'title': 'Price Range',
-                'value': f"${stats.min_price:.0f} - ${stats.max_price:.0f}",
-                'icon': '📏',
-                'help_text': 'Minimum to maximum price'
-            }
+                "title": "Price Range",
+                "value": f"${stats.min_price:.0f} - ${stats.max_price:.0f}",
+                "icon": "📏",
+                "help_text": "Minimum to maximum price",
+            },
         ]
 
         display_metrics_row(metrics, columns=4)
@@ -93,36 +93,36 @@ def display_market_dashboard(
             display_stat_box(
                 title="Avg Rooms",
                 value=f"{stats.avg_rooms:.1f}",
-                subtitle=f"rooms per property",
+                subtitle="rooms per property",
                 icon="🛏️",
-                color="#1f77b4"
+                color="#1f77b4",
             )
 
         with col2:
             display_stat_box(
                 title="With Parking",
                 value=f"{stats.parking_percentage:.0f}%",
-                subtitle=f"properties have parking",
+                subtitle="properties have parking",
                 icon="🚗",
-                color="#2ca02c"
+                color="#2ca02c",
             )
 
         with col3:
             display_stat_box(
                 title="With Garden",
                 value=f"{stats.garden_percentage:.0f}%",
-                subtitle=f"properties have gardens",
+                subtitle="properties have gardens",
                 icon="🌳",
-                color="#ff7f0e"
+                color="#ff7f0e",
             )
 
         with col4:
             display_stat_box(
                 title="Furnished",
                 value=f"{stats.furnished_percentage:.0f}%",
-                subtitle=f"properties are furnished",
+                subtitle="properties are furnished",
                 icon="🛋️",
-                color="#d62728"
+                color="#d62728",
             )
 
         st.divider()
@@ -169,15 +169,11 @@ def display_market_dashboard(
 
                 if city_insights:
                     st.markdown(f"**{city}**")
-                    st.metric(
-                        label="Properties",
-                        value=count,
-                        delta=None
-                    )
+                    st.metric(label="Properties", value=count, delta=None)
                     st.metric(
                         label="Avg Price",
                         value=f"${city_insights.avg_price:,.0f}",
-                        delta=None
+                        delta=None,
                     )
 
                     # Price comparison badge
@@ -197,7 +193,7 @@ def display_market_dashboard(
             TrendDirection.INCREASING: "📈",
             TrendDirection.DECREASING: "📉",
             TrendDirection.STABLE: "➡️",
-            TrendDirection.INSUFFICIENT_DATA: "❓"
+            TrendDirection.INSUFFICIENT_DATA: "❓",
         }
 
         st.write(
@@ -236,7 +232,9 @@ def display_market_dashboard(
 
         if amenity_impact:
             # Sort by impact
-            sorted_amenities = sorted(amenity_impact.items(), key=lambda x: x[1], reverse=True)
+            sorted_amenities = sorted(
+                amenity_impact.items(), key=lambda x: x[1], reverse=True
+            )
 
             for amenity, impact in sorted_amenities:
                 col1, col2 = st.columns([3, 1])
@@ -251,8 +249,7 @@ def display_market_dashboard(
 
 
 def display_compact_dashboard(
-    properties: PropertyCollection,
-    insights: Optional[MarketInsights] = None
+    properties: PropertyCollection, insights: Optional[MarketInsights] = None
 ):
     """
     Display a compact version of the market dashboard.
@@ -271,7 +268,11 @@ def display_compact_dashboard(
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.metric("Total Properties", f"{stats.total_properties:,}", help="Number of properties")
+        st.metric(
+            "Total Properties",
+            f"{stats.total_properties:,}",
+            help="Number of properties",
+        )
 
     with col2:
         st.metric("Average Price", f"${stats.average_price:,.0f}", help="Mean price")
@@ -306,7 +307,7 @@ def display_location_comparison_dashboard(
     properties: PropertyCollection,
     city1: str,
     city2: str,
-    insights: Optional[MarketInsights] = None
+    insights: Optional[MarketInsights] = None,
 ):
     """
     Display a dashboard comparing two locations.
@@ -326,8 +327,8 @@ def display_location_comparison_dashboard(
     # Get comparison data
     comparison = insights.compare_locations(city1, city2)
 
-    if 'error' in comparison:
-        st.error(comparison['error'])
+    if "error" in comparison:
+        st.error(comparison["error"])
         return
 
     # Display comparison metrics
@@ -335,7 +336,7 @@ def display_location_comparison_dashboard(
 
     with col1:
         st.markdown(f"#### {city1}")
-        st.metric("Properties", comparison['city1']['property_count'])
+        st.metric("Properties", comparison["city1"]["property_count"])
         st.metric("Avg Price", f"${comparison['city1']['avg_price']:,.0f}")
         st.metric("Median Price", f"${comparison['city1']['median_price']:,.0f}")
 
@@ -344,22 +345,22 @@ def display_location_comparison_dashboard(
         st.metric(
             "Price Difference",
             f"${abs(comparison['price_difference']):,.0f}",
-            delta=f"{comparison['price_difference_percent']:+.1f}%"
+            delta=f"{comparison['price_difference_percent']:+.1f}%",
         )
         st.markdown(f"**Cheaper:** {comparison['cheaper_city']}")
         st.markdown(f"**More Properties:** {comparison['more_properties']}")
 
     with col3:
         st.markdown(f"#### {city2}")
-        st.metric("Properties", comparison['city2']['property_count'])
+        st.metric("Properties", comparison["city2"]["property_count"])
         st.metric("Avg Price", f"${comparison['city2']['avg_price']:,.0f}")
         st.metric("Median Price", f"${comparison['city2']['median_price']:,.0f}")
 
     # Amenity comparison
     st.markdown("#### 🛠️ Amenity Availability")
 
-    amenities1 = comparison['city1']['amenity_availability']
-    amenities2 = comparison['city2']['amenity_availability']
+    amenities1 = comparison["city1"]["amenity_availability"]
+    amenities2 = comparison["city2"]["amenity_availability"]
 
     for amenity in amenities1.keys():
         col1, col2, col3 = st.columns([2, 1, 1])

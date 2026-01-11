@@ -6,7 +6,7 @@ the user experience and understand usage patterns.
 """
 
 from typing import List, Dict, Any, Optional
-from datetime import datetime, timedelta
+from datetime import datetime
 from pydantic import BaseModel, Field
 from enum import Enum
 import json
@@ -16,6 +16,7 @@ from collections import Counter
 
 class EventType(str, Enum):
     """Types of tracked events."""
+
     QUERY = "query"
     PROPERTY_VIEW = "property_view"
     SEARCH = "search"
@@ -28,6 +29,7 @@ class EventType(str, Enum):
 
 class SessionEvent(BaseModel):
     """A single tracked event."""
+
     event_type: EventType
     timestamp: datetime = Field(default_factory=datetime.now)
     data: Dict[str, Any] = Field(default_factory=dict)
@@ -36,6 +38,7 @@ class SessionEvent(BaseModel):
 
 class SessionStats(BaseModel):
     """Statistics for a session."""
+
     session_id: str
     start_time: datetime
     end_time: Optional[datetime] = None
@@ -58,11 +61,7 @@ class SessionTracker:
     and usage patterns.
     """
 
-    def __init__(
-        self,
-        session_id: str,
-        storage_path: str = ".analytics"
-    ):
+    def __init__(self, session_id: str, storage_path: str = ".analytics") -> None:
         """
         Initialize session tracker.
 
@@ -84,8 +83,8 @@ class SessionTracker:
         self,
         event_type: EventType,
         data: Optional[Dict[str, Any]] = None,
-        duration_ms: Optional[int] = None
-    ):
+        duration_ms: Optional[int] = None,
+    ) -> None:
         """
         Track a user event.
 
@@ -95,9 +94,7 @@ class SessionTracker:
             duration_ms: Optional event duration in milliseconds
         """
         event = SessionEvent(
-            event_type=event_type,
-            data=data or {},
-            duration_ms=duration_ms
+            event_type=event_type, data=data or {}, duration_ms=duration_ms
         )
         self.events.append(event)
 
@@ -110,117 +107,72 @@ class SessionTracker:
         query: str,
         intent: Optional[str] = None,
         complexity: Optional[str] = None,
-        processing_time_ms: Optional[int] = None
-    ):
+        processing_time_ms: Optional[int] = None,
+    ) -> None:
         """Track a user query."""
         self.track_event(
             EventType.QUERY,
-            data={
-                'query': query,
-                'intent': intent,
-                'complexity': complexity
-            },
-            duration_ms=processing_time_ms
+            data={"query": query, "intent": intent, "complexity": complexity},
+            duration_ms=processing_time_ms,
         )
 
     def track_property_view(
         self,
         property_id: str,
         property_city: Optional[str] = None,
-        property_price: Optional[float] = None
-    ):
+        property_price: Optional[float] = None,
+    ) -> None:
         """Track a property view."""
         self.track_event(
             EventType.PROPERTY_VIEW,
             data={
-                'property_id': property_id,
-                'city': property_city,
-                'price': property_price
-            }
+                "property_id": property_id,
+                "city": property_city,
+                "price": property_price,
+            },
         )
 
-    def track_search(
-        self,
-        search_criteria: Dict[str, Any],
-        results_count: int
-    ):
+    def track_search(self, search_criteria: Dict[str, Any], results_count: int) -> None:
         """Track a search operation."""
         self.track_event(
             EventType.SEARCH,
-            data={
-                'criteria': search_criteria,
-                'results_count': results_count
-            }
+            data={"criteria": search_criteria, "results_count": results_count},
         )
 
-    def track_export(
-        self,
-        format: str,
-        property_count: int
-    ):
+    def track_export(self, format: str, property_count: int) -> None:
         """Track an export operation."""
         self.track_event(
-            EventType.EXPORT,
-            data={
-                'format': format,
-                'property_count': property_count
-            }
+            EventType.EXPORT, data={"format": format, "property_count": property_count}
         )
 
     def track_favorite(
-        self,
-        property_id: str,
-        action: str  # "add" or "remove"
-    ):
+        self, property_id: str, action: str  # "add" or "remove"
+    ) -> None:
         """Track a favorite operation."""
         self.track_event(
-            EventType.FAVORITE,
-            data={
-                'property_id': property_id,
-                'action': action
-            }
+            EventType.FAVORITE, data={"property_id": property_id, "action": action}
         )
 
-    def track_model_change(
-        self,
-        old_model: Optional[str],
-        new_model: str
-    ):
+    def track_model_change(self, old_model: Optional[str], new_model: str) -> None:
         """Track a model change."""
         self.track_event(
             EventType.MODEL_CHANGE,
-            data={
-                'old_model': old_model,
-                'new_model': new_model
-            }
+            data={"old_model": old_model, "new_model": new_model},
         )
 
     def track_tool_use(
-        self,
-        tool_name: str,
-        parameters: Optional[Dict[str, Any]] = None
-    ):
+        self, tool_name: str, parameters: Optional[Dict[str, Any]] = None
+    ) -> None:
         """Track tool usage."""
         self.track_event(
-            EventType.TOOL_USE,
-            data={
-                'tool_name': tool_name,
-                'parameters': parameters
-            }
+            EventType.TOOL_USE, data={"tool_name": tool_name, "parameters": parameters}
         )
 
-    def track_error(
-        self,
-        error_type: str,
-        error_message: str
-    ):
+    def track_error(self, error_type: str, error_message: str) -> None:
         """Track an error."""
         self.track_event(
             EventType.ERROR,
-            data={
-                'error_type': error_type,
-                'error_message': error_message
-            }
+            data={"error_type": error_type, "error_message": error_message},
         )
 
     def get_session_stats(self) -> SessionStats:
@@ -231,20 +183,32 @@ class SessionTracker:
             SessionStats with aggregated metrics
         """
         query_events = [e for e in self.events if e.event_type == EventType.QUERY]
-        property_view_events = [e for e in self.events if e.event_type == EventType.PROPERTY_VIEW]
+        property_view_events = [
+            e for e in self.events if e.event_type == EventType.PROPERTY_VIEW
+        ]
         search_events = [e for e in self.events if e.event_type == EventType.SEARCH]
         export_events = [e for e in self.events if e.event_type == EventType.EXPORT]
         favorite_events = [e for e in self.events if e.event_type == EventType.FAVORITE]
-        model_change_events = [e for e in self.events if e.event_type == EventType.MODEL_CHANGE]
+        model_change_events = [
+            e for e in self.events if e.event_type == EventType.MODEL_CHANGE
+        ]
         tool_events = [e for e in self.events if e.event_type == EventType.TOOL_USE]
         error_events = [e for e in self.events if e.event_type == EventType.ERROR]
 
         # Unique models used
-        models = [e.data.get('new_model') for e in model_change_events if e.data.get('new_model')]
+        models: list[str] = []
+        for e in model_change_events:
+            new_model = e.data.get("new_model")
+            if isinstance(new_model, str) and new_model:
+                models.append(new_model)
         unique_models = list(set(models))
 
         # Tools used
-        tools = [e.data.get('tool_name') for e in tool_events if e.data.get('tool_name')]
+        tools: list[str] = []
+        for e in tool_events:
+            tool_name = e.data.get("tool_name")
+            if isinstance(tool_name, str) and tool_name:
+                tools.append(tool_name)
 
         # Calculate duration
         session_end = self.events[-1].timestamp if self.events else datetime.now()
@@ -264,7 +228,7 @@ class SessionTracker:
             unique_models_used=unique_models,
             tools_used=tools,
             errors_encountered=len(error_events),
-            total_duration_minutes=duration_minutes
+            total_duration_minutes=duration_minutes,
         )
 
     def get_popular_queries(self, top_n: int = 5) -> List[Dict[str, Any]]:
@@ -280,11 +244,15 @@ class SessionTracker:
         query_events = [e for e in self.events if e.event_type == EventType.QUERY]
 
         # Group by intent
-        intents = [e.data.get('intent') for e in query_events if e.data.get('intent')]
+        intents: list[str] = []
+        for e in query_events:
+            intent = e.data.get("intent")
+            if isinstance(intent, str) and intent:
+                intents.append(intent)
         intent_counts = Counter(intents)
 
         return [
-            {'intent': intent, 'count': count}
+            {"intent": intent, "count": count}
             for intent, count in intent_counts.most_common(top_n)
         ]
 
@@ -298,76 +266,99 @@ class SessionTracker:
         Returns:
             Average duration in milliseconds or None
         """
-        events = [e for e in self.events if e.event_type == event_type and e.duration_ms is not None]
+        durations: list[int] = [
+            e.duration_ms
+            for e in self.events
+            if e.event_type == event_type and e.duration_ms is not None
+        ]
 
-        if not events:
+        if not durations:
             return None
 
-        return sum(e.duration_ms for e in events) / len(events)
+        return sum(durations) / len(durations)
 
-    def _save_session(self):
+    def _save_session(self) -> None:
         """Save session data to disk."""
         session_data = {
-            'session_id': self.session_id,
-            'session_start': self.session_start.isoformat(),
-            'events': [
+            "session_id": self.session_id,
+            "session_start": self.session_start.isoformat(),
+            "events": [
                 {
-                    'event_type': e.event_type.value,
-                    'timestamp': e.timestamp.isoformat(),
-                    'data': e.data,
-                    'duration_ms': e.duration_ms
+                    "event_type": e.event_type.value,
+                    "timestamp": e.timestamp.isoformat(),
+                    "data": e.data,
+                    "duration_ms": e.duration_ms,
                 }
                 for e in self.events
             ],
-            'stats': self.get_session_stats().dict()
+            "stats": self.get_session_stats().dict(),
         }
 
-        with open(self.session_file, 'w') as f:
+        with open(self.session_file, "w") as f:
             json.dump(session_data, f, indent=2, default=str)
 
         # Update aggregate stats
         self._update_aggregate_stats()
 
-    def _update_aggregate_stats(self):
+    def _update_aggregate_stats(self) -> None:
         """Update aggregate statistics across all sessions."""
         # Load existing aggregate stats
+        aggregate: dict[str, Any]
         if self.aggregate_file.exists():
-            with open(self.aggregate_file, 'r') as f:
-                aggregate = json.load(f)
+            with open(self.aggregate_file, "r") as f:
+                loaded = json.load(f)
+                aggregate = loaded if isinstance(loaded, dict) else {}
         else:
             aggregate = {
-                'total_sessions': 0,
-                'total_queries': 0,
-                'total_property_views': 0,
-                'total_exports': 0,
-                'popular_intents': {},
-                'popular_tools': {},
-                'last_updated': None
+                "total_sessions": 0,
+                "total_queries": 0,
+                "total_property_views": 0,
+                "total_exports": 0,
+                "popular_intents": {},
+                "popular_tools": {},
+                "last_updated": None,
             }
 
         # Update with current session
         stats = self.get_session_stats()
-        aggregate['total_sessions'] += 1
-        aggregate['total_queries'] += stats.total_queries
-        aggregate['total_property_views'] += stats.total_property_views
-        aggregate['total_exports'] += stats.total_exports
+        aggregate["total_sessions"] = int(aggregate.get("total_sessions", 0)) + 1
+        aggregate["total_queries"] = (
+            int(aggregate.get("total_queries", 0)) + stats.total_queries
+        )
+        aggregate["total_property_views"] = (
+            int(aggregate.get("total_property_views", 0)) + stats.total_property_views
+        )
+        aggregate["total_exports"] = (
+            int(aggregate.get("total_exports", 0)) + stats.total_exports
+        )
 
         # Update popular intents
+        popular_intents = aggregate.get("popular_intents")
+        if not isinstance(popular_intents, dict):
+            popular_intents = {}
+            aggregate["popular_intents"] = popular_intents
         for query_stat in self.get_popular_queries(top_n=100):
-            intent = query_stat['intent']
-            aggregate['popular_intents'][intent] = aggregate['popular_intents'].get(intent, 0) + query_stat['count']
+            intent = query_stat["intent"]
+            if isinstance(intent, str):
+                popular_intents[intent] = int(popular_intents.get(intent, 0)) + int(
+                    query_stat["count"]
+                )
 
         # Update popular tools
+        popular_tools = aggregate.get("popular_tools")
+        if not isinstance(popular_tools, dict):
+            popular_tools = {}
+            aggregate["popular_tools"] = popular_tools
         for tool in stats.tools_used:
-            aggregate['popular_tools'][tool] = aggregate['popular_tools'].get(tool, 0) + 1
+            popular_tools[tool] = int(popular_tools.get(tool, 0)) + 1
 
-        aggregate['last_updated'] = datetime.now().isoformat()
+        aggregate["last_updated"] = datetime.now().isoformat()
 
         # Save aggregate
-        with open(self.aggregate_file, 'w') as f:
+        with open(self.aggregate_file, "w") as f:
             json.dump(aggregate, f, indent=2, default=str)
 
-    def finalize_session(self):
+    def finalize_session(self) -> None:
         """Finalize and save the session."""
         self._save_session()
 
@@ -386,10 +377,11 @@ class SessionTracker:
 
         if not aggregate_file.exists():
             return {
-                'total_sessions': 0,
-                'total_queries': 0,
-                'message': 'No analytics data available yet'
+                "total_sessions": 0,
+                "total_queries": 0,
+                "message": "No analytics data available yet",
             }
 
-        with open(aggregate_file, 'r') as f:
-            return json.load(f)
+        with open(aggregate_file, "r") as f:
+            loaded = json.load(f)
+            return loaded if isinstance(loaded, dict) else {}

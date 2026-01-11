@@ -5,34 +5,43 @@ This module provides a persistent vector store for property embeddings
 using ChromaDB with FastEmbed embeddings.
 """
 
-import os
+from __future__ import annotations
+
 import logging
-from pathlib import Path
-from typing import List, Optional, Dict, Any
-from datetime import datetime
+import os
 import platform
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, cast
+
 import pandas as pd
 
 import streamlit as st
+from config.settings import settings
+from data.schemas import Property, PropertyCollection
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
+from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
+from langchain_core.retrievers import BaseRetriever
+
+ChromaSettings: type[Any] | None
 try:
-    from chromadb.config import Settings as ChromaSettings
+    from chromadb.config import Settings as _ChromaSettingsClass
+
+    ChromaSettings = _ChromaSettingsClass
 except Exception:
     ChromaSettings = None
-from langchain_core.documents import Document
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_core.retrievers import BaseRetriever
+
+FastEmbedEmbeddings: type[Any] | None
 try:
-    from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
+    from langchain_community.embeddings.fastembed import (
+        FastEmbedEmbeddings as _FastEmbedEmbeddingsClass,
+    )
+
+    FastEmbedEmbeddings = _FastEmbedEmbeddingsClass
 except Exception:
     FastEmbedEmbeddings = None
-try:
-    from langchain_community.vectorstores.utils import filter_complex_metadata
-except Exception:
-    filter_complex_metadata = None
-
-from data.schemas import Property, PropertyCollection
-from config.settings import settings
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -53,8 +62,8 @@ class ChromaPropertyStore:
         self,
         persist_directory: Optional[str] = None,
         collection_name: str = "properties",
-        embedding_model: str = "BAAI/bge-small-en-v1.5"
-    ):
+        embedding_model: str = "BAAI/bge-small-en-v1.5",
+    ) -> None:
         """
         Initialize ChromaDB vector store.
 
@@ -74,10 +83,10 @@ class ChromaPropertyStore:
         self.persist_directory.mkdir(parents=True, exist_ok=True)
 
         # Initialize embeddings
-        self.embeddings = self._create_embeddings(embedding_model)
+        self.embeddings: Embeddings | None = self._create_embeddings(embedding_model)
 
         # Initialize or load vector store
-        self.vector_store = self._initialize_vector_store()
+        self.vector_store: Chroma | None = self._initialize_vector_store()
 
         # Text splitter for long descriptions
         self.text_splitter = RecursiveCharacterTextSplitter(
@@ -90,30 +99,37 @@ class ChromaPropertyStore:
         self._doc_ids: set[str] = set()
 
     @st.cache_resource
-    def _create_embeddings(_self, model_name: str):
+    def _create_embeddings(_self, model_name: str) -> Embeddings | None:
         try:
             is_windows = platform.system().lower() == "windows"
-            force_fastembed = os.getenv("CHROMA_FORCE_FASTEMBED") == "1" or os.getenv("FORCE_FASTEMBED") == "1"
+            force_fastembed = (
+                os.getenv("CHROMA_FORCE_FASTEMBED") == "1"
+                or os.getenv("FORCE_FASTEMBED") == "1"
+            )
             if FastEmbedEmbeddings is not None and not is_windows:
-                return FastEmbedEmbeddings(model_name=model_name)
+                return cast(Embeddings, FastEmbedEmbeddings(model_name=model_name))
             elif FastEmbedEmbeddings is not None and is_windows and force_fastembed:
-                return FastEmbedEmbeddings(model_name=model_name)
+                return cast(Embeddings, FastEmbedEmbeddings(model_name=model_name))
             elif FastEmbedEmbeddings is not None and is_windows:
-                st.warning("FastEmbed is disabled on Windows for stability. Set CHROMA_FORCE_FASTEMBED=1 to force enable.")
+                st.warning(
+                    "FastEmbed is disabled on Windows for stability. Set CHROMA_FORCE_FASTEMBED=1 to force enable."
+                )
         except Exception as e:
             st.warning(f"FastEmbed initialization failed: {e}")
 
         try:
             from config import settings
+
             if settings.openai_api_key:
                 from langchain_openai import OpenAIEmbeddings
-                return OpenAIEmbeddings()
+
+                return cast(Embeddings, OpenAIEmbeddings())
         except Exception as e:
             st.warning(f"OpenAI embeddings unavailable: {e}")
 
         return None
 
-    def _initialize_vector_store(self) -> Chroma:
+    def _initialize_vector_store(self) -> Chroma | None:
         """Initialize or load existing ChromaDB vector store."""
         if self.embeddings is None:
             st.warning("Embeddings unavailable; vector store features are disabled")
@@ -137,7 +153,9 @@ class ChromaPropertyStore:
 
                 # Check if collection has any documents
                 collection_stats = vector_store._collection.count()
-                logger.info(f"Loaded existing ChromaDB collection with {collection_stats} documents")
+                logger.info(
+                    f"Loaded existing ChromaDB collection with {collection_stats} documents"
+                )
                 try:
                     existing = vector_store._collection.get(include=[], limit=None)
                     for _id in existing.get("ids", []) or []:
@@ -151,7 +169,9 @@ class ChromaPropertyStore:
                     collection_name=self.collection_name,
                     embedding_function=self.embeddings,
                 )
-                logger.info("Using in-memory Chroma vector store (persistence disabled for this platform)")
+                logger.info(
+                    "Using in-memory Chroma vector store (persistence disabled for this platform)"
+                )
                 st.warning("Persistent vector store unavailable; using in-memory store")
                 try:
                     existing = vector_store._collection.get(include=[], limit=None)
@@ -170,7 +190,9 @@ class ChromaPropertyStore:
                     collection_name=self.collection_name,
                     embedding_function=self.embeddings,
                 )
-                logger.info("Initialized in-memory Chroma vector store (no persistence)")
+                logger.info(
+                    "Initialized in-memory Chroma vector store (no persistence)"
+                )
                 st.warning("Persistent vector store unavailable; using in-memory store")
                 try:
                     existing = vector_store._collection.get(include=[], limit=None)
@@ -197,10 +219,11 @@ class ChromaPropertyStore:
         text = property.to_search_text()
 
         # Create metadata (must be JSON-serializable)
-        def _nf(x):
+        def _nf(x: Any) -> float | None:
             return float(x) if (x is not None and not pd.isna(x)) else None
 
-        metadata = {
+        PrimitiveMetadata = str | int | float | bool | None
+        metadata: dict[str, PrimitiveMetadata] = {
             "id": property.id or "unknown",
             "country": getattr(property, "country", None),
             "region": getattr(property, "region", None),
@@ -216,8 +239,16 @@ class ChromaPropertyStore:
             "has_pool": property.has_pool,
             "has_garage": property.has_garage,
             "has_elevator": property.has_elevator,
-            "property_type": property.property_type.value if hasattr(property.property_type, "value") else str(property.property_type),
-            "listing_type": property.listing_type.value if hasattr(property.listing_type, "value") else str(property.listing_type),
+            "property_type": (
+                property.property_type.value
+                if hasattr(property.property_type, "value")
+                else str(property.property_type)
+            ),
+            "listing_type": (
+                property.listing_type.value
+                if hasattr(property.listing_type, "value")
+                else str(property.listing_type)
+            ),
             "source_url": property.source_url or "",
             "lat": _nf(getattr(property, "latitude", None)),
             "lon": _nf(getattr(property, "longitude", None)),
@@ -234,10 +265,14 @@ class ChromaPropertyStore:
             metadata["price_per_sqm"] = float(property.price_per_sqm)
 
         if property.negotiation_rate:
-            metadata["negotiation_rate"] = property.negotiation_rate.value if hasattr(property.negotiation_rate, "value") else str(property.negotiation_rate)
+            metadata["negotiation_rate"] = (
+                property.negotiation_rate.value
+                if hasattr(property.negotiation_rate, "value")
+                else str(property.negotiation_rate)
+            )
 
         # Sanitize metadata: only primitives (str, int, float, bool, None); convert datetimes
-        def _sanitize_val(v: Any) -> Any:
+        def _sanitize_val(v: Any) -> PrimitiveMetadata:
             try:
                 if v is None:
                     return None
@@ -255,7 +290,7 @@ class ChromaPropertyStore:
             except Exception:
                 return None
 
-        sanitized = {}
+        sanitized: dict[str, PrimitiveMetadata] = {}
         for k, v in metadata.items():
             sv = _sanitize_val(v)
             if sv is not None or v is None:
@@ -263,16 +298,9 @@ class ChromaPropertyStore:
 
         metadata = sanitized
 
-        return Document(
-            page_content=text,
-            metadata=metadata
-        )
+        return Document(page_content=text, metadata=metadata)
 
-    def add_properties(
-        self,
-        properties: List[Property],
-        batch_size: int = 100
-    ) -> int:
+    def add_properties(self, properties: List[Property], batch_size: int = 100) -> int:
         """
         Add properties to the vector store.
 
@@ -305,25 +333,25 @@ class ChromaPropertyStore:
 
         # If vector store is unavailable, keep documents in fallback cache only
         if self.vector_store is None:
-            logger.info(f"Vector store disabled; cached {len(documents)} properties in memory")
+            logger.info(
+                f"Vector store disabled; cached {len(documents)} properties in memory"
+            )
             return len(documents)
 
         # Add documents in batches
         total_added = 0
         for i in range(0, len(documents), batch_size):
-            batch = documents[i:i + batch_size]
+            batch = documents[i : i + batch_size]
 
             try:
-                cleaned_batch: List[Document] = []
-                for d in batch:
-                    if filter_complex_metadata is not None:
-                        md = filter_complex_metadata(d.metadata)
-                        d = Document(page_content=d.page_content, metadata=md)
-                    cleaned_batch.append(d)
-                ids = [str(d.metadata.get("id", f"doc-{i+j}")) for j, d in enumerate(cleaned_batch)]
-                self.vector_store.add_documents(cleaned_batch, ids=ids)
+                ids = [
+                    str(d.metadata.get("id", f"doc-{i+j}")) for j, d in enumerate(batch)
+                ]
+                self.vector_store.add_documents(batch, ids=ids)
                 total_added += len(batch)
-                logger.info(f"Added batch {i // batch_size + 1}: {len(batch)} properties")
+                logger.info(
+                    f"Added batch {i // batch_size + 1}: {len(batch)} properties"
+                )
 
             except Exception as e:
                 logger.error(f"Error adding batch: {e}")
@@ -337,9 +365,7 @@ class ChromaPropertyStore:
             return len(documents)
 
     def add_property_collection(
-        self,
-        collection: PropertyCollection,
-        replace_existing: bool = False
+        self, collection: PropertyCollection, replace_existing: bool = False
     ) -> int:
         """
         Add a PropertyCollection to the vector store.
@@ -361,7 +387,7 @@ class ChromaPropertyStore:
         query: str,
         k: int = 5,
         filter: Optional[Dict[str, Any]] = None,
-        **kwargs
+        **kwargs: Any,
     ) -> List[tuple[Document, float]]:
         """
         Search for properties by semantic similarity.
@@ -378,10 +404,7 @@ class ChromaPropertyStore:
         try:
             if self.vector_store is not None:
                 results = self.vector_store.similarity_search_with_score(
-                    query=query,
-                    k=k,
-                    filter=filter,
-                    **kwargs
+                    query=query, k=k, filter=filter, **kwargs
                 )
                 return results
             else:
@@ -408,7 +431,7 @@ class ChromaPropertyStore:
         max_price: Optional[float] = None,
         min_rooms: Optional[float] = None,
         has_parking: Optional[bool] = None,
-        k: int = 5
+        k: int = 5,
     ) -> List[Document]:
         """
         Search properties by metadata filters.
@@ -424,7 +447,7 @@ class ChromaPropertyStore:
         Returns:
             List of matching documents
         """
-        filter_dict = {}
+        filter_dict: dict[str, Any] = {}
 
         if city:
             filter_dict["city"] = city
@@ -434,10 +457,13 @@ class ChromaPropertyStore:
 
         # Note: ChromaDB has limited support for range queries
         # For complex filtering, retrieve more results and filter in Python
+        if self.vector_store is None:
+            return []
+
         results = self.vector_store.similarity_search(
             query="",  # Empty query for metadata-only search
             k=k * 5,  # Retrieve more for filtering
-            filter=filter_dict if filter_dict else None
+            filter=filter_dict if filter_dict else None,
         )
 
         # Apply additional filters
@@ -448,7 +474,10 @@ class ChromaPropertyStore:
             # Price filters
             if min_price is not None and metadata.get("price", 0) < min_price:
                 continue
-            if max_price is not None and metadata.get("price", float('inf')) > max_price:
+            if (
+                max_price is not None
+                and metadata.get("price", float("inf")) > max_price
+            ):
                 continue
 
             # Rooms filter
@@ -463,12 +492,8 @@ class ChromaPropertyStore:
         return filtered
 
     def get_retriever(
-        self,
-        search_type: str = "mmr",
-        k: int = 5,
-        fetch_k: int = 20,
-        **kwargs
-    ):
+        self, search_type: str = "mmr", k: int = 5, fetch_k: int = 20, **kwargs: Any
+    ) -> BaseRetriever:
         """
         Get a LangChain retriever for this vector store.
 
@@ -484,19 +509,24 @@ class ChromaPropertyStore:
         stats = self.get_stats()
         total = stats.get("total_documents", 0)
         if self.vector_store is not None and total > 0:
-            return self.vector_store.as_retriever(
+            retriever = self.vector_store.as_retriever(
                 search_type=search_type,
                 search_kwargs={
                     "k": k,
                     "fetch_k": fetch_k,
-                    **kwargs
-                }
+                    **kwargs,
+                },
             )
+            return cast(BaseRetriever, retriever)
         else:
+
             class FallbackRetriever(BaseRetriever):
                 docs: List[Document]
                 kk: int
-                def get_relevant_documents(self, query: str) -> List[Document]:
+
+                def _get_relevant_documents(
+                    self, query: str, *, run_manager: Any = None
+                ) -> List[Document]:
                     q = [t for t in query.lower().split() if t]
                     scored: List[tuple[Document, float]] = []
                     for d in self.docs:
@@ -505,10 +535,11 @@ class ChromaPropertyStore:
                         if s > 0:
                             scored.append((d, s))
                     scored.sort(key=lambda x: x[1], reverse=True)
-                    return [d for d, _s in scored[:self.kk]]
+                    return [d for d, _s in scored[: self.kk]]
+
             return FallbackRetriever(docs=self._documents, kk=k)
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear all documents from the vector store."""
         try:
             if self.vector_store is not None:
@@ -537,13 +568,19 @@ class ChromaPropertyStore:
             else:
                 count = len(self._documents)
 
-            emb_cls = type(self.embeddings).__name__ if self.embeddings is not None else "None"
+            emb_cls = (
+                type(self.embeddings).__name__
+                if self.embeddings is not None
+                else "None"
+            )
             if "OpenAIEmbeddings" in emb_cls:
                 emb_provider = "openai"
                 emb_model = getattr(self.embeddings, "model", "openai")
             elif "FastEmbedEmbeddings" in emb_cls:
                 emb_provider = "fastembed"
-                emb_model = getattr(self.embeddings, "model_name", "BAAI/bge-small-en-v1.5")
+                emb_model = getattr(
+                    self.embeddings, "model_name", "BAAI/bge-small-en-v1.5"
+                )
             else:
                 emb_provider = "none"
                 emb_model = "none"
@@ -558,7 +595,7 @@ class ChromaPropertyStore:
         except Exception as e:
             return {"error": str(e), "total_documents": len(self._documents)}
 
-    def delete_by_source(self, source_url: str):
+    def delete_by_source(self, source_url: str) -> None:
         """
         Delete all properties from a specific source.
 
@@ -566,9 +603,9 @@ class ChromaPropertyStore:
             source_url: Source URL to filter by
         """
         try:
-            self.vector_store.delete(
-                filter={"source_url": source_url}
-            )
+            if self.vector_store is None:
+                return
+            self.vector_store.delete(filter={"source_url": source_url})
             logger.info(f"Deleted properties from source: {source_url}")
 
         except Exception as e:

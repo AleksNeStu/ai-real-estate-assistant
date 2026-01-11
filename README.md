@@ -11,6 +11,15 @@
 > Note: Version 3 (V3) is under active development. Bugs and behavior changes may occur.
 > For a stable, non-evolving release, please use the V2 branch: https://github.com/AleksNeStu/ai-real-estate-assistant/tree/ver2
 
+## 🧭 Versions
+
+| Version | Branch | Status | UI | Notes |
+|---:|---|---|---|---|
+| v1 | — | historical | Streamlit | Early prototype (basic search/chat). |
+| v2 | `ver2` | stable | Streamlit | Stable baseline. |
+| v3 | `ver3` | latest working | Streamlit | Current working version; improvements and fixes land here. |
+| v4 | `ver4` | in progress | new stack | Migration from Streamlit to a separate frontend + backend API; service separation and new deployment paths. |
+
 ## 🌟 Overview
 
 The AI Real Estate Assistant is a conversational AI application that helps users find their ideal properties through natural language interaction. The modern version (V3) features intelligent query understanding, multi-provider AI model support, sophisticated search capabilities, and a completely modernized UI with dark mode support.

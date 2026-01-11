@@ -189,6 +189,9 @@ node_modules/
 package-lock.json
 yarn.lock
 
+# Frontend workspace (v4 migration)
+frontend/
+
 # Build artifacts
 *.min.css
 *.min.js

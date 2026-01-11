@@ -20,15 +20,15 @@ class EmailTemplate:
 
     # Common color scheme
     COLORS = {
-        'primary': '#1f77b4',
-        'success': '#2ca02c',
-        'warning': '#ff7f0e',
-        'danger': '#d62728',
-        'text': '#333333',
-        'text_light': '#666666',
-        'background': '#f8f9fa',
-        'white': '#ffffff',
-        'border': '#e0e0e0'
+        "primary": "#1f77b4",
+        "success": "#2ca02c",
+        "warning": "#ff7f0e",
+        "danger": "#d62728",
+        "text": "#333333",
+        "text_light": "#666666",
+        "background": "#f8f9fa",
+        "white": "#ffffff",
+        "border": "#e0e0e0",
     }
 
     @staticmethod
@@ -148,7 +148,7 @@ class EmailTemplate:
     @staticmethod
     def _property_card(prop: Property, highlight_color: Optional[str] = None) -> str:
         """Generate HTML card for a property."""
-        border_color = highlight_color or EmailTemplate.COLORS['border']
+        border_color = highlight_color or EmailTemplate.COLORS["border"]
 
         area_text = f"{prop.area_sqm} sqm" if prop.area_sqm else "Area not specified"
 
@@ -179,8 +179,7 @@ class PriceDropTemplate(EmailTemplate):
 
     @staticmethod
     def render(
-        property_info: Dict[str, Any],
-        user_name: Optional[str] = None
+        property_info: Dict[str, Any], user_name: Optional[str] = None
     ) -> tuple[str, str]:
         """
         Render price drop alert email.
@@ -192,11 +191,11 @@ class PriceDropTemplate(EmailTemplate):
         Returns:
             Tuple of (subject, html_body)
         """
-        prop = property_info['property']
-        old_price = property_info['old_price']
-        new_price = property_info['new_price']
-        percent_drop = property_info['percent_drop']
-        savings = property_info['savings']
+        prop = property_info["property"]
+        old_price = property_info["old_price"]
+        new_price = property_info["new_price"]
+        percent_drop = property_info["percent_drop"]
+        savings = property_info["savings"]
 
         greeting = f"Hi {user_name}," if user_name else "Hello,"
 
@@ -260,7 +259,7 @@ class NewPropertyTemplate(EmailTemplate):
         search_name: str,
         properties: List[Property],
         max_display: int = 5,
-        user_name: Optional[str] = None
+        user_name: Optional[str] = None,
     ) -> tuple[str, str]:
         """
         Render new property matches email.
@@ -282,7 +281,9 @@ class NewPropertyTemplate(EmailTemplate):
         # Build property cards HTML
         properties_html = ""
         for prop in properties[:max_display]:
-            properties_html += EmailTemplate._property_card(prop, EmailTemplate.COLORS['primary'])
+            properties_html += EmailTemplate._property_card(
+                prop, EmailTemplate.COLORS["primary"]
+            )
 
         if len(properties) > max_display:
             remaining = len(properties) - max_display
@@ -323,7 +324,7 @@ class DigestTemplate(EmailTemplate):
     def render(
         digest_type: str,  # 'daily' or 'weekly'
         data: Dict[str, Any],
-        user_name: Optional[str] = None
+        user_name: Optional[str] = None,
     ) -> tuple[str, str]:
         """
         Render digest email.
@@ -343,13 +344,13 @@ class DigestTemplate(EmailTemplate):
         subject = f"📊 Your {period} Real Estate Digest - {date_str}"
 
         # Extract data with defaults
-        new_properties = data.get('new_properties', 0)
-        price_drops = data.get('price_drops', 0)
-        avg_price = data.get('avg_price', 0)
-        total_properties = data.get('total_properties', 0)
-        average_price = data.get('average_price', 0)
-        trending_cities = data.get('trending_cities', [])
-        saved_searches = data.get('saved_searches', [])
+        new_properties = data.get("new_properties", 0)
+        price_drops = data.get("price_drops", 0)
+        avg_price = data.get("avg_price", 0)
+        total_properties = data.get("total_properties", 0)
+        average_price = data.get("average_price", 0)
+        trending_cities = data.get("trending_cities", [])
+        saved_searches = data.get("saved_searches", [])
 
         content = f"""
 <h2 style="color: {EmailTemplate.COLORS['primary']};">📊 {period} Real Estate Digest</h2>
@@ -394,7 +395,7 @@ class DigestTemplate(EmailTemplate):
 
         # Add trending cities if available
         if trending_cities:
-            content += f"""
+            content += """
 <div style="margin: 25px 0;">
     <h3>🔥 Trending Cities</h3>
     <ul style="line-height: 2;">
@@ -405,14 +406,18 @@ class DigestTemplate(EmailTemplate):
 
         # Add saved searches status if available
         if saved_searches:
-            content += f"""
+            content += """
 <div style="margin: 25px 0;">
     <h3>🔔 Your Saved Searches</h3>
 """
             for search in saved_searches:
-                search_name = search.get('name', 'Unnamed Search')
-                new_matches = search.get('new_matches', 0)
-                match_color = EmailTemplate.COLORS['success'] if new_matches > 0 else EmailTemplate.COLORS['text_light']
+                search_name = search.get("name", "Unnamed Search")
+                new_matches = search.get("new_matches", 0)
+                match_color = (
+                    EmailTemplate.COLORS["success"]
+                    if new_matches > 0
+                    else EmailTemplate.COLORS["text_light"]
+                )
 
                 content += f"""
     <div style="background-color: white; padding: 15px; border-radius: 5px; margin: 10px 0;
@@ -489,8 +494,7 @@ class MarketUpdateTemplate(EmailTemplate):
 
     @staticmethod
     def render(
-        update_data: Dict[str, Any],
-        user_name: Optional[str] = None
+        update_data: Dict[str, Any], user_name: Optional[str] = None
     ) -> tuple[str, str]:
         """
         Render market update email.
@@ -506,9 +510,9 @@ class MarketUpdateTemplate(EmailTemplate):
 
         subject = "📈 Market Update - Real Estate Insights"
 
-        update_title = update_data.get('title', 'Market Update')
-        summary = update_data.get('summary', 'Latest market insights and trends.')
-        insights = update_data.get('insights', [])
+        update_title = update_data.get("title", "Market Update")
+        summary = update_data.get("summary", "Latest market insights and trends.")
+        insights = update_data.get("insights", [])
 
         content = f"""
 <h2 style="color: {EmailTemplate.COLORS['primary']};">📈 {update_title}</h2>
@@ -520,8 +524,8 @@ class MarketUpdateTemplate(EmailTemplate):
 """
 
         for insight in insights:
-            icon = insight.get('icon', '•')
-            text = insight.get('text', '')
+            icon = insight.get("icon", "•")
+            text = insight.get("text", "")
             content += f"    <p>{icon} {text}</p>\n"
 
         content += """

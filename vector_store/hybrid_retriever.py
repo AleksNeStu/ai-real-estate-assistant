@@ -9,7 +9,7 @@ This module provides advanced retrieval capabilities by combining:
 """
 
 import logging
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
@@ -75,9 +75,7 @@ class HybridPropertyRetriever(BaseRetriever):
         else:
             # Use regular similarity search
             results_with_scores = self.vector_store.search(
-                query=query,
-                k=self.k,
-                filter=filters if filters else None
+                query=query, k=self.k, filter=filters if filters else None
             )
             results = [doc for doc, score in results_with_scores]
 
@@ -85,7 +83,7 @@ class HybridPropertyRetriever(BaseRetriever):
         if filters:
             results = self._apply_filters(results, filters)
 
-        return results[:self.k]
+        return results[: self.k]
 
     def _extract_filters(self, query: str) -> Dict[str, Any]:
         """
@@ -100,7 +98,7 @@ class HybridPropertyRetriever(BaseRetriever):
         Returns:
             Dictionary of filters
         """
-        filters = {}
+        filters: Dict[str, Any] = {}
         query_lower = query.lower()
 
         # Extract city
@@ -133,9 +131,7 @@ class HybridPropertyRetriever(BaseRetriever):
         return filters
 
     def _apply_filters(
-        self,
-        documents: List[Document],
-        filters: Dict[str, Any]
+        self, documents: List[Document], filters: Dict[str, Any]
     ) -> List[Document]:
         """
         Apply filters to documents.
@@ -197,7 +193,11 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
             results = self._filter_by_price(results)
 
         # Apply geospatial radius filter
-        if self.center_lat is not None and self.center_lon is not None and self.radius_km is not None:
+        if (
+            self.center_lat is not None
+            and self.center_lon is not None
+            and self.radius_km is not None
+        ):
             results = self._filter_by_geo(results)
 
         # Sort results if requested
@@ -211,7 +211,10 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
         filtered = []
 
         for doc in documents:
-            price = doc.metadata.get("price", 0)
+            price_val = doc.metadata.get("price")
+            if not isinstance(price_val, (int, float)):
+                continue
+            price = float(price_val)
 
             if self.min_price is not None and price < self.min_price:
                 continue
@@ -232,8 +235,8 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
         try:
             sorted_docs = sorted(
                 documents,
-                key=lambda doc: doc.metadata.get(self.sort_by, 0),
-                reverse=not self.sort_ascending
+                key=lambda doc: doc.metadata.get(self.sort_by or "", 0),
+                reverse=not self.sort_ascending,
             )
             return sorted_docs
 
@@ -244,21 +247,29 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
     def _filter_by_geo(self, documents: List[Document]) -> List[Document]:
         filtered = []
         import math
-        lat1 = math.radians(float(self.center_lat))
-        lon1 = math.radians(float(self.center_lon))
+
+        if self.center_lat is None or self.center_lon is None or self.radius_km is None:
+            return documents
+        lat1 = math.radians(self.center_lat)
+        lon1 = math.radians(self.center_lon)
         for doc in documents:
-            lat = doc.metadata.get('lat')
-            lon = doc.metadata.get('lon')
+            lat = doc.metadata.get("lat")
+            lon = doc.metadata.get("lon")
             if lat is None or lon is None:
+                continue
+            if not isinstance(lat, (int, float)) or not isinstance(lon, (int, float)):
                 continue
             lat2 = math.radians(float(lat))
             lon2 = math.radians(float(lon))
             dlat = lat2 - lat1
             dlon = lon2 - lon1
-            a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
-            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+            a = (
+                math.sin(dlat / 2) ** 2
+                + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+            )
+            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
             dist_km = 6371.0 * c
-            if dist_km <= float(self.radius_km):
+            if dist_km <= self.radius_km:
                 filtered.append(doc)
         return filtered
 
@@ -274,7 +285,7 @@ def create_retriever(
     center_lon: Optional[float] = None,
     radius_km: Optional[float] = None,
     forced_filters: Optional[Dict[str, Any]] = None,
-    **kwargs
+    **kwargs: Any,
 ) -> BaseRetriever:
     """
     Factory function to create a retriever.
@@ -293,8 +304,10 @@ def create_retriever(
     """
     # Use advanced retriever if price filters or sorting specified
     if (
-        min_price is not None or max_price is not None or sort_by is not None or
-        (center_lat is not None and center_lon is not None and radius_km is not None)
+        min_price is not None
+        or max_price is not None
+        or sort_by is not None
+        or (center_lat is not None and center_lon is not None and radius_km is not None)
     ):
         return AdvancedPropertyRetriever(
             vector_store=vector_store,
@@ -307,7 +320,7 @@ def create_retriever(
             center_lon=center_lon,
             radius_km=radius_km,
             forced_filters=forced_filters,
-            **kwargs
+            **kwargs,
         )
 
     # Use hybrid retriever otherwise
@@ -316,5 +329,5 @@ def create_retriever(
         k=k,
         search_type=search_type,
         forced_filters=forced_filters,
-        **kwargs
+        **kwargs,
     )

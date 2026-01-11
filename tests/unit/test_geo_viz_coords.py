@@ -1,5 +1,5 @@
 from ui.geo_viz import get_property_coords
-from data.schemas import Property, PropertyCollection
+from data.schemas import Property
 
 
 def test_get_property_coords_prefers_lat_lon():
@@ -15,4 +15,3 @@ def test_get_property_coords_falls_back_to_city_center():
     # Krakow center from CITY_COORDINATES is (50.0647, 19.9450)
     assert abs(lat - 50.0647) < 0.1
     assert abs(lon - 19.9450) < 0.1
-

@@ -10,7 +10,7 @@ Provides interactive maps using Folium with:
 - Location filtering
 """
 
-from typing import List, Optional, Tuple, Dict, Any
+from typing import Optional, Tuple
 import folium
 from folium import plugins
 from data.schemas import Property, PropertyCollection
@@ -23,37 +23,37 @@ DEFAULT_ZOOM = 6
 
 # City coordinates (approximate centers)
 CITY_COORDINATES = {
-    'warsaw': [52.2297, 21.0122],
-    'krakow': [50.0647, 19.9450],
-    'wroclaw': [51.1079, 17.0385],
-    'poznan': [52.4064, 16.9252],
-    'gdansk': [54.3520, 18.6466],
-    'szczecin': [53.4285, 14.5528],
-    'lublin': [51.2465, 22.5684],
-    'katowice': [50.2649, 19.0238],
-    'bydgoszcz': [53.1235, 18.0084],
-    'lodz': [51.7592, 19.4560]
+    "warsaw": [52.2297, 21.0122],
+    "krakow": [50.0647, 19.9450],
+    "wroclaw": [51.1079, 17.0385],
+    "poznan": [52.4064, 16.9252],
+    "gdansk": [54.3520, 18.6466],
+    "szczecin": [53.4285, 14.5528],
+    "lublin": [51.2465, 22.5684],
+    "katowice": [50.2649, 19.0238],
+    "bydgoszcz": [53.1235, 18.0084],
+    "lodz": [51.7592, 19.4560],
 }
 
 # Price range colors
 PRICE_COLORS = {
-    'low': '#2ca02c',          # Green (< $800)
-    'medium': '#ffbb00',       # Yellow ($800-$1200)
-    'high': '#ff7f0e',         # Orange ($1200-$1600)
-    'very_high': '#d62728'     # Red (> $1600)
+    "low": "#2ca02c",  # Green (< $800)
+    "medium": "#ffbb00",  # Yellow ($800-$1200)
+    "high": "#ff7f0e",  # Orange ($1200-$1600)
+    "very_high": "#d62728",  # Red (> $1600)
 }
 
 
 def _get_price_color(price: float) -> str:
     """Get color based on price range."""
     if price < 800:
-        return PRICE_COLORS['low']
+        return PRICE_COLORS["low"]
     elif price < 1200:
-        return PRICE_COLORS['medium']
+        return PRICE_COLORS["medium"]
     elif price < 1600:
-        return PRICE_COLORS['high']
+        return PRICE_COLORS["high"]
     else:
-        return PRICE_COLORS['very_high']
+        return PRICE_COLORS["very_high"]
 
 
 def _get_city_coordinates(city: str) -> Tuple[float, float]:
@@ -88,7 +88,7 @@ def create_property_map(
     zoom_start: int = 7,
     add_clusters: bool = True,
     show_legend: bool = True,
-    jitter: bool = True
+    jitter: bool = True,
 ) -> folium.Map:
     """
     Create an interactive map with property markers.
@@ -113,17 +113,13 @@ def create_property_map(
             coords = [_get_city_coordinates(city) for city in cities]
             center = [
                 sum(lat for lat, _ in coords) / len(coords),
-                sum(lon for _, lon in coords) / len(coords)
+                sum(lon for _, lon in coords) / len(coords),
             ]
         else:
             center = DEFAULT_CENTER
 
     # Create base map
-    m = folium.Map(
-        location=center,
-        zoom_start=zoom_start,
-        tiles='OpenStreetMap'
-    )
+    m = folium.Map(location=center, zoom_start=zoom_start, tiles="OpenStreetMap")
 
     # Create marker cluster if requested
     if add_clusters:
@@ -134,12 +130,13 @@ def create_property_map(
 
     # Add markers for each property
     import random
+
     for prop in properties.properties:
         coords = list(get_property_coords(prop))
         if jitter:
             coords = [
                 coords[0] + random.uniform(-0.01, 0.01),
-                coords[1] + random.uniform(-0.01, 0.01)
+                coords[1] + random.uniform(-0.01, 0.01),
             ]
 
         # Create popup content
@@ -157,7 +154,7 @@ def create_property_map(
             fill=True,
             fillColor=color,
             fillOpacity=0.7,
-            weight=2
+            weight=2,
         ).add_to(marker_group)
 
     # Add legend
@@ -177,7 +174,7 @@ def create_price_heatmap(
     zoom_start: int = 7,
     radius: int = 15,
     blur: int = 25,
-    jitter: bool = True
+    jitter: bool = True,
 ) -> folium.Map:
     """
     Create a heatmap showing price distribution.
@@ -201,27 +198,24 @@ def create_price_heatmap(
             coords = [_get_city_coordinates(city) for city in cities]
             center = [
                 sum(lat for lat, _ in coords) / len(coords),
-                sum(lon for _, lon in coords) / len(coords)
+                sum(lon for _, lon in coords) / len(coords),
             ]
         else:
             center = DEFAULT_CENTER
 
     # Create base map
-    m = folium.Map(
-        location=center,
-        zoom_start=zoom_start,
-        tiles='OpenStreetMap'
-    )
+    m = folium.Map(location=center, zoom_start=zoom_start, tiles="OpenStreetMap")
 
     # Prepare heatmap data
     heat_data = []
     import random
+
     for prop in properties.properties:
         coords = list(get_property_coords(prop))
         if jitter:
             coords = [
                 coords[0] + random.uniform(-0.01, 0.01),
-                coords[1] + random.uniform(-0.01, 0.01)
+                coords[1] + random.uniform(-0.01, 0.01),
             ]
 
         # Weight by price (normalized)
@@ -232,11 +226,7 @@ def create_price_heatmap(
     # Add heatmap layer
     if heat_data:
         plugins.HeatMap(
-            heat_data,
-            radius=radius,
-            blur=blur,
-            max_zoom=13,
-            name='Price Heatmap'
+            heat_data, radius=radius, blur=blur, max_zoom=13, name="Price Heatmap"
         ).add_to(m)
 
     # Add layer control
@@ -246,8 +236,7 @@ def create_price_heatmap(
 
 
 def create_city_overview_map(
-    properties: PropertyCollection,
-    show_statistics: bool = True
+    properties: PropertyCollection, show_statistics: bool = True
 ) -> folium.Map:
     """
     Create a map with city markers showing aggregate statistics.
@@ -260,39 +249,37 @@ def create_city_overview_map(
         Folium Map object
     """
     # Calculate statistics by city
-    df = pd.DataFrame([{
-        'city': p.city,
-        'price': p.price,
-        'rooms': p.rooms
-    } for p in properties.properties])
+    df = pd.DataFrame(
+        [
+            {"city": p.city, "price": p.price, "rooms": p.rooms}
+            for p in properties.properties
+        ]
+    )
 
-    city_stats = df.groupby('city').agg({
-        'price': ['mean', 'median', 'count'],
-        'rooms': 'mean'
-    }).reset_index()
+    city_stats = (
+        df.groupby("city")
+        .agg({"price": ["mean", "median", "count"], "rooms": "mean"})
+        .reset_index()
+    )
 
-    city_stats.columns = ['city', 'avg_price', 'median_price', 'count', 'avg_rooms']
+    city_stats.columns = ["city", "avg_price", "median_price", "count", "avg_rooms"]
 
     # Calculate center
     if len(city_stats) > 0:
-        coords = [_get_city_coordinates(city) for city in city_stats['city']]
+        coords = [_get_city_coordinates(city) for city in city_stats["city"]]
         center = [
             sum(lat for lat, _ in coords) / len(coords),
-            sum(lon for _, lon in coords) / len(coords)
+            sum(lon for _, lon in coords) / len(coords),
         ]
     else:
         center = DEFAULT_CENTER
 
     # Create map
-    m = folium.Map(
-        location=center,
-        zoom_start=6,
-        tiles='OpenStreetMap'
-    )
+    m = folium.Map(location=center, zoom_start=6, tiles="OpenStreetMap")
 
     # Add markers for each city
     for _, row in city_stats.iterrows():
-        coords = _get_city_coordinates(row['city'])
+        coords = _get_city_coordinates(row["city"])
 
         # Create popup content
         popup_html = f"""
@@ -320,10 +307,10 @@ def create_city_overview_map(
         """
 
         # Size based on count
-        radius = min(10 + (row['count'] / 2), 30)
+        radius = min(10 + (row["count"] / 2), 30)
 
         # Color based on average price
-        color = _get_price_color(row['avg_price'])
+        color = _get_price_color(row["avg_price"])
 
         # Create marker
         folium.CircleMarker(
@@ -335,7 +322,7 @@ def create_city_overview_map(
             fill=True,
             fillColor=color,
             fillOpacity=0.6,
-            weight=3
+            weight=3,
         ).add_to(m)
 
     return m
@@ -361,12 +348,16 @@ def _create_property_popup(prop: Property) -> str:
     amenities_html = "<br>".join(amenities) if amenities else "None"
 
     price_label = "Price"
-    price_value = f"${prop.price}/month" if getattr(prop, 'listing_type', None) in (None, 'rent') else f"${prop.price}"
-    currency = getattr(prop, 'currency', None)
+    price_value = (
+        f"${prop.price}/month"
+        if getattr(prop, "listing_type", None) in (None, "rent")
+        else f"${prop.price}"
+    )
+    currency = getattr(prop, "currency", None)
     if currency:
         price_value = price_value.replace("$", "")
         price_value = f"{price_value} {currency}"
-    listing_str = str(getattr(prop, 'listing_type', 'rent')).title()
+    listing_str = str(getattr(prop, "listing_type", "rent")).title()
     html = f"""
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif; width: 250px; background-color: #ffffff; color: #0f172a; padding: 8px; border-radius: 4px;">
         <h4 style="margin: 0 0 10px 0; color: #2563eb; font-size: 16px;">{prop.city}</h4>
@@ -444,9 +435,7 @@ def _create_legend_html() -> str:
 
 
 def create_location_comparison_map(
-    properties: PropertyCollection,
-    city1: str,
-    city2: str
+    properties: PropertyCollection, city1: str, city2: str
 ) -> folium.Map:
     """
     Create a map comparing two cities.
@@ -468,17 +457,10 @@ def create_location_comparison_map(
     coords2 = _get_city_coordinates(city2)
 
     # Calculate center between the two cities
-    center = [
-        (coords1[0] + coords2[0]) / 2,
-        (coords1[1] + coords2[1]) / 2
-    ]
+    center = [(coords1[0] + coords2[0]) / 2, (coords1[1] + coords2[1]) / 2]
 
     # Create map
-    m = folium.Map(
-        location=center,
-        zoom_start=7,
-        tiles='OpenStreetMap'
-    )
+    m = folium.Map(location=center, zoom_start=7, tiles="OpenStreetMap")
 
     # Add feature groups for each city
     fg1 = folium.FeatureGroup(name=city1).add_to(m)
@@ -488,9 +470,10 @@ def create_location_comparison_map(
     for prop in city1_props:
         coords = _get_city_coordinates(prop.city)
         import random
+
         coords = [
             coords[0] + random.uniform(-0.01, 0.01),
-            coords[1] + random.uniform(-0.01, 0.01)
+            coords[1] + random.uniform(-0.01, 0.01),
         ]
 
         popup_html = _create_property_popup(prop)
@@ -499,20 +482,21 @@ def create_location_comparison_map(
             location=coords,
             radius=7,
             popup=folium.Popup(popup_html, max_width=300),
-            color='#1f77b4',
+            color="#1f77b4",
             fill=True,
-            fillColor='#1f77b4',
+            fillColor="#1f77b4",
             fillOpacity=0.6,
-            weight=2
+            weight=2,
         ).add_to(fg1)
 
     # Add markers for city 2
     for prop in city2_props:
         coords = _get_city_coordinates(prop.city)
         import random
+
         coords = [
             coords[0] + random.uniform(-0.01, 0.01),
-            coords[1] + random.uniform(-0.01, 0.01)
+            coords[1] + random.uniform(-0.01, 0.01),
         ]
 
         popup_html = _create_property_popup(prop)
@@ -521,11 +505,11 @@ def create_location_comparison_map(
             location=coords,
             radius=7,
             popup=folium.Popup(popup_html, max_width=300),
-            color='#ff7f0e',
+            color="#ff7f0e",
             fill=True,
-            fillColor='#ff7f0e',
+            fillColor="#ff7f0e",
             fillOpacity=0.6,
-            weight=2
+            weight=2,
         ).add_to(fg2)
 
     # Add layer control

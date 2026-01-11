@@ -1,12 +1,12 @@
-import os
-import pytest
 from unittest.mock import patch
 
 from vector_store.chroma_store import ChromaPropertyStore
 from data.schemas import Property, PropertyCollection, PropertyType
 
 
-def make_property(pid: str, city: str, price: float, rooms: float, desc: str = "") -> Property:
+def make_property(
+    pid: str, city: str, price: float, rooms: float, desc: str = ""
+) -> Property:
     return Property(
         id=pid,
         city=city,
@@ -50,10 +50,13 @@ def test_add_and_search_fallback_without_vector_store(monkeypatch, tmp_path):
     with patch.object(ChromaPropertyStore, "_create_embeddings", return_value=None):
         store = ChromaPropertyStore(persist_directory=str(tmp_path))
 
-    coll = PropertyCollection(properties=[
-        make_property("p1", "Krakow", 900, 2, "balcony garden"),
-        make_property("p2", "Warsaw", 1200, 3, "garage"),
-    ], total_count=2)
+    coll = PropertyCollection(
+        properties=[
+            make_property("p1", "Krakow", 900, 2, "balcony garden"),
+            make_property("p2", "Warsaw", 1200, 3, "garage"),
+        ],
+        total_count=2,
+    )
 
     added = store.add_property_collection(coll)
     assert added == 2
@@ -67,13 +70,15 @@ def test_clear_resets_cache(monkeypatch, tmp_path):
     with patch.object(ChromaPropertyStore, "_create_embeddings", return_value=None):
         store = ChromaPropertyStore(persist_directory=str(tmp_path))
 
-    coll = PropertyCollection(properties=[
-        make_property("p1", "Krakow", 900, 2),
-        make_property("p2", "Warsaw", 1200, 3),
-    ], total_count=2)
+    coll = PropertyCollection(
+        properties=[
+            make_property("p1", "Krakow", 900, 2),
+            make_property("p2", "Warsaw", 1200, 3),
+        ],
+        total_count=2,
+    )
 
     store.add_property_collection(coll)
     assert store.get_stats()["total_documents"] == 2
     store.clear()
     assert store.get_stats()["total_documents"] == 0
-

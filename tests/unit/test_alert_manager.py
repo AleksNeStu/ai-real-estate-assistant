@@ -1,5 +1,3 @@
-import tempfile
-from pathlib import Path
 from unittest.mock import patch
 
 from notifications.alert_manager import AlertManager
@@ -23,22 +21,28 @@ def make_prop(pid, city, price, rooms, area=50):
 
 
 def make_email_service():
-    return EmailService(EmailConfig(
-        provider=EmailProvider.GMAIL,
-        smtp_server="smtp.gmail.com",
-        smtp_port=587,
-        username="u@example.com",
-        password="pw",
-        from_email="u@example.com",
-    ))
+    return EmailService(
+        EmailConfig(
+            provider=EmailProvider.GMAIL,
+            smtp_server="smtp.gmail.com",
+            smtp_port=587,
+            username="u@example.com",
+            password="pw",
+            from_email="u@example.com",
+        )
+    )
 
 
 def test_check_price_drops_and_send(tmp_path):
     svc = make_email_service()
     am = AlertManager(svc, storage_path=str(tmp_path))
 
-    prev = PropertyCollection(properties=[make_prop("p1", "Krakow", 1000, 2)], total_count=1)
-    curr = PropertyCollection(properties=[make_prop("p1", "Krakow", 900, 2)], total_count=1)
+    prev = PropertyCollection(
+        properties=[make_prop("p1", "Krakow", 1000, 2)], total_count=1
+    )
+    curr = PropertyCollection(
+        properties=[make_prop("p1", "Krakow", 900, 2)], total_count=1
+    )
     drops = am.check_price_drops(curr, prev, threshold_percent=5.0)
     assert len(drops) == 1 and drops[0]["savings"] == 100
 
@@ -58,17 +62,22 @@ def test_check_new_property_matches_and_send(tmp_path):
     svc = make_email_service()
     am = AlertManager(svc, storage_path=str(tmp_path))
 
-    props = PropertyCollection(properties=[
-        make_prop("p1", "Krakow", 900, 2),
-        make_prop("p2", "Krakow", 1200, 3),
-    ], total_count=2)
+    props = PropertyCollection(
+        properties=[
+            make_prop("p1", "Krakow", 900, 2),
+            make_prop("p2", "Krakow", 1200, 3),
+        ],
+        total_count=2,
+    )
 
     ss = SavedSearch(id="s1", name="Krakow Budget", city="Krakow", max_price=1000)
     matches = am.check_new_property_matches(props, [ss])
     assert "s1" in matches and len(matches["s1"]) == 1
 
     with patch.object(EmailService, "send_email", return_value=True):
-        ok = am.send_new_property_alerts("user@example.com", "s1", ss.name, matches["s1"], send_email=True)
+        ok = am.send_new_property_alerts(
+            "user@example.com", "s1", ss.name, matches["s1"], send_email=True
+        )
         assert ok is True
 
 
@@ -80,4 +89,3 @@ def test_get_property_key_stable():
     p2 = make_prop(None, "Krakow", 850, 2, area=60)
     k2 = am._get_property_key(p2)
     assert k1 == k2
-
