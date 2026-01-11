@@ -5,7 +5,7 @@ Supports local Llama, Mistral, Qwen, and other open-source models via Ollama.
 """
 
 import os
-from typing import List, Optional
+from typing import Any, List, Optional
 from langchain_community.chat_models import ChatOllama
 from langchain_core.language_models import BaseChatModel
 
@@ -27,11 +27,13 @@ class OllamaProvider(LocalModelProvider):
     def display_name(self) -> str:
         return "Ollama (Local)"
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: Optional[dict[str, Any]] = None):
         super().__init__(config)
         # Default to local Ollama instance
         if "base_url" not in self.config:
-            self.config["base_url"] = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+            self.config["base_url"] = os.getenv(
+                "OLLAMA_BASE_URL", "http://localhost:11434"
+            )
 
     def list_models(self) -> List[ModelInfo]:
         """List popular Ollama models."""
@@ -49,7 +51,11 @@ class OllamaProvider(LocalModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Latest large Llama model (70B parameters) - requires 40GB+ RAM",
-                recommended_for=["highest quality local", "complex tasks", "powerful hardware"]
+                recommended_for=[
+                    "highest quality local",
+                    "complex tasks",
+                    "powerful hardware",
+                ],
             ),
             ModelInfo(
                 id="llama3.3:8b",
@@ -63,9 +69,8 @@ class OllamaProvider(LocalModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Latest balanced Llama model (8B parameters) - requires 8GB RAM",
-                recommended_for=["best balance", "general purpose", "local inference"]
+                recommended_for=["best balance", "general purpose", "local inference"],
             ),
-
             # Llama 3.2 Series - Lightweight
             ModelInfo(
                 id="llama3.2:3b",
@@ -78,7 +83,7 @@ class OllamaProvider(LocalModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Small, efficient Llama 3.2 model (3B parameters) - requires 4GB RAM",
-                recommended_for=["fast responses", "low memory", "laptops"]
+                recommended_for=["fast responses", "low memory", "laptops"],
             ),
             ModelInfo(
                 id="llama3.2:1b",
@@ -91,9 +96,8 @@ class OllamaProvider(LocalModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Tiny but capable Llama model (1B parameters) - requires 2GB RAM",
-                recommended_for=["ultra-fast", "minimal resources", "edge devices"]
+                recommended_for=["ultra-fast", "minimal resources", "edge devices"],
             ),
-
             # Llama 3.1 Series - Proven
             ModelInfo(
                 id="llama3.1:70b",
@@ -107,7 +111,11 @@ class OllamaProvider(LocalModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Proven large Llama model (70B parameters) - requires 40GB+ RAM",
-                recommended_for=["high quality", "complex reasoning", "powerful hardware"]
+                recommended_for=[
+                    "high quality",
+                    "complex reasoning",
+                    "powerful hardware",
+                ],
             ),
             ModelInfo(
                 id="llama3.1:8b",
@@ -121,9 +129,8 @@ class OllamaProvider(LocalModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Proven balanced Llama model (8B parameters) - requires 8GB RAM",
-                recommended_for=["stable", "general purpose", "local inference"]
+                recommended_for=["stable", "general purpose", "local inference"],
             ),
-
             # Other Popular Open Source Models
             ModelInfo(
                 id="mistral:7b",
@@ -136,7 +143,7 @@ class OllamaProvider(LocalModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Efficient Mistral model (7B parameters) - requires 8GB RAM",
-                recommended_for=["efficient", "code generation", "european languages"]
+                recommended_for=["efficient", "code generation", "european languages"],
             ),
             ModelInfo(
                 id="qwen2.5:7b",
@@ -149,7 +156,7 @@ class OllamaProvider(LocalModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Alibaba's Qwen model (7B parameters) - requires 8GB RAM",
-                recommended_for=["multilingual", "chinese", "code", "math"]
+                recommended_for=["multilingual", "chinese", "code", "math"],
             ),
             ModelInfo(
                 id="phi3:3.8b",
@@ -162,7 +169,7 @@ class OllamaProvider(LocalModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Microsoft's small but capable model (3.8B parameters) - requires 4GB RAM",
-                recommended_for=["compact", "efficient", "low resource"]
+                recommended_for=["compact", "efficient", "low resource"],
             ),
             ModelInfo(
                 id="deepseek-coder:6.7b",
@@ -175,7 +182,7 @@ class OllamaProvider(LocalModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Specialized coding model (6.7B parameters) - requires 8GB RAM",
-                recommended_for=["code generation", "programming", "technical tasks"]
+                recommended_for=["code generation", "programming", "technical tasks"],
             ),
         ]
 
@@ -185,7 +192,7 @@ class OllamaProvider(LocalModelProvider):
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
         streaming: bool = True,
-        **kwargs
+        **kwargs: Any,
     ) -> BaseChatModel:
         """Create Ollama model instance."""
         # Note: Ollama doesn't require pre-validation of model availability
@@ -198,15 +205,15 @@ class OllamaProvider(LocalModelProvider):
             model=model_id,
             temperature=temperature,
             num_predict=max_tokens,
-            streaming=streaming,
             base_url=base_url,
-            **kwargs
+            **kwargs,
         )
 
     def validate_connection(self) -> tuple[bool, Optional[str]]:
         """Validate Ollama connection."""
         try:
             import requests
+
             base_url = self.config.get("base_url", "http://localhost:11434")
 
             # Check if Ollama is running
@@ -233,6 +240,7 @@ class OllamaProvider(LocalModelProvider):
         """
         try:
             import requests
+
             base_url = self.config.get("base_url", "http://localhost:11434")
 
             response = requests.get(f"{base_url}/api/tags", timeout=5)

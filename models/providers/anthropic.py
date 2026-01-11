@@ -5,9 +5,10 @@ Supports Claude 3.5 Sonnet, Claude 3 Opus, and other Anthropic models.
 """
 
 import os
-from typing import List, Optional
+from typing import Any, List, Optional
 from langchain_anthropic import ChatAnthropic
 from langchain_core.language_models import BaseChatModel
+from pydantic import SecretStr
 
 from .base import (
     RemoteModelProvider,
@@ -28,7 +29,7 @@ class AnthropicProvider(RemoteModelProvider):
     def display_name(self) -> str:
         return "Anthropic (Claude)"
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: Optional[dict[str, Any]] = None):
         super().__init__(config)
         # Get API key from config, environment, or None
         if "api_key" not in self.config:
@@ -43,10 +44,7 @@ class AnthropicProvider(RemoteModelProvider):
                 display_name="Claude Sonnet 4.5 (Latest)",
                 provider_name=self.display_name,
                 context_window=200000,
-                pricing=PricingInfo(
-                    input_price_per_1m=3.00,
-                    output_price_per_1m=15.00
-                ),
+                pricing=PricingInfo(input_price_per_1m=3.00, output_price_per_1m=15.00),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -55,19 +53,20 @@ class AnthropicProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Latest and most advanced Claude model with improved reasoning and coding",
-                recommended_for=["complex reasoning", "code generation", "long documents", "agentic workflows"]
+                recommended_for=[
+                    "complex reasoning",
+                    "code generation",
+                    "long documents",
+                    "agentic workflows",
+                ],
             ),
-
             # Claude 3.5 Generation
             ModelInfo(
                 id="claude-3-5-sonnet-20241022",
                 display_name="Claude 3.5 Sonnet",
                 provider_name=self.display_name,
                 context_window=200000,
-                pricing=PricingInfo(
-                    input_price_per_1m=3.00,
-                    output_price_per_1m=15.00
-                ),
+                pricing=PricingInfo(input_price_per_1m=3.00, output_price_per_1m=15.00),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -76,17 +75,18 @@ class AnthropicProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Powerful Claude model with extended context - consider Sonnet 4.5 for latest features",
-                recommended_for=["complex reasoning", "long documents", "code generation"]
+                recommended_for=[
+                    "complex reasoning",
+                    "long documents",
+                    "code generation",
+                ],
             ),
             ModelInfo(
                 id="claude-3-5-haiku-20241022",
                 display_name="Claude 3.5 Haiku (Recommended)",
                 provider_name=self.display_name,
                 context_window=200000,
-                pricing=PricingInfo(
-                    input_price_per_1m=0.80,
-                    output_price_per_1m=4.00
-                ),
+                pricing=PricingInfo(input_price_per_1m=0.80, output_price_per_1m=4.00),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -94,9 +94,13 @@ class AnthropicProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Fast and cost-effective model for simpler tasks",
-                recommended_for=["quick responses", "high volume", "cost-effective", "general purpose"]
+                recommended_for=[
+                    "quick responses",
+                    "high volume",
+                    "cost-effective",
+                    "general purpose",
+                ],
             ),
-
             # Legacy Models
             ModelInfo(
                 id="claude-3-opus-20240229",
@@ -104,8 +108,7 @@ class AnthropicProvider(RemoteModelProvider):
                 provider_name=self.display_name,
                 context_window=200000,
                 pricing=PricingInfo(
-                    input_price_per_1m=15.00,
-                    output_price_per_1m=75.00
+                    input_price_per_1m=15.00, output_price_per_1m=75.00
                 ),
                 capabilities=[
                     ModelCapability.STREAMING,
@@ -114,7 +117,7 @@ class AnthropicProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Previous generation model - consider Claude Sonnet 4.5 for better performance and lower cost",
-                recommended_for=["legacy compatibility"]
+                recommended_for=["legacy compatibility"],
             ),
         ]
 
@@ -124,7 +127,7 @@ class AnthropicProvider(RemoteModelProvider):
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
         streaming: bool = True,
-        **kwargs
+        **kwargs: Any,
     ) -> BaseChatModel:
         """Create Anthropic model instance."""
         # Validate model exists
@@ -150,12 +153,12 @@ class AnthropicProvider(RemoteModelProvider):
 
         # Create model
         return ChatAnthropic(
-            model=model_id,
+            model_name=model_id,
             temperature=temperature,
-            max_tokens=max_tokens,
+            max_tokens_to_sample=max_tokens,
             streaming=streaming,
-            api_key=api_key,
-            **kwargs
+            api_key=SecretStr(api_key),
+            **kwargs,
         )
 
     def validate_connection(self) -> tuple[bool, Optional[str]]:
@@ -166,7 +169,7 @@ class AnthropicProvider(RemoteModelProvider):
 
         try:
             # Try to create a minimal model instance
-            model = self.create_model("claude-3-5-haiku-20241022")
+            self.create_model("claude-3-5-haiku-20241022")
             return True, None
         except Exception as e:
             return False, f"Connection failed: {str(e)}"

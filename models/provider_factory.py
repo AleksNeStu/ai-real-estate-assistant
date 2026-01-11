@@ -6,7 +6,8 @@ and their models.
 """
 
 import logging
-from typing import Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type
+from langchain_core.language_models import BaseChatModel
 from .providers.base import ModelProvider, ModelInfo
 from .providers.openai import OpenAIProvider
 from .providers.anthropic import AnthropicProvider
@@ -53,8 +54,8 @@ class ModelProviderFactory:
     def get_provider(
         cls,
         provider_name: str,
-        config: Optional[Dict] = None,
-        use_cache: bool = True
+        config: Optional[dict[str, Any]] = None,
+        use_cache: bool = True,
     ) -> ModelProvider:
         """
         Get a provider instance by name.
@@ -125,7 +126,9 @@ class ModelProviderFactory:
         return all_models
 
     @classmethod
-    def get_model_by_id(cls, model_id: str) -> Optional[tuple[ModelProvider, ModelInfo]]:
+    def get_model_by_id(
+        cls, model_id: str
+    ) -> Optional[tuple[ModelProvider, ModelInfo]]:
         """
         Find a model by its ID across all providers.
 
@@ -156,8 +159,8 @@ class ModelProviderFactory:
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
         streaming: bool = True,
-        **kwargs
-    ):
+        **kwargs: Any,
+    ) -> BaseChatModel:
         """
         Create a model instance by ID.
 
@@ -183,7 +186,7 @@ class ModelProviderFactory:
                 temperature=temperature,
                 max_tokens=max_tokens,
                 streaming=streaming,
-                **kwargs
+                **kwargs,
             )
 
         # Auto-detect provider
@@ -200,7 +203,7 @@ class ModelProviderFactory:
             temperature=temperature,
             max_tokens=max_tokens,
             streaming=streaming,
-            **kwargs
+            **kwargs,
         )
 
     @classmethod
@@ -225,11 +228,7 @@ class ModelProviderFactory:
         return results
 
     @classmethod
-    def register_provider(
-        cls,
-        name: str,
-        provider_class: Type[ModelProvider]
-    ):
+    def register_provider(cls, name: str, provider_class: Type[ModelProvider]) -> None:
         """
         Register a custom provider.
 
@@ -247,12 +246,12 @@ class ModelProviderFactory:
             del cls._instances[name]
 
     @classmethod
-    def clear_cache(cls):
+    def clear_cache(cls) -> None:
         """Clear all cached provider instances."""
         cls._instances.clear()
 
 
-def get_model_display_info(model_info: ModelInfo) -> Dict:
+def get_model_display_info(model_info: ModelInfo) -> dict[str, Any]:
     """
     Get formatted display information for a model.
 
@@ -262,7 +261,7 @@ def get_model_display_info(model_info: ModelInfo) -> Dict:
     Returns:
         Dictionary with formatted display information
     """
-    info = {
+    info: dict[str, Any] = {
         "name": model_info.display_name,
         "id": model_info.id,
         "provider": model_info.provider_name,

@@ -5,9 +5,10 @@ Supports Grok-2 and other xAI models via OpenAI-compatible API.
 """
 
 import os
-from typing import List, Optional
+from typing import Any, List, Optional
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models import BaseChatModel
+from pydantic import SecretStr
 
 from .base import (
     RemoteModelProvider,
@@ -28,11 +29,13 @@ class GrokProvider(RemoteModelProvider):
     def display_name(self) -> str:
         return "Grok (xAI)"
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: Optional[dict[str, Any]] = None):
         super().__init__(config)
         # Get API key from config, environment, or None
         if "api_key" not in self.config:
-            self.config["api_key"] = os.getenv("XAI_API_KEY") or os.getenv("GROK_API_KEY")
+            self.config["api_key"] = os.getenv("XAI_API_KEY") or os.getenv(
+                "GROK_API_KEY"
+            )
 
         # Set base URL for xAI API
         if "base_url" not in self.config:
@@ -47,10 +50,7 @@ class GrokProvider(RemoteModelProvider):
                 display_name="Grok 2 (Latest - Recommended)",
                 provider_name=self.display_name,
                 context_window=131072,
-                pricing=PricingInfo(
-                    input_price_per_1m=2.00,
-                    output_price_per_1m=10.00
-                ),
+                pricing=PricingInfo(input_price_per_1m=2.00, output_price_per_1m=10.00),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -58,17 +58,20 @@ class GrokProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Latest Grok model with enhanced reasoning and real-time information from X",
-                recommended_for=["real-time analysis", "current events", "reasoning", "creative tasks", "general purpose"]
+                recommended_for=[
+                    "real-time analysis",
+                    "current events",
+                    "reasoning",
+                    "creative tasks",
+                    "general purpose",
+                ],
             ),
             ModelInfo(
                 id="grok-2-vision-1212",
                 display_name="Grok 2 Vision (Multimodal)",
                 provider_name=self.display_name,
                 context_window=32768,
-                pricing=PricingInfo(
-                    input_price_per_1m=2.00,
-                    output_price_per_1m=10.00
-                ),
+                pricing=PricingInfo(input_price_per_1m=2.00, output_price_per_1m=10.00),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -77,17 +80,19 @@ class GrokProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Grok 2 with vision capabilities for image analysis and understanding",
-                recommended_for=["image analysis", "visual reasoning", "multimodal tasks", "document understanding"]
+                recommended_for=[
+                    "image analysis",
+                    "visual reasoning",
+                    "multimodal tasks",
+                    "document understanding",
+                ],
             ),
             ModelInfo(
                 id="grok-beta",
                 display_name="Grok Beta (Experimental)",
                 provider_name=self.display_name,
                 context_window=131072,
-                pricing=PricingInfo(
-                    input_price_per_1m=5.00,
-                    output_price_per_1m=15.00
-                ),
+                pricing=PricingInfo(input_price_per_1m=5.00, output_price_per_1m=15.00),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -95,7 +100,12 @@ class GrokProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Experimental Grok model with cutting-edge features and improvements",
-                recommended_for=["experimental features", "advanced reasoning", "complex analysis", "testing"]
+                recommended_for=[
+                    "experimental features",
+                    "advanced reasoning",
+                    "complex analysis",
+                    "testing",
+                ],
             ),
         ]
 
@@ -105,7 +115,7 @@ class GrokProvider(RemoteModelProvider):
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
         streaming: bool = True,
-        **kwargs
+        **kwargs: Any,
     ) -> BaseChatModel:
         """Create Grok model instance using OpenAI-compatible client."""
         # Validate model exists
@@ -129,11 +139,11 @@ class GrokProvider(RemoteModelProvider):
         return ChatOpenAI(
             model=model_id,
             temperature=temperature,
-            max_tokens=max_tokens,
+            max_completion_tokens=max_tokens,
             streaming=streaming,
-            api_key=api_key,
+            api_key=SecretStr(api_key),
             base_url=self.config.get("base_url", "https://api.x.ai/v1"),
-            **kwargs
+            **kwargs,
         )
 
     def validate_connection(self) -> tuple[bool, Optional[str]]:
@@ -144,7 +154,7 @@ class GrokProvider(RemoteModelProvider):
 
         try:
             # Try to create a minimal model instance
-            model = self.create_model("grok-2-1212")
+            self.create_model("grok-2-1212")
             # If no error, connection is valid
             return True, None
         except Exception as e:

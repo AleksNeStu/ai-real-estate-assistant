@@ -6,7 +6,7 @@ LLM providers (OpenAI, Anthropic, Google, Ollama, etc.).
 """
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional, Dict, Any, List
 from langchain_core.language_models import BaseChatModel
@@ -14,6 +14,7 @@ from langchain_core.language_models import BaseChatModel
 
 class ModelCapability(str, Enum):
     """Enumeration of model capabilities."""
+
     STREAMING = "streaming"
     FUNCTION_CALLING = "function_calling"
     VISION = "vision"
@@ -24,6 +25,7 @@ class ModelCapability(str, Enum):
 @dataclass
 class PricingInfo:
     """Pricing information for a model."""
+
     input_price_per_1m: float  # Price per 1M input tokens
     output_price_per_1m: float  # Price per 1M output tokens
     currency: str = "USD"
@@ -47,20 +49,15 @@ class PricingInfo:
 @dataclass
 class ModelInfo:
     """Information about a specific model."""
+
     id: str
     display_name: str
     provider_name: str
     context_window: int
     pricing: Optional[PricingInfo] = None
-    capabilities: List[ModelCapability] = None
+    capabilities: List[ModelCapability] = field(default_factory=list)
     description: Optional[str] = None
-    recommended_for: List[str] = None
-
-    def __post_init__(self):
-        if self.capabilities is None:
-            self.capabilities = []
-        if self.recommended_for is None:
-            self.recommended_for = []
+    recommended_for: List[str] = field(default_factory=list)
 
     def has_capability(self, capability: ModelCapability) -> bool:
         """Check if model has a specific capability."""
@@ -74,10 +71,16 @@ class ModelInfo:
             "provider": self.provider_name,
             "context_window": self.context_window,
             "capabilities": [c.value for c in self.capabilities],
-            "pricing": {
-                "input": self.pricing.input_price_per_1m if self.pricing else None,
-                "output": self.pricing.output_price_per_1m if self.pricing else None,
-            } if self.pricing else None,
+            "pricing": (
+                {
+                    "input": self.pricing.input_price_per_1m if self.pricing else None,
+                    "output": (
+                        self.pricing.output_price_per_1m if self.pricing else None
+                    ),
+                }
+                if self.pricing
+                else None
+            ),
             "description": self.description,
             "recommended_for": self.recommended_for,
         }
@@ -143,7 +146,7 @@ class ModelProvider(ABC):
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
         streaming: bool = True,
-        **kwargs
+        **kwargs: Any,
     ) -> BaseChatModel:
         """
         Create a configured model instance.
@@ -197,10 +200,7 @@ class ModelProvider(ABC):
         return None
 
     def estimate_cost(
-        self,
-        model_id: str,
-        input_tokens: int,
-        output_tokens: int
+        self, model_id: str, input_tokens: int, output_tokens: int
     ) -> Optional[float]:
         """
         Estimate cost for using a specific model.

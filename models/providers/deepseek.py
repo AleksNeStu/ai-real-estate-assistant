@@ -5,9 +5,10 @@ Supports DeepSeek-V3 and other DeepSeek models via OpenAI-compatible API.
 """
 
 import os
-from typing import List, Optional
+from typing import Any, List, Optional
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models import BaseChatModel
+from pydantic import SecretStr
 
 from .base import (
     RemoteModelProvider,
@@ -28,7 +29,7 @@ class DeepSeekProvider(RemoteModelProvider):
     def display_name(self) -> str:
         return "DeepSeek"
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: Optional[dict[str, Any]] = None):
         super().__init__(config)
         # Get API key from config, environment, or None
         if "api_key" not in self.config:
@@ -47,10 +48,7 @@ class DeepSeekProvider(RemoteModelProvider):
                 display_name="DeepSeek R1 (Latest - Reasoning)",
                 provider_name=self.display_name,
                 context_window=64000,
-                pricing=PricingInfo(
-                    input_price_per_1m=0.55,
-                    output_price_per_1m=2.19
-                ),
+                pricing=PricingInfo(input_price_per_1m=0.55, output_price_per_1m=2.19),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -58,17 +56,19 @@ class DeepSeekProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Latest advanced reasoning model - competes with o1, shows chain-of-thought",
-                recommended_for=["complex reasoning", "math problems", "scientific analysis", "detailed explanations"]
+                recommended_for=[
+                    "complex reasoning",
+                    "math problems",
+                    "scientific analysis",
+                    "detailed explanations",
+                ],
             ),
             ModelInfo(
                 id="deepseek-chat",
                 display_name="DeepSeek V3 Chat (Recommended)",
                 provider_name=self.display_name,
                 context_window=64000,
-                pricing=PricingInfo(
-                    input_price_per_1m=0.14,
-                    output_price_per_1m=0.28
-                ),
+                pricing=PricingInfo(input_price_per_1m=0.14, output_price_per_1m=0.28),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -76,17 +76,19 @@ class DeepSeekProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Latest general-purpose chat model (V3) - strong reasoning at low cost",
-                recommended_for=["general chat", "reasoning", "coding assistance", "cost-effective"]
+                recommended_for=[
+                    "general chat",
+                    "reasoning",
+                    "coding assistance",
+                    "cost-effective",
+                ],
             ),
             ModelInfo(
                 id="deepseek-coder",
                 display_name="DeepSeek Coder",
                 provider_name=self.display_name,
                 context_window=64000,
-                pricing=PricingInfo(
-                    input_price_per_1m=0.14,
-                    output_price_per_1m=0.28
-                ),
+                pricing=PricingInfo(input_price_per_1m=0.14, output_price_per_1m=0.28),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -94,7 +96,12 @@ class DeepSeekProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Specialized coding model trained on code and technical documentation",
-                recommended_for=["code generation", "debugging", "code review", "technical documentation"]
+                recommended_for=[
+                    "code generation",
+                    "debugging",
+                    "code review",
+                    "technical documentation",
+                ],
             ),
         ]
 
@@ -104,7 +111,7 @@ class DeepSeekProvider(RemoteModelProvider):
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
         streaming: bool = True,
-        **kwargs
+        **kwargs: Any,
     ) -> BaseChatModel:
         """Create DeepSeek model instance using OpenAI-compatible client."""
         # Validate model exists
@@ -128,11 +135,11 @@ class DeepSeekProvider(RemoteModelProvider):
         return ChatOpenAI(
             model=model_id,
             temperature=temperature,
-            max_tokens=max_tokens,
+            max_completion_tokens=max_tokens,
             streaming=streaming,
-            api_key=api_key,
+            api_key=SecretStr(api_key),
             base_url=self.config.get("base_url", "https://api.deepseek.com"),
-            **kwargs
+            **kwargs,
         )
 
     def validate_connection(self) -> tuple[bool, Optional[str]]:
@@ -143,7 +150,7 @@ class DeepSeekProvider(RemoteModelProvider):
 
         try:
             # Try to create a minimal model instance
-            model = self.create_model("deepseek-chat")
+            self.create_model("deepseek-chat")
             # If no error, connection is valid
             return True, None
         except Exception as e:

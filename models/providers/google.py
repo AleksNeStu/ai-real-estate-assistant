@@ -5,9 +5,10 @@ Supports Gemini 1.5 Pro, Gemini 1.5 Flash, and other Google models.
 """
 
 import os
-from typing import List, Optional
+from typing import Any, List, Optional
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.language_models import BaseChatModel
+from pydantic import SecretStr
 
 from .base import (
     RemoteModelProvider,
@@ -28,7 +29,7 @@ class GoogleProvider(RemoteModelProvider):
     def display_name(self) -> str:
         return "Google (Gemini)"
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: Optional[dict[str, Any]] = None):
         super().__init__(config)
         # Get API key from config, environment, or None
         if "api_key" not in self.config:
@@ -45,7 +46,7 @@ class GoogleProvider(RemoteModelProvider):
                 context_window=1000000,
                 pricing=PricingInfo(
                     input_price_per_1m=0.075,  # Pricing when GA
-                    output_price_per_1m=0.30
+                    output_price_per_1m=0.30,
                 ),
                 capabilities=[
                     ModelCapability.STREAMING,
@@ -55,19 +56,19 @@ class GoogleProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Next-generation model with improved capabilities",
-                recommended_for=["latest features", "fast responses", "general purpose"]
+                recommended_for=[
+                    "latest features",
+                    "fast responses",
+                    "general purpose",
+                ],
             ),
-
             # Gemini 1.5 Series - Proven and stable
             ModelInfo(
                 id="gemini-1.5-pro",
                 display_name="Gemini 1.5 Pro (Recommended)",
                 provider_name=self.display_name,
                 context_window=2000000,  # 2M tokens!
-                pricing=PricingInfo(
-                    input_price_per_1m=1.25,
-                    output_price_per_1m=5.00
-                ),
+                pricing=PricingInfo(input_price_per_1m=1.25, output_price_per_1m=5.00),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -76,17 +77,19 @@ class GoogleProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Most capable Gemini model with massive 2M token context",
-                recommended_for=["long documents", "complex analysis", "multimodal tasks", "large contexts"]
+                recommended_for=[
+                    "long documents",
+                    "complex analysis",
+                    "multimodal tasks",
+                    "large contexts",
+                ],
             ),
             ModelInfo(
                 id="gemini-1.5-flash",
                 display_name="Gemini 1.5 Flash",
                 provider_name=self.display_name,
                 context_window=1000000,  # 1M tokens
-                pricing=PricingInfo(
-                    input_price_per_1m=0.075,
-                    output_price_per_1m=0.30
-                ),
+                pricing=PricingInfo(input_price_per_1m=0.075, output_price_per_1m=0.30),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -95,7 +98,12 @@ class GoogleProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Fast and efficient model with 1M token context",
-                recommended_for=["fast responses", "cost-effective", "high volume", "balanced performance"]
+                recommended_for=[
+                    "fast responses",
+                    "cost-effective",
+                    "high volume",
+                    "balanced performance",
+                ],
             ),
         ]
 
@@ -105,7 +113,7 @@ class GoogleProvider(RemoteModelProvider):
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
         streaming: bool = True,
-        **kwargs
+        **kwargs: Any,
     ) -> BaseChatModel:
         """Create Google model instance."""
         # Validate model exists
@@ -129,10 +137,9 @@ class GoogleProvider(RemoteModelProvider):
         return ChatGoogleGenerativeAI(
             model=model_id,
             temperature=temperature,
-            max_output_tokens=max_tokens,
-            streaming=streaming,
-            google_api_key=api_key,
-            **kwargs
+            max_tokens=max_tokens,
+            api_key=SecretStr(api_key),
+            **kwargs,
         )
 
     def validate_connection(self) -> tuple[bool, Optional[str]]:
@@ -143,7 +150,7 @@ class GoogleProvider(RemoteModelProvider):
 
         try:
             # Try to create a minimal model instance
-            model = self.create_model("gemini-1.5-flash")
+            self.create_model("gemini-1.5-flash")
             return True, None
         except Exception as e:
             return False, f"Connection failed: {str(e)}"
