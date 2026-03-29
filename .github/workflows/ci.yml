@@ -78,7 +78,7 @@ jobs:
           version: 'latest'
 
       - name: Cache uv
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.local/share/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('apps/api/requirements.txt', 'apps/api/pyproject.toml') }}
@@ -226,7 +226,7 @@ jobs:
           fetch-depth: 0
 
       - name: Cache npm
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('apps/web/package-lock.json') }}
@@ -273,7 +273,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Cache npm
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('apps/web/package-lock.json') }}
@@ -328,7 +328,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Cache npm
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
