@@ -543,7 +543,7 @@ jobs:
       contents: read
     steps:
       - name: Summarize pipeline health
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const needs = ${{ toJson(needs) }};
