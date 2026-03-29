@@ -14,7 +14,7 @@ langchain-community>=0.3.0
 # LangChain core and providers (pinned to 0.3.x for API compatibility)
 langchain>=0.3.0,<0.4.0
 langchain-core>=0.3.0,<0.4.0
-langchain-openai>=0.2.0,<0.3.0
+langchain-openai>=0.2.0,<1.2.0
 langchain-anthropic>=0.3.0,<0.4.0
 langchain-google-genai>=2.0.0,<3.0.0
 
