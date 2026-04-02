@@ -517,7 +517,7 @@ jobs:
         run: |
           docker build -f deploy/docker/Dockerfile.frontend -t ai-frontend:ci .
       - name: Trivy scan (backend)
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           image-ref: ai-backend:ci
           format: table
@@ -526,7 +526,7 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
       - name: Trivy scan (frontend)
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           image-ref: ai-frontend:ci
           format: table
