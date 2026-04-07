@@ -7,7 +7,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, Mapping, Sequence, Set
-from xml.etree import ElementTree
+from defusedxml import ElementTree
 
 
 @dataclass(frozen=True)

@@ -123,19 +123,27 @@ def verify_access_token(token: str) -> dict[str, Any]:
     return payload
 
 
-def decode_access_token(token: str) -> Optional[dict[str, Any]]:
+def _decode_access_token_unsafe(token: str) -> Optional[dict[str, Any]]:
     """
-    Decode a JWT access token without verification.
-
-    This is useful for debugging or extracting claims from expired tokens.
-    DO NOT use for authentication - use verify_access_token instead.
-
+    INTERNAL: Decode a JWT access token WITHOUT signature verification.
+    
+    WARNING: This function does NOT verify the token signature.
+    It only decodes the token payload. DO NOT use for authentication.
+    This is intended for internal debugging only.
+    
     Args:
         token: Encoded JWT token string
 
     Returns:
         Decoded token payload or None if invalid
     """
+    import warnings
+    warnings.warn(
+        "decode_access_token is deprecated and will be removed. "
+        "Use verify_access_token instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     try:
         return jwt.decode(
             token,
@@ -145,6 +153,11 @@ def decode_access_token(token: str) -> Optional[dict[str, Any]]:
         )
     except jwt.PyJWTError:
         return None
+
+
+# Alias for backwards compatibility (triggers deprecation warning)
+import functools
+decode_access_token = functools.partial(_decode_access_token_unsafe)
 
 
 def generate_refresh_token() -> str:
