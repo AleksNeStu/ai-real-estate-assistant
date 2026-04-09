@@ -172,7 +172,7 @@ jobs:
           python ../../scripts/ci/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include 'api/*.py' --include 'api/routers/*.py' --include 'rules/*.py' --include 'models/provider_factory.py' --include 'models/user_model_preferences.py' --include 'config/*.py'
 
       - name: Upload backend coverage (unit)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-coverage-unit-xml
           path: coverage.xml
@@ -212,7 +212,7 @@ jobs:
 
       - name: Upload backend coverage (integration)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-coverage-integration-xml
           path: coverage.xml
@@ -259,7 +259,7 @@ jobs:
           node -e 'const fs=require("fs"); const summary=JSON.parse(fs.readFileSync("coverage/coverage-summary.json","utf8")); const total=summary.total; const text=["### Frontend Coverage","","Lines: "+total.lines.pct+"%","Statements: "+total.statements.pct+"%","Functions: "+total.functions.pct+"%","Branches: "+total.branches.pct+"%",""].join("\n"); fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, text);'
 
       - name: Upload frontend coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-coverage
           path: apps/web/coverage
@@ -300,7 +300,7 @@ jobs:
 
       - name: Upload OpenAPI documentation
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: openapi-docs
           path: docs/api/
@@ -358,7 +358,7 @@ jobs:
 
       - name: Upload Lighthouse results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: lighthouse-results
           path: apps/web/.lighthouseci
@@ -411,14 +411,14 @@ jobs:
 
       - name: Upload E2E report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-report
           path: artifacts/e2e-report/
 
       - name: Upload E2E output (screenshots/traces)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-output
           path: artifacts/e2e-output/
@@ -495,7 +495,7 @@ jobs:
           python -m bandit -r apps/api -x tests,node_modules,.history,venv,venv/*,.venv,.venv/*,.venv_ci,.venv_ci/* --severity-level high --confidence-level high -f json -o artifacts/bandit.json
       - name: Upload bandit report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bandit-report
           path: artifacts/bandit.json
@@ -530,7 +530,7 @@ jobs:
           python -m pip_audit -r requirements.txt -f json -o ../../artifacts/pip-audit.json
       - name: Upload pip-audit report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pip-audit-report
           path: artifacts/pip-audit.json
