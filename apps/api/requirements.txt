@@ -5,7 +5,7 @@ pyarrow>=18.0.0
 # Vector store / embeddings
 chromadb>=0.5.0
 fastembed>=0.5.0,<1.0.0
-langchain-chroma>=0.2.0  # Compatible with langchain-core 0.3.x
+langchain-chroma>=1.1.0  # Compatible with langchain-core 0.3.x
 
 # Retry logic for external APIs
 backoff>=2.2.0
