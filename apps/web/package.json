@@ -43,7 +43,7 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
-    "@lhci/cli": "^0.14.x",
+    "@lhci/cli": "^0.15.x",
     "@swc/helpers": "^0.5.19",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.1",
