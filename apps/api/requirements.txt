@@ -47,7 +47,7 @@ cryptography>=43.0.0
 # Utilities
 requests>=2.32.0
 types-requests>=2.32.0  # Type stubs for mypy
-regex>=2024.0.0
+regex>=2026.5.9
 rpds-py>=0.30.0
 onnxruntime>=1.19.0
 yarl>=1.17.0
