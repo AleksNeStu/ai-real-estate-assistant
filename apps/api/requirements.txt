@@ -55,7 +55,7 @@ faker>=27.0.0
 reportlab>=4.2.0
 rank_bm25>=0.2.2
 openpyxl>=3.1.0
-tabulate>=0.9.0
+tabulate>=0.10.0
 
 # Excel file support (beyond openpyxl)
 odfpy>=1.4.1  # For .ods file support
