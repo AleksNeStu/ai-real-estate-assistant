@@ -54,7 +54,7 @@
     "@types/mapbox__mapbox-gl-draw": "^1.4.9",
     "@types/mapbox__point-geometry": "^1.0.87",
     "@types/mapbox-gl": "^3.5.0",
-    "@types/node": "^20",
+    "@types/node": "^25",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
