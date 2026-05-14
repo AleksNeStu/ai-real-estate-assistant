@@ -88,4 +88,4 @@ Pillow>=12.2.0  # Image processing (fastembed pins pillow<12.3)
 urllib3>=2.7.0  # fastembed pins urllib3<2.8
 GitPython>=3.1.50  # CVE-2024-22190: RCE via config_writer (latest available)
 pyasn1>=0.6.3  # latest available (CVE-2024-xxx DoS mitigated)
-orjson>=3.11.7
+orjson>=3.11.9
