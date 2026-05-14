@@ -74,7 +74,7 @@ asyncpg>=0.29.0  # Async PostgreSQL driver for production deployments
 alembic>=1.18.4  # Database migrations
 pyjwt>=2.8.0
 passlib[bcrypt]>=1.7.4
-authlib>=1.6.0
+authlib>=1.6.12
 httpx>=0.27.0,<1.0.0
 jinja2>=3.1.0
 
