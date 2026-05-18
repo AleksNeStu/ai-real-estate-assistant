@@ -60,7 +60,9 @@ services:
       - DATABASE_URL=${DATABASE_URL:-sqlite+aiosqlite:///./data/auth.db}
       - POOL_MAX_WORKERS=${POOL_MAX_WORKERS:-10}
       # Auth configuration
-      - ENABLE_JWT_AUTH=${ENABLE_JWT_AUTH:-true}
+      - AUTH_JWT_ENABLED=${AUTH_JWT_ENABLED:-true}
+      - AUTH_REGISTRATION_ENABLED=${AUTH_REGISTRATION_ENABLED:-true}
+      - AUTH_EMAIL_VERIFICATION_REQUIRED=${AUTH_EMAIL_VERIFICATION_REQUIRED:-false}
       # OAuth configuration
       - AUTH_OAUTH_GOOGLE_ENABLED=${AUTH_OAUTH_GOOGLE_ENABLED:-false}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}

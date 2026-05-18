@@ -369,6 +369,8 @@ logs/
 # Playwright test output
 artifacts/e2e-output/
 test-results/
+.playwright-mcp/
+tests/
 .kiro/
 .vercel/
 .vercel/project.json
