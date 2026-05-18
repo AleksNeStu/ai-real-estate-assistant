@@ -94,13 +94,11 @@ Full control over test execution:
 **Windows:**
 
 ```powershell
-.\scripts\dev\start.ps1       # Start both backend and frontend
-.\scripts\dev\stop.ps1        # Stop all services
+.\scripts\dev\run.ps1         # Start both backend and frontend
 .\scripts\dev\be.ps1          # Start backend only
 .\scripts\dev\fe.ps1          # Start frontend only
 .\scripts\dev\stop-be.ps1     # Stop backend
 .\scripts\dev\stop-fe.ps1     # Stop frontend
-.\scripts\dev\run.ps1         # Alternative start script
 ```
 
 **Linux/macOS:**
@@ -109,30 +107,48 @@ Full control over test execution:
 ./scripts/dev/run.sh          # Start both services
 ```
 
+### Standalone Mode (`local/`)
+
+Simpler launchers that pass arguments directly to `scripts/start.py`:
+
+```powershell
+.\scripts\local\run.ps1                       # Start both services
+.\scripts\local\run.ps1 --no-bootstrap        # Skip dependency install
+.\scripts\local\backend.ps1                   # Backend only
+.\scripts\local\frontend.ps1                  # Frontend only
+```
+
 ---
 
 ## 🐳 Docker Scripts (`docker/`)
 
-### Docker Compose
+### Quick Start (Self-Contained)
+
+Zero-argument scripts. No dependencies beyond Docker Desktop.
 
 ```powershell
-# Windows
-.\scripts\docker\start-docker.ps1
-.\scripts\docker\docker.ps1
+.\scripts\docker\start.ps1    # Build and start full stack
+.\scripts\docker\stop.ps1     # Stop containers
+.\scripts\docker\logs.ps1     # Follow logs (Ctrl+C to stop)
+.\scripts\docker\reset.ps1    # Full reset (deletes data volumes)
+```
 
-# Linux/macOS
-./scripts/docker/docker-up.sh
-./scripts/docker/docker.sh
+First run: if no `.env` exists, copies from `.env.example` and opens editor. Add at least one LLM API key, then re-run.
+
+Ports: Backend `:8082`, Frontend `:3082`, Redis `:16379`.
+
+### Advanced Launchers
+
+```powershell
+.\scripts\docker\docker.ps1                     # With GPU detection
+.\scripts\docker\docker.ps1 --docker-mode cpu   # CPU-only
+.\scripts\docker\docker.ps1 --internet          # With web search
 ```
 
 ### Quickstart Verification
 
 ```powershell
-# Windows
-.\scripts\docker\quickstart-verify.ps1
-
-# Linux/macOS
-./scripts/docker/quickstart-verify.sh
+.\scripts\docker\quickstart-verify.ps1    # Health check all services
 ```
 
 ### CPU/GPU Variants
@@ -255,16 +271,13 @@ python scripts/ci/network_isolation_check.py
 ## 📦 Other Directories
 
 - **`setup/`** - Installation and setup scripts
-- **`deployment/`** - Deployment automation
+- **`deployment/`** - Deployment automation (Vercel)
 - **`validation/`** - Validation and verification scripts
 - **`workflows/`** - GitHub Actions workflow helpers
-- **`community/`** - Community contribution scripts
-- **`internal/`** - Internal tooling
-- **`local/`** - Local development helpers
+- **`internal/`** - Internal tooling (git-filter-repo, pre-commit)
 - **`port/`** - Port management system
-- **`shared/`** - Shared utilities
-- **`sprav/`** - Reference data scripts
-- **`taskmaster/`** - Task automation
+- **`shared/`** - Shared utilities (Python resolver)
+- **`sprav/`** - Pre-release validation scripts
 
 ---
 
