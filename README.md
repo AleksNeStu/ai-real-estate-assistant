@@ -58,28 +58,13 @@ Experience the full power of AI-driven real estate search without any setup:
 
 ## 📸 Screenshots
 
-<table>
-  <tr>
-    <td align="center"><b>Home</b></td>
-    <td align="center"><b>Property Search</b></td>
-    <td align="center"><b>Analytics & Tools</b></td>
-  </tr>
-  <tr>
-    <td><img src="assets/screenshots/home-dark.png" alt="Home page with dark theme" width="400"/></td>
-    <td><img src="assets/screenshots/search-dark.png" alt="Property search with filters" width="400"/></td>
-    <td><img src="assets/screenshots/analytics-dark.png" alt="Analytics and financial tools" width="400"/></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Knowledge Base</b></td>
-    <td align="center"><b>Sign In</b></td>
-    <td align="center"><b>Create Account</b></td>
-  </tr>
-  <tr>
-    <td><img src="assets/screenshots/knowledge-dark.png" alt="Knowledge base with document upload" width="400"/></td>
-    <td><img src="assets/screenshots/login-dark.png" alt="Login page with OAuth" width="400"/></td>
-    <td><img src="assets/screenshots/register-dark.png" alt="Registration page with OAuth" width="400"/></td>
-  </tr>
-</table>
+<div align="center">
+
+<img src="assets/screenshots/slideshow.gif" alt="App slideshow — slide through all screens" width="640"/>
+
+*Home · Search · Assistant · Analytics · Agents · Knowledge · Sign In · Sign Up*
+
+</div>
 
 ## ✨ Features
 
@@ -109,9 +94,9 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 [![GitHub forks](https://img.shields.io/github/forks/AleksNeStu/ai-real-estate-assistant?style=social)](https://github.com/AleksNeStu/ai-real-estate-assistant)
 [![GitHub issues](https://img.shields.io/github/issues/AleksNeStu/ai-real-estate-assistant)](https://github.com/AleksNeStu/ai-real-estate-assistant/issues)
 
-### Activity Graph
+### Star Growth
 
-[![Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=AleksNeStu&repo=ai-real-estate-assistant&theme=react-dark)](https://github.com/AleksNeStu/ai-real-estate-assistant)
+[![Star History Chart](https://api.star-history.com/svg?repos=AleksNeStu/ai-real-estate-assistant&type=Date)](https://star-history.com/#AleksNeStu/ai-real-estate-assistant&Date)
 
 ### Key Metrics
 
