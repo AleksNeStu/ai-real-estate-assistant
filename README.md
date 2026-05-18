@@ -56,7 +56,30 @@ Experience the full power of AI-driven real estate search without any setup:
 
 > **Note:** The demo uses simulated AI responses for instant exploration. Production deployment requires API keys.
 
-![AI Real Estate Assistant hero banner showing property search interface](assets/image.png)
+## 📸 Screenshots
+
+<table>
+  <tr>
+    <td align="center"><b>Home</b></td>
+    <td align="center"><b>Property Search</b></td>
+    <td align="center"><b>Analytics & Tools</b></td>
+  </tr>
+  <tr>
+    <td><img src="assets/screenshots/home-dark.png" alt="Home page with dark theme" width="400"/></td>
+    <td><img src="assets/screenshots/search-dark.png" alt="Property search with filters" width="400"/></td>
+    <td><img src="assets/screenshots/analytics-dark.png" alt="Analytics and financial tools" width="400"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Knowledge Base</b></td>
+    <td align="center"><b>Sign In</b></td>
+    <td align="center"><b>Create Account</b></td>
+  </tr>
+  <tr>
+    <td><img src="assets/screenshots/knowledge-dark.png" alt="Knowledge base with document upload" width="400"/></td>
+    <td><img src="assets/screenshots/login-dark.png" alt="Login page with OAuth" width="400"/></td>
+    <td><img src="assets/screenshots/register-dark.png" alt="Registration page with OAuth" width="400"/></td>
+  </tr>
+</table>
 
 ## ✨ Features
 
