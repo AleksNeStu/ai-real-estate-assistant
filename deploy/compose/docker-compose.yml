@@ -61,6 +61,11 @@ services:
       - POOL_MAX_WORKERS=${POOL_MAX_WORKERS:-10}
       # Auth configuration
       - ENABLE_JWT_AUTH=${ENABLE_JWT_AUTH:-true}
+      # OAuth configuration
+      - AUTH_OAUTH_GOOGLE_ENABLED=${AUTH_OAUTH_GOOGLE_ENABLED:-false}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI:-}
       # Auto-seed on startup (set to "true" for fresh dev/demo data)
       - SEED_ON_STARTUP=${SEED_ON_STARTUP:-false}
     volumes:
@@ -198,7 +203,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: redis
+    container_name: ai-redis
     ports:
       - "16379:6379"
     command: ["redis-server", "--appendonly", "yes", "--maxmemory", "100mb", "--maxmemory-policy", "allkeys-lru"]
@@ -225,7 +230,7 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-sprav_dev}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
       - POSTGRES_DB=${POSTGRES_DB:-realestate}
     volumes:
       - postgres_data:/var/lib/postgresql/data
