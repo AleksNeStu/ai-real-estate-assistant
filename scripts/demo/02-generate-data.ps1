@@ -49,8 +49,10 @@ Write-Host "    • 20 CMA reports" -ForegroundColor White
 Write-Host ""
 Write-Host "  ℹ️  Existing demo data will be cleared first for clean state" -ForegroundColor Yellow
 Write-Host ""
+Write-Host "  ⏳ This may take 2-3 minutes... (generating 250+ properties with ChromaDB)" -ForegroundColor Cyan
+Write-Host ""
 
-$null = docker exec ai-backend python -c "
+docker exec ai-backend python -c "
 import asyncio
 import sys
 import logging
@@ -76,12 +78,18 @@ async def main():
 
 exit_code = asyncio.run(main())
 sys.exit(exit_code)
-" 2>&1
+" 2>&1 | ForEach-Object {
+    if ($_ -match "Error|error|ERROR|Exception|Traceback") { Write-Host "  $_" -ForegroundColor Red }
+    elseif ($_ -match "✅|successfully") { Write-Host "  $_" -ForegroundColor Green }
+    elseif ($_ -match "INFO") { Write-Host "  $_" -ForegroundColor Cyan }
+    elseif ($_ -match "WARNING|⚠") { Write-Host "  $_" -ForegroundColor Yellow }
+    else { Write-Host "  $_" -ForegroundColor White }
+}
 
 if ($LASTEXITCODE -eq 0) {
     Ok "Comprehensive demo data generated successfully"
 } else {
-    Warn "Data generation completed with some warnings (non-critical)"
+    Fail "Data generation failed with exit code $LASTEXITCODE. Check the errors above."
 }
 
 # ── Verify Data Generation ─────────────────────────────────────────────────
