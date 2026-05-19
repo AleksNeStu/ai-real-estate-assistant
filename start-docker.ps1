@@ -1,21 +1,25 @@
 <#
 .SYNOPSIS
-    Start AI Real Estate Assistant in Docker. Zero arguments.
+    Start AI Real Estate Assistant in Docker (Demo Mode)
 .DESCRIPTION
-    Builds and runs the full stack (backend + frontend + Redis).
-    Checks Docker, validates .env, waits for health checks.
+    Quick start script for demo mode with MockLLM and seeded data.
+    No API keys required for demo functionality.
 #>
 $ErrorActionPreference = "Stop"
-$ProjectRoot = Split-Path (Split-Path $PSScriptRoot)
+$ProjectRoot = $PSScriptRoot
 $ComposeDir = Join-Path $ProjectRoot "deploy/compose"
 $ComposeFile = Join-Path $ComposeDir "docker-compose.yml"
 $EnvFile = Join-Path $ComposeDir ".env"
-$EnvExample = Join-Path $ComposeDir ".env.example"
 
 function Step($m) { Write-Host "`n  $m" -ForegroundColor Cyan }
 function Ok($m)   { Write-Host "  OK  $m" -ForegroundColor Green }
 function Warn($m) { Write-Host "  !!  $m" -ForegroundColor Yellow }
 function Fail($m) { Write-Host "  X   $m" -ForegroundColor Red; exit 1 }
+
+Write-Host "`n  =====================================" -ForegroundColor Cyan
+Write-Host "  AI Real Estate Assistant - Docker" -ForegroundColor Cyan
+Write-Host "  Demo Mode Start" -ForegroundColor Cyan
+Write-Host "  =====================================`n" -ForegroundColor Cyan
 
 # ── Docker ────────────────────────────────────────────────────────────
 Step "[1/5] Checking Docker..."
@@ -27,30 +31,33 @@ Ok "Docker is running"
 # ── .env ──────────────────────────────────────────────────────────────
 Step "[2/5] Checking .env..."
 if (-not (Test-Path $EnvFile)) {
+    $EnvExample = Join-Path $ComposeDir ".env.example"
     if (Test-Path $EnvExample) {
         Copy-Item $EnvExample $EnvFile
         Warn "Created .env from .env.example"
-        Warn "Add at least one LLM key (OPENAI_API_KEY, ANTHROPIC_API_KEY, or GOOGLE_API_KEY), then re-run."
-        Start-Process notepad $EnvFile -Wait
-        if (-not (Test-Path $EnvFile)) { Fail ".env was deleted." }
+        Warn "Demo mode enabled by default"
     } else {
-        Fail "No .env or .env.example found."
+        Fail "No .env or .env.example found in deploy/compose/"
     }
 }
 Ok ".env exists"
 
-# ── Validate LLM key ─────────────────────────────────────────────────
-Step "[3/5] Validating .env..."
+# ── Demo Mode ────────────────────────────────────────────────────────
+Step "[3/5] Enabling Demo Mode..."
 $envContent = Get-Content $EnvFile -Raw
-$hasLlm = @("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY", "XAI_API_KEY", "DEEPSEEK_API_KEY", "ZAI_API_KEY") | Where-Object {
-    $envContent -match "(?m)^$_=(?!$|your-|sk-your|REPLACE)"
+if ($envContent -notmatch "NEXT_PUBLIC_DEMO_MODE=true") {
+    Warn "Enabling demo mode in .env..."
+    $envContent = $envContent -replace "NEXT_PUBLIC_DEMO_MODE=.*", "NEXT_PUBLIC_DEMO_MODE=true"
+    $envContent = $envContent -replace "SEED_ON_STARTUP=.*", "SEED_ON_STARTUP=true"
+    $envContent = $envContent -replace "DEMO_MODE=.*", "DEMO_MODE=false"
+    Set-Content $EnvFile $envContent -NoNewline
 }
-if ($hasLlm) { Ok "LLM key found" } else { Warn "No LLM key — app will run in demo mode" }
+Ok "Demo mode configured"
 
 # ── Build and start ───────────────────────────────────────────────────
 Step "[4/5] Building and starting containers..."
 Push-Location $ComposeDir
-docker compose -f $ComposeFile --env-file $EnvFile up -d --build 2>&1 | ForEach-Object {
+docker compose up -d --build 2>&1 | ForEach-Object {
     if ($_ -match "error|Error|ERROR|failed|FAILED") { Write-Host "  X $_" -ForegroundColor Red }
     else { Write-Host "  $_" -ForegroundColor DarkGray }
 }
@@ -67,21 +74,26 @@ $elapsed = 0; $bOk = $false; $fOk = $false
 while ($elapsed -lt 120 -and -not ($bOk -and $fOk)) {
     Start-Sleep -Seconds 3; $elapsed += 3
     if (-not $bOk) { try { $r = Invoke-WebRequest -Uri "$BackendUrl/health" -TimeoutSec 3 -SkipHttpErrorCheck -ErrorAction Stop; if ($r.StatusCode -eq 200) { $bOk = $true; Ok "Backend:  $BackendUrl (${elapsed}s)" } } catch {} }
-    if (-not $fOk) { try { $r = Invoke-WebRequest -Uri "$FrontendUrl/" -TimeoutSec 3 -SkipHttpErrorCheck -ErrorAction Stop; if ($r.StatusCode -eq 200) { $fOk = $true; Ok "Frontend: $FrontendUrl (${elapsed}s)" } } catch {} }
+    if (-not $fOk) { try { $r = Invoke-WebRequest -Uri "$FrontendUrl/" -TimeoutSec 3 -SkipHttpErrorCheck -ErrorAction Stop; if ($r.StatusCode -eq 200) { $fOk = $true; Ok "Frontend:  $FrontendUrl (${elapsed}s)" } } catch {} }
     if (-not ($bOk -and $fOk)) { Write-Host "." -NoNewline -ForegroundColor DarkGray }
 }
 Write-Host ""
 
 # ── Summary ───────────────────────────────────────────────────────────
 Write-Host "`n  =====================================" -ForegroundColor Cyan
-Write-Host "  AI Real Estate Assistant — Docker" -ForegroundColor Cyan
+Write-Host "  🚀 Ready!" -ForegroundColor Green
 Write-Host "  =====================================" -ForegroundColor Cyan
-if ($bOk) { Write-Host "  Backend:   $BackendUrl" -ForegroundColor Green }
-else      { Write-Host "  Backend:   $BackendUrl (still starting...)" -ForegroundColor Yellow }
-if ($fOk) { Write-Host "  Frontend:  $FrontendUrl" -ForegroundColor Green }
-else      { Write-Host "  Frontend:  $FrontendUrl (still starting...)" -ForegroundColor Yellow }
 Write-Host ""
-Write-Host "  scripts/docker/stop.ps1   — stop" -ForegroundColor DarkGray
-Write-Host "  scripts/docker/logs.ps1   — watch logs" -ForegroundColor DarkGray
-Write-Host "  scripts/docker/reset.ps1  — full clean" -ForegroundColor DarkGray
+Write-Host "  Frontend:  $FrontendUrl" -ForegroundColor Green
+Write-Host "  Backend:   $BackendUrl" -ForegroundColor Green
+Write-Host ""
+Write-Host "  Demo Mode:  " -NoNewline -ForegroundColor Cyan
+Write-Host "Enabled (toggleable via UI)" -ForegroundColor Green
+Write-Host ""
+Write-Host "  Next steps:" -ForegroundColor Yellow
+Write-Host "    • Open frontend in browser" -ForegroundColor White
+Write-Host "    • Toggle demo mode ON/OFF via banner" -ForegroundColor White
+Write-Host "    • Take screenshots for documentation" -ForegroundColor White
+Write-Host ""
+Write-Host "  Stop: ./stop-docker.ps1" -ForegroundColor DarkGray
 Write-Host ""

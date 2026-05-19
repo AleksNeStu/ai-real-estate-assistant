@@ -127,13 +127,25 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full system design.
 
 ## 🚀 Quick Start
 
-### Docker (recommended)
+### PowerShell Scripts (recommended for Windows)
+
+```powershell
+# Clone and start demo mode (no API keys required)
+git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
+cd ai-real-estate-assistant
+.\start-docker.ps1
+
+# Stop: .\stop-docker.ps1
+# Logs: .\logs-docker.ps1
+```
+
+### Docker (manual)
 
 ```bash
 git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
 cd ai-real-estate-assistant
 cp deploy/compose/.env.example deploy/compose/.env
-# Edit deploy/compose/.env — add one API key (or use Ollama for free local LLM)
+# Edit deploy/compose/.env — demo mode enabled by default
 docker compose -f deploy/compose/docker-compose.yml up --build
 # Frontend: http://localhost:3082 · API: http://localhost:8082/docs
 ```
