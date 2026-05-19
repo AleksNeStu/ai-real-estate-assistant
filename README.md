@@ -60,7 +60,7 @@ Experience the full power of AI-driven real estate search without any setup:
 
 <div align="center">
 
-<img src="assets/screenshots/slideshow.gif" alt="App slideshow — slide through all screens" width="640"/>
+<img src="https://raw.githubusercontent.com/AleksNeStu/ai-real-estate-assistant/dev/assets/screenshots/slideshow.gif" alt="App slideshow — slide through all screens" width="640"/>
 
 *Home · Search · Assistant · Analytics · Agents · Knowledge · Sign In · Sign Up*
 
