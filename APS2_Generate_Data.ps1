@@ -54,19 +54,18 @@ import asyncio
 import sys
 import logging
 from alembic.demo_data_generator import generate_comprehensive_demo_data
-from db.database import get_db_session
+from db.database import get_db_context
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
 async def main():
     try:
-        async for session in get_db_session():
+        async with get_db_context() as session:
             results = await generate_comprehensive_demo_data(session)
             print()
             print('✅ Comprehensive demo data generated successfully!')
             for key, value in results.items():
                 print(f'   • {value} {key}')
-            break
         return 0
     except Exception as e:
         print(f'❌ Error: {e}', file=sys.stderr)

@@ -506,10 +506,10 @@ async def generate_comprehensive_demo_data(session: AsyncSession) -> dict:
 if __name__ == "__main__":
     import asyncio
 
-    from db.database import get_db_session
+    from db.database import get_db_context
 
     async def main():
-        async for session in get_db_session():
+        async with get_db_context() as session:
             results = await generate_comprehensive_demo_data(session)
             print("\n✅ Comprehensive demo data generated:")
             print(f"   • {results['users']} users")
@@ -521,6 +521,5 @@ if __name__ == "__main__":
             print(f"   • {results['activities']} activity events")
             print(f"   • {results['preferences']} preference profiles")
             print(f"   • {results['cma_reports']} CMA reports")
-            break
 
     asyncio.run(main())
