@@ -66,10 +66,35 @@ Ok "Demo mode configured (NEXT_PUBLIC_DEMO_MODE=true, SEED_ON_STARTUP=true, DEMO
 # ── Build and Start ─────────────────────────────────────────────────────
 Step "[4/5] Building and starting containers..."
 $ComposeFile = Join-Path $ComposeDir "docker-compose.yml"
-docker compose -f $ComposeFile up -d --build 2>&1 | ForEach-Object {
-    if ($_ -match "error|Error|ERROR|failed|FAILED") { Write-Host "  ❌ $_" -ForegroundColor Red }
-    else { Write-Host "  $_" -ForegroundColor DarkGray }
+
+# Check if images already exist (skip build if they do)
+$backendImage = docker images -q "realt-backend" 2>$null
+$frontendImage = docker images -q "realt-frontend" 2>$null
+
+if ($backendImage -and $frontendImage -and $args -notcontains "-Force") {
+    Write-Host "  Images already built, starting containers..." -ForegroundColor Cyan
+    $buildFlag = $false
+} else {
+    if ($args -contains "-Force") {
+        Write-Host "  -Force: rebuilding images..." -ForegroundColor Yellow
+    } else {
+        Write-Host "  First run: building images..." -ForegroundColor Cyan
+    }
+    $buildFlag = $true
 }
+
+if ($buildFlag) {
+    docker compose -f $ComposeFile up -d --build 2>&1 | ForEach-Object {
+        if ($_ -match "error|Error|ERROR|failed|FAILED") { Write-Host "  ❌ $_" -ForegroundColor Red }
+        else { Write-Host "  $_" -ForegroundColor DarkGray }
+    }
+} else {
+    docker compose -f $ComposeFile up -d 2>&1 | ForEach-Object {
+        if ($_ -match "error|Error|ERROR") { Write-Host "  ❌ $_" -ForegroundColor Red }
+        else { Write-Host "  $_" -ForegroundColor DarkGray }
+    }
+}
+
 if ($LASTEXITCODE -ne 0) { Fail "Docker compose failed." }
 Ok "Containers started successfully"
 
