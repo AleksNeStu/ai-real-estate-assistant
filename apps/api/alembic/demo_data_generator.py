@@ -167,8 +167,7 @@ class ComprehensiveDemoDataGenerator:
         logger.info("Clearing ChromaDB vector store...")
         try:
             vector_store = ChromaPropertyStore()
-            await vector_store.initialize()
-            await vector_store.clear()
+            vector_store.clear()
             logger.info("ChromaDB vector store cleared")
         except Exception as e:
             logger.warning(f"Failed to clear ChromaDB (non-fatal): {e}")
@@ -249,7 +248,7 @@ class ComprehensiveDemoDataGenerator:
                 "apartment": 1.0,
                 "studio": 0.7,
                 "house": 1.5,
-                "penthouse": 2.0,
+                "townhouse": 1.3,
                 "loft": 1.2,
             }[prop_type]
             base_price = int(base_price * price_multiplier * random.uniform(0.5, 2.0))
@@ -286,12 +285,11 @@ class ComprehensiveDemoDataGenerator:
 
         # Add to ChromaDB
         vector_store = ChromaPropertyStore()
-        await vector_store.initialize()
 
         batch_size = 50
         for i in range(0, len(properties), batch_size):
             batch = properties[i : i + batch_size]
-            await vector_store.add_properties([p.model_dump() for p in batch])
+            vector_store.add_properties(batch)
             logger.info(f"Added batch {i // batch_size + 1}: {len(batch)} properties")
 
         return len(properties)
@@ -316,9 +314,11 @@ class ComprehensiveDemoDataGenerator:
                     "min_rooms": random.randint(1, 3),
                     "max_rooms": random.randint(3, 5),
                 },
-                notifications_enabled=random.choice([True, False]),
+                alert_frequency=random.choice(["instant", "daily", "weekly", "none"]),
+                is_active=random.choice([True, False]),
+                notify_on_new=random.choice([True, False]),
+                notify_on_price_drop=random.choice([True, False]),
                 created_at=datetime.now(UTC) - timedelta(days=random.randint(1, 90)),
-                updated_at=datetime.now(UTC),
             )
             searches.append(search)
 
@@ -336,8 +336,8 @@ class ComprehensiveDemoDataGenerator:
 
             # Check for duplicates
             existing = await self.session.execute(
-                select(SavedSearchDB).where(
-                    SavedSearchDB.user_id == user_id, SavedSearchDB.id == property_id
+                select(FavoriteDB).where(
+                    FavoriteDB.user_id == user_id, FavoriteDB.property_id == property_id
                 )
             )
 
