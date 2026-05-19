@@ -96,6 +96,9 @@ if ($LASTEXITCODE -eq 0) {
 Step "[3/4] Verifying generated data..."
 Start-Sleep -Seconds 2
 
+$BackendUrl = "http://localhost:8082"
+$FrontendUrl = "http://localhost:3082"
+
 try {
     $checkResponse = Invoke-WebRequest -Uri "$BackendUrl/health" -TimeoutSec 10
 
