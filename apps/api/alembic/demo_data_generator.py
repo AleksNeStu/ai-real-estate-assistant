@@ -438,15 +438,16 @@ class ComprehensiveDemoDataGenerator:
         for _i in range(count):
             event = UserActivityEvent(
                 id=str(uuid.uuid4()),
-                user_id=random.choice(self.user_ids),
+                user_id_hash=hash(random.choice(self.user_ids)),
+                session_id=f"demo-session-{random.randint(1, 100)}",
                 event_type=random.choice(ACTIVITY_TYPES),
-                metadata={
+                event_category=random.choice(["search", "property", "favorites", "analytics"]),
+                event_data={
                     "page": random.choice(["search", "property", "favorites", "analytics"]),
                     "duration": random.randint(10, 300),
                 },
-                ip_address=f"192.168.1.{random.randint(1, 255)}",
-                user_agent="Demo Browser/1.0",
-                created_at=datetime.now(UTC) - timedelta(days=random.randint(1, 30)),
+                duration_ms=random.randint(50, 5000),
+                event_timestamp=datetime.now(UTC) - timedelta(days=random.randint(1, 30)),
             )
             events.append(event)
 
