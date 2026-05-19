@@ -18,6 +18,10 @@
 ## Stop Demo
 
 ```powershell
+# Use dedicated demo stop script
+.\scripts\demo\03-stop-docker.ps1
+
+# Or use general stop script
 .\scripts\docker\stop.ps1
 ```
 

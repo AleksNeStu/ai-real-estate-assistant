@@ -22,9 +22,9 @@ Run AI Real Estate Assistant locally with comprehensive demo data in 10 minutes.
 
 Open your browser:
 
-- **Frontend**: http://localhost:3082
-- **Backend API**: http://localhost:8082
-- **API Docs**: http://localhost:8082/docs
+- **Frontend**: <http://localhost:3082>
+- **Backend API**: <http://localhost:8082>
+- **API Docs**: <http://localhost:8082/docs>
 
 No login required — demo mode is enabled by default.
 
@@ -43,12 +43,17 @@ No login required — demo mode is enabled by default.
 ## Stop the Demo
 
 ```powershell
+# Use the dedicated demo stop script (recommended)
+.\scripts\demo\03-stop-docker.ps1
+
+# Or use the general stop script
 .\scripts\docker\stop.ps1
 ```
 
 ## Troubleshooting
 
 **Containers won't start?**
+
 ```powershell
 # Check Docker is running
 docker ps
@@ -58,6 +63,7 @@ netstat -an | Select-String ":3082|:8082|:6379"
 ```
 
 **Data generation fails?**
+
 ```powershell
 # Re-run data generation
 .\scripts\demo\02-generate-data.ps1
