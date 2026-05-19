@@ -10,7 +10,8 @@
     - Works with SQLite database in Docker
 #>
 $ErrorActionPreference = "Stop"
-$ProjectRoot = $PSScriptRoot
+# Get project root (go up two levels from scripts/demo/ to project root)
+$ProjectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $ComposeDir = Join-Path $ProjectRoot "deploy/compose"
 
 function Step($m) { Write-Host "`n  $m" -ForegroundColor Cyan }

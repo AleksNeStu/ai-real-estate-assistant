@@ -11,7 +11,8 @@
     - Backend:  http://localhost:8082
 #>
 $ErrorActionPreference = "Stop"
-$ProjectRoot = $PSScriptRoot
+# Get project root (go up two levels from scripts/demo/ to project root)
+$ProjectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $ComposeDir = Join-Path $ProjectRoot "deploy/compose"
 $EnvFile = Join-Path $ComposeDir ".env"
 
