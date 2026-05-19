@@ -1,0 +1,120 @@
+<#
+.SYNOPSIS
+    APS1: Launch AI Real Estate Assistant in Docker (Demo Mode)
+.DESCRIPTION
+    First autonomous process - launches Docker containers with demo mode enabled.
+    No API keys required for demo functionality.
+.NOTES
+    - Run this script first to start Docker containers
+    - Then run APS2_Generate_Data.ps1 to populate with comprehensive data
+    - Frontend: http://localhost:3082
+    - Backend:  http://localhost:8082
+#>
+$ErrorActionPreference = "Stop"
+$ProjectRoot = $PSScriptRoot
+$ComposeDir = Join-Path $ProjectRoot "deploy/compose"
+$EnvFile = Join-Path $ComposeDir ".env"
+
+function Step($m) { Write-Host "`n  $m" -ForegroundColor Cyan }
+function Ok($m)   { Write-Host "  ✅  $m" -ForegroundColor Green }
+function Warn($m) { Write-Host "  ⚠️  $m" -ForegroundColor Yellow }
+function Fail($m) { Write-Host "  ❌  $m" -ForegroundColor Red; exit 1 }
+
+Write-Host "`n  ╔════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "  ║     APS1: AI Real Estate Assistant - Docker Launch     ║" -ForegroundColor Cyan
+Write-Host  "  ╚════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host ""
+
+# ── Validate Environment ────────────────────────────────────────────────
+Step "[1/5] Validating environment..."
+if (-not (Test-Path $ComposeDir)) {
+    Fail "Docker compose directory not found: $ComposeDir"
+}
+Ok "Project structure validated"
+
+# ── Check Docker ───────────────────────────────────────────────────────
+Step "[2/5] Checking Docker..."
+try {
+    $null = docker info 2>&1
+    if ($LASTEXITCODE -ne 0) { throw }
+} catch {
+    Fail "Docker is not running. Start Docker Desktop first."
+}
+Ok "Docker is running"
+
+# �── Configure Environment ───────────────────────────────────────────────
+Step "[3/5] Configuring demo mode..."
+if (-not (Test-Path $EnvFile)) {
+    $EnvExample = Join-Path $ComposeDir ".env.example"
+    if (Test-Path $EnvExample) {
+        Copy-Item $EnvExample $EnvFile
+        Warn "Created .env from .env.example"
+    } else {
+        Fail "No .env or .env.example found in deploy/compose/"
+    }
+}
+
+# Enable demo mode
+$envContent = Get-Content $EnvFile -Raw
+$envContent = $envContent -replace "NEXT_PUBLIC_DEMO_MODE=.*", "NEXT_PUBLIC_DEMO_MODE=true"
+$envContent = $envContent -replace "SEED_ON_STARTUP=.*", "SEED_ON_STARTUP=true"
+$envContent = $envContent -replace "DEMO_MODE=.*", "DEMO_MODE=true"
+Set-Content $EnvFile $envContent -NoNewline
+Ok "Demo mode configured (NEXT_PUBLIC_DEMO_MODE=true, SEED_ON_STARTUP=true, DEMO_MODE=true)"
+
+# ── Build and Start ─────────────────────────────────────────────────────
+Step "[4/5] Building and starting containers..."
+$ComposeFile = Join-Path $ComposeDir "docker-compose.yml"
+docker compose -f $ComposeFile up -d --build 2>&1 | ForEach-Object {
+    if ($_ -match "error|Error|ERROR|failed|FAILED") { Write-Host "  ❌ $_" -ForegroundColor Red }
+    else { Write-Host "  $_" -ForegroundColor DarkGray }
+}
+if ($LASTEXITCODE -ne 0) { Fail "Docker compose failed." }
+Ok "Containers started successfully"
+
+# ── Health Check ───────────────────────────────────────────────────────
+Step "[5/5] Waiting for services to be healthy..."
+$BackendUrl = "http://localhost:8082"
+$FrontendUrl = "http://localhost:3082"
+$elapsed = 0; $bOk = $false; $fOk = $false
+
+while ($elapsed -lt 120 -and -not ($bOk -and $fOk)) {
+    Start-Sleep -Seconds 3; $elapsed += 3
+    if (-not $bOk) {
+        try {
+            $r = Invoke-WebRequest -Uri "$BackendUrl/health" -TimeoutSec 3 -SkipHttpErrorCheck -ErrorAction Stop
+            if ($r.StatusCode -eq 200) {
+                $bOk = $true
+                Ok "Backend:  $BackendUrl (${elapsed}s)"
+            }
+        } catch {}
+    }
+    if (-not $fOk) {
+        try {
+            $r = Invoke-WebRequest -Uri "$FrontendUrl/" -TimeoutSec 3 -SkipHttpErrorCheck -ErrorAction Stop
+            if ($r.StatusCode -eq 200) {
+                $fOk = $true
+                Ok "Frontend:  $FrontendUrl (${elapsed}s)"
+            }
+        } catch {}
+    }
+    if (-not ($bOk -and $fOk)) { Write-Host "." -NoNewline -ForegroundColor DarkGray }
+}
+Write-Host ""
+
+# ── Summary ───────────────────────────────────────────────────────────────
+Write-Host "`n  ╔════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "  ║              🚀 APS1 Complete!                       ║" -ForegroundColor Cyan
+Write-Host "  ╚════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "  ✅ Docker containers running successfully" -ForegroundColor Green
+Write-Host "  ✅ Demo mode enabled" -ForegroundColor Green
+Write-Host "  ✅ Services healthy:" -ForegroundColor Green
+Write-Host "    • Frontend:  $FrontendUrl" -ForegroundColor White
+Write-Host "    • Backend:   $BackendUrl" -ForegroundColor White
+Write-Host ""
+Write-Host "  📋 NEXT STEP:" -ForegroundColor Yellow
+Write-Host "    Run APS2_Generate_Data.ps1 to populate database with comprehensive demo data" -ForegroundColor White
+Write-Host ""
+Write-Host "  🛑 To stop: ./stop-docker.ps1 or docker compose down" -ForegroundColor DarkGray
+Write-Host ""

@@ -127,11 +127,27 @@ export default async function LocaleLayout({
   // Enable static rendering
   setRequestLocale(locale);
 
+  // Force dark theme as default for demo - persists across language changes
+  const darkThemeScript = `
+    (function() {
+      try {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (stored === 'dark' || (!stored && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {
+        // Fallback: always use dark mode for demo
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  `;
+
   // Providing all messages to the client
   const messages = await getMessages();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} className="dark" suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
@@ -153,20 +169,7 @@ export default async function LocaleLayout({
         />
         <script
           dangerouslySetInnerHTML={{
-            __html: `
-              (function () {
-                try {
-                  var stored = localStorage.getItem("theme");
-                  var theme = stored === "dark" || stored === "light" ? stored : null;
-                  if (!theme) {
-                    var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-                    theme = prefersDark ? "dark" : "light";
-                  }
-                  if (theme === "dark") document.documentElement.classList.add("dark");
-                  else document.documentElement.classList.remove("dark");
-                } catch (e) {}
-              })();
-            `,
+            __html: darkThemeScript,
           }}
         />
       </head>

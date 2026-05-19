@@ -255,6 +255,21 @@ async def startup_event():
         except Exception as e:
             logger.warning("Auto-seed failed (non-fatal): %s", e)
 
+    # 1.2 Generate comprehensive demo data for maximum feature showcase (if demo mode enabled)
+    if os.getenv("DEMO_MODE", "false").lower() == "true":
+        logger.info("DEMO_MODE enabled — generating comprehensive demo data...")
+        try:
+            from alembic.demo_data_generator import generate_comprehensive_demo_data
+            from db.database import get_db_session
+
+            # Get a database session for the generator
+            async for session in get_db_session():
+                await generate_comprehensive_demo_data(session)
+                break  # Only generate once per startup
+            logger.info("Comprehensive demo data generated successfully.")
+        except Exception as demo_error:
+            logger.warning("Comprehensive demo data generation failed (non-fatal): %s", demo_error)
+
     # 1.5 Initialize Auth Database (if JWT auth enabled)
     if settings.auth_jwt_enabled:
         logger.info("Initializing Auth Database...")

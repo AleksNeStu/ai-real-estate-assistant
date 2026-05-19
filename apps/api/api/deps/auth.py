@@ -1,6 +1,5 @@
 """Authentication dependencies for FastAPI."""
 
-import os
 from typing import Optional, Set
 
 import jwt
@@ -26,7 +25,7 @@ def _get_demo_user() -> User:
     Returns a User instance without database dependency for demo/testing.
     Includes additional profile fields for ProfileResponse compatibility.
     """
-    from datetime import datetime, UTC
+    from datetime import UTC, datetime
 
     # Create a simple User object (not a database model)
     demo_user = User()
