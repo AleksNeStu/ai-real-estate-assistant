@@ -87,8 +87,6 @@ USER_ROLES = ["user", "admin", "agent", "premium_user"]
 
 LEAD_STATUSES = ["new", "contacted", "qualified", "converted", "lost"]
 
-LEAD_TYPES = ["inquiry", "viewing", "offer", "mortgage", "valuation"]
-
 NOTIFICATION_TYPES = ["email", "push", "sms", "in_app"]
 
 ACTIVITY_TYPES = ["search", "view", "favorite", "inquiry", "login"]
@@ -413,15 +411,17 @@ class ComprehensiveDemoDataGenerator:
         for i in range(count):
             lead = Lead(
                 id=str(uuid.uuid4()),
+                visitor_id=f"visitor-{i + 1}",
                 user_id=random.choice(self.user_ids),
-                property_id=random.choice(self.property_ids),
-                lead_type=random.choice(LEAD_TYPES),
-                status=random.choice(LEAD_STATUSES),
-                name=f"Demo Lead {i + 1}",
                 email=f"lead.{i + 1}@demo.com",
                 phone=f"+48 {random.randint(100, 999)} {random.randint(100, 999)} {random.randint(100, 999)}",
-                message="I am interested in this property. Please contact me.",
+                name=f"Demo Lead {i + 1}",
+                budget_min=random.randint(200000, 400000),
+                budget_max=random.randint(500000, 800000),
+                preferred_locations=random.sample(list(CITIES.keys()), random.randint(1, 3)),
+                status=random.choice(LEAD_STATUSES),
                 source=random.choice(["web", "mobile", "api", "referral"]),
+                current_score=random.randint(0, 100),
                 created_at=datetime.now(UTC) - timedelta(days=random.randint(1, 90)),
                 updated_at=datetime.now(UTC),
             )
