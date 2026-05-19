@@ -56,6 +56,43 @@ Experience the full power of AI-driven real estate search without any setup:
 
 > **Note:** The demo uses simulated AI responses for instant exploration. Production deployment requires API keys.
 
+## 💻 Local Demo Setup
+
+Run the full demo locally with comprehensive mock data in minutes:
+
+```powershell
+# Step 1: Launch Docker containers (5-8 min)
+.\scripts\demo\01-launch-docker.ps1
+
+# Step 2: Generate comprehensive demo data (2-3 min)
+.\scripts\demo\02-generate-data.ps1
+
+# Access the demo
+# Frontend: http://localhost:3082
+# Backend:  http://localhost:8082
+# API Docs: http://localhost:8082/docs
+```
+
+**Demo Data Includes:**
+
+- 🏠 250+ properties across 5 Polish cities (Kraków, Warsaw, Gdańsk, Wrocław, Poznań)
+- 👥 50 users with different roles
+- 🔍 100 saved searches with diverse filters
+- ⭐ 200 favorites across users
+- 🏢 15 real estate agent profiles
+- 📊 150 leads/inquiries
+- 📈 300 activity events
+- ⚙️ 40 preference profiles
+- 📋 20 CMA reports
+
+**Stop the demo:**
+
+```powershell
+.\scripts\docker\stop.ps1
+```
+
+**[→ Demo Setup Documentation](scripts/demo/README.md)** — Complete guide with troubleshooting.
+
 ## 📸 Screenshots
 
 <div align="center">
