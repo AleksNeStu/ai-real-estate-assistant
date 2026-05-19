@@ -60,4 +60,4 @@ docker-compose*.yml text eol=lf
 *.node binary
 # CSV files tracked by Git LFS
 #*.csv filter=lfs diff=lfs merge=lfs -text
-assets/screenshots/slideshow.gif filter=lfs diff=lfs merge=lfs -text
+# No LFS tracking — all binary files committed directly
