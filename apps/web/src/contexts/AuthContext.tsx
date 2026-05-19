@@ -25,6 +25,7 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   clearError: () => void;
+  setIsDemoMode: (value: boolean) => void;
 }
 
 // Default context value for SSR/SSG when AuthProvider is not wrapping the component
@@ -47,6 +48,7 @@ const defaultAuthContext: AuthContextType = {
     // Silent no-op during SSR
   },
   clearError: () => {},
+  setIsDemoMode: () => {},
 };
 
 const AuthContext = createContext<AuthContextType>(defaultAuthContext);
@@ -174,6 +176,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     refreshUser,
     clearError,
+    setIsDemoMode,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

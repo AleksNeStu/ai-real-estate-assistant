@@ -90,6 +90,14 @@ def _create_llm(provider_name: str, model_id: Optional[str]) -> BaseChatModel:
 def _create_llm_with_resolved_model_id(
     provider_name: str, model_id: Optional[str]
 ) -> tuple[BaseChatModel, str]:
+    # Check if demo mode is enabled (from env var)
+    # Note: For per-session demo mode, the session check would happen in the calling function
+    if os.getenv("DEMO_MODE", "false").lower() == "true":
+        from core.demo import get_demo_llm
+
+        logger.info("Demo mode enabled — using MockLLM (no real API calls)")
+        return get_demo_llm(), "demo-mock"
+
     factory_provider = ModelProviderFactory.get_provider(provider_name)
     resolved_model_id = model_id
 

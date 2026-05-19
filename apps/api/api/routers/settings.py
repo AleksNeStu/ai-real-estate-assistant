@@ -1,7 +1,8 @@
 import logging
+import os
 from typing import Optional
 
-from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi import APIRouter, Body, Header, HTTPException, Query, Request
 
 import models.user_model_preferences as user_model_preferences
 from api.models import (
@@ -24,6 +25,9 @@ from utils.sanitization import sanitize_for_logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Settings"])
+
+# Simple in-memory store for demo mode preference (per-session)
+_DEMO_MODE_SESSIONS: dict[str, bool] = {}
 
 
 def _resolve_user_email(user_email: str | None, x_user_email: str | None) -> str:
@@ -405,4 +409,41 @@ async def update_model_preferences(
         raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         logger.error(f"Error updating model preferences: {sanitize_for_logging(e)}")
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.post("/settings/demo")
+async def set_demo_mode(
+    request: Request,
+    demo_mode: bool = Body(..., embed=True),
+):
+    """Set demo mode preference (stored in session for demo purposes).
+
+    This endpoint allows toggling demo mode at runtime without requiring authentication.
+    In a production environment, this would be a per-user setting stored in the database.
+    For demo purposes, we use a simple in-memory session store.
+    """
+    try:
+        # Get session ID from headers or generate one
+        session_id = request.headers.get("X-Session-ID", "default")
+        _DEMO_MODE_SESSIONS[session_id] = demo_mode
+        logger.info(f"Demo mode set to {demo_mode} for session {session_id}")
+        return {"demo_mode": demo_mode, "session_id": session_id}
+    except Exception as e:
+        logger.error(f"Error setting demo mode: {sanitize_for_logging(e)}")
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.get("/settings/demo")
+async def get_demo_mode(request: Request):
+    """Get current demo mode preference."""
+    try:
+        session_id = request.headers.get("X-Session-ID", "default")
+        # Check session store first, then fall back to env var
+        is_demo = _DEMO_MODE_SESSIONS.get(
+            session_id, os.getenv("DEMO_MODE", "false").lower() == "true"
+        )
+        return {"demo_mode": is_demo, "session_id": session_id}
+    except Exception as e:
+        logger.error(f"Error getting demo mode: {sanitize_for_logging(e)}")
         raise HTTPException(status_code=500, detail=str(e)) from e

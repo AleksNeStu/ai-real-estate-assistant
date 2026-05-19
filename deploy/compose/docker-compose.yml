@@ -70,6 +70,8 @@ services:
       - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI:-}
       # Auto-seed on startup (set to "true" for fresh dev/demo data)
       - SEED_ON_STARTUP=${SEED_ON_STARTUP:-false}
+      # Demo mode (use MockLLM, toggleable via UI)
+      - DEMO_MODE=${DEMO_MODE:-false}
     volumes:
       - ./chroma_db:/app/chroma_db
       - ./data/audit:/app/data/audit
