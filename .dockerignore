@@ -86,8 +86,11 @@ private/
 .history/
 .trae/
 
-# Frontend is built in its own image
+# Frontend is built in its own image (not needed in backend context)
 frontend/
+apps/web/
+.next/
+next-env.d.ts
 
 # Local artifacts
 artifacts/
