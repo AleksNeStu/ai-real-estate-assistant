@@ -70,6 +70,9 @@ netstat -an | Select-String ":3082|:8082|:6379"
 
 # Or reset everything
 .\scripts\docker\reset.ps1
+
+# Or complete data removal (careful - deletes all data!)
+.\scripts\demo\04-delete-data.ps1
 ```
 
 **Need more help?**

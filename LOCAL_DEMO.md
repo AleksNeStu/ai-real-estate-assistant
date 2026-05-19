@@ -25,6 +25,13 @@
 .\scripts\docker\stop.ps1
 ```
 
+## Delete All Demo Data
+
+```powershell
+# Complete data removal (careful - deletes everything!)
+.\scripts\demo\04-delete-data.ps1
+```
+
 ## What's Included
 
 - 250+ properties across 5 Polish cities

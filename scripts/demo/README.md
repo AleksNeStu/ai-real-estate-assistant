@@ -70,6 +70,20 @@ Autonomous Process Scripts (APS) for local Docker demo environment setup.
 
 **Duration**: ~30 seconds
 
+### 04-delete-data.ps1
+
+**Purpose**: Remove all demo data and containers for fresh start
+
+**What it does**:
+
+- Stops all containers
+- Removes all Docker volumes (deletes all demo data)
+- Removes orphaned containers
+- Optionally removes built images to free disk space
+- Requires confirmation to prevent accidental data loss
+
+**Duration**: ~1-2 minutes (optional image removal adds time)
+
 ## Demo Data Summary
 
 | Entity | Count | Description |
@@ -107,6 +121,19 @@ DATABASE_URL=sqlite+aiosqlite:////app/data/demo.db
 # Or use docker compose directly
 cd deploy/compose
 docker compose down
+```
+
+## Removing Demo Data
+
+```powershell
+# Complete data reset (removes volumes and all data)
+.\scripts\demo\04-delete-data.ps1
+
+# This will delete:
+# • All database data (250+ properties, users, etc.)
+# • All Docker volumes
+# • All containers
+# • Optionally: built images (for complete cleanup)
 ```
 
 ## Troubleshooting
