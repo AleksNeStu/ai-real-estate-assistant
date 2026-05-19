@@ -1,5 +1,6 @@
 """Authentication dependencies for FastAPI."""
 
+import os
 from typing import Optional, Set
 
 import jwt
@@ -16,6 +17,40 @@ from db.repositories import UserRepository
 
 # Optional Bearer token security (for API clients)
 bearer_security = HTTPBearer(auto_error=False)
+
+
+def _get_demo_user() -> User:
+    """
+    Create a demo user for demo mode.
+
+    Returns a User instance without database dependency for demo/testing.
+    Includes additional profile fields for ProfileResponse compatibility.
+    """
+    from datetime import datetime, UTC
+
+    # Create a simple User object (not a database model)
+    demo_user = User()
+    demo_user.id = "demo-user-id"
+    demo_user.email = "demo@example.com"
+    demo_user.full_name = "Demo User"
+    demo_user.is_active = True
+    demo_user.is_verified = True
+    demo_user.role = "admin"
+    demo_user.hashed_password = None  # No password for demo user
+    demo_user.created_at = datetime.now(UTC)
+    demo_user.updated_at = datetime.now(UTC)
+
+    # Add profile fields for ProfileResponse compatibility
+    demo_user.phone = None
+    demo_user.avatar_url = None
+    demo_user.timezone = "UTC"
+    demo_user.language = "en"
+    demo_user.bio = "Demo mode user"
+    demo_user.privacy_settings = {"profile_visible": True, "activity_visible": False}
+    demo_user.gdpr_consent_at = None
+    demo_user.last_login_at = datetime.now(UTC)
+
+    return demo_user
 
 
 class AuthCredentials:
@@ -161,12 +196,31 @@ async def get_current_user(
     - Authorization: Bearer <token> header
     - access_token cookie
 
+    In demo mode, returns a demo user without requiring authentication.
+
     Returns:
         User model instance
 
     Raises:
-        HTTPException: 401 if not authenticated
+        HTTPException: 401 if not authenticated (and not in demo mode)
     """
+    # Check if demo mode is active (from session or environment)
+    settings = get_settings()
+    session_id = request.headers.get("X-Session-ID", "default")
+
+    # Check session-based demo mode first
+    from api.routers.settings import _DEMO_MODE_SESSIONS
+
+    is_demo_session = _DEMO_MODE_SESSIONS.get(session_id, False)
+
+    # Check environment-based demo mode
+    is_demo_env = settings.demo_mode
+
+    # Use demo user if demo mode is active
+    if is_demo_session or is_demo_env:
+        return _get_demo_user()
+
+    # Normal authentication flow
     token = await _extract_token(request, access_token, credentials)
 
     if not token:

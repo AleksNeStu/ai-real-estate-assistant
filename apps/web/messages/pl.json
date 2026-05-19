@@ -1,57 +1,104 @@
 {
-  "common": {
-    "appName": "AI Estate",
-    "save": "Zapisz",
-    "cancel": "Anuluj",
-    "delete": "Usuń",
-    "edit": "Edytuj",
-    "submit": "Wyślij",
-    "retry": "Ponów",
-    "refresh": "Odśwież",
-    "export": "Eksportuj",
-    "search": "Szukaj",
-    "calculate": "Oblicz",
-    "create": "Utwórz",
-    "clear": "Wyczyść",
-    "update": "Aktualizuj",
-    "loading": "Ładowanie...",
-    "searching": "Wyszukiwanie...",
-    "exporting": "Eksportowanie...",
-    "saving": "Zapisywanie...",
-    "testing": "Testowanie...",
-    "error": "Błąd",
-    "success": "Sukces",
-    "toggleTheme": "Zmień motyw",
-    "close": "Zamknij",
-    "back": "Wstecz",
-    "next": "Dalej",
-    "previous": "Poprzedni",
-    "yes": "Tak",
-    "no": "Nie",
-    "all": "Wszystkie",
-    "none": "Brak",
-    "any": "Dowolny",
-    "other": "Inne",
-    "results": "Wyniki",
-    "noResults": "Brak wyników",
-    "tryAgain": "Spróbuj ponownie",
-    "skipToContent": "Przejdź do treści głównej"
+  "admin": {
+    "dataSources": {
+      "title": "Źródła danych",
+      "description": "Zarządzaj zewnętrznymi źródłami danych i integracjami.",
+      "status": {
+        "connected": "Połączono",
+        "disconnected": "Rozłączono",
+        "error": "Błąd"
+      },
+      "lastSync": "Ostatnia synchronizacja",
+      "syncNow": "Synchronizuj teraz",
+      "configure": "Konfiguruj"
+    }
   },
-  "nav": {
-    "mainNavigation": "Nawigacja główna",
-    "home": "Strona główna",
-    "search": "Szukaj",
-    "favorites": "Ulubione",
-    "documents": "Dokumenty",
-    "cities": "Miasta",
-    "assistant": "Asystent",
-    "analytics": "Analityka",
-    "agents": "Znajdź agentów",
-    "knowledge": "Wiedza",
-    "settings": "Ustawienia",
-    "marketTrends": "Trendy rynkowe",
-    "savedSearches": "Zapisane wyszukiwania",
-    "tools": "Narzędzia"
+  "agents": {
+    "title": "Find an Agent",
+    "subtitle": "Connect with professional real estate agents",
+    "noAgents": "No agents found",
+    "noAgentsDescription": "Try adjusting your filters or search criteria",
+    "verified": "Verified",
+    "rating": "{rating} rating",
+    "reviews": "{count} reviews",
+    "sales": "{count} sales",
+    "rentals": "{count} rentals",
+    "specialties": "Specialties",
+    "serviceAreas": "Service Areas",
+    "languages": "Languages",
+    "contact": "Contact Agent",
+    "scheduleViewing": "Schedule Viewing",
+    "viewProfile": "View Profile",
+    "filters": {
+      "title": "Filters",
+      "city": "City",
+      "specialty": "Specialty",
+      "minRating": "Minimum Rating",
+      "sortBy": "Sort By",
+      "rating": "Rating",
+      "listings": "Number of Listings",
+      "reviews": "Number of Reviews",
+      "clear": "Clear Filters"
+    },
+    "profile": {
+      "title": "Agent Profile",
+      "about": "About",
+      "listings": "Active Listings",
+      "contactInfo": "Contact Information",
+      "office": "Office",
+      "phone": "Phone",
+      "email": "Email",
+      "license": "License",
+      "agency": "Agency",
+      "noListings": "No active listings"
+    },
+    "contactForm": {
+      "title": "Contact {name}",
+      "name": "Your Name",
+      "email": "Your Email",
+      "phone": "Your Phone",
+      "inquiryType": "Inquiry Type",
+      "general": "General Inquiry",
+      "property": "Property Inquiry",
+      "financing": "Financing Options",
+      "viewing": "Schedule Viewing",
+      "message": "Message",
+      "messagePlaceholder": "Tell us how we can help you...",
+      "submit": "Send Message",
+      "success": "Message sent successfully!",
+      "successDescription": "The agent will get back to you soon."
+    },
+    "viewingForm": {
+      "title": "Schedule a Viewing",
+      "selectDate": "Select Date",
+      "selectTime": "Select Time",
+      "duration": "Duration (minutes)",
+      "notes": "Notes",
+      "notesPlaceholder": "Any special requests or questions?",
+      "submit": "Request Viewing",
+      "success": "Viewing request sent!",
+      "successDescription": "The agent will confirm your appointment soon."
+    },
+    "inquiries": {
+      "title": "Inquiries",
+      "noInquiries": "No inquiries yet",
+      "status": {
+        "new": "New",
+        "read": "Read",
+        "responded": "Responded",
+        "closed": "Closed"
+      }
+    },
+    "appointments": {
+      "title": "Appointments",
+      "noAppointments": "No appointments scheduled",
+      "status": {
+        "requested": "Requested",
+        "confirmed": "Confirmed",
+        "cancelled": "Cancelled",
+        "completed": "Completed"
+      }
+    }
   },
   "auth": {
     "signIn": "Zaloguj się",
@@ -120,306 +167,131 @@
       "invalidEmail": "Wprowadź prawidłowy adres email"
     }
   },
-  "property": {
-    "card": {
-      "untitled": "Nieruchomość bez nazwy",
-      "imagePlaceholder": "Zdjęcie nieruchomości",
-      "priceOnRequest": "Cena do uzgodnienia",
-      "beds": "{count, plural, one {# pokój} few {# pokoje} other {# pokoi}}",
-      "baths": "{count, plural, one {# łazienka} few {# łazienki} other {# łazienek}}",
-      "areaUnit": "m²",
-      "noLongerAvailable": "Nieruchomość już niedostępna",
-      "locationUnavailable": "Lokalizacja niedostępna"
+  "cma": {
+    "steps": {
+      "subject": {
+        "title": "Subject Property",
+        "description": "Select the property to evaluate"
+      },
+      "comparables": {
+        "title": "Comparables",
+        "description": "Choose similar properties"
+      },
+      "adjustments": {
+        "title": "Adjustments",
+        "description": "Review value adjustments"
+      },
+      "preview": {
+        "title": "Preview",
+        "description": "Review the report"
+      },
+      "export": {
+        "title": "Export",
+        "description": "Download or share"
+      }
     },
-    "favorite": {
-      "add": "Dodaj do ulubionych",
-      "remove": "Usuń z ulubionych"
+    "subject": {
+      "searchPlaceholder": "Search by address, city, or property ID...",
+      "searchAriaLabel": "Search properties",
+      "searchButton": "Search",
+      "searching": "Searching...",
+      "selectedSubject": "Selected Subject Property",
+      "selected": "Selected",
+      "price": "Price:",
+      "area": "Area:",
+      "rooms": "Rooms:",
+      "type": "Type:",
+      "searchResults": "Search Results ({count})",
+      "property": "Property",
+      "roomsCount": "{count} rooms",
+      "nextComparables": "Next: Select Comparables"
     },
-    "details": {
-      "title": "Szczegóły nieruchomości",
-      "price": "Cena",
-      "area": "Powierzchnia",
-      "rooms": "Pokoje",
-      "bathrooms": "Łazienki",
-      "floor": "Piętro",
-      "totalFloors": "Liczba pięter",
-      "yearBuilt": "Rok budowy",
-      "propertyType": "Typ nieruchomości",
-      "heating": "Ogrzewanie",
-      "parking": "Parking",
-      "description": "Opis",
-      "location": "Lokalizacja",
-      "features": "Cechy",
-      "contact": "Skontaktuj się z agentem"
-    }
-  },
-  "search": {
-    "title": "Znajdź swoją nieruchomość",
-    "description": "Przeszukaj tysiące ofert za pomocą semantycznego wyszukiwania AI.",
-    "placeholder": "Opisz czego szukasz...",
-    "filters": {
-      "title": "Filtry",
-      "sortBy": "Sortuj według",
-      "order": "Kolejność",
-      "minPrice": "Cena minimalna",
-      "maxPrice": "Cena maksymalna",
-      "minRooms": "Min. pokoi",
-      "propertyType": "Typ nieruchomości",
-      "clearFilters": "Wyczyść filtry",
-      "applyFilters": "Zastosuj filtry"
+    "comparables": {
+      "selectRange": "Select {min}-{max} comparable properties. Drag to reorder by relevance.",
+      "refresh": "Refresh",
+      "finding": "Finding similar properties...",
+      "selected": "Selected:",
+      "selectMore": "Select at least {count} more",
+      "similarity": "Similarity",
+      "noComparables": "No comparable properties found. Try adjusting your search criteria.",
+      "selectedComparables": "Selected Comparables",
+      "roomsCount": "{count} rooms",
+      "property": "Property {id}",
+      "back": "Back",
+      "nextAdjustments": "Next: Review Adjustments"
     },
-    "sortOptions": {
-      "relevance": "Trafność",
-      "price": "Cena",
-      "pricePerSqm": "Cena za m²",
-      "area": "Powierzchnia (m²)",
-      "yearBuilt": "Rok budowy",
-      "dateAdded": "Data dodania"
+    "adjustments": {
+      "description": "Review and adjust the valuation factors for each comparable property. Positive adjustments increase the comparable's value; negative adjustments decrease it.",
+      "comparable": "Comparable {index}",
+      "similarity": "Similarity:",
+      "factor": "Factor",
+      "subject": "Subject",
+      "comparableLabel": "Comparable",
+      "adjPercent": "Adj. %",
+      "amount": "Amount",
+      "totalAdjustments": "Total Adjustments",
+      "adjustedPrice": "Adjusted Price:",
+      "adjustmentSummary": "Adjustment Summary",
+      "avgAdjustment": "Avg Adjustment",
+      "priceRange": "Price Range",
+      "medianPrice": "Median Price",
+      "back": "Back",
+      "nextPreview": "Next: Preview Report"
     },
-    "orderOptions": {
-      "ascending": "Rosnąco",
-      "descending": "Malejąco"
-    },
-    "propertyTypes": {
-      "any": "Dowolny",
-      "apartment": "Mieszkanie",
-      "house": "Dom",
-      "studio": "Kawalerka",
-      "loft": "Loft",
-      "townhouse": "Bliźniak",
-      "other": "Inne"
-    },
-    "emptyState": {
-      "title": "Rozpocznij wyszukiwanie nieruchomości",
-      "description": "Wprowadź zapytanie, aby przeszukać tysiące ofert.",
-      "tryExamples": "Wypróbuj te przykłady:"
-    },
-    "results": {
-      "noResults": "Brak wyników",
-      "noResultsHint": "Spróbuj zmienić kryteria wyszukiwania lub filtry.",
-      "showingResults": "Wyświetlam {count} {count, plural, one {nieruchomość} few {nieruchomości} other {nieruchomości}}",
-      "exportResults": "Eksportuj wyniki"
+    "preview": {
+      "noSubject": "No subject property selected",
+      "generating": "Generating CMA report...",
+      "generateReport": "Generate Report",
+      "noReport": "No report generated yet. Click Generate to create the CMA report.",
+      "tryAgain": "Try Again",
+      "back": "Back",
+      "nextExport": "Next: Export Options",
+      "executiveSummary": "Executive Summary",
+      "estimatedValue": "Estimated Market Value",
+      "range": "Range:",
+      "confidenceScore": "Confidence Score",
+      "confidenceHigh": "High",
+      "confidenceMedium": "Medium",
+      "confidenceLow": "Low",
+      "pricePerSqm": "Price per m²",
+      "subjectProperty": "Subject Property",
+      "location": "Location",
+      "area": "Area",
+      "rooms": "Rooms",
+      "type": "Type",
+      "comparables": "Comparables ({count})",
+      "property": "Property",
+      "score": "Score:",
+      "marketContext": "Market Context",
+      "avgPricePerSqm": "Avg Price/m²",
+      "medianPrice": "Median Price",
+      "trend": "Trend",
+      "inventory": "Inventory",
+      "listings": "{count} listings",
+      "failedGenerate": "Failed to generate report"
     },
     "export": {
-      "title": "Eksportuj wyniki",
-      "format": "Format eksportu",
-      "csv": "CSV",
-      "json": "JSON",
-      "export": "Eksportuj"
-    },
-    "saveSearch": {
-      "button": "Zapisz wyszukiwanie",
-      "title": "Zapisz wyszukiwanie",
-      "nameLabel": "Nazwa wyszukiwania",
-      "namePlaceholder": "np. 2-pokojowe mieszkania w Warszawie",
-      "success": "Wyszukiwanie zapisane!",
-      "error": "Nie udało się zapisać wyszukiwania"
-    },
-    "errors": {
-      "searchFailed": "Wyszukiwanie nie powiodło się",
-      "connectionFailed": "Błąd połączenia. Spróbuj ponownie.",
-      "timeout": "Przekroczono czas wyszukiwania. Spróbuj ponownie."
+      "noReport": "No report available. Please go back and generate a report first.",
+      "back": "Back",
+      "reportGenerated": "Report Generated Successfully",
+      "reportReady": "Your Comparative Market Analysis report is ready for export.",
+      "pdfReport": "PDF Report",
+      "professionalFormat": "Professional format",
+      "downloading": "Downloading...",
+      "downloadPdf": "Download PDF",
+      "jsonData": "JSON Data",
+      "rawDataExport": "Raw data export",
+      "downloadJson": "Download JSON",
+      "shareLink": "Share Link",
+      "copyShareableUrl": "Copy shareable URL",
+      "copied": "Copied!",
+      "copyLink": "Copy Link",
+      "reportId": "Report ID:",
+      "created": "Created:",
+      "expires": "Expires:",
+      "createNew": "Create New Report",
+      "failedDownload": "Failed to download PDF"
     }
-  },
-  "mortgage": {
-    "title": "Kalkulator kredytu hipotecznego",
-    "description": "Oblicz miesięczną ratę i całkowity koszt kredytu.",
-    "propertyPrice": "Cena nieruchomości",
-    "downPayment": "Wkład własny",
-    "downPaymentPercent": "Wkład własny (%)",
-    "interestRate": "Oprocentowanie (%)",
-    "loanTerm": "Okres kredytowania (lata)",
-    "calculate": "Oblicz",
-    "results": {
-      "title": "Wyniki kalkulacji",
-      "monthlyPayment": "Miesięczna rata",
-      "totalInterest": "Całkowite odsetki",
-      "totalCost": "Całkowity koszt",
-      "loanAmount": "Kwota kredytu",
-      "downPaymentAmount": "Wkład własny"
-    },
-    "tco": {
-      "title": "Całkowity koszt posiadania",
-      "monthlyTco": "Miesięczny koszt posiadania",
-      "annualTco": "Roczny koszt posiadania",
-      "maintenance": "Utrzymanie",
-      "maintenanceHint": "Zasada: 1-2% wartości nieruchomości rocznie",
-      "propertyTax": "Podatek od nieruchomości",
-      "insurance": "Ubezpieczenie",
-      "utilities": "Media"
-    }
-  },
-  "investment": {
-    "title": "Analiza inwestycji w nieruchomości",
-    "description": "Analizuj potencjalną stopę zwrotu z inwestycji.",
-    "purchasePrice": "Cena zakupu",
-    "monthlyRent": "Miesięczny czynsz",
-    "operatingExpenses": "Koszty operacyjne",
-    "vacancyRate": "Wskaźnik pustostanów (%)",
-    "appreciationRate": "Wskaźnik wzrostu wartości (%)",
-    "analyze": "Analizuj",
-    "results": {
-      "title": "Analiza inwestycji",
-      "capRate": "Stopa kapitalizacji",
-      "cashOnCash": "Stopa zwrotu z gotówki",
-      "netOperatingIncome": "Dochód operacyjny netto",
-      "cashFlow": "Miesięczny przepływ gotówki",
-      "roi": "ROI (1 rok)",
-      "onePercentRule": "Zasada 1%",
-      "onePercentRulePass": "Pozytywnie - Czynsz ≥ 1% ceny",
-      "onePercentRuleFail": "Negatywnie - Czynsz < 1% ceny"
-    },
-    "advanced": {
-      "title": "Zaawansowana analiza inwestycji",
-      "holdingPeriod": "Okres trzymania (lata)",
-      "sellingCosts": "Koszty sprzedaży (%)",
-      "incomeGrowth": "Wzrost dochodu (%)",
-      "expenseGrowth": "Wzrost kosztów (%)"
-    }
-  },
-  "portfolio": {
-    "title": "Analiza portfela",
-    "description": "Analizuj wiele nieruchomości jako portfel.",
-    "addProperty": "Dodaj nieruchomość",
-    "removeProperty": "Usuń",
-    "emptyPortfolio": "Brak nieruchomości w portfelu",
-    "totals": {
-      "title": "Podsumowanie portfela",
-      "totalValue": "Całkowita wartość",
-      "totalRent": "Całkowity czynsz miesięczny",
-      "averageCapRate": "Średnia stopa kapitalizacji",
-      "totalCashFlow": "Całkowity przepływ miesięczny"
-    }
-  },
-  "rentVsBuy": {
-    "title": "Kalkulator Wynajem vs Kupno",
-    "description": "Porównaj wynajem i kupno w czasie z analizą punktu równowagi.",
-    "emptyHint": "Wprowadź szczegóły nieruchomości i aktualny czynsz, aby zobaczyć porównanie.",
-    "analyzeButton": "Porównaj Wynajem z Kupnem",
-    "error": {
-      "title": "Analiza nieudana",
-      "retry": "Spróbuj ponownie"
-    },
-    "form": {
-      "propertyRent": "Informacje o nieruchomości i czynszie",
-      "propertyPrice": "Cena nieruchomości ($)",
-      "monthlyRent": "Miesięczny czynsz ($)",
-      "advancedOptions": "Opcje zaawansowane",
-      "showAdvanced": "Pokaż opcje zaawansowane",
-      "hideAdvanced": "Ukryj opcje zaawansowane",
-      "mortgageDetails": "Szczegóły kredytu",
-      "downPayment": "Wpłata własna (%)",
-      "interestRate": "Oprocentowanie (%)",
-      "loanTerm": "Okres kredytu (lata)",
-      "ownershipCosts": "Koszty własności",
-      "annualPropertyTax": "Roczny podatek od nieruchomości ($)",
-      "annualInsurance": "Roczne ubezpieczenie ($)",
-      "monthlyHoa": "Miesięczne HOA ($)",
-      "maintenancePercent": "Utrzymanie (%)",
-      "appreciationRate": "Wzrost wartości (%)",
-      "rentIncreaseRate": "Wzrost czynszu (%)",
-      "investmentReturnRate": "Stopa zwrotu z inwestycji (%)",
-      "marginalTaxRate": "Krańcowa stopa podatkowa (%)",
-      "projectionYears": "Okres prognozy (lata)"
-    },
-    "results": {
-      "title": "Wyniki analizy",
-      "description": "Kompletne porównanie wynajmu i kupna w okresie {years} lat.",
-      "recommendation": "Rekomendacja",
-      "breakEvenAt": "Punkt równowagi po {years} lat",
-      "buyingRecommended": "Rekomendowane kupno",
-      "rentingRecommended": "Rekomendowany wynajem",
-      "dependsTimeline": "Zależy od Twojej perspektywy czasowej",
-      "monthlyMortgage": "Miesięczna rata kredytu",
-      "monthlyRentInitial": "Miesięczny czynsz (początkowy)",
-      "totalRentPaid": "Całkowity zapłacony czynsz",
-      "totalOwnershipCost": "Całkowity koszt własności",
-      "netBuyingAdvantage": "Netto korzyść z kupna",
-      "equityBuilt": "Zbudowany kapitał własny",
-      "advantageExplanation": "Pozytywna = kupno jest bardziej opłacalne. Negatywna = wynajem jest lepszy.",
-      "finalSummary": "Podsumowanie końcowe",
-      "finalPropertyValue": "Końcowa wartość nieruchomości",
-      "totalEquityBuilt": "Całkowity zbudowany kapitał własny",
-      "opportunityCost": "Koszt alternatywny",
-      "netAdvantage": "Netto korzyść",
-      "charts": {
-        "cumulativeCost": {
-          "title": "Porównanie kosztów skumulowanych",
-          "ariaLabel": "Wykres porównania kosztów skumulowanych pokazujący koszty wynajmu i kupna w czasie"
-        },
-        "equityGrowth": {
-          "title": "Wzrost kapitału własnego i wartości nieruchomości",
-          "ariaLabel": "Wykres wzrostu kapitału własnego i wartości nieruchomości w czasie"
-        }
-      }
-    }
-  },
-  "neighborhood": {
-    "title": "Informacje o dzielnicy",
-    "score": {
-      "excellent": "Doskonały",
-      "good": "Dobry",
-      "fair": "Przeciętny",
-      "poor": "Słaby",
-      "veryPoor": "Bardzo słaby"
-    },
-    "components": {
-      "safety": "Bezpieczeństwo",
-      "schools": "Szkoły",
-      "amenities": "Udogodnienia",
-      "walkability": "Dostępność piesza",
-      "greenSpace": "Tereny zielone",
-      "publicTransport": "Transport publiczny",
-      "restaurants": "Restauracje",
-      "shopping": "Zakupy"
-    }
-  },
-  "settings": {
-    "title": "Ustawienia",
-    "description": "Zarządzaj ustawieniami konta i preferencjami.",
-    "tabs": {
-      "identity": "Tożsamość",
-      "notifications": "Powiadomienia",
-      "models": "Modele"
-    },
-    "identity": {
-      "title": "Tożsamość",
-      "description": "Ustaw adres email powiązany z kontem.",
-      "emailLabel": "Email",
-      "emailPlaceholder": "Wprowadź swój email",
-      "save": "Zapisz",
-      "saved": "Email zapisany.",
-      "cleared": "Email usunięty.",
-      "invalidEmail": "Wprowadź prawidłowy adres email."
-    },
-    "notifications": {
-      "title": "Powiadomienia",
-      "description": "Skonfiguruj sposób otrzymywania powiadomień.",
-      "emailNotifications": "Powiadomienia email",
-      "pushNotifications": "Powiadomienia push",
-      "savedSearchAlerts": "Alerty zapisanych wyszukiwań",
-      "priceDropAlerts": "Alerty spadków cen",
-      "newListingAlerts": "Alerty nowych ofert"
-    },
-    "models": {
-      "title": "Modele",
-      "description": "Wybierz domyślny model i porównaj cenniki.",
-      "defaultModel": "Domyślny model",
-      "refreshCatalog": "Odśwież katalog",
-      "runtimeCheck": "Sprawdzenie runtime",
-      "testConnection": "Testuj połączenie",
-      "connectionSuccess": "Połączenie udane",
-      "connectionFailed": "Połączenie nieudane",
-      "noModels": "Brak dostępnych modeli",
-      "pricing": {
-        "title": "Cennik modeli",
-        "input": "Wejście",
-        "output": "Wyjście",
-        "per1kTokens": "za 1K tokenów"
-      }
-    },
-    "saved": "Ustawienia zapisane.",
-    "error": "Nie udało się zapisać ustawień."
   },
   "chat": {
     "title": "Asystent AI",
@@ -529,53 +401,6 @@
       }
     }
   },
-  "favorites": {
-    "title": "Moje ulubione",
-    "description": "Nieruchomości zapisane na później.",
-    "emptyState": {
-      "title": "Brak ulubionych",
-      "description": "Przeglądaj i zapisuj interesujące nieruchomości.",
-      "browseButton": "Przeglądaj nieruchomości"
-    },
-    "collections": {
-      "title": "Kolekcje",
-      "newCollection": "Nowa kolekcja",
-      "collectionName": "Nazwa kolekcji",
-      "create": "Utwórz",
-      "delete": "Usuń kolekcję"
-    }
-  },
-  "savedSearches": {
-    "title": "Zapisane wyszukiwania",
-    "description": "Twoje zapisane zapytania wyszukiwania.",
-    "emptyState": {
-      "title": "Brak zapisanych wyszukiwań",
-      "description": "Zapisuj wyszukiwania, aby otrzymywać powiadomienia o nowych ofertach."
-    },
-    "run": "Uruchom wyszukiwanie",
-    "delete": "Usuń",
-    "edit": "Edytuj",
-    "alerts": {
-      "enabled": "Alerty włączone",
-      "disabled": "Alerty wyłączone",
-      "enable": "Włącz alerty",
-      "disable": "Wyłącz alerty"
-    }
-  },
-  "marketTrends": {
-    "title": "Trendy rynkowe",
-    "description": "Analizuj trendy i statystyki rynku nieruchomości.",
-    "priceTrends": "Trendy cenowe",
-    "volumeTrends": "Wolumen sprzedaży",
-    "byPropertyType": "Według typu nieruchomości",
-    "byLocation": "Według lokalizacji",
-    "period": {
-      "month": "Ostatni miesiąc",
-      "quarter": "Ostatni kwartał",
-      "year": "Ostatni rok",
-      "all": "Cały okres"
-    }
-  },
   "cityOverview": {
     "title": "Przegląd miast",
     "description": "Porównaj dzielnice i ceny nieruchomości w różnych miastach.",
@@ -585,177 +410,50 @@
     "inventory": "Aktywne oferty",
     "neighborhoods": "Dzielnice"
   },
-  "knowledge": {
-    "title": "Baza wiedzy",
-    "description": "Poznaj pojęcia i terminologię nieruchomości.",
-    "searchPlaceholder": "Szukaj artykułów...",
-    "categories": {
-      "buying": "Poradnik kupującego",
-      "selling": "Poradnik sprzedającego",
-      "mortgages": "Kredyty hipoteczne",
-      "investing": "Inwestowanie",
-      "legal": "Kwestie prawne"
-    },
-    "noArticles": "Nie znaleziono artykułów"
+  "common": {
+    "appName": "AI Estate",
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "delete": "Usuń",
+    "edit": "Edytuj",
+    "submit": "Wyślij",
+    "retry": "Ponów",
+    "refresh": "Odśwież",
+    "export": "Eksportuj",
+    "search": "Szukaj",
+    "calculate": "Oblicz",
+    "create": "Utwórz",
+    "clear": "Wyczyść",
+    "update": "Aktualizuj",
+    "loading": "Ładowanie...",
+    "searching": "Wyszukiwanie...",
+    "exporting": "Eksportowanie...",
+    "saving": "Zapisywanie...",
+    "testing": "Testowanie...",
+    "error": "Błąd",
+    "success": "Sukces",
+    "toggleTheme": "Zmień motyw",
+    "close": "Zamknij",
+    "back": "Wstecz",
+    "next": "Dalej",
+    "previous": "Poprzedni",
+    "yes": "Tak",
+    "no": "Nie",
+    "all": "Wszystkie",
+    "none": "Brak",
+    "any": "Dowolny",
+    "other": "Inne",
+    "results": "Wyniki",
+    "noResults": "Brak wyników",
+    "tryAgain": "Spróbuj ponownie",
+    "skipToContent": "Przejdź do treści głównej"
   },
-  "tools": {
-    "title": "Narzędzia",
-    "description": "Przydatne kalkulatory i narzędzia dla nieruchomości.",
-    "mortgageCalculator": "Kalkulator kredytu",
-    "investmentAnalyzer": "Analiza inwestycji",
-    "affordabilityCalculator": "Kalkulator zdolności",
-    "comparisonTool": "Porównanie nieruchomości"
-  },
-  "admin": {
-    "dataSources": {
-      "title": "Źródła danych",
-      "description": "Zarządzaj zewnętrznymi źródłami danych i integracjami.",
-      "status": {
-        "connected": "Połączono",
-        "disconnected": "Rozłączono",
-        "error": "Błąd"
-      },
-      "lastSync": "Ostatnia synchronizacja",
-      "syncNow": "Synchronizuj teraz",
-      "configure": "Konfiguruj"
-    }
-  },
-  "home": {
-    "title": "Asystent Nieruchomości AI",
-    "subtitle": "Inteligentne wyszukiwanie nieruchomości, analityka rynkowa i analizy inwestycyjne z wykorzystaniem zaawansowanego AI.",
-    "startSearching": "Rozpocznij szukanie",
-    "askAssistant": "Zapytaj asystenta",
-    "askAssistantDemo": "Zaloguj się dla AI asystenta",
-    "features": {
-      "search": {
-        "title": "Inteligentne wyszukiwanie",
-        "description": "Znajdź nieruchomości za pomocą zapytań w języku naturalnym"
-      },
-      "analytics": {
-        "title": "Analityka rynkowa",
-        "description": "Śledź trendy i analizuj dane rynkowe"
-      },
-      "assistant": {
-        "title": "Asystent AI",
-        "description": "Otrzymuj spersonalizowane rekomendacje"
-      },
-      "investment": {
-        "title": "Narzędzia inwestycyjne",
-        "description": "Analizuj ROI i opcje kredytowe"
-      }
-    }
-  },
-  "language": {
-    "switch": "Zmień język",
-    "current": "Aktualny język: {language}",
-    "pl": "Polski",
-    "en": "Angielski",
-    "ru": "Rosyjski"
-  },
-  "error": {
-    "generic": "Coś poszło nie tak",
-    "notFound": "Strona nie znaleziona",
-    "unauthorized": "Brak autoryzacji",
-    "forbidden": "Dostęp zabroniony",
-    "serverError": "Błąd serwera",
-    "tryAgain": "Spróbuj ponownie później",
-    "goHome": "Przejdź do strony głównej"
-  },
-  "validation": {
-    "required": "To pole jest wymagane",
-    "email": "Wprowadź prawidłowy email",
-    "minLength": "Minimum {min} znaków",
-    "maxLength": "Maksimum {max} znaków",
-    "min": "Minimalna wartość to {min}",
-    "max": "Maksymalna wartość to {max}",
-    "pattern": "Nieprawidłowy format"
-  },
-  "agents": {
-    "title": "Find an Agent",
-    "subtitle": "Connect with professional real estate agents",
-    "noAgents": "No agents found",
-    "noAgentsDescription": "Try adjusting your filters or search criteria",
-    "verified": "Verified",
-    "rating": "{rating} rating",
-    "reviews": "{count} reviews",
-    "sales": "{count} sales",
-    "rentals": "{count} rentals",
-    "specialties": "Specialties",
-    "serviceAreas": "Service Areas",
-    "languages": "Languages",
-    "contact": "Contact Agent",
-    "scheduleViewing": "Schedule Viewing",
-    "viewProfile": "View Profile",
-    "filters": {
-      "title": "Filters",
-      "city": "City",
-      "specialty": "Specialty",
-      "minRating": "Minimum Rating",
-      "sortBy": "Sort By",
-      "rating": "Rating",
-      "listings": "Number of Listings",
-      "reviews": "Number of Reviews",
-      "clear": "Clear Filters"
-    },
-    "profile": {
-      "title": "Agent Profile",
-      "about": "About",
-      "listings": "Active Listings",
-      "contactInfo": "Contact Information",
-      "office": "Office",
-      "phone": "Phone",
-      "email": "Email",
-      "license": "License",
-      "agency": "Agency",
-      "noListings": "No active listings"
-    },
-    "contactForm": {
-      "title": "Contact {name}",
-      "name": "Your Name",
-      "email": "Your Email",
-      "phone": "Your Phone",
-      "inquiryType": "Inquiry Type",
-      "general": "General Inquiry",
-      "property": "Property Inquiry",
-      "financing": "Financing Options",
-      "viewing": "Schedule Viewing",
-      "message": "Message",
-      "messagePlaceholder": "Tell us how we can help you...",
-      "submit": "Send Message",
-      "success": "Message sent successfully!",
-      "successDescription": "The agent will get back to you soon."
-    },
-    "viewingForm": {
-      "title": "Schedule a Viewing",
-      "selectDate": "Select Date",
-      "selectTime": "Select Time",
-      "duration": "Duration (minutes)",
-      "notes": "Notes",
-      "notesPlaceholder": "Any special requests or questions?",
-      "submit": "Request Viewing",
-      "success": "Viewing request sent!",
-      "successDescription": "The agent will confirm your appointment soon."
-    },
-    "inquiries": {
-      "title": "Inquiries",
-      "noInquiries": "No inquiries yet",
-      "status": {
-        "new": "New",
-        "read": "Read",
-        "responded": "Responded",
-        "closed": "Closed"
-      }
-    },
-    "appointments": {
-      "title": "Appointments",
-      "noAppointments": "No appointments scheduled",
-      "status": {
-        "requested": "Requested",
-        "confirmed": "Confirmed",
-        "cancelled": "Cancelled",
-        "completed": "Completed"
-      }
-    }
+  "demo": {
+    "banner": "Tryb demo — wyszukiwanie i dane miast są dostępne",
+    "login": "Zaloguj się",
+    "lockedFeature": "Zaloguj się, aby uzyskać dostęp",
+    "signInForFull": "Zaloguj się dla AI asystenta i więcej",
+    "signUpCta": "Zarejestruj się aby odblokować wszystko"
   },
   "documents": {
     "title": "Documents",
@@ -825,11 +523,439 @@
       "description": "The following documents will expire within 30 days:"
     }
   },
-  "demo": {
-    "banner": "Tryb demo — wyszukiwanie i dane miast są dostępne",
-    "login": "Zaloguj się",
-    "lockedFeature": "Zaloguj się, aby uzyskać dostęp",
-    "signInForFull": "Zaloguj się dla AI asystenta i więcej",
-    "signUpCta": "Zarejestruj się aby odblokować wszystko"
+  "error": {
+    "generic": "Coś poszło nie tak",
+    "notFound": "Strona nie znaleziona",
+    "unauthorized": "Brak autoryzacji",
+    "forbidden": "Dostęp zabroniony",
+    "serverError": "Błąd serwera",
+    "tryAgain": "Spróbuj ponownie później",
+    "goHome": "Przejdź do strony głównej"
+  },
+  "favorites": {
+    "title": "Moje ulubione",
+    "description": "Nieruchomości zapisane na później.",
+    "emptyState": {
+      "title": "Brak ulubionych",
+      "description": "Przeglądaj i zapisuj interesujące nieruchomości.",
+      "browseButton": "Przeglądaj nieruchomości"
+    },
+    "collections": {
+      "title": "Kolekcje",
+      "newCollection": "Nowa kolekcja",
+      "collectionName": "Nazwa kolekcji",
+      "create": "Utwórz",
+      "delete": "Usuń kolekcję"
+    }
+  },
+  "home": {
+    "title": "Asystent Nieruchomości AI",
+    "subtitle": "Inteligentne wyszukiwanie nieruchomości, analityka rynkowa i analizy inwestycyjne z wykorzystaniem zaawansowanego AI.",
+    "startSearching": "Rozpocznij szukanie",
+    "askAssistant": "Zapytaj asystenta",
+    "askAssistantDemo": "Zaloguj się dla AI asystenta",
+    "features": {
+      "search": {
+        "title": "Inteligentne wyszukiwanie",
+        "description": "Znajdź nieruchomości za pomocą zapytań w języku naturalnym"
+      },
+      "analytics": {
+        "title": "Analityka rynkowa",
+        "description": "Śledź trendy i analizuj dane rynkowe"
+      },
+      "assistant": {
+        "title": "Asystent AI",
+        "description": "Otrzymuj spersonalizowane rekomendacje"
+      },
+      "investment": {
+        "title": "Narzędzia inwestycyjne",
+        "description": "Analizuj ROI i opcje kredytowe"
+      }
+    }
+  },
+  "investment": {
+    "title": "Analiza inwestycji w nieruchomości",
+    "description": "Analizuj potencjalną stopę zwrotu z inwestycji.",
+    "purchasePrice": "Cena zakupu",
+    "monthlyRent": "Miesięczny czynsz",
+    "operatingExpenses": "Koszty operacyjne",
+    "vacancyRate": "Wskaźnik pustostanów (%)",
+    "appreciationRate": "Wskaźnik wzrostu wartości (%)",
+    "analyze": "Analizuj",
+    "results": {
+      "title": "Analiza inwestycji",
+      "capRate": "Stopa kapitalizacji",
+      "cashOnCash": "Stopa zwrotu z gotówki",
+      "netOperatingIncome": "Dochód operacyjny netto",
+      "cashFlow": "Miesięczny przepływ gotówki",
+      "roi": "ROI (1 rok)",
+      "onePercentRule": "Zasada 1%",
+      "onePercentRulePass": "Pozytywnie - Czynsz ≥ 1% ceny",
+      "onePercentRuleFail": "Negatywnie - Czynsz < 1% ceny"
+    },
+    "advanced": {
+      "title": "Zaawansowana analiza inwestycji",
+      "holdingPeriod": "Okres trzymania (lata)",
+      "sellingCosts": "Koszty sprzedaży (%)",
+      "incomeGrowth": "Wzrost dochodu (%)",
+      "expenseGrowth": "Wzrost kosztów (%)"
+    }
+  },
+  "knowledge": {
+    "title": "Baza wiedzy",
+    "description": "Poznaj pojęcia i terminologię nieruchomości.",
+    "searchPlaceholder": "Szukaj artykułów...",
+    "categories": {
+      "buying": "Poradnik kupującego",
+      "selling": "Poradnik sprzedającego",
+      "mortgages": "Kredyty hipoteczne",
+      "investing": "Inwestowanie",
+      "legal": "Kwestie prawne"
+    },
+    "noArticles": "Nie znaleziono artykułów"
+  },
+  "language": {
+    "switch": "Zmień język",
+    "current": "Aktualny język: {language}",
+    "pl": "Polski",
+    "en": "Angielski",
+    "ru": "Rosyjski"
+  },
+  "marketTrends": {
+    "title": "Trendy rynkowe",
+    "description": "Analizuj trendy i statystyki rynku nieruchomości.",
+    "priceTrends": "Trendy cenowe",
+    "volumeTrends": "Wolumen sprzedaży",
+    "byPropertyType": "Według typu nieruchomości",
+    "byLocation": "Według lokalizacji",
+    "period": {
+      "month": "Ostatni miesiąc",
+      "quarter": "Ostatni kwartał",
+      "year": "Ostatni rok",
+      "all": "Cały okres"
+    }
+  },
+  "mortgage": {
+    "title": "Kalkulator kredytu hipotecznego",
+    "description": "Oblicz miesięczną ratę i całkowity koszt kredytu.",
+    "propertyPrice": "Cena nieruchomości",
+    "downPayment": "Wkład własny",
+    "downPaymentPercent": "Wkład własny (%)",
+    "interestRate": "Oprocentowanie (%)",
+    "loanTerm": "Okres kredytowania (lata)",
+    "calculate": "Oblicz",
+    "results": {
+      "title": "Wyniki kalkulacji",
+      "monthlyPayment": "Miesięczna rata",
+      "totalInterest": "Całkowite odsetki",
+      "totalCost": "Całkowity koszt",
+      "loanAmount": "Kwota kredytu",
+      "downPaymentAmount": "Wkład własny"
+    },
+    "tco": {
+      "title": "Całkowity koszt posiadania",
+      "monthlyTco": "Miesięczny koszt posiadania",
+      "annualTco": "Roczny koszt posiadania",
+      "maintenance": "Utrzymanie",
+      "maintenanceHint": "Zasada: 1-2% wartości nieruchomości rocznie",
+      "propertyTax": "Podatek od nieruchomości",
+      "insurance": "Ubezpieczenie",
+      "utilities": "Media"
+    }
+  },
+  "nav": {
+    "mainNavigation": "Nawigacja główna",
+    "home": "Strona główna",
+    "search": "Szukaj",
+    "favorites": "Ulubione",
+    "documents": "Dokumenty",
+    "cities": "Miasta",
+    "assistant": "Asystent",
+    "analytics": "Analityka",
+    "agents": "Znajdź agentów",
+    "knowledge": "Wiedza",
+    "settings": "Ustawienia",
+    "marketTrends": "Trendy rynkowe",
+    "savedSearches": "Zapisane wyszukiwania",
+    "tools": "Narzędzia"
+  },
+  "neighborhood": {
+    "title": "Informacje o dzielnicy",
+    "score": {
+      "excellent": "Doskonały",
+      "good": "Dobry",
+      "fair": "Przeciętny",
+      "poor": "Słaby",
+      "veryPoor": "Bardzo słaby"
+    },
+    "components": {
+      "safety": "Bezpieczeństwo",
+      "schools": "Szkoły",
+      "amenities": "Udogodnienia",
+      "walkability": "Dostępność piesza",
+      "greenSpace": "Tereny zielone",
+      "publicTransport": "Transport publiczny",
+      "restaurants": "Restauracje",
+      "shopping": "Zakupy"
+    }
+  },
+  "portfolio": {
+    "title": "Analiza portfela",
+    "description": "Analizuj wiele nieruchomości jako portfel.",
+    "addProperty": "Dodaj nieruchomość",
+    "removeProperty": "Usuń",
+    "emptyPortfolio": "Brak nieruchomości w portfelu",
+    "totals": {
+      "title": "Podsumowanie portfela",
+      "totalValue": "Całkowita wartość",
+      "totalRent": "Całkowity czynsz miesięczny",
+      "averageCapRate": "Średnia stopa kapitalizacji",
+      "totalCashFlow": "Całkowity przepływ miesięczny"
+    }
+  },
+  "property": {
+    "card": {
+      "untitled": "Nieruchomość bez nazwy",
+      "imagePlaceholder": "Zdjęcie nieruchomości",
+      "priceOnRequest": "Cena do uzgodnienia",
+      "beds": "{count, plural, one {# pokój} few {# pokoje} other {# pokoi}}",
+      "baths": "{count, plural, one {# łazienka} few {# łazienki} other {# łazienek}}",
+      "areaUnit": "m²",
+      "noLongerAvailable": "Nieruchomość już niedostępna",
+      "locationUnavailable": "Lokalizacja niedostępna"
+    },
+    "favorite": {
+      "add": "Dodaj do ulubionych",
+      "remove": "Usuń z ulubionych"
+    },
+    "details": {
+      "title": "Szczegóły nieruchomości",
+      "price": "Cena",
+      "area": "Powierzchnia",
+      "rooms": "Pokoje",
+      "bathrooms": "Łazienki",
+      "floor": "Piętro",
+      "totalFloors": "Liczba pięter",
+      "yearBuilt": "Rok budowy",
+      "propertyType": "Typ nieruchomości",
+      "heating": "Ogrzewanie",
+      "parking": "Parking",
+      "description": "Opis",
+      "location": "Lokalizacja",
+      "features": "Cechy",
+      "contact": "Skontaktuj się z agentem"
+    }
+  },
+  "rentVsBuy": {
+    "title": "Kalkulator Wynajem vs Kupno",
+    "description": "Porównaj wynajem i kupno w czasie z analizą punktu równowagi.",
+    "emptyHint": "Wprowadź szczegóły nieruchomości i aktualny czynsz, aby zobaczyć porównanie.",
+    "analyzeButton": "Porównaj Wynajem z Kupnem",
+    "error": {
+      "title": "Analiza nieudana",
+      "retry": "Spróbuj ponownie"
+    },
+    "form": {
+      "propertyRent": "Informacje o nieruchomości i czynszie",
+      "propertyPrice": "Cena nieruchomości ($)",
+      "monthlyRent": "Miesięczny czynsz ($)",
+      "advancedOptions": "Opcje zaawansowane",
+      "showAdvanced": "Pokaż opcje zaawansowane",
+      "hideAdvanced": "Ukryj opcje zaawansowane",
+      "mortgageDetails": "Szczegóły kredytu",
+      "downPayment": "Wpłata własna (%)",
+      "interestRate": "Oprocentowanie (%)",
+      "loanTerm": "Okres kredytu (lata)",
+      "ownershipCosts": "Koszty własności",
+      "annualPropertyTax": "Roczny podatek od nieruchomości ($)",
+      "annualInsurance": "Roczne ubezpieczenie ($)",
+      "monthlyHoa": "Miesięczne HOA ($)",
+      "maintenancePercent": "Utrzymanie (%)",
+      "appreciationRate": "Wzrost wartości (%)",
+      "rentIncreaseRate": "Wzrost czynszu (%)",
+      "investmentReturnRate": "Stopa zwrotu z inwestycji (%)",
+      "marginalTaxRate": "Krańcowa stopa podatkowa (%)",
+      "projectionYears": "Okres prognozy (lata)"
+    },
+    "results": {
+      "title": "Wyniki analizy",
+      "description": "Kompletne porównanie wynajmu i kupna w okresie {years} lat.",
+      "recommendation": "Rekomendacja",
+      "breakEvenAt": "Punkt równowagi po {years} lat",
+      "buyingRecommended": "Rekomendowane kupno",
+      "rentingRecommended": "Rekomendowany wynajem",
+      "dependsTimeline": "Zależy od Twojej perspektywy czasowej",
+      "monthlyMortgage": "Miesięczna rata kredytu",
+      "monthlyRentInitial": "Miesięczny czynsz (początkowy)",
+      "totalRentPaid": "Całkowity zapłacony czynsz",
+      "totalOwnershipCost": "Całkowity koszt własności",
+      "netBuyingAdvantage": "Netto korzyść z kupna",
+      "equityBuilt": "Zbudowany kapitał własny",
+      "advantageExplanation": "Pozytywna = kupno jest bardziej opłacalne. Negatywna = wynajem jest lepszy.",
+      "finalSummary": "Podsumowanie końcowe",
+      "finalPropertyValue": "Końcowa wartość nieruchomości",
+      "totalEquityBuilt": "Całkowity zbudowany kapitał własny",
+      "opportunityCost": "Koszt alternatywny",
+      "netAdvantage": "Netto korzyść",
+      "charts": {
+        "cumulativeCost": {
+          "title": "Porównanie kosztów skumulowanych",
+          "ariaLabel": "Wykres porównania kosztów skumulowanych pokazujący koszty wynajmu i kupna w czasie"
+        },
+        "equityGrowth": {
+          "title": "Wzrost kapitału własnego i wartości nieruchomości",
+          "ariaLabel": "Wykres wzrostu kapitału własnego i wartości nieruchomości w czasie"
+        }
+      }
+    }
+  },
+  "savedSearches": {
+    "title": "Zapisane wyszukiwania",
+    "description": "Twoje zapisane zapytania wyszukiwania.",
+    "emptyState": {
+      "title": "Brak zapisanych wyszukiwań",
+      "description": "Zapisuj wyszukiwania, aby otrzymywać powiadomienia o nowych ofertach."
+    },
+    "run": "Uruchom wyszukiwanie",
+    "delete": "Usuń",
+    "edit": "Edytuj",
+    "alerts": {
+      "enabled": "Alerty włączone",
+      "disabled": "Alerty wyłączone",
+      "enable": "Włącz alerty",
+      "disable": "Wyłącz alerty"
+    }
+  },
+  "search": {
+    "title": "Znajdź swoją nieruchomość",
+    "description": "Przeszukaj tysiące ofert za pomocą semantycznego wyszukiwania AI.",
+    "placeholder": "Opisz czego szukasz...",
+    "filters": {
+      "title": "Filtry",
+      "sortBy": "Sortuj według",
+      "order": "Kolejność",
+      "minPrice": "Cena minimalna",
+      "maxPrice": "Cena maksymalna",
+      "minRooms": "Min. pokoi",
+      "propertyType": "Typ nieruchomości",
+      "clearFilters": "Wyczyść filtry",
+      "applyFilters": "Zastosuj filtry"
+    },
+    "sortOptions": {
+      "relevance": "Trafność",
+      "price": "Cena",
+      "pricePerSqm": "Cena za m²",
+      "area": "Powierzchnia (m²)",
+      "yearBuilt": "Rok budowy",
+      "dateAdded": "Data dodania"
+    },
+    "orderOptions": {
+      "ascending": "Rosnąco",
+      "descending": "Malejąco"
+    },
+    "propertyTypes": {
+      "any": "Dowolny",
+      "apartment": "Mieszkanie",
+      "house": "Dom",
+      "studio": "Kawalerka",
+      "loft": "Loft",
+      "townhouse": "Bliźniak",
+      "other": "Inne"
+    },
+    "emptyState": {
+      "title": "Rozpocznij wyszukiwanie nieruchomości",
+      "description": "Wprowadź zapytanie, aby przeszukać tysiące ofert.",
+      "tryExamples": "Wypróbuj te przykłady:"
+    },
+    "results": {
+      "noResults": "Brak wyników",
+      "noResultsHint": "Spróbuj zmienić kryteria wyszukiwania lub filtry.",
+      "showingResults": "Wyświetlam {count} {count, plural, one {nieruchomość} few {nieruchomości} other {nieruchomości}}",
+      "exportResults": "Eksportuj wyniki"
+    },
+    "export": {
+      "title": "Eksportuj wyniki",
+      "format": "Format eksportu",
+      "csv": "CSV",
+      "json": "JSON",
+      "export": "Eksportuj"
+    },
+    "saveSearch": {
+      "button": "Zapisz wyszukiwanie",
+      "title": "Zapisz wyszukiwanie",
+      "nameLabel": "Nazwa wyszukiwania",
+      "namePlaceholder": "np. 2-pokojowe mieszkania w Warszawie",
+      "success": "Wyszukiwanie zapisane!",
+      "error": "Nie udało się zapisać wyszukiwania"
+    },
+    "errors": {
+      "searchFailed": "Wyszukiwanie nie powiodło się",
+      "connectionFailed": "Błąd połączenia. Spróbuj ponownie.",
+      "timeout": "Przekroczono czas wyszukiwania. Spróbuj ponownie."
+    }
+  },
+  "settings": {
+    "title": "Ustawienia",
+    "description": "Zarządzaj ustawieniami konta i preferencjami.",
+    "tabs": {
+      "identity": "Tożsamość",
+      "notifications": "Powiadomienia",
+      "models": "Modele"
+    },
+    "identity": {
+      "title": "Tożsamość",
+      "description": "Ustaw adres email powiązany z kontem.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Wprowadź swój email",
+      "save": "Zapisz",
+      "saved": "Email zapisany.",
+      "cleared": "Email usunięty.",
+      "invalidEmail": "Wprowadź prawidłowy adres email."
+    },
+    "notifications": {
+      "title": "Powiadomienia",
+      "description": "Skonfiguruj sposób otrzymywania powiadomień.",
+      "emailNotifications": "Powiadomienia email",
+      "pushNotifications": "Powiadomienia push",
+      "savedSearchAlerts": "Alerty zapisanych wyszukiwań",
+      "priceDropAlerts": "Alerty spadków cen",
+      "newListingAlerts": "Alerty nowych ofert"
+    },
+    "models": {
+      "title": "Modele",
+      "description": "Wybierz domyślny model i porównaj cenniki.",
+      "defaultModel": "Domyślny model",
+      "refreshCatalog": "Odśwież katalog",
+      "runtimeCheck": "Sprawdzenie runtime",
+      "testConnection": "Testuj połączenie",
+      "connectionSuccess": "Połączenie udane",
+      "connectionFailed": "Połączenie nieudane",
+      "noModels": "Brak dostępnych modeli",
+      "pricing": {
+        "title": "Cennik modeli",
+        "input": "Wejście",
+        "output": "Wyjście",
+        "per1kTokens": "za 1K tokenów"
+      }
+    },
+    "saved": "Ustawienia zapisane.",
+    "error": "Nie udało się zapisać ustawień."
+  },
+  "tools": {
+    "title": "Narzędzia",
+    "description": "Przydatne kalkulatory i narzędzia dla nieruchomości.",
+    "mortgageCalculator": "Kalkulator kredytu",
+    "investmentAnalyzer": "Analiza inwestycji",
+    "affordabilityCalculator": "Kalkulator zdolności",
+    "comparisonTool": "Porównanie nieruchomości"
+  },
+  "validation": {
+    "required": "To pole jest wymagane",
+    "email": "Wprowadź prawidłowy email",
+    "minLength": "Minimum {min} znaków",
+    "maxLength": "Maksimum {max} znaków",
+    "min": "Minimalna wartość to {min}",
+    "max": "Maksymalna wartość to {max}",
+    "pattern": "Nieprawidłowy format"
   }
 }
