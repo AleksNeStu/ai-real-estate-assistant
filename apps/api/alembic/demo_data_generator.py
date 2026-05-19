@@ -26,7 +26,6 @@ import uuid
 from datetime import UTC, datetime, timedelta
 
 # Database imports
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -329,19 +328,16 @@ class ComprehensiveDemoDataGenerator:
     async def _generate_favorites(self, count: int = 200) -> int:
         """Generate favorite properties."""
         favorites = []
+        seen_combinations = set()  # Track user_id + property_id combinations
 
         for _i in range(count):
             user_id = random.choice(self.user_ids)
             property_id = random.choice(self.property_ids)
 
-            # Check for duplicates
-            existing = await self.session.execute(
-                select(FavoriteDB).where(
-                    FavoriteDB.user_id == user_id, FavoriteDB.property_id == property_id
-                )
-            )
-
-            if not existing.first():
+            # Check for duplicates using set
+            combination = f"{user_id}:{property_id}"
+            if combination not in seen_combinations:
+                seen_combinations.add(combination)
                 favorite = FavoriteDB(
                     id=str(uuid.uuid4()),
                     user_id=user_id,
@@ -356,28 +352,52 @@ class ComprehensiveDemoDataGenerator:
         return len(favorites)
 
     async def _generate_agent_profiles(self, count: int = 15) -> int:
-        """Generate AI agent profiles."""
+        """Generate real estate agent profiles."""
         agents = []
 
-        agent_types = ["search", "valuation", "analytics", "recommendation", "assistant"]
+        specialties_options = [
+            ["residential", "commercial"],
+            ["luxury", "investment"],
+            ["residential", "new construction"],
+            ["commercial", "industrial"],
+            ["residential", "vacation"],
+        ]
+
+        # Use unique users for agents to avoid UNIQUE constraint on user_id
+        agent_users = random.sample(self.user_ids, min(count, len(self.user_ids)))
 
         for i in range(count):
-            agent_type = agent_types[i % len(agent_types)]
+            if i >= len(agent_users):
+                break  # Skip if we don't have enough unique users
+            user_id = agent_users[i]
+            specialty = specialties_options[i % len(specialties_options)]
+            agency_names = [
+                "Premium Estates",
+                "City Living",
+                "Global Properties",
+                "Local Realty",
+                "Elite Homes",
+            ]
 
             agent = AgentProfile(
                 id=str(uuid.uuid4()),
-                name=f"{agent_type.capitalize()} Agent {i + 1}",
-                description=f"AI-powered {agent_type} agent for real estate",
-                agent_type=agent_type,
-                config={
-                    "model": "gpt-4",
-                    "temperature": 0.7,
-                    "max_tokens": 1000,
-                },
-                capabilities=["search", "filter", "recommend", "analyze"],
+                user_id=user_id,
+                agency_name=agency_names[i % len(agency_names)],
+                license_number=f"RL-{random.randint(10000, 99999)}",
+                license_state=random.choice(["CA", "NY", "TX", "FL", "IL"]),
+                professional_email=f"agent.{i + 1}@{agency_names[i % len(agency_names)].lower().replace(' ', '')}.com",
+                professional_phone=f"+1 {random.randint(200, 999)}-{random.randint(100, 999)}-{random.randint(1000, 9999)}",
+                office_address=f"{random.randint(100, 999)} Main St, Suite {random.randint(100, 999)}, {random.choice(['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'])}",
+                specialties=specialty,
+                service_areas=random.sample(list(CITIES.keys()), random.randint(2, 4)),
+                property_types=random.sample(PROPERTY_TYPES, random.randint(2, 4)),
+                languages=random.sample(["en", "es", "pl", "de", "fr"], random.randint(1, 3)),
+                average_rating=round(random.uniform(3.5, 5.0), 1),
+                total_reviews=random.randint(0, 500),
+                total_sales=random.randint(0, 200),
+                total_rentals=random.randint(0, 100),
                 is_active=random.choice([True, False]),
-                created_by=random.choice(self.user_ids),
-                created_at=datetime.now(UTC) - timedelta(days=random.randint(1, 30)),
+                created_at=datetime.now(UTC) - timedelta(days=random.randint(30, 365)),
             )
             agents.append(agent)
             self.agent_ids.append(agent.id)
