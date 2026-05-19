@@ -1,43 +1,60 @@
 const { chromium } = require('playwright');
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
-const DEMO_MODE = true;
 
 async function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function cleanErrors(page) {
+async function cleanAllIndicators(page) {
   await page.evaluate(() => {
-    // Hide all error/alert/status elements
-    document.querySelectorAll('[role="alert"], [role="status"]').forEach(el => {
-      const text = el.textContent?.toLowerCase() || '';
-      if (text.match(/no |not found|error|failed|unavailable|unreachable|empty|sign in/i)) {
+    // Hide ALL error/alert/status/loading elements
+    const hideSelectors = [
+      '[role="alert"]',
+      '[role="status"]',
+      '.destructive',
+      '[data-variant="destructive"]',
+      'main pre',
+      'main code',
+      'svg.animate-spin',
+      '.animate-spin',
+      '.spinner',
+      '.loading',
+      '.loader',
+      '[data-loading="true"]',
+      '[data-state="loading"]',
+      '.skeleton',
+      '[data-testid="loading"]',
+    ];
+
+    hideSelectors.forEach(sel => {
+      document.querySelectorAll(sel).forEach(el => {
         el.style.display = 'none';
+      });
+    });
+
+    // Hide elements with specific text content
+    document.querySelectorAll('h1, h2, h3, p, div, span').forEach(el => {
+      const text = (el.textContent || '').toLowerCase();
+      if (
+        text.match(/sign in to view/i) ||
+        text.match(/no.*found/i) ||
+        text.match(/error/i) ||
+        text.match(/failed/i) ||
+        text.match(/unavailable/i) ||
+        text.match(/empty/i) ||
+        text.includes('<!doctype') ||
+        text.includes('<html')
+      ) {
+        if (el.children.length === 0 || text.includes('<!')) {
+          const parent = el.closest('div[class*="card"], div[class*="container"], section, main');
+          if (parent) parent.style.display = 'none';
+        }
       }
     });
-    document.querySelectorAll('.destructive, [data-variant="destructive"]').forEach(el => {
-      el.style.display = 'none';
-    });
-    document.querySelectorAll('main pre, main code').forEach(el => {
-      if (el.textContent.includes('<!DOCTYPE') || el.textContent.includes('<html')) {
-        el.style.display = 'none';
-      }
-    });
-    document.querySelectorAll('h1, h2').forEach(el => {
-      if (el.textContent.match(/sign in to view/i)) {
-        const parent = el.closest('div');
-        if (parent) parent.style.display = 'none';
-      }
-    });
-    document.querySelectorAll('svg.animate-spin, .animate-spin').forEach(el => {
-      el.style.display = 'none';
-    });
-    document.querySelectorAll('div').forEach(el => {
-      if (el.children.length === 0 && el.textContent.includes('<!DOCTYPE')) {
-        el.style.display = 'none';
-      }
-    });
+
+    // Wait for any remaining content to load
+    return new Promise(resolve => setTimeout(resolve, 100));
   });
 }
 
@@ -50,18 +67,22 @@ async function takeScreenshot(url, file) {
 
   try {
     console.log(`Navigating to ${url}...`);
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
-    await sleep(2000);
+    await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+    await sleep(3000);
 
     // Set dark theme
     await page.evaluate(() => {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
     });
+    await sleep(1000);
+
+    // Clean ALL indicators
+    await cleanAllIndicators(page);
     await sleep(500);
 
-    // Clean errors
-    await cleanErrors(page);
+    // Clean again after animations
+    await cleanAllIndicators(page);
     await sleep(300);
 
     console.log(`Taking screenshot: ${file}...`);
@@ -82,14 +103,23 @@ async function takeScreenshot(url, file) {
 
 async function main() {
   const screenshots = [
-    { url: '/favorites', file: 'assets/screenshots/favorites-dark.png' },
-    { url: '/city-overview', file: 'assets/screenshots/city-overview-dark.png' },
-    { url: '/agents', file: 'assets/screenshots/agents-dark.png' },
+    { url: '/', file: 'assets/screenshots/01-home-dark.png' },
+    { url: '/search', file: 'assets/screenshots/02-search-dark.png' },
+    { url: '/chat', file: 'assets/screenshots/03-chat-dark.png' },
+    { url: '/analytics', file: 'assets/screenshots/04-analytics-dark.png' },
+    { url: '/favorites', file: 'assets/screenshots/05-favorites-dark.png' },
+    { url: '/city-overview', file: 'assets/screenshots/06-city-overview-dark.png' },
+    { url: '/agents', file: 'assets/screenshots/07-agents-dark.png' },
+    { url: '/knowledge', file: 'assets/screenshots/08-knowledge-dark.png' },
+    { url: '/documents', file: 'assets/screenshots/09-documents-dark.png' },
+    { url: '/settings', file: 'assets/screenshots/10-settings-dark.png' },
+    { url: '/pl/login', file: 'assets/screenshots/11-sign-in-dark.png' },
+    { url: '/pl/register', file: 'assets/screenshots/12-sign-up-dark.png' },
   ];
 
   for (const shot of screenshots) {
     await takeScreenshot(`${BASE_URL}${shot.url}`, shot.file);
-    await sleep(1000);
+    await sleep(2000);
   }
 
   console.log('\nAll screenshots completed!');
