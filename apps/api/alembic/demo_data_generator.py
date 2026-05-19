@@ -459,23 +459,27 @@ class ComprehensiveDemoDataGenerator:
         """Generate user preference profiles."""
         profiles = []
 
-        for i in range(count):
+        # user_id is UNIQUE in UserPreferenceProfile, so sample unique users
+        unique_users = random.sample(self.user_ids, min(count, len(self.user_ids)))
+
+        for user_id in unique_users:
             profile = UserPreferenceProfile(
                 id=str(uuid.uuid4()),
-                user_id=random.choice(self.user_ids),
-                name=f"Profile {i + 1}",
-                preferences={
-                    "cities": random.sample(list(CITIES.keys()), random.randint(1, 3)),
-                    "property_types": random.sample(PROPERTY_TYPES, random.randint(1, 3)),
-                    "price_range": {
-                        "min": random.randint(100000, 300000),
-                        "max": random.randint(500000, 1000000),
-                    },
-                    "rooms": random.randint(1, 4),
-                    "amenities": random.sample(
+                user_id=user_id,
+                preferred_cities=random.sample(list(CITIES.keys()), random.randint(1, 3)),
+                preferred_price_min=float(random.randint(100000, 300000)),
+                preferred_price_max=float(random.randint(500000, 1000000)),
+                preferred_rooms=random.sample([1, 2, 3, 4, 5], random.randint(1, 3)),
+                preferred_property_types=random.sample(PROPERTY_TYPES, random.randint(1, 3)),
+                amenity_weights={
+                    amenity: round(random.uniform(0.3, 1.0), 1)
+                    for amenity in random.sample(
                         ["parking", "balcony", "elevator", "garden"], random.randint(1, 3)
-                    ),
+                    )
                 },
+                view_count=random.randint(0, 500),
+                favorite_count=random.randint(0, 100),
+                search_count=random.randint(0, 200),
                 created_at=datetime.now(UTC) - timedelta(days=random.randint(1, 60)),
                 updated_at=datetime.now(UTC),
             )
@@ -491,18 +495,39 @@ class ComprehensiveDemoDataGenerator:
 
         for _i in range(count):
             city = random.choice(list(CITIES.keys()))
+            prop_id = random.choice(self.property_ids)
 
             report = CMAReportDB(
                 id=str(uuid.uuid4()),
                 user_id=random.choice(self.user_ids),
-                property_id=random.choice(self.property_ids),
-                title=f"CMA Report for {city}",
-                subject_property_value=random.randint(300000, 700000),
-                comparable_properties=random.sample(self.property_ids, random.randint(3, 6)),
-                market_analysis={
+                status="completed",
+                subject_property_id=prop_id,
+                subject_data={
+                    "property_id": prop_id,
+                    "city": city,
+                    "estimated_value": random.randint(300000, 700000),
+                },
+                comparables=[
+                    {
+                        "property_id": cid,
+                        "similarity_score": round(random.uniform(0.7, 0.99), 2),
+                        "adjustments": [],
+                        "adjusted_price": random.randint(300000, 700000),
+                    }
+                    for cid in random.sample(self.property_ids, random.randint(3, 6))
+                ],
+                valuation={
+                    "estimated_value": random.randint(300000, 700000),
+                    "value_range_low": random.randint(250000, 400000),
+                    "value_range_high": random.randint(500000, 800000),
+                    "confidence_score": round(random.uniform(0.6, 0.95), 2),
+                    "price_per_sqm": random.randint(5000, 12000),
+                },
+                market_context={
                     "avg_price_per_sqm": random.randint(5000, 12000),
-                    "price_trend": random.choice(["up", "down", "stable"]),
-                    "market_condition": random.choice(["hot", "balanced", "cold"]),
+                    "median_price": random.randint(350000, 600000),
+                    "trend": random.choice(["up", "down", "stable"]),
+                    "inventory_count": random.randint(10, 200),
                 },
                 created_at=datetime.now(UTC) - timedelta(days=random.randint(1, 30)),
             )
