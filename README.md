@@ -88,7 +88,7 @@ Run the full demo locally with comprehensive mock data in minutes:
 **Stop the demo:**
 
 ```powershell
-.\scripts\docker\stop.ps1
+.\scripts\demo\03-stop-docker.ps1
 ```
 
 **[→ Demo Setup Documentation](scripts/demo/README.md)** — Complete guide with troubleshooting.
