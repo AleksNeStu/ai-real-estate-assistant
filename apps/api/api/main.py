@@ -260,12 +260,11 @@ async def startup_event():
         logger.info("DEMO_MODE enabled — generating comprehensive demo data...")
         try:
             from alembic.demo_data_generator import generate_comprehensive_demo_data
-            from db.database import get_db_session
+            from db.database import get_db_context
 
             # Get a database session for the generator
-            async for session in get_db_session():
+            async with get_db_context() as session:
                 await generate_comprehensive_demo_data(session)
-                break  # Only generate once per startup
             logger.info("Comprehensive demo data generated successfully.")
         except Exception as demo_error:
             logger.warning("Comprehensive demo data generation failed (non-fatal): %s", demo_error)
