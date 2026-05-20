@@ -109,6 +109,7 @@ def get_optimized_memory(
             chat_memory=chat_history,
             memory_key="chat_history",
             return_messages=True,
+            output_key="answer",
         )
         return memory, None
 
@@ -134,6 +135,7 @@ def get_optimized_memory(
             chat_memory=optimized_history,
             memory_key="chat_history",
             return_messages=True,
+            output_key="answer",
         )
     else:
         # No optimization needed
@@ -141,6 +143,7 @@ def get_optimized_memory(
             chat_memory=chat_history,
             memory_key="chat_history",
             return_messages=True,
+            output_key="answer",
         )
 
     return memory, metrics
