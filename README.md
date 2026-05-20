@@ -97,9 +97,9 @@ Run the full demo locally with comprehensive mock data in minutes:
 
 <div align="center">
 
-<img src="docs/screenshots/homepage.png" alt="AI Real Estate Assistant — Homepage" width="640"/>
+<img src="docs/screenshots/demo-flow.gif" alt="App demo — Homepage · Search · Chat · Agents" width="640"/>
 
-*Homepage — property search, AI chat, and market analytics*
+*Homepage · Search · Chat · Agents · Analytics*
 
 </div>
 
