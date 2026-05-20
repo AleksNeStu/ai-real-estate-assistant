@@ -573,10 +573,10 @@ class NotificationScheduler:
             Stats dictionary with detection results
         """
         try:
-            from db.database import async_session_factory
+            from db.database import get_db_context
             from db.repositories import AnomalyRepository, PriceSnapshotRepository
 
-            async with async_session_factory() as session:
+            async with get_db_context() as session:
                 anomaly_repo = AnomalyRepository(session)
                 price_snapshot_repo = PriceSnapshotRepository(session)
 

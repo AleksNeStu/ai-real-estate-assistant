@@ -125,7 +125,3 @@ async def close_db() -> None:
         await _engine.dispose()
         _engine = None
         _session_factory = None
-
-
-# Alias for backward compatibility
-async_session_factory = get_session_factory

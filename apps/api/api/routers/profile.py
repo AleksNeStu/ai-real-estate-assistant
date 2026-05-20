@@ -31,6 +31,7 @@ _export_jobs: dict[str, dict] = {}
 
 # --- Pydantic Models ---
 
+
 class ProfileUpdate(BaseModel):
     """Schema for profile update (partial)."""
 
@@ -213,7 +214,9 @@ async def upload_avatar(
 
     # Generate unique filename
     timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
-    file_ext = file.filename.split(".")[-1].lower() if file.filename and "." in file.filename else "png"
+    file_ext = (
+        file.filename.split(".")[-1].lower() if file.filename and "." in file.filename else "png"
+    )
     unique_filename = f"avatar_{user.id}_{timestamp}.{file_ext}"
     avatar_path = os.path.join(_AVATAR_UPLOAD_DIR, unique_filename)
 
@@ -371,9 +374,9 @@ async def _process_data_export(
         _export_jobs[export_id]["progress_percent"] = 10
 
         # Get user from database
-        from db.database import async_session_factory
+        from db.database import get_db_context
 
-        async with async_session_factory() as session:
+        async with get_db_context() as session:
             result = await session.execute(select(User).where(User.id == user_id))
             user = result.scalar_one_or_none()
 
@@ -471,19 +474,23 @@ async def _process_data_export(
         expires_at = datetime.now(UTC) + timedelta(hours=24)
 
         # Update job status
-        _export_jobs[export_id].update({
-            "status": "completed",
-            "progress_percent": 100,
-            "download_url": f"/uploads/exports/{export_id}.json",
-            "expires_at": expires_at,
-            "completed_at": datetime.now(UTC),
-        })
+        _export_jobs[export_id].update(
+            {
+                "status": "completed",
+                "progress_percent": 100,
+                "download_url": f"/uploads/exports/{export_id}.json",
+                "expires_at": expires_at,
+                "completed_at": datetime.now(UTC),
+            }
+        )
 
         logger.info(f"Data export {export_id} completed for user {user_id}")
 
     except Exception as e:
         logger.error(f"Data export failed: {e}")
-        _export_jobs[export_id].update({
-            "status": "failed",
-            "error_message": str(e),
-        })
+        _export_jobs[export_id].update(
+            {
+                "status": "failed",
+                "error_message": str(e),
+            }
+        )
