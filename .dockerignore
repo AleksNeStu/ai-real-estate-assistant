@@ -10,12 +10,17 @@ __pycache__
 *.so
 .Python
 
-# Virtual environments
-venv/
-env/
-ENV/
-.venv
-.venv_ci/
+# Virtual environments (match at any depth)
+**/venv/
+**/env/
+**/ENV/
+**/.venv
+**/.venv*/
+**/.venv_ci/
+
+# Type checkers and linters cache
+**/.mypy_cache/
+**/.ruff_cache/
 
 # IDE files
 .vscode/
@@ -26,11 +31,11 @@ ENV/
 .DS_Store
 
 # Testing
-.pytest_cache/
+**/.pytest_cache/
 .coverage
 htmlcov/
 .tox/
-tests/
+**/tests/
 *.test
 
 # Documentation
