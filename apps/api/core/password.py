@@ -2,57 +2,30 @@
 
 from typing import Optional
 
-from passlib.context import CryptContext
+import bcrypt
 
-# Password context with bcrypt
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto",
-    bcrypt__rounds=12,  # Cost factor (higher = more secure but slower)
-)
+_BCRYPT_ROUNDS = 12
 
 
 def hash_password(password: str) -> str:
-    """
-    Hash a password using bcrypt.
-
-    Args:
-        password: Plain text password
-
-    Returns:
-        Hashed password string
-    """
-    return pwd_context.hash(password)  # type: ignore[no-any-return]
+    """Hash a password using bcrypt."""
+    return bcrypt.hashpw(
+        password.encode("utf-8")[:72], bcrypt.gensalt(rounds=_BCRYPT_ROUNDS)
+    ).decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """
-    Verify a password against a hash.
-
-    Args:
-        plain_password: Plain text password to verify
-        hashed_password: Hashed password to compare against
-
-    Returns:
-        True if password matches, False otherwise
-    """
-    return pwd_context.verify(plain_password, hashed_password)  # type: ignore[no-any-return]
+    """Verify a password against a hash."""
+    return bcrypt.checkpw(plain_password.encode("utf-8")[:72], hashed_password.encode("utf-8"))
 
 
 def needs_rehash(hashed_password: str) -> bool:
-    """
-    Check if a password hash needs to be rehashed.
-
-    This is useful when you want to upgrade the hash algorithm
-    or increase the cost factor over time.
-
-    Args:
-        hashed_password: Current password hash
-
-    Returns:
-        True if the hash should be updated
-    """
-    return pwd_context.needs_update(hashed_password)  # type: ignore[no-any-return]
+    """Check if a password hash needs to be rehashed (cost factor changed)."""
+    try:
+        existing_rounds = int(hashed_password.split("$")[2])
+        return existing_rounds != _BCRYPT_ROUNDS
+    except (IndexError, ValueError):
+        return True
 
 
 def validate_password_strength(password: str) -> tuple[bool, Optional[str]]:

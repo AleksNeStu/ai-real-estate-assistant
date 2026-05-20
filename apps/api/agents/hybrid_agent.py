@@ -603,7 +603,7 @@ Thought: {agent_scratchpad}"""
         # Fallback to standard retrieval
         if self.verbose:
             logger.info("Using standard retrieval")
-        docs = self.retriever.get_relevant_documents(query)  # type: ignore[attr-defined]
+        docs = self.retriever.invoke(query)  # type: ignore[attr-defined]
         return docs[:k]  # type: ignore[no-any-return]
 
     async def _aretrieve_documents(
@@ -620,7 +620,7 @@ Thought: {agent_scratchpad}"""
 
         if self.verbose:
             logger.info("Using async standard retrieval")
-        docs = await self.retriever.aget_relevant_documents(query)  # type: ignore[attr-defined]
+        docs = await self.retriever.ainvoke(query)  # type: ignore[attr-defined]
         return docs[:k]  # type: ignore[no-any-return]
 
     def _process_with_rag(self, query: str, analysis: QueryAnalysis) -> Dict[str, Any]:
@@ -961,7 +961,7 @@ class SimpleRAGAgent:
 
     def get_sources_for_query(self, query: str, k: int = 5) -> List[Document]:
         try:
-            return self.retriever.get_relevant_documents(query)[:k]  # type: ignore[attr-defined,no-any-return]
+            return self.retriever.invoke(query)[:k]  # type: ignore[attr-defined,no-any-return]
         except Exception as e:
             logger.warning("SimpleRAGAgent retrieval failed: %s", e)
             return []

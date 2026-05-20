@@ -10,6 +10,7 @@ from typing import Optional
 
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from db.models import (
     AgentInquiry,
@@ -97,8 +98,12 @@ class AgentProfileRepository:
         sort_order: str = "desc",
     ) -> list[AgentProfile]:
         """Get list of agent profiles with filters."""
-        query = select(AgentProfile).where(
-            AgentProfile.is_active == True  # noqa: E712
+        query = (
+            select(AgentProfile)
+            .options(selectinload(AgentProfile.user))
+            .where(
+                AgentProfile.is_active == True  # noqa: E712
+            )
         )
 
         # Apply filters

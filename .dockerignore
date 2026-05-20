@@ -82,7 +82,9 @@ test_*.sh
 # Other
 *.sqlite
 *.db
-node_modules/
+
+# Node modules — frontend Dockerfile uses npm ci, doesn't need host node_modules
+**/node_modules/
 
 # Private non-committed materials (exclude from images)
 private/
@@ -91,11 +93,10 @@ private/
 .history/
 .trae/
 
-# Frontend is built in its own image (not needed in backend context)
-frontend/
-apps/web/
+# Frontend build artifacts (source is needed for frontend Docker build)
 .next/
 next-env.d.ts
+frontend/
 
 # Local artifacts
 artifacts/
@@ -116,12 +117,6 @@ coverage.xml
 tmp/
 dummy/
 
-# Exclude node_modules except for frontend build
-node_modules/
-!apps/web/node_modules/
-
-# Keep root package.json but allow apps/web/package.json
+# Root package files not needed in images
 package.json
-!apps/web/package.json
 package-lock.json
-!apps/web/package-lock.json
