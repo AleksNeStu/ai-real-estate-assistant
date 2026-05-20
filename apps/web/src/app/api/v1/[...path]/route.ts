@@ -103,6 +103,11 @@ function buildBackendRequestHeaders(original: Headers): Headers {
   const apiKey = getApiAccessKey();
   if (apiKey) headers.set('X-API-Key', apiKey);
 
+  // Prevent backend gzip compression — the proxy streams raw bytes to the
+  // browser, so decompressing gzip in the browser would require forwarding
+  // the Content-Encoding header. Requesting identity avoids the issue.
+  headers.set('Accept-Encoding', 'identity');
+
   return headers;
 }
 

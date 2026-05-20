@@ -230,7 +230,7 @@ async def search_properties(
         if cache:
             await cache.set(
                 http_request,
-                data=response.model_dump(),
+                data=response.model_dump(mode="json"),
                 status_code=200,
                 body_hash=body_hash,
             )
