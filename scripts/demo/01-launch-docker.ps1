@@ -78,20 +78,54 @@ docker compose -f $ComposeFile up -d --build 2>&1 | ForEach-Object {
 if ($LASTEXITCODE -ne 0) { Fail "Docker compose failed." }
 Ok "Containers started successfully"
 
-# ── Health Check ───────────────────────────────────────────────────────
+# ── Health Check with Live Logs ──────────────────────────────────────────
 Step "[5/5] Waiting for services to be healthy..."
 $BackendUrl = "http://localhost:8082"
 $FrontendUrl = "http://localhost:3082"
 $elapsed = 0; $bOk = $false; $fOk = $false
+$lastLogTime = (Get-Date).AddSeconds(-3).ToString("yyyy-MM-ddTHH:mm:ss")
+$suppressPattern = "Persistent vector store|sentry-sdk|bcrypt|greenlet|passlib|Centralized error|error_handler|middleware"
 
-while ($elapsed -lt 120 -and -not ($bOk -and $fOk)) {
+while ($elapsed -lt 180 -and -not ($bOk -and $fOk)) {
     Start-Sleep -Seconds 3; $elapsed += 3
+
+    # Fetch recent backend logs and display meaningful progress
+    $now = (Get-Date).ToString("yyyy-MM-ddTHH:mm:ss")
+    $newLogs = docker logs --since $lastLogTime ai-backend 2>&1
+    $lastLogTime = $now
+
+    $shownLog = $false
+    $newLogs | ForEach-Object {
+        $line = $_.ToString().Trim()
+        if ($line -and $line -notmatch $suppressPattern) {
+            # Color-code by severity/content
+            if ($line -match "ERROR|Traceback|failed|OOM|Killed") {
+                Write-Host "  $($elapsed)s — $line" -ForegroundColor Red; $shownLog = $true
+            } elseif ($line -match "WARNING") {
+                if ($line -match "seed failed|Auto-seed failed") {
+                    Write-Host "  $($elapsed)s — $line" -ForegroundColor Yellow; $shownLog = $true
+                }
+            } elseif ($line -match "SEED|seed|generat|Generat|batch|Added|complet|Complet|Demo|DEMO|data generat") {
+                # Extract message from JSON or loguru format
+                $msg = $line
+                if ($line -match '"message":\s*"([^"]+)"') { $msg = $Matches[1] }
+                elseif ($line -match '\|\s*INFO\s*\|.*\|\s*(.+)') { $msg = $Matches[1].Trim() }
+                if ($msg.Length -gt 100) { $msg = $msg.Substring(0, 100) + "..." }
+                $ts = "$elapsed"
+                Write-Host "  $($ts)s - $msg" -ForegroundColor Cyan; $shownLog = $true
+            }
+        }
+    }
+
+    if (-not $shownLog) { Write-Host "." -NoNewline -ForegroundColor DarkGray }
+
+    # Check health endpoints
     if (-not $bOk) {
         try {
             $r = Invoke-WebRequest -Uri "$BackendUrl/health" -TimeoutSec 3 -SkipHttpErrorCheck -ErrorAction Stop
             if ($r.StatusCode -eq 200) {
                 $bOk = $true
-                Ok "Backend:  $BackendUrl (${elapsed}s)"
+                Ok "Backend:  $BackendUrl ($($elapsed)s)"
             }
         } catch {}
     }
@@ -100,13 +134,15 @@ while ($elapsed -lt 120 -and -not ($bOk -and $fOk)) {
             $r = Invoke-WebRequest -Uri "$FrontendUrl/" -TimeoutSec 3 -SkipHttpErrorCheck -ErrorAction Stop
             if ($r.StatusCode -eq 200) {
                 $fOk = $true
-                Ok "Frontend:  $FrontendUrl (${elapsed}s)"
+                Ok "Frontend:  $FrontendUrl ($($elapsed)s)"
             }
         } catch {}
     }
-    if (-not ($bOk -and $fOk)) { Write-Host "." -NoNewline -ForegroundColor DarkGray }
 }
 Write-Host ""
+
+if (-not $bOk) { Fail "Backend did not become healthy within 180s. Check: docker logs ai-backend" }
+if (-not $fOk) { Fail "Frontend did not become healthy within 180s. Check: docker logs ai-frontend" }
 
 # ── Summary ───────────────────────────────────────────────────────────────
 Write-Host "`n  ╔════════════════════════════════════════════════════╗" -ForegroundColor Cyan
