@@ -17,7 +17,7 @@ class TestHybridPropertyAgent:
     @pytest.fixture
     def mock_retriever(self):
         retriever = MagicMock()
-        retriever.get_relevant_documents.return_value = [
+        retriever.invoke.return_value = [
             Document(page_content="Doc 1", metadata={"id": "1"}),
             Document(page_content="Doc 2", metadata={"id": "2"}),
         ]
@@ -27,7 +27,7 @@ class TestHybridPropertyAgent:
         retriever.asearch_with_filters = AsyncMock(
             return_value=[Document(page_content="Async Filtered Doc 1", metadata={"id": "af1"})]
         )
-        retriever.aget_relevant_documents = AsyncMock(
+        retriever.ainvoke = AsyncMock(
             return_value=[Document(page_content="Async Doc 1", metadata={"id": "a1"})]
         )
         return retriever
@@ -97,7 +97,7 @@ class TestHybridPropertyAgent:
         docs = agent._retrieve_documents(query, analysis)
 
         mock_retriever.search_with_filters.assert_not_called()
-        mock_retriever.get_relevant_documents.assert_called_once_with(query)
+        mock_retriever.invoke.assert_called_once_with(query)
         assert docs[0].metadata["id"] == "1"
 
     def test_retrieve_documents_respects_k_without_filters(self, agent, mock_retriever):
@@ -111,7 +111,7 @@ class TestHybridPropertyAgent:
 
         docs = agent._retrieve_documents(query, analysis, k=1)
 
-        mock_retriever.get_relevant_documents.assert_called_once_with(query)
+        mock_retriever.invoke.assert_called_once_with(query)
         assert len(docs) == 1
         assert docs[0].metadata["id"] == "1"
 
@@ -146,7 +146,7 @@ class TestHybridPropertyAgent:
         docs = await agent._aretrieve_documents(query, analysis)
 
         mock_retriever.asearch_with_filters.assert_not_called()
-        mock_retriever.aget_relevant_documents.assert_called_once_with(query)
+        mock_retriever.ainvoke.assert_called_once_with(query)
         assert docs[0].metadata["id"] == "a1"
 
     @pytest.mark.asyncio
@@ -161,7 +161,7 @@ class TestHybridPropertyAgent:
 
         docs = await agent._aretrieve_documents(query, analysis, k=1)
 
-        mock_retriever.aget_relevant_documents.assert_called_once_with(query)
+        mock_retriever.ainvoke.assert_called_once_with(query)
         assert len(docs) == 1
         assert docs[0].metadata["id"] == "a1"
 
@@ -359,15 +359,15 @@ class TestHybridPropertyAgent:
             complexity=Complexity.MEDIUM,
             extracted_filters={"city": "Krakow"},
         )
-        retriever = MagicMock(spec_set=["aget_relevant_documents"])
-        retriever.aget_relevant_documents = AsyncMock(
+        retriever = MagicMock(spec_set=["ainvoke"])
+        retriever.ainvoke = AsyncMock(
             return_value=[Document(page_content="Async Doc 1", metadata={"id": "fallback"})]
         )
         agent.retriever = retriever
 
         docs = await agent._aretrieve_documents("q", analysis)
 
-        retriever.aget_relevant_documents.assert_called_once_with("q")
+        retriever.ainvoke.assert_called_once_with("q")
         assert docs[0].metadata["id"] == "fallback"
 
     def test_process_with_agent_uses_filtered_retrieval(self, agent, mock_retriever):
@@ -490,7 +490,7 @@ class TestHybridPropertyAgent:
 
     def test_simple_rag_agent_get_sources_for_query_returns_docs(self, mock_llm):
         retriever = MagicMock()
-        retriever.get_relevant_documents.return_value = [
+        retriever.invoke.return_value = [
             Document(page_content="Doc 1", metadata={"id": "1"}),
             Document(page_content="Doc 2", metadata={"id": "2"}),
         ]
@@ -504,7 +504,7 @@ class TestHybridPropertyAgent:
 
     def test_simple_rag_agent_get_sources_for_query_returns_empty_on_error(self, mock_llm):
         retriever = MagicMock()
-        retriever.get_relevant_documents.side_effect = RuntimeError("fail")
+        retriever.invoke.side_effect = RuntimeError("fail")
         with patch(
             "agents.hybrid_agent.ConversationalRetrievalChain.from_llm", return_value=MagicMock()
         ):

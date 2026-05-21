@@ -64,7 +64,7 @@ def test_hybrid_property_agent_get_sources_for_query_skips_calculation_intent():
 
 def test_simple_rag_agent_get_sources_for_query_returns_empty_on_error():
     retriever = MagicMock()
-    retriever.get_relevant_documents.side_effect = RuntimeError("fail")
+    retriever.invoke.side_effect = RuntimeError("fail")
     with patch(
         "agents.hybrid_agent.ConversationalRetrievalChain.from_llm", return_value=MagicMock()
     ):

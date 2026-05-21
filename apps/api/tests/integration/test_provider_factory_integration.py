@@ -66,22 +66,39 @@ def test_list_all_models_integration(mock_settings_env):
 def test_factory_creates_providers_with_settings(mock_settings_env):
     ModelProviderFactory.clear_cache()
 
-    # OpenAI
-    openai_provider = ModelProviderFactory.get_provider("openai")
-    assert openai_provider.config["api_key"] == "sk-test-openai"
+    # Also patch _PROVIDER_KEY_MAP since it captures settings values at class definition time
+    test_key_map = {
+        "openai": "sk-test-openai",
+        "anthropic": "sk-ant-test",
+        "google": "AIza-test",
+        "grok": "xai-test-key",
+        "deepseek": "sk-deepseek-test",
+        "openrouter": None,
+        "groq": None,
+        "mistral": None,
+        "qwen": None,
+        "zai": None,
+        "moonshot": None,
+        "opencode": None,
+        "ollama": None,
+    }
+    with patch.object(ModelProviderFactory, "_PROVIDER_KEY_MAP", test_key_map):
+        # OpenAI
+        openai_provider = ModelProviderFactory.get_provider("openai")
+        assert openai_provider.config["api_key"] == "sk-test-openai"
 
-    # Anthropic
-    anthropic_provider = ModelProviderFactory.get_provider("anthropic")
-    assert anthropic_provider.config["api_key"] == "sk-ant-test"
+        # Anthropic
+        anthropic_provider = ModelProviderFactory.get_provider("anthropic")
+        assert anthropic_provider.config["api_key"] == "sk-ant-test"
 
-    # Google
-    google_provider = ModelProviderFactory.get_provider("google")
-    assert google_provider.config["api_key"] == "AIza-test"
+        # Google
+        google_provider = ModelProviderFactory.get_provider("google")
+        assert google_provider.config["api_key"] == "AIza-test"
 
-    # Grok
-    grok_provider = ModelProviderFactory.get_provider("grok")
-    assert grok_provider.config["api_key"] == "xai-test-key"
+        # Grok
+        grok_provider = ModelProviderFactory.get_provider("grok")
+        assert grok_provider.config["api_key"] == "xai-test-key"
 
-    # DeepSeek
-    deepseek_provider = ModelProviderFactory.get_provider("deepseek")
-    assert deepseek_provider.config["api_key"] == "sk-deepseek-test"
+        # DeepSeek
+        deepseek_provider = ModelProviderFactory.get_provider("deepseek")
+        assert deepseek_provider.config["api_key"] == "sk-deepseek-test"

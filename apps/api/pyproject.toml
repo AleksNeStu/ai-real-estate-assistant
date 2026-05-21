@@ -1,6 +1,6 @@
 [project]
 name = "ai-real-estate-assistant"
-version = "5.0.1"
+version = "5.0.2"
 description = "AI-powered real estate assistant with FastAPI backend and Next.js frontend"
 authors = [
     {name = "Alex Nesterovich", email = "alex@example.com"}

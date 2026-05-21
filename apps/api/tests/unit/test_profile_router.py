@@ -862,10 +862,13 @@ class TestHelperFunctions:
         mock_context = MagicMock()
         mock_context.__aenter__ = AsyncMock(return_value=mock_session)
         mock_context.__aexit__ = AsyncMock(return_value=None)
-        mock_factory = MagicMock(return_value=mock_context)
+        mock_get_db = MagicMock(return_value=mock_context)
 
-        with patch("db.database.async_session_factory", mock_factory):
-            await profile._process_data_export("user-1", export_id, export_request)
+        with patch("db.database.get_db_context", mock_get_db):
+            # Patch FavoriteRepository and SavedSearchRepository to avoid import errors
+            with patch("db.repositories.FavoriteRepository"):
+                with patch("db.repositories.SavedSearchRepository"):
+                    await profile._process_data_export("user-1", export_id, export_request)
 
         assert profile._export_jobs[export_id]["status"] == "completed"
         assert profile._export_jobs[export_id]["progress_percent"] == 100
@@ -897,9 +900,9 @@ class TestHelperFunctions:
         mock_context = MagicMock()
         mock_context.__aenter__ = AsyncMock(return_value=mock_session)
         mock_context.__aexit__ = AsyncMock(return_value=None)
-        mock_factory = MagicMock(return_value=mock_context)
+        mock_get_db = MagicMock(return_value=mock_context)
 
-        with patch("db.database.async_session_factory", mock_factory):
+        with patch("db.database.get_db_context", mock_get_db):
             await profile._process_data_export("missing-user", export_id, {})
 
         assert profile._export_jobs[export_id]["status"] == "failed"

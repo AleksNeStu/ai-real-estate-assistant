@@ -166,7 +166,11 @@ class TestZaiProvider:
 
     def test_api_key_from_environment(self):
         """Test that API key is loaded from environment."""
-        with patch.dict(os.environ, {"ZAI_API_KEY": "test-env-key"}):
+        # Use clear=True to prevent real ZHIPUAI_API_KEY from leaking in.
+        # The provider reads ZHIPUAI_API_KEY first, then ZAI_API_KEY.
+        with patch.dict(
+            os.environ, {"ZAI_API_KEY": "test-env-key", "ZHIPUAI_API_KEY": ""}, clear=True
+        ):
             provider = ZaiProvider()
             assert provider.get_api_key() == "test-env-key"
 

@@ -1,5 +1,5 @@
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import CityOverviewPage from "../page";
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import CityOverviewPage from '../page';
 
 // Spy on console.error to suppress expected errors during tests
 const originalError = console.error;
@@ -38,9 +38,9 @@ interface SearchResultItem {
 }
 
 // Mock the Mapbox map component
-jest.mock("@/components/search/property-mapbox-map", () => {
+jest.mock('@/components/search/property-mapbox-map', () => {
   return function MockPropertyMapboxMap({
-    className = "",
+    className = '',
     onMarkerClick,
     points,
   }: {
@@ -52,13 +52,7 @@ jest.mock("@/components/search/property-mapbox-map", () => {
       <div data-testid="mapbox-map" className={className}>
         Mapbox Map
         {points && points.length > 0 && (
-          <button
-            onClick={() =>
-              onMarkerClick?.(points[0])
-            }
-          >
-            Test Marker
-          </button>
+          <button onClick={() => onMarkerClick?.(points[0])}>Test Marker</button>
         )}
       </div>
     );
@@ -66,7 +60,7 @@ jest.mock("@/components/search/property-mapbox-map", () => {
 });
 
 // Mock the property-map-utils
-jest.mock("@/components/search/property-map-utils", () => ({
+jest.mock('@/components/search/property-map-utils', () => ({
   extractMapPoints: jest.fn((results: SearchResultItem[]) =>
     results.map((item) => ({
       id: item.property.id,
@@ -78,16 +72,27 @@ jest.mock("@/components/search/property-map-utils", () => ({
       price: item.property.price,
     }))
   ),
+  computeCenter: jest.fn((points: { lat: number; lon: number }[]) => {
+    if (!points.length) return null;
+    const sum = points.reduce(
+      (acc: { lat: number; lon: number }, p: { lat: number; lon: number }) => ({
+        lat: acc.lat + p.lat,
+        lon: acc.lon + p.lon,
+      }),
+      { lat: 0, lon: 0 }
+    );
+    return { lat: sum.lat / points.length, lon: sum.lon / points.length };
+  }),
 }));
 
 // Mock the API
-jest.mock("@/lib/api", () => ({
+jest.mock('@/lib/api', () => ({
   searchProperties: jest.fn(),
 }));
 
-import { searchProperties } from "@/lib/api";
+import { searchProperties } from '@/lib/api';
 
-describe("CityOverviewPage", () => {
+describe('CityOverviewPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
@@ -98,7 +103,7 @@ describe("CityOverviewPage", () => {
     jest.useRealTimers();
   });
 
-  it("should render loading state initially", () => {
+  it('should render loading state initially', () => {
     (searchProperties as jest.Mock).mockImplementation(() => new Promise(() => {}));
 
     render(<CityOverviewPage />);
@@ -106,15 +111,15 @@ describe("CityOverviewPage", () => {
     expect(screen.getByText(/Loading city data/i)).toBeInTheDocument();
   });
 
-  it("should render city overview with data", async () => {
+  it('should render city overview with data', async () => {
     (searchProperties as jest.Mock).mockResolvedValue({
       results: [
         {
           property: {
-            id: "1",
-            title: "Test Apartment",
-            city: "Warsaw",
-            country: "Poland",
+            id: '1',
+            title: 'Test Apartment',
+            city: 'Warsaw',
+            country: 'Poland',
             price: 300000,
             latitude: 52.2297,
             longitude: 21.0122,
@@ -129,19 +134,19 @@ describe("CityOverviewPage", () => {
       expect(screen.queryByText(/Loading city data/i)).not.toBeInTheDocument();
     });
 
-    expect(screen.getByText("City Overview")).toBeInTheDocument();
+    expect(screen.getByText('City Overview')).toBeInTheDocument();
     expect(screen.getByText(/Explore property markets across Poland/i)).toBeInTheDocument();
   });
 
-  it("should render map when data is loaded", async () => {
+  it('should render map when data is loaded', async () => {
     (searchProperties as jest.Mock).mockResolvedValue({
       results: [
         {
           property: {
-            id: "1",
-            title: "Test Apartment",
-            city: "Warsaw",
-            country: "Poland",
+            id: '1',
+            title: 'Test Apartment',
+            city: 'Warsaw',
+            country: 'Poland',
             price: 300000,
             latitude: 52.2297,
             longitude: 21.0122,
@@ -156,10 +161,10 @@ describe("CityOverviewPage", () => {
       expect(screen.queryByText(/Loading city data/i)).not.toBeInTheDocument();
     });
 
-    expect(screen.getByTestId("mapbox-map")).toBeInTheDocument();
+    expect(screen.getByTestId('mapbox-map')).toBeInTheDocument();
   });
 
-  it("should render empty state when no city data is available", async () => {
+  it('should render empty state when no city data is available', async () => {
     (searchProperties as jest.Mock).mockResolvedValue({
       results: [],
     });
@@ -171,11 +176,11 @@ describe("CityOverviewPage", () => {
     });
 
     // Should show the page but with no cities
-    expect(screen.getByText("City Overview")).toBeInTheDocument();
+    expect(screen.getByText('City Overview')).toBeInTheDocument();
   });
 
-  it("should render error state on API failure", async () => {
-    (searchProperties as jest.Mock).mockRejectedValue(new Error("API Error"));
+  it('should render error state on API failure', async () => {
+    (searchProperties as jest.Mock).mockRejectedValue(new Error('API Error'));
 
     render(<CityOverviewPage />);
 
@@ -184,18 +189,18 @@ describe("CityOverviewPage", () => {
     });
 
     // Error should be caught and logged, page should still render
-    expect(screen.getByText("City Overview")).toBeInTheDocument();
+    expect(screen.getByText('City Overview')).toBeInTheDocument();
   });
 
-  it("should render city statistics cards when data is loaded", async () => {
+  it('should render city statistics cards when data is loaded', async () => {
     (searchProperties as jest.Mock).mockResolvedValue({
       results: [
         {
           property: {
-            id: "1",
-            title: "Warsaw Apartment",
-            city: "Warsaw",
-            country: "Poland",
+            id: '1',
+            title: 'Warsaw Apartment',
+            city: 'Warsaw',
+            country: 'Poland',
             price: 300000,
             latitude: 52.2297,
             longitude: 21.0122,
@@ -203,13 +208,13 @@ describe("CityOverviewPage", () => {
         },
         {
           property: {
-            id: "2",
-            title: "Krakow Apartment",
-            city: "Krakow",
-            country: "Poland",
+            id: '2',
+            title: 'Krakow Apartment',
+            city: 'Krakow',
+            country: 'Poland',
             price: 250000,
             latitude: 50.0647,
-            longitude: 19.9450,
+            longitude: 19.945,
           },
         },
       ],
@@ -222,18 +227,18 @@ describe("CityOverviewPage", () => {
     });
 
     // Should show "Market Statistics by City" section
-    expect(screen.getByText("Market Statistics by City")).toBeInTheDocument();
+    expect(screen.getByText('Market Statistics by City')).toBeInTheDocument();
   });
 
-  it("should handle city card selection", async () => {
+  it('should handle city card selection', async () => {
     (searchProperties as jest.Mock).mockResolvedValue({
       results: [
         {
           property: {
-            id: "1",
-            title: "Warsaw Apartment",
-            city: "Warsaw",
-            country: "Poland",
+            id: '1',
+            title: 'Warsaw Apartment',
+            city: 'Warsaw',
+            country: 'Poland',
             price: 300000,
             latitude: 52.2297,
             longitude: 21.0122,
@@ -249,22 +254,22 @@ describe("CityOverviewPage", () => {
     });
 
     // Find and click the Warsaw city card
-    const warsawCards = screen.getAllByText("Warsaw");
-    const cityCard = warsawCards.find((el) => el.closest("button"));
+    const warsawCards = screen.getAllByText('Warsaw');
+    const cityCard = warsawCards.find((el) => el.closest('button'));
     if (cityCard) {
       fireEvent.click(cityCard);
     }
   });
 
-  it("should close selected city details", async () => {
+  it('should close selected city details', async () => {
     (searchProperties as jest.Mock).mockResolvedValue({
       results: [
         {
           property: {
-            id: "1",
-            title: "Warsaw Apartment",
-            city: "Warsaw",
-            country: "Poland",
+            id: '1',
+            title: 'Warsaw Apartment',
+            city: 'Warsaw',
+            country: 'Poland',
             price: 300000,
             latitude: 52.2297,
             longitude: 21.0122,
@@ -280,30 +285,30 @@ describe("CityOverviewPage", () => {
     });
 
     // Select a city first
-    const warsawCards = screen.getAllByText("Warsaw");
-    const cityCard = warsawCards.find((el) => el.closest("button"));
+    const warsawCards = screen.getAllByText('Warsaw');
+    const cityCard = warsawCards.find((el) => el.closest('button'));
     if (cityCard) {
       fireEvent.click(cityCard);
     }
 
     await waitFor(() => {
       // Should see city details section
-      const closeButton = screen.queryByText("Close");
+      const closeButton = screen.queryByText('Close');
       if (closeButton) {
         fireEvent.click(closeButton);
       }
     });
   });
 
-  it("should handle marker click to select city", async () => {
+  it('should handle marker click to select city', async () => {
     (searchProperties as jest.Mock).mockResolvedValue({
       results: [
         {
           property: {
-            id: "1",
-            title: "Warsaw Apartment",
-            city: "Warsaw",
-            country: "Poland",
+            id: '1',
+            title: 'Warsaw Apartment',
+            city: 'Warsaw',
+            country: 'Poland',
             price: 300000,
             latitude: 52.2297,
             longitude: 21.0122,
@@ -319,26 +324,26 @@ describe("CityOverviewPage", () => {
     });
 
     // Click the marker button on the map
-    const markerButton = screen.queryByText("Test Marker");
+    const markerButton = screen.queryByText('Test Marker');
     if (markerButton) {
       fireEvent.click(markerButton);
 
       await waitFor(() => {
         // City should be selected
-        expect(screen.getAllByText("Warsaw").length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Warsaw').length).toBeGreaterThan(0);
       });
     }
   });
 
-  it("should render property cards for selected city", async () => {
+  it('should render property cards for selected city', async () => {
     (searchProperties as jest.Mock).mockResolvedValue({
       results: [
         {
           property: {
-            id: "1",
-            title: "Warsaw Apartment",
-            city: "Warsaw",
-            country: "Poland",
+            id: '1',
+            title: 'Warsaw Apartment',
+            city: 'Warsaw',
+            country: 'Poland',
             price: 300000,
             latitude: 52.2297,
             longitude: 21.0122,
@@ -346,13 +351,13 @@ describe("CityOverviewPage", () => {
         },
         {
           property: {
-            id: "2",
-            title: "Krakow Apartment",
-            city: "Krakow",
-            country: "Poland",
+            id: '2',
+            title: 'Krakow Apartment',
+            city: 'Krakow',
+            country: 'Poland',
             price: 250000,
             latitude: 50.0647,
-            longitude: 19.9450,
+            longitude: 19.945,
           },
         },
       ],
@@ -365,34 +370,34 @@ describe("CityOverviewPage", () => {
     });
 
     // Select Warsaw - the city selection should work without error
-    const warsawCards = screen.getAllByText("Warsaw");
-    const cityCard = warsawCards.find((el) => el.closest("button"));
+    const warsawCards = screen.getAllByText('Warsaw');
+    const cityCard = warsawCards.find((el) => el.closest('button'));
     if (cityCard) {
       fireEvent.click(cityCard);
     }
 
     // Just verify the page still renders after selection
-    expect(screen.getByText("City Overview")).toBeInTheDocument();
+    expect(screen.getByText('City Overview')).toBeInTheDocument();
   });
 
-  it("should handle API errors gracefully and continue with other cities", async () => {
+  it('should handle API errors gracefully and continue with other cities', async () => {
     let callCount = 0;
     (searchProperties as jest.Mock).mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
-        return Promise.reject(new Error("First city failed"));
+        return Promise.reject(new Error('First city failed'));
       }
       return Promise.resolve({
         results: [
           {
             property: {
-              id: "2",
-              title: "Krakow Apartment",
-              city: "Krakow",
-              country: "Poland",
+              id: '2',
+              title: 'Krakow Apartment',
+              city: 'Krakow',
+              country: 'Poland',
               price: 250000,
               latitude: 50.0647,
-              longitude: 19.9450,
+              longitude: 19.945,
             },
           },
         ],
@@ -406,18 +411,18 @@ describe("CityOverviewPage", () => {
     });
 
     // Should still show some results
-    expect(screen.getByText("City Overview")).toBeInTheDocument();
+    expect(screen.getByText('City Overview')).toBeInTheDocument();
   });
 
-  it("should handle properties without location data", async () => {
+  it('should handle properties without location data', async () => {
     (searchProperties as jest.Mock).mockResolvedValue({
       results: [
         {
           property: {
-            id: "1",
-            title: "Apartment Without Location",
-            city: "Warsaw",
-            country: "Poland",
+            id: '1',
+            title: 'Apartment Without Location',
+            city: 'Warsaw',
+            country: 'Poland',
             price: 300000,
             // No latitude/longitude
           },
@@ -432,12 +437,12 @@ describe("CityOverviewPage", () => {
     });
 
     // Should still render without crashing
-    expect(screen.getByText("City Overview")).toBeInTheDocument();
+    expect(screen.getByText('City Overview')).toBeInTheDocument();
   });
 
-  it("should handle ApiError with request ID", async () => {
-    const mockError = new Error("API failed") as Error & { request_id?: string };
-    mockError.request_id = "test-123";
+  it('should handle ApiError with request ID', async () => {
+    const mockError = new Error('API failed') as Error & { request_id?: string };
+    mockError.request_id = 'test-123';
 
     (searchProperties as jest.Mock).mockRejectedValue(mockError);
 
@@ -448,6 +453,6 @@ describe("CityOverviewPage", () => {
     });
 
     // Error should be caught and logged, page should still render
-    expect(screen.getByText("City Overview")).toBeInTheDocument();
+    expect(screen.getByText('City Overview')).toBeInTheDocument();
   });
 });

@@ -6,6 +6,7 @@ queued alerts, price snapshots, anomaly detection, search sync, error handling,
 and edge cases.
 """
 
+from contextlib import asynccontextmanager
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -1185,10 +1186,11 @@ class TestAnomalyDetection:
     async def test_async_detection_full_flow(self, scheduler):
         """Full async detection flow with mocked DB (lines 580-603)."""
         mock_session = AsyncMock()
-        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
-        mock_session.__aexit__ = AsyncMock(return_value=False)
 
-        mock_session_factory = MagicMock(return_value=mock_session)
+        # Build a mock async context manager for get_db_context()
+        @asynccontextmanager
+        async def mock_get_db_context():
+            yield mock_session
 
         mock_anomaly_repo = MagicMock()
         mock_price_repo = MagicMock()
@@ -1197,7 +1199,7 @@ class TestAnomalyDetection:
         mock_service_instance.run_daily_analysis = AsyncMock(return_value=mock_stats)
 
         with (
-            patch("db.database.async_session_factory", mock_session_factory),
+            patch("db.database.get_db_context", mock_get_db_context),
             patch("db.repositories.AnomalyRepository", return_value=mock_anomaly_repo),
             patch("db.repositories.PriceSnapshotRepository", return_value=mock_price_repo),
             patch("notifications.scheduler.AnomalyService", return_value=mock_service_instance),

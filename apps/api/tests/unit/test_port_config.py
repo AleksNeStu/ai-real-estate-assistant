@@ -520,7 +520,7 @@ class TestGetAllPortConfig:
     def test_returns_correct_defaults(self, tmp_path: Path):
         """Returns correct default values when nothing is configured."""
         with (
-            patch.dict(os.environ, {"ENVIRONMENT": "development"}, clear=False),
+            patch.dict(os.environ, {"ENVIRONMENT": "development"}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_all_port_config()
