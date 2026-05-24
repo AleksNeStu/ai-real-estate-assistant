@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.3] - 2026-05-24
+
+### Fixed
+
+- Security: bump qs to fix CVE-2026-8723 (DoS via null entries in stringify)
+- Security: bump idna 3.11 → 3.15 to fix CVE-2026-45409 (IDNA encode bypass)
+- Security: override uuid to 11.1.1 to fix CVE-2026-41907 (buffer bounds check)
+- Dependency updates: express, types-requests, dev-patch-and-minor group
+
+## [5.0.2] - 2026-05-20
+
+### Fixed
+
+- Updated tests for current API surface
+- Added output_key to ConversationBufferMemory in get_optimized_memory
+
+## [5.0.1] - 2026-05-18
+
+### Fixed
+
+- Resolved search API failures through frontend proxy
+- Replaced async_session_factory with get_db_context
+
 ## [5.0.0] - 2026-05-16
 
 First production release of AI Real Estate Assistant.

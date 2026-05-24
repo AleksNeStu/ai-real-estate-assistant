@@ -1,6 +1,6 @@
 {
   "name": "ai-real-estate-assistant-monorepo",
-  "version": "4.0.0",
+  "version": "5.0.3",
   "description": "AI-powered assistant for real estate agencies with chat, search, and analytics",
   "private": true,
   "directories": {
