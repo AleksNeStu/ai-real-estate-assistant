@@ -9,7 +9,7 @@ langchain-chroma>=1.1.0,<2.0.0
 
 # Retry logic for external APIs
 backoff>=2.2.0
-langchain-community>=0.4.1,<1.0.0
+langchain-community>=0.4.2,<1.0.0
 
 # LangChain core and providers (aligned to core 1.x)
 langchain>=1.2.18,<2.0.0
