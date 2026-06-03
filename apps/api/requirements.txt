@@ -29,7 +29,7 @@ zstandard>=0.23.0
 grpcio>=1.80.0
 protobuf>=5.29.6,<6.0.0
 
-aiohttp>=3.13.5
+aiohttp>=3.14.0
 
 # Config / typing
 pydantic>=2.10.0
