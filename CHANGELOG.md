@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.5] - 2026-06-04
+
+### Security
+
+- Bump starlette 1.0.0 → 1.2.1 (CVE-2026-48710) — missing Host header
+  validation could poison `request.url.path` and bypass path-based
+  security checks
+- Dedupe postcss via npm `overrides: ^8.5.10` (CVE-2026-41305) — the
+  vulnerable copy was `next@16.2.6/node_modules/postcss` (< 8.5.10);
+  now resolves to 8.5.15 alongside the top-level install. `npm audit`
+  reports 0 vulnerabilities
+
 ## [5.0.4] - 2026-06-04
 
 ### Security
