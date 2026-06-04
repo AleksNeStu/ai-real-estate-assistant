@@ -9,7 +9,9 @@ This module provides functions to prevent common security vulnerabilities:
 """
 
 import hashlib
+import hmac
 import logging
+import os
 import re
 from pathlib import Path
 from typing import Any, Optional
@@ -119,6 +121,33 @@ def hash_sensitive_data(data: str, algorithm: str = "sha256") -> str:
         return hashlib.sha512(data.encode()).hexdigest()
     else:
         raise ValueError(f"Unsupported algorithm: {algorithm}")
+
+
+# Server-side pepper used to derive keyed fingerprints (client_id, token digests).
+# A static fallback is used only when the env var is not configured; deployments
+# should set SECURITY_PEPPER to a high-entropy secret.
+_SECURITY_PEPPER = (
+    os.getenv("SECURITY_PEPPER") or "nestlab-static-pepper-9b3a4f1e-7c2d-4a8b-9e1f-0a8c5d6b7e2f"
+).encode("utf-8")
+
+
+def hash_fingerprint(value: str, length: int = 16) -> str:
+    """
+    Derive a non-reversible, collision-resistant fingerprint of a high-entropy
+    value (API key, token) using HMAC-SHA-256 with a server-side pepper.
+
+    Use this for client identifiers and at-rest token digests — never for
+    user-chosen passwords (which require argon2/bcrypt and slow hashing).
+
+    Args:
+        value: High-entropy secret to fingerprint.
+        length: Number of hex chars to return (default 16, max 64).
+
+    Returns:
+        Hex string of the requested length.
+    """
+    digest = hmac.new(_SECURITY_PEPPER, value.encode("utf-8"), hashlib.sha256).hexdigest()
+    return digest[: max(0, min(length, 64))]
 
 
 class SecureLogger:

@@ -170,7 +170,7 @@ async def send_notification_preview(
             # Simulate sending notification (in real implementation, would trigger actual notification)
             # For now, just log and return success
             logger.info(
-                f"Preview notification: channel={request.channel}, type={request.notification_type}, user={sanitize_for_logging(user.email)}"
+                f"Preview notification: channel={sanitize_for_logging(request.channel)}, type={sanitize_for_logging(request.notification_type)}, user={sanitize_for_logging(user.email)}"
             )
 
             return NotificationPreviewResponse(

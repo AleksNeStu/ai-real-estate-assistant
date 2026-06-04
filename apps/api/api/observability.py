@@ -1,4 +1,3 @@
-import hashlib
 import inspect
 import logging
 import os
@@ -11,6 +10,8 @@ from typing import Any, Optional
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+
+from core.security_utils import hash_fingerprint
 
 REQUEST_ID_HEADER = "X-Request-ID"
 _REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,128}$")
@@ -236,9 +237,7 @@ def generate_request_id() -> str:
 def client_id_from_api_key(api_key: str | None) -> str | None:
     if not api_key:
         return None
-    digest = hashlib.sha256(api_key.encode("utf-8")).hexdigest()
-    # nosemgrep: py/weak-sensitive-data-hashing - truncated hash for rate-limit key, not security
-    return digest[:12]
+    return hash_fingerprint(api_key, length=12)
 
 
 def add_observability(app: FastAPI, logger: logging.Logger) -> None:

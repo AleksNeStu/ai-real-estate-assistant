@@ -12,12 +12,14 @@ Provides:
 """
 
 import logging
+import os
 from pathlib import Path
 from typing import Any, List, Optional
 from urllib.parse import urlparse
 
 import pandas as pd
 
+from core.security_utils import sanitize_for_log, validate_file_path
 from data.csv_loader import DataLoaderCsv
 from data.schemas import PropertyCollection
 
@@ -25,6 +27,18 @@ logger = logging.getLogger(__name__)
 
 # Supported Excel extensions
 EXCEL_EXTENSIONS = {".xlsx", ".xls", ".ods"}
+
+# Default allowed base directories for local Excel files. Allow override via
+# the EXCEL_ALLOWED_BASE_DIR env var (comma-separated list of absolute paths).
+_default_allowed = [
+    os.path.abspath(os.getcwd()),
+    os.path.abspath(os.path.join(os.getcwd(), "data")),
+    os.path.abspath(os.path.join(os.getcwd(), "uploads")),
+]
+_env_allowed = os.getenv("EXCEL_ALLOWED_BASE_DIR", "").strip()
+ALLOWED_BASE_DIRS: list[str] = (
+    [p.strip() for p in _env_allowed.split(",") if p.strip()] if _env_allowed else _default_allowed
+)
 
 
 def _is_url(path: Path | str) -> bool:
@@ -39,6 +53,34 @@ def _get_suffix(path: Path | str) -> str:
     parsed = urlparse(s)
     p = parsed.path if parsed.scheme and parsed.netloc else s
     return Path(p).suffix.lower()
+
+
+def _safe_local_path(file_path: Path | str) -> Optional[Path]:
+    """Return a Path if ``file_path`` resolves inside an allowed base dir.
+
+    Validates against path traversal patterns and rejects any path whose
+    resolved form lies outside one of ``ALLOWED_BASE_DIRS``. Returns ``None``
+    for URLs (which are not local paths) or when the file does not exist.
+    """
+    if _is_url(file_path):
+        return None
+    if not validate_file_path(str(file_path)):
+        return None
+    try:
+        resolved = Path(str(file_path)).resolve()
+    except OSError:
+        return None
+    for base in ALLOWED_BASE_DIRS:
+        try:
+            base_resolved = Path(base).resolve()
+        except OSError:
+            continue
+        try:
+            resolved.relative_to(base_resolved)
+            return resolved
+        except ValueError:
+            continue
+    return None
 
 
 class ExcelDataLoader:
@@ -86,11 +128,13 @@ class ExcelDataLoader:
 
         # Validate file exists (only for local paths, not URLs)
         if not _is_url(file_path):
-            p = Path(file_path)
-            if p.exists() and not p.is_file():
-                raise ValueError(f"Not a file: {p}")
-            if not p.exists():
-                logger.warning("Excel file not found: %s", p)
+            safe_path = _safe_local_path(file_path)
+            if safe_path is None:
+                raise ValueError(f"Excel file path is not within an allowed directory: {file_path}")
+            if safe_path.exists() and not safe_path.is_file():
+                raise ValueError(f"Not a file: {safe_path}")
+            if not safe_path.exists():
+                logger.warning("Excel file not found: %s", sanitize_for_log(safe_path))
 
         # Validate extension
         suffix = _get_suffix(file_path)
@@ -115,10 +159,17 @@ class ExcelDataLoader:
 
         # For local paths, check existence
         if not _is_url(file_str):
-            p = Path(file_str)
-            if not p.exists():
-                logger.warning("Excel file not found: %s", p)
+            p = _safe_local_path(file_str)
+            if p is None:
+                logger.warning(
+                    "Excel path rejected (not in allowed dir): %s", sanitize_for_log(file_str)
+                )
                 return []
+            if not p.exists():
+                logger.warning("Excel file not found: %s", sanitize_for_log(p))
+                return []
+            # Use the validated path going forward
+            file_str = str(p)
 
         try:
             if suffix == ".xlsx":
@@ -159,7 +210,11 @@ class ExcelDataLoader:
                 "For .xlsx: openpyxl. For .xls: xlrd. For .ods: odfpy."
             ) from exc
         except Exception as exc:
-            logger.error("Failed to read sheet names from %s: %s", file_str, exc)
+            logger.error(
+                "Failed to read sheet names from %s: %s",
+                sanitize_for_log(file_str),
+                sanitize_for_log(exc),
+            )
             raise
 
     # ------------------------------------------------------------------
@@ -231,8 +286,8 @@ class ExcelDataLoader:
 
         logger.info(
             "Excel loaded from %s (sheet=%s, header_row=%d, rows=%d)",
-            file_str,
-            self._resolve_sheet() or "default",
+            sanitize_for_log(file_str),
+            sanitize_for_log(self._resolve_sheet() or "default"),
             self.header_row,
             len(df),
         )
@@ -247,7 +302,7 @@ class ExcelDataLoader:
         """
         df = self.load()
         df_norm = DataLoaderCsv.format_df(df, rows_count=self.max_rows)
-        logger.info("Normalized %d rows from %s", len(df_norm), self.file_path)
+        logger.info("Normalized %d rows from %s", len(df_norm), sanitize_for_log(self.file_path))
         return df_norm
 
     def load_collection(
@@ -272,6 +327,6 @@ class ExcelDataLoader:
         logger.info(
             "Created PropertyCollection with %d properties from %s",
             collection.total_count,
-            self.file_path,
+            sanitize_for_log(self.file_path),
         )
         return collection

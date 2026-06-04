@@ -163,7 +163,7 @@ async def handle_hellosign_webhook(
 
     elif event_type == "file_error":
         logger.error("HelloSign file error for envelope: %s", sanitize_for_log(envelope_id))
-        signature_request.error_message = data.get("error", "Unknown error")
+        signature_request.error_message = sanitize_for_log(data.get("error", "Unknown error"))
 
     else:
         logger.info("Unhandled event type: %s", sanitize_for_log(event_type))

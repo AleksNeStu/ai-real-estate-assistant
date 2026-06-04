@@ -17,6 +17,8 @@ import httpx
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field
 
+from core.security_utils import sanitize_for_log
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -83,19 +85,19 @@ class OSRMCommuteClient:
                 f"Unsupported mode '{mode}'. Supported: {', '.join(sorted(set(self.PROFILES.values())))}"
             )
 
-        cache_key = f"{profile}:{origin_lat:.6f},{origin_lon:.6f}:{destination_lat:.6f},{destination_lon:.6f}"
+        cache_key = f"{profile}:{float(origin_lat):.6f},{float(origin_lon):.6f}:{float(destination_lat):.6f},{float(destination_lon):.6f}"
 
         # Check cache
         now = time.monotonic()
         entry = self._cache.get(cache_key)
         if entry is not None and entry[0] > now:
-            logger.debug("OSRM cache hit: %s", cache_key)
+            logger.debug("OSRM cache hit: %s", sanitize_for_log(cache_key))
             return entry[1]
 
         url = (
             f"{self.base_url}/{profile}"
-            f"/{origin_lon:.6f},{origin_lat:.6f}"
-            f";{destination_lon:.6f},{destination_lat:.6f}"
+            f"/{float(origin_lon):.6f},{float(origin_lat):.6f}"
+            f";{float(destination_lon):.6f},{float(destination_lat):.6f}"
             "?overview=simplified&geometries=geojson"
         )
 
@@ -113,7 +115,7 @@ class OSRMCommuteClient:
             data = resp.json()
 
             if data.get("code") != "Ok" or not data.get("routes"):
-                logger.warning("OSRM returned no route for %s", cache_key)
+                logger.warning("OSRM returned no route for %s", sanitize_for_log(cache_key))
                 return self._haversine_estimate(
                     origin_lat, origin_lon, destination_lat, destination_lon, mode
                 )

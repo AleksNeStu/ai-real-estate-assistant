@@ -23,6 +23,7 @@ from api.models import (
     BulkJobStatus,
     BulkJobType,
 )
+from core.security_utils import sanitize_for_log
 from db.database import get_db
 from db.models import BulkJob
 from utils.exporters import ExportFormat, PropertyExporter
@@ -369,7 +370,11 @@ async def create_import_job(
     # Queue background task
     background_tasks.add_task(_run_import_job, job_id, db_url)
 
-    logger.info("Created import job %s (source_type=%s)", job_id, request.source_type)
+    logger.info(
+        "Created import job %s (source_type=%s)",
+        sanitize_for_log(job_id),
+        sanitize_for_log(request.source_type),
+    )
 
     return BulkJobCreateResponse(
         id=job_id,
@@ -428,7 +433,11 @@ async def create_export_job(
     # Queue background task
     background_tasks.add_task(_run_export_job, job_id, db_url)
 
-    logger.info("Created export job %s (format=%s)", job_id, request.format)
+    logger.info(
+        "Created export job %s (format=%s)",
+        sanitize_for_log(job_id),
+        sanitize_for_log(request.format),
+    )
 
     return BulkJobCreateResponse(
         id=job_id,
@@ -533,7 +542,7 @@ async def cancel_bulk_job(
     job.error_message = "Job cancelled by user"
     await db.commit()
 
-    logger.info("Cancelled bulk job %s", job_id)
+    logger.info("Cancelled bulk job %s", sanitize_for_log(job_id))
     return _job_to_response(job)
 
 
@@ -562,7 +571,7 @@ async def delete_bulk_job(
         )
 
     await db.delete(job)
-    logger.info("Deleted bulk job %s", job_id)
+    logger.info("Deleted bulk job %s", sanitize_for_log(job_id))
 
 
 def _validate_import_config(source_type: BulkJobSourceType, config: dict[str, Any]) -> None:

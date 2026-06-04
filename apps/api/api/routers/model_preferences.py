@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.deps.auth import get_current_active_user
+from core.security_utils import sanitize_for_log
 from db.database import get_db
 from db.models import User
 from db.schemas import (
@@ -138,10 +139,10 @@ async def create_preference(
 
     logger.info(
         "User %s created model preference for task %s: %s/%s",
-        user.id[:8],
-        data.task_type,
-        data.provider,
-        data.model_name,
+        sanitize_for_log(user.id[:8]),
+        sanitize_for_log(data.task_type),
+        sanitize_for_log(data.provider),
+        sanitize_for_log(data.model_name),
     )
 
     return TaskModelPreferenceResponse(
@@ -197,8 +198,8 @@ async def update_preference(
 
     logger.info(
         "User %s updated model preference %s",
-        user.id[:8],
-        preference_id[:8],
+        sanitize_for_log(user.id[:8]),
+        sanitize_for_log(preference_id[:8]),
     )
 
     return TaskModelPreferenceResponse(
@@ -238,8 +239,8 @@ async def delete_preference(
 
     logger.info(
         "User %s deleted model preference %s",
-        user.id[:8],
-        preference_id[:8],
+        sanitize_for_log(user.id[:8]),
+        sanitize_for_log(preference_id[:8]),
     )
 
 

@@ -25,6 +25,7 @@ from ai.context_metrics import (
     init_context_metrics_db,
     log_context_metrics,
 )
+from core.security_utils import sanitize_for_log
 
 if TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
@@ -434,7 +435,7 @@ class ContextManager:
 
         logger.info(
             "Context optimization triggered: session=%s tokens=%d/%d utilization=%.1f%%",
-            session_id,
+            sanitize_for_log(session_id),
             initial_tokens,
             context_window,
             initial_utilization,

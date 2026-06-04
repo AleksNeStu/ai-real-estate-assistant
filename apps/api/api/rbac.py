@@ -206,11 +206,10 @@ class RBACChecker:
         roles = self._get_roles_for_key(api_key)
         permissions = self._get_permissions_for_roles(roles)
 
-        # Hash the API key for logging
-        import hashlib
+        # Hash the API key for logging (HMAC-based fingerprint, not a password hash)
+        from core.security_utils import hash_fingerprint
 
-        # nosemgrep: py/weak-sensitive-data-hashing - truncated hash for logging ID, not security
-        client_id = hashlib.sha256(api_key.encode("utf-8")).hexdigest()[:16]
+        client_id = hash_fingerprint(api_key, length=16)
 
         return UserContext(
             client_id=client_id,

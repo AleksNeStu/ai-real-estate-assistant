@@ -408,8 +408,8 @@ async def download_document(
         # Log download
         audit_logger.log_data_access(
             operation="read",
-            resource=f"/documents/{document_id}",
-            client_id=user.id,
+            resource=f"/documents/{sanitize_for_log(document_id)}",
+            client_id=sanitize_for_log(user.id),
             result="success",
             request_id=request_id,
         )
@@ -497,10 +497,10 @@ async def delete_document(
         # Log deletion
         audit_logger.log_data_access(
             operation="delete",
-            resource=f"/documents/{document_id}",
-            client_id=user.id,
+            resource=f"/documents/{sanitize_for_log(document_id)}",
+            client_id=sanitize_for_log(user.id),
             result="success",
-            request_id=request_id,
+            request_id=sanitize_for_log(request_id) if request_id else None,
         )
 
         return None

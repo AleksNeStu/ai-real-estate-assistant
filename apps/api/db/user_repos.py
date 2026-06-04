@@ -6,7 +6,6 @@ PasswordResetToken, EmailVerificationToken, PushSubscription,
 and NotificationPreference models.
 """
 
-import hashlib
 import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Optional
@@ -14,6 +13,7 @@ from typing import Optional
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.security_utils import hash_fingerprint
 from db.models import (
     EmailVerificationToken,
     NotificationPreferenceDB,
@@ -108,11 +108,11 @@ class RefreshTokenRepository:
     def _hash_token(token: str) -> str:
         """Hash a token for storage.
 
-        Uses SHA-256 which is appropriate for high-entropy tokens
-        (not user-chosen secrets that need slow hashing like bcrypt).
+        Uses HMAC-SHA-256 with a server-side pepper. The token is high-entropy
+        (cryptographically random) so the keyed hash is appropriate for
+        at-rest lookups; this is NOT used for user-chosen passwords.
         """
-        # nosemgrep: py/weak-sensitive-data-hashing - token is high-entropy random, SHA-256 is appropriate
-        return hashlib.sha256(token.encode()).hexdigest()
+        return hash_fingerprint(token, length=64)
 
     async def create(
         self,
@@ -238,11 +238,11 @@ class PasswordResetTokenRepository:
     def _hash_token(token: str) -> str:
         """Hash a token for storage.
 
-        Uses SHA-256 which is appropriate for high-entropy reset tokens
-        (not user-chosen secrets that need slow hashing like bcrypt).
+        Uses HMAC-SHA-256 with a server-side pepper. The token is high-entropy
+        (cryptographically random) so the keyed hash is appropriate for
+        at-rest lookups; this is NOT used for user-chosen passwords.
         """
-        # nosemgrep: py/weak-sensitive-data-hashing - token is high-entropy random, SHA-256 is appropriate
-        return hashlib.sha256(token.encode()).hexdigest()
+        return hash_fingerprint(token, length=64)
 
     async def create(self, user_id: str, token: str, expires_hours: int = 1) -> PasswordResetToken:
         """Create a new password reset token."""
@@ -297,11 +297,11 @@ class EmailVerificationTokenRepository:
     def _hash_token(token: str) -> str:
         """Hash a token for storage.
 
-        Uses SHA-256 which is appropriate for high-entropy tokens
-        (not user-chosen secrets that need slow hashing like bcrypt).
+        Uses HMAC-SHA-256 with a server-side pepper. The token is high-entropy
+        (cryptographically random) so the keyed hash is appropriate for
+        at-rest lookups; this is NOT used for user-chosen passwords.
         """
-        # nosemgrep: py/weak-sensitive-data-hashing - token is high-entropy random, SHA-256 is appropriate
-        return hashlib.sha256(token.encode()).hexdigest()
+        return hash_fingerprint(token, length=64)
 
     async def create(
         self, user_id: str, token: str, expires_hours: int = 24

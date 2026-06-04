@@ -32,12 +32,12 @@ class DataLoaderCsv:
             return
 
         if isinstance(csv_path, Path) and not csv_path.is_file():
-            err_msg = f"The Path {csv_path} does not exists."
+            err_msg = f"The Path {sanitize_for_log(csv_path)} does not exists."
             # raise FileNotFoundError(err_msg)
             logger.warning(err_msg)
             csv_path = None
         elif isinstance(csv_path, URL) and not self.url_exists(csv_path):
-            err_msg = f"The URL at {csv_path} does not exist."
+            err_msg = f"The URL at {sanitize_for_log(csv_path)} does not exist."
             # raise FileNotFoundError(err_msg)
             logger.warning(err_msg)
             csv_path = None
@@ -96,7 +96,7 @@ class DataLoaderCsv:
             ) from e
         except Exception as e:
             if is_excel:
-                raise Exception(f"Failed to load Excel file: {str(e)}") from e
+                raise Exception(f"Failed to load Excel file: {sanitize_for_log(e)}") from e
 
             try:
                 df = pd.read_csv(
@@ -115,7 +115,7 @@ class DataLoaderCsv:
                     )
                 except Exception as e3:
                     raise Exception(
-                        f"Failed to load CSV: {str(e)}. Additional attempts failed: {str(e2)}, {str(e3)}"
+                        f"Failed to load CSV: {sanitize_for_log(e)}. Additional attempts failed: {sanitize_for_log(e2)}, {sanitize_for_log(e3)}"
                     ) from e3
 
         logger.info("Data frame loaded from %s, rows: %s", sanitize_for_log(csv_url), len(df))
@@ -561,7 +561,7 @@ class DataLoaderExcel(DataLoaderCsv):
                 "openpyxl (.xlsx), xlrd (.xls), or odfpy (.ods)."
             ) from e
         except Exception as e:
-            raise Exception(f"Failed to load Excel file: {str(e)}") from e
+            raise Exception(f"Failed to load Excel file: {sanitize_for_log(e)}") from e
 
     @classmethod
     def detect_source_type(cls, file_path: Path | str | URL) -> SourceType:

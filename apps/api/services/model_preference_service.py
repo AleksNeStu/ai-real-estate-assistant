@@ -17,6 +17,7 @@ from uuid import uuid4
 from sqlalchemy import and_, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.security_utils import sanitize_for_log
 from db.models import TASK_TYPES, TaskModelPreference
 
 logger = logging.getLogger(__name__)
@@ -239,10 +240,10 @@ class ModelPreferenceService:
 
         logger.info(
             "Created model preference for user %s: %s/%s for task %s",
-            user_id[:8],
-            provider,
-            model_name,
-            task_type,
+            sanitize_for_log(user_id[:8]),
+            sanitize_for_log(provider),
+            sanitize_for_log(model_name),
+            sanitize_for_log(task_type),
         )
 
         return preference
@@ -308,8 +309,8 @@ class ModelPreferenceService:
 
         logger.info(
             "Updated model preference %s for user %s",
-            preference_id[:8],
-            user_id[:8],
+            sanitize_for_log(preference_id[:8]),
+            sanitize_for_log(user_id[:8]),
         )
 
         return preference
@@ -336,8 +337,8 @@ class ModelPreferenceService:
         if result.rowcount > 0:  # type: ignore[attr-defined]
             logger.info(
                 "Deleted model preference %s for user %s",
-                preference_id[:8],
-                user_id[:8],
+                sanitize_for_log(preference_id[:8]),
+                sanitize_for_log(user_id[:8]),
             )
             return True
 
@@ -467,8 +468,8 @@ class ModelPreferenceService:
         if model_name not in AVAILABLE_MODELS[provider]:
             logger.warning(
                 "Model '%s' not in known list for provider '%s'. Allowing for flexibility.",
-                model_name,
-                provider,
+                sanitize_for_log(model_name),
+                sanitize_for_log(provider),
             )
 
     def _validate_fallback_chain(

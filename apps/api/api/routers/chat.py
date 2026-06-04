@@ -23,7 +23,11 @@ from api.models import ChatRequest, ChatResponse
 from config.settings import get_settings
 from core.circuit_breaker import ServiceDegradedError
 from utils.free_tier import get_free_tier_rate_limiter, get_llm_for_free_user
-from utils.sanitization import sanitize_chat_message, sanitize_intermediate_steps
+from utils.sanitization import (
+    sanitize_chat_message,
+    sanitize_for_logging,
+    sanitize_intermediate_steps,
+)
 from utils.streaming import (
     HeartbeatConfig,
     StreamMetrics,
@@ -95,7 +99,7 @@ def _build_agent_and_process(
     if context_metrics and settings.context_metrics_enabled:
         logger.info(
             "Context optimization: session=%s tokens=%d/%d utilization=%.1f%% cost=$%.4f",
-            session_id,
+            sanitize_for_logging(session_id),
             context_metrics.input_tokens,
             context_metrics.context_window_limit,
             context_metrics.utilization_percent,

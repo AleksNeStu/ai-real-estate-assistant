@@ -22,6 +22,7 @@ from api.models import (
     DataSourceUpdate,
     SyncHistoryResponse,
 )
+from core.security_utils import sanitize_for_log
 from db.database import get_db
 from db.models import DataSourceDB, DataSourceSyncHistory
 
@@ -183,7 +184,7 @@ async def update_data_source(
     await db.flush()
     await db.refresh(ds)
 
-    logger.info("Updated data source %s", source_id)
+    logger.info("Updated data source %s", sanitize_for_log(source_id))
     return _datasource_to_response(ds)
 
 
@@ -217,7 +218,9 @@ async def delete_data_source(
     # Delete the data source
     await db.delete(ds)
 
-    logger.info("Deleted data source %s (%s)", source_id, ds.name)
+    logger.info(
+        "Deleted data source %s (%s)", sanitize_for_log(source_id), sanitize_for_log(ds.name)
+    )
 
 
 @router.post("/{source_id}/sync", response_model=DataSourceSyncResponse)
@@ -305,7 +308,11 @@ async def sync_data_source(
             ds.total_records = (ds.total_records or 0) + records
 
         except Exception as e:
-            logger.error("Background sync failed for %s: %s", source_id, e)
+            logger.error(
+                "Background sync failed for %s: %s",
+                sanitize_for_log(source_id),
+                sanitize_for_log(e),
+            )
             sync_record.status = "failed"
             sync_record.completed_at = datetime.now(timezone.utc)
             sync_record.error_message = str(e)[:500]
@@ -321,7 +328,7 @@ async def sync_data_source(
 
     asyncio.create_task(_run_sync(source_id, ds, sync_record, db))
 
-    logger.info("Triggered sync for data source %s", source_id)
+    logger.info("Triggered sync for data source %s", sanitize_for_log(source_id))
 
     return DataSourceSyncResponse(
         source_id=source_id,

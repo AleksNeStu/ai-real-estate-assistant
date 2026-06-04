@@ -13,7 +13,7 @@ from urllib.parse import urlparse
 
 import requests
 
-from utils.sanitization import sanitize_for_logging
+from utils.sanitization import redact_sensitive_data, sanitize_for_logging
 
 logger = logging.getLogger(__name__)
 
@@ -257,7 +257,7 @@ class AirQualityAdapter:
         if cached_result:
             return cached_result
 
-        url = f"{self.API_URL}/feed/geo:{lat};{lon}/"
+        url = f"{self.API_URL}/feed/geo:{float(lat):.6f};{float(lon):.6f}/"
         params = {"token": self._api_key}
 
         try:
@@ -300,7 +300,7 @@ class AirQualityAdapter:
 
             self._put_in_cache(cache_key, result)
             logger.info(
-                f"WAQI data for {sanitize_for_logging(station_name)}: AQI={aqi}, PM2.5={pm25}, PM10={pm10}"
+                f"WAQI data for {sanitize_for_logging(redact_sensitive_data(station_name))}: AQI={aqi}, PM2.5={pm25}, PM10={pm10}"
             )
 
             return result
