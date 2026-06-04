@@ -377,3 +377,4 @@ tests/
 .devcontainer/
 .rafcache/
 .private/
+.claude/worktrees/
