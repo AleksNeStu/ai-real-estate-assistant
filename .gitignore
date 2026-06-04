@@ -370,7 +370,12 @@ logs/
 artifacts/e2e-output/
 test-results/
 .playwright-mcp/
+# Ignore vendored test packages and cache directories matching 'tests/'.
+# The project's own tests under apps/*/tests were tracked before this rule
+# was added and remain tracked; the lines below re-allow adding new test
+# files in those project directories.
 tests/
+!apps/api/tests/
 .kiro/
 .vercel/
 .vercel/project.json
