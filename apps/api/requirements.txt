@@ -27,7 +27,10 @@ google-generativeai>=0.8.0
 tiktoken>=0.13.0
 zstandard>=0.23.0
 grpcio>=1.80.0
-protobuf>=7.35.0,<8.0.0
+# Capped at <6.0.0 because google-generativeai 0.8.x (transitive via
+# langchain-google-genai 4.x) requires protobuf<6.0.0. Bumping protobuf to
+# 7+ breaks `uv pip install` with an unsatisfiable-requirements error.
+protobuf>=4.21.5,<6.0.0
 
 aiohttp>=3.13.5
 
