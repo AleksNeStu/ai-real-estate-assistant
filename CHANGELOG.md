@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.4] - 2026-06-04
+
+### Security
+
+- Log injection remediation: add `core/security_utils.py` (`sanitize_for_log`,
+  `validate_file_path`, `validate_osrm_url`, `hash_sensitive_data`, `SecureLogger`)
+  and replace 301 unsafe f-string logger calls across 61 backend files with
+  parameterized %-format + sanitization
+- Bump urllib3 2.6.3 → 2.7.0 (CVE-2026-44432, CVE-2026-44431)
+- Bump pillow 12.1.1 → 12.2.0 (CVE-2026-42311, CVE-2026-42310, CVE-2026-42308,
+  CVE-2026-42309, CVE-2026-40192)
+- Bump cryptography 43.0.3 → 46.0.7 (CVE-2026-26007, CVE-2026-34073,
+  CVE-2024-12797) — 3 major versions; verified `data_protection.py` still
+  works with Fernet + PBKDF2HMAC APIs
+- Bump anthropic 0.86.0 → 0.105.2 (CVE-2026-34452, CVE-2026-34450)
+- Bump pytest 9.0.2 → 9.0.3 (CVE-2025-71176)
+- Bump tmp 0.1.0 → 0.2.7 and add npm `overrides` to dedupe transitive copies
+  in `@lhci/cli` and `external-editor` (CVE-2025-54798)
+
+### Notes
+
+- The Dependabot alert for `postcss` (CVE-2026-41305) remains open because the
+  vulnerable copy is `next/node_modules/postcss` (a transitive of `next@16.2.6`),
+  not a direct dep. The top-level `postcss@8.5.14` is already patched; closing
+  the alert requires bumping `next` (out of scope for this security-only push).
+
 ## [5.0.3] - 2026-05-24
 
 ### Fixed
