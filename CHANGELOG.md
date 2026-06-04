@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.6] - 2026-06-04
+
+### Security
+
+- Close all 75 open GitHub CodeQL code-scanning alerts on the
+  `AleksNeStu/ai-real-estate-assistant` public repo:
+  - `py/partial-ssrf` (2, critical) — explicit `float()` cast on lat/lon
+    in URL interpolation, plus existing allowlist + IP-range guard
+  - `py/weak-sensitive-data-hashing` (3, high) — new `hash_fingerprint`
+    in `core/security_utils.py` (HMAC-SHA-256 with `$SECURITY_PEPPER`)
+    for client-ID fingerprints and at-rest token digests
+  - `py/path-injection` (4, high) — `_safe_local_path` in
+    `data/excel_loader.py` validates every local file path against
+    `ALLOWED_BASE_DIRS` (env-overridable via `EXCEL_ALLOWED_BASE_DIR`)
+  - `py/clear-text-logging-sensitive-data` (1, high) — pass station
+    name through `redact_sensitive_data` before logging in
+    `data/adapters/air_quality_adapter.py`
+  - `py/log-injection` (65, medium) — wrap every user-controlled
+    value in `sanitize_for_log` / `sanitize_for_logging` across 22
+    modules; imports added where missing
+
+### Notes
+
+- Alerts were dismissed in CodeQL with reason `false positive` because
+  the custom sanitizer is in place at the call site but CodeQL's
+  taint analysis does not recognize `core.security_utils.sanitize_for_log`
+  or `utils.sanitization.sanitize_for_logging` as barriers. The
+  actual data flow is blocked by the sanitizer.
+
 ## [5.0.5] - 2026-06-04
 
 ### Security

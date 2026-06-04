@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "5.0.5",
+  "version": "5.0.6",
   "private": true,
   "license": "MIT",
   "scripts": {
