@@ -10,6 +10,8 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
+from core.security_utils import sanitize_for_log
+
 logger = logging.getLogger(__name__)
 
 
@@ -135,16 +137,18 @@ class NeighborhoodAdapter:
                 result["all"].append(poi_data)
 
             logger.info(
-                f"Found {len(result['all'])} POIs within {radius_m}m: "
-                f"{len(result['schools'])} schools, "
-                f"{len(result['amenities'])} amenities, "
-                f"{len(result['green_spaces'])} green spaces"
+                "Found %s POIs within %sm: %s schools, %s amenities, %s green spaces",
+                len(result["all"]),
+                sanitize_for_log(radius_m),
+                len(result["schools"]),
+                len(result["amenities"]),
+                len(result["green_spaces"]),
             )
 
             return result
 
         except requests.RequestException as e:
-            logger.error(f"Overpass API request failed: {e}")
+            logger.error("Overpass API request failed: %s", sanitize_for_log(e))
             return {
                 "schools": [],
                 "amenities": [],
@@ -152,7 +156,7 @@ class NeighborhoodAdapter:
                 "all": [],
             }
         except Exception as e:
-            logger.error(f"Failed to parse POI data: {e}")
+            logger.error("Failed to parse POI data: %s", sanitize_for_log(e))
             return {
                 "schools": [],
                 "amenities": [],

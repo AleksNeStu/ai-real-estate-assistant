@@ -15,6 +15,8 @@ from typing import Any, Optional, Protocol, runtime_checkable
 
 import httpx
 
+from core.security_utils import sanitize_for_log
+
 logger = logging.getLogger(__name__)
 
 
@@ -260,10 +262,10 @@ class HelloSignService:
             }
 
         except httpx.HTTPStatusError as e:
-            logger.error(f"HelloSign API error: {e.response.text}")
+            logger.error("HelloSign API error: %s", sanitize_for_log(e.response.text))
             raise RuntimeError(f"HelloSign API error: {e.response.text}") from e
         except Exception as e:
-            logger.error(f"Error creating HelloSign envelope: {e}")
+            logger.error("Error creating HelloSign envelope: %s", sanitize_for_log(e))
             raise
 
     async def get_envelope_status(self, envelope_id: str) -> dict[str, Any]:
@@ -315,10 +317,10 @@ class HelloSignService:
             }
 
         except httpx.HTTPStatusError as e:
-            logger.error(f"HelloSign API error: {e.response.text}")
+            logger.error("HelloSign API error: %s", sanitize_for_log(e.response.text))
             raise RuntimeError(f"HelloSign API error: {e.response.text}") from e
         except Exception as e:
-            logger.error(f"Error getting HelloSign status: {e}")
+            logger.error("Error getting HelloSign status: %s", sanitize_for_log(e))
             raise
 
     async def download_signed_document(self, envelope_id: str) -> bytes:
@@ -353,10 +355,10 @@ class HelloSignService:
             return file_response.content
 
         except httpx.HTTPStatusError as e:
-            logger.error(f"HelloSign API error: {e.response.text}")
+            logger.error("HelloSign API error: %s", sanitize_for_log(e.response.text))
             raise RuntimeError(f"HelloSign API error: {e.response.text}") from e
         except Exception as e:
-            logger.error(f"Error downloading signed document: {e}")
+            logger.error("Error downloading signed document: %s", sanitize_for_log(e))
             raise
 
     async def cancel_envelope(self, envelope_id: str) -> bool:
@@ -377,13 +379,13 @@ class HelloSignService:
 
             return response.status_code == 200
         except httpx.HTTPStatusError as e:
-            logger.error(f"HelloSign API error: {e.response.text}")
+            logger.error("HelloSign API error: %s", sanitize_for_log(e.response.text))
             if e.response.status_code == 404:
                 # Already completed or not found
                 return False
             raise
         except Exception as e:
-            logger.error(f"Error cancelling HelloSign envelope: {e}")
+            logger.error("Error cancelling HelloSign envelope: %s", sanitize_for_log(e))
             return False
 
     async def send_reminder(self, envelope_id: str) -> bool:
@@ -404,10 +406,10 @@ class HelloSignService:
 
             return response.status_code == 200
         except httpx.HTTPStatusError as e:
-            logger.error(f"HelloSign API error: {e.response.text}")
+            logger.error("HelloSign API error: %s", sanitize_for_log(e.response.text))
             return False
         except Exception as e:
-            logger.error(f"Error sending HelloSign reminder: {e}")
+            logger.error("Error sending HelloSign reminder: %s", sanitize_for_log(e))
             return False
 
     def verify_webhook_signature(
@@ -443,7 +445,7 @@ class HelloSignService:
 
             return hmac.compare_digest(signature.encode(), expected_sig.encode())
         except Exception as e:
-            logger.error(f"Error verifying webhook signature: {e}")
+            logger.error("Error verifying webhook signature: %s", sanitize_for_log(e))
             return False
 
 

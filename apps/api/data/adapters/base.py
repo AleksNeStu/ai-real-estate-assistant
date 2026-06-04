@@ -15,6 +15,8 @@ from typing import Any, Callable, Dict, List, Optional, TypeVar
 import backoff
 import pandas as pd
 
+from core.security_utils import sanitize_for_log
+
 logger = logging.getLogger(__name__)
 
 # Type variable for generic function return type
@@ -62,8 +64,12 @@ def with_retry(
         attempt = getattr(details, "tries", 0)
 
         logger.warning(
-            f"Retry attempt {attempt}/{max_tries} after {wait_time:.1f}s. "
-            f"Exception: {type(exception).__name__ if exception else 'Unknown'}: {exception}"
+            "Retry attempt %s/%s after %.1fs. Exception: %s: %s",
+            sanitize_for_log(attempt),
+            sanitize_for_log(max_tries),
+            sanitize_for_log(wait_time),
+            sanitize_for_log(type(exception).__name__ if exception else "Unknown"),
+            sanitize_for_log(exception),
         )
 
         if on_retry:
@@ -117,8 +123,12 @@ def with_retry_async(
         attempt = getattr(details, "tries", 0)
 
         logger.warning(
-            f"Async retry attempt {attempt}/{max_tries} after {wait_time:.1f}s. "
-            f"Exception: {type(exception).__name__ if exception else 'Unknown'}: {exception}"
+            "Async retry attempt %s/%s after %.1fs. Exception: %s: %s",
+            sanitize_for_log(attempt),
+            sanitize_for_log(max_tries),
+            sanitize_for_log(wait_time),
+            sanitize_for_log(type(exception).__name__ if exception else "Unknown"),
+            sanitize_for_log(exception),
         )
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
@@ -233,7 +243,7 @@ class PortalFetchResult:
     def add_error(self, error: str) -> None:
         """Add an error message to the result."""
         self.errors.append(error)
-        logger.error(f"[{self.source}] {error}")
+        logger.error("[%s] %s", sanitize_for_log(self.source), sanitize_for_log(error))
 
 
 class ExternalSourceAdapter(ABC):
@@ -416,7 +426,7 @@ class RateLimiter:
             # Wait a bit before retrying
             time.sleep(0.1)
 
-        logger.warning(f"Rate limiter timeout after {timeout}s")
+        logger.warning("Rate limiter timeout after %ss", sanitize_for_log(timeout))
         return False
 
     def reset(self) -> None:

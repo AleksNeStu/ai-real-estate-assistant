@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.deps.auth import get_current_active_user
 from config.settings import get_settings, settings
+from core.security_utils import sanitize_for_log
 from db import AnomalyRepository, PriceSnapshotRepository
 from db.database import get_db
 from db.schemas import (
@@ -179,7 +180,7 @@ async def stream_anomalies(
 
             except Exception as e:
                 consecutive_errors += 1
-                logger.error(f"Error in anomaly stream: {e}")
+                logger.error("Error in anomaly stream: %s", sanitize_for_log(e))
 
                 # Calculate backoff with exponential increase (Task #74)
                 backoff_ms = calculate_backoff(consecutive_errors)
@@ -190,7 +191,8 @@ async def stream_anomalies(
                 # Check if we should stop after too many errors
                 if consecutive_errors >= max_consecutive_errors:
                     logger.error(
-                        f"Anomaly stream stopping after {consecutive_errors} consecutive errors"
+                        "Anomaly stream stopping after %s consecutive errors",
+                        sanitize_for_log(consecutive_errors),
                     )
                     fatal_payload = json.dumps(
                         {"type": "fatal_error", "message": "Too many errors, reconnecting..."}

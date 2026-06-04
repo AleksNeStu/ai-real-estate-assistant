@@ -14,6 +14,7 @@ Features:
 import logging
 from typing import Any, Callable, Dict, List, Optional, Type
 
+from core.security_utils import sanitize_for_log
 from data.enrichment.hooks import EnrichmentConfig, EnrichmentPriority, PropertyEnrichmentHook
 
 logger = logging.getLogger(__name__)
@@ -53,7 +54,8 @@ class EnrichmentRegistry:
 
         if enricher_class.name in cls._enrichers:
             logger.warning(
-                f"Enricher '{enricher_class.name}' already registered, overwriting"
+                "Enricher '%s' already registered, overwriting",
+                sanitize_for_log(enricher_class.name),
             )
 
         cls._enrichers[enricher_class.name] = enricher_class
@@ -62,7 +64,7 @@ class EnrichmentRegistry:
         if config:
             cls._configs[enricher_class.name] = config
 
-        logger.info(f"Registered enricher: {enricher_class.name}")
+        logger.info("Registered enricher: %s", sanitize_for_log(enricher_class.name))
 
     @classmethod
     def unregister(cls, name: str) -> None:
@@ -80,7 +82,7 @@ class EnrichmentRegistry:
             del cls._configs[name]
         if name in cls._priorities:
             del cls._priorities[name]
-        logger.info(f"Unregistered enricher: {name}")
+        logger.info("Unregistered enricher: %s", sanitize_for_log(name))
 
     @classmethod
     def get_enricher(
@@ -100,7 +102,7 @@ class EnrichmentRegistry:
         """
         enricher_class = cls._enrichers.get(name)
         if not enricher_class:
-            logger.warning(f"Enricher '{name}' not found in registry")
+            logger.warning("Enricher '%s' not found in registry", sanitize_for_log(name))
             return None
 
         # Return cached instance if available and no custom config
@@ -118,7 +120,11 @@ class EnrichmentRegistry:
 
             return instance
         except Exception as e:
-            logger.error(f"Failed to instantiate enricher '{name}': {e}")
+            logger.error(
+                "Failed to instantiate enricher '%s': %s",
+                sanitize_for_log(name),
+                sanitize_for_log(e),
+            )
             return None
 
     @classmethod
@@ -227,7 +233,7 @@ class EnrichmentRegistry:
         if name in cls._instances:
             del cls._instances[name]
 
-        logger.info(f"Updated config for enricher: {name}")
+        logger.info("Updated config for enricher: %s", sanitize_for_log(name))
 
     @classmethod
     def get_config(cls, name: str) -> Optional[EnrichmentConfig]:

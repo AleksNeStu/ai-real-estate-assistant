@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.security_utils import sanitize_for_log
 from db.database import get_db
 from db.models import RankingConfig
 
@@ -183,7 +184,7 @@ class RankingConfigService:
             return config
 
         except Exception as e:
-            logger.error(f"Error fetching active ranking config: {e}")
+            logger.error("Error fetching active ranking config: %s", sanitize_for_log(e))
             return None
 
     async def get_active_weights(self) -> dict[str, Any]:
@@ -225,7 +226,11 @@ class RankingConfigService:
             return config
 
         except Exception as e:
-            logger.error(f"Error fetching ranking config '{name}': {e}")
+            logger.error(
+                "Error fetching ranking config '%s': %s",
+                sanitize_for_log(name),
+                sanitize_for_log(e),
+            )
             return None
 
     async def get_config_by_id(self, config_id: str) -> Optional[RankingConfig]:
@@ -255,7 +260,11 @@ class RankingConfigService:
             return config
 
         except Exception as e:
-            logger.error(f"Error fetching ranking config '{config_id}': {e}")
+            logger.error(
+                "Error fetching ranking config '%s': %s",
+                sanitize_for_log(config_id),
+                sanitize_for_log(e),
+            )
             return None
 
     async def list_configs(self, include_inactive: bool = False) -> list[RankingConfig]:
@@ -277,7 +286,7 @@ class RankingConfigService:
             return list(result.scalars().all())
 
         except Exception as e:
-            logger.error(f"Error listing ranking configs: {e}")
+            logger.error("Error listing ranking configs: %s", sanitize_for_log(e))
             return []
 
     async def create_config(
@@ -334,7 +343,11 @@ class RankingConfigService:
         # Invalidate cache
         self._invalidate_cache()
 
-        logger.info(f"Created ranking config '{config.name}' (id={config.id})")
+        logger.info(
+            "Created ranking config '%s' (id=%s)",
+            sanitize_for_log(config.name),
+            sanitize_for_log(config.id),
+        )
         return config
 
     async def update_config(self, config_id: str, **updates: Any) -> Optional[RankingConfig]:
@@ -363,7 +376,11 @@ class RankingConfigService:
         # Invalidate cache
         self._invalidate_cache()
 
-        logger.info(f"Updated ranking config '{config.name}' (id={config.id})")
+        logger.info(
+            "Updated ranking config '%s' (id=%s)",
+            sanitize_for_log(config.name),
+            sanitize_for_log(config.id),
+        )
         return config
 
     async def activate_config(self, config_id: str) -> Optional[RankingConfig]:
@@ -393,7 +410,11 @@ class RankingConfigService:
         # Invalidate cache
         self._invalidate_cache()
 
-        logger.info(f"Activated ranking config '{config.name}' (id={config.id})")
+        logger.info(
+            "Activated ranking config '%s' (id=%s)",
+            sanitize_for_log(config.name),
+            sanitize_for_log(config.id),
+        )
         return config
 
     async def delete_config(self, config_id: str) -> bool:
@@ -422,7 +443,11 @@ class RankingConfigService:
         # Invalidate cache
         self._invalidate_cache()
 
-        logger.info(f"Deleted ranking config '{config.name}' (id={config.id})")
+        logger.info(
+            "Deleted ranking config '%s' (id=%s)",
+            sanitize_for_log(config.name),
+            sanitize_for_log(config.id),
+        )
         return True
 
     def _is_cache_valid(self) -> bool:

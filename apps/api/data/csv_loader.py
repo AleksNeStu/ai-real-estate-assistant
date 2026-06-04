@@ -10,6 +10,8 @@ import requests
 from faker import Faker
 from yarl import URL
 
+from core.security_utils import sanitize_for_log
+
 # Configure logger
 logger = logging.getLogger(__name__)
 
@@ -116,13 +118,13 @@ class DataLoaderCsv:
                         f"Failed to load CSV: {str(e)}. Additional attempts failed: {str(e2)}, {str(e3)}"
                     ) from e3
 
-        logger.info(f"Data frame loaded from {csv_url}, rows: {len(df)}")
+        logger.info("Data frame loaded from %s, rows: %s", sanitize_for_log(csv_url), len(df))
         return df
 
     def load_format_df(self, df: pd.DataFrame, rows_count: int | None = None) -> pd.DataFrame:
         """Returns the DataFrame. If not loaded, loads and prepares the data first."""
         df_formatted = self.format_df(df, rows_count=rows_count)
-        logger.info(f"Data frame formatted from {self.csv_path}")
+        logger.info("Data frame formatted from %s", sanitize_for_log(self.csv_path))
         return df_formatted
 
     @staticmethod
@@ -150,7 +152,7 @@ class DataLoaderCsv:
 
         # Drop rows with any NaN values
         df_copy = df.copy()
-        logger.info(f"Original data frame rows: {len(df_copy)}")
+        logger.info("Original data frame rows: %s", len(df_copy))
 
         # Camel case to snake for header first
         df_copy.columns = [DataLoaderCsv.camel_to_snake(col) for col in df_copy.columns]
@@ -403,8 +405,8 @@ class DataLoaderCsv:
         diff_header = set(header_final) - set(header)
 
         if diff_header:
-            logger.info(f"Added columns with generated data: {diff_header}")
-        logger.info(f"Formatted data frame rows: {len(df_final)}")
+            logger.info("Added columns with generated data: %s", sanitize_for_log(diff_header))
+        logger.info("Formatted data frame rows: %s", len(df_final))
 
         return df_final
 
@@ -546,8 +548,10 @@ class DataLoaderExcel(DataLoaderCsv):
             df = pd.read_excel(file_path, **read_kwargs)
 
             logger.info(
-                f"Excel data loaded from {file_path}"
-                f" (sheet: {self.sheet_name or 'default'}, rows: {len(df)})"
+                "Excel data loaded from %s (sheet: %s, rows: %s)",
+                sanitize_for_log(file_path),
+                sanitize_for_log(self.sheet_name or "default"),
+                len(df),
             )
             return df
 

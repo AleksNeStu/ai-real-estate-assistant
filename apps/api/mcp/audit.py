@@ -26,6 +26,7 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
+from core.security_utils import sanitize_for_log
 from mcp.context import get_request_id
 
 logger = logging.getLogger(__name__)
@@ -109,7 +110,8 @@ class MCPAuditLogger:
             retention_days: Number of days to retain logs
         """
         self._enabled = enabled and (
-            os.getenv("MCP_AUDIT_LOGGING_ENABLED", "true").strip().lower() in {"1", "true", "yes", "on"}
+            os.getenv("MCP_AUDIT_LOGGING_ENABLED", "true").strip().lower()
+            in {"1", "true", "yes", "on"}
         )
 
         if log_dir is None:
@@ -412,7 +414,11 @@ class MCPAuditLogger:
                             if len(results) >= limit + offset:
                                 break
             except Exception as e:
-                logger.warning(f"Failed to read audit log file {log_file}: {e}")
+                logger.warning(
+                    "Failed to read audit log file %s: %s",
+                    sanitize_for_log(log_file),
+                    sanitize_for_log(e),
+                )
 
         # Apply offset and limit
         return results[offset : offset + limit]
@@ -478,9 +484,13 @@ class MCPAuditLogger:
                 if date_str < cutoff_str:
                     log_file.unlink()
                     removed += 1
-                    logger.info(f"Removed old MCP audit log: {log_file}")
+                    logger.info("Removed old MCP audit log: %s", sanitize_for_log(log_file))
             except Exception as e:
-                logger.warning(f"Failed to process log file {log_file}: {e}")
+                logger.warning(
+                    "Failed to process log file %s: %s",
+                    sanitize_for_log(log_file),
+                    sanitize_for_log(e),
+                )
 
         return removed
 

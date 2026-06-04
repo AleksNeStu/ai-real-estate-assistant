@@ -9,6 +9,7 @@ import logging
 from typing import Any, Dict, List
 
 from analytics.market_insights import MarketInsights
+from core.security_utils import sanitize_for_log
 from utils.saved_searches import SavedSearch, UserPreferences
 from vector_store.chroma_store import ChromaPropertyStore
 
@@ -98,7 +99,11 @@ class DigestGenerator:
                         # For now, we leave price_drop_properties empty unless we find explicit signals
 
             except Exception as e:
-                logger.error(f"Error searching for saved search {search.name}: {e}")
+                logger.error(
+                    "Error searching for saved search %s: %s",
+                    sanitize_for_log(search.name),
+                    sanitize_for_log(e),
+                )
                 saved_search_data.append({"id": search.id, "name": search.name, "new_matches": 0})
                 continue
 

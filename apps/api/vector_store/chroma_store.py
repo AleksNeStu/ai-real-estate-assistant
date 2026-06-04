@@ -22,6 +22,8 @@ from langchain_core.embeddings import Embeddings
 from langchain_core.retrievers import BaseRetriever
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+from core.security_utils import sanitize_for_log
+
 try:
     from langchain_chroma import Chroma
 except Exception:
@@ -141,7 +143,7 @@ class ChromaPropertyStore:
                     "Set CHROMA_FORCE_FASTEMBED=1 to force enable."
                 )
         except Exception as e:
-            logger.warning(f"FastEmbed initialization failed: {e}")
+            logger.warning("FastEmbed initialization failed: %s", sanitize_for_log(e))
 
         try:
             if settings.openai_api_key:
@@ -149,7 +151,7 @@ class ChromaPropertyStore:
 
                 return cast(Embeddings, OpenAIEmbeddings())
         except Exception as e:
-            logger.warning(f"OpenAI embeddings unavailable: {e}")
+            logger.warning("OpenAI embeddings unavailable: %s", sanitize_for_log(e))
 
         return None
 
@@ -182,10 +184,11 @@ class ChromaPropertyStore:
                 try:
                     collection_stats = vector_store._collection.count()
                     logger.info(
-                        f"Loaded existing ChromaDB collection with {collection_stats} documents"
+                        "Loaded existing ChromaDB collection with %s documents",
+                        sanitize_for_log(collection_stats),
                     )
                 except Exception as e:
-                    logger.warning(f"Could not get collection stats: {e}")
+                    logger.warning("Could not get collection stats: %s", sanitize_for_log(e))
 
                 # Removed blocking ID loading loop for performance
                 return vector_store
@@ -202,7 +205,7 @@ class ChromaPropertyStore:
                 return vector_store
 
         except BaseException as e:
-            logger.warning(f"Persistent Chroma init failed: {e}")
+            logger.warning("Persistent Chroma init failed: %s", sanitize_for_log(e))
 
             # Fallback: in-memory Chroma (no persistence)
             try:
@@ -214,7 +217,7 @@ class ChromaPropertyStore:
                 logger.warning("Persistent vector store unavailable; using in-memory store")
                 return vector_store
             except BaseException as e2:
-                logger.error(f"In-memory Chroma init failed: {e2}")
+                logger.error("In-memory Chroma init failed: %s", sanitize_for_log(e2))
                 raise
 
     def property_to_document(self, prop: Property) -> Document:
@@ -360,7 +363,7 @@ class ChromaPropertyStore:
 
             return documents
         except Exception as e:
-            logger.error(f"Error retrieving properties by IDs: {e}")
+            logger.error("Error retrieving properties by IDs: %s", sanitize_for_log(e))
             return []
 
     def add_properties(self, properties: List[Property], batch_size: int = 100) -> int:
@@ -381,7 +384,9 @@ class ChromaPropertyStore:
                 doc = self.property_to_document(prop)
                 documents.append(doc)
             except Exception as e:
-                logger.warning(f"Skipping property {prop.id}: {e}")
+                logger.warning(
+                    "Skipping property %s: %s", sanitize_for_log(prop.id), sanitize_for_log(e)
+                )
                 continue
 
         if not documents:
@@ -402,7 +407,10 @@ class ChromaPropertyStore:
                     if doc_id:
                         self._doc_ids.add(doc_id)
                     total_cached += 1
-            logger.info(f"Vector store disabled; cached {total_cached} properties in memory")
+            logger.info(
+                "Vector store disabled; cached %s properties in memory",
+                sanitize_for_log(total_cached),
+            )
             return total_cached
 
         # Add documents in batches
@@ -440,7 +448,7 @@ class ChromaPropertyStore:
                     batch = new_batch
                     batch_ids = new_ids
             except Exception as e:
-                logger.warning(f"Error checking duplicates: {e}")
+                logger.warning("Error checking duplicates: %s", sanitize_for_log(e))
 
             try:
                 # 2. Generate Embeddings (CPU/Network) - WITHOUT LOCK
@@ -492,14 +500,20 @@ class ChromaPropertyStore:
                 #    self._documents.extend(batch)
 
                 total_indexed += len(batch)
-                logger.info(f"Added batch {i // batch_size + 1}: {len(batch)} properties")
+                logger.info(
+                    "Added batch %s: %s properties",
+                    sanitize_for_log(i // batch_size + 1),
+                    len(batch),
+                )
 
             except Exception as e:
-                logger.error(f"Error adding batch: {e}")
+                logger.error("Error adding batch: %s", sanitize_for_log(e))
                 continue
 
         if total_indexed > 0:
-            logger.info(f"Total properties added to vector store: {total_indexed}")
+            logger.info(
+                "Total properties added to vector store: %s", sanitize_for_log(total_indexed)
+            )
 
         return total_cached
 
@@ -680,7 +694,7 @@ class ChromaPropertyStore:
                 if not docs:
                     # If we have a vector store but search failed, maybe it's empty or locked?
                     # If we have no docs in memory, we can't do anything.
-                    logger.warning(f"Search failed and no cached docs: {e}")
+                    logger.warning("Search failed and no cached docs: %s", sanitize_for_log(e))
                     return []
 
                 # Apply filters manually for fallback
@@ -701,7 +715,7 @@ class ChromaPropertyStore:
                 scored.sort(key=lambda x: x[1], reverse=True)
                 return scored[:k]
             except Exception:
-                logger.error(f"Search error: {e}")
+                logger.error("Search error: %s", sanitize_for_log(e))
                 return []
 
     def _build_geo_filter(self, lat: float, lon: float, radius_km: float) -> List[Dict[str, Any]]:
@@ -921,7 +935,7 @@ class ChromaPropertyStore:
                         else:
                             bm25_scores = [1.0 if max_s > 0 else 0.0 for _ in bm25_scores]
                 except Exception as e:
-                    logger.warning(f"BM25 scoring failed: {e}")
+                    logger.warning("BM25 scoring failed: %s", sanitize_for_log(e))
                     bm25_scores = [0.0] * len(docs)
             else:
                 # Fallback: Simple Term Frequency
@@ -1134,7 +1148,7 @@ class ChromaPropertyStore:
             logger.info("Vector store cleared")
 
         except Exception as e:
-            logger.error(f"Error clearing vector store: {e}")
+            logger.error("Error clearing vector store: %s", sanitize_for_log(e))
             with self._cache_lock:
                 self._documents = []
 
@@ -1198,10 +1212,10 @@ class ChromaPropertyStore:
                 return
             with self._vector_lock:
                 vector_store.delete(filter={"source_url": source_url})
-            logger.info(f"Deleted properties from source: {source_url}")
+            logger.info("Deleted properties from source: %s", sanitize_for_log(source_url))
 
         except Exception as e:
-            logger.error(f"Error deleting by source: {e}")
+            logger.error("Error deleting by source: %s", sanitize_for_log(e))
 
     def delete_by_source_type(self, source_type: str) -> None:
         """
@@ -1216,10 +1230,10 @@ class ChromaPropertyStore:
                 return
             with self._vector_lock:
                 vector_store.delete(filter={"source_platform": source_type})
-            logger.info(f"Deleted properties from source_type: {source_type}")
+            logger.info("Deleted properties from source_type: %s", sanitize_for_log(source_type))
 
         except Exception as e:
-            logger.error(f"Error deleting by source_type: {e}")
+            logger.error("Error deleting by source_type: %s", sanitize_for_log(e))
 
     def __repr__(self) -> str:
         stats = self.get_stats()

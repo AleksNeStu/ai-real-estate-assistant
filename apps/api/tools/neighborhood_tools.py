@@ -13,6 +13,8 @@ from typing import Any, ClassVar, Dict, List, Optional, Tuple
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field
 
+from core.security_utils import sanitize_for_log
+
 logger = logging.getLogger(__name__)
 
 
@@ -186,7 +188,7 @@ class NeighborhoodQualityIndexTool(BaseTool):
             return round(result.score, 1), details
 
         except Exception as e:
-            logger.warning(f"Safety score calculation failed: {e}")
+            logger.warning("Safety score calculation failed: %s", sanitize_for_log(e))
             score = NeighborhoodQualityIndexTool._mock_safety_score(city, neighborhood)
             return score, {"data_source": "fallback", "confidence": 0.2, "error": str(e)}
 
@@ -375,7 +377,7 @@ class NeighborhoodQualityIndexTool(BaseTool):
             return round(result.score, 1), details
 
         except Exception as e:
-            logger.warning(f"Air quality calculation failed: {e}")
+            logger.warning("Air quality calculation failed: %s", sanitize_for_log(e))
             return 60.0, {"data_source": "fallback", "confidence": 0.2, "error": str(e)}
 
     @staticmethod
@@ -410,7 +412,7 @@ class NeighborhoodQualityIndexTool(BaseTool):
             return round(result.score, 1), details
 
         except Exception as e:
-            logger.warning(f"Noise level calculation failed: {e}")
+            logger.warning("Noise level calculation failed: %s", sanitize_for_log(e))
             return 65.0, {"data_source": "fallback", "confidence": 0.2, "error": str(e)}
 
     @staticmethod
@@ -445,7 +447,7 @@ class NeighborhoodQualityIndexTool(BaseTool):
             return round(result.score, 1), details
 
         except Exception as e:
-            logger.warning(f"Transport calculation failed: {e}")
+            logger.warning("Transport calculation failed: %s", sanitize_for_log(e))
             return 55.0, {"data_source": "fallback", "confidence": 0.2, "error": str(e)}
 
     @staticmethod
@@ -486,7 +488,7 @@ class NeighborhoodQualityIndexTool(BaseTool):
             }
 
         except Exception as e:
-            logger.warning(f"City comparison failed: {e}")
+            logger.warning("City comparison failed: %s", sanitize_for_log(e))
             return None
 
     @staticmethod
@@ -568,7 +570,7 @@ class NeighborhoodQualityIndexTool(BaseTool):
             return nearby_pois
 
         except Exception as e:
-            logger.warning(f"Failed to fetch nearby POIs: {e}")
+            logger.warning("Failed to fetch nearby POIs: %s", sanitize_for_log(e))
             return None
 
     @staticmethod
@@ -587,12 +589,12 @@ class NeighborhoodQualityIndexTool(BaseTool):
 
         if not provided_keys.issubset(valid_keys):
             invalid = provided_keys - valid_keys
-            logger.warning(f"Invalid weight keys: {invalid}")
+            logger.warning("Invalid weight keys: %s", sanitize_for_log(invalid))
 
         # Validate sum
         total = sum(custom_weights.values())
         if abs(total - 1.0) > 0.01:
-            logger.warning(f"Weights sum to {total}, normalizing to 1.0")
+            logger.warning("Weights sum to %s, normalizing to 1.0", sanitize_for_log(total))
             if total > 0:
                 custom_weights = {k: v / total for k, v in custom_weights.items()}
             else:

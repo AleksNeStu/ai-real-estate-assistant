@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 from analytics.investment_analytics import (
     InvestmentAnalyticsCalculator,
 )
+from core.security_utils import sanitize_for_log
 from tools.property_tools import (
     AdvancedInvestmentInput,
     AdvancedInvestmentResult,
@@ -331,7 +332,7 @@ async def generate_investment_report(
             detail=f"Invalid input: {str(e)}",
         ) from e
     except Exception as e:
-        logger.error(f"Report generation failed: {e}", exc_info=True)
+        logger.error("Report generation failed: %s", sanitize_for_log(e), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Report generation failed: {str(e)}",
@@ -379,7 +380,7 @@ async def analyze_investment(request: InvestmentReportRequest):
             detail=str(e),
         ) from e
     except Exception as e:
-        logger.error(f"Investment analysis failed: {e}", exc_info=True)
+        logger.error("Investment analysis failed: %s", sanitize_for_log(e), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Analysis failed: {str(e)}",
@@ -430,7 +431,7 @@ async def analyze_investment_advanced(request: AdvancedInvestmentInput):
             detail=str(e),
         ) from e
     except Exception as e:
-        logger.error(f"Advanced investment analysis failed: {e}", exc_info=True)
+        logger.error("Advanced investment analysis failed: %s", sanitize_for_log(e), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Advanced analysis failed: {str(e)}",

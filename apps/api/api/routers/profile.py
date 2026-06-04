@@ -12,6 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.deps.auth import get_current_active_user
+from core.security_utils import sanitize_for_log
 from db.database import get_db_context
 from db.models import User
 
@@ -134,7 +135,11 @@ def _delete_avatar_file(avatar_path: str) -> None:
         if os.path.exists(avatar_path):
             os.remove(avatar_path)
     except Exception as e:
-        logger.warning(f"Failed to delete avatar file {avatar_path}: {e}")
+        logger.warning(
+            "Failed to delete avatar file %s: %s",
+            sanitize_for_log(avatar_path),
+            sanitize_for_log(e),
+        )
 
 
 # --- API Endpoints ---
@@ -484,10 +489,14 @@ async def _process_data_export(
             }
         )
 
-        logger.info(f"Data export {export_id} completed for user {user_id}")
+        logger.info(
+            "Data export %s completed for user %s",
+            sanitize_for_log(export_id),
+            sanitize_for_log(user_id),
+        )
 
     except Exception as e:
-        logger.error(f"Data export failed: {e}")
+        logger.error("Data export failed: %s", sanitize_for_log(e))
         _export_jobs[export_id].update(
             {
                 "status": "failed",

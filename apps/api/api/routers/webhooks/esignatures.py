@@ -23,6 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.audit import AuditEvent, AuditEventType, AuditLevel, get_audit_logger
 from config.settings import settings
+from core.security_utils import sanitize_for_log
 from db.database import get_db
 from db.repositories import SignatureRequestRepository, SignedDocumentRepository
 from services.esignature_service import get_esignature_service
@@ -52,7 +53,7 @@ def _verify_hellosign_signature(
 
         return hmac.compare_digest(signature.encode(), expected_sig.encode())
     except Exception as e:
-        logger.error(f"Error verifying webhook signature: {e}")
+        logger.error("Error verifying webhook signature: %s", sanitize_for_log(e))
         return False
 
 
@@ -85,7 +86,7 @@ async def handle_hellosign_webhook(
         payload_str = body.decode("utf-8")
         data = json.loads(payload_str)
     except json.JSONDecodeError as e:
-        logger.error(f"Failed to parse webhook payload: {e}")
+        logger.error("Failed to parse webhook payload: %s", sanitize_for_log(e))
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid JSON payload",
@@ -95,7 +96,7 @@ async def handle_hellosign_webhook(
     if not event_type:
         event_type = data.get("event_type")
 
-    logger.info(f"Received HelloSign webhook: {event_type}")
+    logger.info("Received HelloSign webhook: %s", sanitize_for_log(event_type))
 
     # Get the signature request by provider envelope ID
     envelope_id = data.get("signature_request", {}).get("signature_request_id")
@@ -111,7 +112,9 @@ async def handle_hellosign_webhook(
     signature_request = await repo.get_by_provider_envelope_id("hellosign", envelope_id)
 
     if not signature_request:
-        logger.warning(f"Signature request not found for envelope: {envelope_id}")
+        logger.warning(
+            "Signature request not found for envelope: %s", sanitize_for_log(envelope_id)
+        )
         return {"status": "ignored", "reason": "not_found"}
 
     # Update signature request based on event type
@@ -159,11 +162,11 @@ async def handle_hellosign_webhook(
         signature_request.cancelled_at = now
 
     elif event_type == "file_error":
-        logger.error(f"HelloSign file error for envelope: {envelope_id}")
+        logger.error("HelloSign file error for envelope: %s", sanitize_for_log(envelope_id))
         signature_request.error_message = data.get("error", "Unknown error")
 
     else:
-        logger.info(f"Unhandled event type: {event_type}")
+        logger.info("Unhandled event type: %s", sanitize_for_log(event_type))
         return {"status": "ignored", "reason": "unhandled_event"}
 
     await session.flush()
@@ -197,7 +200,7 @@ async def handle_hellosign_webhook(
                     esignature_service=esignature_service,
                 )
             except Exception as e:
-                logger.error(f"Failed to download signed document: {e}")
+                logger.error("Failed to download signed document: %s", sanitize_for_log(e))
 
     return {"status": "processed", "event_type": event_type}
 
@@ -237,8 +240,10 @@ async def _download_and_store_signed_document(
             provider_document_id=signature_request.provider_envelope_id,
         )
 
-        logger.info(f"Stored signed document for request: {signature_request.id}")
+        logger.info(
+            "Stored signed document for request: %s", sanitize_for_log(signature_request.id)
+        )
 
     except Exception as e:
-        logger.error(f"Error storing signed document: {e}")
+        logger.error("Error storing signed document: %s", sanitize_for_log(e))
         raise

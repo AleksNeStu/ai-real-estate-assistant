@@ -28,6 +28,8 @@ from datetime import UTC, datetime, timedelta
 # Database imports
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.security_utils import sanitize_for_log
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from loguru import logger
@@ -167,7 +169,7 @@ class ComprehensiveDemoDataGenerator:
             vector_store.clear()
             logger.info("ChromaDB vector store cleared")
         except Exception as e:
-            logger.warning(f"Failed to clear ChromaDB (non-fatal): {e}")
+            logger.warning("Failed to clear ChromaDB (non-fatal): %s", sanitize_for_log(e))
 
         # Clear in reverse order of dependencies to avoid foreign key constraints
         logger.info("Clearing CMA reports...")
@@ -287,7 +289,9 @@ class ComprehensiveDemoDataGenerator:
         for i in range(0, len(properties), batch_size):
             batch = properties[i : i + batch_size]
             vector_store.add_properties(batch)
-            logger.info(f"Added batch {i // batch_size + 1}: {len(batch)} properties")
+            logger.info(
+                "Added batch %s: %s properties", sanitize_for_log(i // batch_size + 1), len(batch)
+            )
 
         return len(properties)
 

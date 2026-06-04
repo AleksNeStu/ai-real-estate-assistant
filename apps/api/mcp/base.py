@@ -11,6 +11,7 @@ import time
 from abc import ABC, abstractmethod
 from typing import Any, AsyncGenerator, Dict, Generic, Optional, TypeVar
 
+from core.security_utils import sanitize_for_log
 from mcp.config import MCPConnectorConfig, MCPEdition
 from mcp.exceptions import MCPNotAllowlistedError
 from mcp.result import MCPConnectorResult
@@ -34,6 +35,7 @@ def _get_redaction():
     )
 
     return redact_params, redact_result, sanitize_error_message
+
 
 T = TypeVar("T")
 
@@ -83,7 +85,7 @@ class MCPConnector(ABC, Generic[T]):
         self._connected = False
         self._connection_pool: Any = None
         self._validate_configuration()
-        logger.info(f"Initialized MCP connector: {self.name}")
+        logger.info("Initialized MCP connector: %s", sanitize_for_log(self.name))
 
     def _create_default_config(self) -> MCPConnectorConfig:
         """Create default configuration from class attributes."""
@@ -238,13 +240,11 @@ class MCPConnector(ABC, Generic[T]):
                 result_meta=redact_result(result),
                 duration_ms=int(execution_time_ms),
                 status=status,
-                error_message=sanitize_error(error_message)
-                if error_message
-                else None,
+                error_message=sanitize_error(error_message) if error_message else None,
             )
         except Exception as audit_error:
             # Don't fail the request if audit logging fails
-            logger.warning(f"Audit logging failed: {audit_error}")
+            logger.warning("Audit logging failed: %s", sanitize_for_log(audit_error))
 
         return result
 

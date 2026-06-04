@@ -17,6 +17,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+from core.security_utils import sanitize_for_log
 from data.enrichment.cache import EnrichmentCache, get_enrichment_cache
 from data.enrichment.hooks import (
     EnrichmentContext,
@@ -125,13 +126,15 @@ class EnrichmentPipeline:
         result = PipelineResult(property_id=property_id)
 
         if not self._config.enabled:
-            logger.info(f"Enrichment pipeline disabled, skipping property {property_id}")
+            logger.info(
+                "Enrichment pipeline disabled, skipping property %s", sanitize_for_log(property_id)
+            )
             return result
 
         # Get enrichers to run
         enrichers = self._get_enrichers(sources)
         if not enrichers:
-            logger.info(f"No enrichers available for property {property_id}")
+            logger.info("No enrichers available for property %s", sanitize_for_log(property_id))
             return result
 
         # Check cache first
@@ -147,7 +150,9 @@ class EnrichmentPipeline:
         ]
 
         if not pending_enrichers:
-            logger.info(f"All enrichments served from cache for property {property_id}")
+            logger.info(
+                "All enrichments served from cache for property %s", sanitize_for_log(property_id)
+            )
             result.total_time_ms = (time.perf_counter() - start_time) * 1000
             return result
 
@@ -241,7 +246,8 @@ class EnrichmentPipeline:
             # Check fail-fast
             if self._config.fail_fast and result.errors:
                 logger.warning(
-                    f"Fail-fast triggered, stopping pipeline for property {context.property_id}"
+                    "Fail-fast triggered, stopping pipeline for property %s",
+                    sanitize_for_log(context.property_id),
                 )
                 break
 
@@ -268,13 +274,18 @@ class EnrichmentPipeline:
             if enrichment_result.success:
                 result.enriched_fields[enricher.field] = enrichment_result.value
                 logger.debug(
-                    f"Enrichment succeeded: {enricher.name} for property {context.property_id}"
+                    "Enrichment succeeded: %s for property %s",
+                    sanitize_for_log(enricher.name),
+                    sanitize_for_log(context.property_id),
                 )
             else:
                 error_msg = enrichment_result.error or "Unknown error"
                 result.errors.append(f"{enricher.name}: {error_msg}")
                 logger.warning(
-                    f"Enrichment failed: {enricher.name} for property {context.property_id} - {error_msg}"
+                    "Enrichment failed: %s for property %s - %s",
+                    sanitize_for_log(enricher.name),
+                    sanitize_for_log(context.property_id),
+                    sanitize_for_log(error_msg),
                 )
 
             # Update status tracker
@@ -331,7 +342,7 @@ class EnrichmentPipeline:
                 )
                 if fallback_value is not None:
                     result.enriched_fields[field] = fallback_value
-                    logger.info(f"Applied fallback for {field}")
+                    logger.info("Applied fallback for %s", sanitize_for_log(field))
 
     async def run_batch(
         self,

@@ -25,6 +25,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.audit import AuditEvent, AuditEventType, AuditLevel, get_audit_logger
 from api.deps.auth import get_current_active_user
+from core.security_utils import sanitize_for_log
 from db.database import get_db
 from db.models import DocumentDB, User
 from db.repositories import DocumentRepository
@@ -207,11 +208,15 @@ async def upload_document(
                     )
                 elif ocr_error:
                     await repo.update(document, ocr_status="failed")
-                    logger.warning(f"OCR failed for document {document.id}: {ocr_error}")
+                    logger.warning(
+                        "OCR failed for document %s: %s",
+                        sanitize_for_log(document.id),
+                        sanitize_for_log(ocr_error),
+                    )
                 else:
                     await repo.update(document, ocr_status="completed")
             except Exception as e:
-                logger.error(f"OCR processing failed: {e}")
+                logger.error("OCR processing failed: %s", sanitize_for_log(e))
                 await repo.update(document, ocr_status="failed")
 
         return DocumentUploadResponse(
@@ -226,7 +231,7 @@ async def upload_document(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Document upload failed: {e}", exc_info=True)
+        logger.error("Document upload failed: %s", sanitize_for_log(e), exc_info=True)
         audit_logger.log(
             AuditEvent(
                 event_type=AuditEventType.API_ERROR,
@@ -416,7 +421,9 @@ async def download_document(
         )
 
     except Exception as e:
-        logger.error(f"Failed to read document {document_id}: {e}")
+        logger.error(
+            "Failed to read document %s: %s", sanitize_for_log(document_id), sanitize_for_log(e)
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to read document",
@@ -499,7 +506,9 @@ async def delete_document(
         return None
 
     except Exception as e:
-        logger.error(f"Failed to delete document {document_id}: {e}")
+        logger.error(
+            "Failed to delete document %s: %s", sanitize_for_log(document_id), sanitize_for_log(e)
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete document",

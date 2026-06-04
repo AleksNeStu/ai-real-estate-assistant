@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union
 
 from langchain_core.documents import Document
 
+from core.security_utils import sanitize_for_log
 from data.schemas import Property
 
 if TYPE_CHECKING:
@@ -362,7 +363,11 @@ class StrategicReranker(PropertyReranker):
 
                     except Exception as e:
                         # Log warning but continue
-                        logger.warning(f"Failed to value property {metadata.get('id')}: {e}")
+                        logger.warning(
+                            "Failed to value property %s: %s",
+                            sanitize_for_log(metadata.get("id")),
+                            sanitize_for_log(e),
+                        )
 
                 # Simple heuristic boosts if no model (or if model failed)
                 if metadata.get("price") and metadata.get("area_sqm"):

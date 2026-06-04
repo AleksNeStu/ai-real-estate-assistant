@@ -28,6 +28,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.audit import AuditEvent, AuditEventType, AuditLevel, get_audit_logger
 from api.deps.auth import get_current_active_user
+from core.security_utils import sanitize_for_log
 from db.database import get_db
 from db.models import User
 from db.repositories import (
@@ -249,7 +250,7 @@ async def create_signature_request(
             document_path.unlink()
         raise
     except Exception as e:
-        logger.error(f"Error creating signature request: {e}")
+        logger.error("Error creating signature request: %s", sanitize_for_log(e))
         # Clean up temp file
         if document_path and document_path.exists():
             document_path.unlink()
@@ -366,7 +367,7 @@ async def cancel_signature_request(
         try:
             await esignature_service.cancel_envelope(signature_request.provider_envelope_id)
         except Exception as e:
-            logger.warning(f"Failed to cancel in provider: {e}")
+            logger.warning("Failed to cancel in provider: %s", sanitize_for_log(e))
 
     # Update in database
     signature_request = await repo.cancel(signature_request)
@@ -501,7 +502,7 @@ async def download_signed_document(
             )
 
         except Exception as e:
-            logger.error(f"Error downloading signed document: {e}")
+            logger.error("Error downloading signed document: %s", sanitize_for_log(e))
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to download signed document: {str(e)}",

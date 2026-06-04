@@ -10,6 +10,8 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 
+from core.security_utils import sanitize_for_log
+
 logger = logging.getLogger(__name__)
 
 # Check if OCR dependencies are available
@@ -87,7 +89,9 @@ class OCRService:
                     text=True,
                 )
                 if result.returncode == 0:
-                    logger.info(f"Tesseract installed: {result.stdout.split()[1]}")
+                    logger.info(
+                        "Tesseract installed: %s", sanitize_for_log(result.stdout.split()[1])
+                    )
                 else:
                     logger.warning("Tesseract binary not found in PATH")
             except FileNotFoundError:
@@ -134,7 +138,9 @@ class OCRService:
                 return None, f"Unsupported file type for OCR: {file_type}"
 
         except Exception as e:
-            logger.error(f"OCR extraction failed for {file_path}: {e}")
+            logger.error(
+                "OCR extraction failed for %s: %s", sanitize_for_log(file_path), sanitize_for_log(e)
+            )
             return None, str(e)
 
     async def _extract_from_pdf(
@@ -178,7 +184,9 @@ class OCRService:
                 if page_text.strip():
                     texts.append(f"--- Page {i + 1} ---\n{page_text.strip()}")
             except Exception as e:
-                logger.warning(f"Failed to OCR page {i + 1}: {e}")
+                logger.warning(
+                    "Failed to OCR page %s: %s", sanitize_for_log(i + 1), sanitize_for_log(e)
+                )
 
         return "\n\n".join(texts) if texts else ""
 

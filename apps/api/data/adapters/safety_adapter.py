@@ -15,6 +15,8 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
+from core.security_utils import sanitize_for_log
+
 logger = logging.getLogger(__name__)
 
 
@@ -190,7 +192,7 @@ class SafetyAdapter:
             )
 
         except Exception as e:
-            logger.error(f"Error calculating safety score: {e}")
+            logger.error("Error calculating safety score: %s", sanitize_for_log(e))
             # Fallback to city-based estimate
             variation = self._calculate_neighborhood_variation(city, neighborhood)
             score = max(0, min(100, base_score + variation))
@@ -266,14 +268,14 @@ class SafetyAdapter:
                 if poi:
                     pois.append(poi)
 
-            logger.info(f"Found {len(pois)} safety POIs within {radius_m}m")
+            logger.info("Found %s safety POIs within %sm", len(pois), sanitize_for_log(radius_m))
             return pois
 
         except requests.RequestException as e:
-            logger.error(f"Overpass API request failed: {e}")
+            logger.error("Overpass API request failed: %s", sanitize_for_log(e))
             return []
         except Exception as e:
-            logger.error(f"Failed to parse safety POI data: {e}")
+            logger.error("Failed to parse safety POI data: %s", sanitize_for_log(e))
             return []
 
     def _estimate_lighting_score(self, latitude: float, longitude: float) -> Optional[float]:

@@ -15,6 +15,7 @@ from api.models import (
     SearchResultItem,
 )
 from core.circuit_breaker import ServiceDegradedError, get_breaker
+from core.security_utils import sanitize_for_log
 from data.schemas import Property
 from services.ranking_explainer import create_ranking_explainer
 from utils.sanitization import sanitize_search_query
@@ -221,7 +222,9 @@ async def search_properties(
                     )
                 )
             except Exception as e:
-                logger.warning(f"Failed to parse property from search result: {e}")
+                logger.warning(
+                    "Failed to parse property from search result: %s", sanitize_for_log(e)
+                )
                 continue
 
         response = SearchResponse(results=items, count=len(items))
@@ -238,7 +241,7 @@ async def search_properties(
         return response
 
     except Exception as e:
-        logger.error(f"Search failed: {e}")
+        logger.error("Search failed: %s", sanitize_for_log(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Search operation failed: {str(e)}",

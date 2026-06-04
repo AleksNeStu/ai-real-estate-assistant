@@ -7,6 +7,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from core.security_utils import sanitize_for_log
+
 # Load .env from project root when running from apps/api/
 _root_env = Path(__file__).resolve().parent.parent.parent.parent / ".env"
 if _root_env.exists():
@@ -278,7 +280,7 @@ async def startup_event():
             await init_db()
             logger.info("Auth Database initialized successfully.")
         except Exception as e:
-            logger.error(f"Failed to initialize Auth Database: {e}")
+            logger.error("Failed to initialize Auth Database: %s", sanitize_for_log(e))
 
     # 2. Initialize Email Service
     logger.info("Initializing Email Service...")
@@ -314,7 +316,7 @@ async def startup_event():
         app.state.scheduler = scheduler
         logger.info("Notification Scheduler started successfully.")
     except Exception as e:
-        logger.error(f"Failed to start Notification Scheduler: {e}")
+        logger.error("Failed to start Notification Scheduler: %s", sanitize_for_log(e))
 
     # 4. Initialize Uptime Monitor (optional via env)
     try:
@@ -346,7 +348,7 @@ async def startup_event():
                 "Uptime Monitor started url=%s to=%s interval=%s", health_url, to_email, interval
             )
     except Exception as e:
-        logger.error(f"Failed to start Uptime Monitor: {e}")
+        logger.error("Failed to start Uptime Monitor: %s", sanitize_for_log(e))
 
     # 5. Initialize Response Cache (TASK-017: Production Deployment Optimization)
     logger.info("Initializing Response Cache...")
@@ -363,7 +365,7 @@ async def startup_event():
         app.state.response_cache = response_cache
         logger.info("Response Cache initialized: %s", response_cache.get_stats())
     except Exception as e:
-        logger.warning(f"Failed to initialize Response Cache: {e}")
+        logger.warning("Failed to initialize Response Cache: %s", sanitize_for_log(e))
 
     # 6. Initialize Connection Pool Manager (TASK-017)
     logger.info("Initializing Connection Pool Manager...")
@@ -372,7 +374,7 @@ async def startup_event():
         app.state.pool_manager = pool_manager
         logger.info("Connection Pool Manager initialized: %s", pool_manager.get_stats())
     except Exception as e:
-        logger.warning(f"Failed to initialize Connection Pool Manager: {e}")
+        logger.warning("Failed to initialize Connection Pool Manager: %s", sanitize_for_log(e))
 
 
 @app.on_event("shutdown")
@@ -401,7 +403,7 @@ async def shutdown_event():
             mon.stop()
             logger.info("Uptime Monitor stopped.")
         except Exception as e:
-            logger.error(f"Error stopping Uptime Monitor: {e}")
+            logger.error("Error stopping Uptime Monitor: %s", sanitize_for_log(e))
 
     # Step 3: Stop Notification Scheduler
     if scheduler:
@@ -410,15 +412,18 @@ async def shutdown_event():
             scheduler.stop()
             logger.info("Notification Scheduler stopped.")
         except Exception as e:
-            logger.error(f"Error stopping Notification Scheduler: {e}")
+            logger.error("Error stopping Notification Scheduler: %s", sanitize_for_log(e))
 
     # Step 4: Wait for drain period to allow in-flight requests to complete
     if SHUTDOWN_DRAIN_SECONDS > 0:
-        logger.info(f"Waiting {SHUTDOWN_DRAIN_SECONDS}s drain period for in-flight requests...")
+        logger.info(
+            "Waiting %ss drain period for in-flight requests...",
+            sanitize_for_log(SHUTDOWN_DRAIN_SECONDS),
+        )
         try:
             await asyncio.sleep(SHUTDOWN_DRAIN_SECONDS)
         except Exception as e:
-            logger.warning(f"Drain period interrupted: {e}")
+            logger.warning("Drain period interrupted: %s", sanitize_for_log(e))
 
     # Step 5: Close vector store connection
     vector_store = getattr(app.state, "vector_store", None)
@@ -431,7 +436,7 @@ async def shutdown_event():
                 await vector_store.close()
             logger.info("Vector Store connection closed.")
         except Exception as e:
-            logger.error(f"Error closing Vector Store: {e}")
+            logger.error("Error closing Vector Store: %s", sanitize_for_log(e))
 
     # Step 6: Close rate limiter connections if using Redis
     rate_limiter = getattr(app.state, "rate_limiter", None)
@@ -445,7 +450,7 @@ async def shutdown_event():
                 ) else redis_client.close()
                 logger.info("Redis connection closed.")
             except Exception as e:
-                logger.error(f"Error closing Redis connection: {e}")
+                logger.error("Error closing Redis connection: %s", sanitize_for_log(e))
 
     # Step 7: Clear response cache (TASK-017)
     response_cache = getattr(app.state, "response_cache", None)
@@ -455,7 +460,7 @@ async def shutdown_event():
             await response_cache.clear_all()
             logger.info("Response Cache cleared.")
         except Exception as e:
-            logger.error(f"Error clearing Response Cache: {e}")
+            logger.error("Error clearing Response Cache: %s", sanitize_for_log(e))
 
     # Step 8: Close connection pools (TASK-017)
     pool_manager = getattr(app.state, "pool_manager", None)
@@ -465,10 +470,10 @@ async def shutdown_event():
             pool_manager.close_all()
             logger.info("Connection pools closed.")
         except Exception as e:
-            logger.error(f"Error closing connection pools: {e}")
+            logger.error("Error closing connection pools: %s", sanitize_for_log(e))
 
     shutdown_elapsed = asyncio.get_event_loop().time() - shutdown_start_time
-    logger.info(f"Graceful shutdown completed in {shutdown_elapsed:.2f}s")
+    logger.info("Graceful shutdown completed in %.2fs", sanitize_for_log(shutdown_elapsed))
 
 
 # CORS configuration

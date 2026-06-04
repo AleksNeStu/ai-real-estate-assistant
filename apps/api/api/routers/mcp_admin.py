@@ -26,6 +26,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
 from api.auth import get_api_key
+from core.security_utils import sanitize_for_log
 from mcp import (
     AllowlistConfig,
     AllowlistEntry,
@@ -285,7 +286,11 @@ async def add_to_allowlist(request: MCPAllowlistAddRequest):
         added_by=request.added_by,
     )
 
-    logger.info(f"Added connector '{request.name}' to allowlist via API by {request.added_by}")
+    logger.info(
+        "Added connector '%s' to allowlist via API by %s",
+        sanitize_for_log(request.name),
+        sanitize_for_log(request.added_by),
+    )
 
     return _entry_to_response(entry)
 
@@ -307,7 +312,7 @@ async def remove_from_allowlist(name: str):
             detail=f"Connector '{name}' not found in allowlist",
         )
 
-    logger.info(f"Removed connector '{name}' from allowlist via API")
+    logger.info("Removed connector '%s' from allowlist via API", sanitize_for_log(name))
 
 
 @router.get("/allowlist/violations", response_model=MCPViolationsListResponse)
@@ -626,7 +631,11 @@ async def health_check_connector(name: str):
         )
     except Exception as e:
         response_time_ms = (time.time() - start_time) * 1000
-        logger.error(f"Health check failed for connector '{name}': {e}")
+        logger.error(
+            "Health check failed for connector '%s': %s",
+            sanitize_for_log(name),
+            sanitize_for_log(e),
+        )
 
         return MCPConnectorHealthResponse(
             name=name,
@@ -656,7 +665,7 @@ async def health_check():
     try:
         health_results = await MCPConnectorRegistry.health_check_all()
     except Exception as e:
-        logger.error(f"Health check failed: {e}")
+        logger.error("Health check failed: %s", sanitize_for_log(e))
 
     # Determine overall status
     total = len(health_results)

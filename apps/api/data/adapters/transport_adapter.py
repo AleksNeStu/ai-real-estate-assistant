@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
+from core.security_utils import sanitize_for_log
 from utils.sanitization import sanitize_for_logging
 
 logger = logging.getLogger(__name__)
@@ -155,17 +156,24 @@ class TransportAdapter:
                     stops.append(stop)
 
             logger.info(
-                f"Found {len(stops)} transport stops within {radius_m}m "
-                f"of ({latitude}, {longitude})"
+                "Found %s transport stops within %sm of (%s, %s)",
+                len(stops),
+                sanitize_for_log(radius_m),
+                sanitize_for_log(latitude),
+                sanitize_for_log(longitude),
             )
 
             return stops
 
         except requests.RequestException as e:
-            logger.error(f"Overpass API request failed: {sanitize_for_logging(e)}")
+            logger.error(
+                "Overpass API request failed: %s", sanitize_for_log(sanitize_for_logging(e))
+            )
             return []
         except Exception as e:
-            logger.error(f"Failed to parse transport data: {sanitize_for_logging(e)}")
+            logger.error(
+                "Failed to parse transport data: %s", sanitize_for_log(sanitize_for_logging(e))
+            )
             return []
 
     def count_stops(

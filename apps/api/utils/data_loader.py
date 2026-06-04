@@ -4,6 +4,7 @@ from typing import Any, Callable, List, Optional
 
 import pandas as pd
 
+from core.security_utils import sanitize_for_log
 from data.csv_loader import DataLoaderCsv
 from data.schemas import PropertyCollection
 
@@ -49,7 +50,9 @@ class ParallelDataLoader:
                     if collection:
                         results.append(collection)
                 except Exception as e:
-                    logger.error(f"Error loading file {filename}: {e}")
+                    logger.error(
+                        "Error loading file %s: %s", sanitize_for_log(filename), sanitize_for_log(e)
+                    )
 
                 completed_count += 1
                 if progress_callback:
@@ -80,5 +83,5 @@ class ParallelDataLoader:
             # Convert to collection
             return PropertyCollection.from_dataframe(df_formatted, source=name)
         except Exception as e:
-            logger.error(f"Failed to process file: {e}")
+            logger.error("Failed to process file: %s", sanitize_for_log(e))
             raise e

@@ -14,6 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import get_api_key
+from core.security_utils import sanitize_for_log
 from db.database import get_db
 from db.models import RankingConfig
 from services.ranking_config_service import (
@@ -280,7 +281,11 @@ async def create_config(
             is_default=request.is_default,
         )
 
-        logger.info(f"Created ranking configuration '{config.name}' (id={config.id})")
+        logger.info(
+            "Created ranking configuration '%s' (id=%s)",
+            sanitize_for_log(config.name),
+            sanitize_for_log(config.id),
+        )
 
         return RankingConfigResponse(
             id=str(config.id),
@@ -339,7 +344,11 @@ async def update_config(
                 detail=f"Ranking configuration '{config_id}' not found",
             )
 
-        logger.info(f"Updated ranking configuration '{config.name}' (id={config.id})")
+        logger.info(
+            "Updated ranking configuration '%s' (id=%s)",
+            sanitize_for_log(config.name),
+            sanitize_for_log(config.id),
+        )
 
         return RankingConfigResponse(
             id=str(config.id),
@@ -387,7 +396,11 @@ async def activate_config(
             detail=f"Ranking configuration '{config_id}' not found",
         )
 
-    logger.info(f"Activated ranking configuration '{config.name}' (id={config.id})")
+    logger.info(
+        "Activated ranking configuration '%s' (id=%s)",
+        sanitize_for_log(config.name),
+        sanitize_for_log(config.id),
+    )
 
     return RankingConfigResponse(
         id=str(config.id),
@@ -431,7 +444,7 @@ async def delete_config(
                 detail=f"Ranking configuration '{config_id}' not found",
             )
 
-        logger.info(f"Deleted ranking configuration (id={config_id})")
+        logger.info("Deleted ranking configuration (id=%s)", sanitize_for_log(config_id))
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

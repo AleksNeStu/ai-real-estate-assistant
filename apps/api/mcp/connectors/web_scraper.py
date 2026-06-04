@@ -20,6 +20,7 @@ from urllib.parse import urlparse
 import httpx
 from bs4 import BeautifulSoup
 
+from core.security_utils import sanitize_for_log
 from mcp.base import MCPConnector
 from mcp.config import MCPConnectorConfig, MCPEdition
 from mcp.exceptions import (
@@ -188,11 +189,12 @@ class WebScraperConnector(MCPConnector[Dict[str, Any]]):
             )
             self._connected = True
             logger.info(
-                f"WebScraperConnector connected with {len(self._scraper_config.allowed_domains)} allowed domains"
+                "WebScraperConnector connected with %s allowed domains",
+                len(self._scraper_config.allowed_domains),
             )
             return True
         except Exception as e:
-            logger.error(f"Failed to initialize HTTP client: {e}")
+            logger.error("Failed to initialize HTTP client: %s", sanitize_for_log(e))
             raise MCPConnectionError(
                 f"Failed to initialize HTTP client: {e}",
                 connector_name=self.name,
@@ -294,7 +296,7 @@ class WebScraperConnector(MCPConnector[Dict[str, Any]]):
             )
         except Exception as e:
             self._error_count += 1
-            logger.exception(f"Unexpected error in {operation}")
+            logger.exception("Unexpected error in %s", sanitize_for_log(operation))
             return MCPConnectorResult.error_result(
                 errors=[f"Internal error: {e}"],
                 connector_name=self.name,
@@ -606,7 +608,11 @@ class WebScraperConnector(MCPConnector[Dict[str, Any]]):
                     retry_after = float(
                         response.headers.get("Retry-After", base_delay * (2**attempt))
                     )
-                    logger.warning(f"Rate limited by {url}, waiting {retry_after}s")
+                    logger.warning(
+                        "Rate limited by %s, waiting %ss",
+                        sanitize_for_log(url),
+                        sanitize_for_log(retry_after),
+                    )
                     await asyncio.sleep(retry_after)
                 elif response.status_code >= 500:
                     # Server error - retry with backoff
@@ -615,7 +621,11 @@ class WebScraperConnector(MCPConnector[Dict[str, Any]]):
                         connector_name=self.name,
                     )
                     delay = base_delay * (2**attempt)
-                    logger.warning(f"Server error from {url}, retrying in {delay}s")
+                    logger.warning(
+                        "Server error from %s, retrying in %ss",
+                        sanitize_for_log(url),
+                        sanitize_for_log(delay),
+                    )
                     await asyncio.sleep(delay)
                 elif response.status_code == 403:
                     # Blocked - don't retry
@@ -643,7 +653,11 @@ class WebScraperConnector(MCPConnector[Dict[str, Any]]):
                 )
                 if attempt < max_retries - 1:
                     delay = base_delay * (2**attempt)
-                    logger.warning(f"Timeout for {url}, retrying in {delay}s")
+                    logger.warning(
+                        "Timeout for %s, retrying in %ss",
+                        sanitize_for_log(url),
+                        sanitize_for_log(delay),
+                    )
                     await asyncio.sleep(delay)
             except httpx.NetworkError as e:
                 last_error = MCPConnectionError(
@@ -652,7 +666,11 @@ class WebScraperConnector(MCPConnector[Dict[str, Any]]):
                 )
                 if attempt < max_retries - 1:
                     delay = base_delay * (2**attempt)
-                    logger.warning(f"Network error for {url}, retrying in {delay}s")
+                    logger.warning(
+                        "Network error for %s, retrying in %ss",
+                        sanitize_for_log(url),
+                        sanitize_for_log(delay),
+                    )
                     await asyncio.sleep(delay)
 
         # All retries exhausted
@@ -689,7 +707,11 @@ class WebScraperConnector(MCPConnector[Dict[str, Any]]):
                     result[field_name] = [self._clean_text(el.get_text()) for el in elements]
 
             except Exception as e:
-                logger.warning(f"Failed to parse selector '{selector}': {e}")
+                logger.warning(
+                    "Failed to parse selector '%s': %s",
+                    sanitize_for_log(selector),
+                    sanitize_for_log(e),
+                )
                 result[field_name] = None
 
         return result

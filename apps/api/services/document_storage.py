@@ -12,6 +12,7 @@ from uuid import uuid4
 from fastapi import UploadFile
 
 from config.settings import settings
+from core.security_utils import sanitize_for_log
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,9 @@ class DocumentStorageService:
             storage_path or getattr(settings, "DOCUMENT_STORAGE_PATH", "uploads/documents")
         )
         self.storage_path.mkdir(parents=True, exist_ok=True)
-        logger.info(f"DocumentStorageService initialized with path: {self.storage_path}")
+        logger.info(
+            "DocumentStorageService initialized with path: %s", sanitize_for_log(self.storage_path)
+        )
 
     def _get_user_dir(self, user_id: str) -> Path:
         """Get the storage directory for a specific user.
@@ -108,7 +111,9 @@ class DocumentStorageService:
             and not file.content_type.startswith(expected_type.split("/")[0])
         ):
             logger.warning(
-                f"Content type mismatch: expected {expected_type}, got {file.content_type}"
+                "Content type mismatch: expected %s, got %s",
+                sanitize_for_log(expected_type),
+                sanitize_for_log(file.content_type),
             )
             # Don't fail on mismatch, just log
 
@@ -166,13 +171,18 @@ class DocumentStorageService:
                         )
                     f.write(chunk)
 
-            logger.info(f"Saved file {unique_filename} for user {user_id}, size: {size}")
+            logger.info(
+                "Saved file %s for user %s, size: %s",
+                sanitize_for_log(unique_filename),
+                sanitize_for_log(user_id),
+                sanitize_for_log(size),
+            )
             return str(file_path), unique_filename, size
 
         except DocumentStorageError:
             raise
         except Exception as e:
-            logger.error(f"Failed to save file: {e}")
+            logger.error("Failed to save file: %s", sanitize_for_log(e))
             raise DocumentStorageError(f"Failed to save file: {e}") from e
 
     async def read_file(self, storage_path: str) -> bytes:
@@ -198,7 +208,9 @@ class DocumentStorageService:
         except DocumentStorageError:
             raise
         except Exception as e:
-            logger.error(f"Failed to read file {storage_path}: {e}")
+            logger.error(
+                "Failed to read file %s: %s", sanitize_for_log(storage_path), sanitize_for_log(e)
+            )
             raise DocumentStorageError(f"Failed to read file: {e}") from e
 
     async def delete_file(self, storage_path: str) -> None:
@@ -214,12 +226,14 @@ class DocumentStorageService:
             path = Path(storage_path)
             if path.exists():
                 path.unlink()
-                logger.info(f"Deleted file: {storage_path}")
+                logger.info("Deleted file: %s", sanitize_for_log(storage_path))
             else:
-                logger.warning(f"File not found for deletion: {storage_path}")
+                logger.warning("File not found for deletion: %s", sanitize_for_log(storage_path))
 
         except Exception as e:
-            logger.error(f"Failed to delete file {storage_path}: {e}")
+            logger.error(
+                "Failed to delete file %s: %s", sanitize_for_log(storage_path), sanitize_for_log(e)
+            )
             raise DocumentStorageError(f"Failed to delete file: {e}") from e
 
     async def delete_user_files(self, user_id: str) -> int:
@@ -247,11 +261,13 @@ class DocumentStorageService:
 
             # Remove user directory
             user_dir.rmdir()
-            logger.info(f"Deleted {count} files for user {user_id}")
+            logger.info(
+                "Deleted %s files for user %s", sanitize_for_log(count), sanitize_for_log(user_id)
+            )
             return count
 
         except Exception as e:
-            logger.error(f"Failed to delete user files: {e}")
+            logger.error("Failed to delete user files: %s", sanitize_for_log(e))
             raise DocumentStorageError(f"Failed to delete user files: {e}") from e
 
     def get_storage_stats(self, user_id: str) -> dict:

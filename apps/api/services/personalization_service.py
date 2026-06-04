@@ -14,6 +14,7 @@ from typing import Any, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.security_utils import sanitize_for_log
 from db.models import UserPreferenceProfile
 
 logger = logging.getLogger(__name__)
@@ -338,7 +339,9 @@ class PersonalizationService:
         # 3. Compute weighted average (favorites weighted more)
         # 4. Store the result
 
-        logger.debug(f"Preference embedding calculation not implemented for {user_id}")
+        logger.debug(
+            "Preference embedding calculation not implemented for %s", sanitize_for_log(user_id)
+        )
         return None
 
     async def apply_personalization_to_results(

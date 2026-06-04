@@ -9,6 +9,7 @@ import logging
 import os
 from typing import Any, Dict, Optional
 
+from core.security_utils import sanitize_for_log
 from data.adapters.air_quality_adapter import AirQualityAdapter
 from data.enrichment.hooks import (
     EnrichmentConfig,
@@ -61,7 +62,7 @@ class AirQualityEnricher(PropertyEnrichmentHook[Optional[int]]):
             self._connected = True
             return True
         except Exception as e:
-            logger.error(f"Failed to initialize AirQualityAdapter: {e}")
+            logger.error("Failed to initialize AirQualityAdapter: %s", sanitize_for_log(e))
             self._connected = False
             return False
 
@@ -113,7 +114,7 @@ class AirQualityEnricher(PropertyEnrichmentHook[Optional[int]]):
                     error="No AQI data available",
                 )
         except Exception as e:
-            logger.error(f"Air quality enrichment failed: {e}")
+            logger.error("Air quality enrichment failed: %s", sanitize_for_log(e))
             return EnrichmentResult.error_result(
                 source=self.name,
                 enrichment_field=self.field,
@@ -139,7 +140,7 @@ class AirQualityEnricher(PropertyEnrichmentHook[Optional[int]]):
             )
             return result is not None
         except Exception as e:
-            logger.warning(f"Air quality health check failed: {e}")
+            logger.warning("Air quality health check failed: %s", sanitize_for_log(e))
             return False
 
     def get_status(self) -> Dict[str, Any]:

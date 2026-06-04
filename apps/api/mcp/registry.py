@@ -10,6 +10,7 @@ import asyncio
 import logging
 from typing import Any, Dict, List, Optional, Type
 
+from core.security_utils import sanitize_for_log
 from mcp.base import MCPConnector
 from mcp.config import MCPConnectorConfig, MCPEdition
 from mcp.exceptions import MCPConnectorNotFoundError, MCPNotAllowlistedError
@@ -48,7 +49,7 @@ class MCPConnectorRegistry:
             edition: The edition to set (COMMUNITY, PRO, ENTERPRISE)
         """
         cls._current_edition = edition
-        logger.info(f"MCP registry edition set to: {edition.value}")
+        logger.info("MCP registry edition set to: %s", sanitize_for_log(edition.value))
 
     @classmethod
     def load_allowlist_from_yaml(cls, config_path: Optional[str] = None) -> None:
@@ -72,8 +73,9 @@ class MCPConnectorRegistry:
         cls._current_edition = config.edition
 
         logger.info(
-            f"Loaded allowlist from YAML: {len(cls._allowlist)} connectors, "
-            f"edition={config.edition.value}"
+            "Loaded allowlist from YAML: %s connectors, edition=%s",
+            len(cls._allowlist),
+            sanitize_for_log(config.edition.value),
         )
 
     @classmethod
@@ -90,7 +92,7 @@ class MCPConnectorRegistry:
             connector_names: List of connector names to allowlist
         """
         cls._allowlist = set(connector_names)
-        logger.info(f"MCP allowlist updated: {len(cls._allowlist)} connectors")
+        logger.info("MCP allowlist updated: %s connectors", len(cls._allowlist))
 
     @classmethod
     def add_to_allowlist(cls, connector_name: str) -> None:
@@ -137,7 +139,10 @@ class MCPConnectorRegistry:
             raise ValueError("Connector must have a 'name' attribute")
 
         if connector_class.name in cls._connectors:
-            logger.warning(f"Connector '{connector_class.name}' already registered, overwriting")
+            logger.warning(
+                "Connector '%s' already registered, overwriting",
+                sanitize_for_log(connector_class.name),
+            )
 
         cls._connectors[connector_class.name] = connector_class
 
@@ -148,7 +153,7 @@ class MCPConnectorRegistry:
         if connector_class.allowlisted:
             cls._allowlist.add(connector_class.name)
 
-        logger.info(f"Registered MCP connector: {connector_class.name}")
+        logger.info("Registered MCP connector: %s", sanitize_for_log(connector_class.name))
 
     @classmethod
     def unregister(cls, name: str) -> None:
@@ -170,11 +175,13 @@ class MCPConnectorRegistry:
                 else:
                     loop.run_until_complete(instance.disconnect())
             except Exception as e:
-                logger.warning(f"Error disconnecting '{name}': {e}")
+                logger.warning(
+                    "Error disconnecting '%s': %s", sanitize_for_log(name), sanitize_for_log(e)
+                )
             del cls._instances[name]
         if name in cls._configs:
             del cls._configs[name]
-        logger.info(f"Unregistered MCP connector: {name}")
+        logger.info("Unregistered MCP connector: %s", sanitize_for_log(name))
 
     @classmethod
     def get_connector(
@@ -226,7 +233,11 @@ class MCPConnectorRegistry:
                 cls._instances[name] = instance
             return instance
         except Exception as e:
-            logger.error(f"Failed to instantiate connector '{name}': {e}")
+            logger.error(
+                "Failed to instantiate connector '%s': %s",
+                sanitize_for_log(name),
+                sanitize_for_log(e),
+            )
             raise
 
     @classmethod
@@ -360,7 +371,7 @@ class MCPConnectorRegistry:
         config = validator.reload_config()
         cls._allowlist = set(config.get_allowlist_names())
         cls._current_edition = config.edition
-        logger.info(f"Reloaded allowlist: {len(cls._allowlist)} connectors")
+        logger.info("Reloaded allowlist: %s connectors", len(cls._allowlist))
 
 
 def register_mcp_connector(

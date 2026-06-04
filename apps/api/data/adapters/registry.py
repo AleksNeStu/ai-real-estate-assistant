@@ -8,6 +8,7 @@ allowing dynamic registration and lookup.
 import logging
 from typing import Any, Callable, Dict, List, Optional, Type
 
+from core.security_utils import sanitize_for_log
 from data.adapters.base import ExternalSourceAdapter
 from utils.sanitization import sanitize_for_logging
 
@@ -39,10 +40,12 @@ class AdapterRegistry:
             raise ValueError("Adapter must have a 'name' attribute")
 
         if adapter_class.name in cls._adapters:
-            logger.warning(f"Adapter '{adapter_class.name}' already registered, overwriting")
+            logger.warning(
+                "Adapter '%s' already registered, overwriting", sanitize_for_log(adapter_class.name)
+            )
 
         cls._adapters[adapter_class.name] = adapter_class
-        logger.info(f"Registered adapter: {adapter_class.name}")
+        logger.info("Registered adapter: %s", sanitize_for_log(adapter_class.name))
 
     @classmethod
     def unregister(cls, name: str) -> None:
@@ -56,7 +59,7 @@ class AdapterRegistry:
             del cls._adapters[name]
         if name in cls._instances:
             del cls._instances[name]
-        logger.info(f"Unregistered adapter: {name}")
+        logger.info("Unregistered adapter: %s", sanitize_for_log(name))
 
     @classmethod
     def get_adapter(
@@ -74,7 +77,7 @@ class AdapterRegistry:
         """
         adapter_class = cls._adapters.get(name)
         if not adapter_class:
-            logger.warning(f"Adapter '{name}' not found in registry")
+            logger.warning("Adapter '%s' not found in registry", sanitize_for_log(name))
             return None
 
         # Return cached instance if available and api_key not provided
@@ -88,7 +91,9 @@ class AdapterRegistry:
             return instance
         except Exception as e:
             logger.error(
-                f"Failed to instantiate adapter '{sanitize_for_logging(name)}': {sanitize_for_logging(e)}"
+                "Failed to instantiate adapter '%s': %s",
+                sanitize_for_log(sanitize_for_logging(name)),
+                sanitize_for_log(sanitize_for_logging(e)),
             )
             return None
 

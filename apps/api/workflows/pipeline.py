@@ -11,6 +11,7 @@ from typing import Any
 from agents.dev.coding import CodingAgent
 from agents.dev.documentation import DocumentationAgent
 from agents.dev.testing import TestingAgent
+from core.security_utils import sanitize_for_log
 from rules.engine import RuleEngine
 
 logger = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ class DevPipeline:
             result = subprocess.run(["git"] + args, capture_output=True, text=True, check=True)
             return result.stdout.strip()
         except subprocess.CalledProcessError as e:
-            logger.error(f"Git command failed: {e.stderr}")
+            logger.error("Git command failed: %s", sanitize_for_log(e.stderr))
             return ""
 
     def create_feature_branch(self, description: str) -> str:
@@ -43,23 +44,23 @@ class DevPipeline:
         timestamp = uuid.uuid4().hex[:6]
         branch_name = f"feature/{slug}-{timestamp}"
 
-        logger.info(f"Creating branch: {branch_name}")
+        logger.info("Creating branch: %s", sanitize_for_log(branch_name))
         try:
             self._run_git_cmd(["checkout", "-b", branch_name])
             return branch_name
         except Exception as e:
-            logger.warning(f"Failed to create branch: {e}")
+            logger.warning("Failed to create branch: %s", sanitize_for_log(e))
             return ""
 
     def commit_changes(self, message: str) -> bool:
         """Stage and commit changes."""
-        logger.info(f"Committing changes: {message}")
+        logger.info("Committing changes: %s", sanitize_for_log(message))
         try:
             self._run_git_cmd(["add", "."])
             output = self._run_git_cmd(["commit", "-m", message])
             return "nothing to commit" not in output
         except Exception as e:
-            logger.warning(f"Failed to commit: {e}")
+            logger.warning("Failed to commit: %s", sanitize_for_log(e))
             return False
 
     def implement_feature(self, description: str, use_git: bool = False) -> dict[str, Any]:
@@ -70,7 +71,7 @@ class DevPipeline:
             description: Feature description
             use_git: Whether to create a branch and commit changes
         """
-        logger.info(f"Starting pipeline for: {description}")
+        logger.info("Starting pipeline for: %s", sanitize_for_log(description))
         steps: list[StepResult] = []
         result: dict[str, Any] = {"steps": steps, "final_output": {}, "status": "success"}
 

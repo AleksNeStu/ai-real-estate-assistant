@@ -16,6 +16,7 @@ from typing import Dict, List, Optional
 import httpx
 
 from config.settings import get_settings
+from core.security_utils import sanitize_for_log
 
 logger = logging.getLogger(__name__)
 
@@ -166,7 +167,7 @@ class CommuteTimeClient:
                 origin_lat, origin_lon, destination_lat, destination_lon, mode, departure_time
             )
             if cache_key in self._cache:
-                logger.debug(f"Cache hit for commute calculation: {cache_key}")
+                logger.debug("Cache hit for commute calculation: %s", sanitize_for_log(cache_key))
                 result = self._cache[cache_key]
                 # Update property_id and destination_name for cached results
                 result.property_id = property_id
@@ -253,10 +254,14 @@ class CommuteTimeClient:
                 return result
 
         except httpx.HTTPStatusError as e:
-            logger.error(f"Google Routes API error: {e.response.status_code} - {e.response.text}")
+            logger.error(
+                "Google Routes API error: %s - %s",
+                sanitize_for_log(e.response.status_code),
+                sanitize_for_log(e.response.text),
+            )
             raise
         except httpx.RequestError as e:
-            logger.error(f"Google Routes API request failed: {e}")
+            logger.error("Google Routes API request failed: %s", sanitize_for_log(e))
             raise
 
     async def rank_properties_by_commute(
@@ -292,7 +297,10 @@ class CommuteTimeClient:
         async def fetch_commute_time(property_id: str) -> Optional[CommuteTimeResult]:
             try:
                 if property_id not in properties_lat_lon:
-                    logger.warning(f"Property {property_id} not found in coordinates mapping")
+                    logger.warning(
+                        "Property %s not found in coordinates mapping",
+                        sanitize_for_log(property_id),
+                    )
                     return None
 
                 lat, lon = properties_lat_lon[property_id]
@@ -308,7 +316,11 @@ class CommuteTimeClient:
                         departure_time=departure_time,
                     )
             except Exception as e:
-                logger.error(f"Failed to calculate commute time for property {property_id}: {e}")
+                logger.error(
+                    "Failed to calculate commute time for property %s: %s",
+                    sanitize_for_log(property_id),
+                    sanitize_for_log(e),
+                )
                 return None
 
         # Fetch commute times concurrently
@@ -335,7 +347,7 @@ class CommuteTimeClient:
                 return int(float(duration_str[:-1]))
             return int(float(duration_str))
         except (ValueError, IndexError):
-            logger.warning(f"Could not parse duration: {duration_str}")
+            logger.warning("Could not parse duration: %s", sanitize_for_log(duration_str))
             return 0
 
     def _format_duration(self, seconds: int) -> str:

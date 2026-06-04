@@ -8,6 +8,7 @@ from langchain_core.embeddings import Embeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from config.settings import settings as app_settings
+from core.security_utils import sanitize_for_log
 
 logger = logging.getLogger(__name__)
 
@@ -18,14 +19,14 @@ def _create_embeddings() -> Optional[Embeddings]:
 
         return FastEmbedEmbeddings(model_name=app_settings.embedding_model)
     except Exception as e:
-        logger.warning(f"FastEmbed unavailable: {e}")
+        logger.warning("FastEmbed unavailable: %s", sanitize_for_log(e))
         try:
             from langchain_openai import OpenAIEmbeddings
 
             if app_settings.openai_api_key:
                 return OpenAIEmbeddings()
         except Exception as e2:
-            logger.warning(f"OpenAI embeddings unavailable: {e2}")
+            logger.warning("OpenAI embeddings unavailable: %s", sanitize_for_log(e2))
     return None
 
 

@@ -18,6 +18,8 @@ from collections import deque
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
+from core.security_utils import sanitize_for_log
+
 logger = logging.getLogger(__name__)
 
 
@@ -89,8 +91,11 @@ class MCPConnectorRateLimiter:
         )
         self._connector_configs[connector_name] = config
         logger.info(
-            f"Configured rate limit for connector '{connector_name}': "
-            f"{config.requests_per_minute} rpm, burst={config.burst_size}, enabled={config.enabled}"
+            "Configured rate limit for connector '%s': %s rpm, burst=%s, enabled=%s",
+            sanitize_for_log(connector_name),
+            sanitize_for_log(config.requests_per_minute),
+            sanitize_for_log(config.burst_size),
+            sanitize_for_log(config.enabled),
         )
 
     def remove_connector(self, connector_name: str) -> None:
@@ -103,7 +108,9 @@ class MCPConnectorRateLimiter:
         self._connector_configs.pop(connector_name, None)
         self._request_times.pop(connector_name, None)
         self._locks.pop(connector_name, None)
-        logger.info(f"Removed rate limit configuration for connector '{connector_name}'")
+        logger.info(
+            "Removed rate limit configuration for connector '%s'", sanitize_for_log(connector_name)
+        )
 
     def get_config(self, connector_name: str) -> RateLimitConfig:
         """

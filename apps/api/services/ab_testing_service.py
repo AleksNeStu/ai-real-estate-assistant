@@ -13,6 +13,7 @@ from typing import Optional
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.security_utils import sanitize_for_log
 from db.models import ABExperiment, ABExperimentAssignment, RankingConfig
 from services.ranking_config_service import RankingConfigService
 
@@ -109,8 +110,10 @@ class ABTestingService:
         await self.session.refresh(assignment)
 
         logger.debug(
-            f"Created experiment assignment: experiment={experiment.name}, "
-            f"session={session_id[:8]}..., variant={variant}"
+            "Created experiment assignment: experiment=%s, session=%s..., variant=%s",
+            sanitize_for_log(experiment.name),
+            sanitize_for_log(session_id[:8]),
+            sanitize_for_log(variant),
         )
 
         return assignment
@@ -191,7 +194,11 @@ class ABTestingService:
         await self.session.commit()
         await self.session.refresh(experiment)
 
-        logger.info(f"Started experiment '{experiment.name}' (id={experiment.id})")
+        logger.info(
+            "Started experiment '%s' (id=%s)",
+            sanitize_for_log(experiment.name),
+            sanitize_for_log(experiment.id),
+        )
         return experiment
 
     async def stop_experiment(
@@ -220,8 +227,10 @@ class ABTestingService:
         await self.session.refresh(experiment)
 
         logger.info(
-            f"Stopped experiment '{experiment.name}' (id={experiment.id})"
-            f"{f' - reason: {reason}' if reason else ''}"
+            "Stopped experiment '%s' (id=%s)%s",
+            sanitize_for_log(experiment.name),
+            sanitize_for_log(experiment.id),
+            sanitize_for_log(f" - reason: {reason}" if reason else ""),
         )
         return experiment
 

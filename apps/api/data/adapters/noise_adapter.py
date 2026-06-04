@@ -13,6 +13,8 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
+from core.security_utils import sanitize_for_log
+
 logger = logging.getLogger(__name__)
 
 
@@ -204,7 +206,7 @@ class NoiseAdapter:
             )
 
         except Exception as e:
-            logger.error(f"Failed to estimate noise level: {e}")
+            logger.error("Failed to estimate noise level: %s", sanitize_for_log(e))
             # Return default result on error
             return NoiseResult(
                 score=50.0,
@@ -357,7 +359,7 @@ class NoiseAdapter:
                 )
 
         except requests.RequestException as e:
-            logger.error(f"Failed to query roads: {e}")
+            logger.error("Failed to query roads: %s", sanitize_for_log(e))
 
         return noise_sources
 
@@ -416,7 +418,7 @@ class NoiseAdapter:
                 )
 
         except requests.RequestException as e:
-            logger.error(f"Failed to query railways: {e}")
+            logger.error("Failed to query railways: %s", sanitize_for_log(e))
 
         return noise_sources
 
@@ -471,7 +473,7 @@ class NoiseAdapter:
                 )
 
         except requests.RequestException as e:
-            logger.error(f"Failed to query airports: {e}")
+            logger.error("Failed to query airports: %s", sanitize_for_log(e))
 
         return noise_sources
 
@@ -526,7 +528,7 @@ class NoiseAdapter:
                 )
 
         except requests.RequestException as e:
-            logger.error(f"Failed to query industrial areas: {e}")
+            logger.error("Failed to query industrial areas: %s", sanitize_for_log(e))
 
         return noise_sources
 

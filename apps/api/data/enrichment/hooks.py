@@ -17,6 +17,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, Generic, Optional, TypeVar
 
+from core.security_utils import sanitize_for_log
+
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
@@ -253,7 +255,7 @@ class PropertyEnrichmentHook(ABC, Generic[T]):
         self._config = config or self._create_default_config()
         self._connected = False
         self._validate_configuration()
-        logger.info(f"Initialized enrichment hook: {self.name}")
+        logger.info("Initialized enrichment hook: %s", sanitize_for_log(self.name))
 
     def _create_default_config(self) -> EnrichmentConfig:
         """Create default configuration from class attributes."""
@@ -381,7 +383,9 @@ class PropertyEnrichmentHook(ABC, Generic[T]):
             return result
         except Exception as e:
             execution_time_ms = (time.perf_counter() - start_time) * 1000
-            logger.error(f"Enrichment failed for {self.name}: {e}")
+            logger.error(
+                "Enrichment failed for %s: %s", sanitize_for_log(self.name), sanitize_for_log(e)
+            )
             return EnrichmentResult.error_result(
                 source=self.name,
                 enrichment_field=self.field,

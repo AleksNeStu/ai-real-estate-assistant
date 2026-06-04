@@ -23,6 +23,8 @@ from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
 from langchain_core.retrievers import BaseRetriever
 
+from core.security_utils import sanitize_for_log
+
 try:
     from langchain.agents import AgentExecutor, create_openai_tools_agent
     from langchain.chains import ConversationalRetrievalChain
@@ -118,7 +120,7 @@ class HybridPropertyAgent:
         try:
             init_metrics_db()
         except Exception as e:
-            logger.warning(f"Failed to initialize metrics database: {e}")
+            logger.warning("Failed to initialize metrics database: %s", sanitize_for_log(e))
 
         # Cache for intent-specific tool agents
         self._tool_agent_cache: Dict[QueryIntent, AgentExecutor] = {}
@@ -569,7 +571,7 @@ Thought: {agent_scratchpad}"""
             )
             log_classification_metrics(metrics)
         except Exception as e:
-            logger.warning(f"Failed to log classification metrics: {e}")
+            logger.warning("Failed to log classification metrics: %s", sanitize_for_log(e))
 
     def get_sources_for_query(self, query: str, k: int = 5) -> List[Document]:
         analysis = self.analyzer.analyze(query)
@@ -597,7 +599,7 @@ Thought: {agent_scratchpad}"""
         # Check if retriever supports explicit filtering (HybridPropertyRetriever)
         if filters and hasattr(self.retriever, "search_with_filters"):
             if self.verbose:
-                logger.info(f"Using hybrid search with filters: {filters}")
+                logger.info("Using hybrid search with filters: %s", sanitize_for_log(filters))
             return cast(List[Document], self.retriever.search_with_filters(query, filters, k=k))
 
         # Fallback to standard retrieval
@@ -840,7 +842,7 @@ Thought: {agent_scratchpad}"""
                 async for chunk in self._astream_hybrid(query, analysis):
                     yield chunk
         except Exception as e:
-            logger.error(f"Streaming failed: {e}")
+            logger.error("Streaming failed: %s", sanitize_for_log(e))
             try:
                 result = self.process_query(query)
                 answer = result.get("answer", "")
@@ -848,7 +850,7 @@ Thought: {agent_scratchpad}"""
                     yield json.dumps({"content": answer})
                     return
             except Exception as fallback_error:
-                logger.error(f"Streaming fallback failed: {fallback_error}")
+                logger.error("Streaming fallback failed: %s", sanitize_for_log(fallback_error))
             yield json.dumps({"error": str(e)})
 
     async def _astream_with_rag(self, query: str, analysis: QueryAnalysis) -> AsyncIterator[str]:
@@ -881,7 +883,7 @@ Thought: {agent_scratchpad}"""
                     )
                     input_text = f"{query}\n\nRelevant properties:\n{context_text}"
             except Exception as e:
-                logger.warning(f"Retrieval failed in stream: {e}")
+                logger.warning("Retrieval failed in stream: %s", sanitize_for_log(e))
 
         async for event in self.tool_agent.astream_events({"input": input_text}, version="v1"):
             kind = event["event"]

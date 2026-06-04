@@ -15,6 +15,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional, TypedDict
 
+from core.security_utils import sanitize_for_log
+
 logger = logging.getLogger(__name__)
 
 
@@ -114,7 +116,11 @@ class MCPAuditRetention:
                 if date_str < cutoff_str:
                     expired.append(log_file)
             except Exception as e:
-                logger.warning(f"Failed to parse date from {log_file}: {e}")
+                logger.warning(
+                    "Failed to parse date from %s: %s",
+                    sanitize_for_log(log_file),
+                    sanitize_for_log(e),
+                )
 
         return expired
 
@@ -144,7 +150,7 @@ class MCPAuditRetention:
 
                 if not dry_run:
                     log_file.unlink()
-                    logger.info(f"Removed expired MCP audit log: {log_file}")
+                    logger.info("Removed expired MCP audit log: %s", sanitize_for_log(log_file))
                     result["files_removed"] += 1
 
                 result["bytes_freed"] += file_size
@@ -219,13 +225,13 @@ class MCPAuditRetention:
                     logger.info("Running scheduled MCP audit log cleanup")
                     try:
                         result = self.cleanup()
-                        logger.info(f"Cleanup completed: {result}")
+                        logger.info("Cleanup completed: %s", sanitize_for_log(result))
                     except Exception as e:
-                        logger.error(f"Scheduled cleanup failed: {e}")
+                        logger.error("Scheduled cleanup failed: %s", sanitize_for_log(e))
 
         self._cleanup_thread = threading.Thread(target=cleanup_loop, daemon=True)
         self._cleanup_thread.start()
-        logger.info(f"Started scheduled cleanup (interval: {interval_hours}h)")
+        logger.info("Started scheduled cleanup (interval: %sh)", sanitize_for_log(interval_hours))
 
     def stop_scheduled_cleanup(self) -> None:
         """Stop the scheduled cleanup thread."""

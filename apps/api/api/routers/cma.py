@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from analytics.comparable_selector import ComparableSelector
 from api.dependencies import get_vector_store
 from api.deps.auth import get_current_active_user
+from core.security_utils import sanitize_for_log
 from data.schemas import Property, PropertyCollection
 from db.database import get_db
 from db.models import User
@@ -376,7 +377,7 @@ async def generate_cma_report(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"CMA report generation failed: {e}", exc_info=True)
+        logger.error("CMA report generation failed: %s", sanitize_for_log(e), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Report generation failed: {str(e)}",
@@ -496,7 +497,7 @@ async def download_cma_pdf(
             detail="PDF generation not yet implemented",
         ) from None
     except Exception as e:
-        logger.error(f"PDF generation failed: {e}", exc_info=True)
+        logger.error("PDF generation failed: %s", sanitize_for_log(e), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"PDF generation failed: {str(e)}",

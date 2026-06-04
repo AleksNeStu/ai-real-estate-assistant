@@ -38,6 +38,7 @@ from core.jwt import (
 )
 from core.lockout import AccountLockoutService
 from core.password import hash_password, needs_rehash, verify_password
+from core.security_utils import sanitize_for_log
 from db.database import get_db
 from db.models import User
 from db.repositories import (
@@ -612,7 +613,9 @@ async def resend_verification(
     settings = get_settings()
     if settings.environment.lower() == "development":
         logger.info(
-            f"Verification token generated for {email} (prefix: {verification_token[:4]}...)"
+            "Verification token generated for %s (prefix: %s...)",
+            sanitize_for_log(email),
+            sanitize_for_log(verification_token[:4]),
         )
 
     # Send email using email service
@@ -677,7 +680,11 @@ async def forgot_password(
     # Send reset email
     settings = get_settings()
     if settings.environment.lower() == "development":
-        logger.info(f"Password reset token generated for {email} (prefix: {reset_token[:4]}...)")
+        logger.info(
+            "Password reset token generated for %s (prefix: %s...)",
+            sanitize_for_log(email),
+            sanitize_for_log(reset_token[:4]),
+        )
 
     # Send email using email service
     email_service = get_email_service()
@@ -1088,7 +1095,7 @@ async def apple_oauth_start(
             with open(settings.apple_private_key_path, "r") as f:
                 private_key = f.read()
         except Exception as e:
-            logger.error(f"Failed to read Apple private key: {e}")
+            logger.error("Failed to read Apple private key: %s", sanitize_for_log(e))
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Apple Sign-In private key not found",

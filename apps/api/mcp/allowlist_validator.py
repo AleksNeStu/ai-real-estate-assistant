@@ -20,6 +20,7 @@ from typing import Any, Dict, List, Optional
 
 import yaml  # type: ignore[import-untyped]
 
+from core.security_utils import sanitize_for_log
 from mcp.config import MCPEdition
 from mcp.exceptions import MCPConfigError
 
@@ -168,7 +169,9 @@ class AllowlistValidator:
             MCPConfigError: If YAML parsing fails
         """
         if not self.config_path.exists():
-            logger.warning(f"Allowlist config not found: {self.config_path}, using defaults")
+            logger.warning(
+                "Allowlist config not found: %s, using defaults", sanitize_for_log(self.config_path)
+            )
             return self._get_default_config()
 
         try:
@@ -176,7 +179,7 @@ class AllowlistValidator:
                 data = yaml.safe_load(f)
 
             if not data:
-                logger.warning(f"Empty allowlist config: {self.config_path}")
+                logger.warning("Empty allowlist config: %s", sanitize_for_log(self.config_path))
                 return self._get_default_config()
 
             # Parse edition
@@ -184,7 +187,9 @@ class AllowlistValidator:
             try:
                 edition = MCPEdition(edition_str)
             except ValueError:
-                logger.warning(f"Invalid edition '{edition_str}', defaulting to community")
+                logger.warning(
+                    "Invalid edition '%s', defaulting to community", sanitize_for_log(edition_str)
+                )
                 edition = MCPEdition.COMMUNITY
 
             # Parse allowlist entries
@@ -202,15 +207,21 @@ class AllowlistValidator:
             )
 
             logger.info(
-                f"Loaded allowlist config: {len(allowlist)} allowed, {len(restricted)} restricted"
+                "Loaded allowlist config: %s allowed, %s restricted",
+                len(allowlist),
+                len(restricted),
             )
             return self._config
 
         except yaml.YAMLError as e:
-            logger.error(f"YAML parsing error in {self.config_path}: {e}")
+            logger.error(
+                "YAML parsing error in %s: %s",
+                sanitize_for_log(self.config_path),
+                sanitize_for_log(e),
+            )
             raise MCPConfigError(f"Invalid YAML in allowlist config: {e}") from e
         except Exception as e:
-            logger.error(f"Failed to load allowlist config: {e}")
+            logger.error("Failed to load allowlist config: %s", sanitize_for_log(e))
             raise MCPConfigError(f"Failed to load allowlist config: {e}") from e
 
     def _parse_entries(
@@ -220,12 +231,16 @@ class AllowlistValidator:
         entries = []
         for entry_data in entries_data:
             if not isinstance(entry_data, dict):
-                logger.warning(f"Invalid entry in {source}: {entry_data}")
+                logger.warning(
+                    "Invalid entry in %s: %s",
+                    sanitize_for_log(source),
+                    sanitize_for_log(entry_data),
+                )
                 continue
 
             name = entry_data.get("name")
             if not name:
-                logger.warning(f"Entry missing 'name' in {source}")
+                logger.warning("Entry missing 'name' in %s", sanitize_for_log(source))
                 continue
 
             edition_str = entry_data.get("edition", "community")
@@ -317,7 +332,9 @@ class AllowlistValidator:
         # In non-CE editions, all connectors are accessible
         if current_edition != MCPEdition.COMMUNITY:
             logger.debug(
-                f"Connector '{name}' accessible in {current_edition.value} edition (non-CE)"
+                "Connector '%s' accessible in %s edition (non-CE)",
+                sanitize_for_log(name),
+                sanitize_for_log(current_edition.value),
             )
             return True
 
@@ -325,19 +342,21 @@ class AllowlistValidator:
         if config.is_allowlisted(name):
             entry = config.get_entry(name)
             if entry and entry.enabled:
-                logger.debug(f"Connector '{name}' is allowlisted and enabled")
+                logger.debug("Connector '%s' is allowlisted and enabled", sanitize_for_log(name))
                 return True
 
         # Check if restricted
         restricted_entry = config.get_restricted_entry(name)
         if restricted_entry:
             logger.debug(
-                f"Connector '{name}' is restricted (requires {restricted_entry.edition.value})"
+                "Connector '%s' is restricted (requires %s)",
+                sanitize_for_log(name),
+                sanitize_for_log(restricted_entry.edition.value),
             )
             return False
 
         # Not in any list - default deny in CE
-        logger.debug(f"Connector '{name}' not found in allowlist for CE")
+        logger.debug("Connector '%s' not found in allowlist for CE", sanitize_for_log(name))
         return False
 
     def log_violation(
@@ -364,9 +383,10 @@ class AllowlistValidator:
         self._violations.append(violation)
 
         logger.warning(
-            f"Allowlist violation: connector '{connector_name}' "
-            f"not accessible in {self.config.edition.value} edition "
-            f"(operation: {operation})"
+            "Allowlist violation: connector '%s' not accessible in %s edition (operation: %s)",
+            sanitize_for_log(connector_name),
+            sanitize_for_log(self.config.edition.value),
+            sanitize_for_log(operation),
         )
 
     def get_violations(self) -> List[Dict[str, Any]]:
@@ -408,7 +428,7 @@ class AllowlistValidator:
         # Check if already exists
         existing = self._config.get_entry(name)
         if existing:
-            logger.info(f"Connector '{name}' already in allowlist, updating")
+            logger.info("Connector '%s' already in allowlist, updating", sanitize_for_log(name))
             existing.display_name = display_name
             existing.description = description
             existing.edition = edition
@@ -425,7 +445,11 @@ class AllowlistValidator:
             added_at=datetime.utcnow(),
         )
         self._config.allowlist.append(entry)
-        logger.info(f"Added connector '{name}' to allowlist by {added_by}")
+        logger.info(
+            "Added connector '%s' to allowlist by %s",
+            sanitize_for_log(name),
+            sanitize_for_log(added_by),
+        )
         return entry
 
     def remove_connector(self, name: str) -> bool:
@@ -446,9 +470,9 @@ class AllowlistValidator:
         removed = len(self._config.allowlist) < original_count
 
         if removed:
-            logger.info(f"Removed connector '{name}' from allowlist")
+            logger.info("Removed connector '%s' from allowlist", sanitize_for_log(name))
         else:
-            logger.debug(f"Connector '{name}' not found in allowlist")
+            logger.debug("Connector '%s' not found in allowlist", sanitize_for_log(name))
 
         return removed
 

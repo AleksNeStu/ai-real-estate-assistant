@@ -13,6 +13,7 @@ from typing import Any, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.security_utils import sanitize_for_log
 from db.models import Lead, LeadInteraction
 from db.repositories import LeadInteractionRepository, LeadRepository
 
@@ -93,8 +94,11 @@ class LeadTrackingService:
 
         query_preview = search_query[:50] if search_query else None
         logger.debug(
-            f"Tracked interaction: lead={lead.id}, type={interaction_type}, "
-            f"property={property_id}, query={query_preview}"
+            "Tracked interaction: lead=%s, type=%s, property=%s, query=%s",
+            sanitize_for_log(lead.id),
+            sanitize_for_log(interaction_type),
+            sanitize_for_log(property_id),
+            sanitize_for_log(query_preview),
         )
 
         return interaction
@@ -151,7 +155,11 @@ class LeadTrackingService:
             consent_given=consent_given,
         )
 
-        logger.info(f"Created new lead: visitor_id={visitor_id}, source={source}")
+        logger.info(
+            "Created new lead: visitor_id=%s, source=%s",
+            sanitize_for_log(visitor_id),
+            sanitize_for_log(source),
+        )
         return lead, True
 
     async def link_visitor_to_user(
@@ -180,7 +188,7 @@ class LeadTrackingService:
                 user_id=user_id,
                 email=email,
             )
-            logger.info(f"Created lead for new user: user_id={user_id}")
+            logger.info("Created lead for new user: user_id=%s", sanitize_for_log(user_id))
         else:
             # Link existing lead to user
             await self.lead_repo.link_to_user(lead, user_id)
@@ -188,7 +196,7 @@ class LeadTrackingService:
                 lead.email = email
                 await self.session.flush()
             log_msg = f"Linked visitor to user: visitor_id={visitor_id}"
-            logger.info(f"{log_msg}, user_id={user_id}")
+            logger.info("%s, user_id=%s", sanitize_for_log(log_msg), sanitize_for_log(user_id))
 
         return lead
 
@@ -278,7 +286,9 @@ class LeadTrackingService:
                 },
             )
 
-        logger.info(f"Updated lead {lead_id} status to {status}")
+        logger.info(
+            "Updated lead %s status to %s", sanitize_for_log(lead_id), sanitize_for_log(status)
+        )
         return lead
 
     async def get_lead_by_visitor(self, visitor_id: str) -> Optional[Lead]:
@@ -334,7 +344,9 @@ class LeadTrackingService:
         # Cascade delete will remove all interactions, scores, assignments
         await self.lead_repo.delete(lead)
 
-        logger.info(f"Deleted lead and all associated data: visitor_id={visitor_id}")
+        logger.info(
+            "Deleted lead and all associated data: visitor_id=%s", sanitize_for_log(visitor_id)
+        )
         return True
 
     async def get_recent_activity(

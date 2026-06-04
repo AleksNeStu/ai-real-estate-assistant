@@ -18,6 +18,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
+from core.security_utils import sanitize_for_log
 from data.enrichment.hooks import EnrichmentResult, EnrichmentStatus
 
 logger = logging.getLogger(__name__)
@@ -281,14 +282,23 @@ class FallbackHandler:
             key = f"{source}:{field}"
             self._failure_counts[key] += 1
 
-        logger.warning(f"Using fallback for {source}:{field} - error: {error}")
+        logger.warning(
+            "Using fallback for %s:%s - error: %s",
+            sanitize_for_log(source),
+            sanitize_for_log(field),
+            sanitize_for_log(error),
+        )
 
         # Try custom handler first
         if field in self._custom_handlers:
             try:
                 return self._custom_handlers[field]()
             except Exception as e:
-                logger.error(f"Custom fallback handler failed for {field}: {e}")
+                logger.error(
+                    "Custom fallback handler failed for %s: %s",
+                    sanitize_for_log(field),
+                    sanitize_for_log(e),
+                )
 
         # Use default fallback
         if field in self._default_fallbacks:

@@ -14,6 +14,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, cast
 
 from analytics import MarketInsights
+from core.security_utils import sanitize_for_log
 from data.schemas import PropertyCollection
 from notifications.alert_manager import Alert, AlertManager, AlertType
 from notifications.digest_generator import DigestGenerator
@@ -143,7 +144,7 @@ class NotificationScheduler:
             stats["anomaly_alerts"] = anomaly_stats.get("alerts_sent", 0)
 
         except Exception as e:
-            logger.error(f"Scheduler run error: {e}")
+            logger.error("Scheduler run error: %s", sanitize_for_log(e))
             errors.append(str(e))
 
         return {"stats": stats, "errors": errors}
@@ -217,7 +218,11 @@ class NotificationScheduler:
                     self._history.mark_sent(record.id)
 
             except Exception as e:
-                logger.error(f"Error sending digest to {prefs.user_email}: {e}")
+                logger.error(
+                    "Error sending digest to %s: %s",
+                    sanitize_for_log(prefs.user_email),
+                    sanitize_for_log(e),
+                )
 
         return sent_count
 
@@ -493,7 +498,7 @@ class NotificationScheduler:
             finally:
                 loop.close()
         except Exception as e:
-            logger.error(f"Price snapshot capture failed: {e}")
+            logger.error("Price snapshot capture failed: %s", sanitize_for_log(e))
             return {"captured": 0, "error": str(e)}
 
     async def _capture_price_snapshots_async(self, now: datetime) -> Dict[str, Any]:
@@ -513,13 +518,14 @@ class NotificationScheduler:
             stats = await service.capture_all_property_prices(source="scheduled")
 
             logger.info(
-                f"Captured {stats.get('captured', 0)} price snapshots "
-                f"(skipped: {stats.get('skipped', 0)})"
+                "Captured %s price snapshots (skipped: %s)",
+                sanitize_for_log(stats.get("captured", 0)),
+                sanitize_for_log(stats.get("skipped", 0)),
             )
             return stats
 
         except Exception as e:
-            logger.error(f"Price snapshot async capture failed: {e}")
+            logger.error("Price snapshot async capture failed: %s", sanitize_for_log(e))
             return {"captured": 0, "error": str(e)}
 
     # -------------------------------------------------------------------------
@@ -556,7 +562,7 @@ class NotificationScheduler:
             finally:
                 loop.close()
         except Exception as e:
-            logger.error(f"Anomaly detection failed: {e}")
+            logger.error("Anomaly detection failed: %s", sanitize_for_log(e))
             return {"alerts_sent": 0, "error": str(e)}
 
     async def _run_anomaly_detection_async(self, now: datetime) -> Dict[str, Any]:
@@ -596,14 +602,14 @@ class NotificationScheduler:
                 stats = await service.run_daily_analysis()
 
                 logger.info(
-                    f"Anomaly detection complete: "
-                    f"{stats.get('total_anomalies', 0)} anomalies found, "
-                    f"{stats.get('alerts_sent', 0)} alerts sent"
+                    "Anomaly detection complete: %s anomalies found, %s alerts sent",
+                    sanitize_for_log(stats.get("total_anomalies", 0)),
+                    sanitize_for_log(stats.get("alerts_sent", 0)),
                 )
                 return stats
 
         except Exception as e:
-            logger.error(f"Anomaly detection async failed: {e}")
+            logger.error("Anomaly detection async failed: %s", sanitize_for_log(e))
             return {"alerts_sent": 0, "error": str(e)}
 
     # -------------------------------------------------------------------------
@@ -621,7 +627,7 @@ class NotificationScheduler:
             search: SavedSearch Pydantic model
         """
         self._search_manager.save_search(search)
-        logger.debug(f"Synced search to scheduler: {search.id}")
+        logger.debug("Synced search to scheduler: %s", sanitize_for_log(search.id))
 
     def remove_search(self, search_id: str) -> bool:
         """
@@ -637,7 +643,7 @@ class NotificationScheduler:
         """
         result = self._search_manager.delete_search(search_id)
         if result:
-            logger.debug(f"Removed search from scheduler: {search_id}")
+            logger.debug("Removed search from scheduler: %s", sanitize_for_log(search_id))
         return result
 
     def get_search(self, search_id: str) -> Optional[SavedSearch]:

@@ -9,6 +9,7 @@ Task #38: Price History & Trends
 import logging
 from typing import Any, Dict, List, Optional
 
+from core.security_utils import sanitize_for_log
 from db.database import get_db_context
 from db.repositories import PriceSnapshotRepository
 from utils.property_cache import load_collection
@@ -101,8 +102,10 @@ class PriceSnapshotService:
                         stats["errors"].append(error_msg)
 
             logger.info(
-                f"Price snapshot complete: {stats['captured']} captured, "
-                f"{stats['skipped']} skipped, {stats['properties_checked']} checked"
+                "Price snapshot complete: %s captured, %s skipped, %s checked",
+                sanitize_for_log(stats["captured"]),
+                sanitize_for_log(stats["skipped"]),
+                sanitize_for_log(stats["properties_checked"]),
             )
 
         except Exception as e:
@@ -157,7 +160,7 @@ class PriceSnapshotService:
             repo = PriceSnapshotRepository(session)
             count = await repo.cleanup_old_snapshots(days_to_keep)
             if count > 0:
-                logger.info(f"Cleaned up {count} old price snapshots")
+                logger.info("Cleaned up %s old price snapshots", sanitize_for_log(count))
             return count
 
 

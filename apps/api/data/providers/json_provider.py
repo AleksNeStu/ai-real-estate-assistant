@@ -6,6 +6,7 @@ from typing import Any, List
 import pandas as pd
 import requests
 
+from core.security_utils import sanitize_for_log
 from data.providers.base import BaseDataProvider
 from data.schemas import Property
 
@@ -87,7 +88,7 @@ class JSONDataProvider(BaseDataProvider):
                 prop = Property(**item)
                 properties.append(prop)
             except Exception as e:
-                logger.warning(f"Skipping invalid property item: {e}")
+                logger.warning("Skipping invalid property item: %s", sanitize_for_log(e))
                 continue
 
         return properties

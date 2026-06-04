@@ -19,6 +19,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
+from core.security_utils import sanitize_for_log
+
 logger = logging.getLogger(__name__)
 
 
@@ -188,7 +190,7 @@ class EnrichmentCache:
             self._redis_client.ping()
             logger.info("EnrichmentCache connected to Redis")
         except Exception as e:
-            logger.warning(f"Failed to connect to Redis: {e}")
+            logger.warning("Failed to connect to Redis: %s", sanitize_for_log(e))
             self._redis_client = None
             if self._fallback_enabled:
                 self._fallback_cache = InMemoryEnrichmentCache()
@@ -228,7 +230,7 @@ class EnrichmentCache:
                         # Delete expired entry
                         self._redis_client.delete(key)
             except Exception as e:
-                logger.warning(f"Redis get failed: {e}")
+                logger.warning("Redis get failed: %s", sanitize_for_log(e))
 
         # Fall back to in-memory
         if self._fallback_cache:
@@ -279,7 +281,7 @@ class EnrichmentCache:
                 )
                 return True
             except Exception as e:
-                logger.warning(f"Redis set failed: {e}")
+                logger.warning("Redis set failed: %s", sanitize_for_log(e))
 
         # Fall back to in-memory
         if self._fallback_cache:
@@ -312,7 +314,7 @@ class EnrichmentCache:
             try:
                 deleted = bool(self._redis_client.delete(key))
             except Exception as e:
-                logger.warning(f"Redis delete failed: {e}")
+                logger.warning("Redis delete failed: %s", sanitize_for_log(e))
 
         if self._fallback_cache:
             deleted = self._fallback_cache.delete(key) or deleted
@@ -338,7 +340,7 @@ class EnrichmentCache:
                 if keys:
                     count = self._redis_client.delete(*keys)
             except Exception as e:
-                logger.warning(f"Redis invalidate failed: {e}")
+                logger.warning("Redis invalidate failed: %s", sanitize_for_log(e))
 
         # For in-memory cache, we need to iterate
         if self._fallback_cache:
@@ -360,7 +362,7 @@ class EnrichmentCache:
                 if keys:
                     self._redis_client.delete(*keys)
             except Exception as e:
-                logger.warning(f"Redis clear failed: {e}")
+                logger.warning("Redis clear failed: %s", sanitize_for_log(e))
 
         if self._fallback_cache:
             self._fallback_cache.clear()

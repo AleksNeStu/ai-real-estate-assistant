@@ -17,6 +17,7 @@ from typing import Any, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.security_utils import sanitize_for_log
 from db.models import Lead, LeadScore
 from db.repositories import (
     AgentAssignmentRepository,
@@ -387,7 +388,7 @@ class LeadScoringService:
         """
         lead = await self.lead_repo.get_by_id(lead_id)
         if not lead:
-            logger.warning(f"Lead not found: {lead_id}")
+            logger.warning("Lead not found: %s", sanitize_for_log(lead_id))
             return None
 
         # Calculate score breakdown
@@ -409,10 +410,12 @@ class LeadScoringService:
         await self.lead_repo.update_score(lead, breakdown.total_score)
 
         logger.info(
-            f"Scored lead {lead_id}: {breakdown.total_score} "
-            f"(search={breakdown.search_activity_score}, "
-            f"engagement={breakdown.engagement_score}, "
-            f"intent={breakdown.intent_score})"
+            "Scored lead %s: %s (search=%s, engagement=%s, intent=%s)",
+            sanitize_for_log(lead_id),
+            sanitize_for_log(breakdown.total_score),
+            sanitize_for_log(breakdown.search_activity_score),
+            sanitize_for_log(breakdown.engagement_score),
+            sanitize_for_log(breakdown.intent_score),
         )
 
         return score_record
@@ -455,7 +458,9 @@ class LeadScoringService:
                 else:
                     results["skipped"] += 1
             except Exception as e:
-                logger.error(f"Failed to score lead {lead_id}: {e}")
+                logger.error(
+                    "Failed to score lead %s: %s", sanitize_for_log(lead_id), sanitize_for_log(e)
+                )
                 results["failed"] += 1
                 results["errors"].append(f"{lead_id}: {str(e)}")
 

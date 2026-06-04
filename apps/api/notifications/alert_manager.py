@@ -16,6 +16,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Set, cast
 
+from core.security_utils import sanitize_for_log
 from data.schemas import Property, PropertyCollection
 from notifications.email_service import EmailService
 from notifications.email_templates import DigestTemplate
@@ -92,7 +93,11 @@ class AlertManager:
         """
         self._pending_alerts.append(self._normalize_alert_for_storage(alert))
         self._save_pending_alerts()
-        logger.info(f"Queued alert {alert.alert_type} for {alert.user_email}")
+        logger.info(
+            "Queued alert %s for %s",
+            sanitize_for_log(alert.alert_type),
+            sanitize_for_log(alert.user_email),
+        )
 
     def list_pending_alerts(self) -> List[Alert]:
         return self._load_pending_alerts()
@@ -156,7 +161,7 @@ class AlertManager:
                 else:
                     remaining_alerts.append(alert)
             except Exception as e:
-                logger.error(f"Error processing pending alert: {e}")
+                logger.error("Error processing pending alert: %s", sanitize_for_log(e))
                 remaining_alerts.append(alert)
 
         self._pending_alerts = remaining_alerts
@@ -244,7 +249,7 @@ class AlertManager:
                     alerts.append(Alert(**a_data))
                 return alerts
         except Exception as e:
-            logger.error(f"Error loading pending alerts: {e}")
+            logger.error("Error loading pending alerts: %s", sanitize_for_log(e))
             return []
 
     def _save_pending_alerts(self):
@@ -270,7 +275,7 @@ class AlertManager:
                     default=str,
                 )
         except Exception as e:
-            logger.error(f"Error saving pending alerts: {e}")
+            logger.error("Error saving pending alerts: %s", sanitize_for_log(e))
 
     def check_price_drops(
         self,
@@ -506,7 +511,11 @@ class AlertManager:
             data = digest_generator.generate_digest(user_prefs, saved_searches, digest_type)
             return self.send_digest(user_email, digest_type, data, send_email)
         except Exception as e:
-            logger.error(f"Error processing digest for {user_email}: {e}")
+            logger.error(
+                "Error processing digest for %s: %s",
+                sanitize_for_log(user_email),
+                sanitize_for_log(e),
+            )
             return False
 
     def send_digest(

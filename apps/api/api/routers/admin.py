@@ -27,6 +27,7 @@ from api.models import (
     ReindexResponse,
 )
 from config.settings import settings
+from core.security_utils import sanitize_for_log
 from data.csv_loader import DataLoaderCsv, DataLoaderExcel
 from data.excel_loader import ExcelDataLoader
 from data.schemas import Property, PropertyCollection
@@ -145,12 +146,13 @@ async def ingest_data(request: IngestRequest, http_request: Request):
                         )
 
                 all_properties.extend(props)
-                logger.info(f"Loaded {len(props)} properties from {url}")
+                logger.info("Loaded %s properties from %s", len(props), sanitize_for_log(url))
 
                 # Stop if we've reached the limit
                 if len(all_properties) >= max_properties:
                     logger.warning(
-                        f"Reached maximum property limit ({max_properties}), stopping ingestion"
+                        "Reached maximum property limit (%s), stopping ingestion",
+                        sanitize_for_log(max_properties),
                     )
                     break
             except Exception as e:
@@ -192,7 +194,7 @@ async def ingest_data(request: IngestRequest, http_request: Request):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ingestion failed: {e}")
+        logger.error("Ingestion failed: %s", sanitize_for_log(e))
         raise HTTPException(status_code=500, detail=str(e)) from e
     finally:
         await _invalidate_response_cache(http_request)
@@ -217,7 +219,9 @@ async def get_excel_sheets(request: ExcelSheetsRequest):
                 df = sheet_loader.load()
                 row_counts[sheet] = len(df)
             except Exception as e:
-                logger.warning(f"Could not read sheet '{sheet}': {e}")
+                logger.warning(
+                    "Could not read sheet '%s': %s", sanitize_for_log(sheet), sanitize_for_log(e)
+                )
                 row_counts[sheet] = 0
 
         # Determine default sheet (first non-empty sheet)
@@ -241,7 +245,7 @@ async def get_excel_sheets(request: ExcelSheetsRequest):
             detail=f"Excel libraries not available: {str(e)}",
         ) from e
     except Exception as e:
-        logger.error(f"Failed to get Excel sheets: {e}")
+        logger.error("Failed to get Excel sheets: %s", sanitize_for_log(e))
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
@@ -291,7 +295,9 @@ async def get_excel_sheets_upload(
                 df = sheet_loader.load()
                 row_counts[sheet] = len(df)
             except Exception as e:
-                logger.warning(f"Could not read sheet '{sheet}': {e}")
+                logger.warning(
+                    "Could not read sheet '%s': %s", sanitize_for_log(sheet), sanitize_for_log(e)
+                )
                 row_counts[sheet] = 0
 
         # Determine default sheet (first non-empty sheet)
@@ -315,7 +321,7 @@ async def get_excel_sheets_upload(
             detail=f"Excel libraries not available: {str(e)}",
         ) from e
     except Exception as e:
-        logger.error(f"Failed to get Excel sheets from upload: {e}")
+        logger.error("Failed to get Excel sheets from upload: %s", sanitize_for_log(e))
         raise HTTPException(status_code=500, detail=str(e)) from e
     finally:
         # Clean up temp file
@@ -436,7 +442,7 @@ async def ingest_file_upload(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Upload ingestion failed: {e}")
+        logger.error("Upload ingestion failed: %s", sanitize_for_log(e))
         raise HTTPException(status_code=500, detail=str(e)) from e
     finally:
         # Clean up temp file
@@ -476,7 +482,7 @@ async def reindex_data(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Reindexing failed: {e}")
+        logger.error("Reindexing failed: %s", sanitize_for_log(e))
         raise HTTPException(status_code=500, detail=str(e)) from e
     finally:
         await _invalidate_response_cache(http_request)
@@ -531,7 +537,7 @@ async def admin_metrics(request: Request):
             "version": settings.version,
         }
     except Exception as e:
-        logger.error(f"Metrics retrieval failed: {e}")
+        logger.error("Metrics retrieval failed: %s", sanitize_for_log(e))
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
@@ -688,7 +694,7 @@ async def list_portals():
             count=len([info for info in adapters_info if info is not None]),
         )
     except Exception as e:
-        logger.error(f"Failed to list portals: {e}")
+        logger.error("Failed to list portals: %s", sanitize_for_log(e))
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
@@ -760,7 +766,9 @@ async def fetch_from_portal(request: PortalFiltersRequest, http_request: Request
 
                 # Stop if we've reached the limit
                 if len(all_properties) >= max_properties:
-                    logger.warning(f"Reached maximum property limit ({max_properties})")
+                    logger.warning(
+                        "Reached maximum property limit (%s)", sanitize_for_log(max_properties)
+                    )
                     break
             except Exception as e:
                 record_id = record.get("id", record.get("title", "unknown"))
@@ -814,7 +822,7 @@ async def fetch_from_portal(request: PortalFiltersRequest, http_request: Request
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Portal fetch failed: {e}")
+        logger.error("Portal fetch failed: %s", sanitize_for_log(e))
         raise HTTPException(status_code=500, detail=str(e)) from e
     finally:
         await _invalidate_response_cache(http_request)

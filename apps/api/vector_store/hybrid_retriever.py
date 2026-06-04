@@ -15,6 +15,8 @@ from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
 
+from core.security_utils import sanitize_for_log
+
 from .chroma_store import ChromaPropertyStore
 from .reranker import StrategicReranker
 
@@ -173,7 +175,7 @@ class HybridPropertyRetriever(BaseRetriever):
                 )
                 results = [doc for doc, score in reranked]
             except Exception as e:
-                logger.warning(f"Reranking failed: {e}")
+                logger.warning("Reranking failed: %s", sanitize_for_log(e))
 
         return results[: self.k]
 
@@ -382,7 +384,7 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
                 results = [doc for doc, score in reranked]
                 # No need to update initial_scores as we are done with scoring
             except Exception as e:
-                logger.warning(f"Reranking failed: {e}")
+                logger.warning("Reranking failed: %s", sanitize_for_log(e))
 
         if self.sort_by:
             results = self._sort_results(results)

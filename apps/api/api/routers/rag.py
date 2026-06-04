@@ -12,6 +12,7 @@ from langchain_core.language_models import BaseChatModel
 from api.dependencies import get_knowledge_store, get_rag_qa_llm_details, parse_rag_qa_request
 from api.models import RagQaRequest, RagQaResponse, RagResetResponse
 from config.settings import get_settings
+from core.security_utils import sanitize_for_log
 from services.citation_service import CitationService
 from utils.document_text_extractor import (
     DocumentTextExtractionError,
@@ -332,7 +333,11 @@ async def rag_qa(
 
             except Exception as e:
                 stream_metrics.record_error()
-                logger.error(f"RAG stream error (request_id={request_id}): {e}")
+                logger.error(
+                    "RAG stream error (request_id=%s): %s",
+                    sanitize_for_log(request_id),
+                    sanitize_for_log(e),
+                )
                 error_payload = {"error": str(e), "request_id": request_id}
                 yield "event: error\n"
                 yield f"data: {json.dumps(error_payload)}\n\n"

@@ -11,6 +11,7 @@ from typing import List, Optional
 import pandas as pd
 import requests
 
+from core.security_utils import sanitize_for_log
 from data.providers.base import BaseDataProvider
 from data.schemas import Property
 
@@ -48,7 +49,7 @@ class APIProvider(BaseDataProvider):
                 403,
             ]  # 401/403 means reachable but auth failed
         except requests.RequestException:
-            logger.error(f"Failed to connect to API: {self.source}")
+            logger.error("Failed to connect to API: %s", sanitize_for_log(self.source))
             return False
 
     def load_data(self) -> pd.DataFrame:
@@ -68,7 +69,7 @@ class APIProvider(BaseDataProvider):
             # Here we assume the API returns a list of dicts compatible with our schema
             return pd.DataFrame(data)
         except Exception as e:
-            logger.error(f"Error loading data from API: {e}")
+            logger.error("Error loading data from API: %s", sanitize_for_log(e))
             return pd.DataFrame()
 
     def get_properties(self) -> List[Property]:
@@ -86,7 +87,7 @@ class APIProvider(BaseDataProvider):
                 prop = Property(**data)
                 properties.append(prop)
             except Exception as e:
-                logger.warning(f"Skipping invalid property row: {e}")
+                logger.warning("Skipping invalid property row: %s", sanitize_for_log(e))
         return properties
 
 

@@ -12,6 +12,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, Optional
 
 from analytics.anomaly_detector import AnomalyDetector
+from core.security_utils import sanitize_for_log
 from db.repositories import AnomalyRepository, PriceSnapshotRepository
 from db.schemas import (
     AnomalyListResponse,
@@ -69,10 +70,10 @@ class AnomalyService:
                 alerts_sent = await self._send_anomaly_alerts(all_anomalies)
                 results["alerts_sent"] = alerts_sent
 
-            logger.info(f"Daily analysis complete: {results}")
+            logger.info("Daily analysis complete: %s", sanitize_for_log(results))
 
         except Exception as e:
-            logger.error(f"Error in daily analysis: {e}")
+            logger.error("Error in daily analysis: %s", sanitize_for_log(e))
             results["errors"].append(str(e))
 
         return results
@@ -181,7 +182,11 @@ class AnomalyService:
                 await self.anomaly_repo.mark_alert_sent(anomaly_id)
                 alerts_sent += 1
             except Exception as e:
-                logger.error(f"Error sending alert for anomaly {anomaly.get('id', '?')}: {e}")
+                logger.error(
+                    "Error sending alert for anomaly %s: %s",
+                    sanitize_for_log(anomaly.get("id", "?")),
+                    sanitize_for_log(e),
+                )
 
         return alerts_sent
 
@@ -238,7 +243,9 @@ class AnomalyService:
             await self.anomaly_repo.dismiss(anomaly_id, dismissed_by)
             return True
         except Exception as e:
-            logger.error(f"Error dismissing anomaly {anomaly_id}: {e}")
+            logger.error(
+                "Error dismissing anomaly %s: %s", sanitize_for_log(anomaly_id), sanitize_for_log(e)
+            )
             return False
 
     async def get_anomaly_stats(self) -> dict[str, Any]:

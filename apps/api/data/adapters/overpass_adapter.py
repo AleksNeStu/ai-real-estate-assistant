@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
+from core.security_utils import sanitize_for_log
 from data.adapters.base import (
     ExternalSourceAdapter,
     PortalFetchResult,
@@ -100,7 +101,11 @@ class OverpassAdapter(ExternalSourceAdapter):
                 "osm_elements_count": len(data.get("elements", [])),
             }
 
-            logger.info(f"Fetched {len(properties)} properties from Overpass for {filters.city}")
+            logger.info(
+                "Fetched %s properties from Overpass for %s",
+                len(properties),
+                sanitize_for_log(filters.city),
+            )
 
         except requests.RequestException as e:
             result.add_error(f"Overpass API request failed: {str(e)}")
@@ -173,7 +178,11 @@ class OverpassAdapter(ExternalSourceAdapter):
                 properties.append(prop)
 
             except Exception as e:
-                logger.warning(f"Failed to parse OSM element {element.get('id')}: {e}")
+                logger.warning(
+                    "Failed to parse OSM element %s: %s",
+                    sanitize_for_log(element.get("id")),
+                    sanitize_for_log(e),
+                )
                 continue
 
         return properties

@@ -17,6 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.deps.auth import get_current_active_user
+from core.security_utils import sanitize_for_log
 from db.database import get_db
 from db.models import Deal, User
 from db.schemas import (
@@ -360,7 +361,9 @@ async def create_deal(
     await session.flush()
     await session.refresh(deal)
 
-    logger.info(f"Deal created: {deal.id} by agent {user.id}")
+    logger.info(
+        "Deal created: %s by agent %s", sanitize_for_log(deal.id), sanitize_for_log(user.id)
+    )
 
     return _deal_to_response(deal)
 
@@ -507,7 +510,7 @@ async def update_deal(
     await session.flush()
     await session.refresh(deal)
 
-    logger.info(f"Deal updated: {deal.id} by user {user.id}")
+    logger.info("Deal updated: %s by user %s", sanitize_for_log(deal.id), sanitize_for_log(user.id))
 
     return _deal_to_response(deal)
 
