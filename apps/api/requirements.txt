@@ -1,5 +1,5 @@
 pandas>=2.2.3
-numpy>=2.1.0,<2.5.0
+numpy>=2.1.0,<2.6.0
 # pyarrow: pinned to >=23.0.1 to address CVE-2026-25087 / GHSA-rgxp-2hwp-jwgg
 # (use-after-free in Apache Arrow C++ IPC file pre-buffering). The Python
 # bindings don't expose the vulnerable C++ API, but the lower bound keeps
