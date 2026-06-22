@@ -65,7 +65,7 @@
     "jest-axe": "^10.0.0",
     "jest-environment-jsdom": "^30.4.1",
     "jest-resolve": "^30.4.1",
-    "prettier": "^3.8.3",
+    "prettier": "^3.8.4",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^6"
