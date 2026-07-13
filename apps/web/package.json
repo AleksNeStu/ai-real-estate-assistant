@@ -31,7 +31,7 @@
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.0",
     "leaflet": "^1.9.4",
-    "lucide-react": "^1.17.0",
+    "lucide-react": "^1.24.0",
     "mapbox-gl": "^3.24.0",
     "next": "16.2.7",
     "next-intl": "^4.13.0",
