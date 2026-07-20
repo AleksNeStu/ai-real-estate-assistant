@@ -34,6 +34,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
+  themeColor: '#2563eb',
 };
 
 export function generateStaticParams() {
@@ -110,7 +111,6 @@ export async function generateMetadata({
       follow: true,
     },
     manifest: '/manifest.json',
-    themeColor: '#2563eb',
     appleWebApp: {
       capable: true,
       statusBarStyle: 'default',
