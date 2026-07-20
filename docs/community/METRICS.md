@@ -87,6 +87,47 @@ Reports are stored at: `docs/community/reports/YYYY-MM.md`
 - Monthly reports at `docs/community/reports/YYYY-MM.md`
 - No external analytics services required (GitHub-native)
 
+## Automated Star-Growth Metrics
+
+The `star-history.yml` workflow runs daily and publishes current growth data to the `star-history` orphan branch.
+
+### Data Location
+
+| File | Description |
+|------|-------------|
+| `assets/my-star-history/growth-metrics.json` | Current star-growth metrics (published on `star-history` branch) |
+| `docs/community/metrics/latest.json` | **Immutable legacy snapshot** from 2026-05-04 — historical reference only |
+
+### growth-metrics.json Schema
+
+```json
+{
+  "collected_at": "2026-07-20T12:00:00+00:00",
+  "repository": "AleksNeStu/ai-real-estate-assistant",
+  "total_stars": 284,
+  "new_stars_1d": 2,
+  "new_stars_7d": 5,
+  "new_stars_30d": 23,
+  "traffic_available": true,
+  "traffic_error": null,
+  "views_14d": 1200,
+  "unique_visitors_14d": 450,
+  "referrers": [
+    { "referrer": "github.com", "count": 800, "uniques": 300 }
+  ]
+}
+```
+
+### GitHub Traffic Data Limitations
+
+**Important:** GitHub traffic endpoints (`/traffic/views`, `/traffic/popular/referrers`) have specific constraints:
+
+1. **Rolling 14-day window**: Traffic data covers only the last 14 days. Historical trends cannot be reconstructed from a single snapshot.
+2. **Domain-level attribution**: Referrer data identifies source domains only (e.g., `github.com`, `google.com`). Individual pages or UTM parameters are not exposed.
+3. **Campaign correlation**: GitHub does not provide campaign attribution. Correlating traffic spikes to specific posts, shares, or events requires external tracking (e.g., UTM parameters on outgoing links).
+4. **Traffic errors**: 403/404/429 responses are expected for some configurations and are handled gracefully — `traffic_available` will be `false` and `traffic_error` will contain the error message.
+
+
 ## Automation Opportunities
 
 Future improvements (contributions welcome):

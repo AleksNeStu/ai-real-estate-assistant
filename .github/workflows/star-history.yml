@@ -1,0 +1,86 @@
+name: Star History
+
+# Regenerates a self-hosted star-history chart as static SVGs on an orphan
+# branch, referenced by README.md.
+#
+# Auth model (2026-07-14+):
+# In July 2026 GitHub restricted the stargazers listing endpoint to admins
+# and collaborators only. That broke two previous approaches:
+#   1. The hosted star-history.com embed (api.star-billion.com 503s for
+#      non-collaborator repos).
+#   2. The auto-provided GITHUB_TOKEN used by this workflow (the bot is
+#      neither admin nor collaborator, so the API now returns 403).
+# Fix: read the API token from the `GH_STAR_TOKEN` secret — a Personal
+# Access Token owned by an admin/collaborator. Recommended options:
+#   - Classic PAT with `public_repo` scope (broad read on public repos;
+#     covers the stargazers endpoint out of the box).
+#   - Fine-grained PAT scoped to this repo only with `Contents: Read`
+#     (fine-grained PATs do NOT expose a "Starring" permission, but
+#     `Contents: Read` is the closest scoped equivalent that admits the
+#     stargazers listing request in practice).
+# GITHUB_TOKEN is still used for the git push step because it carries
+# `contents: write` for the orphan branch.
+
+on:
+  schedule:
+    - cron: '17 3 * * *' # daily ~03:17 UTC (off-round minute)
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/star-history.yml'
+  workflow_dispatch: # manual first run creates the orphan branch
+
+permissions:
+  contents: write # required to push the star-history orphan branch
+
+concurrency:
+  group: star-history
+  cancel-in-progress: true
+
+jobs:
+  star-history:
+    if: github.repository_owner == 'AleksNeStu'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: .github/scripts/requirements.txt
+
+      - name: Install render deps
+        run: python -m pip install -r .github/scripts/requirements.txt
+
+      - name: Run growth metrics unit tests
+        run: python -m unittest discover -s .github/scripts/tests -p "test_render_star_history.py" -v
+
+      - name: Render star-history SVG (light + dark)
+        env:
+          # PAT required: see header comment. Auto GITHUB_TOKEN was blocked
+          # by GitHub's July-2026 admin/collaborator-only restriction on
+          # the stargazers listing endpoint.
+          GH_STAR_TOKEN: ${{ secrets.GH_STAR_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          OUT_DIR: assets/my-star-history
+        run: python .github/scripts/render_star_history.py
+
+      - name: Commit & push to star-history orphan branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch --orphan star-history
+          git add assets/my-star-history/
+          if git diff --cached --quiet; then
+            echo "no changes to commit"
+            exit 0
+          fi
+          git commit -m "chore(star-history): refresh SVG (light + dark) [skip ci]"
+          git push --force https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git star-history
