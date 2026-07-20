@@ -19,9 +19,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   for (const locale of routing.locales) {
     for (const path of PUBLIC_PATHS) {
-      const normalizedPath = path === '' ? '' : path;
       entries.push({
-        url: absoluteUrl(`/${locale}${normalizedPath}`),
+        url: absoluteUrl(`/${locale}${path}`),
         changeFrequency: path === '' ? 'daily' : 'weekly',
         priority: path === '' ? 1.0 : path === '/search' ? 0.9 : 0.7,
       });
