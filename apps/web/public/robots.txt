@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ai-real-estate.example.com/sitemap.xml
+Sitemap: https://realestate-web-dz1y.onrender.com/sitemap.xml
 
 # Private areas
 Disallow: /api/

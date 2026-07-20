@@ -1,7 +1,6 @@
 import { MetadataRoute } from 'next';
-
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ai-real-estate.example.com';
-const LOCALES = ['en', 'pl', 'ru'];
+import { routing } from '@/i18n/routing';
+import { absoluteUrl } from '@/lib/site';
 
 const PUBLIC_PATHS = [
   '', // homepage
@@ -12,16 +11,17 @@ const PUBLIC_PATHS = [
   '/agents',
   '/tools',
   '/knowledge',
+  '/valuation',
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const entries: MetadataRoute.Sitemap = [];
 
-  for (const locale of LOCALES) {
+  for (const locale of routing.locales) {
     for (const path of PUBLIC_PATHS) {
+      const normalizedPath = path === '' ? '' : path;
       entries.push({
-        url: `${BASE_URL}/${locale}${path}`,
-        lastModified: new Date(),
+        url: absoluteUrl(`/${locale}${normalizedPath}`),
         changeFrequency: path === '' ? 'daily' : 'weekly',
         priority: path === '' ? 1.0 : path === '/search' ? 0.9 : 0.7,
       });
