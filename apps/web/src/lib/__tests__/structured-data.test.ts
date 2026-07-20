@@ -102,4 +102,13 @@ describe('buildStructuredData', () => {
     const canonicalUrls = graph.map((item) => item['@id'] as string);
     expect(canonicalUrls).not.toContain('https://propvectorai.com');
   });
+
+  it('WebSite.inLanguage reflects the locale parameter', () => {
+    const locale = 'pl' as const;
+    const result = buildStructuredData(locale);
+    const graph = result['@graph'] as Record<string, unknown>[];
+    const site = graph.find((item) => item['@type'] === 'WebSite') as Record<string, unknown>;
+    expect(site).toBeDefined();
+    expect(site.inLanguage).toBe('pl');
+  });
 });

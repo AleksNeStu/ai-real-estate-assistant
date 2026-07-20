@@ -14,9 +14,9 @@ import { SITE_URL } from './site';
  *   MIT license (free / price "0"), GitHub source, 9 supported languages,
  *   and PropVector AI as a sameAs related link — NOT the canonical app URL.
  *
- * @param locale — the current locale (unused in v1; reserved for i18n expansion)
+ * @param locale — the current locale (BCP-47 two-letter tag)
  */
-export function buildStructuredData(_locale: Locale): Record<string, unknown> {
+export function buildStructuredData(locale: Locale): Record<string, unknown> {
   const origin = SITE_URL.origin;
   const githubUrl = 'https://github.com/AleksNeStu/ai-real-estate-assistant';
   const propVectorUrl = 'https://propvectorai.com';
@@ -54,7 +54,7 @@ export function buildStructuredData(_locale: Locale): Record<string, unknown> {
         '@id': siteId,
         name: 'AI Real Estate Assistant',
         url: liveDemoUrl,
-        inLanguage: 'en',
+        inLanguage: locale,
         isAccessibleForFree: true,
         keywords: 'real estate,property search,AI,chatbot,conversational AI',
       },

@@ -44,4 +44,4 @@ MIT License — https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/
 
 ## Hosted Version
 
-PropVector AI (https://propvectorai.com) is the hosted version of this project — the same core RAG and vector-search engine, with managed tiers for live data, accounts, AI CRM, and enterprise capabilities. The repository stays open-core; the core engine remains free, while commercial features gate revenue in the hosted product.
+PropVector AI (https://propvectorai.com) is a hosted SaaS tier built on this open-source codebase, with managed tiers for live data, accounts, AI CRM, and enterprise capabilities. The repository stays open-core; the core engine remains free, while commercial features gate revenue in the hosted product.
