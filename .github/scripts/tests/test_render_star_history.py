@@ -7,14 +7,14 @@ Run:
 import unittest
 import sys
 import importlib.util
+from pathlib import Path
 from datetime import datetime, timezone
 from unittest.mock import patch, MagicMock
 
-# Load the module
-spec = importlib.util.spec_from_file_location(
-    "render_star_history",
-    "E:/repo/repo-alex/ai-real-estate-assistant/.claude/worktrees/agent-a2b5252c2a1baaaed/.github/scripts/render_star_history.py"
-)
+# Load the module - use relative path from test file to sibling script
+test_dir = Path(__file__).parent
+script_path = test_dir.parent / "render_star_history.py"
+spec = importlib.util.spec_from_file_location("render_star_history", script_path)
 render_star_history = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(render_star_history)
 
