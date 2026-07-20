@@ -13,6 +13,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import type { Locale } from '@/i18n/config';
 import { routing } from '@/i18n/routing';
 import { SITE_URL, absoluteUrl } from '@/lib/site';
+import { buildStructuredData } from '@/lib/structured-data';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -155,25 +156,15 @@ export default async function LocaleLayout({
   // Providing all messages to the client
   const messages = await getMessages();
 
+  const structuredData = buildStructuredData(locale as Locale);
+
   return (
     <html lang={locale} className="dark" suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'WebApplication',
-              name: 'AI Real Estate Assistant',
-              description: 'Next-gen real estate search and analytics',
-              applicationCategory: 'BusinessApplication',
-              operatingSystem: 'Web',
-              offers: {
-                '@type': 'Offer',
-                price: '0',
-                priceCurrency: 'EUR',
-              },
-            }),
+            __html: JSON.stringify(structuredData),
           }}
         />
         <script

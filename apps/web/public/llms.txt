@@ -1,0 +1,47 @@
+# AI Real Estate Assistant
+
+> Open-source conversational AI platform for property search, analytics, and market insights. Ask in natural language — "2-bedroom apartment in Kraków under 500k" — and get matched listings. Built with FastAPI, Next.js, and ChromaDB. MIT-licensed, free to self-host.
+
+## Capabilities
+
+- Conversational property search with natural language queries
+- AI-powered chat interface for property discovery
+- Financial tools: mortgage calculator, rent-vs-buy comparison, ROI analysis, TCO calculator
+- Interactive maps with clustered property markers and area analytics
+- Comparative Market Analysis (CMA) reports
+- AI property valuation with multi-year price forecast
+- 9 supported languages: English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, Ukrainian
+
+## Tech Stack
+
+- **Backend:** FastAPI (Python 3.12+)
+- **Frontend:** Next.js 16 + React 19
+- **Vector Database:** ChromaDB with MMR reranking
+- **LLM Providers:** OpenAI, Anthropic, Google, Grok, DeepSeek, local Ollama
+- **Database:** PostgreSQL / SQLite
+- **Container:** Docker / Docker Compose
+
+## Live Demo and Quick Start
+
+- **Live Demo:** https://realestate-web-dz1y.onrender.com/
+- **5-Minute Quickstart:** https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/development/QUICKSTART_5MIN.md
+
+## Documentation
+
+- **API Reference:** https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/api/API_REFERENCE.md
+- **Architecture Overview:** https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/architecture/large-saas-overview.md
+- **Contributing Guide:** https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/development/CONTRIBUTING.md
+- **Security Policy:** https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/security/SECURITY.md
+- **Changelog:** https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/CHANGELOG.md
+
+## License
+
+MIT License — https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/LICENSE
+
+## Source Repository
+
+- **GitHub:** https://github.com/AleksNeStu/ai-real-estate-assistant
+
+## Hosted Version
+
+PropVector AI (https://propvectorai.com) is the hosted version of this project — the same core RAG and vector-search engine, with managed tiers for live data, accounts, AI CRM, and enterprise capabilities. The repository stays open-core; the core engine remains free, while commercial features gate revenue in the hosted product.
