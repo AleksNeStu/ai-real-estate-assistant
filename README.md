@@ -12,12 +12,14 @@
 [![CI](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Live Demo](https://img.shields.io/badge/Demo-Live-success?style=flat&logo=render)](https://realestate-web-dz1y.onrender.com/)
+[![Hosted Soon: PropVector AI](https://img.shields.io/badge/Hosted_Soon-PropVector_AI-6f42c1?style=flat)](https://propvectorai.com?utm_source=github&utm_medium=readme&utm_campaign=hosted-badge)
 [![Latest Release](https://img.shields.io/github/v/release/AleksNeStu/ai-real-estate-assistant?style=flat&color=2ea44f)](https://github.com/AleksNeStu/ai-real-estate-assistant/releases)
 
 <!-- markdownlint-disable MD051 -->
 ## 📑 Table of Contents
 
 - [Live Demo](#-live-demo)
+- [Hosted Version](#hosted-version-propvector-ai)
 - [Features](#-features)
 - [Project Growth](#-project-growth)
 - [Releases](#-releases)
@@ -52,6 +54,35 @@ Experience the full power of AI-driven real estate search without any setup:
 - 🌍 **9 Languages** — English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, and Ukrainian
 
 > **Note:** The demo uses simulated AI responses for instant exploration. Production deployment requires API keys.
+
+<!-- HOSTED-FUNNEL-START -->
+## Hosted Version: PropVector AI
+
+PropVector AI is the hosted version of this project — the same core RAG
+and vector-search engine, with managed tiers for live data, accounts,
+AI CRM, and enterprise capabilities. The repo stays open-core: the core
+engine remains free, anything that gates revenue lives in the hosted product.
+
+| Capability | OSS (this repo) | Hosted (PropVector AI) |
+|---|---|---|
+| Core RAG property Q&A, demo dataset | Free | Included |
+| Bring-your-own LLM keys, local Ollama | Free | Included |
+| Vector search (ChromaDB) on sample data | Free | Included |
+| Live/MLS data feeds, enrichment pipeline | Not included | Pro |
+| Accounts, favorites, saved searches, alerts | Not included | Pro |
+| AI CRM (lead scoring, drip, pipeline) | Not included | Pro/Enterprise |
+| Multi-agent Agentic OS | Limited | Pro |
+| CRM connectors (HubSpot/Pipedrive), SSO, MFA | Not included | Enterprise |
+| White-label / self-host support contract | Not included | Enterprise (custom) |
+
+**Free $0** · **Pro $29/mo** · **Enterprise (custom)** — tiers reflect
+the public roadmap and may adjust before launch.
+
+[PropVector AI](https://propvectorai.com) is launching soon; the landing
+page ships alongside billing. The fastest way to reach the maintainer
+today is to [open a Discussion](https://github.com/AleksNeStu/ai-real-estate-assistant/discussions)
+with the `[Commercial]` prefix.
+<!-- HOSTED-FUNNEL-END -->
 
 ## 🆕 What's new in v5.1
 
