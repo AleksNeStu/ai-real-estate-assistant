@@ -108,8 +108,14 @@ export async function generateMetadata({
       description: descriptions[locale as Locale] || descriptions.en,
     },
     robots: {
-      index: true,
-      follow: true,
+      index: false,
+      follow: false,
+      nocache: true,
+      googleBot: {
+        index: false,
+        follow: false,
+        noimageindex: true,
+      },
     },
     manifest: '/manifest.json',
     appleWebApp: {
