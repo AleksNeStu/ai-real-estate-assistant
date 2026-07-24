@@ -184,7 +184,7 @@ def fetch_stargazers(repo: str, token: str, api_base: str = API_BASE) -> list:
         stargazers(first: $first, after: $after, orderBy: {field: STARRED_AT, direction: ASC}) {
           totalCount
           pageInfo { hasNextPage endCursor }
-          edges { node { ... on User { login } starredAt } }
+          edges { starredAt node { ... on User { login } } }
         }
       }
       rateLimit { remaining resetAt }
@@ -232,7 +232,10 @@ def fetch_stargazers(repo: str, token: str, api_base: str = API_BASE) -> list:
 
         stargazers = repo_data.get("stargazers") or {}
         for edge in stargazers.get("edges") or []:
-            starred_at = (edge.get("node") or {}).get("starredAt")
+            # GitHub GraphQL: starredAt is a field on the StargazerEdge
+            # connection wrapper itself, NOT on the User node. Path is
+            # edges[*].starredAt — confirmed live against api.github.com/graphql.
+            starred_at = edge.get("starredAt")
             if not starred_at:
                 continue
             dt = datetime.fromisoformat(starred_at.replace("Z", "+00:00"))
