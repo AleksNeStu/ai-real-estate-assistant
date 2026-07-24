@@ -132,6 +132,33 @@ concurrency:
 **Environment Variables Required:**
 - `RENDER_SERVICE_ID_API` - Backend service ID
 - `RENDER_SERVICE_ID_WEB` - Frontend service ID
+
+### GitHub Deployment Status: staging = "Active"
+
+The `deploy-backend` and `deploy-frontend` jobs both post a deployment
+status to the same `staging` environment in parallel. By default GitHub
+treats new success statuses on a non-production environment as
+`auto_inactive=true`, which cross-inactivates the other in-flight
+deployment record and can leave the **newest** record marked `inactive`
+even when the deploy itself succeeded (Render received the code, the
+service is healthy). The repo Environments tab then reads **Inactive**
+until the next deploy run.
+
+To avoid this, both `Mark backend deployment success` and
+`Mark frontend deployment success` steps pass `-F auto_inactive=false`
+when the target environment is `staging`. Production is left at the
+default behaviour (`auto_inactive=true`) so a new prod deploy correctly
+supersedes the prior active one.
+
+Verification after a deploy run:
+
+```bash
+DID=$(gh api repos/AleksNeStu/ai-real-estate-assistant/deployments?environment=staging\&per_page=1 --jq '.[0].id')
+gh api repos/AleksNeStu/ai-real-estate-assistant/deployments/$DID/statuses?per_page=1 --jq '.[0].state'
+# Expected: "success" (not "inactive")
+```
+
+See commit `fc11bdd` for the implementation.
 - `RENDER_API_KEY` - Render.com API key
 
 **Manual Deployment:**
