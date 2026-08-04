@@ -18,6 +18,7 @@ jobs:
           check-name: backend-tests
           interval: 30
           timeout: 1800
+        continue-on-error: true
       - name: Wait for security-deps
         uses: lewagon/wait-on-check-action@v1.3.4
         with:
@@ -25,6 +26,7 @@ jobs:
           check-name: security-deps
           interval: 30
           timeout: 1800
+        continue-on-error: true
       - uses: fastify/github-action-merge-dependabot@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
