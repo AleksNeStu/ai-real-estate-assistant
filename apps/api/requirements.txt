@@ -58,7 +58,7 @@ pre-commit>=4.3.0
 detect-secrets>=1.5.0
 bandit>=1.7.6
 pip-audit>=2.7.3
-cryptography>=43.0.0
+cryptography>=50.0.0
 
 # Utilities
 requests>=2.34.2
