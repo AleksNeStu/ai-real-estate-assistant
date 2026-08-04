@@ -280,7 +280,7 @@ jobs:
   codeql-python:
     runs-on: ubuntu-latest
     if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
-    needs: [security-deps]
+    needs: [backend-lint]
     timeout-minutes: 30
     permissions:
       security-events: write
@@ -300,15 +300,12 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
-        with:
-          category: '/language:python'
-          upload: true
         continue-on-error: true
 
   codeql-javascript:
     runs-on: ubuntu-latest
     if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
-    needs: [security-deps]
+    needs: [backend-lint]
     timeout-minutes: 30
     permissions:
       security-events: write
@@ -328,9 +325,6 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
-        with:
-          category: '/language:javascript-typescript'
-          upload: true
         continue-on-error: true
 
   container-scan:
