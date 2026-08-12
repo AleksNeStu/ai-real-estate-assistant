@@ -1,10 +1,16 @@
 import json
+import os
 from typing import Any, Optional
 
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field, PrivateAttr
 
-from utils.web_fetch import duckduckgo_html_search, fetch_url_text, searxng_search
+from utils.web_fetch import (
+    duckduckgo_html_search,
+    fetch_url_text,
+    searxng_search,
+    serpbase_search,
+)
 
 
 class WebSearchInput(BaseModel):
@@ -20,11 +26,13 @@ class WebSearchTool(BaseTool):
     )
 
     _searxng_url: Optional[str] = PrivateAttr()
+    _serpbase_api_key: Optional[str] = PrivateAttr()
     _timeout_seconds: float = PrivateAttr()
 
     def __init__(self, searxng_url: Optional[str], timeout_seconds: float, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._searxng_url = searxng_url.strip() if searxng_url else None
+        self._serpbase_api_key = os.environ.get("SERPBASE_API_KEY", "").strip() or None
         self._timeout_seconds = float(timeout_seconds)
 
     def _run(self, query: str, max_results: int = 5) -> str:
@@ -33,6 +41,14 @@ class WebSearchTool(BaseTool):
         if self._searxng_url:
             results = searxng_search(
                 searxng_url=self._searxng_url,
+                query=query,
+                max_results=int(max_results),
+                timeout_seconds=self._timeout_seconds,
+            )
+        if not results and self._serpbase_api_key:
+            provider = "serpbase"
+            results = serpbase_search(
+                api_key=self._serpbase_api_key,
                 query=query,
                 max_results=int(max_results),
                 timeout_seconds=self._timeout_seconds,

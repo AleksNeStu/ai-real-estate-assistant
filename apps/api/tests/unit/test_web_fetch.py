@@ -11,6 +11,7 @@ Tests cover:
 - fetch_url_text (safe URL, content types, max bytes, errors)
 - searxng_search (HTML parsing, result extraction, errors)
 - duckduckgo_html_search (HTML parsing, result extraction, errors)
+- serpbase_search (JSON parsing, result extraction, errors)
 """
 
 import ipaddress
@@ -28,6 +29,7 @@ from utils.web_fetch import (
     duckduckgo_html_search,
     fetch_url_text,
     searxng_search,
+    serpbase_search,
 )
 
 # ===========================================================================
@@ -891,3 +893,162 @@ class TestDuckduckgoHtmlSearch:
 
         call_kwargs = mock_get.call_args
         assert "Mozilla/5.0" in call_kwargs[1]["headers"]["User-Agent"]
+
+
+# ===========================================================================
+# Test: serpbase_search
+# ===========================================================================
+
+
+class TestSerpbaseSearch:
+    """Tests for SerpBase REST API result parsing."""
+
+    def test_parses_organic_results(self):
+        """Parses JSON organic_results into WebSearchResult objects."""
+        payload = {
+            "organic_results": [
+                {
+                    "title": "Example Page 1",
+                    "link": "https://example.com/page1",
+                    "snippet": "Snippet for page 1",
+                    "position": 1,
+                },
+                {
+                    "title": "Example Page 2",
+                    "link": "https://example.com/page2",
+                    "snippet": "Snippet for page 2",
+                    "position": 2,
+                },
+            ]
+        }
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = payload
+
+        with patch("utils.web_fetch.requests.get", return_value=mock_resp):
+            results = serpbase_search(
+                api_key="test-key",
+                query="test query",
+                max_results=10,
+                timeout_seconds=5,
+            )
+
+        assert len(results) == 2
+        assert isinstance(results[0], WebSearchResult)
+        assert results[0].title == "Example Page 1"
+        assert results[0].url == "https://example.com/page1"
+        assert results[0].snippet == "Snippet for page 1"
+        assert results[1].title == "Example Page 2"
+
+    def test_limits_max_results(self):
+        """Respects max_results parameter."""
+        payload = {
+            "organic_results": [
+                {
+                    "title": f"Title {i}",
+                    "link": f"https://example.com/{i}",
+                    "snippet": f"Snippet {i}",
+                }
+                for i in range(5)
+            ]
+        }
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = payload
+
+        with patch("utils.web_fetch.requests.get", return_value=mock_resp):
+            results = serpbase_search(
+                api_key="test-key",
+                query="test",
+                max_results=3,
+                timeout_seconds=5,
+            )
+
+        assert len(results) == 3
+        assert results[0].url == "https://example.com/0"
+
+    def test_skips_entries_without_link(self):
+        """Drops organic results that have no usable link."""
+        payload = {
+            "organic_results": [
+                {"title": "No link", "link": "", "snippet": "x"},
+                {"title": "Valid", "link": "https://example.com/ok", "snippet": "y"},
+            ]
+        }
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = payload
+
+        with patch("utils.web_fetch.requests.get", return_value=mock_resp):
+            results = serpbase_search(
+                api_key="test-key",
+                query="test",
+                max_results=10,
+                timeout_seconds=5,
+            )
+
+        assert len(results) == 1
+        assert results[0].url == "https://example.com/ok"
+
+    def test_returns_empty_on_non_200(self):
+        """Non-200 responses produce an empty list, not an exception."""
+        mock_resp = MagicMock()
+        mock_resp.status_code = 401
+
+        with patch("utils.web_fetch.requests.get", return_value=mock_resp):
+            results = serpbase_search(
+                api_key="bad-key",
+                query="test",
+                max_results=10,
+                timeout_seconds=5,
+            )
+
+        assert results == []
+
+    def test_returns_empty_on_exception(self):
+        """Network errors produce an empty list, not an exception."""
+        with patch("utils.web_fetch.requests.get", side_effect=Exception("boom")):
+            results = serpbase_search(
+                api_key="test-key",
+                query="test",
+                max_results=10,
+                timeout_seconds=5,
+            )
+
+        assert results == []
+
+    def test_returns_empty_without_api_key(self):
+        """An empty API key is a no-op (graceful degradation)."""
+        results = serpbase_search(
+            api_key="",
+            query="test",
+            max_results=10,
+            timeout_seconds=5,
+        )
+
+        assert results == []
+
+    def test_sends_expected_params(self):
+        """Sends query, api_key, and num to the SerpBase endpoint."""
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"organic_results": []}
+
+        with patch("utils.web_fetch.requests.get", return_value=mock_resp) as mock_get:
+            serpbase_search(
+                api_key="test-key",
+                query="test query",
+                max_results=7,
+                timeout_seconds=5,
+            )
+
+        call_kwargs = mock_get.call_args
+        assert call_kwargs[0][0] == "https://api.serpbase.dev/google/search"
+        assert call_kwargs[1]["params"] == {
+            "q": "test query",
+            "api_key": "test-key",
+            "num": "7",
+        }

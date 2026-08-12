@@ -194,3 +194,51 @@ def duckduckgo_html_search(
         return results
     except Exception:
         return []
+
+
+def serpbase_search(
+    *,
+    api_key: str,
+    query: str,
+    max_results: int,
+    timeout_seconds: float,
+) -> list[WebSearchResult]:
+    """Search Google via the SerpBase REST API (https://serpbase.dev).
+
+    Returns an empty list on any error so callers can fall back to other
+    backends. Requires a SerpBase API key; callers without one should not
+    call this function (WebSearchTool only does when SERPBASE_API_KEY is set).
+    """
+    if not api_key:
+        return []
+    params = {
+        "q": query,
+        "api_key": api_key,
+        "num": str(max(1, min(int(max_results), 20))),
+    }
+    headers = {"User-Agent": "ai-real-estate-assistant/1.0"}
+    try:
+        resp = requests.get(
+            "https://api.serpbase.dev/google/search",
+            params=params,
+            headers=headers,
+            timeout=timeout_seconds,
+        )
+        if resp.status_code != 200:
+            return []
+        payload = resp.json()
+        results: list[WebSearchResult] = []
+        for item in (payload.get("organic_results") or [])[: max(0, int(max_results))]:
+            url = str(item.get("link") or "").strip()
+            if not url:
+                continue
+            results.append(
+                WebSearchResult(
+                    title=str(item.get("title") or "").strip(),
+                    url=url,
+                    snippet=str(item.get("snippet") or "").strip(),
+                )
+            )
+        return results
+    except Exception:
+        return []
