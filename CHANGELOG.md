@@ -68,20 +68,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the `dev-scaler` + `nest-ai-dev` mirrors only, not under `AleksNeStu`,
   so the endpoint returns 404. Enable per mirror account separately.
 
-## [5.1.3] - 2026-08-15
-
-### Fixed
-
-- **Star-History chart (Round 4)**: replaced the v5.1.2
-  `img.shields.io` static badge with the **official star-history.com
-  embed code** (with `sealed_token` encrypted PAT) per their
-  [setup guide](https://www.star-history.com/blog/how-to-use-github-star-history#how-to-add-your-github-access-token).
-  The `?secret=<PAT>` URL parameter documented in their blog does
-  NOT unlock the chart — the embed MUST be generated via the
-  "Show real-time chart on your README.md" UI panel (which
-  encrypts the token into `sealed_token` server-side). The chart now
-  renders live star history with the current count and growth curve.
-
 ## [5.1.2] - 2026-08-15
 
 ### Fixed

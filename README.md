@@ -194,21 +194,16 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 
 ### Star Growth
 
-<a href="https://www.star-history.com/?repos=AleksNeStu%2Fai-real-estate-assistant&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=AleksNeStu/ai-real-estate-assistant&type=date&theme=dark&legend=top-left&sealed_token=dLC4gJOVgeG09m7gDw6tGkSgeC4LuX04JcxV3JVmuT5WvbqKDcK2GqcNVEoOgCR4bdavGcnZ65FOoYtoD-H6ZLNYXi-fZ9OYJg40eYMSvPHzI7lF5AFGEEjzM4hW0Syw5w3k4z7WQxW_o2Ma9dQBt05krBqubuxW3x-IdcKs571mTRCs5pYchSXnspIC" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=AleksNeStu/ai-real-estate-assistant&type=date&legend=top-left&sealed_token=dLC4gJOVgeG09m7gDw6tGkSgeC4LuX04JcxV3JVmuT5WvbqKDcK2GqcNVEoOgCR4bdavGcnZ65FOoYtoD-H6ZLNYXi-fZ9OYJg40eYMSvPHzI7lF5AFGEEjzM4hW0Syw5w3k4z7WQxW_o2Ma9dQBt05krBqubuxW3x-IdcKs571mTRCs5pYchSXnspIC" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=AleksNeStu/ai-real-estate-assistant&type=date&legend=top-left&sealed_token=dLC4gJOVgeG09m7gDw6tGkSgeC4LuX04JcxV3JVmuT5WvbqKDcK2GqcNVEoOgCR4bdavGcnZ65FOoYtoD-H6ZLNYXi-fZ9OYJg40eYMSvPHzI7lF5AFGEEjzM4hW0Syw5w3k4z7WQxW_o2Ma9dQBt05krBqubuxW3x-IdcKs571mTRCs5pYchSXnspIC" />
- </picture>
-</a>
+[![GitHub stars](https://img.shields.io/github/stars/AleksNeStu/ai-real-estate-assistant?style=social)](https://github.com/AleksNeStu/ai-real-estate-assistant/stargazers)
 
-> **Note (2026-08-15):** The chart above is rendered via the official
-> [star-history.com](https://star-history.com/) embed with a
-> `sealed_token` (encrypted PAT, per their
-> [setup guide](https://www.star-history.com/blog/how-to-use-github-star-history#how-to-add-your-github-access-token)).
-> GitHub restricted the stargazer API in
-> [2026-07](https://star-history.com/blog/github-stargazer-api-restriction)
-> to owners/collaborators only; the embed is the path forward.
+> **Note (2026-08-15):** The detailed star-history chart is currently
+> unavailable because [GitHub restricted stargazer-API access in
+> 2026-07](https://star-history.com/blog/github-stargazer-api-restriction)
+> to repo owners/collaborators only, and the hosted
+> `api.star-history.com/svg` endpoint now returns a placeholder image
+> even for owners regardless of `?secret=` token. A self-hosted chart
+> is on the v5.2+ roadmap. The static shields.io badge above
+> continues to reflect the current star count.
 
 ### Key Metrics
 
