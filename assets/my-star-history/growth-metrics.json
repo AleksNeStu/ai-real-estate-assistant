@@ -1,0 +1,14 @@
+{
+  "new_stars_1d": 0,
+  "new_stars_7d": 0,
+  "new_stars_30d": 0,
+  "total_stars": 0,
+  "collected_at": "2026-08-15T07:40:13.288528+00:00",
+  "repository": "AleksNeStu/ai-real-estate-assistant",
+  "traffic_available": false,
+  "traffic_error": null,
+  "views_14d": 0,
+  "unique_visitors_14d": 0,
+  "referrers": [],
+  "fetch_error": "GraphQL errors: [{'type': 'FORBIDDEN', 'path': ['repository', 'stargazers'], 'extensions': {'saml_failure': False}, 'locations': [{'line': 4, 'column': 9}], 'message': 'Resource not accessible by personal access token'}]"
+}
