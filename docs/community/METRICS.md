@@ -89,13 +89,16 @@ Reports are stored at: `docs/community/reports/YYYY-MM.md`
 
 ## Automated Star-Growth Metrics
 
-The `star-history.yml` workflow runs daily and publishes current growth data to the `star-history` orphan branch.
+The `README.md` star-history chart is rendered live by the hosted `api.star-history.com` SVG endpoint (no workflow, no PAT, no orphan branch). The previous self-hosted workflow (`.github/workflows/star-history.yml` + `render_star_history.py`) was removed on 2026-08-15 because:
+
+1. The `GH_STAR_TOKEN` fine-grained PAT lacked the `Starring: Read` scope needed for GraphQL `stargazers` (verified empirically — returns `FORBIDDEN: Resource not accessible by personal access token`).
+2. The workflow's `git switch --orphan star-history` + `git push --force` pattern created a fresh orphan branch every run, silently destroying previously-pushed SVGs.
 
 ### Data Location
 
 | File | Description |
 |------|-------------|
-| `assets/my-star-history/growth-metrics.json` | Current star-growth metrics (published on `star-history` branch) |
+| `https://api.star-history.com/svg?repos=AleksNeStu/ai-real-estate-assistant&type=Date` | Live hosted star-history chart (rendered by `star-history.com` on demand) |
 | `docs/community/metrics/latest.json` | **Immutable legacy snapshot** from 2026-05-04 — historical reference only |
 
 ### growth-metrics.json Schema
