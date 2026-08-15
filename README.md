@@ -16,15 +16,20 @@
 [![Latest Release](https://img.shields.io/github/v/release/AleksNeStu/ai-real-estate-assistant?style=flat&color=2ea44f)](https://github.com/AleksNeStu/ai-real-estate-assistant/releases)
 
 <!-- markdownlint-disable MD051 -->
-## 📑 Table of Contents
+## Table of Contents
 
 - [Live Demo](#-live-demo)
-- [Hosted Version](#hosted-version-propvector-ai)
-- [Features](#-features)
-- [Project Growth](#-project-growth)
-- [Releases](#-releases)
+- [What's New in v5.1](#-whats-new-in-v51)
 - [Architecture](#-architecture)
 - [Quick Start](#-quick-start)
+- [Three Developer Differentiators](#-three-developer-differentiators)
+- [Hosted Version: PropVector AI](#hosted-version-propvector-ai)
+- [Features](#-features)
+- [Screenshots](#-screenshots)
+- [Tech Stack](#-tech-stack)
+- [Project Growth](#-project-growth)
+- [Releases](#-releases)
+- [Project Structure](#-project-structure)
 - [Testing](#-testing)
 - [Documentation](#-documentation)
 - [Roadmap](#-roadmap)
@@ -55,42 +60,13 @@ Experience the full power of AI-driven real estate search without any setup:
 
 > **Note:** The demo uses simulated AI responses for instant exploration. Production deployment requires API keys.
 
-<!-- HOSTED-FUNNEL-START -->
-## Hosted Version: PropVector AI
-
-PropVector AI is the hosted version of this project — the same core RAG
-and vector-search engine, with managed tiers for live data, accounts,
-AI CRM, and enterprise capabilities. The repo stays open-core: the core
-engine remains free, anything that gates revenue lives in the hosted product.
-
-| Capability | OSS (this repo) | Hosted (PropVector AI) |
-|---|---|---|
-| Core RAG property Q&A, demo dataset | Free | Included |
-| Bring-your-own LLM keys, local Ollama | Free | Included |
-| Vector search (ChromaDB) on sample data | Free | Included |
-| Live/MLS data feeds, enrichment pipeline | Not included | Pro |
-| Accounts, favorites, saved searches, alerts | Not included | Pro |
-| AI CRM (lead scoring, drip, pipeline) | Not included | Pro/Enterprise |
-| Multi-agent Agentic OS | Limited | Pro |
-| CRM connectors (HubSpot/Pipedrive), SSO, MFA | Not included | Enterprise |
-| White-label / self-host support contract | Not included | Enterprise (custom) |
-
-**Free $0** · **Pro $29/mo** · **Enterprise (custom)** — tiers reflect
-the public roadmap and may adjust before launch.
-
-[PropVector AI](https://propvectorai.com) is launching soon; the landing
-page ships alongside billing. The fastest way to reach the maintainer
-today is to [open a Discussion](https://github.com/AleksNeStu/ai-real-estate-assistant/discussions)
-with the `[Commercial]` prefix.
-<!-- HOSTED-FUNNEL-END -->
-
-## 🆕 What's new in v5.1
+## 🆕 What's New in v5.1
 
 Three small but demoable additions, shipped together as a focused release:
 
-- 🔮 **AI Property Valuation with Multi-Year Price Forecast** — paste a property id (or enter features manually) and get an LLM-powered estimate of current value plus projected value at 1y, 3y, 5y, and 10y horizons, with a confidence band and key drivers. Try it at `/valuation`.
-- 🏦 **Inline monthly payment on listing cards** — every property card on the search results page now shows a small "$X / mo" estimate next to the title (20% down, 30-year fixed, 6.5% APR by default; not a lending offer).
-- 🏘️ **AI Neighborhood One-Liner** — property detail pages now feature a short AI-generated summary of the neighborhood's character, lifestyle, and accessibility. Falls back silently if the LLM is unavailable.
+- **AI Property Valuation with Multi-Year Price Forecast** — paste a property id (or enter features manually) and get an LLM-powered estimate of current value plus projected value at 1y, 3y, 5y, and 10y horizons, with a confidence band and key drivers. Try it at `/valuation`.
+- **Inline monthly payment on listing cards** — every property card on the search results page now shows a small "$X / mo" estimate next to the title (20% down, 30-year fixed, 6.5% APR by default; not a lending offer).
+- **AI Neighborhood One-Liner** — property detail pages now feature a short AI-generated summary of the neighborhood's character, lifestyle, and accessibility. Falls back silently if the LLM is unavailable.
 
 All three work in demo mode without any paid external APIs.
 
@@ -218,7 +194,21 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 
 ### Star Growth
 
-[![Star History](https://api.star-history.com/svg?repos=AleksNeStu/ai-real-estate-assistant&type=Date)](https://star-history.com/#AleksNeStu/ai-real-estate-assistant&Date)
+<a href="https://www.star-history.com/?repos=AleksNeStu%2Fai-real-estate-assistant&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=AleksNeStu/ai-real-estate-assistant&type=date&theme=dark&legend=top-left&sealed_token=dLC4gJOVgeG09m7gDw6tGkSgeC4LuX04JcxV3JVmuT5WvbqKDcK2GqcNVEoOgCR4bdavGcnZ65FOoYtoD-H6ZLNYXi-fZ9OYJg40eYMSvPHzI7lF5AFGEEjzM4hW0Syw5w3k4z7WQxW_o2Ma9dQBt05krBqubuxW3x-IdcKs571mTRCs5pYchSXnspIC" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=AleksNeStu/ai-real-estate-assistant&type=date&legend=top-left&sealed_token=dLC4gJOVgeG09m7gDw6tGkSgeC4LuX04JcxV3JVmuT5WvbqKDcK2GqcNVEoOgCR4bdavGcnZ65FOoYtoD-H6ZLNYXi-fZ9OYJg40eYMSvPHzI7lF5AFGEEjzM4hW0Syw5w3k4z7WQxW_o2Ma9dQBt05krBqubuxW3x-IdcKs571mTRCs5pYchSXnspIC" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=AleksNeStu/ai-real-estate-assistant&type=date&legend=top-left&sealed_token=dLC4gJOVgeG09m7gDw6tGkSgeC4LuX04JcxV3JVmuT5WvbqKDcK2GqcNVEoOgCR4bdavGcnZ65FOoYtoD-H6ZLNYXi-fZ9OYJg40eYMSvPHzI7lF5AFGEEjzM4hW0Syw5w3k4z7WQxW_o2Ma9dQBt05krBqubuxW3x-IdcKs571mTRCs5pYchSXnspIC" />
+ </picture>
+</a>
+
+> **Note (2026-08-15):** The chart above is rendered via the official
+> [star-history.com](https://star-history.com/) embed with a
+> `sealed_token` (encrypted PAT, per their
+> [setup guide](https://www.star-history.com/blog/how-to-use-github-star-history#how-to-add-your-github-access-token)).
+> GitHub restricted the stargazer API in
+> [2026-07](https://star-history.com/blog/github-stargazer-api-restriction)
+> to owners/collaborators only; the embed is the path forward.
 
 ### Key Metrics
 
@@ -256,29 +246,6 @@ graph LR
     RAG --> VDB[("ChromaDB")]
     Tools --> LLM["AI Providers"]
     API --> DB[("PostgreSQL / SQLite")]
-```
-
-### Request flow at a glance
-
-```
-You ask in natural language
-            │
-            ▼
-┌───────────────────────┐
-│   Query Analyzer      │  Classifies: Simple / Medium / Complex
-└──────────┬────────────┘
-           │
-   ┌───────┼────────┐
-   ▼       ▼        ▼
- RAG     Hybrid   Agent+Tools
- only    (RAG +    (tools,
-          enhance)  memory)
-   │       │        │
-   └───────┴────────┘
-           ▼
-    ChromaDB + LLM providers
-           ▼
-       Matched listings + answer
 ```
 
 See [docs/architecture/large-saas-overview.md](docs/architecture/large-saas-overview.md) for the full system design.
@@ -321,6 +288,46 @@ cd apps/web && npm install && npm run dev
 ```
 
 > **[5-Minute Quickstart →](docs/development/QUICKSTART_5MIN.md)** — Full setup with verification scripts.
+
+## 🏠 Three Developer Differentiators
+
+### 1. Multi-Provider LLM Routing
+13 LLM providers with automatic fallback chain — OpenAI, Anthropic Google, Grok, DeepSeek, and local Ollama. Per-request provider selection via header or request parameter; no code changes required to switch models.
+
+### 2. Hybrid RAG + ChromaDB Vector Search
+Query complexity classifier routes requests to RAG-only (simple), hybrid RAG+enhancement (medium), or agent+tools (complex). ChromaDB with MMR reranking provides semantic similarity search.
+
+### 3. 9-Language Localization
+English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, and Ukrainian — with EU AI Act compliance labels on AI-generated outputs.
+
+<!-- HOSTED-FUNNEL-START -->
+## Hosted Version: PropVector AI
+
+PropVector AI is the hosted version of this project — the same core RAG
+and vector-search engine, with managed tiers for live data, accounts,
+AI CRM, and enterprise capabilities. The repo stays open-core: the core
+engine remains free, anything that gates revenue lives in the hosted product.
+
+| Capability | OSS (this repo) | Hosted (PropVector AI) |
+|---|---|---|
+| Core RAG property Q&A, demo dataset | Free | Included |
+| Bring-your-own LLM keys, local Ollama | Free | Included |
+| Vector search (ChromaDB) on sample data | Free | Included |
+| Live/MLS data feeds, enrichment pipeline | Not included | Pro |
+| Accounts, favorites, saved searches, alerts | Not included | Pro |
+| AI CRM (lead scoring, drip, pipeline) | Not included | Pro/Enterprise |
+| Multi-agent Agentic OS | Limited | Pro |
+| CRM connectors (HubSpot/Pipedrive), SSO, MFA | Not included | Enterprise |
+| White-label / self-host support contract | Not included | Enterprise (custom) |
+
+**Free $0** · **Pro $29/mo** · **Enterprise (custom)** — tiers reflect
+the public roadmap and may adjust before launch.
+
+[PropVector AI](https://propvectorai.com) is launching soon; the landing
+page ships alongside billing. The fastest way to reach the maintainer
+today is to [open a Discussion](https://github.com/AleksNeStu/ai-real-estate-assistant/discussions)
+with the `[Commercial]` prefix.
+<!-- HOSTED-FUNNEL-END -->
 
 ## 📁 Project Structure
 
