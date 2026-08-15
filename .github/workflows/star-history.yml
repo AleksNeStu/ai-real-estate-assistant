@@ -3,8 +3,8 @@ name: Star History
 # Regenerates a self-hosted star-history chart as static SVGs on an orphan
 # branch, referenced by README.md.
 #
-# Auth model (2026-07-14+, updated 2026-07-24):
-# In July 2026 GitHub restricted the stargazers listing endpoint to admins
+# Auth model (2026-07-14+, updated 2026-07-24, re-validated 2026-08-15):
+# In July 2026 GitHub restricted the stargazers REST endpoint to admins
 # and collaborators only. That broke two previous approaches:
 #   1. The hosted star-history.com embed (api.star-billion.com 503s for
 #      non-collaborator repos).
@@ -15,13 +15,25 @@ name: Star History
 #      REST endpoint. GitHub's admin check is independent of declared
 #      fine-grained scopes.
 # Fix (commits d0daee6 + 0cf44b7): use the GraphQL `stargazers` connection
-# instead of REST. The GraphQL connection accepts a token with Contents: Read
-# + Metadata: Read on the repo — no admin check. Render uses matplotlib the
-# same way as before; only the data-source change matters.
+# instead of REST. Render uses matplotlib the same way as before; only
+# the data-source change matters.
 #
-# Token: `GH_STAR_TOKEN` is a fine-grained PAT scoped to this repo only with:
-#   - Contents: Read-only
-#   - Metadata: Read-only
+# Token scope reality (re-validated 2026-08-15 against run #31863104558):
+# The GraphQL `repository.stargazers` connection is itself gated. Verified
+# empirically: a fine-grained PAT with `Contents: Read + Metadata: Read`
+# (the scopes the original docstring claimed were sufficient) returns
+# `FORBIDDEN: Resource not accessible by personal access token`. The
+# working classes are:
+#   - classic PAT with `public_repo` (or `repo`) scope, OR
+#   - fine-grained PAT with `Starring: Read` on the repo, OR
+#   - a user access token issued to a repo admin/collaborator.
+# If `GH_STAR_TOKEN` is missing or has the wrong scope, the script now
+# soft-fails (writes a degraded growth-metrics.json, exits 0) so the
+# cron workflow stays green and the previous chart on the
+# star-history orphan branch is preserved.
+#
+# Token: `GH_STAR_TOKEN` is a PAT (classic or fine-grained with
+# Starring: Read) for read access to the GraphQL stargazers connection.
 # GITHUB_TOKEN is still used for the git push step because it carries
 # `contents: write` for the orphan branch.
 
@@ -63,6 +75,16 @@ jobs:
         run: python -m unittest discover -s .github/scripts/tests -p "test_render_star_history.py" -v
 
       - name: Render star-history SVG (light + dark)
+        # The script soft-fails on token/permission/rate-limit errors
+        # (exits 0 with a degraded growth-metrics.json) — see the
+        # FetchError / main() try/except in render_star_history.py.
+        # continue-on-error is a safety net for any unhandled exception
+        # path (e.g. an unexpected ImportError in a future dependency
+        # bump) so the cron workflow stays green and the previous
+        # chart on the star-history orphan branch is preserved.
+        # Added 2026-08-15 after run #31863104558 failed with
+        # `Resource not accessible by personal access token`.
+        continue-on-error: true
         env:
           # PAT required: see header comment. Auto GITHUB_TOKEN was blocked
           # by GitHub's July-2026 admin/collaborator-only restriction on
