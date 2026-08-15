@@ -68,6 +68,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the `dev-scaler` + `nest-ai-dev` mirrors only, not under `AleksNeStu`,
   so the endpoint returns 404. Enable per mirror account separately.
 
+## [5.1.4] - 2026-08-15
+
+### Changed
+
+- **README**: removed the explanatory Note under "Star Growth" — the
+  official `sealed_token` chart in v5.1.3 is self-explanatory.
+
+### Notes
+
+- **ESLint re-enable of 4 `react-hooks` rules** (set-state-in-effect,
+  static-components, immutability, preserve-manual-memoization) is
+  tracked for a future refactor. Per-page re-enablement requires
+  converting the 15 admin/chat/agent pages from the
+  `useEffect(() => fetch().then(setState)` pattern to a data-fetching
+  library (SWR / React Query). The global disable in
+  `apps/web/eslint.config.mjs` is documented and tracked here.
+- **Private Vulnerability Reporting for mirror-only repos** (`cv`,
+  `natively-cluely`, `EBiCS_Firmware`) is **blocked**: verified
+  2026-08-15 that those repos do not actually exist on the
+  `dev-scaler` / `nest-ai-dev` GitHub user accounts (the
+  `repo-alex/CLAUDE.md` "mirror-only" policy assumes they do, but
+  only local clones exist). Enable per-mirror when the repos are
+  actually pushed to GitHub.
+
+## [5.1.3] - 2026-08-15
+
+### Fixed
+
+- **Star-History chart (Round 4)**: replaced the v5.1.2
+  `img.shields.io` static badge with the **official star-history.com
+  embed code** (with `sealed_token` encrypted PAT) per their
+  [setup guide](https://www.star-history.com/blog/how-to-use-github-star-history#how-to-add-your-github-access-token).
+  The `?secret=<PAT>` URL parameter documented in their blog does
+  NOT unlock the chart — the embed MUST be generated via the
+  "Show real-time chart on your README.md" UI panel (which
+  encrypts the token into `sealed_token` server-side). The chart now
+  renders live star history with the current count and growth curve.
+
 ## [5.1.2] - 2026-08-15
 
 ### Fixed
