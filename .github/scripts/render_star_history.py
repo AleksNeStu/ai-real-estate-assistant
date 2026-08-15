@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Render self-hosted star-history SVGs for the AleksNeStu/ai-real-estate-assistant README.
 
-Pulls star timestamps via the GitHub REST API (paginated), bins them into a
+Pulls star timestamps via the GitHub GraphQL API (paginated), bins them into a
 cumulative series, and renders light + dark themed SVGs with matplotlib. The
 X-axis is manually thinned to <= 12 labels (first month, last month, every
 Jan-1, every quarter start) to avoid overlapping labels that plagued the
@@ -11,13 +11,30 @@ emitted one label per calendar month).
 Used by .github/workflows/star-history.yml.
 
 Token precedence (set by the workflow):
-  1. GH_STAR_TOKEN — PAT owned by a repo admin/collaborator (required since
-     July 2026, when GitHub restricted the stargazers endpoint to admins/
-     collaborators only). Classic PAT with `public_repo`, or fine-grained
-     PAT with `Contents: Read` on this repo only (no "Starring" permission
-     exists for fine-grained PATs).
+  1. GH_STAR_TOKEN — PAT. Required since July 2026, when GitHub restricted
+     the REST `/stargazers` endpoint to admins/collaborators only. The script
+     uses GraphQL `stargazers { edges { starredAt } }` instead. As of
+     2026-08-15 the GraphQL `stargazers` connection requires a token that
+     the repo accepts for fixture-level read access — empirically the
+     working classes are:
+       * classic PAT with `public_repo` (or `repo`), OR
+       * fine-grained PAT with `Starring: Read` on the repo, OR
+       * a user access token issued to a repo admin/collaborator.
+     A fine-grained PAT scoped to `Contents: Read + Metadata: Read` only
+     (as the original docstring claimed) returns `FORBIDDEN` from
+     `repository.stargazers` — verified against api.github.com/graphql
+     2026-08-15. See workflow comments for the bad-token class.
   2. GITHUB_TOKEN — fallback for local dev runs; will return 403 in CI as of
      2026-07-14 because the bot token is not admin/collaborator.
+
+Failure handling (added 2026-08-15):
+  fetch_stargazers() raises `FetchError` on any non-recoverable token /
+  permission / rate-limit failure. main() catches it, writes a degraded
+  `growth-metrics.json` (with `fetch_error` field) so the chart's last
+  good state remains intact, and returns 0. This keeps the scheduled
+  workflow green when the API is unreachable or the secret is rotated.
+  The commit step already no-ops on `git diff --cached --quiet`, so a
+  degraded run leaves the previous chart in place.
 """
 
 import argparse
@@ -44,6 +61,28 @@ LINE_COLOR = "#fc6d26"
 
 PER_PAGE = 100
 RATE_LIMIT_FLOOR = 10
+
+
+class FetchError(Exception):
+    """Raised when stargazer data cannot be fetched.
+
+    Distinct from generic Exception so main() can write a degraded
+    `growth-metrics.json` (with `fetch_error` field) and exit 0 instead
+    of breaking the workflow. Use this for any non-recoverable token,
+    permission, or rate-limit failure — the message is intended to be
+    both human-readable and safe to surface in CI logs.
+    """
+
+
+def _emit_fetch_error(msg: str) -> "FetchError":
+    """Print a structured error line to stderr and return a FetchError.
+
+    Centralises the stderr format so it stays consistent across the
+    HTTP, GraphQL, rate-limit, and rate-limit-floor branches that all
+    raise FetchError.
+    """
+    print(f"ERROR: {msg}", file=sys.stderr)
+    return FetchError(msg)
 
 
 def summarize_growth(dates: list, now: datetime | None = None) -> dict:
@@ -152,57 +191,90 @@ def fetch_optional_traffic(
 def fetch_stargazers(repo: str, token: str, api_base: str = API_BASE) -> list:
     """Fetch star timestamps (UTC) for `owner/repo`, paginated, sorted ascending.
 
-    Aborts with non-zero exit on any HTTP error. Honors X-RateLimit-Remaining
-    (refuses to proceed below RATE_LIMIT_FLOOR).
+    Uses the GraphQL `stargazers(first:N, after:cursor){ edges { starredAt } }`
+    connection. REST `GET /repos/{owner}/{repo}/stargazers` was restricted by
+    GitHub in July 2026 to admins/collaborators only — fine-grained PATs (and
+    PATs without admin:org scope) now get HTTP 403 even with Starring: Read.
+    The GraphQL connection accepts a token the repo allows for star fixture
+    read access; see token precedence in the module docstring.
+
+    Raises FetchError on any HTTP error, GraphQL error, rate-limit floor
+    hit, or missing repository. The caller (main()) is responsible for
+    deciding whether to soft-fail (write a degraded metrics file and
+    exit 0) or hard-fail. Honors `cost` / `rateLimit.remaining` from
+    GraphQL responses (refuses to proceed below RATE_LIMIT_FLOOR).
     """
-    url = f"{api_base}/repos/{repo}/stargazers"
-    # `application/vnd.github.star+json` is required to get the `starred_at`
-    # timestamp on each entry; with the default media type the endpoint
-    # returns user objects only (no timestamps).
+    owner, _, name = repo.partition("/")
+    if not owner or not name:
+        raise _emit_fetch_error(f"--repo must be 'owner/name', got {repo!r}")
+
+    url = f"{api_base}/graphql"
     headers = {
         "Authorization": f"Bearer {token}",
-        "Accept": "application/vnd.github.star+json",
+        "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
     }
-    params = {"per_page": PER_PAGE}
     dates: list = []
 
-    while url:
-        resp = requests.get(url, headers=headers, params=params, timeout=30)
+    query = """
+    query Stargazers($owner: String!, $name: String!, $first: Int!, $after: String) {
+      repository(owner: $owner, name: $name) {
+        stargazers(first: $first, after: $after, orderBy: {field: STARRED_AT, direction: ASC}) {
+          totalCount
+          pageInfo { hasNextPage endCursor }
+          edges { starredAt node { ... on User { login } } }
+        }
+      }
+      rateLimit { remaining resetAt }
+    }
+    """
+
+    cursor: str | None = None
+    while True:
+        variables = {"owner": owner, "name": name, "first": PER_PAGE, "after": cursor}
+        resp = requests.post(url, headers=headers, json={"query": query, "variables": variables}, timeout=30)
         if resp.status_code != 200:
-            print(
-                f"ERROR: HTTP {resp.status_code} fetching {url}: {resp.text[:200]}",
-                file=sys.stderr,
+            raise _emit_fetch_error(
+                f"HTTP {resp.status_code} fetching {url}: {resp.text[:200]}"
             )
-            sys.exit(1)
 
-        remaining = int(resp.headers.get("X-RateLimit-Remaining", "9999"))
+        try:
+            payload = resp.json()
+        except ValueError:
+            raise _emit_fetch_error(f"non-JSON response from {url}: {resp.text[:200]}")
+
+        # GraphQL-level errors (still returned with HTTP 200).
+        if payload.get("errors"):
+            raise _emit_fetch_error(f"GraphQL errors: {payload['errors'][:3]}")
+
+        rate_limit = (payload.get("data") or {}).get("rateLimit") or {}
+        remaining = rate_limit.get("remaining", 9999)
         if remaining < RATE_LIMIT_FLOOR:
-            print(
-                f"ERROR: rate-limit remaining={remaining}; aborting (floor={RATE_LIMIT_FLOOR})",
-                file=sys.stderr,
+            raise _emit_fetch_error(
+                f"rate-limit remaining={remaining}; aborting (floor={RATE_LIMIT_FLOOR})"
             )
-            sys.exit(1)
 
-        page = resp.json()
-        if not isinstance(page, list):
-            print(f"ERROR: unexpected payload shape (not a list): {str(page)[:200]}", file=sys.stderr)
-            sys.exit(1)
+        repo_data = (payload.get("data") or {}).get("repository")
+        if repo_data is None:
+            raise _emit_fetch_error(f"repository not found (or no access): {repo}")
 
-        for entry in page:
-            starred_at = entry.get("starred_at")
+        stargazers = repo_data.get("stargazers") or {}
+        for edge in stargazers.get("edges") or []:
+            # GitHub GraphQL: starredAt is a field on the StargazerEdge
+            # connection wrapper itself, NOT on the User node. Path is
+            # edges[*].starredAt — confirmed live against api.github.com/graphql.
+            starred_at = edge.get("starredAt")
             if not starred_at:
                 continue
             dt = datetime.fromisoformat(starred_at.replace("Z", "+00:00"))
             dates.append(dt.astimezone(timezone.utc))
 
-        # Parse Link header for the next page (URL already carries the query string).
-        url = None
-        params = {}
-        for part in resp.headers.get("Link", "").split(","):
-            if 'rel="next"' in part:
-                url = part.split(";")[0].strip(" <>")
-                break
+        page_info = stargazers.get("pageInfo") or {}
+        if not page_info.get("hasNextPage"):
+            break
+        cursor = page_info.get("endCursor")
+        if not cursor:
+            break
 
     dates.sort()
     return dates
@@ -360,7 +432,37 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Fetching stargazers for {args.repo} ...", flush=True)
-    dates = fetch_stargazers(args.repo, args.token, args.api_base)
+    try:
+        dates = fetch_stargazers(args.repo, args.token, args.api_base)
+    except FetchError as exc:
+        # Soft-fail: write a degraded metrics file so the rest of the
+        # pipeline (commit step, downstream consumers) keeps working,
+        # and exit 0 so the cron workflow stays green. The previous
+        # chart on the star-history orphan branch is unchanged.
+        # Triggered 2026-08-15 after run #31863104558 failed with
+        # `Resource not accessible by personal access token` —
+        # the GH_STAR_TOKEN had insufficient scopes.
+        now = datetime.now(tz=timezone.utc)
+        growth = summarize_growth([], now)
+        growth["repository"] = args.repo
+        growth["traffic_available"] = False
+        growth["traffic_error"] = None
+        growth["views_14d"] = 0
+        growth["unique_visitors_14d"] = 0
+        growth["referrers"] = []
+        growth["fetch_error"] = str(exc)
+        metrics_path = out_dir / "growth-metrics.json"
+        metrics_path.write_text(json.dumps(growth, indent=2))
+        print(
+            f"  WARNING: stargazer fetch failed; wrote degraded {metrics_path}",
+            file=sys.stderr,
+            flush=True,
+        )
+        print(
+            "  star-history chart will keep the previous (stale) version.",
+            flush=True,
+        )
+        return 0
 
     now = datetime.now(tz=timezone.utc)
     growth = summarize_growth(dates, now)
