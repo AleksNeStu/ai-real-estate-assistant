@@ -20,6 +20,8 @@ spec.loader.exec_module(render_star_history)
 
 summarize_growth = render_star_history.summarize_growth
 fetch_optional_traffic = render_star_history.fetch_optional_traffic
+fetch_stargazers = render_star_history.fetch_stargazers
+FetchError = render_star_history.FetchError
 
 
 class TestSummarizeGrowth(unittest.TestCase):
@@ -200,6 +202,173 @@ class TestFetchOptionalTraffic(unittest.TestCase):
             self.assertEqual(result["views_14d"], 100)
             self.assertEqual(result["unique_visitors_14d"], 50)
             self.assertIn("referrers", result)
+
+
+class TestFetchStargazers(unittest.TestCase):
+    """Tests for fetch_stargazers GraphQL response parsing.
+
+    Coverage added 2026-08-15 after run #31863104558 failed with
+    `Resource not accessible by personal access token` (the GH_STAR_TOKEN
+    had insufficient scopes for GraphQL `repository.stargazers`). The
+    real failure path was completely uncovered before; this class
+    locks the behaviour so any future token/permission/rate-limit
+    failure raises FetchError (which main() converts to a degraded
+    metrics file + exit 0) instead of sys.exit(1).
+    """
+
+    def _mock_response(self, status_code=200, payload=None, text=None):
+        """Build a mock requests.post response that returns the given payload."""
+        r = MagicMock()
+        r.status_code = status_code
+        if text is not None:
+            r.text = text
+        if payload is not None:
+            r.json.return_value = payload
+        else:
+            r.json.side_effect = ValueError("not JSON")
+        return r
+
+    def _ok_payload(self, edges, has_next_page=False, end_cursor=None, remaining=9999):
+        return {
+            "data": {
+                "repository": {
+                    "stargazers": {
+                        "edges": edges,
+                        "pageInfo": {"hasNextPage": has_next_page, "endCursor": end_cursor},
+                    }
+                },
+                "rateLimit": {"remaining": remaining, "resetAt": "2026-08-15T00:00:00Z"},
+            }
+        }
+
+    def test_success_single_page_returns_sorted_dates(self):
+        """Single-page success returns dates sorted ascending."""
+        edges = [
+            {"starredAt": "2026-01-03T00:00:00Z", "node": {"login": "b"}},
+            {"starredAt": "2026-01-01T00:00:00Z", "node": {"login": "a"}},
+            {"starredAt": "2026-01-02T00:00:00Z", "node": {"login": "c"}},
+        ]
+        resp = self._mock_response(payload=self._ok_payload(edges))
+
+        with patch("requests.post", return_value=resp) as mock_post:
+            dates = fetch_stargazers("AleksNeStu/ai-real-estate-assistant", "fake_token")
+
+        self.assertEqual(len(dates), 3)
+        self.assertLessEqual(dates[0], dates[1])
+        self.assertLessEqual(dates[1], dates[2])
+        # All returned timestamps are UTC-aware
+        for d in dates:
+            self.assertEqual(d.tzinfo, timezone.utc)
+        # Verify the GraphQL request was sent to /graphql
+        called_args, _ = mock_post.call_args
+        self.assertIn("/graphql", called_args[0])
+
+    def test_success_paginates_until_has_next_page_false(self):
+        """Multi-page success walks the cursor until hasNextPage=false."""
+        page1 = self._mock_response(payload=self._ok_payload(
+            [{"starredAt": "2026-01-01T00:00:00Z", "node": {"login": "a"}}],
+            has_next_page=True, end_cursor="CURSOR_1",
+        ))
+        page2 = self._mock_response(payload=self._ok_payload(
+            [{"starredAt": "2026-01-02T00:00:00Z", "node": {"login": "b"}}],
+            has_next_page=False, end_cursor=None,
+        ))
+
+        with patch("requests.post", side_effect=[page1, page2]) as mock_post:
+            dates = fetch_stargazers("AleksNeStu/ai-real-estate-assistant", "fake_token")
+
+        self.assertEqual(len(dates), 2)
+        self.assertEqual(mock_post.call_count, 2)
+
+    def test_http_401_raises_fetch_error(self):
+        """HTTP 401 raises FetchError with the HTTP code in the message."""
+        resp = self._mock_response(status_code=401, text="bad credentials")
+
+        with patch("requests.post", return_value=resp):
+            with self.assertRaises(FetchError) as ctx:
+                fetch_stargazers("AleksNeStu/ai-real-estate-assistant", "fake_token")
+
+        self.assertIn("HTTP 401", str(ctx.exception))
+
+    def test_http_403_raises_fetch_error(self):
+        """HTTP 403 raises FetchError (this is the GitHub PAT-too-tight class)."""
+        resp = self._mock_response(status_code=403, text="forbidden")
+
+        with patch("requests.post", return_value=resp):
+            with self.assertRaises(FetchError) as ctx:
+                fetch_stargazers("AleksNeStu/ai-real-estate-assistant", "fake_token")
+
+        self.assertIn("HTTP 403", str(ctx.exception))
+
+    def test_graphql_errors_raises_fetch_error(self):
+        """GraphQL errors[] in the payload (HTTP 200) raise FetchError.
+
+        This is the actual shape of the run #31863104558 failure: HTTP 200
+        with `errors: [{type: FORBIDDEN, ...}]`. The original script
+        sys.exit(1)'d here; the new contract raises FetchError.
+        """
+        forbidden = self._mock_response(
+            status_code=200,
+            payload={
+                "errors": [
+                    {
+                        "type": "FORBIDDEN",
+                        "path": ["repository", "stargazers"],
+                        "message": "Resource not accessible by personal access token",
+                    }
+                ],
+                "data": {"repository": None, "rateLimit": {"remaining": 9999}},
+            },
+        )
+
+        with patch("requests.post", return_value=forbidden):
+            with self.assertRaises(FetchError) as ctx:
+                fetch_stargazers("AleksNeStu/ai-real-estate-assistant", "fake_token")
+
+        self.assertIn("GraphQL errors", str(ctx.exception))
+        self.assertIn("FORBIDDEN", str(ctx.exception))
+
+    def test_rate_limit_below_floor_raises_fetch_error(self):
+        """GraphQL rateLimit.remaining below RATE_LIMIT_FLOOR raises FetchError."""
+        resp = self._mock_response(payload=self._ok_payload(
+            [], has_next_page=False, remaining=5,  # floor=10
+        ))
+
+        with patch("requests.post", return_value=resp):
+            with self.assertRaises(FetchError) as ctx:
+                fetch_stargazers("AleksNeStu/ai-real-estate-assistant", "fake_token")
+
+        self.assertIn("rate-limit", str(ctx.exception).lower())
+        self.assertIn("5", str(ctx.exception))
+
+    def test_missing_repository_raises_fetch_error(self):
+        """GraphQL response with no `repository` (None or absent) raises FetchError."""
+        resp = self._mock_response(payload={
+            "data": {"repository": None, "rateLimit": {"remaining": 9999}},
+        })
+
+        with patch("requests.post", return_value=resp):
+            with self.assertRaises(FetchError) as ctx:
+                fetch_stargazers("AleksNeStu/ai-real-estate-assistant", "fake_token")
+
+        self.assertIn("repository not found", str(ctx.exception))
+
+    def test_non_json_response_raises_fetch_error(self):
+        """HTTP 200 with non-JSON body raises FetchError."""
+        resp = self._mock_response(status_code=200, payload=None, text="<html>not json</html>")
+
+        with patch("requests.post", return_value=resp):
+            with self.assertRaises(FetchError) as ctx:
+                fetch_stargazers("AleksNeStu/ai-real-estate-assistant", "fake_token")
+
+        self.assertIn("non-JSON", str(ctx.exception))
+
+    def test_invalid_repo_format_raises_fetch_error(self):
+        """Repo string without `owner/name` shape raises FetchError immediately."""
+        with self.assertRaises(FetchError) as ctx:
+            fetch_stargazers("no-slash", "fake_token")
+
+        self.assertIn("owner/name", str(ctx.exception))
 
 
 if __name__ == "__main__":
