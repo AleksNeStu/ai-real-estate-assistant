@@ -31,6 +31,7 @@ RESET := \033[0m
 .PHONY: migrate-check migrate-up migrate-down smoke-test test-resilience quickstart
 .PHONY: api-diff api-diff-baseline
 .PHONY: seed
+.PHONY: rule5-guard
 
 # Default target
 .DEFAULT_GOAL := help
@@ -96,6 +97,13 @@ check-deps:
 ## security-pre-push: Quick security check for pre-push (semgrep errors only)
 security-pre-push:
 	$(PYTHON) $(SCRIPTS_DIR)/security/local_scan.py --scan-only=semgrep --quick
+
+## rule5-guard: Verify CLAUDE.md Rule 5 protected paths are not tracked.
+## Catches regression where someone runs `git add -f .mcp.json` (or any other
+## force-add of a gitignored path) into the public, frozen repo.
+## Exit 1 = drift; remediation is `git rm --cached <path>`.
+rule5-guard:
+	$(PYTHON) $(SCRIPTS_DIR)/rule5_guard/gitignored_tracked_check.py
 
 ## ============================================================================
 ## TESTING

@@ -90,6 +90,18 @@ jobs:
 
           exit $EXIT_CODE
 
+  rule5-protected-paths:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Verify canonical gitignored paths are not tracked (CLAUDE.md Rule 5)
+        run: |
+          set -e
+          echo "Running Rule 5 guard: .mcp.json, .env, .env.local, .env.ports must be untracked."
+          python scripts/rule5_guard/gitignored_tracked_check.py --verbose
+
   backend-lint:
     runs-on: ubuntu-latest
     needs: [gitleaks, secret-validation]
