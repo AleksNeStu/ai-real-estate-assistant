@@ -34,7 +34,7 @@
     "lucide-react": "^1.17.0",
     "mapbox-gl": "^3.24.0",
     "next": "16.2.12",
-    "next-intl": "^4.13.0",
+    "next-intl": "^4.14.1",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "react-leaflet": "^5.0.0",
