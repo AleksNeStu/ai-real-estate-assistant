@@ -64,7 +64,7 @@
     "eslint-config-next": "16.2.9",
     "jest": "^30.4.2",
     "jest-axe": "^10.0.0",
-    "jest-environment-jsdom": "^30.4.1",
+    "jest-environment-jsdom": "^30.5.0",
     "jest-resolve": "^30.4.1",
     "prettier": "^3.8.4",
     "tailwindcss": "^4",
