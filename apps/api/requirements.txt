@@ -34,7 +34,7 @@ google-generativeai>=0.8.0
 # Tokenization / compression
 tiktoken>=0.13.0
 zstandard>=0.23.0
-grpcio>=1.80.0
+grpcio>=1.83.1
 # protobuf is capped at <6.0.0 because google-ai-generativelanguage 0.6.x
 # (transitive via google-generativeai 0.8.x → langchain-google-genai 4.x)
 # requires protobuf<6.0.0. Bumping the lower bound to 7+ (or widening
