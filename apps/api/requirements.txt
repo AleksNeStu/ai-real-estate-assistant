@@ -4,7 +4,7 @@ numpy>=2.1.0,<2.5.0
 # (use-after-free in Apache Arrow C++ IPC file pre-buffering). The Python
 # bindings don't expose the vulnerable C++ API, but the lower bound keeps
 # fresh installs from pulling a vulnerable C++ wheel.
-pyarrow>=23.0.1
+pyarrow>=25.0.1
 
 # Vector store / embeddings
 chromadb>=0.5.0
