@@ -104,4 +104,4 @@ Pillow>=12.3.0  # Image processing — closes CVE-2026-59205/-59204/-59200/-5919
 urllib3>=2.7.0  # fastembed pins urllib3<2.8
 GitPython>=3.1.57  # CVE-2024-22190: RCE via config_writer (latest available)
 pyasn1>=0.6.4  # closes CVE-2026-59886 (uncontrolled resource consumption) + CVE-2026-59885 (quadratic OID DoS)
-orjson>=3.11.9
+orjson>=3.12.0
