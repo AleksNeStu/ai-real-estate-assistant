@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Wait for backend-tests (unit)
-        uses: lewagon/wait-on-check-action@v1.3.4
+        uses: lewagon/wait-on-check-action@v1.9.1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.event.pull_request.head.sha }}
@@ -21,7 +21,7 @@ jobs:
           wait-timeout: 1800
         continue-on-error: false
       - name: Wait for backend-tests (integration)
-        uses: lewagon/wait-on-check-action@v1.3.4
+        uses: lewagon/wait-on-check-action@v1.9.1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.event.pull_request.head.sha }}
@@ -30,7 +30,7 @@ jobs:
           wait-timeout: 1800
         continue-on-error: false
       - name: Wait for security-deps
-        uses: lewagon/wait-on-check-action@v1.3.4
+        uses: lewagon/wait-on-check-action@v1.9.1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.event.pull_request.head.sha }}
