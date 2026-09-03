@@ -60,7 +60,7 @@
   "homepage": "https://realestate-web-dz1y.onrender.com/",
   "devDependencies": {
     "@playwright/test": "^1.57.0",
-    "concurrently": "^8.2.2",
+    "concurrently": "^10.0.5",
     "eslint": "^9.39.3",
     "lint-staged": "^15.4.3",
     "prettier": "^3.5.2",
