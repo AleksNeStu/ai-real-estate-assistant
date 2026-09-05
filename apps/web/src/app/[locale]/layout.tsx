@@ -12,6 +12,8 @@ import { UpdateBanner } from '@/components/pwa/update-banner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import type { Locale } from '@/i18n/config';
 import { routing } from '@/i18n/routing';
+import { SITE_URL, absoluteUrl } from '@/lib/site';
+import { buildStructuredData } from '@/lib/structured-data';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -33,6 +35,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
+  themeColor: '#2563eb',
 };
 
 export function generateStaticParams() {
@@ -71,17 +74,25 @@ export async function generateMetadata({
   };
 
   return {
+    metadataBase: SITE_URL,
     title: {
       default: titles[locale as Locale] || titles.en,
       template: `%s | ${titles[locale as Locale] || titles.en}`,
     },
     description: descriptions[locale as Locale] || descriptions.en,
     alternates: {
-      canonical: `/${locale}`,
+      canonical: absoluteUrl(`/${locale}`),
       languages: {
-        pl: '/pl',
-        en: '/en',
-        ru: '/ru',
+        pl: absoluteUrl('/pl'),
+        en: absoluteUrl('/en'),
+        ru: absoluteUrl('/ru'),
+        de: absoluteUrl('/de'),
+        es: absoluteUrl('/es'),
+        it: absoluteUrl('/it'),
+        pt: absoluteUrl('/pt'),
+        tr: absoluteUrl('/tr'),
+        uk: absoluteUrl('/uk'),
+        'x-default': absoluteUrl('/pl'),
       },
     },
     openGraph: {
@@ -99,9 +110,14 @@ export async function generateMetadata({
     robots: {
       index: true,
       follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
     },
     manifest: '/manifest.json',
-    themeColor: '#2563eb',
     appleWebApp: {
       capable: true,
       statusBarStyle: 'default',
@@ -146,25 +162,15 @@ export default async function LocaleLayout({
   // Providing all messages to the client
   const messages = await getMessages();
 
+  const structuredData = buildStructuredData(locale as Locale);
+
   return (
     <html lang={locale} className="dark" suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'WebApplication',
-              name: 'AI Real Estate Assistant',
-              description: 'Next-gen real estate search and analytics',
-              applicationCategory: 'BusinessApplication',
-              operatingSystem: 'Web',
-              offers: {
-                '@type': 'Offer',
-                price: '0',
-                priceCurrency: 'EUR',
-              },
-            }),
+            __html: JSON.stringify(structuredData),
           }}
         />
         <script

@@ -269,6 +269,7 @@ temp/
 
 # Private docs (closed version)
 docs/private/
+docs/community/private-evidence/
 **/*.private.md
 **/*.secret.md
 **/*.internal.md
