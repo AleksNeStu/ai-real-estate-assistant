@@ -1,0 +1,9 @@
+# id	route	rule_fired	title
+12	burst	bounded, no reservation signal	Migrate remaining Next.js 16 metadata deprecations
+13	agents	security signal	Open and merge technical visibility PR
+14	UNCLEAR	underspecified verb	Launch AI-developer content after technical PR
+15	UNCLEAR	underspecified verb	Run community and directory distribution sprint
+16	burst	bounded, no reservation signal	Optimize channels toward 50 Stars/day
+17	burst	bounded, no reservation signal	Repair frontend SSG missing translations
+18	burst	bounded, no reservation signal	Untrack and protect .mcp.json configuration
+20	agents	deploy signal	Refactor 2 xfail health-check tests to deterministic async-mocks

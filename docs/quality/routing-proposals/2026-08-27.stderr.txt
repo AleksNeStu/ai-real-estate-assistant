@@ -1,0 +1,5 @@
+#
+#   burst     4
+#   agents    2
+#   UNCLEAR   2
+# Rows marked UNCLEAR/CONFLICT/NONE are NOT writable by --batch; resolve them before applying.
