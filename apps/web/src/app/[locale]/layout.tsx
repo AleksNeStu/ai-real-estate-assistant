@@ -143,13 +143,19 @@ export default async function LocaleLayout({
   // Enable static rendering
   setRequestLocale(locale);
 
-  // Force dark theme as default for demo - persists across language changes
+  // Default to dark theme for the demo, but allow explicit light choice
+  // via localStorage.theme = 'light'. Without the explicit 'light' branch,
+  // React's className="dark" hydration overrides any earlier removal, and
+  // the page is stuck in dark mode (e.g. screenshot tools can't capture
+  // a light theme for a page that pre-renders <html class="dark">).
   const darkThemeScript = `
     (function() {
       try {
         const stored = localStorage.getItem('theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (stored === 'dark' || (!stored && prefersDark)) {
+        if (stored === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else if (stored === 'dark' || (!stored && prefersDark)) {
           document.documentElement.classList.add('dark');
         }
       } catch (e) {
@@ -165,7 +171,7 @@ export default async function LocaleLayout({
   const structuredData = buildStructuredData(locale as Locale);
 
   return (
-    <html lang={locale} className="dark" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"

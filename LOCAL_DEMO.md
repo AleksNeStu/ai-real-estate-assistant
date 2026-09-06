@@ -42,6 +42,6 @@
 
 ## Need Help?
 
-See [docs/QUICKSTART_DEMO.md](docs/QUICKSTART_DEMO.md) or [scripts/demo/README.md](scripts/demo/README.md)
+See [docs/development/QUICKSTART_DEMO.md](docs/development/QUICKSTART_DEMO.md) or [scripts/demo/README.md](scripts/demo/README.md)
 
 For a feature-by-feature comparison of Local Docker vs VPS vs Render free tier, see [DEPLOYMENT_VARIANTS.md](DEPLOYMENT_VARIANTS.md).

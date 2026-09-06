@@ -152,7 +152,7 @@ The Caddy example in [docs/guides/deployment.md](docs/guides/deployment.md) walk
 
 ## Render free tier — limited functionality
 
-The public staging demo at <https://ai-real-estate-assistant-api.onrender.com> runs on Render's free plan. Each service is hard-capped at **512 MB RAM**, which is the dominant constraint on what can run there.
+The public staging demo at <https://realestate-api-wkm7.onrender.com> runs on Render's free plan. Each service is hard-capped at **512 MB RAM**, which is the dominant constraint on what can run there.
 
 ### What works
 

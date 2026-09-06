@@ -332,3 +332,85 @@ export async function rankPropertiesByCommute(
   });
   return handleResponse<CommuteRankingResponse>(response);
 }
+
+// ============================================================================
+// v5.1: AI Price Forecast with Multi-Year Projection
+// ============================================================================
+
+export interface PriceForecastRequest {
+  property_id?: string;
+  property_features?: Record<string, unknown>;
+  horizon_years?: number[];
+}
+
+export interface ForecastPoint {
+  years_ahead: number;
+  estimated_value: number;
+  lower_bound: number;
+  upper_bound: number;
+}
+
+export interface PriceForecastResponse {
+  current_estimate: number;
+  currency: string;
+  horizon_years: number[];
+  forecast: ForecastPoint[];
+  confidence: number;
+  drivers: string[];
+  explanation: string;
+  comparables_used: number;
+  median_price_per_sqm?: number | null;
+  neighborhood_median_price_per_sqm?: number | null;
+  disclaimer: string;
+}
+
+/**
+ * Estimate current value and project value at 1y/3y/5y horizons.
+ *
+ * Either property_id OR property_features must be supplied.
+ */
+export async function priceForecastApi(
+  input: PriceForecastRequest
+): Promise<PriceForecastResponse> {
+  const response = await safeFetch(`${getApiUrl()}/tools/price-forecast`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(input),
+  });
+  return handleResponse<PriceForecastResponse>(response);
+}
+
+// ============================================================================
+// v5.1: AI Neighborhood One-Liner
+// ============================================================================
+
+export interface NeighborhoodSummaryRequest {
+  city?: string;
+  neighborhood?: string;
+  property_type?: string;
+  rooms?: number;
+  area_sqm?: number;
+  language?: string;
+  max_sentences?: number;
+}
+
+export interface NeighborhoodSummaryResponse {
+  summary: string;
+  language: string;
+}
+
+/**
+ * Generate a 2-3 sentence AI summary of a neighborhood.
+ */
+export async function neighborhoodSummaryApi(
+  input: NeighborhoodSummaryRequest
+): Promise<NeighborhoodSummaryResponse> {
+  const response = await safeFetch(`${getApiUrl()}/tools/neighborhood-summary`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(input),
+  });
+  return handleResponse<NeighborhoodSummaryResponse>(response);
+}

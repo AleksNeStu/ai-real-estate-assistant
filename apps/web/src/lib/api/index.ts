@@ -59,6 +59,9 @@ export {
   generateListing,
   calculateCommuteTime,
   rankPropertiesByCommute,
+  // v5.1: AI price forecast and neighborhood one-liner
+  priceForecastApi,
+  neighborhoodSummaryApi,
 } from './tools';
 
 // Chat: message and streaming

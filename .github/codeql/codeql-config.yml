@@ -1,5 +1,3 @@
-name: "Custom CodeQL Configuration"
-
 queries:
   - uses: security-extended
 

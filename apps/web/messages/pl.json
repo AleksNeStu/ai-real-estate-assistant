@@ -154,7 +154,8 @@
       "description": "Wysłaliśmy link weryfikacyjny na Twój email",
       "checkInbox": "Sprawdź swoją skrzynkę i kliknij link weryfikacyjny.",
       "resend": "Wyślij ponownie email weryfikacyjny",
-      "verified": "Email został zweryfikowany"
+      "verified": "Email został zweryfikowany",
+      "loading": "Loading..."
     },
     "errors": {
       "invalidCredentials": "Nieprawidłowy email lub hasło",
@@ -939,7 +940,11 @@
       }
     },
     "saved": "Ustawienia zapisane.",
-    "error": "Nie udało się zapisać ustawień."
+    "error": "Nie udało się zapisać ustawień.",
+    "emailRequired": "Set an email in Identity settings above to access this section.",
+    "profile": {
+      "loadingProfile": "Loading profile..."
+    }
   },
   "tools": {
     "title": "Narzędzia",

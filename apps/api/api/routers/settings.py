@@ -427,7 +427,11 @@ async def set_demo_mode(
         # Get session ID from headers or generate one
         session_id = request.headers.get("X-Session-ID", "default")
         _DEMO_MODE_SESSIONS[session_id] = demo_mode
-        logger.info(f"Demo mode set to {demo_mode} for session {session_id}")
+        logger.info(
+            "Demo mode set to %s for session %s",
+            sanitize_for_logging(demo_mode),
+            sanitize_for_logging(session_id),
+        )
         return {"demo_mode": demo_mode, "session_id": session_id}
     except Exception as e:
         logger.error(f"Error setting demo mode: {sanitize_for_logging(e)}")

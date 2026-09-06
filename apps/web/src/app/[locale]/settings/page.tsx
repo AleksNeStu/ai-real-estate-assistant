@@ -319,7 +319,7 @@ export default function SettingsPage() {
   }, []);
 
   return (
-    <div className="container py-10">
+    <div className="container mx-auto px-4 py-10">
       <div className="flex flex-col space-y-4 mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground">
@@ -337,19 +337,19 @@ export default function SettingsPage() {
         {/* Profile Section - Task #88 */}
         <section>
           <h2 className="text-lg font-semibold mb-4">Profile</h2>
-          <ProfileSettings />
+          <ProfileSettings userEmail={userEmail} />
         </section>
 
         {/* Privacy & Data Section - Task #88 */}
         <section>
           <h2 className="text-lg font-semibold mb-4">Privacy & Data</h2>
-          <PrivacySettings />
+          <PrivacySettings userEmail={userEmail} />
         </section>
 
         {/* Notifications Section - Always populated */}
         <section>
           <h2 className="text-lg font-semibold mb-4">Notifications</h2>
-          <NotificationSettings />
+          <NotificationSettings userEmail={userEmail} />
         </section>
 
         {/* Models Section - 4 Mandated States */}

@@ -91,7 +91,7 @@ while ($elapsed -lt 180 -and -not ($bOk -and $fOk)) {
 
     # Fetch recent backend logs and display meaningful progress
     $now = (Get-Date).ToString("yyyy-MM-ddTHH:mm:ss")
-    $newLogs = docker logs --since $lastLogTime ai-backend 2>&1
+    $newLogs = docker logs --since $lastLogTime ai-re-prod-backend 2>&1
     $lastLogTime = $now
 
     $shownLog = $false
@@ -141,8 +141,8 @@ while ($elapsed -lt 180 -and -not ($bOk -and $fOk)) {
 }
 Write-Host ""
 
-if (-not $bOk) { Fail "Backend did not become healthy within 180s. Check: docker logs ai-backend" }
-if (-not $fOk) { Fail "Frontend did not become healthy within 180s. Check: docker logs ai-frontend" }
+if (-not $bOk) { Fail "Backend did not become healthy within 180s. Check: docker logs ai-re-prod-backend" }
+if (-not $fOk) { Fail "Frontend did not become healthy within 180s. Check: docker logs ai-re-prod-frontend" }
 
 # ── Summary ───────────────────────────────────────────────────────────────
 Write-Host "`n  ╔════════════════════════════════════════════════════╗" -ForegroundColor Cyan

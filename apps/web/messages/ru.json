@@ -154,7 +154,8 @@
       "description": "Мы отправили ссылку подтверждения на ваш email",
       "checkInbox": "Проверьте почту и нажмите на ссылку подтверждения.",
       "resend": "Отправить повторно",
-      "verified": "Email подтверждён"
+      "verified": "Email подтверждён",
+      "loading": "Loading..."
     },
     "errors": {
       "invalidCredentials": "Неверный email или пароль",
@@ -939,7 +940,11 @@
       }
     },
     "saved": "Настройки сохранены.",
-    "error": "Не удалось сохранить настройки."
+    "error": "Не удалось сохранить настройки.",
+    "emailRequired": "Set an email in Identity settings above to access this section.",
+    "profile": {
+      "loadingProfile": "Loading profile..."
+    }
   },
   "tools": {
     "title": "Инструменты",

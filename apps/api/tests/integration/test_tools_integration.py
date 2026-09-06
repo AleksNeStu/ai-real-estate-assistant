@@ -90,7 +90,8 @@ def test_create_property_tools(mock_vector_store):
     tools = create_property_tools(mock_vector_store)
     # Task #114: Added CommuteTool, MultiOriginCommuteTool
     # Task #115: Added NegotiationTool
-    assert len(tools) == 17
+    # v5.1: Added PriceForecastTool and NeighborhoodSummaryTool
+    assert len(tools) == 19
     assert isinstance(tools[0], MortgageCalculatorTool)
     assert isinstance(tools[1], TCOCalculatorTool)
     assert isinstance(tools[2], InvestmentCalculatorTool)

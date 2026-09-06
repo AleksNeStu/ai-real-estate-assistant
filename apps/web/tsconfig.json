@@ -1,3 +1,10 @@
+// Task #11 audit (2026-08-28): apps/web/tsconfig.audit.json reproduces a typecheck
+// with `skipLibCheck: false`. Result: 21 errors across 4 third-party .d.ts files
+// (react-leaflet internal sub-module, recharts missing @types/lodash, workbox-core
+// missing ExtendableEvent global). ZERO first-party errors. Suppression is kept
+// because every failure is upstream-declaration drift, not our code. Re-run with
+// `./node_modules/.bin/tsc --noEmit --project tsconfig.audit.json` to re-verify
+// after dependency upgrades.
 {
   "compilerOptions": {
     "target": "ES2017",

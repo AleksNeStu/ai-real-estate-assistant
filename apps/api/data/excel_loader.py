@@ -13,6 +13,7 @@ Provides:
 
 import logging
 import os
+import tempfile
 from pathlib import Path
 from typing import Any, List, Optional
 from urllib.parse import urlparse
@@ -30,10 +31,14 @@ EXCEL_EXTENSIONS = {".xlsx", ".xls", ".ods"}
 
 # Default allowed base directories for local Excel files. Allow override via
 # the EXCEL_ALLOWED_BASE_DIR env var (comma-separated list of absolute paths).
+# The OS temp dir is included because the /admin/ingest/upload endpoint stages
+# uploaded files via tempfile.NamedTemporaryFile, which lives there. Server-
+# created temp files are trusted; the path-traversal guard below still applies.
 _default_allowed = [
     os.path.abspath(os.getcwd()),
     os.path.abspath(os.path.join(os.getcwd(), "data")),
     os.path.abspath(os.path.join(os.getcwd(), "uploads")),
+    os.path.abspath(tempfile.gettempdir()),
 ]
 _env_allowed = os.getenv("EXCEL_ALLOWED_BASE_DIR", "").strip()
 ALLOWED_BASE_DIRS: list[str] = (

@@ -261,7 +261,7 @@ cp .env.example .env
 # Install Python dependencies
 make setup
 # or
-python scripts/bootstrap.py --dev
+python scripts/setup/bootstrap.py --dev
 
 # Activate virtual environment (if not using uv)
 source .venv/bin/activate  # macOS/Linux

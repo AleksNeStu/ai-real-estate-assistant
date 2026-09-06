@@ -67,7 +67,7 @@ def with_retry(
             "Retry attempt %s/%s after %.1fs. Exception: %s: %s",
             sanitize_for_log(attempt),
             sanitize_for_log(max_tries),
-            sanitize_for_log(wait_time),
+            wait_time,
             sanitize_for_log(type(exception).__name__ if exception else "Unknown"),
             sanitize_for_log(exception),
         )
@@ -126,7 +126,7 @@ def with_retry_async(
             "Async retry attempt %s/%s after %.1fs. Exception: %s: %s",
             sanitize_for_log(attempt),
             sanitize_for_log(max_tries),
-            sanitize_for_log(wait_time),
+            wait_time,
             sanitize_for_log(type(exception).__name__ if exception else "Unknown"),
             sanitize_for_log(exception),
         )

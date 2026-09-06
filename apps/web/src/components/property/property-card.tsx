@@ -3,6 +3,7 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { HeartButton } from './heart-button';
+import { MortgageEstimate } from './MortgageEstimate';
 import { CommuteBadge } from '@/components/commute';
 import type { Property, CommuteTimeResult, CommuteMode } from '@/lib/types';
 
@@ -13,6 +14,8 @@ interface PropertyCardProps {
   commuteData?: CommuteTimeResult | null;
   /** Optional: Whether to show commute time on the card image */
   showCommuteBadge?: boolean;
+  /** Optional: Whether to show the inline monthly payment estimate (v5.1). */
+  showMortgageEstimate?: boolean;
 }
 
 export function PropertyCard({
@@ -20,6 +23,7 @@ export function PropertyCard({
   showFavoriteButton = true,
   commuteData,
   showCommuteBadge = false,
+  showMortgageEstimate = true,
 }: PropertyCardProps) {
   const t = useTranslations('property.card');
 
@@ -61,9 +65,18 @@ export function PropertyCard({
       </div>
 
       <div className="p-6 space-y-2">
-        <h3 className="text-2xl font-semibold leading-none tracking-tight">
-          {property.title || t('untitled')}
-        </h3>
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="text-2xl font-semibold leading-none tracking-tight">
+            {property.title || t('untitled')}
+          </h3>
+          {showMortgageEstimate && property.price ? (
+            <MortgageEstimate
+              price={property.price}
+              currency={property.currency || 'USD'}
+              className="shrink-0"
+            />
+          ) : null}
+        </div>
         <p className="text-sm text-muted-foreground">
           {property.city}
           {property.country ? `, ${property.country}` : ''}

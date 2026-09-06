@@ -11,7 +11,7 @@
 services:
   backend:
     image: ghcr.io/aleksnestu/ai-real-estate-assistant/backend:latest
-    container_name: nestlab-prod-ai-re-backend
+    container_name: ai-re-prod-backend
     ports:
       - "8082:8000"
     environment:
@@ -58,13 +58,14 @@ services:
 
   frontend:
     image: ghcr.io/aleksnestu/ai-real-estate-assistant/frontend:latest
-    container_name: nestlab-prod-ai-re-frontend
+    container_name: ai-re-prod-frontend
     ports:
       - "3082:3000"
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api/v1}
       - BACKEND_API_URL=${BACKEND_API_URL:-http://backend:8000/api/v1}
       - API_ACCESS_KEY=${API_ACCESS_KEY:-dev-secret-key}
+      - NEXT_PUBLIC_DEMO_MODE=${NEXT_PUBLIC_DEMO_MODE:-true}
     depends_on:
       backend:
         condition: service_healthy
@@ -91,7 +92,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: nestlab-prod-ai-re-redis
+    container_name: ai-re-prod-redis
     command: ["redis-server", "--appendonly", "yes", "--maxmemory", "100mb", "--maxmemory-policy", "allkeys-lru"]
     volumes:
       - redis_data:/data

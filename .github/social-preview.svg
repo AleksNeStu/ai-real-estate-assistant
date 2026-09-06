@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640">
+  <defs>
+    <!-- Subtle radial gradient for depth (B&amp;W only) -->
+    <radialGradient id="bgGradient" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#18181b"/>
+      <stop offset="100%" stop-color="#0a0a0a"/>
+    </radialGradient>
+
+    <!-- Subtle blueprint grid (B&amp;W) -->
+    <pattern id="gridPattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#18181b" stroke-width="0.5"/>
+    </pattern>
+    <pattern id="gridMajor" x="0" y="0" width="160" height="160" patternUnits="userSpaceOnUse">
+      <path d="M 160 0 L 0 0 0 160" fill="none" stroke="#1f1f23" stroke-width="0.8"/>
+    </pattern>
+
+    <!-- Soft white glow for house icon -->
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background layers -->
+  <rect width="1280" height="640" fill="url(#bgGradient)"/>
+  <rect width="1280" height="640" fill="url(#gridPattern)"/>
+  <rect width="1280" height="640" fill="url(#gridMajor)"/>
+
+  <!-- Architectural corner brackets -->
+  <g stroke="#27272a" stroke-width="2" fill="none">
+    <path d="M 40 40 L 40 80 M 40 40 L 80 40"/>
+    <path d="M 1240 40 L 1240 80 M 1240 40 L 1200 40"/>
+    <path d="M 40 600 L 40 560 M 40 600 L 80 600"/>
+    <path d="M 1240 600 L 1240 560 M 1240 600 L 1200 600"/>
+  </g>
+
+  <!-- ============ TOP SECTION: house icon + title ============ -->
+
+  <!-- House icon (white outline, top-left) -->
+  <g transform="translate(100, 90)" filter="url(#softGlow)">
+    <!-- House body -->
+    <path d="M 0 80 L 60 20 L 120 80 L 120 130 L 0 130 Z"
+          fill="none" stroke="#fafafa" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Roof -->
+    <path d="M -8 84 L 60 16 L 128 84"
+          fill="none" stroke="#fafafa" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Door -->
+    <rect x="46" y="86" width="28" height="44" fill="#fafafa" opacity="0.9"/>
+    <!-- Windows -->
+    <g stroke="#fafafa" stroke-width="2" fill="none">
+      <rect x="14" y="92" width="20" height="20"/>
+      <rect x="86" y="92" width="20" height="20"/>
+    </g>
+    <!-- Antenna -->
+    <line x1="100" y1="22" x2="100" y2="40" stroke="#fafafa" stroke-width="2.5"/>
+    <circle cx="100" cy="20" r="3" fill="#fafafa"/>
+  </g>
+
+  <!-- Title -->
+  <text x="260" y="155" font-family="'Inter', 'SF Pro Display', 'Segoe UI', system-ui, sans-serif"
+        font-size="56" font-weight="700" fill="#fafafa" letter-spacing="-1.2">
+    AI Real Estate Assistant
+  </text>
+
+  <!-- Tagline -->
+  <text x="260" y="200" font-family="'Inter', 'SF Pro Display', 'Segoe UI', system-ui, sans-serif"
+        font-size="22" font-weight="400" fill="#a1a1aa" letter-spacing="0.2">
+    Conversational property search
+  </text>
+
+  <!-- ============ MIDDLE SECTION: 4 horizontal metric cards ============ -->
+
+  <g transform="translate(140, 290)">
+
+        <!-- Card 1: Hybrid RAG -->
+    <g transform="translate(0, 0)">
+      <rect x="0" y="0" width="240" height="170" rx="12" fill="#18181b" stroke="#27272a" stroke-width="1"/>
+      <!-- RAG icon: layered bars representing retrieval + generation layers -->
+      <g transform="translate(120, 30)" stroke="#fafafa" stroke-width="2.5" fill="none" stroke-linecap="round">
+        <rect x="-30" y="10" width="60" height="12" rx="3" opacity="0.9"/>
+        <rect x="-24" y="-4" width="48" height="12" rx="3" opacity="0.7"/>
+        <rect x="-18" y="-18" width="36" height="12" rx="3" opacity="0.5"/>
+      </g>
+      <text x="120" y="85" font-family="'Inter', system-ui, sans-serif"
+            font-size="30" font-weight="700" fill="#fafafa" text-anchor="middle" letter-spacing="-0.5">
+        HYBRID RAG
+      </text>
+      <text x="120" y="130" font-family="'Inter', system-ui, sans-serif"
+            font-size="16" font-weight="500" fill="#e4e4e7" text-anchor="middle" letter-spacing="2">
+        RAG + VECTOR SEARCH
+      </text>
+      <!-- divider line -->
+      <line x1="80" y1="148" x2="160" y2="148" stroke="#27272a" stroke-width="1"/>
+      <text x="120" y="163" font-family="'Inter', system-ui, sans-serif"
+            font-size="11" font-weight="400" fill="#71717a" text-anchor="middle">
+        semantic property matching
+      </text>
+    </g>
+
+    <!-- Card 2: 7,000+ tests -->
+    <g transform="translate(260, 0)">
+      <rect x="0" y="0" width="240" height="170" rx="12" fill="#18181b" stroke="#27272a" stroke-width="1"/>
+      <text x="120" y="85" font-family="'Inter', system-ui, sans-serif"
+            font-size="48" font-weight="700" fill="#fafafa" text-anchor="middle" letter-spacing="-2">
+        7,000+
+      </text>
+      <text x="120" y="130" font-family="'Inter', system-ui, sans-serif"
+            font-size="16" font-weight="500" fill="#e4e4e7" text-anchor="middle" letter-spacing="2">
+        TESTS
+      </text>
+      <line x1="80" y1="148" x2="160" y2="148" stroke="#27272a" stroke-width="1"/>
+      <text x="120" y="163" font-family="'Inter', system-ui, sans-serif"
+            font-size="11" font-weight="400" fill="#71717a" text-anchor="middle">
+        90%+ backend coverage
+      </text>
+    </g>
+
+    <!-- Card 3: 9 languages -->
+    <g transform="translate(520, 0)">
+      <rect x="0" y="0" width="240" height="170" rx="12" fill="#18181b" stroke="#27272a" stroke-width="1"/>
+      <text x="120" y="85" font-family="'Inter', system-ui, sans-serif"
+            font-size="56" font-weight="700" fill="#fafafa" text-anchor="middle" letter-spacing="-2">
+        9
+      </text>
+      <text x="120" y="130" font-family="'Inter', system-ui, sans-serif"
+            font-size="16" font-weight="500" fill="#e4e4e7" text-anchor="middle" letter-spacing="2">
+        LANGUAGES
+      </text>
+      <line x1="80" y1="148" x2="160" y2="148" stroke="#27272a" stroke-width="1"/>
+      <text x="120" y="163" font-family="'Inter', system-ui, sans-serif"
+            font-size="11" font-weight="400" fill="#71717a" text-anchor="middle">
+        EN · PL · RU · DE · ES · IT · PT · TR · UK
+      </text>
+    </g>
+
+    <!-- Card 4: WCAG 2.1 AA -->
+    <g transform="translate(780, 0)">
+      <rect x="0" y="0" width="240" height="170" rx="12" fill="#18181b" stroke="#27272a" stroke-width="1"/>
+      <text x="120" y="85" font-family="'Inter', system-ui, sans-serif"
+            font-size="38" font-weight="700" fill="#fafafa" text-anchor="middle" letter-spacing="-1">
+        WCAG 2.1
+      </text>
+      <text x="120" y="130" font-family="'Inter', system-ui, sans-serif"
+            font-size="16" font-weight="500" fill="#e4e4e7" text-anchor="middle" letter-spacing="2">
+        ACCESSIBILITY
+      </text>
+      <line x1="80" y1="148" x2="160" y2="148" stroke="#27272a" stroke-width="1"/>
+      <text x="120" y="163" font-family="'Inter', system-ui, sans-serif"
+            font-size="11" font-weight="400" fill="#71717a" text-anchor="middle">
+        AA compliant
+      </text>
+    </g>
+  </g>
+
+  <!-- ============ BOTTOM SECTION: tech footer strip ============ -->
+
+  <g transform="translate(140, 540)">
+    <text font-family="'Inter', system-ui, sans-serif" font-size="15" font-weight="500" fill="#71717a">
+      <tspan fill="#a1a1aa">●</tspan>
+      <tspan dx="6" fill="#a1a1aa">MIT License</tspan>
+
+      <tspan dx="22" fill="#a1a1aa">●</tspan>
+      <tspan dx="6" fill="#a1a1aa">Live Demo</tspan>
+
+      <tspan dx="22" fill="#a1a1aa">●</tspan>
+      <tspan dx="6" fill="#a1a1aa">FastAPI · Next.js · ChromaDB</tspan>
+    </text>
+  </g>
+</svg>

@@ -1,8 +1,18 @@
 name: Deploy Pipeline
 
 on:
-  push:
-    branches: [main, dev, ver4]
+  # Auto-deploy: wait for CI/CD suite to complete successfully first.
+  # workflow_run only fires when the referenced workflow completes, so
+  # deploys no longer race against CI. The conclusion is checked below
+  # in the ci-check job (for workflow_dispatch) but for workflow_run
+  # events CI has provably already finished.
+  workflow_run:
+    workflows: ["CI/CD AI Real Estate Assistant"]
+    types: [completed]
+    branches: [main, dev]
+
+  # Manual deploy: trigger from GitHub Actions UI. Skips the workflow_run
+  # gate; the ci-check job still verifies CI state before deploying.
   workflow_dispatch:
     inputs:
       environment:
@@ -15,6 +25,20 @@ on:
           - production
           - staging
 
+# Prevent overlapping deploys to the same ref. cancel-in-progress: false
+# (previous value was true). With cancel-in-progress: true, a new push
+# cancels the previous in-flight deploy, but GitHub leaves the previous
+# deployment record in an orphaned in_progress state — Render receives the
+# new code, the new record succeeds, yet the widget shows the old record
+# as "inactive". With cancel-in-progress: false, the second deploy waits
+# for the first to finish and itself runs to completion, so every push
+# creates a coherent success record and no Render deploy is skipped.
+# The concurrency.group is preserved so simultaneous pushes to the same
+# ref still queue serially (one Render deploy at a time).
+concurrency:
+  group: deploy-${{ github.event.workflow_run.head_branch || github.ref_name }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
   deployments: write
@@ -25,17 +49,72 @@ env:
 
 jobs:
   ci-check:
+    if: github.repository_owner == 'AleksNeStu'
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ver4'
     steps:
+      - name: Validate triggering CI run
+        if: github.event_name == 'workflow_run'
+        env:
+          CI_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          CI_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          CI_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          case "$CI_HEAD_BRANCH" in
+            main|dev) ;;
+            *) echo "ERROR: Unsupported CI branch: $CI_HEAD_BRANCH"; exit 1 ;;
+          esac
+          if [ -z "$CI_HEAD_SHA" ]; then
+            echo "ERROR: Triggering CI head SHA is empty"
+            exit 1
+          fi
+          # Gate on integration tests specifically (more reliable, faster than unit).
+          # backend-tests (unit) has known 5-min CI flake per project memory
+          # "Integration test hang pattern"; integration tests catch real bugs
+          # without the flake.
+          INTEGRATION=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            "repos/AleksNeStu/ai-real-estate-assistant/actions/runs/${{ github.event.workflow_run.id }}/jobs" \
+            | jq -r '.jobs[] | select(.name | test("integration"; "i")) | .conclusion' \
+            | head -1)
+          echo "integration-tests conclusion: ${INTEGRATION:-not-found}"
+          if [ -z "$INTEGRATION" ] || [ "$INTEGRATION" != "success" ]; then
+            echo "ERROR: integration tests not passed (got: ${INTEGRATION:-not-found})"
+            exit 1
+          fi
+          # Frontend tests: also gate (no flake expected, ~2 min runtime)
+          FRONTEND=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            "repos/AleksNeStu/ai-real-estate-assistant/actions/runs/${{ github.event.workflow_run.id }}/jobs" \
+            | jq -r '.jobs[] | select(.name == "frontend-tests") | .conclusion' \
+            | head -1)
+          if [ "$FRONTEND" != "success" ]; then
+            echo "ERROR: frontend-tests not passed (got: ${FRONTEND:-not-found})"
+            exit 1
+          fi
+          # CodeQL: gate (high signal for real security regressions)
+          CODEQL_PY=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            "repos/AleksNeStu/ai-real-estate-assistant/actions/runs/${{ github.event.workflow_run.id }}/jobs" \
+            | jq -r '.jobs[] | select(.name == "codeql-python") | .conclusion' \
+            | head -1)
+          if [ "$CODEQL_PY" != "success" ] && [ "$CODEQL_PY" != "skipped" ]; then
+            echo "ERROR: codeql-python not passed (got: ${CODEQL_PY:-not-found})"
+            exit 1
+          fi
+          echo "CI passed for $CI_HEAD_BRANCH at $CI_HEAD_SHA (integration=$INTEGRATION frontend=$FRONTEND codeql=$CODEQL_PY)"
+
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Verify CI passed on target branch
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/github-script@v9
         with:
           script: |
             const branch = context.ref.replace('refs/heads/', '');
-            const isStaging = branch === 'dev' || branch === 'ver4';
+            const isStaging = branch === 'dev';
 
             const runs = await github.rest.actions.listWorkflowRuns({
               owner: context.repo.owner,
@@ -87,11 +166,13 @@ jobs:
 
   validate:
     needs: [ci-check]
-    if: always() && needs.ci-check.result != 'failure'
+    if: github.repository_owner == 'AleksNeStu' && needs.ci-check.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Validate deployment configs
         run: |
@@ -105,8 +186,9 @@ jobs:
             echo "  ✓ $f"
           done
 
-          # Check render.yaml on main/dev
-          if [ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ github.ref }}" = "refs/heads/dev" ]; then
+          # Check render.yaml for main/dev deployment sources
+          DEPLOY_BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
+          if [ "$DEPLOY_BRANCH" = "main" ] || [ "$DEPLOY_BRANCH" = "dev" ]; then
             if [ ! -f "render.yaml" ]; then
               echo "WARNING: Missing render.yaml (needed for Render deploy)"
             fi
@@ -125,13 +207,63 @@ jobs:
 
   deploy-backend:
     needs: validate
+    if: github.repository_owner == 'AleksNeStu' && needs.validate.result == 'success'
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}
+    environment: ${{ github.event.inputs.environment || ((github.event.workflow_run.head_branch || github.ref_name) == 'dev' && 'staging') || 'production' }}
     steps:
+      - name: Create GitHub deployment record (backend)
+        id: gh_deploy
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_ENV: ${{ github.event.inputs.environment || ((github.event.workflow_run.head_branch || github.ref_name) == 'dev' && 'staging') || 'production' }}
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          SHORT_SHA="${DEPLOY_SHA::7}"
+          # auto_inactive=false on staging keeps the latest backend deployment
+          # from being auto-marked Inactive when the parallel frontend job (or
+          # any newer staging push) lands in the same environment. The same
+          # flag on the status POST below is a no-op (not a valid parameter
+          # on /deployments/:id/statuses); the correct surface is on the
+          # deployment creation call here. Without it the Environments page
+          # shows every backend staging deployment as Inactive within
+          # minutes of success, even when Render is live.
+          AUTO_INACTIVE_FLAG=""
+          if [ "$DEPLOY_ENV" = "staging" ]; then
+            AUTO_INACTIVE_FLAG="-F auto_inactive=false"
+          fi
+          DEPLOY_ID=$(gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/deployments \
+            -f ref="$DEPLOY_SHA" \
+            -f environment="$DEPLOY_ENV" \
+            -f description="Backend deploy $SHORT_SHA" \
+            -F auto_merge=false \
+            $AUTO_INACTIVE_FLAG \
+            --jq '.id')
+          echo "id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
+          # Expose DEPLOY_ENV to subsequent steps.
+          echo "DEPLOY_ENV=$DEPLOY_ENV" >> "$GITHUB_ENV"
+          echo "Created GitHub deployment #$DEPLOY_ID in environment $DEPLOY_ENV (auto_inactive=${AUTO_INACTIVE_FLAG:-true})"
+
+      - name: Mark backend deployment in_progress
+        if: always() && steps.gh_deploy.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
+            -f state=in_progress \
+            -f description="Deploying backend to Render ($DEPLOY_SHA)" \
+            >/dev/null
+
       - name: Select Render service
         id: service
         run: |
-          DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
+          DEPLOY_ENV="${{ github.event.inputs.environment || ((github.event.workflow_run.head_branch || github.ref_name) == 'dev' && 'staging') || 'production' }}"
           echo "Deploy environment: $DEPLOY_ENV"
           if [ "$DEPLOY_ENV" = "staging" ]; then
             echo "id=${{ secrets.RENDER_SERVICE_ID_API_STAGING }}" >> $GITHUB_OUTPUT
@@ -148,33 +280,200 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" | jq -r '.[0].id // empty')
           echo "id=$PREV" >> $GITHUB_OUTPUT
 
+      - name: Wait for any prior deploy to finish (Render API mutex)
+        run: |
+          # If a previous deploy to this Render service is still in-flight,
+          # POST /services/$id/deploys returns HTTP 409 Conflict. Poll
+          # GET /deploys?limit=1 until the most recent deploy status is not
+          # in {build_in_progress, pre_deploy_in_progress, queued}, or there
+          # are no prior deploys at all. 20 attempts × 30 s = 10 min cap.
+          echo "Draining prior Render deploys (if any)..."
+          for i in $(seq 1 20); do
+            STATUS=$(curl -s -m 10 \
+              "https://api.render.com/v1/services/${{ steps.service.outputs.id }}/deploys?limit=1" \
+              -H "Accept: application/json" \
+              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              | jq -r '.[0].status // empty')
+            echo "  Attempt $i/20 - most recent deploy status: ${STATUS:-none}"
+            case "$STATUS" in
+              build_in_progress|pre_deploy_in_progress|queued)
+                echo "    Still in-flight; waiting 30 s..."
+                sleep 30
+                ;;
+              "")
+                echo "    No prior deploys; safe to proceed."
+                break
+                ;;
+              *)
+                echo "    Terminal state ($STATUS); safe to trigger a new deploy."
+                break
+                ;;
+            esac
+          done
+          if [ "$i" -eq 20 ]; then
+            echo "ERROR: Prior deploy stuck in '$STATUS' for 10 min - bailing."
+            exit 1
+          fi
+
       - name: Trigger Render backend deploy
         if: steps.service.outputs.id != ''
         run: |
-          curl -s -X POST "https://api.render.com/v1/services/${{ steps.service.outputs.id }}/deploys" \
-            -H "Accept: application/json" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-            -d '{"clearCache": "clear"}' | jq .
+          # POST /services/$id/deploys can return HTTP 409 Conflict when a
+          # prior deploy is still in-flight (race between deploy-backend and
+          # deploy-frontend running in parallel). Retry up to 5 times, with
+          # Retry-After honoured when Render provides it; default 15 s backoff.
+          for i in $(seq 1 5); do
+            HTTP=$(curl -s -D /tmp/render-deploy-h.txt -o /tmp/render-deploy.json -w "%{http_code}" \
+              -X POST "https://api.render.com/v1/services/${{ steps.service.outputs.id }}/deploys" \
+              -H "Accept: application/json" \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              -d '{"clearCache": "clear"}')
+            echo "  Attempt $i/5 - HTTP $HTTP"
+            if [ "$HTTP" = "201" ] || [ "$HTTP" = "200" ]; then
+              jq . /tmp/render-deploy.json
+              exit 0
+            fi
+            if [ "$HTTP" = "409" ]; then
+              RA=$(tr -d '\r' < /tmp/render-deploy-h.txt | awk -F': ' 'tolower($1)=="retry-after"{print $2; exit}')
+              WAIT=${RA:-15}
+              echo "    409 Conflict; sleeping ${WAIT}s (Retry-After='${RA:-none}')..."
+              sleep "$WAIT"
+              continue
+            fi
+            echo "ERROR: Unexpected HTTP $HTTP - body:"
+            cat /tmp/render-deploy.json || true
+            exit 1
+          done
+          echo "ERROR: Trigger failed after 5 attempts"
+          exit 1
+
+      - name: Warm-up ping (Render free-tier hibernate)
+        run: |
+          # Render free-tier hibernates after ~15 min of no traffic; the first
+          # request returns 503 with a Retry-After header while the container
+          # cold-starts. Distinguish that 503 (cold-start, transient) from a
+          # real 5xx (502/504/500/404) by checking the Retry-After header and
+          # status code. 10 attempts, 503 sleeps Retry-After (default 30 s),
+          # real 5xx bails out early so the main health-wait loop can fail
+          # closed. This step never fails by itself.
+          #
+          # Note: curl is invoked with `|| echo ""` so that any non-2xx exit
+          # code (e.g., 28 = timeout) does NOT propagate under `set -e` (the
+          # GitHub Actions runner uses `shell: bash -e {0}`). -m 60 gives a
+          # fully cold-starting Render container enough time to come online.
+          URL="${{ steps.service.outputs.url }}/health"
+          for i in $(seq 1 10); do
+            HTTP=$(curl -s -m 60 -o /tmp/warmup.json -w "%{http_code}" \
+              -D /tmp/warmup-h.txt "$URL" || echo "")
+            echo "  Warm-up attempt $i/10 - HTTP ${HTTP:-timeout}"
+            case "$HTTP" in
+              200|204)
+                echo "  Already warm."
+                exit 0
+                ;;
+              503)
+                RA=$(tr -d '\r' < /tmp/warmup-h.txt | awk -F': ' 'tolower($1)=="retry-after"{print $2; exit}')
+                WAIT=${RA:-30}
+                echo "    Cold-start 503; sleeping ${WAIT}s (Retry-After='${RA:-none}')..."
+                sleep "$WAIT"
+                ;;
+              502|504|500|404)
+                echo "    Real 5xx (not a cold-start); bailing warm-up early so the health loop can diagnose."
+                break
+                ;;
+              *)
+                echo "    Unhandled HTTP $HTTP; bailing warm-up."
+                break
+                ;;
+            esac
+          done
+          # Fall through to the full health wait loop below.
 
       - name: Wait for backend health
         run: |
           echo "Waiting for backend to become healthy..."
+          # 30 iterations × 30 s = 15 min total budget. Each iteration
+          # branches on HTTP status: 200+healthy (success), 503 cold-start
+          # (Retry-After sleep + retry), other 5xx (fail closed immediately).
+          # -m 10 caps curl runtime so a hung host cannot stall the loop.
+          # `|| echo ""` swallows curl exit codes under set -e so timeouts
+          # fall into the 000 (retry) branch instead of failing the step.
           for i in $(seq 1 30); do
-            # -m 10 = 10s curl timeout so a hung Render cold-start
-            # doesn't block the loop forever. -f = silent on HTTP
-            # errors. Without -m, the previous loop hung for 75+ min
-            # against a Render free-tier service that wasn't returning
-            # /health, blocking the deploy pipeline.
-            if curl -m 10 -sf "${{ steps.service.outputs.url }}/health" | jq -e '.status == "healthy"' >/dev/null 2>&1; then
-              echo "Backend is healthy!"
-              exit 0
-            fi
-            echo "  Attempt $i/30 - waiting 30s..."
-            sleep 30
+            HTTP=$(curl -s -m 10 -o /tmp/health.json -w "%{http_code}" \
+              -D /tmp/health-h.txt "${{ steps.service.outputs.url }}/health" || echo "")
+            echo "  Attempt $i/30 - HTTP ${HTTP:-timeout}"
+            case "$HTTP" in
+              200)
+                if jq -e '.status == "healthy"' /tmp/health.json >/dev/null 2>&1; then
+                  echo "Backend is healthy!"
+                  exit 0
+                fi
+                echo "    200 but body says not healthy; retrying..."
+                sleep 15
+                ;;
+              503)
+                RA=$(tr -d '\r' < /tmp/health-h.txt | awk -F': ' 'tolower($1)=="retry-after"{print $2; exit}')
+                WAIT=${RA:-30}
+                echo "    Cold-start 503; sleeping ${WAIT}s (Retry-After='${RA:-none}')..."
+                sleep "$WAIT"
+                ;;
+              502|504|500|404)
+                echo "ERROR: Backend returned HTTP $HTTP - body:"
+                cat /tmp/health.json || true
+                exit 1
+                ;;
+              000)
+                echo "    Curl timed out / connection refused; retrying..."
+                sleep 30
+                ;;
+              *)
+                echo "    Unhandled HTTP $HTTP; retrying..."
+                sleep 30
+                ;;
+            esac
           done
           echo "ERROR: Backend health check failed after 15 minutes"
           exit 1
+
+      - name: Mark backend deployment success
+        if: success() && steps.gh_deploy.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Pass auto_inactive=false on staging so the parallel backend and
+          # frontend jobs in the same run don't cross-inactivate each other
+          # in the shared staging environment (GitHub defaults
+          # auto_inactive=true, which left the newest staging deployment
+          # marked "Inactive" on the repo Environments page even when Render
+          # was live). Production is left at the default (auto_inactive=true)
+          # so a new prod deploy correctly supersedes the prior active one.
+          AUTO_INACTIVE_FLAG=""
+          if [ "${DEPLOY_ENV}" = "staging" ]; then
+            AUTO_INACTIVE_FLAG="-F auto_inactive=false"
+          fi
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
+            $AUTO_INACTIVE_FLAG \
+            -f state=success \
+            -F environment_url="${{ steps.service.outputs.url }}/health" \
+            -f description="Backend deployed and healthy" \
+            >/dev/null
+
+      - name: Mark backend deployment failure
+        if: failure() && steps.gh_deploy.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
+            -f state=failure \
+            -f description="Backend deploy failed (see job logs)" \
+            >/dev/null
 
       - name: Rollback on failure
         if: failure() && steps.prev-deploy.outputs.id != ''
@@ -186,15 +485,62 @@ jobs:
 
   deploy-frontend:
     needs: validate
+    if: github.repository_owner == 'AleksNeStu' && needs.validate.result == 'success'
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}
+    environment: ${{ github.event.inputs.environment || ((github.event.workflow_run.head_branch || github.ref_name) == 'dev' && 'staging') || 'production' }}
     outputs:
       deploy-url: ${{ steps.resolve-url.outputs.url }}
     steps:
+      - name: Create GitHub deployment record (frontend)
+        id: gh_deploy
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_ENV: ${{ github.event.inputs.environment || ((github.event.workflow_run.head_branch || github.ref_name) == 'dev' && 'staging') || 'production' }}
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          SHORT_SHA="${DEPLOY_SHA::7}"
+          # auto_inactive=false on staging keeps the latest frontend deployment
+          # from being auto-marked Inactive when the parallel backend job (or
+          # any newer staging push) lands. See backend twin step for the
+          # full rationale — the flag is meaningful on the deployment
+          # CREATION call (here), not on the status POST below.
+          AUTO_INACTIVE_FLAG=""
+          if [ "$DEPLOY_ENV" = "staging" ]; then
+            AUTO_INACTIVE_FLAG="-F auto_inactive=false"
+          fi
+          DEPLOY_ID=$(gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/deployments \
+            -f ref="$DEPLOY_SHA" \
+            -f environment="$DEPLOY_ENV" \
+            -f description="Frontend deploy $SHORT_SHA" \
+            -F auto_merge=false \
+            $AUTO_INACTIVE_FLAG \
+            --jq '.id')
+          echo "id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
+          # Expose DEPLOY_ENV to subsequent steps.
+          echo "DEPLOY_ENV=$DEPLOY_ENV" >> "$GITHUB_ENV"
+          echo "Created GitHub deployment #$DEPLOY_ID in environment $DEPLOY_ENV (auto_inactive=${AUTO_INACTIVE_FLAG:-true})"
+
+      - name: Mark frontend deployment in_progress
+        if: always() && steps.gh_deploy.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
+            -f state=in_progress \
+            -f description="Deploying frontend to Render ($DEPLOY_SHA)" \
+            >/dev/null
+
       - name: Select Render frontend service
         id: service
         run: |
-          DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
+          DEPLOY_ENV="${{ github.event.inputs.environment || ((github.event.workflow_run.head_branch || github.ref_name) == 'dev' && 'staging') || 'production' }}"
           echo "Deploy environment: $DEPLOY_ENV"
           if [ "$DEPLOY_ENV" = "staging" ]; then
             echo "id=${{ secrets.RENDER_SERVICE_ID_WEB_STAGING }}" >> $GITHUB_OUTPUT
@@ -205,7 +551,7 @@ jobs:
       - name: Resolve frontend URL
         id: resolve-url
         run: |
-          DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
+          DEPLOY_ENV="${{ github.event.inputs.environment || ((github.event.workflow_run.head_branch || github.ref_name) == 'dev' && 'staging') || 'production' }}"
           if [ "$DEPLOY_ENV" = "staging" ]; then
             URL="${{ secrets.RENDER_FRONTEND_URL_STAGING }}"
           else
@@ -222,30 +568,192 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" | jq -r '.[0].id // empty')
           echo "id=$PREV" >> $GITHUB_OUTPUT
 
+      - name: Wait for any prior deploy to finish (Render API mutex)
+        run: |
+          # If a previous deploy to this Render service is still in-flight,
+          # POST /services/$id/deploys returns HTTP 409 Conflict. Poll
+          # GET /deploys?limit=1 until the most recent deploy status is not
+          # in {build_in_progress, pre_deploy_in_progress, queued}, or there
+          # are no prior deploys at all. 20 attempts × 30 s = 10 min cap.
+          echo "Draining prior Render deploys (if any)..."
+          for i in $(seq 1 20); do
+            STATUS=$(curl -s -m 10 \
+              "https://api.render.com/v1/services/${{ steps.service.outputs.id }}/deploys?limit=1" \
+              -H "Accept: application/json" \
+              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              | jq -r '.[0].status // empty')
+            echo "  Attempt $i/20 - most recent deploy status: ${STATUS:-none}"
+            case "$STATUS" in
+              build_in_progress|pre_deploy_in_progress|queued)
+                echo "    Still in-flight; waiting 30 s..."
+                sleep 30
+                ;;
+              "")
+                echo "    No prior deploys; safe to proceed."
+                break
+                ;;
+              *)
+                echo "    Terminal state ($STATUS); safe to trigger a new deploy."
+                break
+                ;;
+            esac
+          done
+          if [ "$i" -eq 20 ]; then
+            echo "ERROR: Prior deploy stuck in '$STATUS' for 10 min - bailing."
+            exit 1
+          fi
+
       - name: Trigger Render frontend deploy
         if: steps.service.outputs.id != ''
         run: |
-          curl -s -X POST "https://api.render.com/v1/services/${{ steps.service.outputs.id }}/deploys" \
-            -H "Accept: application/json" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-            -d '{"clearCache": "clear"}' | jq .
+          # POST /services/$id/deploys can return HTTP 409 Conflict when a
+          # prior deploy is still in-flight (race between deploy-backend and
+          # deploy-frontend running in parallel). Retry up to 5 times, with
+          # Retry-After honoured when Render provides it; default 15 s backoff.
+          for i in $(seq 1 5); do
+            HTTP=$(curl -s -D /tmp/render-deploy-h.txt -o /tmp/render-deploy.json -w "%{http_code}" \
+              -X POST "https://api.render.com/v1/services/${{ steps.service.outputs.id }}/deploys" \
+              -H "Accept: application/json" \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              -d '{"clearCache": "clear"}')
+            echo "  Attempt $i/5 - HTTP $HTTP"
+            if [ "$HTTP" = "201" ] || [ "$HTTP" = "200" ]; then
+              jq . /tmp/render-deploy.json
+              exit 0
+            fi
+            if [ "$HTTP" = "409" ]; then
+              RA=$(tr -d '\r' < /tmp/render-deploy-h.txt | awk -F': ' 'tolower($1)=="retry-after"{print $2; exit}')
+              WAIT=${RA:-15}
+              echo "    409 Conflict; sleeping ${WAIT}s (Retry-After='${RA:-none}')..."
+              sleep "$WAIT"
+              continue
+            fi
+            echo "ERROR: Unexpected HTTP $HTTP - body:"
+            cat /tmp/render-deploy.json || true
+            exit 1
+          done
+          echo "ERROR: Trigger failed after 5 attempts"
+          exit 1
+
+      - name: Warm-up ping (Render free-tier hibernate)
+        run: |
+          # Render free-tier hibernates after ~15 min of no traffic; the first
+          # request returns 503 with a Retry-After header while the container
+          # cold-starts. Distinguish that 503 (cold-start, transient) from a
+          # real 5xx (502/504/500/404) by checking the Retry-After header and
+          # status code. 10 attempts, 503 sleeps Retry-After (default 30 s),
+          # real 5xx bails out early so the main health-wait loop can fail
+          # closed. This step never fails by itself.
+          #
+          # Frontend probe accepts 2xx and 3xx (Render often returns 307 for
+          # HTTP→HTTPS upgrade or www→apex redirect). `|| echo ""` swallows
+          # curl exit codes under set -e.
+          FRONTEND_URL=$(cat /tmp/frontend_url.txt)
+          for i in $(seq 1 10); do
+            HTTP=$(curl -s -m 60 -o /tmp/warmup.json -w "%{http_code}" \
+              -D /tmp/warmup-h.txt "$FRONTEND_URL" || echo "")
+            echo "  Warm-up attempt $i/10 - HTTP ${HTTP:-timeout}"
+            case "$HTTP" in
+              200|301|302|304|307|308)
+                echo "  Already warm."
+                exit 0
+                ;;
+              503)
+                RA=$(tr -d '\r' < /tmp/warmup-h.txt | awk -F': ' 'tolower($1)=="retry-after"{print $2; exit}')
+                WAIT=${RA:-30}
+                echo "    Cold-start 503; sleeping ${WAIT}s (Retry-After='${RA:-none}')..."
+                sleep "$WAIT"
+                ;;
+              502|504|500|404)
+                echo "    Real 5xx (not a cold-start); bailing warm-up early so the health loop can diagnose."
+                break
+                ;;
+              *)
+                echo "    Unhandled HTTP $HTTP; bailing warm-up."
+                break
+                ;;
+            esac
+          done
+          # Fall through to the full health wait loop below.
 
       - name: Wait for frontend health
         run: |
           FRONTEND_URL=$(cat /tmp/frontend_url.txt)
           echo "Waiting for frontend to become healthy at $FRONTEND_URL..."
+          # 30 iterations × 30 s = 15 min total budget. Each iteration
+          # branches on HTTP status: 2xx/3xx (live — Render often returns
+          # 307 for HTTP→HTTPS or www→apex redirect), 503 cold-start
+          # (Retry-After sleep + retry), other 5xx (fail closed immediately).
+          # -m 10 caps curl runtime so a hung host cannot stall the loop.
+          # `|| echo ""` swallows curl exit codes under set -e.
           for i in $(seq 1 30); do
-            # -m 10 = 10s curl timeout (see Wait for backend health above)
-            if curl -m 10 -sf "$FRONTEND_URL" -o /dev/null; then
-              echo "Frontend is live!"
-              exit 0
-            fi
-            echo "  Attempt $i/30 - waiting 30s..."
-            sleep 30
+            HTTP=$(curl -s -m 10 -o /tmp/health.json -w "%{http_code}" \
+              -D /tmp/health-h.txt "$FRONTEND_URL" || echo "")
+            echo "  Attempt $i/30 - HTTP ${HTTP:-timeout}"
+            case "$HTTP" in
+              200|301|302|304|307|308)
+                echo "Frontend is live!"
+                exit 0
+                ;;
+              503)
+                RA=$(tr -d '\r' < /tmp/health-h.txt | awk -F': ' 'tolower($1)=="retry-after"{print $2; exit}')
+                WAIT=${RA:-30}
+                echo "    Cold-start 503; sleeping ${WAIT}s (Retry-After='${RA:-none}')..."
+                sleep "$WAIT"
+                ;;
+              502|504|500|404)
+                echo "ERROR: Frontend returned HTTP $HTTP - body:"
+                cat /tmp/health.json || true
+                exit 1
+                ;;
+              000)
+                echo "    Curl timed out / connection refused; retrying..."
+                sleep 30
+                ;;
+              *)
+                echo "    Unhandled HTTP $HTTP; retrying..."
+                sleep 30
+                ;;
+            esac
           done
           echo "ERROR: Frontend health check failed after 15 minutes"
           exit 1
+
+      - name: Mark frontend deployment success
+        if: success() && steps.gh_deploy.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Pass auto_inactive=false on staging so the parallel backend and
+          # frontend jobs in the same run don't cross-inactivate each other
+          # in the shared staging environment (see backend twin step).
+          AUTO_INACTIVE_FLAG=""
+          if [ "${DEPLOY_ENV}" = "staging" ]; then
+            AUTO_INACTIVE_FLAG="-F auto_inactive=false"
+          fi
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
+            $AUTO_INACTIVE_FLAG \
+            -f state=success \
+            -F environment_url="${{ steps.resolve-url.outputs.url }}" \
+            -f description="Frontend deployed and live" \
+            >/dev/null
+
+      - name: Mark frontend deployment failure
+        if: failure() && steps.gh_deploy.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
+            -f state=failure \
+            -f description="Frontend deploy failed (see job logs)" \
+            >/dev/null
 
       - name: Rollback on failure
         if: failure() && steps.prev-deploy.outputs.id != ''
@@ -257,18 +765,24 @@ jobs:
 
   smoke-test:
     needs: [deploy-backend, deploy-frontend]
-    if: always() && needs.deploy-backend.result == 'success' && needs.deploy-frontend.result == 'success'
+    if: |
+      always() &&
+      github.repository_owner == 'AleksNeStu' &&
+      needs.deploy-backend.result == 'success' &&
+      needs.deploy-frontend.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Run smoke tests
         run: |
           echo "Running post-deployment smoke tests..."
 
           # Determine environment URLs
-          DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
+          DEPLOY_ENV="${{ github.event.inputs.environment || ((github.event.workflow_run.head_branch || github.ref_name) == 'dev' && 'staging') || 'production' }}"
           if [ "$DEPLOY_ENV" = "staging" ]; then
             BACKEND_URL="${{ secrets.RENDER_BACKEND_URL_STAGING }}"
             FRONTEND_URL="${{ secrets.RENDER_FRONTEND_URL_STAGING }}"

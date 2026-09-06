@@ -55,7 +55,7 @@ Log "uv found: $(uv --version)"
 $venvPath = Join-Path $root ".venv"
 if (-not (Test-Path $venvPath)) {
     Log ".venv not found. Running bootstrap..."
-    python scripts/bootstrap.py --dev 2>&1 | ForEach-Object { Log $_ }
+    python scripts/setup/bootstrap.py --dev 2>&1 | ForEach-Object { Log $_ }
     if ($LASTEXITCODE -ne 0) {
         Log "ERROR: Bootstrap failed"
         exit 1

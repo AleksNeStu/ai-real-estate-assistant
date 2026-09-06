@@ -17,8 +17,6 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 from config.port_config import (
     _find_project_root,
     _load_env_ports,
@@ -243,26 +241,18 @@ class TestGetBackendPort:
             result = get_backend_port()
             assert result == 9999
 
-    @pytest.mark.xfail(
-        reason="F-20260905-10: port_config pre-existing failures on main@50e98ad (8 tests). PORT env var leakage from outer pytest env (8080) overrides default-fallback in get_backend_port/get_frontend_url; tests assume clean os.environ but environment is inherited.",
-        strict=False,
-    )
     def test_returns_port_from_env_ports_file(self, tmp_path: Path):
         """BACKEND_PORT from .env.ports when no PORT env var."""
         env_file = tmp_path / ".env.ports"
         env_file.write_text("BACKEND_PORT=9000\n", encoding="utf-8")
 
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_backend_port()
             assert result == 9000
 
-    @pytest.mark.xfail(
-        reason="F-20260905-10: port_config pre-existing failures on main@50e98ad (8 tests). PORT env var leakage from outer pytest env (8080) overrides default-fallback in get_backend_port/get_frontend_url; tests assume clean os.environ but environment is inherited.",
-        strict=False,
-    )
     def test_returns_port_from_registry(self, tmp_path: Path):
         """Backend port from PORT_REGISTRY.json when no env var or .env.ports."""
         docs_dir = tmp_path / "docs"
@@ -275,20 +265,16 @@ class TestGetBackendPort:
         (docs_dir / "PORT_REGISTRY.json").write_text(json.dumps(registry), encoding="utf-8")
 
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_backend_port()
             assert result == 7777
 
-    @pytest.mark.xfail(
-        reason="F-20260905-10: port_config pre-existing failures on main@50e98ad (8 tests). PORT env var leakage from outer pytest env (8080) overrides default-fallback in get_backend_port/get_frontend_url; tests assume clean os.environ but environment is inherited.",
-        strict=False,
-    )
     def test_returns_default_8000(self, tmp_path: Path):
         """Default port 8000 when nothing is configured."""
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_backend_port()
@@ -303,17 +289,13 @@ class TestGetBackendPort:
             result = get_backend_port()
             assert result == 8000
 
-    @pytest.mark.xfail(
-        reason="F-20260905-10: port_config pre-existing failures on main@50e98ad (8 tests). PORT env var leakage from outer pytest env (8080) overrides default-fallback in get_backend_port/get_frontend_url; tests assume clean os.environ but environment is inherited.",
-        strict=False,
-    )
     def test_invalid_env_ports_value_falls_through(self, tmp_path: Path):
         """Non-numeric BACKEND_PORT in .env.ports falls through."""
         env_file = tmp_path / ".env.ports"
         env_file.write_text("BACKEND_PORT=abc\n", encoding="utf-8")
 
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_backend_port()
@@ -346,42 +328,30 @@ class TestGetFrontendUrl:
             result = get_frontend_url()
             assert result == "https://app.example.com"
 
-    @pytest.mark.xfail(
-        reason="F-20260905-10: port_config pre-existing failures on main@50e98ad (8 tests). PORT env var leakage from outer pytest env (8080) overrides default-fallback in get_backend_port/get_frontend_url; tests assume clean os.environ but environment is inherited.",
-        strict=False,
-    )
     def test_returns_url_from_env_ports(self, tmp_path: Path):
         """FRONTEND_URL from .env.ports when no env var."""
         env_file = tmp_path / ".env.ports"
         env_file.write_text("FRONTEND_URL=http://custom:4000\n", encoding="utf-8")
 
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_frontend_url()
             assert result == "http://custom:4000"
 
-    @pytest.mark.xfail(
-        reason="F-20260905-10: port_config pre-existing failures on main@50e98ad (8 tests). PORT env var leakage from outer pytest env (8080) overrides default-fallback in get_backend_port/get_frontend_url; tests assume clean os.environ but environment is inherited.",
-        strict=False,
-    )
     def test_constructs_url_from_frontend_port(self, tmp_path: Path):
         """Constructs URL from FRONTEND_PORT in .env.ports."""
         env_file = tmp_path / ".env.ports"
         env_file.write_text("FRONTEND_PORT=4000\n", encoding="utf-8")
 
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_frontend_url()
             assert result == "http://localhost:4000"
 
-    @pytest.mark.xfail(
-        reason="F-20260905-10: port_config pre-existing failures on main@50e98ad (8 tests). PORT env var leakage from outer pytest env (8080) overrides default-fallback in get_backend_port/get_frontend_url; tests assume clean os.environ but environment is inherited.",
-        strict=False,
-    )
     def test_constructs_url_from_registry(self, tmp_path: Path):
         """Constructs URL from frontend allocation in registry."""
         docs_dir = tmp_path / "docs"
@@ -394,7 +364,7 @@ class TestGetFrontendUrl:
         (docs_dir / "PORT_REGISTRY.json").write_text(json.dumps(registry), encoding="utf-8")
 
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_frontend_url()
@@ -403,7 +373,7 @@ class TestGetFrontendUrl:
     def test_returns_default_localhost_3000(self, tmp_path: Path):
         """Default URL when nothing is configured."""
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_frontend_url()
@@ -415,7 +385,7 @@ class TestGetFrontendUrl:
         env_file.write_text("FRONTEND_PORT=abc\n", encoding="utf-8")
 
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_frontend_url()
@@ -464,10 +434,6 @@ class TestGetCorsOrigins:
             result = get_cors_origins()
             assert result == ["http://a:3000", "http://b:4000"]
 
-    @pytest.mark.xfail(
-        reason="F-20260905-10: port_config pre-existing failures on main@50e98ad (8 tests). PORT env var leakage from outer pytest env (8080) overrides default-fallback in get_backend_port/get_frontend_url; tests assume clean os.environ but environment is inherited.",
-        strict=False,
-    )
     def test_uses_frontend_url_when_not_default(self, tmp_path: Path):
         """Non-default frontend URL is used as CORS origin."""
         env_file = tmp_path / ".env.ports"
@@ -477,7 +443,7 @@ class TestGetCorsOrigins:
             patch.dict(
                 os.environ,
                 {"CORS_ALLOW_ORIGINS": "", "ENVIRONMENT": "development"},
-                clear=False,
+                clear=True,
             ),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
@@ -542,7 +508,7 @@ class TestGetAllPortConfig:
     def test_returns_all_config_keys(self, tmp_path: Path):
         """Returns dict with backend_port, frontend_url, and cors_origins."""
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_all_port_config()
@@ -602,7 +568,7 @@ class TestGetFrontendUrlForSettings:
     def test_returns_default_when_no_config(self, tmp_path: Path):
         """Returns default URL when nothing is configured."""
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             assert get_frontend_url_for_settings() == "http://localhost:3000"

@@ -127,8 +127,15 @@ def hash_sensitive_data(data: str, algorithm: str = "sha256") -> str:
 # A static fallback is used only when the env var is not configured; deployments
 # should set SECURITY_PEPPER to a high-entropy secret.
 _SECURITY_PEPPER = (
-    os.getenv("SECURITY_PEPPER") or "nestlab-static-pepper-9b3a4f1e-7c2d-4a8b-9e1f-0a8c5d6b7e2f"
+    os.getenv("SECURITY_PEPPER")
+    or "change-me-set-SECURITY_PEPPER-env-var-in-production-environments"
 ).encode("utf-8")
+
+if not os.getenv("SECURITY_PEPPER"):
+    logging.getLogger(__name__).warning(
+        "SECURITY_PEPPER env var is not set; using insecure placeholder. "
+        "Set SECURITY_PEPPER to a high-entropy secret in production."
+    )
 
 
 def hash_fingerprint(value: str, length: int = 16) -> str:

@@ -2,7 +2,7 @@ const { chromium } = require("playwright");
 const path = require("path");
 const fs = require("fs");
 
-const BASE = process.argv[2] || "http://localhost:3456";
+const BASE = process.argv[2] || "http://localhost:3082";
 const THEME = process.argv[3] || "dark";
 const OUT_DIR = path.join(__dirname, "..", "..", "docs", "screenshots");
 
@@ -45,6 +45,15 @@ async function captureScreenshots(browser, screenshots) {
       localStorage.setItem("theme", "dark");
       document.documentElement.classList.add("dark");
     });
+  } else {
+    // Force light mode: the frontend doesn't respect `colorScheme: "light"`
+    // on its own, so we explicitly set localStorage and remove the .dark
+    // class. Without this, every "light" capture was actually rendering in
+    // the default dark theme (because the demo page starts dark).
+    await context.addInitScript(() => {
+      localStorage.setItem("theme", "light");
+      document.documentElement.classList.remove("dark");
+    });
   }
 
   const page = await context.newPage();
@@ -54,13 +63,32 @@ async function captureScreenshots(browser, screenshots) {
     console.log(`Capturing ${shot.name} (${shot.desc})...`);
     try {
       await page.goto(url, { waitUntil: "load", timeout: 30000 });
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(5000);
 
       // Dismiss cookie banners
       try {
         const btn = page.locator("button:has-text('Accept'), button:has-text('Close')");
         if (await btn.isVisible({ timeout: 1000 })) await btn.click();
       } catch {}
+
+      // For the AI chat route, type a question and wait for the assistant
+      // response so the screenshot shows a real conversation, not the empty
+      // welcome screen. Without this the chat panel always captures empty.
+      if (shot.name === "chat") {
+        try {
+          const input = page.locator("textarea, input[type='text']").first();
+          await input.waitFor({ state: "visible", timeout: 5000 });
+          await input.fill("Find 2-bedroom apartments under $400,000 in Madrid");
+          await page.keyboard.press("Enter");
+          await page.waitForResponse(
+            (r) => r.url().includes("/chat") && r.status() === 200,
+            { timeout: 20000 }
+          );
+          await page.waitForTimeout(3000); // let the streamed reply paint
+        } catch (err) {
+          console.warn(`  Chat scripting failed (fallback to empty): ${err.message}`);
+        }
+      }
 
       const outPath = path.join(OUT_DIR, `${shot.name}.png`);
       await page.screenshot({ path: outPath, fullPage: false });
@@ -107,7 +135,7 @@ async function main() {
       console.log(`Capturing ${shot.name} (${shot.desc}, mobile)...`);
       try {
         await mobilePage.goto(url, { waitUntil: "load", timeout: 30000 });
-        await mobilePage.waitForTimeout(3000);
+        await mobilePage.waitForTimeout(5000);
 
         const outPath = path.join(OUT_DIR, `${shot.name}.png`);
         await mobilePage.screenshot({ path: outPath, fullPage: false });

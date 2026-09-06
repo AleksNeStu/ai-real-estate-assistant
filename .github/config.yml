@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Question
-    url: https://github.com/NestLab-Tech/ai-real-estate-assistant/issues/new?labels=question
+    url: https://github.com/AleksNeStu/ai-real-estate-assistant/issues/new?labels=question
     about: Ask a question about the project. Please check existing issues first.
   - name: Documentation
-    url: https://github.com/NestLab-Tech/ai-real-estate-assistant/tree/dev/docs
+    url: https://github.com/AleksNeStu/ai-real-estate-assistant/tree/dev/docs
     about: Browse the documentation for setup guides, architecture, and API reference.

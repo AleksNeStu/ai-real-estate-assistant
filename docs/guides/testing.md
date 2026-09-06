@@ -44,7 +44,7 @@ The project uses:
 # Backend
 make setup
 # or
-python scripts/bootstrap.py --dev
+python scripts/setup/bootstrap.py --dev
 
 # Frontend
 cd apps/web

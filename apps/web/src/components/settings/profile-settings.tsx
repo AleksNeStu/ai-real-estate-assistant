@@ -37,7 +37,7 @@ const LANGUAGES = [
   { value: 'fr', label: 'Français' },
 ];
 
-export function ProfileSettings() {
+export function ProfileSettings({ userEmail }: { userEmail: string | null }) {
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -55,8 +55,12 @@ export function ProfileSettings() {
   const [language, setLanguage] = useState('en');
 
   useEffect(() => {
+    if (!userEmail) {
+      setLoading(false);
+      return;
+    }
     fetchProfile();
-  }, []);
+  }, [userEmail]);
 
   const fetchProfile = async () => {
     try {
@@ -76,14 +80,26 @@ export function ProfileSettings() {
   };
 
   if (loading) {
-    return <div className="p-4 text-center">{t('profile.loadingProfile')}</div>;
+    return (
+      <div className="rounded-md border border-dashed bg-muted/30 p-4 text-muted-foreground">
+        {t('profile.loadingProfile')}
+      </div>
+    );
+  }
+
+  if (!userEmail) {
+    return (
+      <div className="rounded-md border border-dashed bg-muted/30 p-4 text-muted-foreground">
+        {t('emailRequired')}
+      </div>
+    );
   }
 
   if (!profile) {
     return (
-      <div className="p-4 text-center text-red-500">
-        {error || t('profile.somethingWentWrong')}
-        <Button onClick={fetchProfile} className="ml-4">
+      <div className="flex items-center gap-3 rounded-md border border-destructive/20 bg-destructive/5 p-4 text-destructive">
+        <span className="flex-1">{error || t('profile.somethingWentWrong')}</span>
+        <Button onClick={fetchProfile} variant="outline" size="sm">
           {t('profile.retry')}
         </Button>
       </div>
@@ -277,7 +293,7 @@ export function ProfileSettings() {
               maxLength={500}
             />
             <span className="text-xs text-muted-foreground">
-              {t('profile.charactersCount', { count: bio.length })}
+              {t('profile.charactersCount', { count: bio.length, max: 500 })}
             </span>
           </div>
         </CardContent>
