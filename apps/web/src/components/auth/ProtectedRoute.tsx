@@ -18,7 +18,7 @@ interface ProtectedRouteProps {
  * This component checks if the user is authenticated on the client side.
  * If not authenticated, it redirects to the login page.
  *
- * For server-side protection, use the middleware.ts file.
+ * For server-side protection, use the proxy.ts file (Next.js 16 renamed middleware.ts → proxy.ts).
  *
  * @example
  * ```tsx

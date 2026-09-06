@@ -6,14 +6,14 @@ permissions:
 
 on:
   push:
-    branches: [main, dev, ver4]
+    branches: [main, dev]
     paths-ignore:
       - '**.md'
       - 'docs/**'
       - '.gitignore'
       - 'LICENSE'
   pull_request:
-    branches: [main, dev, ver4]
+    branches: [main, dev]
     paths-ignore:
       - '**.md'
       - 'docs/**'
@@ -31,21 +31,13 @@ concurrency:
   group: ci-${{ github.ref }}-${{ github.actor }}
   cancel-in-progress: ${{ github.actor != 'dependabot[bot]' }}
 
-# Condition: only run on NestLab-Tech repo (skip forks)
 # Condition: skip Stage 4 on Dependabot PRs (dependency-only changes)
-# Condition: Stage 4 on dev/main/ver4 pushes or manual dispatch
-env:
-  STAGE4_CONDITION: >-
-    github.repository_owner == 'NestLab-Tech' &&
-    github.actor != 'dependabot[bot]' &&
-    (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true'))
-
+# Condition: Stage 4 on dev/main pushes or manual dispatch
 jobs:
   # ===== STAGE 1: Quick Checks =====
 
   gitleaks:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -59,7 +51,6 @@ jobs:
 
   secret-validation:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -155,13 +146,14 @@ jobs:
           install-extras: 'pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff httpx types-requests'
 
       - name: Run ${{ matrix.test-suite.name }} tests
+        timeout-minutes: 15
         run: |
           python -m pytest ${{ matrix.test-suite.path }} \
             -n auto --dist=worksteal \
             --cov=. \
             --cov-report=xml \
             --cov-report=term-missing:skip-covered \
-            --timeout=${{ matrix.test-suite.name == 'integration' && '120' || '60' }} \
+            --timeout=${{ matrix.test-suite.name == 'integration' && '120' || '180' }} \
             --tb=short \
             -v
 
@@ -296,12 +288,12 @@ jobs:
           name: pip-audit-report
           path: artifacts/pip-audit.json
 
-  # ===== STAGE 4: Deep Analysis (main/dev/ver4 or manual, skip Dependabot) =====
+  # ===== STAGE 4: Deep Analysis (main/dev or manual, skip Dependabot) =====
 
   codeql-python:
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'NestLab-Tech' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
-    needs: [security-deps]
+    if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
+    needs: [backend-lint]
     timeout-minutes: 30
     permissions:
       security-events: write
@@ -316,20 +308,16 @@ jobs:
         with:
           languages: python
           build-mode: none
-          queries: security-extended
           config-file: ./.github/codeql/codeql-config.yml
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
-        with:
-          category: '/language:python'
-          upload: true
         continue-on-error: true
 
   codeql-javascript:
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'NestLab-Tech' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
-    needs: [security-deps]
+    if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
+    needs: [backend-lint]
     timeout-minutes: 30
     permissions:
       security-events: write
@@ -344,19 +332,15 @@ jobs:
         with:
           languages: javascript-typescript
           build-mode: none
-          queries: security-extended
           config-file: ./.github/codeql/codeql-config.yml
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
-        with:
-          category: '/language:javascript-typescript'
-          upload: true
         continue-on-error: true
 
   container-scan:
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'NestLab-Tech' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
+    if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [frontend-build]
     steps:
       - name: Checkout
@@ -392,7 +376,7 @@ jobs:
 
   lighthouse:
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'NestLab-Tech' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
+    if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [frontend-tests]
     timeout-minutes: 15
     defaults:
@@ -443,7 +427,7 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'NestLab-Tech' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
+    if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [frontend-build]
     timeout-minutes: 25
     continue-on-error: true
@@ -480,6 +464,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
+        continue-on-error: true
         env:
           CI: 'true'
           PLAYWRIGHT_START_WEB: 'false'

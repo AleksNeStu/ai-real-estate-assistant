@@ -71,7 +71,7 @@ async def check_vector_store() -> DependencyHealth:
     """
     start = asyncio.get_event_loop().time()
     try:
-        vector_store = get_vector_store()
+        vector_store = await asyncio.to_thread(get_vector_store)
         if vector_store is None:
             return DependencyHealth(
                 name="vector_store",
@@ -87,9 +87,10 @@ async def check_vector_store() -> DependencyHealth:
 
         # Check if we can access the store
         try:
-            # Assuming ChromaDB - adjust based on actual implementation
+            # ChromaDB collection operations are synchronous, so keep them
+            # off the event loop used to serve health probes.
             if hasattr(vector_store, "_collection"):
-                count = vector_store._collection.count()
+                count = await asyncio.to_thread(vector_store._collection.count)
                 return DependencyHealth(
                     name="vector_store",
                     status=HealthStatus.HEALTHY,
@@ -314,6 +315,26 @@ def get_git_info() -> dict[str, str]:
     return git_info
 
 
+async def _bounded_dependency_check(
+    check: Any,
+    name: str,
+    timeout_seconds: float = 4.0,
+) -> Optional[DependencyHealth]:
+    """Run one dependency check without letting it stall the health endpoint."""
+    try:
+        return await asyncio.wait_for(check(), timeout=timeout_seconds)
+    except asyncio.TimeoutError:
+        logger.warning("Health check timed out: %s", name)
+        return DependencyHealth(
+            name=name,
+            status=HealthStatus.DEGRADED,
+            message=f"Timed out after {timeout_seconds:.1f}s",
+        )
+    except Exception as e:
+        logger.error("Health check error for %s: %s", name, e)
+        return None
+
+
 async def get_health_status(include_dependencies: bool = True) -> HealthCheckResponse:
     """
     Get comprehensive health status.
@@ -328,12 +349,13 @@ async def get_health_status(include_dependencies: bool = True) -> HealthCheckRes
     dependencies: dict[str, DependencyHealth] = {}
 
     if include_dependencies:
-        # Check all dependencies in parallel
+        # Check all dependencies in parallel; each has its own bounded budget
+        # so a slow dependency cannot hold the entire /health response.
         results = await asyncio.gather(
-            check_vector_store(),
-            check_redis(),
-            check_database(),
-            check_llm_provider(),
+            _bounded_dependency_check(check_vector_store, "vector_store", 4.0),
+            _bounded_dependency_check(check_redis, "redis", 2.0),
+            _bounded_dependency_check(check_database, "database", 4.0),
+            _bounded_dependency_check(check_llm_provider, "llm_providers", 2.0),
             return_exceptions=True,
         )
 
@@ -341,9 +363,10 @@ async def get_health_status(include_dependencies: bool = True) -> HealthCheckRes
             if isinstance(result, Exception):
                 logger.error("Health check error: %s", result)
                 continue
-            if result is not None:
-                health_result: DependencyHealth = result  # type: ignore[assignment]
-                dependencies[health_result.name] = health_result
+            if result is None:
+                continue
+            health_result: DependencyHealth = result  # type: ignore[assignment]
+            dependencies[health_result.name] = health_result
 
     # Include circuit breaker states (Task #96)
     breaker_states = get_all_breaker_states()

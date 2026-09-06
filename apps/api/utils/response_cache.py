@@ -487,11 +487,24 @@ def cached_response(
             # Execute original function
             result: T = await func(*args, **kwargs)  # type: ignore[misc]
 
-            # Cache result
+            # Cache result. Preserve the response shape so FastAPI's
+            # response_model validation passes on cache hits: dicts and
+            # Pydantic models go in as-is (model_dump if available), and
+            # lists are stored directly. Only wrap in {"data": ...} as a
+            # last resort for unrecognized return types -- the previous
+            # behavior of always wrapping Pydantic models in {"data":
+            # model} caused ResponseValidationError on cache hits because
+            # the outer dict lacked the model's declared fields.
             if cache and request:
+                if isinstance(result, (dict, list)):
+                    data = result
+                elif hasattr(result, "model_dump"):
+                    data = result.model_dump()
+                else:
+                    data = {"data": result}
                 await cache.set(
                     request,
-                    data=result if isinstance(result, dict) else {"data": result},
+                    data=data,
                     status_code=200,
                 )
 

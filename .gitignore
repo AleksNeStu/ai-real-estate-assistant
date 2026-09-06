@@ -115,6 +115,7 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+semgrep_results.sarif
 *.cover
 *.py,cover
 .hypothesis/
@@ -201,6 +202,8 @@ celerybeat.pid
 # Environments
 .env
 .env.ports
+.env.local
+.env.*.local
 .venv
 .venv_ci
 .venv312
@@ -345,6 +348,14 @@ sprav-quick-test.md
 # Local test artifacts and snapshots
 artifacts/
 resp.html
+
+# Social preview render helpers (local-only, regenerated periodically)
+# NOTE: .runtime/port.txt and .runtime/ports.json are KEPT (used by start scripts)
+.runtime/social-preview.svg
+.runtime/render.mjs
+.runtime/package.json
+.runtime/package-lock.json
+.runtime/node_modules/
 tmp
 data/audit/
 apps/api/data/audit/
@@ -356,8 +367,8 @@ scripts/validation/taskmaster_review.py
 scripts/internal/
 scripts/ci/
 
-# Secret detection baselines (internal tooling)
-.secrets.baseline
+# Secret detection baseline (tracked so pre-commit can use it)
+# .secrets.baseline is intentionally NOT ignored — it must be in the repo.
 
 # Release validation reports (internal)
 docs/releases/

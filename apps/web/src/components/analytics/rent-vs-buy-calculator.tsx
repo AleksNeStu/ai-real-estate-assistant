@@ -139,11 +139,11 @@ export function RentVsBuyCalculator() {
   }));
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className={result || errorState || loading ? 'grid gap-6 lg:grid-cols-2' : 'grid gap-6'}>
       {/* Empty state hint */}
       {!result && !errorState && !loading && (
         <div
-          className="col-span-full lg:col-span-2 rounded-lg border bg-muted/30 p-4 text-center"
+          className="rounded-lg border bg-muted/30 p-4 text-center"
           role="status"
           aria-live="polite"
         >
@@ -151,8 +151,8 @@ export function RentVsBuyCalculator() {
         </div>
       )}
 
-      {/* Calculator Form */}
-      <Card>
+      {/* Calculator Form - centered when no results, left column when results present */}
+      <Card className={result || errorState || loading ? undefined : 'mx-auto w-full max-w-2xl'}>
         <CardHeader>
           <CardTitle>{t('title')}</CardTitle>
           <CardDescription>{t('description')}</CardDescription>

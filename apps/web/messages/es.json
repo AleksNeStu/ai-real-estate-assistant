@@ -154,7 +154,8 @@
       "description": "We've sent a verification link to your email",
       "checkInbox": "Please check your inbox and click the verification link.",
       "resend": "Resend verification email",
-      "verified": "Email verified successfully"
+      "verified": "Email verified successfully",
+      "loading": "Loading..."
     },
     "errors": {
       "invalidCredentials": "Invalid email or password",
@@ -946,7 +947,11 @@
       }
     },
     "saved": "Settings saved successfully.",
-    "error": "Failed to save settings."
+    "error": "Failed to save settings.",
+    "emailRequired": "Set an email in Identity settings above to access this section.",
+    "profile": {
+      "loadingProfile": "Loading profile..."
+    }
   },
   "tools": {
     "title": "Tools",

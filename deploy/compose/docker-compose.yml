@@ -13,7 +13,7 @@ services:
     build:
       context: ../..
       dockerfile: deploy/docker/Dockerfile.backend
-    container_name: nestlab-prod-ai-re-backend
+    container_name: ai-re-prod-backend
     ports:
       - "8082:8000"
     environment:
@@ -106,7 +106,7 @@ services:
     build:
       context: ../..
       dockerfile: deploy/docker/Dockerfile.frontend
-    container_name: nestlab-prod-ai-re-frontend
+    container_name: ai-re-prod-frontend
     ports:
       - "3082:3000"
     environment:
@@ -141,7 +141,7 @@ services:
   ollama:
     profiles: ["local-llm"]  # Optional: only start with --profile local-llm
     image: ollama/ollama:latest
-    container_name: nestlab-prod-ai-re-ollama
+    container_name: ai-re-prod-ollama
     ports:
       - "11434:11434"
     environment:
@@ -188,7 +188,7 @@ services:
 
   searxng:
     image: searxng/searxng:latest
-    container_name: nestlab-prod-ai-re-searxng
+    container_name: ai-re-prod-searxng
     profiles: ["internet"]
     ports:
       - "8081:8080"
@@ -207,7 +207,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: nestlab-prod-ai-re-redis
+    container_name: ai-re-prod-redis
     ports:
       - "16379:6379"
     command: ["redis-server", "--appendonly", "yes", "--maxmemory", "100mb", "--maxmemory-policy", "allkeys-lru"]
@@ -228,7 +228,7 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: nestlab-prod-ai-re-postgres
+    container_name: ai-re-prod-postgres
     profiles: ["postgres"]
     ports:
       - "${POSTGRES_PORT:-5432}:5432"

@@ -1,33 +1,149 @@
 """
 Model provider factory for creating and managing LLM providers.
 
-This module provides a unified interface for accessing different model providers
-and their models.
+This module provides a unified interface for accessing different model
+providers and their models.
+
+Memory note
+-----------
+On Render free tier (512 MB hard limit) the app baseline sits ~20 MB
+over the cap because every provider module (``langchain_openai``,
+``langchain_anthropic``, ``langchain_google_genai``, etc.) is imported
+eagerly at startup — even when only one provider (``zai``) is in use.
+The OS kills the instance on the first memory spike.
+
+To stay on free tier without changing the public deployment plan, we
+load provider modules lazily when running on Render. The Render
+service sets ``RENDER=true`` automatically; locally and on other PaaS
+providers the eager path is preserved (no behavior change, no
+surprise in tests or local dev).
 """
 
+import importlib
 import logging
+import os
 from typing import Any, Dict, List, Optional, Type
 
 from langchain_core.language_models import BaseChatModel
 
 from config.settings import settings
 
-from .providers.anthropic import AnthropicProvider
+# Base provider class is needed for type checks and is cheap to import.
 from .providers.base import ModelInfo, ModelProvider
-from .providers.deepseek import DeepSeekProvider
-from .providers.google import GoogleProvider
-from .providers.grok import GrokProvider
-from .providers.groq import GroqProvider
-from .providers.mistral import MistralProvider
-from .providers.moonshot import MoonshotProvider
-from .providers.ollama import OllamaProvider
-from .providers.openai import OpenAIProvider
-from .providers.opencode import OpenCodeProvider
-from .providers.openrouter import OpenRouterProvider
-from .providers.qwen import QwenProvider
-from .providers.zai import ZaiProvider
 
 logger = logging.getLogger(__name__)
+
+# Detect Render environment for lazy-loading optimization.
+# Render sets RENDER=true automatically on all its services. Locally
+# and on other PaaS, this env var is unset/false, so we use the
+# fast eager-import path (no behavior change in dev / CI / other
+# deployments).
+IS_RENDER = os.environ.get("RENDER") == "true"
+
+
+def _class_name_for(provider: str) -> str:
+    """Map provider slug to its expected class name.
+
+    Convention in this repo: ``models/providers/<slug>.py`` defines
+    ``<Capitalized>Provider``. Most providers follow a simple
+    first-letter-uppercase rule, but a few have brand-style casing
+    (e.g. ``OpenAI`` not ``Openai``); those live in
+    ``_CLASS_NAME_OVERRIDES``.
+    """
+    if provider in _CLASS_NAME_OVERRIDES:
+        return _CLASS_NAME_OVERRIDES[provider]
+    return provider[0].upper() + provider[1:] + "Provider"
+
+
+# Providers whose class name doesn't follow the simple
+# "Capitalize(slug) + 'Provider'" rule. Keys are slugs, values are
+# the exact class name defined in models/providers/<slug>.py.
+_CLASS_NAME_OVERRIDES: Dict[str, str] = {
+    "openai": "OpenAIProvider",  # not "OpenaiProvider"
+    "deepseek": "DeepSeekProvider",  # not "DeepseekProvider"
+    "openrouter": "OpenRouterProvider",  # not "OpenrouterProvider"
+    "opencode": "OpenCodeProvider",  # not "OpencodeProvider"
+}
+
+
+# Provider slug -> module path (relative to apps/api). Module is loaded
+# lazily on first use on Render, eagerly on other environments.
+_PROVIDER_MODULES: Dict[str, str] = {
+    "openai": "models.providers.openai",
+    "anthropic": "models.providers.anthropic",
+    "google": "models.providers.google",
+    "grok": "models.providers.grok",
+    "deepseek": "models.providers.deepseek",
+    "openrouter": "models.providers.openrouter",
+    "groq": "models.providers.groq",
+    "mistral": "models.providers.mistral",
+    "qwen": "models.providers.qwen",
+    "zai": "models.providers.zai",
+    "moonshot": "models.providers.moonshot",
+    "opencode": "models.providers.opencode",
+    "ollama": "models.providers.ollama",
+}
+_PROVIDER_CLASS_NAMES: Dict[str, str] = {
+    name: _class_name_for(name) for name in _PROVIDER_MODULES
+}
+
+
+def _load_provider_class(name: str) -> Type[ModelProvider]:
+    """Import a provider module and return its provider class.
+
+    Caches the class in ``_PROVIDERS`` so subsequent calls skip the
+    import overhead.
+    """
+    if name in _PROVIDERS:
+        return _PROVIDERS[name]
+    module_path = _PROVIDER_MODULES.get(name)
+    if module_path is None:
+        available = ", ".join(_PROVIDER_MODULES.keys())
+        raise ValueError(
+            f"Unknown provider '{name}'. Available providers: {available}"
+        )
+    class_name = _PROVIDER_CLASS_NAMES[name]
+    module = importlib.import_module(module_path)
+    cls = getattr(module, class_name)
+    _PROVIDERS[name] = cls
+    return cls
+
+
+# Provider slug -> settings attribute for API key lookup
+_PROVIDER_KEY_MAP: Dict[str, Optional[str]] = {
+    "openai": settings.openai_api_key,
+    "anthropic": settings.anthropic_api_key,
+    "google": settings.google_api_key,
+    "grok": settings.grok_api_key,
+    "deepseek": settings.deepseek_api_key,
+    "openrouter": settings.openrouter_api_key,
+    "groq": settings.groq_api_key,
+    "mistral": settings.mistral_api_key,
+    "qwen": settings.qwen_api_key,
+    "zai": settings.zhipuai_api_key,
+    "moonshot": settings.moonshot_api_key,
+    "opencode": settings.opencode_api_key,
+}
+
+
+def _bootstrap_providers_eager() -> None:
+    """Pre-import every provider module. Used on non-Render environments."""
+    for name in _PROVIDER_MODULES:
+        _load_provider_class(name)
+
+
+# Registry of available providers. Populated eagerly on import outside
+# Render, lazily on first ``get_provider`` call on Render.
+_PROVIDERS: Dict[str, Type[ModelProvider]] = {}
+
+# Cache of instantiated providers
+_instances: Dict[str, ModelProvider] = {}
+
+
+# Eager load only when not on Render. Local dev / CI / other PaaS
+# keeps the original behavior so existing tests and DX are unchanged.
+if not IS_RENDER:
+    _bootstrap_providers_eager()
 
 
 class ModelProviderFactory:
@@ -38,41 +154,14 @@ class ModelProviderFactory:
     and their models.
     """
 
-    # Registry of available providers
-    _PROVIDERS: Dict[str, Type[ModelProvider]] = {
-        "openai": OpenAIProvider,
-        "anthropic": AnthropicProvider,
-        "google": GoogleProvider,
-        "grok": GrokProvider,
-        "deepseek": DeepSeekProvider,
-        "openrouter": OpenRouterProvider,
-        "groq": GroqProvider,
-        "mistral": MistralProvider,
-        "qwen": QwenProvider,
-        "zai": ZaiProvider,
-        "moonshot": MoonshotProvider,
-        "opencode": OpenCodeProvider,
-        "ollama": OllamaProvider,
-    }
-
-    # Cache of instantiated providers
-    _instances: Dict[str, ModelProvider] = {}
-
-    # Provider name -> settings attribute for API key lookup
-    _PROVIDER_KEY_MAP: Dict[str, Optional[str]] = {
-        "openai": settings.openai_api_key,
-        "anthropic": settings.anthropic_api_key,
-        "google": settings.google_api_key,
-        "grok": settings.grok_api_key,
-        "deepseek": settings.deepseek_api_key,
-        "openrouter": settings.openrouter_api_key,
-        "groq": settings.groq_api_key,
-        "mistral": settings.mistral_api_key,
-        "qwen": settings.qwen_api_key,
-        "zai": settings.zhipuai_api_key,
-        "moonshot": settings.moonshot_api_key,
-        "opencode": settings.opencode_api_key,
-    }
+    # Class-level aliases for backward compatibility with tests and
+    # callers that reference these as class attributes. The aliases
+    # point to the same module-level dicts, so ``patch.dict`` on the
+    # class attribute mutates the shared dict (and vice versa).
+    _PROVIDERS = _PROVIDERS  # type: ignore[assignment]
+    _PROVIDER_MODULES = _PROVIDER_MODULES  # type: ignore[assignment]
+    _PROVIDER_KEY_MAP = _PROVIDER_KEY_MAP  # type: ignore[assignment]
+    _instances = _instances  # type: ignore[assignment]
 
     @classmethod
     def list_providers(cls) -> List[str]:
@@ -82,7 +171,7 @@ class ModelProviderFactory:
         Returns:
             List of provider names (e.g., ['openai', 'anthropic', ...])
         """
-        return list(cls._PROVIDERS.keys())
+        return list(_PROVIDER_MODULES.keys())
 
     @classmethod
     def get_provider(
@@ -102,19 +191,19 @@ class ModelProviderFactory:
         Raises:
             ValueError: If provider_name is not recognized
         """
-        if provider_name not in cls._PROVIDERS:
+        if provider_name not in _PROVIDER_MODULES:
             available = ", ".join(cls.list_providers())
             raise ValueError(
                 f"Unknown provider '{provider_name}'. Available providers: {available}"
             )
 
         # Check cache
-        if use_cache and provider_name in cls._instances:
+        if use_cache and provider_name in _instances:
             # If config is provided, we might want to update the cached instance or create a new one.
             # For now, we assume cached instances are reused unless explicit new config is needed.
             # If config is passed, we skip cache to ensure config is applied.
             if config is None:
-                return cls._instances[provider_name]
+                return _instances[provider_name]
 
         # Prepare config with defaults from settings
         if config is None:
@@ -122,17 +211,17 @@ class ModelProviderFactory:
 
         # Inject API key from settings if not present
         if "api_key" not in config:
-            api_key = cls._PROVIDER_KEY_MAP.get(provider_name)
+            api_key = _PROVIDER_KEY_MAP.get(provider_name)
             if api_key:
                 config["api_key"] = api_key
 
-        # Create new instance
-        provider_class = cls._PROVIDERS[provider_name]
+        # Create new instance (triggers lazy module load on Render)
+        provider_class = _load_provider_class(provider_name)
         provider = provider_class(config=config)
 
         # Cache if requested
         if use_cache:
-            cls._instances[provider_name] = provider
+            _instances[provider_name] = provider
 
         return provider
 
@@ -211,7 +300,7 @@ class ModelProviderFactory:
             model_id: Model identifier
             provider_name: Optional provider name (auto-detected if not provided)
             temperature: Temperature for generation
-            max_tokens: Maximum tokens to generate
+            max_tokens: Maximum number of tokens to generate
             streaming: Whether to enable streaming
             **kwargs: Additional model-specific parameters
 
@@ -283,23 +372,23 @@ class ModelProviderFactory:
         Register a custom provider.
 
         Args:
-            name: Provider name
+            name: Name of the provider
             provider_class: Provider class (must inherit from ModelProvider)
         """
         if not issubclass(provider_class, ModelProvider):
             raise TypeError("Provider class must inherit from ModelProvider")
 
-        cls._PROVIDERS[name] = provider_class
+        _PROVIDERS[name] = provider_class
 
         # Clear cache for this provider if it exists
-        if name in cls._instances:
-            del cls._instances[name]
+        if name in _instances:
+            del _instances[name]
         return None
 
     @classmethod
     def clear_cache(cls) -> None:
         """Clear all cached provider instances."""
-        cls._instances.clear()
+        _instances.clear()
         return None
 
 

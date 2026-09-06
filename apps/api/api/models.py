@@ -520,6 +520,69 @@ class ValuationResponse(BaseModel):
     estimated_value: float
 
 
+# ============================================================================
+# v5.1: AI Price Forecast with Multi-Year Projection
+# ============================================================================
+
+
+class PriceForecastRequest(BaseModel):
+    """Request for AI price forecast.
+
+    Either property_id OR property_features must be provided.
+    """
+
+    property_id: Optional[str] = Field(
+        default=None, description="Existing property id (resolved from vector store)"
+    )
+    property_features: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Free-form property features for hypothetical scenarios",
+    )
+    horizon_years: List[int] = Field(
+        default_factory=lambda: [1, 3, 5],
+        description="Forecast horizons in years (each must be in [1, 10])",
+    )
+
+
+class ForecastPointResponse(BaseModel):
+    years_ahead: int
+    estimated_value: float
+    lower_bound: float
+    upper_bound: float
+
+
+class PriceForecastResponse(BaseModel):
+    current_estimate: float
+    currency: str = "EUR"
+    horizon_years: List[int]
+    forecast: List[ForecastPointResponse]
+    confidence: float
+    drivers: List[str] = Field(default_factory=list)
+    explanation: str
+    comparables_used: int = 0
+    median_price_per_sqm: Optional[float] = None
+    neighborhood_median_price_per_sqm: Optional[float] = None
+    disclaimer: str = (
+        "AI estimate, not a formal appraisal. Forecasts are scenario-based "
+        "and depend on market conditions that may change."
+    )
+
+
+class NeighborhoodSummaryRequest(BaseModel):
+    city: Optional[str] = None
+    neighborhood: Optional[str] = None
+    property_type: Optional[str] = None
+    rooms: Optional[float] = None
+    area_sqm: Optional[float] = None
+    language: str = "en"
+    max_sentences: int = Field(default=3, ge=1, le=5)
+
+
+class NeighborhoodSummaryResponse(BaseModel):
+    summary: str
+    language: str = "en"
+
+
 class LegalCheckRequest(BaseModel):
     text: str
 

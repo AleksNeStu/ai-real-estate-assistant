@@ -21,13 +21,26 @@ const PRECACHE_URLS = [
 const _API_CACHE_MAX_AGE = 5 * 60 * 1000;
 const _API_CACHE_MAX_ENTRIES = 50;
 
-// Install event — pre-cache essential assets
+// Install event — pre-cache essential assets (fail soft per-URL so a
+// single 404 doesn't break the whole install).
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(STATIC_CACHE)
-      .then((cache) => {
-        return cache.addAll(PRECACHE_URLS);
+      .then(async (cache) => {
+        await Promise.all(
+          PRECACHE_URLS.map(async (url) => {
+            try {
+              const response = await fetch(url, { cache: 'no-cache' });
+              if (response.ok) {
+                await cache.put(url, response.clone());
+              }
+            } catch {
+              // Network or fetch error for this URL - skip silently so
+              // install still completes for the URLs that worked.
+            }
+          })
+        );
       })
       .then(() => {
         return self.skipWaiting();

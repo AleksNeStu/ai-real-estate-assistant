@@ -121,9 +121,9 @@ export function PortfolioAnalyzer() {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Property Input Form */}
-        <Card>
+      <div className={result || errorState || loading ? 'grid gap-6 lg:grid-cols-2' : 'grid gap-6'}>
+        {/* Property Input Form - centered when no results, left column when results present */}
+        <Card className={result || errorState || loading ? undefined : 'mx-auto w-full max-w-2xl'}>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>{t('addProperty')}</span>

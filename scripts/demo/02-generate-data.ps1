@@ -27,7 +27,7 @@ Write-Host ""
 # ── Validate Docker Containers ────────────────────────────────────────────
 Step "[1/4] Checking Docker containers..."
 $ComposeFile = Join-Path $ComposeDir "docker-compose.yml"
-$containerStatus = docker compose -f $ComposeFile ps -q ai-backend 2>&1
+$containerStatus = docker compose -f $ComposeFile ps -q ai-re-prod-backend 2>&1
 if ($LASTEXITCODE -ne 0 -or -not $containerStatus) {
     Fail "Backend container not running. Run APS1_Launch_Docker.ps1 first."
 }
@@ -52,7 +52,7 @@ Write-Host ""
 Write-Host "  ⏳ This may take 2-3 minutes... (generating 250+ properties with ChromaDB)" -ForegroundColor Cyan
 Write-Host ""
 
-docker exec ai-backend python -c "
+docker exec ai-re-prod-backend python -c "
 import asyncio
 import sys
 import logging

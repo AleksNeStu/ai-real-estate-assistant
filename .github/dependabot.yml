@@ -1,7 +1,7 @@
 version: 2
 
 updates:
-  # Frontend (npm)
+  # Frontend (npm) — version + security updates
   - package-ecosystem: npm
     directory: /apps/web
     schedule:
@@ -13,17 +13,8 @@ updates:
       - frontend
     commit-message:
       prefix: chore(deps-web)
-    groups:
-      dev-patch-and-minor:
-        patterns: ["*"]
-        update-types: ["patch", "minor"]
-        exclude-patterns:
-          - "next"
-          - "react"
-          - "react-dom"
-          - "postcss"
 
-  # Backend (pip)
+  # Backend (pip) — version + security updates
   - package-ecosystem: pip
     directory: /apps/api
     schedule:
@@ -35,17 +26,23 @@ updates:
       - backend
     commit-message:
       prefix: chore(deps-api)
-    groups:
-      dev-patch-and-minor:
-        patterns: ["*"]
-        update-types: ["patch", "minor"]
-        exclude-patterns:
-          - "langchain"
-          - "langchain-core"
-          - "langchain-community"
-          - "chromadb"
 
-  # GitHub Actions
+  # Root monorepo tooling (npm) — version + security updates.
+  # Required so advisories in root-lockfile deps (e.g. @humanfs/node)
+  # auto-open PRs instead of sitting in the dashboard forever.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+      - monorepo
+    commit-message:
+      prefix: chore(deps)
+
+  # GitHub Actions — version + security updates
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -56,6 +53,3 @@ updates:
       - ci
     commit-message:
       prefix: chore(ci-deps)
-    groups:
-      actions-updates:
-        patterns: ["*"]

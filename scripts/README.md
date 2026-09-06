@@ -1,23 +1,33 @@
 # Scripts Directory
 
 This directory contains utility scripts for development, testing, and CI/CD operations.
+All scripts live under a category subfolder; the root holds only this README and `__init__.py` (per
+the meta-repo Rule 94: no loose scripts at `scripts/` or `docs/` root).
 
 ## 📁 Directory Structure
 
 ```
 scripts/
-├── testing/          # Test execution scripts
-├── dev/              # Development server scripts
-├── docker/           # Docker and container scripts
-├── api/              # API-specific scripts
-├── utils/            # Utility scripts
-├── ci/               # CI/CD pipeline scripts
-├── docs/             # Documentation generation
-├── security/         # Security scanning
-├── setup/            # Setup and installation
-├── deployment/       # Deployment scripts
-└── validation/       # Validation scripts
+├── api/              # API-specific scripts (e.g. openapi_diff.py)
+├── ci/               # CI/CD pipeline helpers (ci_parity, coverage_gate, network_isolation)
+├── demo/             # Demo-mode helpers (PowerShell, numbered 01-04)
+├── deployment/       # Deployment automation (vercel)
+├── dev/              # Development server launchers (ps1 + sh pairs)
+├── docker/           # Docker Compose wrappers (start, stop, logs, cpu/gpu variants)
+├── internal/         # Internal tooling data (git-filter-repo text)
+├── local/            # Standalone launchers (no auto-bootstrap)
+├── port/             # Dynamic port allocation system
+├── security/         # Security scanning (forbidden_tokens, full_scan, local_scan)
+├── setup/            # Installation and environment setup (bootstrap.py, setup.{ps1,sh})
+├── shared/           # Shared utilities (Python resolver)
+├── sprav/            # Pre-release validation (run_validation, defect_tracker, etc.)
+├── testing/          # Test execution scripts (ps1 + sh pairs)
+├── utils/            # Cross-cutting utilities (kill-port, service_discovery, screenshots)
+├── validation/       # System and TaskMaster validation
+└── workflows/        # GitHub Actions workflow helpers (full_ci)
 ```
+
+---
 
 ## 🧪 Testing Scripts (`testing/`)
 
@@ -87,29 +97,23 @@ Full control over test execution:
 
 ---
 
-## 🚀 Development Scripts (`dev/`)
+## 🚀 Development Scripts (`dev/`, `local/`)
 
-### Start/Stop Services
-
-**Windows:**
+### Wrapped Mode (`dev/`) — log files, port allocation, monitoring
 
 ```powershell
 .\scripts\dev\run.ps1         # Start both backend and frontend
-.\scripts\dev\be.ps1          # Start backend only
-.\scripts\dev\fe.ps1          # Start frontend only
+.\scripts\dev\be.ps1          # Backend only
+.\scripts\dev\fe.ps1          # Frontend only
 .\scripts\dev\stop-be.ps1     # Stop backend
 .\scripts\dev\stop-fe.ps1     # Stop frontend
 ```
 
-**Linux/macOS:**
-
 ```bash
-./scripts/dev/run.sh          # Start both services
+./scripts/dev/run.sh          # Start both services (Linux/macOS)
 ```
 
-### Standalone Mode (`local/`)
-
-Simpler launchers that pass arguments directly to `scripts/start.py`:
+### Standalone Mode (`local/`) — simpler launchers, no auto-bootstrap
 
 ```powershell
 .\scripts\local\run.ps1                       # Start both services
@@ -168,7 +172,7 @@ python scripts/docker/compose_smoke.py --ci --timeout-seconds 600
 
 ---
 
-## 🔧 Utility Scripts (`utils/`)
+## 🔧 Utility Scripts (`utils/`, `port/`)
 
 ### Port Management
 
@@ -183,6 +187,8 @@ python scripts/utils/verify-port-system.py
 # Start with custom ports
 python scripts/utils/start-with-ports.py
 ```
+
+The `port/` directory holds the dynamic port allocator (`port_manager.py` + PowerShell/Bash wrappers).
 
 ### Service Discovery
 
@@ -213,35 +219,23 @@ python ../../scripts/api/openapi_diff.py --baseline ../../docs/api-v1-baseline.j
 
 ## 🔒 Security Scripts (`security/`)
 
+### Local Scan (Gitleaks, Semgrep, Bandit, pip-audit)
+
+```bash
+python scripts/security/local_scan.py            # full local CI parity
+python scripts/security/local_scan.py --quick    # skip pip-audit
+```
+
 ### Forbidden Tokens Scan
 
 ```bash
 python scripts/security/forbidden_tokens.py
 ```
 
----
-
-## 📖 Documentation Scripts (`docs/`)
-
-### Export OpenAPI Schema
+### Full Security Scan
 
 ```bash
-cd apps/api
-python ../../scripts/docs/export_openapi.py --output docs/api/openapi.json
-```
-
-### Generate API Reference
-
-```bash
-cd apps/api
-python ../../scripts/docs/generate_api_reference.py --schema docs/api/openapi.json
-```
-
-### Update Full API Reference
-
-```bash
-cd apps/api
-python ../../scripts/docs/update_api_reference_full.py
+python scripts/security/full_scan.py
 ```
 
 ---
@@ -268,16 +262,36 @@ python scripts/ci/network_isolation_check.py
 
 ---
 
+## 📦 Setup & Installation (`setup/`)
+
+### Bootstrap (Python — cross-platform)
+
+```bash
+python scripts/setup/bootstrap.py            # install project deps
+python scripts/setup/bootstrap.py --dev      # also install dev deps + pre-commit hooks
+```
+
+### Setup (PowerShell / Bash wrappers)
+
+```powershell
+.\scripts\setup\setup.ps1
+```
+
+```bash
+./scripts/setup/setup.sh
+```
+
+---
+
 ## 📦 Other Directories
 
-- **`setup/`** - Installation and setup scripts
-- **`deployment/`** - Deployment automation (Vercel)
-- **`validation/`** - Validation and verification scripts
-- **`workflows/`** - GitHub Actions workflow helpers
-- **`internal/`** - Internal tooling (git-filter-repo, pre-commit)
-- **`port/`** - Port management system
-- **`shared/`** - Shared utilities (Python resolver)
-- **`sprav/`** - Pre-release validation scripts
+- **`deployment/`** — Deployment automation (Vercel `vercel.ps1` / `vercel.sh`)
+- **`validation/`** — System and TaskMaster validation
+- **`workflows/`** — Local CI orchestration (`workflows/full_ci.py`)
+- **`internal/`** — Internal tooling data (git-filter-repo replacement text)
+- **`shared/`** — Shared utilities (Python resolver)
+- **`sprav/`** — Pre-release validation (`run_validation.py`, `defect_tracker.py`, etc.)
+- **`demo/`** — Demo-mode PowerShell helpers (`01-launch-docker`, `02-generate-data`, etc.)
 
 ---
 
@@ -315,6 +329,12 @@ pip install -r requirements.txt
 pip install pytest pytest-xdist pytest-cov ruff mypy
 ```
 
+Or use the bootstrap script which handles venv + dependencies via `uv`:
+
+```bash
+python scripts/setup/bootstrap.py --dev
+```
+
 ---
 
 ## 🐛 Troubleshooting
@@ -327,6 +347,8 @@ Install Python 3.12 or create a virtual environment:
 cd apps/api
 python3.12 -m venv .venv312
 ```
+
+Or use `uv` (handled by `scripts/setup/bootstrap.py`).
 
 ### Tests fail in parallel but pass sequentially
 
@@ -352,6 +374,8 @@ cd apps/api
 pip install -r requirements.txt
 ```
 
+Or run `python scripts/setup/bootstrap.py --dev`.
+
 ---
 
 ## 💡 Performance Tips
@@ -376,14 +400,17 @@ pip install -r requirements.txt
 
 When adding new scripts:
 
-1. Place in appropriate subdirectory
-2. Add documentation to this README
+1. Pick the right category subfolder — never place a script at `scripts/` root
+2. Add documentation to this README's matching section
 3. Include usage examples
 4. Add error handling
-5. Support both Windows and Linux/macOS
+5. Support both Windows and Linux/macOS (PowerShell + Bash pair) where applicable
 6. Follow existing script patterns
+
+The meta-repo rule 94 is enforced by `scripts/ports/hooks/pre-commit` at the meta-repo level
+(not installed in this product yet — see plan 2026-06-17).
 
 ---
 
-**Last Updated:** 2026-05-10
-**Version:** 2.0.0 (Reorganized structure)
+**Last Updated:** 2026-06-17
+**Version:** 2.1.0 (Rule-94 compliance + dead-ref cleanup)

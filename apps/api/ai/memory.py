@@ -40,8 +40,11 @@ def get_session_history(session_id: str) -> BaseChatMessageHistory:
     Returns:
         BaseChatMessageHistory instance backed by SQLite
     """
-    # SQLChatMessageHistory automatically creates the table 'message_store' if needed
-    return SQLChatMessageHistory(session_id=session_id, connection_string=CONNECTION_STRING)
+    # langchain >= 1.3.9 + langchain-core >= 1.4.2 removed the legacy
+    # `connection_string` kwarg from SQLChatMessageHistory.__init__.
+    # Use the new `connection` parameter (accepts a URL string or an Engine).
+    # SQLChatMessageHistory automatically creates the table 'message_store' if needed.
+    return SQLChatMessageHistory(session_id=session_id, connection=CONNECTION_STRING)
 
 
 def init_context_manager(settings: "AppSettings") -> "ContextManager":

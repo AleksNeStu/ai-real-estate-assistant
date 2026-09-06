@@ -4,6 +4,23 @@ Please include a summary of the change and which issue is fixed. Please also inc
 
 Fixes # (issue)
 
+## Commit hygiene
+
+This repo uses **Squash and merge**. The squash commit is generated from this PR,
+so:
+
+- **PR title** MUST be a valid [Conventional Commit](https://www.conventionalcommits.org/)
+  — it becomes the squashed commit subject (`feat:`, `fix:`, `docs:`, `chore:`,
+  `refactor:`, `perf:`, `test:`, `ci:`...).
+- **One PR = one concern.** Keep the diff focused; split unrelated work into
+  separate PRs so each squashes to one meaningful commit on the target branch.
+- Fill the **Description** above with care — it becomes the squashed commit body.
+- Draft/WIP commits inside the PR are fine; they get squashed away on merge.
+
+> Target branch: `dev` for feature work. `main` is protected (releases only).
+> Direct pushes to `dev` are allowed but bypass squash — prefer a PR when you
+> want a clean, traceable commit.
+
 ## Type of change
 
 - [ ] Bug fix (non-breaking change which fixes an issue)

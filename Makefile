@@ -26,7 +26,7 @@ RESET := \033[0m
 # Phony targets
 .PHONY: help security security-quick test test-api test-web e2e lint lint-api lint-web format
 .PHONY: docker-up docker-down docker-logs docker-build
-.PHONY: ci ci-quick dev dev-api dev-web setup clean install docs
+.PHONY: ci ci-quick setup clean install docs
 .PHONY: sprav sprav-quick sprav-json benchmark-search benchmark-chat load-test
 .PHONY: migrate-check migrate-up migrate-down smoke-test test-resilience quickstart
 .PHONY: api-diff api-diff-baseline
@@ -176,21 +176,18 @@ format:
 ## DEVELOPMENT
 ## ============================================================================
 
-## dev: Start development servers (auto-detect Docker or local)
-dev:
-	$(PYTHON) $(SCRIPTS_DIR)/start.py --mode auto
-
-## dev-api: Start backend development server only
-dev-api:
-	$(PYTHON) $(SCRIPTS_DIR)/start.py --mode local --service backend
-
-## dev-web: Start frontend development server only
-dev-web:
-	$(PYTHON) $(SCRIPTS_DIR)/start.py --mode local --service frontend
+# Note: dev / dev-api / dev-web targets were removed on 2026-06-17.
+# They referenced scripts/start.py which no longer exists in this repo.
+# Use the cross-platform launchers directly:
+#   bash scripts/dev/run.sh                 # both backend + frontend (Linux/macOS)
+#   pwsh scripts/dev/run.ps1                # both (Windows PowerShell)
+#   bash scripts/dev/{be,fe}.sh              # backend/frontend only (Linux/macOS)
+#   pwsh scripts/dev/{be,fe}.ps1             # backend/frontend only (Windows)
+# Standalone (no auto-bootstrap) variants in scripts/local/.
 
 ## setup: Run environment setup (first-time setup)
 setup:
-	$(PYTHON) $(SCRIPTS_DIR)/bootstrap.py
+	$(PYTHON) $(SCRIPTS_DIR)/setup/bootstrap.py
 
 ## install: Install all dependencies
 install:
@@ -241,22 +238,16 @@ docker-internet:
 ## CI/CD
 ## ============================================================================
 
-## docs: Generate OpenAPI documentation (Task #54)
+## docs: OpenAPI spec lives in docs/api/openapi.json (hand-maintained; generator scripts removed)
 docs:
-	mkdir -p docs/api
-	$(PYTHON) scripts/docs/export_openapi.py --output docs/api/openapi.json
-	$(PYTHON) scripts/docs/generate_api_reference.py --schema docs/api/openapi.json --output docs/api/API_REFERENCE.generated.md
-	@echo "Documentation generated in docs/api/"
-	@echo "  - docs/api/openapi.json"
-	@echo "  - docs/api/API_REFERENCE.generated.md"
+	@test -f docs/api/openapi.json && echo "OpenAPI spec: docs/api/openapi.json (committed)" || (echo "ERROR: docs/api/openapi.json missing" && exit 1)
 
 ## api-diff: Check OpenAPI schema for breaking changes vs baseline (Task #70)
 api-diff:
-	$(PYTHON) scripts/openapi_diff.py --baseline docs/api-v1-baseline.json
+	$(PYTHON) scripts/api/openapi_diff.py --baseline docs/api-v1-baseline.json
 
 ## api-diff-baseline: Regenerate the API baseline schema (run after intentional breaking changes)
 api-diff-baseline:
-	$(PYTHON) scripts/docs/export_openapi.py --output docs/api/openapi.json
 	$(PYTHON) -c "import json; schema=json.load(open('docs/api/openapi.json','r')); paths={k:v for k,v in schema.get('paths',{}).items() if k.startswith('/api/v1/')}; schema['paths']=paths; json.dump(schema, open('docs/api-v1-baseline.json','w'), indent=2)"
 	@echo "Baseline updated: docs/api-v1-baseline.json"
 
@@ -302,9 +293,9 @@ clean-all: clean
 	rm -rf node_modules
 	rm -rf .venv venv .venv_ci
 
-## smoke-test: Run deployment smoke tests against a running instance (Task #69)
+## smoke-test: Build + bring up compose stack and verify health (Task #69)
 smoke-test:
-	bash scripts/smoke_test.sh
+	$(PYTHON) scripts/docker/compose_smoke.py
 
 ## test-resilience: Run graceful degradation and resilience tests (Task #69)
 test-resilience:

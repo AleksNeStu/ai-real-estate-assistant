@@ -20,7 +20,7 @@ export function createMockLLMStreamResponse(
     '\n\nWould you like more details?',
   ]
 ): string {
-  const sseChunks = chunks.map((chunk) => `data: ${JSON.stringify({ text: chunk })}\n\n`);
+  const sseChunks = chunks.map((chunk) => `data: ${JSON.stringify({ content: chunk })}\n\n`);
   return sseChunks.join('') + 'data: [DONE]\n\n';
 }
 
@@ -109,14 +109,23 @@ export async function mockChatWithSources(route: Route): Promise<void> {
   ];
 
   const sseChunks = responseChunks.map(
-    (chunk) => `data: ${JSON.stringify({ text: chunk })}\n\n`
+    (chunk) => `data: ${JSON.stringify({ content: chunk })}\n\n`
   );
 
-  // Add meta event with sources
+  // Add meta event with sources. The serializer in
+  // apps/api/api/chat_sources.py emits each source as
+  // {"content": str, "metadata": {...}} — mirror that shape so the
+  // frontend (chat/page.tsx) renders the citations.
   const metaEvent = `event: meta\ndata: ${JSON.stringify({
     sources: [
-      { id: 'prop-001', title: 'Modern 2-Bedroom Apartment in Mitte', score: 0.95 },
-      { id: 'prop-002', title: 'Spacious 3-Bedroom Flat in Prenzlauer Berg', score: 0.88 },
+      {
+        content: 'Modern 2-Bedroom Apartment in Mitte',
+        metadata: { id: 'prop-001', title: 'Modern 2-Bedroom Apartment in Mitte', score: 0.95 },
+      },
+      {
+        content: 'Spacious 3-Bedroom Flat in Prenzlauer Berg',
+        metadata: { id: 'prop-002', title: 'Spacious 3-Bedroom Flat in Prenzlauer Berg', score: 0.88 },
+      },
     ],
     session_id: 'test-session-001',
   })}\n\n`;

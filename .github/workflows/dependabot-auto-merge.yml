@@ -11,6 +11,33 @@ jobs:
     if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
+      - name: Wait for backend-tests (unit)
+        uses: lewagon/wait-on-check-action@v1.9.1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-regexp: 'backend-tests \(unit.*'
+          wait-interval: 30
+          wait-timeout: 1800
+        continue-on-error: false
+      - name: Wait for backend-tests (integration)
+        uses: lewagon/wait-on-check-action@v1.9.1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-regexp: 'backend-tests \(integration.*'
+          wait-interval: 30
+          wait-timeout: 1800
+        continue-on-error: false
+      - name: Wait for security-deps
+        uses: lewagon/wait-on-check-action@v1.9.1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-name: security-deps
+          wait-interval: 30
+          wait-timeout: 1800
+        continue-on-error: false
       - uses: fastify/github-action-merge-dependabot@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

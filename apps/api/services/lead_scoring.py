@@ -543,11 +543,30 @@ class LeadScoringService:
             result.append(
                 {
                     "id": lead.id,
+                    "visitor_id": lead.visitor_id,
+                    "user_id": lead.user_id,
                     "email": lead.email,
+                    "phone": lead.phone,
                     "name": lead.name,
-                    "current_score": lead.current_score,
+                    "budget_min": lead.budget_min,
+                    "budget_max": lead.budget_max,
+                    "preferred_locations": lead.preferred_locations,
                     "status": lead.status,
+                    "source": lead.source,
+                    "current_score": lead.current_score,
+                    "first_seen_at": lead.first_seen_at.isoformat(),
                     "last_activity_at": lead.last_activity_at.isoformat(),
+                    "created_at": lead.created_at.isoformat(),
+                    "updated_at": lead.updated_at.isoformat(),
+                    "consent_given": lead.consent_given,
+                    "consent_at": lead.consent_at.isoformat() if lead.consent_at else None,
+                    # assigned_agent_id / assigned_agent_name are
+                    # computed via users JOIN in the regular /leads
+                    # endpoint, not stored on the Lead model.
+                    "assigned_agent_id": None,
+                    "assigned_agent_name": None,
+                    "latest_score": None,
+                    "interaction_count": 0,
                     "recommendations": latest_score.recommendations if latest_score else [],
                 }
             )
@@ -558,8 +577,15 @@ class LeadScoringService:
         """Get overall scoring statistics.
 
         Returns:
-            Dict with scoring statistics
+            Dict with scoring statistics. Includes all fields the
+            frontend ScoringStatistics type expects
+            (apps/web/src/lib/types.ts:1325): total_leads,
+            high_value_leads, avg_score, conversion_rate,
+            converted_leads, new_leads_24h, score_distribution,
+            scores_calculated_today, model_version, weights.
         """
+        from datetime import datetime, timedelta, timezone
+
         # Get total leads
         total_leads = await self.lead_repo.count()
 
@@ -571,8 +597,40 @@ class LeadScoringService:
         # Get scores calculated today
         scores_today = await self.score_repo.count_scores_today()
 
+        # Compute avg_score and counts the previous response omitted.
+        # Frontend ScoringStatistics requires these fields populated
+        # or the page crashes with "Cannot read properties of undefined
+        # (reading 'toFixed')" on .avg_score.toFixed(1) / .conversion_rate.toFixed(1).
+        leads = await self.lead_repo.get_list(limit=10000)
+        if leads:
+            avg_score = round(sum(lead.current_score for lead in leads) / len(leads), 2)
+        else:
+            avg_score = 0.0
+
+        converted_leads = sum(1 for lead in leads if lead.status == "converted")
+        conversion_rate = (
+            round(converted_leads / total_leads * 100, 2) if total_leads else 0.0
+        )
+
+        # Use a timezone-naive cutoff to match the naive datetimes
+        # stored in SQLite (DB columns are DateTime without timezone).
+        cutoff_24h = (
+            datetime.now(timezone.utc)
+            .replace(tzinfo=None)
+            - timedelta(hours=24)
+        )
+        new_leads_24h = sum(
+            1 for lead in leads
+            if lead.created_at and lead.created_at >= cutoff_24h
+        )
+
         return {
             "total_leads": total_leads,
+            "high_value_leads": high_value,
+            "avg_score": avg_score,
+            "conversion_rate": conversion_rate,
+            "converted_leads": converted_leads,
+            "new_leads_24h": new_leads_24h,
             "score_distribution": {
                 "high_80_100": high_value,
                 "medium_50_79": medium_value,

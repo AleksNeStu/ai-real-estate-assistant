@@ -70,6 +70,7 @@
     "profile": "Profile",
     "settings": "Settings",
     "user": "User",
+    "userMenu": "User menu",
     "login": {
       "title": "Welcome back",
       "description": "Enter your email to sign in to your account",
@@ -487,6 +488,17 @@
     "addProperty": "Add Property",
     "removeProperty": "Remove",
     "emptyPortfolio": "No properties in portfolio",
+    "emptyHint": "Add at least one property to analyze the portfolio.",
+    "propertyLabel": "Property",
+    "propertyPrice": "Purchase Price ($)",
+    "monthlyRent": "Monthly Rent ($)",
+    "monthlyCashFlow": "Monthly Cash Flow ($)",
+    "capRate": "Cap Rate (%)",
+    "city": "City",
+    "cityPlaceholder": "e.g. Berlin",
+    "propertyType": "Property Type",
+    "selectType": "Select type",
+    "analyzeButton": "Analyze Portfolio",
     "totals": {
       "title": "Portfolio Totals",
       "totalValue": "Total Value",
@@ -697,6 +709,7 @@
   "settings": {
     "title": "Settings",
     "description": "Manage your account settings and preferences.",
+    "emailRequired": "Set an email in Identity settings above to access this section.",
     "tabs": {
       "identity": "Identity",
       "notifications": "Notifications",

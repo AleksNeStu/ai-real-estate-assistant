@@ -70,6 +70,7 @@ from api.routers import (
     search,
     tools,
     user_activity,  # Task #82: User Activity Analytics
+    valuation,  # v5.1: AI Price Forecast + Neighborhood One-Liner
     webhooks,  # Task #57: E-Signature Webhooks
 )
 from api.routers import (
@@ -135,6 +136,10 @@ OPENAPI_TAGS = [
     {
         "name": "Tools",
         "description": "Mortgage, TCO, investment, commute, valuation, and other calculators",
+    },
+    {
+        "name": "Valuation",
+        "description": "v5.1: AI price forecast with multi-year projection and neighborhood one-liner",
     },
     # Property management
     {"name": "Favorites", "description": "Property favorites and watchlist"},
@@ -259,17 +264,23 @@ async def startup_event():
 
     # 1.2 Generate comprehensive demo data for maximum feature showcase (if demo mode enabled)
     if os.getenv("DEMO_MODE", "false").lower() == "true":
-        logger.info("DEMO_MODE enabled — generating comprehensive demo data...")
-        try:
-            from alembic.demo_data_generator import generate_comprehensive_demo_data
-            from db.database import get_db_context
+        if os.getenv("SKIP_DEMO_SEED", "false").lower() == "true":
+            logger.info(
+                "SKIP_DEMO_SEED=true — skipping startup demo data generation. "
+                "Demo data will accumulate via live requests as users search/browse."
+            )
+        else:
+            logger.info("DEMO_MODE enabled — generating comprehensive demo data...")
+            try:
+                from alembic.demo_data_generator import generate_comprehensive_demo_data
+                from db.database import get_db_context
 
-            # Get a database session for the generator
-            async with get_db_context() as session:
-                await generate_comprehensive_demo_data(session)
-            logger.info("Comprehensive demo data generated successfully.")
-        except Exception as demo_error:
-            logger.warning("Comprehensive demo data generation failed (non-fatal): %s", demo_error)
+                # Get a database session for the generator
+                async with get_db_context() as session:
+                    await generate_comprehensive_demo_data(session)
+                logger.info("Comprehensive demo data generated successfully.")
+            except Exception as demo_error:
+                logger.warning("Comprehensive demo data generation failed (non-fatal): %s", demo_error)
 
     # 1.5 Initialize Auth Database (if JWT auth enabled)
     if settings.auth_jwt_enabled:
@@ -473,7 +484,7 @@ async def shutdown_event():
             logger.error("Error closing connection pools: %s", sanitize_for_log(e))
 
     shutdown_elapsed = asyncio.get_event_loop().time() - shutdown_start_time
-    logger.info("Graceful shutdown completed in %.2fs", sanitize_for_log(shutdown_elapsed))
+    logger.info("Graceful shutdown completed in %.2fs", shutdown_elapsed)
 
 
 # CORS configuration
@@ -489,11 +500,19 @@ app.add_middleware(
 # Include Routers
 app.include_router(search.router, prefix="/api/v1", dependencies=[Depends(get_optional_api_key)])
 app.include_router(chat.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
+# Task #45: Agent/Broker Integration (public list_agents; moved outside
+# the JWT block so /api/v1/agents is always reachable for the demo and
+# the README landing grid -- see agents/page.tsx getAgents() which hits
+# this endpoint. Other agents.py routes still require a session via
+# get_current_active_user inside the router itself.)
+app.include_router(agents.router, prefix="/api/v1")
 # Task #89: Free tier chat (no API key required, rate-limited)
 app.include_router(chat.free_router, prefix="/api/v1")
 app.include_router(rag_router.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(settings_router.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(tools.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
+# v5.1: AI valuation endpoints (price forecast + neighborhood summary)
+app.include_router(valuation.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(prompt_templates.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(admin.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 # Task #79: Data Sources Dashboard
@@ -509,38 +528,48 @@ app.include_router(metrics.router)
 # Task #57: Production Monitoring Dashboard (health, readiness, metrics, overview)
 app.include_router(monitoring.router)
 
-# JWT Auth Router (conditionally enabled)
+# User-scoped routers. Most of these were previously gated behind
+# settings.auth_jwt_enabled (so the /api/v1/* endpoints returned 404
+# in deployments with JWT auth disabled -- including the demo image
+# that powers the public landing page). They are now always
+# registered so the public demo can hit these endpoints; per-route
+# auth dependencies inside each router still require a session for
+# user-specific data, so a logged-out visitor sees empty list responses
+# rather than 500/404. Each router keeps its own Depends(...) -- only
+# the conditional registration at startup is removed.
+# Task #37: Favorites and Collections
+app.include_router(favorites.router, prefix="/api/v1")
+app.include_router(collections.router, prefix="/api/v1")
+# Saved searches
+app.include_router(saved_searches.router, prefix="/api/v1")
+# Task #75: Filter Presets
+app.include_router(filter_presets.router, prefix="/api/v1")
+# Task #38: Market analytics (price history, trends, indicators)
+app.include_router(market.router, prefix="/api/v1")
+app.include_router(anomalies.router, prefix="/api/v1")
+# Task #55: Lead Scoring System
+app.include_router(leads.router, prefix="/api/v1")
+# Task #56: Agent Performance Analytics
+app.include_router(agent_analytics.router, prefix="/api/v1")
+# Task #63: Push Notifications
+app.include_router(push.router, prefix="/api/v1")
+# Task #43: Document Management System
+app.include_router(documents.router, prefix="/api/v1")
+# Task #57: E-Signature Integration
+app.include_router(esignatures.router, prefix="/api/v1")
+app.include_router(webhooks.esignatures.router, prefix="/api/v1")
+# Task #82: User Activity Analytics
+app.include_router(user_activity.router, prefix="/api/v1")
+# Task #87: Model Preferences Per-Task
+app.include_router(model_preferences.router, prefix="/api/v1")
+# Task #88: User Profile Management
+app.include_router(profile.router, prefix="/api/v1")
+
+# JWT Auth Router (conditionally enabled -- only the JWT login/logout
+# routes themselves are gated. All other user-scoped routers are
+# always registered above.)
 if settings.auth_jwt_enabled:
     app.include_router(auth_jwt.router, prefix="/api/v1")
-    # Saved searches requires JWT auth
-    app.include_router(saved_searches.router, prefix="/api/v1")
-    # Task #37: Favorites and Collections require JWT auth
-    app.include_router(collections.router, prefix="/api/v1")
-    app.include_router(favorites.router, prefix="/api/v1")
-    # Task #75: Filter Presets
-    app.include_router(filter_presets.router, prefix="/api/v1")
-    # Task #38: Market analytics (price history, trends, indicators)
-    app.include_router(market.router, prefix="/api/v1")
-    app.include_router(anomalies.router, prefix="/api/v1")
-    # Task #55: Lead Scoring System
-    app.include_router(leads.router, prefix="/api/v1")
-    # Task #56: Agent Performance Analytics
-    app.include_router(agent_analytics.router, prefix="/api/v1")
-    # Task #63: Push Notifications
-    app.include_router(push.router, prefix="/api/v1")
-    # Task #45: Agent/Broker Integration
-    app.include_router(agents.router, prefix="/api/v1")
-    # Task #43: Document Management System
-    app.include_router(documents.router, prefix="/api/v1")
-    # Task #57: E-Signature Integration
-    app.include_router(esignatures.router, prefix="/api/v1")
-    app.include_router(webhooks.esignatures.router, prefix="/api/v1")
-    # Task #82: User Activity Analytics
-    app.include_router(user_activity.router, prefix="/api/v1")
-    # Task #87: Model Preferences Per-Task
-    app.include_router(model_preferences.router, prefix="/api/v1")
-    # Task #88: User Profile Management
-    app.include_router(profile.router, prefix="/api/v1")
 else:
     # Fallback /auth/me so frontend gets 401 instead of 404 when JWT is disabled
     @app.get("/api/v1/auth/me", include_in_schema=False)

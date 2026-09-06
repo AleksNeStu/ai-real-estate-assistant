@@ -282,7 +282,8 @@ class TestToolFactory:
         # Task #42: Added rent_vs_buy_calculator
         # Task #114: Added commute_analysis, multi_origin_commute
         # Task #115: Added negotiation_helper (17 total tools)
-        assert len(tools) == 17
+        # v5.1: Added price_forecast, neighborhood_summary (19 total tools)
+        assert len(tools) == 19
         assert all(hasattr(tool, "name") for tool in tools)
         assert all(hasattr(tool, "description") for tool in tools)
 
@@ -300,6 +301,7 @@ class TestToolFactory:
 
         # Task #114: Added commute_analysis, multi_origin_commute
         # Task #115: Added negotiation_helper (17 total tools)
+        # v5.1: Added price_forecast, neighborhood_summary (19 total tools)
         expected_names = {
             "mortgage_calculator",
             "tco_calculator",
@@ -318,6 +320,8 @@ class TestToolFactory:
             "commute_analysis",  # Task #114
             "multi_origin_commute",  # Task #114
             "negotiation_helper",  # Task #115
+            "price_forecast",  # v5.1
+            "neighborhood_summary",  # v5.1
         }
 
         assert tool_names == expected_names

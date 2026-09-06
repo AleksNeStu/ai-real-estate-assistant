@@ -73,11 +73,25 @@ from tools.negotiation_tool import (  # noqa: F401
     NegotiationTool,
 )
 
+# Re-export AI neighborhood one-liner (v5.1)
+from tools.neighborhood_summary import (  # noqa: F401
+    NeighborhoodSummaryInput,
+    NeighborhoodSummaryTool,
+)
+
 # Re-export neighborhood tools
 from tools.neighborhood_tools import (  # noqa: F401
     NeighborhoodQualityIndexTool,
     NeighborhoodQualityInput,
     NeighborhoodQualityResult,
+)
+
+# Re-export AI price forecast tool (v5.1)
+from tools.price_forecast_tools import (  # noqa: F401
+    ForecastPoint,
+    PriceForecastInput,
+    PriceForecastResult,
+    PriceForecastTool,
 )
 
 # Re-export TCO tools
@@ -132,4 +146,8 @@ def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
         PropertyDescriptionGeneratorTool(),
         HeadlineGeneratorTool(),
         SocialMediaContentGeneratorTool(),
+        # v5.1: AI Price Forecast with multi-year projection
+        PriceForecastTool(vector_store=vector_store),
+        # v5.1: AI Neighborhood One-Liner
+        NeighborhoodSummaryTool(),
     ]

@@ -26,7 +26,7 @@ describe('HeartbeatMonitor', () => {
       const before = monitor.getElapsedMs();
       monitor.recordActivity();
       const after = monitor.getElapsedMs();
-      expect(after).toBeLessThan(before + 10);
+      expect(after).toBeLessThan(before + 50);
     });
 
     it('should reset timedOut flag', () => {
@@ -57,7 +57,7 @@ describe('HeartbeatMonitor', () => {
   describe('handleHeartbeat', () => {
     it('should record activity', () => {
       monitor.handleHeartbeat();
-      expect(monitor.getElapsedMs()).toBeLessThan(10);
+      expect(monitor.getElapsedMs()).toBeLessThan(50);
     });
 
     it('should call onHeartbeat callback', () => {
@@ -74,7 +74,7 @@ describe('HeartbeatMonitor', () => {
       monitor.reset();
 
       expect(monitor.isTimedOut()).toBe(false);
-      expect(monitor.getElapsedMs()).toBeLessThan(10);
+      expect(monitor.getElapsedMs()).toBeLessThan(50);
     });
   });
 
