@@ -396,7 +396,12 @@ ai-real-estate-assistant/
 
 ## 🗺️ Roadmap
 
-### Upcoming Features
+### Future Direction *(no committed timeline)*
+
+> The following items represent the project's aspirational direction. They are **not**
+> scheduled commits — see [GitHub Issues](https://github.com/AleksNeStu/ai-real-estate-assistant/issues)
+> for any active discussion or tracking. Items may or may not ship; current version is
+> frozen at the latest tagged release (see [Releases](#-releases)).
 
 - **Multi-Tenant Architecture** — Complete data isolation with tenant-aware models and repositories
 - **Billing API** — Stripe integration for subscription management and usage-based pricing
@@ -405,8 +410,6 @@ ai-real-estate-assistant/
 - **Property Comparison Tool** — Side-by-side property analysis
 - **Email Notifications** — Alerts for price drops, new listings, and market updates
 - **API Rate Limiting** — Per-user quotas and usage analytics
-
-See [GitHub Issues](https://github.com/AleksNeStu/ai-real-estate-assistant/issues) for planned features and discussions.
 
 ## 🌿 Branches
 
