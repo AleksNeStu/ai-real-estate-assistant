@@ -68,6 +68,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the `dev-scaler` + `nest-ai-dev` mirrors only, not under `AleksNeStu`,
   so the endpoint returns 404. Enable per mirror account separately.
 
+## [5.1.4] - 2026-08-15
+
+### Changed
+
+- **README**: removed the explanatory Note under "Star Growth" — the
+  official `sealed_token` chart in v5.1.3 is self-explanatory.
+
+### Notes
+
+- **ESLint re-enable of 4 `react-hooks` rules** (set-state-in-effect,
+  static-components, immutability, preserve-manual-memoization) is
+  tracked for a future refactor. Per-page re-enablement requires
+  converting the 15 admin/chat/agent pages from the
+  `useEffect(() => fetch().then(setState)` pattern to a data-fetching
+  library (SWR / React Query). The global disable in
+  `apps/web/eslint.config.mjs` is documented and tracked here.
+- **Private Vulnerability Reporting for mirror-only repos** (`cv`,
+  `natively-cluely`, `EBiCS_Firmware`) is **blocked**: verified
+  2026-08-15 that those repos do not actually exist on the
+  `dev-scaler` / `nest-ai-dev` GitHub user accounts (the
+  `repo-alex/CLAUDE.md` "mirror-only" policy assumes they do, but
+  only local clones exist). Enable per-mirror when the repos are
+  actually pushed to GitHub.
+
+## [5.1.3] - 2026-08-15
+
+### Fixed
+
+- **Star-History chart (Round 4)**: replaced the v5.1.2
+  `img.shields.io` static badge with the **official star-history.com
+  embed code** (with `sealed_token` encrypted PAT) per their
+  [setup guide](https://www.star-history.com/blog/how-to-use-github-star-history#how-to-add-your-github-access-token).
+  The `?secret=<PAT>` URL parameter documented in their blog does
+  NOT unlock the chart — the embed MUST be generated via the
+  "Show real-time chart on your README.md" UI panel (which
+  encrypts the token into `sealed_token` server-side). The chart now
+  renders live star history with the current count and growth curve.
+
+## [5.1.2] - 2026-08-15
+
+### Fixed
+
+- **Star-History chart (Round 3)**: the `api.star-history.com/svg`
+  endpoint introduced in v5.1.1 returns the "GitHub restricted
+  access to star data" placeholder image for ALL token configurations
+  including `?secret=<fine-grained-PAT>` — verified live 2026-08-15
+  with the same `GITHUB_TOKEN_AVN` PAT that successfully fetches
+  stargazers from `GET /repos/{owner}/{repo}/stargazers` (200 OK with
+  data). The service is broken at the upstream level
+  ([star-history.com/blog](https://star-history.com/blog/github-stargazer-api-restriction))
+  regardless of repo ownership. Replaced the broken chart with the
+  static `img.shields.io` star badge (which correctly shows the current
+  count) + a note linking to the GitHub restriction blog. A working
+  self-hosted chart is on the v5.2+ roadmap.
+
 ## [5.1.1] - 2026-08-15
 
 ### Security

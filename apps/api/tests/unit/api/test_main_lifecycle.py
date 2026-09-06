@@ -37,10 +37,6 @@ async def test_startup_initializes_scheduler(monkeypatch):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    reason="F-20260905-5: main_lifecycle pre-existing failures on main@50e98ad (3 tests). Lifecycle/shutdown hooks depend on singleton services that are not properly torn down in test isolation. Same root cause as F-20260903-01.",
-    strict=False,
-)
 async def test_shutdown_stops_scheduler(monkeypatch):
     # Ensure scheduler exists
     from api import main as main_mod
@@ -87,10 +83,6 @@ class TestTask17Features:
         assert hasattr(app.state, "pool_manager")
 
     @pytest.mark.asyncio
-    @pytest.mark.xfail(
-        reason="F-20260905-5: main_lifecycle pre-existing failures on main@50e98ad (3 tests). Lifecycle/shutdown hooks depend on singleton services that are not properly torn down in test isolation. Same root cause as F-20260903-01.",
-        strict=False,
-    )
     async def test_shutdown_clears_response_cache(monkeypatch):
         """Test that shutdown clears ResponseCache (TASK-017)."""
         import api.main as main_mod
@@ -110,10 +102,6 @@ class TestTask17Features:
         mock_cache.clear_all.assert_called_once()
 
     @pytest.mark.asyncio
-    @pytest.mark.xfail(
-        reason="F-20260905-5: main_lifecycle pre-existing failures on main@50e98ad (3 tests). Lifecycle/shutdown hooks depend on singleton services that are not properly torn down in test isolation. Same root cause as F-20260903-01.",
-        strict=False,
-    )
     async def test_shutdown_closes_connection_pools(monkeypatch):
         """Test that shutdown closes connection pools (TASK-017)."""
         import api.main as main_mod
