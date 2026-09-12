@@ -67,7 +67,7 @@
     "wait-on": "^8.0.5"
   },
   "overrides": {
-    "js-yaml": "^4.3.1"
+    "js-yaml": "^4.3.2"
   },
   "lint-staged": {
     "apps/web/**/*.{ts,tsx,js,jsx}": [
