@@ -105,3 +105,6 @@ urllib3>=2.7.0  # fastembed pins urllib3<2.8
 GitPython>=3.1.61  # CVE-2024-22190: RCE via config_writer (latest available)
 pyasn1>=0.6.4  # closes CVE-2026-59886 (uncontrolled resource consumption) + CVE-2026-59885 (quadratic OID DoS)
 orjson>=3.12.0
+anyio>=4.14.2  # CVE-2026-63374 (critical IDNA 2003 hostname spoofing) + CVE-2026-63349 (high anyio.run_process extra_groups bypass) + CVE-2026-64847 (medium stderr-wedge DoS)
+soupsieve>=2.9.0  # CVE-2026-85999 + CVE-2026-86000 (medium ReDoS in IDENTIFIER/VALUE + RE_WS_END)
+greenlet>=3.3.1  # Required by sqlalchemy[asyncio]>=2.1; must be pinned explicitly to avoid orphaned-transitive ImportError on Render deploy
