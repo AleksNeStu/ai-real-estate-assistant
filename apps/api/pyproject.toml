@@ -73,6 +73,12 @@ dependencies = [
     # Pinned for HIGH/CRITICAL CVE coverage (Dependabot alerts #373, #371, #372, #368, #367)
     "anyio>=4.14.2",      # CVE-2026-63374 (critical, IDNA 2003 hostname spoofing) + CVE-2026-63349 + CVE-2026-64847
     "soupsieve>=2.9.0",   # CVE-2026-85999 + CVE-2026-86000 (ReDoS in IDENTIFIER/VALUE + RE_WS_END)
+    # greenlet re-pinned: required by sqlalchemy[asyncio] >=2.1; uv re-resolution during
+    # the anyio/soupsieve bump dropped it (orphaned transitive). Symptom: ImportError
+    # at api.main.py:30 → get_vector_store → "SQLAlchemy asyncio module requires
+    # that the Python 'greenlet' library is installed" → Render healthcheck timeout
+    # → deploy marked update_failed even though app recovers afterward.
+    "greenlet>=3.3.1",
 ]
 
 [project.optional-dependencies]
