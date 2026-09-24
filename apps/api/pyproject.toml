@@ -70,6 +70,9 @@ dependencies = [
     # Pinned for HIGH CVE coverage (Dependabot alerts #219, #210, #211)
     "langsmith>=0.8.18",  # GHSA-f4xh-w4cj-qxq8: arbitrary server-side file read in TracingMiddleware
     "tornado>=6.5.8",     # GHSA-mgf9-4pg-hj56 (gzip bomb) + GHSA-3x9g-8vmp-wqvf (auth-header leak) + CVE-2026-* multipart/cookie fixes
+    # Pinned for HIGH/CRITICAL CVE coverage (Dependabot alerts #373, #371, #372, #368, #367)
+    "anyio>=4.14.2",      # CVE-2026-63374 (critical, IDNA 2003 hostname spoofing) + CVE-2026-63349 + CVE-2026-64847
+    "soupsieve>=2.9.0",   # CVE-2026-85999 + CVE-2026-86000 (ReDoS in IDENTIFIER/VALUE + RE_WS_END)
 ]
 
 [project.optional-dependencies]
