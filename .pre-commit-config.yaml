@@ -1,6 +1,8 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+    # Re-pinned from v6.0.0 (F-20260925-9): upstream restructured and removed
+    # `.pre-commit-hooks.yaml` manifest; v5.0.0 is the last rev with it.
+    rev: v5.0.0
     hooks:
       - id: check-yaml
         args: [--unsafe]
