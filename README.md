@@ -20,6 +20,7 @@
 
 - [Live Demo](#-live-demo)
 - [What's New in v5.1](#-whats-new-in-v51)
+- [What's New Since v5.1.5.3](#-whats-new-since-v5153-post-release-polish--discoverability)
 - [Architecture](#-architecture)
 - [Quick Start](#-quick-start)
 - [Three Developer Differentiators](#-three-developer-differentiators)
@@ -69,6 +70,22 @@ Three small but demoable additions, shipped together as a focused release:
 - **AI Neighborhood One-Liner** — property detail pages now feature a short AI-generated summary of the neighborhood's character, lifestyle, and accessibility. Falls back silently if the LLM is unavailable.
 
 All three work in demo mode without any paid external APIs.
+
+## ✨ What's New Since v5.1.5.3 (post-release polish + discoverability)
+
+Layered on top of the v5.1 features without changing product behaviour.
+Each item is a small, focused improvement in the demo and discovery surface.
+
+- **🧭 First-visit onboarding tour** — a 5-step guided tour (welcome → search → chat → valuation → languages) appears 1.5 s after the first visit, dismissable, with localStorage memory so it never shows again. Implementation: [`apps/web/src/components/onboarding/Tour.tsx`](apps/web/src/components/onboarding/Tour.tsx).
+- **🎯 "Try one of these" chips on the landing page** — six example natural-language queries (`2-bedroom apartment in Kraków under 500k`, `Investment property, Gdańsk, ROI > 5%`, …) navigate to `/<locale>/search?q=...` so the existing search bar picks them up. Reusable on empty states via `<EmptyStateWithPrompts />` ([`apps/web/src/components/demo/`](apps/web/src/components/demo/)).
+- **🔍 AI-citation layer** — the demo is now first-class-discoverable by ChatGPT, Claude, Perplexity, and Google AI Overviews:
+  - Expanded [`llms.txt`](apps/web/public/llms.txt) with 9-language market notes, competitive context (vs Zillow / Rightmove / Idealista / Otodom), FAQ Q&A, "Known limitations", explicit references to docs.
+  - Augmented [`robots.txt`](apps/web/public/robots.txt) with explicit `Allow` for GPTBot, ChatGPT-User, Claude-Web, ClaudeBot, anthropic-ai, PerplexityBot, Google-Extended, CCBot, Bytespider, Applebot-Extended.
+  - Added `FAQPage` JSON-LD alongside the existing Organization / WebSite / SoftwareApplication schemas ([`apps/web/src/lib/structured-data.ts`](apps/web/src/lib/structured-data.ts)).
+  - Added a custom `og:image.png` placeholder derived from `assets/screenshots/home-dark.png` ([`apps/web/public/og-image.png`](apps/web/public/og-image.png)) wired through `openGraph.images` + `twitter.images` in the locale layout.
+  - Expanded `metadataBase`, `title.template`, `keywords`, `authors`, `creator`, `publisher`, `category`, and `icons` blocks for full SEO coverage in 9 locales.
+- **⚡ Lazy-load /market-trends charts** — extracted the recharts bundle (5+ MB) into a separately-imported client component (`next/dynamic` with `ssr: false`). Initial payload for `/market-trends` shrinks by ~5 MB; charts stream in after the page renders.
+- **📣 Distribution drafts ready** — six drafts under [`docs/marketing/`](docs/marketing/) (Show HN, four-subreddit Reddit plan, Product Hunt, three YouTube scripts, directory submission plan) — see [`docs/marketing/README.md`](docs/marketing/README.md) for the recommended launch sequence.
 
 ## 💻 Local Demo Setup
 
