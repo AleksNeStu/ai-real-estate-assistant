@@ -12,50 +12,31 @@ import {
   Languages,
   type LucideIcon,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
 const STORAGE_KEY = 'onboarding-tour-dismissed-v1';
 
-interface TourStep {
-  id: string;
+type StepId = 'welcome' | 'search' | 'chat' | 'valuation' | 'languages';
+
+interface TourStepConfig {
+  id: StepId;
   icon: LucideIcon;
+}
+
+const STEP_CONFIG: TourStepConfig[] = [
+  { id: 'welcome', icon: Sparkles },
+  { id: 'search', icon: Search },
+  { id: 'chat', icon: MessageSquare },
+  { id: 'valuation', icon: TrendingUp },
+  { id: 'languages', icon: Languages },
+];
+
+interface TourStep extends TourStepConfig {
   title: string;
   body: string;
 }
-
-const STEPS: TourStep[] = [
-  {
-    id: 'welcome',
-    icon: Sparkles,
-    title: 'Welcome to AI Real Estate Assistant',
-    body: 'A quick tour of the features that make this demo useful. Skippable — you can come back anytime.',
-  },
-  {
-    id: 'search',
-    icon: Search,
-    title: 'Search with natural language',
-    body: 'Try typing "2-bedroom apartment in Kraków under 500k" — filters extract automatically from your query.',
-  },
-  {
-    id: 'chat',
-    icon: MessageSquare,
-    title: 'Chat for matched listings',
-    body: 'Ask follow-ups, get refinements. Multi-turn context with multi-provider LLM fallback chain.',
-  },
-  {
-    id: 'valuation',
-    icon: TrendingUp,
-    title: 'AI valuation with forecast',
-    body: 'Paste a property id or enter features — get current value plus 1y, 3y, 5y, and 10y projections with a confidence band.',
-  },
-  {
-    id: 'languages',
-    icon: Languages,
-    title: '9 languages',
-    body: 'Switch the UI and chat language from the top-right selector. EU AI Act compliance labels included.',
-  },
-];
 
 /**
  * Onboarding tour shown to first-time visitors.
@@ -66,12 +47,17 @@ const STEPS: TourStep[] = [
  *  - Dismissed state persisted in localStorage under `onboarding-tour-dismissed-v1`.
  *  - Server-render safe (guards `typeof window`).
  *  - Respects the user's `prefers-reduced-motion` via framer-motion defaults.
- *
- * Localization gap (intentional, this session):
- *  - Strings are English-only. next-intl coverage for 9 locales × 11 keys (99
- *    translations) is out of session scope and recorded as a follow-up.
+ *  - Strings come from next-intl `tour.*` namespace; Polish translations
+ *    shipped in commit [TBD]. Other locales fall back to English until
+ *    F-20260925-5 follow-up fills in `messages/{en,ru,de,es,it,pt,tr,uk}.json`.
  */
 export function OnboardingTour() {
+  const t = useTranslations('tour');
+  const steps: TourStep[] = STEP_CONFIG.map((c) => ({
+    ...c,
+    title: t(`${c.id}.title`),
+    body: t(`${c.id}.body`),
+  }));
   const [step, setStep] = useState(0);
   const [show, setShow] = useState(false);
 
@@ -102,7 +88,7 @@ export function OnboardingTour() {
   }, [persistDismiss]);
 
   const next = useCallback(() => {
-    if (step >= STEPS.length - 1) {
+    if (step >= STEP_CONFIG.length - 1) {
       dismiss();
     } else {
       setStep((s) => s + 1);
@@ -111,9 +97,9 @@ export function OnboardingTour() {
 
   if (!show) return null;
 
-  const current = STEPS[step];
+  const current = steps[step];
   const Icon = current.icon;
-  const isLast = step === STEPS.length - 1;
+  const isLast = step === steps.length - 1;
 
   return (
     <AnimatePresence>
@@ -150,7 +136,7 @@ export function OnboardingTour() {
           </div>
           <div className="flex items-center justify-between gap-2">
             <div className="flex gap-1" aria-hidden="true">
-              {STEPS.map((_, i) => (
+              {steps.map((_, i) => (
                 <span
                   key={i}
                   className={`h-1.5 rounded-full transition-all ${
@@ -161,10 +147,10 @@ export function OnboardingTour() {
             </div>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={dismiss}>
-                Skip
+                {t('skip')}
               </Button>
               <Button size="sm" onClick={next}>
-                {isLast ? 'Done' : 'Next'}
+                {isLast ? t('done') : t('next')}
                 {!isLast && (
                   <ChevronRight className="h-3 w-3 ml-1" aria-hidden="true" />
                 )}

@@ -447,7 +447,10 @@
     "results": "Wyniki",
     "noResults": "Brak wyników",
     "tryAgain": "Spróbuj ponownie",
-    "skipToContent": "Przejdź do treści głównej"
+    "skipToContent": "Przejdź do treści głównej",
+    "tryTheseChips": {
+      "heading": "Spróbuj jednego z tych"
+    }
   },
   "demo": {
     "banner": "Tryb demo — wyszukiwanie i dane miast są dostępne",
@@ -962,5 +965,47 @@
     "min": "Minimalna wartość to {min}",
     "max": "Maksymalna wartość to {max}",
     "pattern": "Nieprawidłowy format"
+  },
+  "tour": {
+    "welcome": {
+      "title": "Witamy w AI Asystencie Nieruchomości",
+      "body": "Krótki przegląd funkcji, które warto wypróbować w tym demo. Możesz pominąć — wrócisz w dowolnej chwili."
+    },
+    "search": {
+      "title": "Szukaj w języku naturalnym",
+      "body": "Spróbuj wpisać „2-pokojowe mieszkanie w Krakowie do 500 tys.\" — filtry wyodrębniają się automatycznie."
+    },
+    "chat": {
+      "title": "Czat dla dopasowanych ofert",
+      "body": "Zadawaj pytania uzupełniające, doprecyzowuj wyniki. Kontekst wieloobrotowy z łańcuchem awaryjnym wielu dostawców LLM."
+    },
+    "valuation": {
+      "title": "AI-wycena z prognozą",
+      "body": "Wklej identyfikator nieruchomości lub wprowadź cechy — otrzymasz bieżącą wartość oraz prognozy na 1, 3, 5 i 10 lat z przedziałem ufności."
+    },
+    "languages": {
+      "title": "9 języków",
+      "body": "Przełącz język interfejsu i czatu w selektorze w prawym górnym rogu. Zgodność z EU AI Act w zestawie."
+    },
+    "skip": "Pomiń",
+    "next": "Dalej",
+    "done": "Gotowe"
+  },
+  "showcase": {
+    "heroTitle": "Realizacje",
+    "heroSubtitle": "Forki, wdrożenia produkcyjne i studia przypadków AI Asystenta Nieruchomości.",
+    "forksTitle": "Forki i projekty zbudowane na bazie",
+    "forksEmpty": "Jeszcze brak forków ani projektów na bazie tego kodu.",
+    "forksEmptyHelper": "Sforkowałeś repo i zbudowałeś coś? Otwórz issue lub PR, żeby to tu dodać.",
+    "companiesTitle": "Firmy używające tego",
+    "companiesEmpty": "Brak publicznych wdrożeń produkcyjnych.",
+    "companiesEmptyHelper": "Używasz tego stacku w produkcji? Napisz w issue lub dyskusji GitHub, żeby Cię tu dodać.",
+    "quotesTitle": "Co mówią użytkownicy",
+    "quotesEmpty": "Brak publicznych wypowiedzi.",
+    "quotesEmptyHelper": "Jeśli korzystałeś lub wdrożyłeś to rozwiązanie i chcesz podzielić się opinią (za zgodą), napisz w issue.",
+    "ctaTitle": "Wypróbuj sam",
+    "ctaSubtitle": "Demo działa bez rejestracji. Kod na licencji MIT, self-hostable w 5 minut.",
+    "ctaStar": "Daj gwiazdkę",
+    "ctaTryDemo": "Wypróbuj demo"
   }
 }

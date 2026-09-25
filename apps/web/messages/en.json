@@ -636,7 +636,6 @@
       "cityAvg": "City Avg",
       "score": "Score",
       "betterThanAverage": "Better Than Average",
-      "belowAverage": "Below Average",
       "averageAcross": "This neighborhood scores close to the city average across all factors.",
       "pointsAbove": "{count} points above average",
       "pointsBelow": "{count} points below average",
@@ -1488,5 +1487,22 @@
     "lockedFeature": "Sign in to access this feature",
     "signInForFull": "Sign in for AI assistant and more",
     "signUpCta": "Sign up to unlock all features"
+  },
+  "showcase": {
+    "heroTitle": "Showcase",
+    "heroSubtitle": "Forks, real-world deployments, and case studies of AI Real Estate Assistant.",
+    "forksTitle": "Forks & Built With This",
+    "forksEmpty": "No forks or built-with listings yet.",
+    "forksEmptyHelper": "Forked the repo and shipped something? Open an issue or PR to add it here.",
+    "companiesTitle": "Companies using this",
+    "companiesEmpty": "No production deployments listed yet.",
+    "companiesEmptyHelper": "Operating this stack in production with real data? Reach out via an issue or GitHub discussion to be listed.",
+    "quotesTitle": "What people are saying",
+    "quotesEmpty": "No public quotes yet.",
+    "quotesEmptyHelper": "If you've used or deployed this and want to share a quote (with permission), reach out via an issue.",
+    "ctaTitle": "Try it yourself",
+    "ctaSubtitle": "The live demo runs without signup. Source is MIT-licensed and self-hostable in 5 minutes.",
+    "ctaStar": "Star the repo",
+    "ctaTryDemo": "Try the demo"
   }
 }

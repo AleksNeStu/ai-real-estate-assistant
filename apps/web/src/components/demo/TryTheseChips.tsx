@@ -2,13 +2,19 @@
 
 import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface TryTheseChipsProps {
   /** Locale-prefixed search path. Default: `/${locale}/search`. */
   searchHref?: string;
   /** Optional CSS class for the wrapping container. */
   className?: string;
-  /** Heading shown above the chips. Default: English "Try one of these". */
+  /**
+   * Heading shown above the chips. If omitted, uses the next-intl
+   * translation `common.tryTheseChips.heading`; if the locale doesn't
+   * have the key (en, ru, de, es, it, pt, tr, uk still pending), falls
+   * back to English "Try one of these".
+   */
   heading?: string;
 }
 
@@ -34,8 +40,19 @@ const PROMPTS = [
 export function TryTheseChips({
   searchHref,
   className,
-  heading = 'Try one of these',
+  heading,
 }: TryTheseChipsProps) {
+  const t = useTranslations('common');
+  // Fall back to English when the locale doesn't have the key yet
+  // (Polish ships; other 8 locales follow via F-20260925-5 follow-up).
+  const tHeading = (() => {
+    try {
+      return t('tryTheseChips.heading');
+    } catch {
+      return 'Try one of these';
+    }
+  })();
+  const resolvedHeading = heading ?? tHeading;
   const base = searchHref ?? '/search';
   const hrefFor = (prompt: string) =>
     `${base}?q=${encodeURIComponent(prompt)}`;
@@ -44,7 +61,7 @@ export function TryTheseChips({
     <div className={className}>
       <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground mb-2">
         <Sparkles className="h-3 w-3" aria-hidden="true" />
-        <span>{heading}</span>
+        <span>{resolvedHeading}</span>
       </div>
       <div className="flex flex-wrap gap-2">
         {PROMPTS.map((prompt) => (
