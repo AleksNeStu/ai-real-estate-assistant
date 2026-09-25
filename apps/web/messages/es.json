@@ -447,7 +447,10 @@
     "results": "Results",
     "noResults": "No results",
     "tryAgain": "Try again",
-    "skipToContent": "Skip to main content"
+    "skipToContent": "Skip to main content",
+    "tryTheseChips": {
+      "heading": "Try one of these"
+    }
   },
   "demo": {
     "banner": "Modo demo — búsqueda y datos de ciudades disponibles",
@@ -969,5 +972,47 @@
     "min": "Minimum value is {min}",
     "max": "Maximum value is {max}",
     "pattern": "Invalid format"
+  },
+  "tour": {
+    "welcome": {
+      "title": "Welcome to AI Real Estate Assistant",
+      "body": "A quick tour of the features that make this demo useful. Skippable — you can come back anytime."
+    },
+    "search": {
+      "title": "Search with natural language",
+      "body": "Try typing \"2-bedroom apartment in Kraków under 500k\" — filters extract automatically from your query."
+    },
+    "chat": {
+      "title": "Chat for matched listings",
+      "body": "Ask follow-ups, get refinements. Multi-turn context with multi-provider LLM fallback chain."
+    },
+    "valuation": {
+      "title": "AI valuation with forecast",
+      "body": "Paste a property id or enter features — get current value plus 1y, 3y, 5y, and 10y projections with a confidence band."
+    },
+    "languages": {
+      "title": "9 languages",
+      "body": "Switch the UI and chat language from the top-right selector. EU AI Act compliance labels included."
+    },
+    "skip": "Skip",
+    "next": "Next",
+    "done": "Done"
+  },
+  "showcase": {
+    "heroTitle": "Showcase",
+    "heroSubtitle": "Forks, real-world deployments, and case studies of AI Real Estate Assistant.",
+    "forksTitle": "Forks & Built With This",
+    "forksEmpty": "No forks or built-with listings yet.",
+    "forksEmptyHelper": "Forked the repo and shipped something? Open an issue or PR to add it here.",
+    "companiesTitle": "Companies using this",
+    "companiesEmpty": "No production deployments listed yet.",
+    "companiesEmptyHelper": "Operating this stack in production with real data? Reach out via an issue or GitHub discussion to be listed.",
+    "quotesTitle": "What people are saying",
+    "quotesEmpty": "No public quotes yet.",
+    "quotesEmptyHelper": "If you've used or deployed this and want to share a quote (with permission), reach out via an issue.",
+    "ctaTitle": "Try it yourself",
+    "ctaSubtitle": "The live demo runs without signup. Source is MIT-licensed and self-hostable in 5 minutes.",
+    "ctaStar": "Star the repo",
+    "ctaTryDemo": "Try the demo"
   }
 }
