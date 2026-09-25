@@ -80,6 +80,24 @@ export async function generateMetadata({
       template: `%s | ${titles[locale as Locale] || titles.en}`,
     },
     description: descriptions[locale as Locale] || descriptions.en,
+    keywords: [
+      'AI real estate',
+      'property search',
+      'conversational AI',
+      'FastAPI',
+      'Next.js',
+      'ChromaDB',
+      'RAG',
+      'mortgage calculator',
+      'property valuation',
+      'open source',
+      'self-hosted',
+      'real estate analytics',
+    ],
+    authors: [{ name: 'AleksNeStu', url: 'https://github.com/AleksNeStu' }],
+    creator: 'AleksNeStu',
+    publisher: 'AleksNeStu',
+    category: 'technology',
     alternates: {
       canonical: absoluteUrl(`/${locale}`),
       languages: {
@@ -101,11 +119,22 @@ export async function generateMetadata({
       siteName: 'AI Real Estate Assistant',
       locale: locale === 'pl' ? 'pl_PL' : locale === 'ru' ? 'ru_RU' : 'en_US',
       type: 'website',
+      images: [
+        {
+          url: absoluteUrl('/og-image.png'),
+          width: 1200,
+          height: 630,
+          alt: 'AI Real Estate Assistant — Conversational AI for property search',
+          type: 'image/png',
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: titles[locale as Locale] || titles.en,
       description: descriptions[locale as Locale] || descriptions.en,
+      images: [absoluteUrl('/og-image.png')],
+      creator: '@AleksNeStu',
     },
     robots: {
       index: true,
@@ -118,6 +147,13 @@ export async function generateMetadata({
       },
     },
     manifest: '/manifest.json',
+    icons: {
+      icon: [
+        { url: '/icon-192x192.svg', sizes: '192x192', type: 'image/svg+xml' },
+        { url: '/icon-512x512.svg', sizes: '512x512', type: 'image/svg+xml' },
+      ],
+      apple: '/apple-touch-icon.png',
+    },
     appleWebApp: {
       capable: true,
       statusBarStyle: 'default',
