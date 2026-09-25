@@ -449,7 +449,7 @@
     "tryAgain": "Try again",
     "skipToContent": "Skip to main content",
     "tryTheseChips": {
-      "heading": "Try one of these"
+      "heading": "Спробуйте один із цих"
     }
   },
   "demo": {
@@ -975,44 +975,44 @@
   },
   "tour": {
     "welcome": {
-      "title": "Welcome to AI Real Estate Assistant",
-      "body": "A quick tour of the features that make this demo useful. Skippable — you can come back anytime."
+      "title": "Ласкаво просимо до AI Асистента з Нерухомості",
+      "body": "Короткий огляд функцій, які варто спробувати в цьому демо. Можна пропустити — повернетеся будь-коли."
     },
     "search": {
-      "title": "Search with natural language",
-      "body": "Try typing \"2-bedroom apartment in Kraków under 500k\" — filters extract automatically from your query."
+      "title": "Пошук природною мовою",
+      "body": "Спробуйте ввести «2-кімнатна квартира у Кракові до 500 тис.» — фільтри витягуються автоматично."
     },
     "chat": {
-      "title": "Chat for matched listings",
-      "body": "Ask follow-ups, get refinements. Multi-turn context with multi-provider LLM fallback chain."
+      "title": "Чат для відповідних оголошень",
+      "body": "Ставте уточнюючі питання, отримуйте кращі результати. Багатоходовий контекст із резервним ланцюгом LLM-провайдерів."
     },
     "valuation": {
-      "title": "AI valuation with forecast",
-      "body": "Paste a property id or enter features — get current value plus 1y, 3y, 5y, and 10y projections with a confidence band."
+      "title": "AI-оцінка з прогнозом",
+      "body": "Вставте ID об'єкта або введіть параметри — отримайте поточну вартість і прогнози на 1, 3, 5 і 10 років з довірчим інтервалом."
     },
     "languages": {
-      "title": "9 languages",
-      "body": "Switch the UI and chat language from the top-right selector. EU AI Act compliance labels included."
+      "title": "9 мов",
+      "body": "Перемкніть мову інтерфейсу і чату в селекторі в правому верхньому куті. Мітки відповідності EU AI Act включено."
     },
-    "skip": "Skip",
-    "next": "Next",
-    "done": "Done"
+    "skip": "Пропустити",
+    "next": "Далі",
+    "done": "Готово"
   },
   "showcase": {
-    "heroTitle": "Showcase",
-    "heroSubtitle": "Forks, real-world deployments, and case studies of AI Real Estate Assistant.",
-    "forksTitle": "Forks & Built With This",
-    "forksEmpty": "No forks or built-with listings yet.",
-    "forksEmptyHelper": "Forked the repo and shipped something? Open an issue or PR to add it here.",
-    "companiesTitle": "Companies using this",
-    "companiesEmpty": "No production deployments listed yet.",
-    "companiesEmptyHelper": "Operating this stack in production with real data? Reach out via an issue or GitHub discussion to be listed.",
-    "quotesTitle": "What people are saying",
-    "quotesEmpty": "No public quotes yet.",
-    "quotesEmptyHelper": "If you've used or deployed this and want to share a quote (with permission), reach out via an issue.",
-    "ctaTitle": "Try it yourself",
-    "ctaSubtitle": "The live demo runs without signup. Source is MIT-licensed and self-hostable in 5 minutes.",
-    "ctaStar": "Star the repo",
-    "ctaTryDemo": "Try the demo"
+    "heroTitle": "Реалізації",
+    "heroSubtitle": "Форки, реальні впровадження та приклади використання AI Асистента з Нерухомості.",
+    "forksTitle": "Форки та проєкти на базі",
+    "forksEmpty": "Поки немає форків чи проєктів на базі цього коду.",
+    "forksEmptyHelper": "Зробили форк і зібрали щось? Відкрийте issue або PR, щоб додати сюди.",
+    "companiesTitle": "Компанії, які використовують",
+    "companiesEmpty": "Поки немає публічних продакшн-впроваджень.",
+    "companiesEmptyHelper": "Використовуєте цей стек у продакшні? Напишіть в issue або обговоренні GitHub, щоб вас додали.",
+    "quotesTitle": "Що кажуть користувачі",
+    "quotesEmpty": "Поки немає публічних відгуків.",
+    "quotesEmptyHelper": "Якщо ви використовували або впровадили це і хочете поділитися думкою (з дозволу), напишіть в issue.",
+    "ctaTitle": "Спробуйте самі",
+    "ctaSubtitle": "Демо працює без реєстрації. Код на ліцензії MIT, розгортається на власному сервері за 5 хвилин.",
+    "ctaStar": "Поставити зірку",
+    "ctaTryDemo": "Спробувати демо"
   }
 }

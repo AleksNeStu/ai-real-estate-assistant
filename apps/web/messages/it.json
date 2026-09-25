@@ -449,7 +449,7 @@
     "tryAgain": "Try again",
     "skipToContent": "Skip to main content",
     "tryTheseChips": {
-      "heading": "Try one of these"
+      "heading": "Prova una di queste"
     }
   },
   "demo": {
@@ -975,44 +975,44 @@
   },
   "tour": {
     "welcome": {
-      "title": "Welcome to AI Real Estate Assistant",
-      "body": "A quick tour of the features that make this demo useful. Skippable — you can come back anytime."
+      "title": "Benvenuto nell'Assistente Immobiliare IA",
+      "body": "Un breve tour delle funzioni che rendono utile questa demo. Opzionale — puoi tornare in qualsiasi momento."
     },
     "search": {
-      "title": "Search with natural language",
-      "body": "Try typing \"2-bedroom apartment in Kraków under 500k\" — filters extract automatically from your query."
+      "title": "Ricerca in linguaggio naturale",
+      "body": "Prova a digitare «appartamento 2 locali a Cracovia sotto 500k» — i filtri si estraggono automaticamente."
     },
     "chat": {
-      "title": "Chat for matched listings",
-      "body": "Ask follow-ups, get refinements. Multi-turn context with multi-provider LLM fallback chain."
+      "title": "Chat per annunci corrispondenti",
+      "body": "Fai domande di follow-up e ottieni affinamenti. Contesto multi-turno con catena di fallback LLM multi-provider."
     },
     "valuation": {
-      "title": "AI valuation with forecast",
-      "body": "Paste a property id or enter features — get current value plus 1y, 3y, 5y, and 10y projections with a confidence band."
+      "title": "Valutazione IA con previsione",
+      "body": "Incolla un ID immobile o inserisci caratteristiche — ottieni il valore attuale più proiezioni a 1, 3, 5 e 10 anni con fascia di confidenza."
     },
     "languages": {
-      "title": "9 languages",
-      "body": "Switch the UI and chat language from the top-right selector. EU AI Act compliance labels included."
+      "title": "9 lingue",
+      "body": "Cambia la lingua dell'interfaccia e della chat dal selettore in alto a destra. Etichette di conformità EU AI Act incluse."
     },
-    "skip": "Skip",
-    "next": "Next",
-    "done": "Done"
+    "skip": "Salta",
+    "next": "Avanti",
+    "done": "Fatto"
   },
   "showcase": {
     "heroTitle": "Showcase",
-    "heroSubtitle": "Forks, real-world deployments, and case studies of AI Real Estate Assistant.",
-    "forksTitle": "Forks & Built With This",
-    "forksEmpty": "No forks or built-with listings yet.",
-    "forksEmptyHelper": "Forked the repo and shipped something? Open an issue or PR to add it here.",
-    "companiesTitle": "Companies using this",
-    "companiesEmpty": "No production deployments listed yet.",
-    "companiesEmptyHelper": "Operating this stack in production with real data? Reach out via an issue or GitHub discussion to be listed.",
-    "quotesTitle": "What people are saying",
-    "quotesEmpty": "No public quotes yet.",
-    "quotesEmptyHelper": "If you've used or deployed this and want to share a quote (with permission), reach out via an issue.",
-    "ctaTitle": "Try it yourself",
-    "ctaSubtitle": "The live demo runs without signup. Source is MIT-licensed and self-hostable in 5 minutes.",
-    "ctaStar": "Star the repo",
-    "ctaTryDemo": "Try the demo"
+    "heroSubtitle": "Fork, distribuzioni concrete e casi di studio dell'Assistente Immobiliare IA.",
+    "forksTitle": "Fork e progetti basati",
+    "forksEmpty": "Ancora nessun fork o progetto basato elencato.",
+    "forksEmptyHelper": "Hai forkato il repo e costruito qualcosa? Apri un issue o PR per aggiungerlo qui.",
+    "companiesTitle": "Aziende che lo usano",
+    "companiesEmpty": "Nessuna distribuzione in produzione elencata.",
+    "companiesEmptyHelper": "Usi questo stack in produzione con dati reali? Scrivi in un issue o discussione GitHub per essere elencato.",
+    "quotesTitle": "Cosa dicono gli utenti",
+    "quotesEmpty": "Ancora nessuna citazione pubblica.",
+    "quotesEmptyHelper": "Se hai usato o distribuito questo e vuoi condividere una citazione (con permesso), scrivi in un issue.",
+    "ctaTitle": "Provalo tu stesso",
+    "ctaSubtitle": "La demo live funziona senza registrazione. Codice con licenza MIT, auto-ospitabile in 5 minuti.",
+    "ctaStar": "Metti una stella",
+    "ctaTryDemo": "Prova la demo"
   }
 }
