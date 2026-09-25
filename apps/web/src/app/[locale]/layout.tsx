@@ -8,6 +8,7 @@ import { DemoBanner } from '@/components/layout/demo-banner';
 import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/sonner';
 import { InstallPrompt } from '@/components/pwa/install-prompt';
+import { OnboardingTour } from '@/components/onboarding/Tour';
 import { UpdateBanner } from '@/components/pwa/update-banner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import type { Locale } from '@/i18n/config';
@@ -238,6 +239,7 @@ export default async function LocaleLayout({
               <ErrorBoundary>{children}</ErrorBoundary>
             </main>
             <InstallPrompt />
+            <OnboardingTour />
             <Toaster />
           </Providers>
         </NextIntlClientProvider>
