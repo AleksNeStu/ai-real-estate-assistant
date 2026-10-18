@@ -79,11 +79,11 @@ class AnthropicProvider(RemoteModelProvider):
                 recommended_for=["complex reasoning", "long documents", "code generation"],
             ),
             ModelInfo(
-                id="claude-3-5-haiku-20241022",
-                display_name="Claude 3.5 Haiku (Recommended)",
+                id="claude-haiku-4-5-20251001",
+                display_name="Claude Haiku 4.5 (Recommended)",
                 provider_name=self.display_name,
                 context_window=200000,
-                pricing=PricingInfo(input_price_per_1m=0.80, output_price_per_1m=4.00),
+                pricing=PricingInfo(input_price_per_1m=1.00, output_price_per_1m=5.00),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -174,7 +174,7 @@ class AnthropicProvider(RemoteModelProvider):
 
         try:
             # Try to create a minimal model instance
-            self.create_model("claude-3-5-haiku-20241022")
+            self.create_model("claude-haiku-4-5-20251001")
             return True, None
         except Exception as e:
             return False, f"Connection failed: {str(e)}"
