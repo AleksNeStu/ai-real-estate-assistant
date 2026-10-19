@@ -17,12 +17,7 @@ graph TB
 
     subgraph LLM Layer
         C[ModelProviderFactory]
-        D[OpenAI Provider]
-        E[Anthropic Provider]
-        F[Google Provider]
-        G[Grok Provider]
-        H[DeepSeek Provider]
-        I[Ollama Provider]
+        D[16 Providers — see table below]
     end
 
     subgraph User Preferences
@@ -43,15 +38,15 @@ graph TB
     K --> C
 
     C --> D
-    C --> E
-    C --> F
-    C --> G
-    C --> H
-    C --> I
 
     L --> C
     M --> C
 ```
+
+The factory owns 16 lazy-loaded OpenAI-compatible provider modules; each
+is a single subclass of ``RemoteModelProvider`` (or ``LocalModelProvider``
+for Ollama). See the table in *Supported Providers* below for the full
+roster.
 
 ## Provider Selection Logic
 
@@ -93,116 +88,106 @@ flowchart TD
 
 ## Supported Providers
 
-### OpenAI
+Sixteen providers are wired through ``ModelProviderFactory``. Most ride
+on the same OpenAI-compatible chat client (``ChatOpenAI``); only Anthropic
+and Google use their native SDKs. Per-provider model catalogs come from
+each provider's ``list_models()`` — the row count varies as new models ship.
 
-| Model | Context | Use Case |
-|-------|---------|----------|
-| gpt-4o | 128K | General purpose |
-| gpt-4o-mini | 128K | Fast, cost-effective |
-| o1-preview | 128K | Complex reasoning |
-| o1-mini | 128K | Fast reasoning |
+| Provider | Slug | Base URL (or SDK) | Env var | Notes |
+|----------|------|-------------------|---------|-------|
+| OpenAI | `openai` | api.openai.com | `OPENAI_API_KEY` | Native SDK |
+| Anthropic | `anthropic` | api.anthropic.com | `ANTHROPIC_API_KEY` | Native SDK |
+| Google Gemini | `google` | generativelanguage.googleapis.com | `GOOGLE_API_KEY` | Native SDK |
+| Grok (xAI) | `grok` | api.x.ai/v1 | `XAI_API_KEY` | OpenAI-compat |
+| DeepSeek | `deepseek` | api.deepseek.com | `DEEPSEEK_API_KEY` | OpenAI-compat |
+| OpenRouter | `openrouter` | openrouter.ai/api/v1 | `OPENROUTER_API_KEY` | Aggregator, 400+ models |
+| Groq | `groq` | api.groq.com/openai/v1 | `GROQ_API_KEY` | LPU speed |
+| Mistral | `mistral` | api.mistral.ai/v1 | `MISTRAL_API_KEY` | EU-hosted |
+| Qwen | `qwen` | dashscope.aliyuncs.com/compatible-mode/v1 | `DASHSCOPE_API_KEY` | OpenAI-compat |
+| ZAI (Zhipu) | `zai` | open.bigmodel.cn/api/paas/v4 | `ZHIPUAI_API_KEY` | OpenAI-compat |
+| Moonshot (Kimi) | `moonshot` | api.moonshot.cn/v1 | `MOONSHOT_API_KEY` | OpenAI-compat |
+| OpenCode | `opencode` | opencode.ai/zen/go/v1 | `OPENCODE_API_KEY` | Coding-models router |
+| Together AI | `together` | api.together.xyz/v1 | `TOGETHER_API_KEY` | 200+ open-source, OpenAI-compat |
+| Fireworks AI | `fireworks` | api.fireworks.ai/inference/v1 | `FIREWORKS_API_KEY` | Sub-200ms TTFT, OpenAI-compat |
+| HuggingFace | `huggingface` | router.huggingface.co/v1 | `HUGGINGFACE_API_KEY` | 100k+ community models |
+| Ollama | `ollama` | localhost:11434 | *(local)* | No API key, runs on host |
+
+The full model list for each provider lives in
+``apps/api/models/providers/<slug>.py`` — those files are the source of
+truth, not this doc. The factory dynamically registers the 16 slugs via
+``ModelProviderFactory.list_providers()``.
+
+### Configuration example (OpenAI default)
 
 ```python
-# Configuration
+# Application env (see .env.example for the full set)
 OPENAI_API_KEY=sk-...
 DEFAULT_PROVIDER=openai
 DEFAULT_MODEL=gpt-4o
 ```
 
-### Anthropic Claude
-
-| Model | Context | Use Case |
-|-------|---------|----------|
-| claude-3-5-sonnet-20241022 | 200K | Long context |
-| claude-3-5-haiku-20241022 | 200K | Fast responses |
-
-```python
-# Configuration
-ANTHROPIC_API_KEY=sk-ant-...
-```
-
-### Google Gemini
-
-| Model | Context | Use Case |
-|-------|---------|----------|
-| gemini-2.0-flash-exp | 1M | Large context |
-| gemini-exp-1206 | 1M | Experimental |
-
-```python
-# Configuration
-GOOGLE_API_KEY=AI...
-```
-
-### Grok
-
-```python
-# Configuration
-GROK_API_KEY=xai-...
-```
-
-### DeepSeek
-
-```python
-# Configuration
-DEEPSEEK_API_KEY=sk-...
-```
+Setting ``DEFAULT_PROVIDER`` to any slug from the table above flips the
+default for new chat requests without code changes; per-request overrides
+flow through the ``X-User-Email`` header → ``preferred_provider`` preference.
 
 ### Ollama (Local)
 
-Open-source local models:
-
-| Model | Parameters | Use Case |
-|-------|------------|----------|
-| llama3.2 | 3B, 11B, 90B | General purpose |
-| mistral | 7B | Fast, efficient |
-| codellama | 7B, 13B, 34B | Code generation |
-
-```python
-# Configuration
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_DEFAULT_MODEL=llama3.2
-```
+Ollama is the only local provider — no API key, runs on the host at
+``OLLAMA_BASE_URL`` (default ``http://localhost:11434``). It is the
+cascade fallback when ``ENABLE_MULTI_KEY_FALLBACK=true`` and no remote
+provider has a valid key.
 
 ## ModelProviderFactory
 
-The factory provides a unified interface for all providers:
+The factory provides a unified interface for all providers. The class
+itself is slim — provider classes live in
+``apps/api/models/providers/<slug>.py`` and are loaded lazily on Render
+to stay under the 512 MB free-tier memory cap (see the module docstring
+in ``provider_factory.py`` for the warm/cold split):
 
 ```python
 class ModelProviderFactory:
-    _PROVIDERS: Dict[str, Type[ModelProvider]] = {
-        "openai": OpenAIProvider,
-        "anthropic": AnthropicProvider,
-        "google": GoogleProvider,
-        "grok": GrokProvider,
-        "deepseek": DeepSeekProvider,
-        "ollama": OllamaProvider,
-    }
+    _PROVIDERS: Dict[str, Type[ModelProvider]] = {}
+    # Filled at module load time (eagerly outside Render, lazily on Render)
+    # via _PROVIDER_MODULES -> _class_name_for().
 ```
 
 ### Factory Methods
 
 ```python
-# List all providers
+# List all 16 providers
 providers = ModelProviderFactory.list_providers()
-# ['openai', 'anthropic', 'google', 'grok', 'deepseek', 'ollama']
+# ['openai', 'anthropic', 'google', 'grok', 'deepseek', 'openrouter',
+#  'groq', 'mistral', 'qwen', 'zai', 'moonshot', 'opencode',
+#  'together', 'fireworks', 'huggingface', 'ollama']
 
 # Get a specific provider
-provider = ModelProviderFactory.get_provider("openai")
+provider = ModelProviderFactory.get_provider("fireworks")
 
 # List all models from all providers
 models = ModelProviderFactory.list_all_models()
 
 # Create a model by ID
 llm = ModelProviderFactory.create_model(
-    model_id="gpt-4o",
+    model_id="accounts/fireworks/models/llama-v3p3-70b-instruct",
     temperature=0.7,
-    max_tokens=4096
+    max_tokens=4096,
 )
 
 # Get provider availability
 status = ModelProviderFactory.get_available_providers()
-# [('openai', True, None), ('anthropic', False, 'API key missing'), ...]
+# [('openai', True, None), ('anthropic', False, 'API key missing'),
+#  ('fireworks', True, None), ...]
 ```
+
+### Registering a new provider
+
+Two seams: drop a subclass file in ``apps/api/models/providers/`` and add
+the slug to ``_PROVIDER_MODULES`` + ``_PROVIDER_KEY_MAP`` in
+``provider_factory.py``. Add a Pydantic field + ``update_api_key()``
+branch in ``config/settings.py`` for runtime key rotation. Mirror the
+``deepseek.py`` template for OpenAI-compatible providers; Anthropic and
+Google are the only two that take their own SDK path.
 
 ## Dependency Integration
 

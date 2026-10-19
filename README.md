@@ -167,7 +167,7 @@ To override the gate (e.g. force lazy loading on a different platform), set `REN
 ## ✨ Features
 
 ### 🤖 Multi-Provider AI
-6+ LLM providers with intelligent routing — OpenAI, Anthropic, Google, Grok, DeepSeek, and local Ollama. Automatic fallback chain ensures reliability.
+16 LLM providers with intelligent routing — OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI, Fireworks AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, and local Ollama. Automatic fallback chain ensures reliability.
 
 ### 🔍 Smart Property Search
 Natural language queries with automatic filter extraction. Hybrid semantic + keyword search powered by ChromaDB with MMR reranking for 30-40% better relevance.
@@ -195,7 +195,7 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 | Frontend | Next.js 16 + React 19 |
 | Vector DB | ChromaDB (semantic search + MMR reranking) |
 | Relational DB | PostgreSQL / SQLite |
-| LLM Providers | OpenAI, Anthropic, Google, Grok, DeepSeek, local Ollama |
+| LLM Providers | OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI, Fireworks AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, local Ollama |
 | Container | Docker / Docker Compose |
 | Hosting (staging) | Render free tier |
 | CI/CD | GitHub Actions (CI + GHCR + Render deploy) |
@@ -303,7 +303,7 @@ cd apps/web && npm install && npm run dev
 ## 🏠 Three Developer Differentiators
 
 ### 1. Multi-Provider LLM Routing
-13 LLM providers with automatic fallback chain — OpenAI, Anthropic Google, Grok, DeepSeek, and local Ollama. Per-request provider selection via header or request parameter; no code changes required to switch models.
+16 LLM providers with automatic fallback chain — OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI, Fireworks AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, and local Ollama. Per-request provider selection via header or request parameter; no code changes required to switch models.
 
 ### 2. Hybrid RAG + ChromaDB Vector Search
 Query complexity classifier routes requests to RAG-only (simple), hybrid RAG+enhancement (medium), or agent+tools (complex). ChromaDB with MMR reranking provides semantic similarity search.
