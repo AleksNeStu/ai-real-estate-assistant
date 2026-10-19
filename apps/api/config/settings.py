@@ -79,6 +79,18 @@ class AppSettings(BaseModel):
         default_factory=lambda: os.getenv("OPENCODE_API_KEY"),
         description="OpenCode Go API key - curated open coding models",
     )
+    together_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("TOGETHER_API_KEY"),
+        description="Together AI API key - 200+ open-source models via OpenAI-compat API",
+    )
+    fireworks_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("FIREWORKS_API_KEY"),
+        description="Fireworks AI API key - sub-200ms TTFT on open-source models",
+    )
+    huggingface_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("HUGGINGFACE_API_KEY"),
+        description="HuggingFace Inference Router API key - 100k+ community models",
+    )
 
     # Multi-Provider Failover Configuration
     provider_api_keys: dict[str, list[str]] = Field(
@@ -992,6 +1004,15 @@ def update_api_key(provider: str, api_key: str) -> None:
     elif provider == "opencode":
         settings.opencode_api_key = api_key
         os.environ["OPENCODE_API_KEY"] = api_key
+    elif provider == "together":
+        settings.together_api_key = api_key
+        os.environ["TOGETHER_API_KEY"] = api_key
+    elif provider == "fireworks":
+        settings.fireworks_api_key = api_key
+        os.environ["FIREWORKS_API_KEY"] = api_key
+    elif provider == "huggingface":
+        settings.huggingface_api_key = api_key
+        os.environ["HUGGINGFACE_API_KEY"] = api_key
 
     # Clear provider cache to pick up new API key
     from models.provider_factory import ModelProviderFactory

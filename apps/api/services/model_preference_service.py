@@ -97,6 +97,28 @@ AVAILABLE_MODELS: dict[str, list[str]] = {
         "llama3.1:8b",
         "mistral:7b",
     ],
+    "together": [
+        "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+        "Qwen/Qwen2.5-72B-Instruct-Turbo",
+        "deepseek-ai/DeepSeek-R1",
+        "mistralai/Mistral-Small-24B-Instruct-2501",
+        "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
+        "meta-llama/Llama-3.1-8B-Instruct-Turbo",
+    ],
+    "fireworks": [
+        "accounts/fireworks/models/llama-v3p3-70b-instruct",
+        "accounts/fireworks/models/deepseek-r1",
+        "accounts/fireworks/models/qwen2p5-72b-instruct",
+        "accounts/fireworks/models/llama-v3p3-8b-instruct",
+        "accounts/fireworks/models/llama-v3p2-3b-instruct",
+    ],
+    "huggingface": [
+        "meta-llama/Llama-3.3-70B-Instruct",
+        "Qwen/Qwen2.5-72B-Instruct",
+        "deepseek-ai/DeepSeek-V3",
+        "meta-llama/Llama-3.1-8B-Instruct",
+        "mistralai/Mistral-7B-Instruct-v0.3",
+    ],
 }
 
 

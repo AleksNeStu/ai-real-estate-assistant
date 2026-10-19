@@ -194,3 +194,42 @@ def test_get_default_llm_swallows_exceptions(monkeypatch):
     )
 
     assert factory.get_default_llm() is None
+
+
+# --- New providers shipped in Phase D.3 (2026-10-20) ---
+#
+# Together AI + Fireworks AI + HuggingFace Inference Router. Each must:
+# (1) be discoverable via ``ModelProviderFactory.list_providers()``;
+# (2) have a brand-correct class name (``HuggingFaceProvider``, not the
+#     default heuristic ``HuggingfaceProvider``);
+# (3) ship a non-trivial ``list_models()`` so the UI dropdown isn't empty.
+
+
+def test_new_providers_register_in_factory(monkeypatch):
+    factory = _reload_factory_with_env(monkeypatch, render=False)
+    providers = factory.ModelProviderFactory.list_providers()
+    for slug in ("together", "fireworks", "huggingface"):
+        assert slug in providers, f"Missing from list_providers(): {slug}"
+
+    # Class-name resolution for the brand-acronym case.
+    assert factory._class_name_for("huggingface") == "HuggingFaceProvider"
+
+
+def test_new_providers_have_curated_model_catalogs(monkeypatch):
+    """Each new provider must ship at least 4 curated models so the UI
+    dropdown offers real choice on day one."""
+    factory = _reload_factory_with_env(monkeypatch, render=False)
+    expected = [
+        ("together", "TogetherProvider"),
+        ("fireworks", "FireworksProvider"),
+        ("huggingface", "HuggingFaceProvider"),
+    ]
+    for slug, cls_name in expected:
+        cls = factory._PROVIDERS[slug]
+        assert cls.__name__ == cls_name, f"{slug}: expected class {cls_name}, got {cls.__name__}"
+        models = cls({}).list_models()
+        assert len(models) >= 4, f"{slug}: expected ≥4 curated models, got {len(models)}"
+        for m in models:
+            assert m.provider_name  # display_name populated
+            assert m.id  # stable id
+            assert m.context_window > 0

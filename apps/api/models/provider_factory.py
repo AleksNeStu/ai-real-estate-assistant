@@ -63,6 +63,7 @@ _CLASS_NAME_OVERRIDES: Dict[str, str] = {
     "deepseek": "DeepSeekProvider",  # not "DeepseekProvider"
     "openrouter": "OpenRouterProvider",  # not "OpenrouterProvider"
     "opencode": "OpenCodeProvider",  # not "OpencodeProvider"
+    "huggingface": "HuggingFaceProvider",  # not "HuggingfaceProvider"
 }
 
 
@@ -81,6 +82,9 @@ _PROVIDER_MODULES: Dict[str, str] = {
     "zai": "models.providers.zai",
     "moonshot": "models.providers.moonshot",
     "opencode": "models.providers.opencode",
+    "together": "models.providers.together",
+    "fireworks": "models.providers.fireworks",
+    "huggingface": "models.providers.huggingface",
     "ollama": "models.providers.ollama",
 }
 _PROVIDER_CLASS_NAMES: Dict[str, str] = {name: _class_name_for(name) for name in _PROVIDER_MODULES}
@@ -119,6 +123,9 @@ _PROVIDER_KEY_MAP: Dict[str, Optional[str]] = {
     "zai": settings.zhipuai_api_key,
     "moonshot": settings.moonshot_api_key,
     "opencode": settings.opencode_api_key,
+    "together": settings.together_api_key,
+    "fireworks": settings.fireworks_api_key,
+    "huggingface": settings.huggingface_api_key,
 }
 
 

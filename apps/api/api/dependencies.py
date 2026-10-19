@@ -78,6 +78,9 @@ PROVIDER_ENV_VAR_MAP = {
     "groq": "GROQ_API_KEY",
     "mistral": "MISTRAL_API_KEY",
     "qwen": "DASHSCOPE_API_KEY",
+    "together": "TOGETHER_API_KEY",
+    "fireworks": "FIREWORKS_API_KEY",
+    "huggingface": "HUGGINGFACE_API_KEY",
 }
 
 
