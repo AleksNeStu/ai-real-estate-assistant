@@ -49,12 +49,9 @@ repos:
         pass_filenames: true
         stages: [pre-push]
 
-  # Lint-staged - Run linting on staged frontend files only
-  # Requires package.json with lint-staged configuration
-  - repo: local
-    hooks:
-      - id: lint-staged-frontend
-        name: lint-staged (frontend)
-        entry: npx lint-staged
-        language: system
-        pass_filenames: false
+  # lint-staged hook REMOVED 2026-10-19 (Phase C.6 of session plan):
+  # the previous ``npx lint-staged`` entry pointed at a ``lint-staged``
+  # block in ``apps/web/package.json`` which never existed. The hook
+  # ran as a no-op (``pass_filenames: false`` masked the failure).
+  # If/when lint-staged is reintroduced, add the config block to
+  # apps/web/package.json FIRST, then re-enable the local hook here.

@@ -83,9 +83,7 @@ _PROVIDER_MODULES: Dict[str, str] = {
     "opencode": "models.providers.opencode",
     "ollama": "models.providers.ollama",
 }
-_PROVIDER_CLASS_NAMES: Dict[str, str] = {
-    name: _class_name_for(name) for name in _PROVIDER_MODULES
-}
+_PROVIDER_CLASS_NAMES: Dict[str, str] = {name: _class_name_for(name) for name in _PROVIDER_MODULES}
 
 
 def _load_provider_class(name: str) -> Type[ModelProvider]:
@@ -99,9 +97,7 @@ def _load_provider_class(name: str) -> Type[ModelProvider]:
     module_path = _PROVIDER_MODULES.get(name)
     if module_path is None:
         available = ", ".join(_PROVIDER_MODULES.keys())
-        raise ValueError(
-            f"Unknown provider '{name}'. Available providers: {available}"
-        )
+        raise ValueError(f"Unknown provider '{name}'. Available providers: {available}")
     class_name = _PROVIDER_CLASS_NAMES[name]
     module = importlib.import_module(module_path)
     cls = getattr(module, class_name)
@@ -144,6 +140,52 @@ _instances: Dict[str, ModelProvider] = {}
 # keeps the original behavior so existing tests and DX are unchanged.
 if not IS_RENDER:
     _bootstrap_providers_eager()
+
+
+def get_default_llm() -> Optional[ModelProvider]:
+    """
+    Probe the configured default LLM provider for readiness.
+
+    Used by ``/ready`` (``apps/api/api/routers/monitoring.py``) for the
+    LLM readiness check. Returns the provider instance when the default
+    provider is configured AND its ``validate_connection`` probe passes;
+    otherwise returns ``None`` so the readiness check can mark the LLM
+    subsystem as unhealthy without raising.
+
+    Returns:
+        A ``ModelProvider`` instance if reachable and configured; ``None``
+        if the default provider is unset, has no API key, or fails the
+        connection probe.
+
+    Notes:
+        - Intentionally cheap: ``validate_connection`` does a minimal
+          upstream round-trip (not a full chat completion). Suitable for
+          ``/ready`` call frequency.
+        - Does NOT cascade through the multi-key failover path; the
+          readiness signal is the *configured* default, not whichever
+          key currently rotates through failover. Operators wanting the
+          failover-aware readiness can call the cascade directly via
+          ``utils.free_tier.get_llm_for_free_user`` or similar.
+    """
+    try:
+        provider_name = getattr(settings, "default_provider", None)
+        if not provider_name:
+            logger.debug("get_default_llm: no default_provider configured")
+            return None
+
+        instance = ModelProviderFactory.get_provider(provider_name)
+        is_valid, error = instance.validate_connection()
+        if not is_valid:
+            logger.warning(
+                "get_default_llm: default provider %s validation failed: %s",
+                provider_name,
+                error,
+            )
+            return None
+        return instance
+    except Exception as e:
+        logger.warning("get_default_llm: unexpected probe failure: %s", e)
+        return None
 
 
 class ModelProviderFactory:

@@ -71,6 +71,8 @@ PROVIDER_ENV_VAR_MAP = {
     "google": "GOOGLE_API_KEY",
     "grok": "XAI_API_KEY",
     "deepseek": "DEEPSEEK_API_KEY",
+    "openrouter": "OPENROUTER_API_KEY",
+    "opencode": "OPENCODE_API_KEY",
     "zai": "ZHIPUAI_API_KEY",
     "moonshot": "MOONSHOT_API_KEY",
     "groq": "GROQ_API_KEY",

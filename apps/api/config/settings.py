@@ -971,6 +971,9 @@ def update_api_key(provider: str, api_key: str) -> None:
     elif provider == "deepseek":
         settings.deepseek_api_key = api_key
         os.environ["DEEPSEEK_API_KEY"] = api_key
+    elif provider == "openrouter":
+        settings.openrouter_api_key = api_key
+        os.environ["OPENROUTER_API_KEY"] = api_key
     elif provider == "zai":
         settings.zhipuai_api_key = api_key
         os.environ["ZHIPUAI_API_KEY"] = api_key

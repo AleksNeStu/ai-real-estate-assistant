@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import importlib
 import sys
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -62,19 +62,14 @@ def test_render_laziness_defers_module_imports(monkeypatch):
 
     # Lazy path: registry empty at import time.
     assert factory._PROVIDERS == {}, (
-        "Expected empty _PROVIDERS on Render, got: "
-        f"{list(factory._PROVIDERS.keys())}"
+        f"Expected empty _PROVIDERS on Render, got: {list(factory._PROVIDERS.keys())}"
     )
 
     # get_provider('zai') triggers exactly one module import.
-    with patch(
-        "importlib.import_module", wraps=importlib.import_module
-    ) as spy:
+    with patch("importlib.import_module", wraps=importlib.import_module) as spy:
         ProviderCls.get_provider("zai")
     imported_modules = [
-        call.args[0]
-        for call in spy.call_args_list
-        if call.args and isinstance(call.args[0], str)
+        call.args[0] for call in spy.call_args_list if call.args and isinstance(call.args[0], str)
     ]
     zai_imports = [m for m in imported_modules if m == "models.providers.zai"]
     assert zai_imports, (
@@ -135,3 +130,67 @@ def test_non_render_get_provider_returns_cached(monkeypatch):
     p2 = ProviderCls.get_provider("anthropic")
     assert p1 is p2
     assert "anthropic" in factory._PROVIDERS
+
+
+# --- get_default_llm readiness probe (Phase C.6 latent-bug regression) ---
+#
+# ``/ready`` (``apps/api/api/routers/monitoring.py``) imports
+# ``get_default_llm`` from this module. Before 2026-10-19 the symbol did
+# not exist, so a fresh boot crashed during the readiness check. These
+# four tests pin the four behaviours the readiness check relies on:
+# (1) no default_provider -> None (no raise);
+# (2) valid connection -> provider instance (truthy);
+# (3) invalid connection -> None (no raise, just unhealthy);
+# (4) get_provider raises -> None (no raise out of the readiness path).
+
+
+def test_get_default_llm_returns_none_when_no_default_provider(monkeypatch):
+    factory = _reload_factory_with_env(monkeypatch, render=False)
+    monkeypatch.setattr(factory.settings, "default_provider", None)
+    assert factory.get_default_llm() is None
+
+
+def test_get_default_llm_returns_provider_instance_when_connection_valid(monkeypatch):
+    factory = _reload_factory_with_env(monkeypatch, render=False)
+
+    fake = MagicMock()
+    fake.validate_connection.return_value = (True, None)
+    monkeypatch.setattr(factory.settings, "default_provider", "openai")
+    monkeypatch.setattr(
+        factory.ModelProviderFactory,
+        "get_provider",
+        classmethod(lambda cls, name: fake),
+    )
+
+    assert factory.get_default_llm() is fake
+
+
+def test_get_default_llm_returns_none_when_connection_invalid(monkeypatch):
+    factory = _reload_factory_with_env(monkeypatch, render=False)
+
+    fake = MagicMock()
+    fake.validate_connection.return_value = (False, "no api key configured")
+    monkeypatch.setattr(factory.settings, "default_provider", "openai")
+    monkeypatch.setattr(
+        factory.ModelProviderFactory,
+        "get_provider",
+        classmethod(lambda cls, name: fake),
+    )
+
+    assert factory.get_default_llm() is None
+
+
+def test_get_default_llm_swallows_exceptions(monkeypatch):
+    factory = _reload_factory_with_env(monkeypatch, render=False)
+
+    def _raise(cls, name):
+        raise RuntimeError("upstream down")
+
+    monkeypatch.setattr(factory.settings, "default_provider", "openai")
+    monkeypatch.setattr(
+        factory.ModelProviderFactory,
+        "get_provider",
+        classmethod(_raise),
+    )
+
+    assert factory.get_default_llm() is None
