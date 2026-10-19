@@ -119,6 +119,46 @@ AVAILABLE_MODELS: dict[str, list[str]] = {
         "meta-llama/Llama-3.1-8B-Instruct",
         "mistralai/Mistral-7B-Instruct-v0.3",
     ],
+    "grok": [
+        "grok-2-1212",
+        "grok-2-vision-1212",
+        "grok-beta",
+    ],
+    "deepseek": [
+        "deepseek-reasoner",
+        "deepseek-chat",
+        "deepseek-coder",
+    ],
+    "zai": [
+        "glm-4.7-flash",
+        "glm-4.7",
+        "glm-4.6v",
+    ],
+    "moonshot": [
+        "moonshot-v1-8k",
+        "moonshot-v1-32k",
+        "moonshot-v1-128k",
+    ],
+    "opencode": [
+        "glm-5.1",
+        "kimi-k2.6",
+        "deepseek-v4-pro",
+    ],
+    "groq": [
+        "llama-3.3-70b-versatile",
+        "llama-3.1-8b-instant",
+        "gemma2-9b-it",
+    ],
+    "mistral": [
+        "mistral-small-latest",
+        "mistral-medium-latest",
+        "mistral-large-latest",
+    ],
+    "qwen": [
+        "qwen-plus-latest",
+        "qwen-turbo-latest",
+        "qwen-max-latest",
+    ],
 }
 
 
