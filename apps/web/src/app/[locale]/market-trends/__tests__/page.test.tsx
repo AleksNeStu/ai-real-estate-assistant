@@ -224,8 +224,11 @@ describe('MarketTrendsPage', () => {
       render(<MarketTrendsPage />);
     });
 
+    // Card title is "Average and Median Prices" since `06aff9f2` extracted
+    // the charts into `@/components/market-trends/MarketTrendsCharts` (it was
+    // "Price Trends" inline in this page before the recharts dynamic-import).
     await waitFor(() => {
-      expect(screen.getByText('Price Trends')).toBeInTheDocument();
+      expect(screen.getByText('Average and Median Prices')).toBeInTheDocument();
     });
 
     expect(screen.getByTestId('line-chart')).toBeInTheDocument();

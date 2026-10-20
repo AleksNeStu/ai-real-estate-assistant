@@ -87,8 +87,11 @@ describe('buildStructuredData', () => {
 
   it('does not contain dynamic star or test counts', () => {
     const json = JSON.stringify(result);
-    // No runtime-derived dynamic claims
-    expect(json).not.toMatch(/star/i);
+    // No runtime-derived dynamic claims. The star guard must match a star
+    // *count* ("1,234 stars"), not the bare substring — a bare /star/i also
+    // matches the word "quickstart" in the self-host FAQ answer, which is
+    // static copy and legitimately allowed here.
+    expect(json).not.toMatch(/[0-9][0-9,.]*\s*stars?\b/i);
     expect(json).not.toMatch(/test count/i);
     expect(json).not.toMatch(/[0-9]+["']\s*(stars?|tests?)/i);
   });
