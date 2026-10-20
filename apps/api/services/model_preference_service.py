@@ -75,9 +75,17 @@ AVAILABLE_MODELS: dict[str, list[str]] = {
         "text-embedding-3-large",
     ],
     "anthropic": [
-        "claude-3-5-sonnet-20241022",
+        # Post-PR #348 catalog swap (Anthropic retired 3.5 Sonnet/Haiku on
+        # 2026-02-19, retired 3 Opus in 2025-Q4). The replacements landed in
+        # ``apps/api/models/providers/anthropic.py`` via PR #348 — mirror them
+        # here so the per-task preference validator + UI dropdown offer what
+        # the catalog actually serves. Opus-4-x is intentionally OMITTED:
+        # ``create_model`` always sends temperature=0.0, which Opus-4 rejects
+        # (Anthropic only loosened temperature=1.0 default on Opus 4). Lifting
+        # that requires a create_model call-site decision; tracked in
+        # Phase D.2 (model-list refresh) follow-up.
         "claude-haiku-4-5-20251001",
-        "claude-3-opus-20240229",
+        "claude-sonnet-4-5-20250929",
     ],
     "google": [
         "gemini-1.5-pro",
