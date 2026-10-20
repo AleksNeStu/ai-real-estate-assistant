@@ -67,30 +67,64 @@ SYSTEM_DEFAULTS: dict[str, dict[str, Any]] = {
 # Available models per provider
 AVAILABLE_MODELS: dict[str, list[str]] = {
     "openai": [
+        # 2026 generation (verified live 2026-10-20). 5.6-luna is the
+        # cheapest 1M-ctx tier; 6-luna / 6-sol are the current GA flagship
+        # line (dateless IDs from 4.6+ gen in the ecosystem). o3 / o4-mini
+        # are the current o-series default.
+        "gpt-6-luna",
+        "gpt-6-sol",
+        "gpt-5.6-luna",
+        "o3",
+        "o4-mini",
+        # Pre-existing 2025-era entries (kept to preserve per-task
+        # preferences). Note: gpt-3.5-turbo, gpt-4, gpt-4-turbo, o1, o3-mini
+        # were DEPRECATED on OpenAI's deprecations page (shut down 2026-10-23,
+        # 3 days before the catalog refresh). They remain selectable so
+        # saved user preferences don't break; new picks should use 5.6/6 + o3/o4 above.
         "gpt-4o",
         "gpt-4o-mini",
         "gpt-4-turbo",
         "gpt-3.5-turbo",
+        "o1",
+        "o3-mini",
+        "o1-mini",
+        "gpt-4",
+        # Embeddings (unchanged — text-embedding-3 still current).
         "text-embedding-3-small",
         "text-embedding-3-large",
     ],
     "anthropic": [
-        # Post-PR #348 catalog swap (Anthropic retired 3.5 Sonnet/Haiku on
-        # 2026-02-19, retired 3 Opus in 2025-Q4). The replacements landed in
-        # ``apps/api/models/providers/anthropic.py`` via PR #348 — mirror them
-        # here so the per-task preference validator + UI dropdown offer what
-        # the catalog actually serves. Opus-4-x is intentionally OMITTED:
-        # ``create_model`` always sends temperature=0.0, which Opus-4 rejects
-        # (Anthropic only loosened temperature=1.0 default on Opus 4). Lifting
-        # that requires a create_model call-site decision; tracked in
-        # Phase D.2 (model-list refresh) follow-up.
-        "claude-haiku-4-5-20251001",
+        # 2026 generation (verified live 2026-10-20). Dateless IDs from
+        # the 4.6 generation on. Opus 5.5 INTENTIONALLY OMITTED: Anthropic's
+        # deprecations page says 4.7+ rejects any non-default `temperature`
+        # (only the default `1.0` accepted), and our `create_model` always
+        # sends `temperature=0.0`. Lifting that is a create_model call-site
+        # decision tracked as Phase D.2 follow-up.
+        "claude-sonnet-5-5",
+        "claude-haiku-5-5",
+        # Pre-existing 4.5 / 3.5 / 3 Opus (kept to preserve saved user
+        # preferences). All three are DEPRECATED per Anthropic's page:
+        # sonnet-4-5 retires 2026-11-30, 3.5-sonnet retired 2025-10-28,
+        # 3-opus retired 2026-01-05. New picks should use the 5.5 line above.
         "claude-sonnet-4-5-20250929",
+        "claude-haiku-4-5-20251001",
+        "claude-3-5-sonnet-20241022",
+        "claude-3-opus-20240229",
     ],
     "google": [
+        # 2026 generation (verified live 2026-10-20). 4-argon is the new
+        # top flagship. 3.6/3.8-flash are the Flash-tier default for new
+        # project onboarding.
+        "gemini-4-argon",
+        "gemini-3.8-flash",
+        "gemini-3.6-flash",
+        # Pre-existing 2025-era entries (kept). gemini-1.5-pro/flash and
+        # 1.0-pro are off Google's deprecations window. gemini-2.0-flash-exp
+        # shut down 2026-06-01. New picks should use 4-argon / 3.8-flash above.
         "gemini-1.5-pro",
         "gemini-1.5-flash",
         "gemini-1.0-pro",
+        "gemini-2.0-flash-exp",
     ],
     "openrouter": [
         "nvidia/nemotron-3-super-120b-a12b:free",
@@ -133,6 +167,12 @@ AVAILABLE_MODELS: dict[str, list[str]] = {
         "grok-beta",
     ],
     "deepseek": [
+        # 2026 V4 line (verified live 2026-10-20). V4.1-flash is the
+        # first Flash-tier model with native visual understanding.
+        "deepseek-flash",
+        "deepseek-v4-pro",
+        # Pre-existing 2025-era entries (kept; all deprecated 2026-07-24
+        # per DeepSeek changelog). New picks should use the V4 line above.
         "deepseek-reasoner",
         "deepseek-chat",
         "deepseek-coder",

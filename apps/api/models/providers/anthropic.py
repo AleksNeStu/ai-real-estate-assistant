@@ -39,13 +39,18 @@ class AnthropicProvider(RemoteModelProvider):
     def list_models(self) -> List[ModelInfo]:
         """List available Anthropic models."""
         return [
-            # Latest Models (2025)
+            # ── 2026 generation (verified live 2026-10-20) ──────────────
+            # Dateless IDs from the 4.6 generation on. Opus 5.5 is INTENTIONALLY
+            # OMITTED: Anthropic's deprecations page says 4.7+ rejects any
+            # non-default `temperature` (only default `1.0` accepted), and our
+            # `create_model` always sends `temperature=0.0`. Lifting that
+            # requires a call-site decision tracked as Phase D.2 follow-up.
             ModelInfo(
-                id="claude-sonnet-4-5-20250929",
-                display_name="Claude Sonnet 4.5 (Latest)",
+                id="claude-sonnet-5-5",
+                display_name="Claude Sonnet 5.5 (1M ctx, recommended)",
                 provider_name=self.display_name,
-                context_window=200000,
-                pricing=PricingInfo(input_price_per_1m=3.00, output_price_per_1m=15.00),
+                context_window=1000000,
+                pricing=None,  # populate from platform.claude.com/docs/en/about-claude/pricing
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -53,7 +58,7 @@ class AnthropicProvider(RemoteModelProvider):
                     ModelCapability.JSON_MODE,
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
-                description="Latest and most advanced Claude model with improved reasoning and coding",
+                description="GA — current Sonnet line, 1M context, dateless ID. Replaces sonnet-4-5 for new picks.",
                 recommended_for=[
                     "complex reasoning",
                     "code generation",
@@ -61,10 +66,34 @@ class AnthropicProvider(RemoteModelProvider):
                     "agentic workflows",
                 ],
             ),
-            # Claude 3.5 Generation
             ModelInfo(
-                id="claude-3-5-sonnet-20241022",
-                display_name="Claude 3.5 Sonnet",
+                id="claude-haiku-5-5",
+                display_name="Claude Haiku 5.5 (1M ctx, fastest)",
+                provider_name=self.display_name,
+                context_window=1000000,
+                pricing=None,
+                capabilities=[
+                    ModelCapability.STREAMING,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.JSON_MODE,
+                    ModelCapability.SYSTEM_MESSAGES,
+                ],
+                description="GA — current Haiku line, 1M context, dateless ID. Two-tier input pricing (≤100K prompt vs >100K prompt). Replaces haiku-4-5 for new picks.",
+                recommended_for=[
+                    "fast responses",
+                    "high throughput",
+                    "cost-effective",
+                ],
+            ),
+            # ── Pre-existing 4.5 / 3.5 / 3 Opus entries (kept) ────────────
+            # claude-sonnet-4-5 is DEPRECATED — retires 2026-11-30.
+            # claude-3-5-sonnet and claude-3-opus were retired 2025-10-28 and
+            # 2026-01-05 respectively. They remain here to preserve
+            # per-task preferences already saved by users — new picks
+            # should use the 5.5 line above.
+            ModelInfo(
+                id="claude-sonnet-4-5-20250929",
+                display_name="Claude Sonnet 4.5 (DEPRECATED — retires 2026-11-30)",
                 provider_name=self.display_name,
                 context_window=200000,
                 pricing=PricingInfo(input_price_per_1m=3.00, output_price_per_1m=15.00),
@@ -75,8 +104,24 @@ class AnthropicProvider(RemoteModelProvider):
                     ModelCapability.JSON_MODE,
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
-                description="Powerful Claude model with extended context - consider Sonnet 4.5 for latest features",
-                recommended_for=["complex reasoning", "long documents", "code generation"],
+                description="DEPRECATED — retires 2026-11-30. Pre-5.5 Sonnet. Kept to preserve saved user preferences.",
+                recommended_for=["legacy compatibility"],
+            ),
+            ModelInfo(
+                id="claude-3-5-sonnet-20241022",
+                display_name="Claude 3.5 Sonnet (RETIRED 2025-10-28)",
+                provider_name=self.display_name,
+                context_window=200000,
+                pricing=PricingInfo(input_price_per_1m=3.00, output_price_per_1m=15.00),
+                capabilities=[
+                    ModelCapability.STREAMING,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.VISION,
+                    ModelCapability.JSON_MODE,
+                    ModelCapability.SYSTEM_MESSAGES,
+                ],
+                description="RETIRED on Anthropic's deprecations page (2025-10-28). Kept to preserve saved user preferences; new picks should use Sonnet 5.5 above.",
+                recommended_for=["legacy compatibility"],
             ),
             ModelInfo(
                 id="claude-haiku-4-5-20251001",

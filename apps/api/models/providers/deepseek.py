@@ -43,10 +43,52 @@ class DeepSeekProvider(RemoteModelProvider):
     def list_models(self) -> List[ModelInfo]:
         """List available DeepSeek models."""
         return [
-            # Latest Models (2025)
+            # ── 2026 V4 line (verified live 2026-10-20) ─────────────────
+            # Per DeepSeek changelog, deepseek-chat and deepseek-reasoner were
+            # DEPRECATED 2026-07-24 15:59 UTC. The V4.1-flash and V4-pro are
+            # the current GA. Peak/off-peak pricing (split effective
+            # 2026-08-16) omitted below — populate via api-docs.deepseek.com
+            # before quoting per-token numbers in the UI.
+            ModelInfo(
+                id="deepseek-flash",
+                display_name="DeepSeek V4.1 Flash (1M ctx, multimodal)",
+                provider_name=self.display_name,
+                context_window=1000000,
+                pricing=None,
+                capabilities=[
+                    ModelCapability.STREAMING,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.VISION,
+                    ModelCapability.JSON_MODE,
+                    ModelCapability.SYSTEM_MESSAGES,
+                ],
+                description="GA — V4.1 launched 2026-10-17. First Flash-tier model with native visual understanding. Replaces deepseek-chat + deepseek-reasoner for new picks.",
+                recommended_for=["general chat", "cost-effective", "vision"],
+            ),
+            ModelInfo(
+                id="deepseek-v4-pro",
+                display_name="DeepSeek V4 Pro (1M ctx, top reasoning)",
+                provider_name=self.display_name,
+                context_window=1000000,
+                pricing=None,
+                capabilities=[
+                    ModelCapability.STREAMING,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.JSON_MODE,
+                    ModelCapability.SYSTEM_MESSAGES,
+                ],
+                description="GA — top-tier reasoning. Strong chain-of-thought, function calling confirmed.",
+                recommended_for=["complex reasoning", "math", "coding", "research"],
+            ),
+            # ── Pre-existing 2025-era entries (kept; all deprecated) ────
+            # deepseek-chat and deepseek-reasoner were the 2025 line and
+            # both DEPRECATED 2026-07-24. deepseek-coder is unverified on
+            # the current docs. They remain here to preserve per-task
+            # preferences already saved by users; new picks should prefer
+            # the V4 line above.
             ModelInfo(
                 id="deepseek-reasoner",
-                display_name="DeepSeek R1 (Latest - Reasoning)",
+                display_name="DeepSeek R1 (DEPRECATED 2026-07-24)",
                 provider_name=self.display_name,
                 context_window=64000,
                 pricing=PricingInfo(input_price_per_1m=0.55, output_price_per_1m=2.19),
@@ -56,17 +98,12 @@ class DeepSeekProvider(RemoteModelProvider):
                     ModelCapability.JSON_MODE,
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
-                description="Latest advanced reasoning model - competes with o1, shows chain-of-thought",
-                recommended_for=[
-                    "complex reasoning",
-                    "math problems",
-                    "scientific analysis",
-                    "detailed explanations",
-                ],
+                description="RETIRED 2026-07-24 15:59 UTC (per DeepSeek changelog). During the 3-month overlap it pointed to thinking mode of deepseek-v4-flash. Kept to preserve saved user preferences.",
+                recommended_for=["legacy compatibility"],
             ),
             ModelInfo(
                 id="deepseek-chat",
-                display_name="DeepSeek V3 Chat (Recommended)",
+                display_name="DeepSeek V3 Chat (DEPRECATED 2026-07-24)",
                 provider_name=self.display_name,
                 context_window=64000,
                 pricing=PricingInfo(input_price_per_1m=0.14, output_price_per_1m=0.28),
@@ -76,17 +113,12 @@ class DeepSeekProvider(RemoteModelProvider):
                     ModelCapability.JSON_MODE,
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
-                description="Latest general-purpose chat model (V3) - strong reasoning at low cost",
-                recommended_for=[
-                    "general chat",
-                    "reasoning",
-                    "coding assistance",
-                    "cost-effective",
-                ],
+                description="RETIRED 2026-07-24 15:59 UTC. During the 3-month overlap it pointed to non-thinking mode of deepseek-v4-flash. Kept to preserve saved user preferences.",
+                recommended_for=["legacy compatibility"],
             ),
             ModelInfo(
                 id="deepseek-coder",
-                display_name="DeepSeek Coder",
+                display_name="DeepSeek Coder (UNVERIFIED — treat as deprecated)",
                 provider_name=self.display_name,
                 context_window=64000,
                 pricing=PricingInfo(input_price_per_1m=0.14, output_price_per_1m=0.28),
@@ -96,13 +128,8 @@ class DeepSeekProvider(RemoteModelProvider):
                     ModelCapability.JSON_MODE,
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
-                description="Specialized coding model trained on code and technical documentation",
-                recommended_for=[
-                    "code generation",
-                    "debugging",
-                    "code review",
-                    "technical documentation",
-                ],
+                description="Not mentioned in DeepSeek's current docs — treat as deprecated. Kept to preserve saved user preferences.",
+                recommended_for=["legacy compatibility"],
             ),
         ]
 
@@ -161,9 +188,9 @@ class DeepSeekProvider(RemoteModelProvider):
             return False, "API key not provided"
 
         try:
-            # Try to create a minimal model instance
-            self.create_model("deepseek-chat")
-            # If no error, connection is valid
+            # `deepseek-chat` was deprecated 2026-07-24. Validate against
+            # the current GA model.
+            self.create_model("deepseek-flash")
             return True, None
         except Exception as e:
             return False, f"Connection failed: {str(e)}"
