@@ -1,0 +1,359 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Repair GitHub growth metrics",
+        "description": "Capture the live GitHub star baseline, repair the existing star-history zero-state, emit machine-readable velocity/traffic data, add unit tests, and document measurement limits.",
+        "details": "Approved visibility-growth plan Task 1. Scope: .github/scripts/render_star_history.py, .github/workflows/star-history.yml, .github/scripts/tests/test_render_star_history.py, docs/community/METRICS.md. Preserve docs/community/metrics/latest.json as an immutable legacy snapshot. DoD: current counts captured; empty star history produces zero metrics without crashing; 1d/7d/30d windows tested; traffic 403 is non-fatal; growth-metrics.json artifact defined; targeted tests green; local conventional commit created; no push.",
+        "testStrategy": "Run python -m unittest discover -s .github/scripts/tests -p \"test_render_star_history.py\" -v and python .github/scripts/render_star_history.py --help. Review workflow YAML and verify no credentials are printed.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-07-20T21:39:48.109Z"
+      },
+      {
+        "id": 2,
+        "title": "Repair canonical SEO metadata",
+        "description": "Repair canonical SEO metadata for the Render demo, including sitemap coverage, robots, metadataBase, canonical URLs, and all 9 hreflang locales.",
+        "details": "Approved visibility-growth plan Task 2. Scope: create apps/web/src/lib/site.ts and tests; modify apps/web/src/app/sitemap.ts, apps/web/public/robots.txt, apps/web/src/app/[locale]/layout.tsx; reuse apps/web/src/i18n/routing.ts. DoD: Render is canonical; sitemap covers all 9 locales and existing public routes including valuation; no fabricated lastModified; no example.com placeholder; targeted Jest, lint, and build green; local conventional commit; no push.",
+        "testStrategy": "Run npm --prefix apps/web test -- --runInBand src/lib/__tests__/site.test.ts, npm --prefix apps/web run lint, and npm --prefix apps/web run build.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-07-20T22:25:01.574Z"
+      },
+      {
+        "id": 3,
+        "title": "Add factual GEO surfaces",
+        "description": "Add factual GEO discovery surfaces for AI answer engines without speculative claims or new product behavior.",
+        "details": "Approved visibility-growth plan Task 3. Scope: create apps/web/public/llms.txt, apps/web/src/lib/structured-data.ts and tests; modify apps/web/src/app/[locale]/layout.tsx. DoD: static llms.txt contains authoritative factual links; JSON-LD @graph has Organization, WebSite, SoftwareApplication; no star/test counts or unverified claims; targeted Jest, lint, build, and runtime endpoint checks green; local conventional commit; no push.",
+        "testStrategy": "Run targeted structured-data Jest test, frontend lint/build, then start via scripts/start.ps1 and verify /llms.txt, /sitemap.xml, /robots.txt, and /en before scripts/stop.ps1.",
+        "status": "done",
+        "dependencies": [
+          "2"
+        ],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-07-20T22:54:04.455Z"
+      },
+      {
+        "id": 4,
+        "title": "Reposition repository for AI developers",
+        "description": "Reposition the public repository page for AI/open-source developers and align package metadata, while retaining PropVector AI as a secondary funnel.",
+        "details": "Approved visibility-growth plan Task 4. Scope: README.md and package.json only. DoD: first viewport has clear AI-developer value, demo, quickstart, GIF, factual differentiators and star CTA; hosted funnel follows developer proof; duplicate flow content trimmed without deleting unique docs; package homepage/keywords aligned; links and docs checks green; local conventional commit; no push.",
+        "testStrategy": "Run existing markdown/link checks if present and the docs-relevant local CI path; manually verify rewritten README anchors and external links.",
+        "status": "done",
+        "dependencies": [
+          "1"
+        ],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-07-22T10:08:54.956Z"
+      },
+      {
+        "id": 5,
+        "title": "Refresh GitHub social preview",
+        "description": "Refresh the stale GitHub social-preview image with evergreen proof and prepare exact public repository metadata without applying it.",
+        "details": "Approved visibility-growth plan Task 5. Scope: .github/social-preview.png and proposed metadata recorded in docs/community/GROWTH_EXPERIMENTS.md. DoD: 1280x640 preview has no decaying star count/date, retains visual identity, has accurate claims and contrast; current/proposed GitHub description/homepage/topics documented; no public settings changed; local conventional commit; no push.",
+        "testStrategy": "Inspect PNG at full and thumbnail size; verify dimensions and copy; read back current GitHub metadata through MCP; confirm no outward mutation occurred.",
+        "status": "done",
+        "dependencies": [
+          "1",
+          "4"
+        ],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-07-21T12:59:54.682Z"
+      },
+      {
+        "id": 6,
+        "title": "Create 30-day growth experiments",
+        "description": "Create the GitHub-native 30-day experiment ledger, publication rules, researched channel shortlist, and unpublished technical launch drafts.",
+        "details": "Approved visibility-growth plan Task 6. Scope: docs/community/GROWTH_EXPERIMENTS.md, docs/community/campaigns/README.md, 01-developer-launch-drafts.md, 02-directory-shortlist.md, and docs/community/METRICS.md. DoD: current channel rules researched; target tiers and attribution limits explicit; campaign schema/UTM format/cadence/stop-scale rules documented; drafts disclose affiliation and avoid manipulation/spam; nothing published externally; local conventional commit; no push.",
+        "testStrategy": "Run markdown/link checks; verify each draft against channel rules, factual claims, publication gate, UTM contract, and anti-manipulation checklist.",
+        "status": "done",
+        "dependencies": [
+          "1",
+          "4"
+        ],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-07-20T22:32:21.504Z"
+      },
+      {
+        "id": 7,
+        "title": "Verify visibility growth system",
+        "description": "Run complete frontend, runtime, SEO, GEO, and metrics verification and record the trustworthy pre-campaign baseline.",
+        "details": "Approved visibility-growth plan Task 7. Scope: all files from Tasks 1-6 plus verified results in docs/community/GROWTH_EXPERIMENTS.md. DoD: targeted Python/Jest tests, frontend-check, lint, full frontend tests, build, wrapper-based runtime endpoints, Lighthouse, structured data, seo-audit, seo-technical, and nest-geo all green; bounded findings fixed in-session; live baseline and unavailable metrics accurately recorded; local conventional commit only if report changes; no push.",
+        "testStrategy": "Execute every verification command in approved plan Task 7, including project start/stop wrappers and frontend-check. Fix all blocking and in-diff findings before done.",
+        "status": "done",
+        "dependencies": [
+          "2",
+          "3",
+          "4",
+          "5",
+          "6"
+        ],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-07-21T13:07:20.495Z"
+      },
+      {
+        "id": 8,
+        "title": "Apply public metadata and indexing",
+        "description": "Apply public GitHub metadata and Google/Bing sitemap submissions only after immediate explicit approval of the exact outward-facing diff.",
+        "details": "Approved visibility-growth plan Task 8. This task is intentionally confirmation-gated. Scope: GitHub topics/description/homepage/live social preview setting and Search Console/Bing sitemap submission. DoD when authorized: present read-back diff, obtain explicit selection, apply only selected actions using MCP or narrow fallback, read back public state, verify submissions. If not authorized, keep pending with blocking note; do not mark done, publish, push, or submit anything.",
+        "testStrategy": "Read back GitHub repository settings and live social preview; verify Google/Bing sitemap submission status. No action without explicit confirmation immediately before mutation.",
+        "status": "done",
+        "dependencies": [
+          "7"
+        ],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-07-21T13:09:31.834Z"
+      },
+      {
+        "id": 9,
+        "title": "Repair TaskMaster complexity-analysis provider",
+        "description": "Restore TaskMaster complexity analysis so it uses an available configured provider instead of failing on missing PERPLEXITY_API_KEY.",
+        "details": "Follow-up discovered while starting visibility-growth Task #1 on 2026-07-20. mcp__mgmt-taskmaster__analyze_project_complexity failed before execution with: Required API key PERPLEXITY_API_KEY for provider 'perplexity' is not set. Inspect TaskMaster role/provider configuration and align complexity analysis with an available key/provider without exposing secrets. This is infrastructure/tooling scope and must not be drive-by fixed in the public product visibility commits.",
+        "testStrategy": "Run analyze_project_complexity on a known task range and confirm a report is produced without credential errors; do not print secret values.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-07-21T13:11:05.321Z"
+      },
+      {
+        "id": 10,
+        "title": "Fix frontend GeoJSON type dependency",
+        "description": "Restore a green Next.js build by adding the missing GeoJSON type package required by property-mapbox-map.tsx.",
+        "details": "Follow-up discovered during visibility-growth Task #2 on 2026-07-20. The clean frontend build fails at apps/web/src/components/search/property-mapbox-map.tsx:6 with Cannot find module 'geojson'. Add the minimal dev-only @types/geojson dependency using the repository's npm/package-lock workflow, verify no runtime dependency changes, run focused map tests and npm --prefix apps/web run build, and commit as an isolated CI/build fix. Do not alter map behavior or visibility-task code.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-07-20T22:05:38.176Z"
+      },
+      {
+        "id": 11,
+        "title": "Audit frontend skipLibCheck suppression",
+        "description": "Assess whether the frontend can safely disable skipLibCheck and surface hidden type-resolution or declaration errors.",
+        "details": "Follow-up to TaskMaster #10 discovered by its clean review on 2026-07-21. apps/web/tsconfig.json:6 sets skipLibCheck true. Do not flip it blindly. Run an isolated typecheck with skipLibCheck false, inventory failures, classify first-party vs third-party declarations, and either make a bounded migration plan or document why suppression remains necessary. This is compiler-policy hygiene and outside the visibility-growth task.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [
+          "10"
+        ],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-09-13T09:32:34.198Z"
+      },
+      {
+        "id": 12,
+        "title": "Migrate remaining Next.js 16 metadata deprecations",
+        "description": "Remove pre-existing Next.js 16 build warnings for page-level themeColor metadata and the middleware-to-proxy convention.",
+        "details": "Follow-up discovered during visibility-growth Task #2 verification on 2026-07-21. The touched locale layout warning will be fixed in Task #2 itself. Separately audit remaining Unsupported metadata themeColor warnings in existing route files and migrate the pre-existing middleware convention to proxy per current Next.js 16 docs. Keep behavior unchanged, add targeted tests, and require a warning-free frontend build for these categories.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [
+          "2"
+        ],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-09-13T09:32:34.953Z"
+      },
+      {
+        "id": 13,
+        "title": "[manual] Open and merge technical visibility PR",
+        "description": "Package the verified SEO/GEO and growth-measurement changes into a technical-only PR after explicit push/PR approval.",
+        "details": "Post-implementation gate for visibility Tasks #1-#7. Ensure the PR contains only technical SEO/GEO, measurement, metadata, README, and verification changes; exclude campaign copy and distribution execution. Re-run required CI, obtain explicit permission before push/PR creation, wait for green CI and user-approved merge, then record the merge SHA. This task is outward-facing and cannot auto-execute.",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "7"
+        ],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-07-22T10:37:07.793Z"
+      },
+      {
+        "id": 14,
+        "title": "[manual] Launch AI-developer content after technical PR",
+        "description": "Create and publish the first post-PR technical content wave aimed at a measured 10 new GitHub Stars/day target.",
+        "details": "Start only after the technical visibility PR is merged and public metadata/indexing are ready. Produce channel-specific technical assets from real implementation proof (recommended: one long-form Dev.to/Hashnode tutorial and one Show HN or equivalent draft after current rule research). Keep content in a separate content/distribution PR or publishing workflow, never mix with technical code. Every publication requires immediate explicit approval. Measure native impressions/clicks, GitHub referrers, stars before, +24h, +72h, and rolling-7d baseline. 10 Stars/day is a target KPI, not a guarantee; report actual results honestly.",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "8",
+          "13"
+        ],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-07-22T10:37:14.959Z"
+      },
+      {
+        "id": 15,
+        "title": "[manual] Run community and directory distribution sprint",
+        "description": "Expand the best content into community posts and curated directory/awesome-list contributions toward the 20 Stars/day stretch target.",
+        "details": "Begin after the first content wave has 72-hour results. Research and obey each community's self-promotion rules; disclose maintainer affiliation; avoid bought/reciprocal stars, vote manipulation, spam, or mass unsolicited outreach. Submit only user-approved assets, one major experiment per 48-hour attribution window. Scale only channels with measured uplift; stop weak formats. Keep this work separate from technical code/PRs. 20 Stars/day is a stretch KPI, not a guarantee.",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "14"
+        ],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-07-22T10:37:22.254Z"
+      },
+      {
+        "id": 16,
+        "title": "[manual] Optimize channels toward 50 Stars/day",
+        "description": "Run the day-30 measurement and scaling cycle toward the 50 new GitHub Stars/day north-star target.",
+        "details": "Use observed campaign data to rebaseline 7-day and 30-day star velocity, identify the highest-uplift channels, publish only approved follow-up variants, and retire non-performing formats. Produce a day-30 report with actual stars/day, traffic/referrers, attribution limits, and a GO/REFINE decision on the 50/day north-star. Do not claim causality that GitHub-native data cannot prove. 50 Stars/day is a north-star KPI, never a guarantee or completion precondition.",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "15"
+        ],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-07-22T10:37:29.804Z"
+      },
+      {
+        "id": 17,
+        "title": "Repair frontend SSG missing translations",
+        "description": "Eliminate pre-existing MISSING_MESSAGE errors emitted during localized Next.js static generation.",
+        "details": "Follow-up discovered while verifying visibility-growth Task #3 on 2026-07-21. A clean frontend build exits 0 but emits next-intl MISSING_MESSAGE errors during SSG. Reproduce with the full build, capture every missing key and locale, add only the missing translations or correct namespace usage, run focused i18n tests plus a warning-free build for this category, and keep behavior/copy changes scoped. This is outside the technical GEO diff and must be committed separately.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [
+          "3"
+        ],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-09-13T09:32:45.112Z"
+      },
+      {
+        "id": 18,
+        "title": "Untrack and protect .mcp.json configuration",
+        "description": "Remove .mcp.json from git tracking to prevent accidental commits of local developer settings while maintaining the file for local use.",
+        "details": "Following the manual cleanup of commit 32e7dd5, .mcp.json remains tracked by git despite being listed in .gitignore. This task involves: 1. Executing 'git rm --cached .mcp.json' to remove the file from the git index without deleting it from the local filesystem. 2. Committing the change with the message 'chore(git): untrack .mcp.json (still gitignored, now also untracked)'. 3. Adding a session-start check or a project rule (e.g., in CLAUDE.md) that triggers a warning on '/trace' if any file listed in .gitignore is currently tracked by git. This prevents future agents or scripts from accidentally re-staging local-only configuration files.",
+        "testStrategy": "1. Verify untracking: Run 'git ls-files .mcp.json' and confirm it returns no output. 2. Verify ignore logic: Modify .mcp.json locally and run 'git status'; the file must not appear in the output. 3. Verify persistence: Confirm the file still exists on disk and is accessible to Claude Code/MCP tools. 4. Verify check: Run the new session-start/trace check to ensure it correctly identifies the repository state.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-09-13T09:06:18.485Z"
+      },
+      {
+        "id": 19,
+        "title": "Fix backend unit test timeouts and CI/CD pipeline dependency chain",
+        "description": "Resolve the 5-minute CI timeout flake in backend unit tests by increasing per-test timeouts and adjusting step-level limits, ensuring the deployment pipeline's health check correctly handles test results.",
+        "details": "Update .github/workflows/ci.yml to increase the pytest --timeout from 60 to 180 seconds and add a 15-minute step-level timeout to the backend-tests (unit) job. This prevents zombie workers from hanging the CI runner when individual tests exceed the previous limit on slower GitHub Actions runners. Additionally, verify .github/workflows/deploy.yml to ensure the ci-check job correctly propagates failure states to the rest of the deployment pipeline (validate, deploy-frontend, deploy-backend). Audit apps/api/tests/unit/conftest.py and test_ci_workflow_post_mvp.py to ensure no hidden latencies or conflicting timeout configurations exist, and verify that the -n auto --dist=worksteal configuration is performing as expected.",
+        "testStrategy": "1. Execute 'pytest apps/api/tests/unit -n auto --timeout=180 --tb=short' locally to ensure wall-clock time is under 8 minutes. 2. Trigger the CI workflow on the dev branch and verify the backend-tests (unit) job completes in under 10 minutes. 3. Confirm the Deploy Pipeline's ci-check job passes and triggers subsequent deployment steps upon successful test completion. 4. Verify that a simulated test failure correctly stops the Deploy Pipeline at the ci-check stage.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-08-04T22:38:52.741Z"
+      },
+      {
+        "id": 20,
+        "title": "Refactor 2 xfail health-check tests to deterministic async-mocks",
+        "description": "Originally tracked as TaskMaster #19 follow-up (closed 2026-08-04) and re-surfaced in this session's commits d93a98a + c6af5d8 (both reverted in 906d1ae due to Linux CI flake). The 2 tests are: test_get_health_status_unhealthy_when_vector_store_unhealthy and test_get_health_status_marks_slow_dependency_degraded, in apps/api/tests/unit/api/test_health.py.\n\nGoal: replace the @pytest.mark.xfail(strict=False) decorators with deterministic async-mocks so backend-tests (unit) is green on Linux CI (Python 3.12 + pytest-asyncio Mode.AUTO + pytest-xdist).\n\nLocal pytest (Windows + Python 3.14) shows the refactor works (13/13 pass on both d93a98a and c6af5d8 versions). On CI Linux, both tests fail with result.status == HEALTHY instead of UNHEALTHY/DEGRADED, meaning the monkeypatch.setattr on api.health.get_vector_store did not take effect — production code still calls chromadb init which returns a real ChromaPropertyStore on Linux (vs None on Windows where FastEmbed is unavailable).\n\nFailed fix attempts in this session:\n1. d93a98a: @functools.lru_cache()-wrapped _no_vector_store() — failed on CI.\n2. c6af5d8: plain def _no_vector_store() (no lru_cache) + per-call asyncio.Event() inside _slow_vector — failed on CI.\n\nHypotheses to investigate:\n- pytest-asyncio Mode.AUTO loop scoping under xdist workers on Linux\n- monkeypatch.setattr with string target vs module reference\n- asyncio.to_thread behavior with async functions on Linux vs Windows\n- Whether the autouse clear_lru_caches fixture interferes with monkeypatched values\n- Whether a module-level patch on api.dependencies vs api.health matters\n\nAcceptance criteria:\n- pytest tests/unit/api/test_health.py passes 13/13 locally\n- pytest on Linux Python 3.12 + pytest-asyncio Mode.AUTO + xdist passes 13/13\n- backend-tests (unit) GitHub Actions job on the test commit is completed/success\n- @pytest.mark.xfail decorator removed on both tests",
+        "details": "",
+        "testStrategy": "",
+        "status": "deferred",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 21,
+        "title": "[manual] 5 commits on `dev` ready for push: `8e0c437a` Phase A (SEO + AI-citation layer), `2a6e1e82` Phase B (onboardi…",
+        "description": "5 commits on `dev` ready for push: `8e0c437a` Phase A (SEO + AI-citation layer), `2a6e1e82` Phase B (onboarding tour + try-these chips), `e47fcb26` Phase C (6 distribution drafts in `docs/marketing/`), `06aff9f2` perf (`/market-trends` lazy recharts), `0ff2b60a` docs (README \"What's New Since v5.1.5.3\" section). Mirrors: `AleksNeStu/ai-real-estate-assistant` (canonical, public, frozen-demo per Ru…",
+        "details": "Converted from findings ledger F-20260925-3 (date 2026-09-25, sev med, status blocked — Hard Rule 1 (CLAUDE.md project) requires explicit operator `push` command; agent cannot perform).\nLocation: `git` working tree (5 commits ahead of remote `dev`)\nClaim: 5 commits on `dev` ready for push: `8e0c437a` Phase A (SEO + AI-citation layer), `2a6e1e82` Phase B (onboarding tour + try-these chips), `e47fcb26` Phase C (6 distribution drafts in `docs/marketing/`), `06aff9f2` perf (`/market-trends` lazy recharts), `0ff2b60a` docs (README \"What's New Since v5.1.5.3\" section). Mirrors: `AleksNeStu/ai-real-estate-assistant` (canonical, public, frozen-demo per Rule 1 — never force-push), `dev-scaler/ai-real-estate-assistant`, `nest-ai-dev/ai-real-estate-assistant`.\nNext step: next step: `git fetch main && git ls-remote main refs/heads/dev` (Rule 3 — concurrent-session safety); if SHA matches expected dev, `git push main dev` cascades to mirror1 + mirror2 via `repoalx` pre-push hook; verify with `git ls-remote {main,mirror1,mirror2} refs/heads/dev` returning all 5 commit SHAs\nSource: this session `/goal address` follow-up sweep\nLast verified: 2026-09-25",
+        "testStrategy": "",
+        "status": "blocked",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-10-10T11:22:18.619Z"
+      },
+      {
+        "id": 22,
+        "title": "[manual] Current placeholder: 45 KB copy of `assets/screenshots/home-dark.png` 1280x800 (off-spec for Twitter Card ide…",
+        "description": "Current placeholder: 45 KB copy of `assets/screenshots/home-dark.png` 1280x800 (off-spec for Twitter Card ideal 1200x630; browsers upscale/downscale acceptably but design intent lost). Already wired through `openGraph.images` + `twitter.images` in `apps/web/src/app/[locale]/layout.tsx` (Phase A commit `8e0c437a`). Plan risk explicitly BLOCKED this until operator approves: \"Custom og-image is 'doc…",
+        "details": "Converted from findings ledger F-20260925-4 (date 2026-09-25, sev low, status blocked — needs operator design direction before custom 1200x630 branded preview card is produced).\nLocation: `apps/web/public/og-image.png` (placeholder)\nClaim: Current placeholder: 45 KB copy of `assets/screenshots/home-dark.png` 1280x800 (off-spec for Twitter Card ideal 1200x630; browsers upscale/downscale acceptably but design intent lost). Already wired through `openGraph.images` + `twitter.images` in `apps/web/src/app/[locale]/layout.tsx` (Phase A commit `8e0c437a`). Plan risk explicitly BLOCKED this until operator approves: \"Custom og-image is 'doc fixes' but requires visual design. Block on operator approval of design direction before producing.\"\nNext step: next step: operator to either (a) provide design specs (logo + tagline + screenshot composition), (b) commission a designed version via `nest-preview` skill, or (c) approve extension of placeholder with minimal text overlay (logo + \"AI Real Estate Assistant\" + demo URL)\nSource: this session `/goal address` follow-up sweep\nLast verified: 2026-09-25",
+        "testStrategy": "",
+        "status": "blocked",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-10-10T11:22:26.749Z"
+      },
+      {
+        "id": 23,
+        "title": "[manual] this session `/goal address` follow-up sweep",
+        "description": "this session `/goal address` follow-up sweep",
+        "details": "Converted from findings ledger F-20260925-8 (date 2026-09-25, sev med, status blocked — depends on F-20260925-3 push + Render redeploy (~3-5 min). Verification plan: Schema.org validator for FAQPage JSON-LD (paste `<script type=\"application/ld+json\">` from page source); Twitter Card Validator + Facebook Sharing Debugger for og-image render; Lighthouse SEO ≥ 95 on demo URL; manual AI queries — ChatGPT \"What open-source AI real estate assistants exist?\", Claude \"Recommend a FastAPI + Next.js property search demo\", Perplexity \"Best AI property search demo with self-hosting\").\nLocation: next step: after F-20260925-3 lands and Render redeploys, operator runs the verification checklist from plan (`docs/quality/findings.md` not the right place — see plan `analyze-starts-history-and-fluffy-goose.md` \"Verification (Phase A)\"); surface regressions to F-20260925-3 / F-20260925-4 follow-ups\nClaim: this session `/goal address` follow-up sweep\nNext step: 2026-09-25\nSource: \nLast verified: ",
+        "testStrategy": "",
+        "status": "blocked",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-10-10T11:22:34.373Z"
+      },
+      {
+        "id": 24,
+        "title": "[manual] this session `/goal address` follow-up sweep",
+        "description": "this session `/goal address` follow-up sweep",
+        "details": "Converted from findings ledger F-20260925-10 (date 2026-09-25, sev low, status blocked — depends on F-20260925-3 push + CI green on the commit to be tagged (CLAUDE.md Rule 2: \"NEVER TAG OR RELEASE BEFORE ALL CI IS GREEN\"). Current version: `v5.1.5.3` (per latest tag `b6e18ef5` era). 5 session commits on `dev` (`8e0c437a`, `2a6e1e82`, `e47fcb26`, `06aff9f2`, `0ff2b60a`) bump-worthy as `v5.1.6` (post-release polish + discoverability + perf + docs + Polish i18n + showcase route). Bump scope: `apps/api/pyproject.toml` + root `package.json` + `apps/web/package.json` to `5.1.6`; CHANGELOG entry per convention listing 5 commits + Polish i18n + showcase + lazy recharts.).\nLocation: next step: after F-20260925-3 push + CI run `completed/success` for all required checks (Rule 2 verification checklist in CLAUDE.md), bump 3 version files, add CHANGELOG entry, then `git tag v5.1.6` and cascade to all 3 mirrors per Rule 3, then publish-ghcr.yml auto-fires for `:v5.1.6` SHA tags. Verification per Rule 2: `gh run list --workflow='CI/CD AI Real Estate Assistant' --limit=1` shows `completed/success` for the commit + `gh run list --workflow=publish-ghcr.yml --limit=1` shows `completed/success`\nClaim: this session `/goal address` follow-up sweep\nNext step: 2026-09-25\nSource: \nLast verified: ",
+        "testStrategy": "",
+        "status": "blocked",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-10-10T11:22:42.176Z"
+      },
+      {
+        "id": 25,
+        "title": "[manual] Original row tracked 7 pending tasks (#11-#18, #20) with engineering items (#12, #17, #18) closed by F-202609…",
+        "description": "Original row tracked 7 pending tasks (#11-#18, #20) with engineering items (#12, #17, #18) closed by F-20260913-3 and (#18) verified done by F-20260913-1. #20 dispositioned as cancelled in this session (F-20260925-2 row below). Visibility chain #13/#14/#15/#16 operator-gated by Hard Rule 1 throughout 2026-09-13 → 2026-09-24 sessions; user authorized in `/nest-green` Step 4 on 2026-09-25: \"Yes, au…",
+        "details": "Converted from findings ledger F-20260912-11 (date 2026-09-12, sev med, status blocked — visibility chain authorized 2026-09-25; TaskMaster #13 scheduled via /nest-next; Hard Rule 1 still requires per-action push/PR authorization at execution).\nLocation: `.taskmaster/tasks/tasks.json`\nClaim: Original row tracked 7 pending tasks (#11-#18, #20) with engineering items (#12, #17, #18) closed by F-20260913-3 and (#18) verified done by F-20260913-1. #20 dispositioned as cancelled in this session (F-20260925-2 row below). Visibility chain #13/#14/#15/#16 operator-gated by Hard Rule 1 throughout 2026-09-13 → 2026-09-24 sessions; user authorized in `/nest-green` Step 4 on 2026-09-25: \"Yes, authorize #13\". Scheduled for execution via `/nest-next`; per-action push/PR still requires explicit operator OK at execution time (Hard Rule 1 is not lifted — only the visibility-chain work-blocker is).\nNext step: run `/nest-next` to schedule TaskMaster #13 (the technical-visibility PR); #14/#15/#16 cascade after #13 lands per chain order\nSource: this session `/nest-green` re-classification\nLast verified: 2026-09-25",
+        "testStrategy": "",
+        "status": "cancelled",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-10-10T11:22:49.955Z"
+      },
+      {
+        "id": 26,
+        "title": "[manual] 3 active CVEs in chromadb 0.5.23: PYSEC-2026-3813 / CVE-2026-45830 / GHSA-2wm9-hf6c-p5cr (high auth-bypass — …",
+        "description": "3 active CVEs in chromadb 0.5.23: PYSEC-2026-3813 / CVE-2026-45830 / GHSA-2wm9-hf6c-p5cr (high auth-bypass — any authenticated user can R/W/D arbitrary collections), PYSEC-2026-3814 / CVE-2026-45833 / GHSA-36p7-vc44-83pf (critical code-injection), PYSEC-2026-3815 / CVE-2026-45831 / GHSA-xph7-9rjv-w5fr (high tenant-isolation gap in SimpleRBACAuthorizationProvider). OSV.dev shows vulnerable range 0…",
+        "details": "Converted from findings ledger F-20260925-1 (date 2026-09-25, sev high, status blocked — no-fix-available upstream; frozen-policy exception (accepted risk in `docs/operations/security/accepted-risks.md`)).\nLocation: `apps/api/uv.lock` chromadb==0.5.23\nClaim: 3 active CVEs in chromadb 0.5.23: PYSEC-2026-3813 / CVE-2026-45830 / GHSA-2wm9-hf6c-p5cr (high auth-bypass — any authenticated user can R/W/D arbitrary collections), PYSEC-2026-3814 / CVE-2026-45833 / GHSA-36p7-vc44-83pf (critical code-injection), PYSEC-2026-3815 / CVE-2026-45831 / GHSA-xph7-9rjv-w5fr (high tenant-isolation gap in SimpleRBACAuthorizationProvider). OSV.dev shows vulnerable range 0.5.0–1.5.9 — **no upstream fix in 0.5.x OR 1.5.x as of 2026-09-24**. Verified via `pip-audit -r apps/api/uv.lock --no-deps` (only chromadb remains; anyio/soupsieve/greenlet fixes landed in 8bafdf2e/070e6d50/c74cbdd1). Project pin `chromadb>=0.5.0,<0.6.0` (apps/api/pyproject.toml:10) restricts resolution to 0.5.x line, all of which are vulnerable; bumping to 1.x would require FastAPI/chromadb API-rewrite (frozen policy blocks architecture changes per CLAUDE.md). Frozen-policy matrix says \"Dependency bumps below critical/high severity → Blocked\" — but the frozen-policy *exception* for HIGH/CRITICAL applies here as \"no-fix-available\" (Rule 252 spirit: accept risk when upstream cannot fix).\nNext step: file CVE entries in `docs/operations/security/accepted-risks.md` (currently NOT listed there per F-20260912-10 close-out only documenting CVE-2026-45829); monitor upstream for chromadb 1.6+; consider alternative vector stores (Qdrant/Weaviate) only after policy unfreezes\nSource: this session `/nest-green` CVEs surface\nLast verified: 2026-09-25",
+        "testStrategy": "",
+        "status": "blocked",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-10-10T11:22:58.268Z"
+      }
+    ],
+    "metadata": {
+      "version": "1.0.0",
+      "lastModified": "2026-10-10T11:22:58.268Z",
+      "taskCount": 26,
+      "completedCount": 15,
+      "tags": [
+        "master"
+      ]
+    }
+  }
+}
