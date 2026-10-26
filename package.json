@@ -62,7 +62,7 @@
     "@playwright/test": "^1.57.0",
     "concurrently": "^10.0.6",
     "eslint": "^9.39.3",
-    "lint-staged": "^15.4.3",
+    "lint-staged": "^17.6.0",
     "prettier": "^3.9.9",
     "wait-on": "^8.0.5"
   },
