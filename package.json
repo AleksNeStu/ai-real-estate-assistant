@@ -64,7 +64,7 @@
     "eslint": "^9.39.3",
     "lint-staged": "^15.4.3",
     "prettier": "^3.9.9",
-    "wait-on": "^8.0.5"
+    "wait-on": "^9.5.1"
   },
   "overrides": {
     "js-yaml": "^4.3.2"
