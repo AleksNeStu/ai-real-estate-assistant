@@ -1,5 +1,12 @@
 # 🏠 AI Real Estate Assistant
 
+---
+
+> **NestLab** — an AI automation studio in Poland (EU). We build our own products and take on a
+> limited number of client contracts each year.
+> [Workflow automation, custom AI software and EU AI Act readiness](https://nestlab.tech/services?utm_source=github&utm_medium=referral&utm_campaign=product_showcase&utm_content=readme)
+
+
 > **AI-powered conversational platform for property search, analytics, and market insights.**
 >
 > Ask in natural language — *"2-bedroom apartment in Kraków under 500k"* — get matched listings.
