@@ -65,7 +65,7 @@ If you exceed the limit, you will receive:
 Cross-Origin Resource Sharing (CORS) is controlled via environment:
 - `ENVIRONMENT=production` pins allowed origins from `CORS_ALLOW_ORIGINS` (comma‑separated).
   - **Production safety**: Wildcard `*` origins are rejected in production. The application will fail to start if `CORS_ALLOW_ORIGINS` is empty or contains `*`.
-  - `CORS_ALLOW_ORIGINS` must be set to specific origins (e.g., `https://yourapp.com,https://your-app.onrender.com`).
+  - `CORS_ALLOW_ORIGINS` must be set to specific origins (e.g., `https://yourapp.com,https://your-app.example.com`).
 - `ENVIRONMENT` not `production` allows all origins (`*`) for local development.
 
 ### Notifications (Email)
@@ -220,7 +220,7 @@ Invoke-RestMethod `
 Example:
 ```powershell
 $env:ENVIRONMENT="production"
-$env:CORS_ALLOW_ORIGINS="https://yourapp.com,https://your-app.onrender.com"
+$env:CORS_ALLOW_ORIGINS="https://yourapp.com,https://your-app.example.com"
 ```
 
 Example (Admin notifications queue stats):

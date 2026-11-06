@@ -2,14 +2,15 @@
 
 ## Target
 
-| Environment | Platform | VPS | Domain |
+| Environment | Platform | Host | Domain |
 |---|---|---|---|
-| Development | Local (scripts/start.sh) | localhost | localhost |
-| Staging | Dokploy | VPS2 | *(staging domain — see ops runbook)* |
-| Production | Dokploy | VPS3 (or Render demo) | *(domain TBD)* |
+| Development | Local (Docker Compose or local scripts) | localhost | localhost |
+| Staging | Your own host / your CI | your host | your staging domain |
+| Production | Your own host / your CI | your host | your domain |
 
-> **Frozen demo per Rule 09c.** CI auto-triggers are disabled for this repo; deployments
-> are manual only.
+> **Frozen demo per Rule 09c.** The public repository is a demo: CI runs on every
+> push and pull request to `main` and `dev` (path-filtered), and releases are
+> tag-driven. Deployment to your own environment is a manual step.
 
 ## Build
 
@@ -29,4 +30,8 @@ pnpm start
 
 ## CI/CD
 
-- Tag-based manual release (no auto-deploy).
+- CI runs on every push and pull request to `main` and `dev`.
+- Releases are tag-driven: push a `v*` tag to publish container images.
+- Deployment to your own environment is manual — the public repository does not
+  ship an environment-specific deployment configuration.
+

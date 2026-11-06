@@ -2,8 +2,7 @@
 
 > **Audience:** Operator (AleksNeStu). All drafts ready for review and
 > manual publishing per Rule 1 (no agent-side publishing).
-> **Phase:** C of growth plan at
-> `C:/Users/he/.claude/plans/analyze-starts-history-and-fluffy-goose.md`.
+> **Phase:** C of the growth plan.
 
 ---
 
@@ -54,14 +53,15 @@ Day +30          → Product Hunt (after audiences warmed up)
       `AleksNeStu/ai-real-estate-assistant` per CLAUDE.md Rule 1
 - [ ] Operator pushes Phase B commit `2a6e1e82` (onboarding tour +
       try-these chips) per Rule 1
-- [ ] Render redeploys both — verify live demo with new features
+- [ ] Deployment redeploys both — verify live demo with new features
 - [ ] Live demo: tour appears on first visit, dismissable
 - [ ] Live demo: try-these chips appear on landing, navigate to /search
 - [ ] og:image renders in Twitter Card Validator
 - [ ] Lighthouse SEO ≥ 95 on demo URL
-- [ ] Operator custom-designs og-image (currently placeholder)
+- [ ] Operator custom-designs og-image (currently a 1200×630 crop of
+      `assets/screenshots/home-dark.png`)
 - [ ] Lighthouse Performance ≥ 85 on demo URL
-- [ ] Custom og-image designed (currently placeholder copy of
+- [ ] Custom og-image designed (currently a crop of
       `assets/screenshots/home-dark.png`)
 
 ## During-launch blockers (resolve during each post)

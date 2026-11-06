@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project uses 5 GitHub Actions workflows for CI/CD automation:
+This project uses 4 GitHub Actions workflows for CI/CD automation:
 
 ```mermaid
 graph TB
@@ -10,10 +10,6 @@ graph TB
         A[ci.yml] --> B[Run Tests]
         A --> C[Security Scans]
         A --> D[Build Checks]
-    end
-
-    subgraph "On Push to main"
-        E[deploy.yml] --> F[Deploy to Production]
     end
 
     subgraph "On PR"
@@ -96,15 +92,16 @@ concurrency:
 
 ---
 
-## 2. deploy.yml - Production Deployment
+## 2. Deployment
 
-**Purpose:** Deploy application to production/staging environments
+**Purpose:** Deploy the application to your own environment
 
-**Triggers:**
-- Push to `main` branch (automatic)
-- Manual workflow dispatch with environment selection
+> The public repository does not ship an environment-specific deployment
+> workflow. Deployment is a manual step against your own host — see
+> [docs/deployment/DEPLOYMENT.md](../deployment/DEPLOYMENT.md) and
+> [docs/guides/deployment.md](../guides/deployment.md).
 
-**What it does:**
+**What a deployment run does:**
 
 ### Validation
 - Checkout code
@@ -112,12 +109,12 @@ concurrency:
 - Check environment variables
 
 ### Deploy API
-- Deploy backend to Render.com
+- Deploy the backend container
 - Wait for deployment to complete
 - Verify health endpoint
 
 ### Deploy Web
-- Deploy frontend to Render.com
+- Deploy the frontend container
 - Wait for deployment to complete
 - Verify application is accessible
 
@@ -126,46 +123,15 @@ concurrency:
 - Send notifications (if configured)
 
 **Target Platforms:**
-- **Production:** Render.com
-- **Staging:** Render.com (separate service)
+- Your own host (Docker Compose + a reverse proxy), or Kubernetes
 
 **Environment Variables Required:**
-- `RENDER_SERVICE_ID_API` - Backend service ID
-- `RENDER_SERVICE_ID_WEB` - Frontend service ID
-
-### GitHub Deployment Status: staging = "Active"
-
-The `deploy-backend` and `deploy-frontend` jobs both post a deployment
-status to the same `staging` environment in parallel. By default GitHub
-treats new success statuses on a non-production environment as
-`auto_inactive=true`, which cross-inactivates the other in-flight
-deployment record and can leave the **newest** record marked `inactive`
-even when the deploy itself succeeded (Render received the code, the
-service is healthy). The repo Environments tab then reads **Inactive**
-until the next deploy run.
-
-To avoid this, both `Mark backend deployment success` and
-`Mark frontend deployment success` steps pass `-F auto_inactive=false`
-when the target environment is `staging`. Production is left at the
-default behaviour (`auto_inactive=true`) so a new prod deploy correctly
-supersedes the prior active one.
-
-Verification after a deploy run:
-
-```bash
-DID=$(gh api repos/AleksNeStu/ai-real-estate-assistant/deployments?environment=staging\&per_page=1 --jq '.[0].id')
-gh api repos/AleksNeStu/ai-real-estate-assistant/deployments/$DID/statuses?per_page=1 --jq '.[0].state'
-# Expected: "success" (not "inactive")
-```
-
-See commit `fc11bdd` for the implementation.
-- `RENDER_API_KEY` - Render.com API key
+- Set per your host — see the deployment guide for the full list
 
 **Manual Deployment:**
 ```bash
-# Via GitHub UI
-Actions → Deploy to Production → Run workflow
-Select environment: production/staging
+# Via GitHub UI, if you wire a deployment workflow of your own:
+Actions → your workflow → Run workflow
 ```
 
 ---
@@ -351,9 +317,8 @@ sequenceDiagram
     Dev->>GH: Merge PR to main
     GH->>CI: Trigger ci.yml
     CI->>GH: Tests pass
-    GH->>Deploy: Trigger deploy.yml
-    Deploy->>Prod: Deploy application
-    Deploy->>GH: Deployment complete
+    Dev->>Host: Deploy (manual, your own environment)
+    Host->>GH: Tag v* to publish images
 ```
 
 ---
@@ -364,7 +329,7 @@ Add these to your README.md:
 
 ```markdown
 [![CI](https://github.com/[owner]/[repo]/actions/workflows/ci.yml/badge.svg)](https://github.com/[owner]/[repo]/actions/workflows/ci.yml)
-[![Deploy](https://github.com/[owner]/[repo]/actions/workflows/deploy.yml/badge.svg)](https://github.com/[owner]/[repo]/actions/workflows/deploy.yml)
+[![Publish GHCR](https://github.com/[owner]/[repo]/actions/workflows/publish-ghcr.yml/badge.svg)](https://github.com/[owner]/[repo]/actions/workflows/publish-ghcr.yml)
 ```
 
 ---
@@ -459,7 +424,6 @@ Actions → Community Metrics → Run workflow
 
 ### Workflow Files
 - `.github/workflows/ci.yml` - Main CI
-- `.github/workflows/deploy.yml` - Deployment
 - `.github/workflows/llm-costs.yml` - Cost analysis
 - `.github/workflows/metrics.yml` - Metrics collection
 - `.github/workflows/publish-ghcr.yml` - Docker publishing
@@ -478,7 +442,6 @@ Actions → Community Metrics → Run workflow
 | Workflow | Avg Duration | Parallelization | Cost (GitHub Actions) |
 |----------|--------------|-----------------|----------------------|
 | ci.yml | 5-8 min | 9 parallel jobs | ~$0.10 per run |
-| deploy.yml | 3-5 min | Sequential | ~$0.05 per run |
 | llm-costs.yml | 1-2 min | N/A | ~$0.02 per run |
 | metrics.yml | 2-3 min | N/A | ~$0.03 per run |
 | publish-ghcr.yml | 10-15 min | 2 parallel builds | ~$0.15 per run |

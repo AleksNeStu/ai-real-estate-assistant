@@ -77,8 +77,8 @@ get matched listings. Nothing did that. So I built it.
   (30-40% relevance lift in our internal evals)
 - Multi-provider LLM routing (OpenAI, Anthropic, Google, Grok,
   DeepSeek, local Ollama) with automatic fallback chain
-- Environment-conditional lazy provider loading (stays under Render's
-  512 MB free-tier cap, eager load on VPS)
+- Environment-conditional lazy provider loading (stays under a
+  512 MB cap, eager load on VPS)
 - 9 languages with EU AI Act compliance labels built in
 
 **What's NOT here:**

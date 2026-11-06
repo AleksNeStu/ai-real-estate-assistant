@@ -1,7 +1,7 @@
 # Accepted Security Risks — `AleksNeStu/ai-real-estate-assistant`
 
-**Last reviewed:** 2026-09-12
-**Previous review:** 2026-08-26
+**Last reviewed:** 2026-11-06
+**Previous review:** 2026-09-12
 **Review cadence:** weekly on Monday, in sync with `.github/dependabot.yml` schedule
 **Owner:** Alex Nesterovich
 **Scope:** Open Dependabot alerts on the `dev` branch where the upstream fix is not yet
@@ -35,10 +35,10 @@ this list and is tracked under the standard `pr-triage` flow.
 
 ---
 
-## Current state (2026-09-12, verified via `gh api` + `pip-audit` + OSV)
+## Current state (2026-11-06, verified via `gh api` + `pip-audit` + OSV)
 
-As of 2026-09-12, **0 open Dependabot alerts** on `dev`. The 13 alerts open at session
-start (5 CRITICAL/HIGH + 4 HIGH + 2 MED + 2 LOW) all resolved by:
+As of 2026-11-06, **0 open Dependabot alerts** on `dev`. The 13 alerts open at the
+2026-09-12 session start (5 CRITICAL/HIGH + 4 HIGH + 2 MED + 2 LOW) all resolved by:
 
 - **4 alerts auto-resolved by merged dependabot PRs**: Next.js CRITICAL RCE (GHSA-p293 +
   GHSA-2xp9-vwfh via PR #309), gitpython CRITICAL CVE-2026-78676 + 2 HIGH + 2 MED (via
@@ -50,13 +50,20 @@ start (5 CRITICAL/HIGH + 4 HIGH + 2 MED + 2 LOW) all resolved by:
   - `joi` CVE-2026-84367 + CVE-2026-84368 (LOW, CVSS 3.7 prototype pollution) → reason:
     `tolerable_risk` (below frozen-policy critical/high threshold per CLAUDE.md;
     the public demo does not exercise untrusted schemas).
-- **3 alerts were chromadb CVEs that auto-resolved** when dependabot re-evaluated after
-  the lockfile update (transitive chromadb 1.x → 0.5.x range was re-checked and found
-  unaffected).
+- **3 alerts were chromadb CVEs whose ALERTS auto-resolved** when dependabot
+  re-evaluated after the lockfile update (transitive chromadb 1.x → 0.5.x range was
+  re-checked and found unaffected). **The alerts closing did not mean the risk was
+  fixed** — the underlying CVEs still have no upstream patch, and the accepted-risk
+  disposition below still stands. The reachability analysis is unchanged; only the
+  alert count changed.
+
+The later 2026-11-06 batch (335 → 11 → 1 → 0) is recorded in the History section. The
+one remaining accepted LOW (`deepmerge`) was dismissed via the API with reason
+`tolerable_risk` on 2026-11-06 and is documented in the MEDIUM/LOW section below.
 
 ## Historical chromadb CVE disposition (still relevant — see § Reachability analysis below)
 
-The chromadb CVE analysis below remains accurate. As of 2026-09-12:
+The chromadb CVE analysis below remains accurate. As of 2026-11-06:
 - The project pins `chromadb>=0.5,<0.6` (locked to 0.5.23 per `uv.lock`).
 - 3 of 4 known chromadb CVEs affect 0.5.x (CVE-2026-45830, -45833, -45831); reachability
   analysis in the section below still holds (single-tenant + ephemeral + no exposed
@@ -104,12 +111,12 @@ active exploitation.
 - **Reachability analysis in this deployment:**
   - ChromaDB runs as an **in-process** Python client inside the FastAPI worker — there is
     **no separate network port** for ChromaDB itself. No `0.0.0.0:8000` listener on the
-    chromadb process; the only public ingress is the FastAPI app on Render.
+    chromadb process; the only public ingress is the FastAPI app.
   - The vulnerable ChromaDB HTTP endpoint
     `/api/v2/tenants/.../collections/{collection_id}` is **not exposed** by this app.
     The FastAPI routes are all under `/api/v1/*` and `/health`. A search of the OpenAPI
     schema confirms no `/api/v2/...` route is registered (verified 2026-08-25 via
-    `GET /openapi.json` on Render staging).
+    `GET /openapi.json` on the staging deployment).
   - **Authentication prerequisite is not met:** ChromaDB's `UPDATE_COLLECTION` permission
     is granted by ChromaDB's own auth layer (not by our FastAPI auth). The deployment
     uses the default `default_tenant` with no ChromaDB-side user accounts configured;
@@ -120,9 +127,9 @@ active exploitation.
     `fastembed` (a sandboxed ONNX-based embedder) for embeddings, not ChromaDB's
     `SentenceTransformerEmbeddingFunction` which is the affected loader.
   - **Deployment context is ephemeral:** `SEED_ON_STARTUP=false` and
-    `VECTOR_PERSIST_ENABLED=false` per `render.yaml`. Each Render instance starts with
-    an empty in-memory ChromaDB index that does not persist. The vulnerable code path
-    requires pre-existing collection state to be meaningful.
+    `VECTOR_PERSIST_ENABLED=false` in the deployment environment. Each instance starts
+    with an empty in-memory ChromaDB index that does not persist. The vulnerable code
+    path requires pre-existing collection state to be meaningful.
 - **Mitigation in place:** the attack chain (authenticated ChromaDB user + malicious model
   URL + pre-existing collection + `trust_remote_code=true` flag) requires four
   independent preconditions, **none of which are reachable in this deployment**.
