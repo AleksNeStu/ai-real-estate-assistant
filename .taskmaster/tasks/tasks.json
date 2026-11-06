@@ -344,6 +344,21 @@
         "priority": "high",
         "subtasks": [],
         "updatedAt": "2026-10-10T11:22:58.268Z"
+      },
+      {
+        "id": 27,
+        "title": "[manual] Serve the demo from our own server behind a stable Cloudflare URL and hide the deployment topology from the public repo",
+        "description": "The public repo's About link now points at the live demo on Render's free tier (https://realestate-web-dz1y.onrender.com). That host sleeps when idle, shares the same two Render services as the repo's staging and production environments, and the whole deployment topology (render.yaml with both service definitions, service names, env knobs, deploy-secret names) is committed in the public repo, so anyone can read exactly how the product is deployed. Goal: run the demo on our own web server behind a stable public URL and move the deployment topology out of the public repo, keeping the demo reachable and poking-able at all times.",
+        "details": "CURRENT STATE (verified 2026-11-06):\n- render.yaml in the public repo defines 2 free-tier Render services, BOTH on branch `dev`: `realestate-api` (backend, deploy/docker/Dockerfile.backend) and `realestate-web` (frontend, deploy/docker/Dockerfile.frontend).\n- GitHub environments `staging` (from dev) and `production` (from main) BOTH report the same URLs: frontend https://realestate-web-dz1y.onrender.com, backend https://realestate-api-wkm7.onrender.com. Last production deploy was 2026-09-13 from main (b6e18ef); there is no separate production host.\n- Secrets: RENDER_BACKEND_URL (production) and RENDER_BACKEND_URL_STAGING in the GitHub environments; per-service API_ACCESS_KEY / JWT_SECRET_KEY / SENTRY_DSN are `sync: false` in render.yaml (values live in Render).\n- Free tier = 512 MB per service, WEB_CONCURRENCY=1, SEED_ON_STARTUP=false, VECTOR_PERSIST_ENABLED=false, DEMO_MODE=true.\n- .taskmaster/ is already gitignored and untracked, so the backlog is NOT visible in the public repo (no change needed there).\n\nWORK TO DO:\n1. Pick the hosting target (a VPS from the fleet is the obvious candidate) and put the demo behind a stable Cloudflare-proxied DNS name via a Cloudflare Tunnel, so the public URL does not contain \"onrender\" and does not cold-start.\n2. Move the deployment topology out of the public repo: render.yaml, the deploy workflow's Render API calls, and the RENDER_* secret references either move to a private deployment repo or are replaced by the tunnel-based deploy path. The public repo must keep building and running for contributors.\n3. Re-point the app at the new hostname: CORS_ALLOW_ORIGINS, the frontend's API base URL / NEXT_PUBLIC_API_URL, AUTH_JWT_ENABLED cookie domain, and any absolute URLs in README badges, docs and the repo About link (homepage is currently https://realestate-web-dz1y.onrender.com/).\n4. Keep the free/poking-able promise: DEMO_MODE=true, no paid external API keys required, seeded or mock data so search and chat answer immediately.\n5. Decide what stays public: the README can keep a generic \"Live Demo\" badge, but the service names, secret names and the concrete deployment mechanics should not be readable in the public repo.\n\nOPEN DECISIONS FOR THE OPERATOR: which VPS/host, which Cloudflare account and DNS zone, and whether the demo runs in demo mode only or with the real providers.",
+        "testStrategy": "1. Health: `curl -sS -o /dev/null -w \"%{http_code}\" https://<new-host>/health` returns 200 from outside the VPS, and stays 200 on a second call after a 10-minute idle gap (no cold start).\n2. Frontend: open https://<new-host>/ in a browser (Playwright CDP bridge), confirm the landing page renders, demo mode is on, a search for \"2 bedroom apartment under 500k\" returns results and the chat answer is usable with no signup.\n3. No deployment internals in the public repo: `git grep -nEi \"onrender|render\\.com|RENDER_API_KEY|RENDER_BACKEND_URL\" -- . ':!docs'` returns nothing, and `git ls-files render.yaml` returns nothing (file moved or deleted).\n4. About link: `gh api repos/AleksNeStu/ai-real-estate-assistant --jq .homepage` returns the new stable URL, not an onrender.com URL.\n5. CORS: the backend's CORS allowlist contains the new origin and no longer contains the old onrender origin; an OPTIONS preflight from the new origin returns 200 with the correct Access-Control-Allow-Origin.\n6. Backlog stays private: `git ls-files .taskmaster` is empty and `git check-ignore .taskmaster/tasks/tasks.json` matches (TaskMaster remains local-only).\n7. Rollback: the old Render services stay reachable until the new URL has passed 1-5 for 24 hours; the cutover is a one-line homepage/README change plus the CORS env var, so it is revertible in one step.",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "metadata": {
+          "severity": "med"
+        },
+        "updatedAt": "2026-11-06T13:15:21.671Z"
       }
     ],
     "metadata": {
@@ -353,7 +368,10 @@
       "completedCount": 15,
       "tags": [
         "master"
-      ]
+      ],
+      "created": "2026-11-06T13:15:21.647Z",
+      "description": "Tasks for master context",
+      "updated": "2026-11-06T13:15:21.648Z"
     }
   }
 }
