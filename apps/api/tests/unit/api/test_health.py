@@ -216,6 +216,59 @@ async def test_get_health_status_unhealthy_when_vector_store_unhealthy(monkeypat
 
 
 @pytest.mark.asyncio
+async def test_a_circuit_breaker_does_not_shadow_the_vector_store_dependency(monkeypatch):
+    """A breaker named "vector_store" must not overwrite the real dependency.
+
+    The search path registers a circuit breaker named "vector_store". The health
+    payload used to key the breaker entries by the RAW breaker name, so that
+    breaker overwrote the vector-store dependency check in the same dictionary.
+
+    Two things broke because of it: the health report showed the breaker's
+    state instead of the store's, and `/health/ready` — which reads
+    ``dependencies["vector_store"]`` — reported "ready" while the vector store
+    was unhealthy. Kubernetes would have kept routing traffic to the pod.
+    """
+    from core.circuit_breaker import CircuitState, get_breaker, reset_all_breakers
+
+    reset_all_breakers()
+    try:
+        breaker = get_breaker("vector_store")
+        breaker._state = CircuitState.OPEN
+
+        settings = SimpleNamespace(version="1.0.0")
+
+        async def _vector_unhealthy():
+            return DependencyHealth(
+                name="vector_store",
+                status=HealthStatus.UNHEALTHY,
+                message="vector store not initialized",
+            )
+
+        async def _none():
+            return None
+
+        monkeypatch.setattr(health_module, "check_vector_store", _vector_unhealthy)
+        monkeypatch.setattr(health_module, "check_redis", _none)
+        monkeypatch.setattr(health_module, "check_database", _none)
+        monkeypatch.setattr(health_module, "check_llm_provider", _none)
+        monkeypatch.setattr(health_module, "get_settings", lambda: settings)
+
+        result = await get_health_status(include_dependencies=True)
+
+        # The dependency check keeps the key it owns...
+        assert result.dependencies["vector_store"].status == HealthStatus.UNHEALTHY
+        # ...and the breaker is reported under its own prefixed key.
+        assert "circuit_breaker:vector_store" in result.dependencies
+        assert (
+            result.dependencies["circuit_breaker:vector_store"].status == HealthStatus.UNHEALTHY
+        )
+        # An unhealthy vector store makes the whole endpoint unhealthy.
+        assert result.status == HealthStatus.UNHEALTHY
+    finally:
+        reset_all_breakers()
+
+
+@pytest.mark.asyncio
 async def test_check_vector_store_uses_thread_for_blocking_count(monkeypatch):
     """The blocking ChromaDB count must be off the event loop."""
 
