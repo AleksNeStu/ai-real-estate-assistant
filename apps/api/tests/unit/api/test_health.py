@@ -259,9 +259,7 @@ async def test_a_circuit_breaker_does_not_shadow_the_vector_store_dependency(mon
         assert result.dependencies["vector_store"].status == HealthStatus.UNHEALTHY
         # ...and the breaker is reported under its own prefixed key.
         assert "circuit_breaker:vector_store" in result.dependencies
-        assert (
-            result.dependencies["circuit_breaker:vector_store"].status == HealthStatus.UNHEALTHY
-        )
+        assert result.dependencies["circuit_breaker:vector_store"].status == HealthStatus.UNHEALTHY
         # An unhealthy vector store makes the whole endpoint unhealthy.
         assert result.status == HealthStatus.UNHEALTHY
     finally:
