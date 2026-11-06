@@ -45,6 +45,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the container image) and `apps/api/pyproject.toml` (installed by CI), and
   `apps/api/uv.lock` regenerated — the lockfile was the only place the pinned
   versions lived, and nothing installed from it.
+- 234 stale Dependabot alerts dismissed: they all pointed at `poetry.lock`,
+  which has not existed in the repository since the Poetry → pip migration, so
+  they could never close themselves and hid the real findings. Open alerts on
+  the live manifests: 335 → 12 (0 critical, 1 high → fixed by the
+  follow-redirects bump, the rest medium/low).
+- 16 routine Dependabot PRs closed per the frozen-policy matrix — 12 carried no
+  advisory, 4 closed a MEDIUM advisory, which is below the critical/high bar
+  this repository accepts.
+- The repository homepage now points at the live demo instead of the studio
+  showcase page.
+- `.taskmaster/` untracked from the public repository — the backlog is local
+  only, as the repo-alex scope rule requires.
 
 ## [5.1.5.2] - 2026-09-12
 
