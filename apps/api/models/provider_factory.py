@@ -6,16 +6,16 @@ providers and their models.
 
 Memory note
 -----------
-On Render free tier (512 MB hard limit) the app baseline sits ~20 MB
+On a small, memory-capped host the app baseline sits ~20 MB
 over the cap because every provider module (``langchain_openai``,
 ``langchain_anthropic``, ``langchain_google_genai``, etc.) is imported
 eagerly at startup — even when only one provider (``zai``) is in use.
 The OS kills the instance on the first memory spike.
 
-To stay on free tier without changing the public deployment plan, we
-load provider modules lazily when running on Render. The Render
-service sets ``RENDER=true`` automatically; locally and on other PaaS
-providers the eager path is preserved (no behavior change, no
+To stay under a tight cap without changing the public deployment plan, we
+load provider modules lazily when the hosting platform asks for it. That
+platform sets the ``RENDER`` environment variable automatically; locally and
+on other PaaS providers the eager path is preserved (no behavior change, no
 surprise in tests or local dev).
 """
 
@@ -33,8 +33,8 @@ from .providers.base import ModelInfo, ModelProvider
 
 logger = logging.getLogger(__name__)
 
-# Detect Render environment for lazy-loading optimization.
-# Render sets RENDER=true automatically on all its services. Locally
+# Detect the memory-capped hosting environment for lazy-loading optimization.
+# The platform sets RENDER=true automatically on its services. Locally
 # and on other PaaS, this env var is unset/false, so we use the
 # fast eager-import path (no behavior change in dev / CI / other
 # deployments).
@@ -68,7 +68,7 @@ _CLASS_NAME_OVERRIDES: Dict[str, str] = {
 
 
 # Provider slug -> module path (relative to apps/api). Module is loaded
-# lazily on first use on Render, eagerly on other environments.
+# lazily on first use on a memory-capped host, eagerly on other environments.
 _PROVIDER_MODULES: Dict[str, str] = {
     "openai": "models.providers.openai",
     "anthropic": "models.providers.anthropic",
@@ -130,20 +130,20 @@ _PROVIDER_KEY_MAP: Dict[str, Optional[str]] = {
 
 
 def _bootstrap_providers_eager() -> None:
-    """Pre-import every provider module. Used on non-Render environments."""
+    """Pre-import every provider module. Used when the host is not memory-capped."""
     for name in _PROVIDER_MODULES:
         _load_provider_class(name)
 
 
 # Registry of available providers. Populated eagerly on import outside
-# Render, lazily on first ``get_provider`` call on Render.
+# a memory-capped host, lazily on the first `get_provider` call there.
 _PROVIDERS: Dict[str, Type[ModelProvider]] = {}
 
 # Cache of instantiated providers
 _instances: Dict[str, ModelProvider] = {}
 
 
-# Eager load only when not on Render. Local dev / CI / other PaaS
+# Eager load only when the host is not memory-capped. Local dev / CI / other PaaS
 # keeps the original behavior so existing tests and DX are unchanged.
 if not IS_RENDER:
     _bootstrap_providers_eager()
@@ -264,7 +264,8 @@ class ModelProviderFactory:
             if api_key:
                 config["api_key"] = api_key
 
-        # Create new instance (triggers lazy module load on Render)
+        # Create new instance (triggers the lazy module load on a
+        # memory-capped host)
         provider_class = _load_provider_class(provider_name)
         provider = provider_class(config=config)
 
