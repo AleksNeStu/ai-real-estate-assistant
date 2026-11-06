@@ -211,17 +211,55 @@ commit and therefore allowed under frozen-policy "Security patches" row. No stan
 
 ---
 
-## MEDIUM (0) and LOW (0)
+## MEDIUM (0) and LOW (1)
 
-As of 2026-08-26 review, there are **zero MEDIUM** and **zero LOW** Dependabot alerts
+### deepmerge — prototype pollution in `mergeObject()` (GHSA-gcqx-w48m-w2h4) · 1 alert (#604)
+
+- **Vulnerable range:** `>= 4.2.0`, **no patched version published** — 4.3.1 is the latest
+  release and the advisory carries `first_patched_version: null`.
+- **Manifest path surfaced:** `apps/web/package-lock.json`
+- **Severity:** LOW (prototype pollution of the object returned by `mergeObject()`; the
+  polluted key is a build-tool option, not application state).
+- **Reachability analysis in this deployment:**
+  - `deepmerge@4.3.1` is pulled in by exactly two parents, both of which execute on a
+    developer machine or a CI runner, never in a deployed runtime:
+    - `@rollup/plugin-node-resolve@15.3.1` → `workbox-build@7.1.1` →
+      `@ducanh2912/next-pwa@10.2.9` — the PWA/service-worker plugin, invoked during
+      `next build`.
+    - `jest-config@30.5.2` → `jest@30.5.2` — the test runner's config merge.
+  - Neither copy is bundled into the browser output nor imported by the FastAPI
+    container. The merged objects are the tool's own configuration (Rollup resolver
+    options, Jest config), never user input.
+- **Why it is not fixed:** there is no upstream patch to move to. The only way to
+  remove the dependency path is to drop `@ducanh2912/next-pwa` (the offline/PWA
+  support of the demo) or `jest` (the test suite) — both remove product or test
+  capability, which the frozen-repo policy treats as a worse outcome than the
+  accepted LOW risk.
+- **Disposition:** the alert is dismissed via the API with reason `tolerable_risk`.
+  Re-check when upstream publishes a fix for `deepmerge` (the `deepmerge` 4.x line is
+  the only affected range; a 5.x release would need an API review before adoption).
+
+As of 2026-08-26 review there were **zero MEDIUM** and **zero LOW** Dependabot alerts
 open. The previous review (2026-08-25) reported 29 MEDIUM + 13 LOW; these 42 alerts have
 auto-resolved in the 1-day interval (most likely via transitive-dep fixes that closed
-the underlying vulnerable ranges). No action needed.
+the underlying vulnerable ranges).
 
 ---
 
 ## History
 
+- **2026-11-06** — Re-review after the critical/high security batch. Open Dependabot
+  alerts on `dev` went 335 → 11 → **1 accepted LOW** (`deepmerge`, GHSA-gcqx-w48m-w2h4,
+  no upstream fix, build-time-only reachability — see the MEDIUM/LOW section above).
+  The other 10 closed by version changes: Pillow 12.3.0 → 13.0.0, authlib 1.6.12 →
+  1.9.1, certifi → 2026.10.18, pyasn1 → 0.6.5, oauthlib → 4.0.1, joserfc → 1.7.5,
+  dnspython → 2.9.0, msgpack → 1.2.3, filelock → 4.2.1, virtualenv → 21.14.9,
+  tornado → 6.6, langgraph → 1.2.20, langgraph-sdk → 0.4.14,
+  opentelemetry-api → 1.45.2 (backend lockfile), and dompurify → 3.4.17,
+  @sentry/nextjs → 10.78.0, zod → 4.6.7, glob → 14.0.2, minimatch → 11.0.1,
+  qs → 6.16.1, serialize-javascript → 7.1.3, follow-redirects → 1.16.2 (frontend).
+  234 alerts that pointed at the deleted `poetry.lock` were dismissed as `not_used`
+  (the manifest has not existed in the repository since the Poetry → pip migration).
 - **2026-08-26** — Re-review. Previous draft documented 100 alerts based on
   `dependabot/alerts?per_page=100` returning a full page; the actual current count is 6
   alerts (94 alerts auto-resolved between 2026-08-25 and 2026-08-26 via transitive-dep

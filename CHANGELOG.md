@@ -43,6 +43,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **zod → 4.6.6** — HIGH memory exhaustion on oversized constrained collections.
 - **follow-redirects → 1.16.2** — HIGH cross-realm `sensitiveHeaders` drop.
 
+### Security (remaining medium/low advisories)
+- **tornado → 6.6** — MEDIUM/LOW quadratic HTTP header parsing, chunked-body
+  event-loop blocking, protocol-relative open redirect.
+- **langgraph → 1.2.20**, **langgraph-sdk → 0.4.14**,
+  **opentelemetry-api → 1.45.2** — MEDIUM advisories in the backend lockfile.
+- **glob → 14.0.2**, **minimatch → 11.0.1**, **qs → 6.16.1**,
+  **serialize-javascript → 7.1.3** — MEDIUM/LOW advisories in the frontend
+  lockfile, applied as npm overrides (glob 14 also pulls minimatch 11, so the
+  9.0.9 and 10.2.6 copies are cleared together).
+- **deepmerge** — LOW prototype pollution with **no upstream fix** (4.3.1 is the
+  latest release). It reaches only build/test tooling (`workbox-build` via
+  next-pwa, `jest-config`), never the shipped bundle or the container. Accepted and
+  dismissed as `tolerable_risk`, documented in
+  `docs/operations/security/accepted-risks.md`.
+
 ### Changed
 - **next 16.4.2 → 16.4.5**, **react / react-dom 19.2.7 → 19.3.1**,
   **eslint-config-next 16.2.9 → 16.4.5** — version freshness.
@@ -53,11 +68,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 234 stale Dependabot alerts dismissed: they all pointed at `poetry.lock`,
   which has not existed in the repository since the Poetry → pip migration, so
   they could never close themselves and hid the real findings. Open alerts on
-  the live manifests: 335 → 12 (0 critical, 1 high → fixed by the
-  follow-redirects bump, the rest medium/low).
+  the live manifests: 335 → **1** (0 critical, 0 high, 0 medium; the single
+  remaining LOW is `deepmerge`, which has no upstream fix and is accepted and
+  documented in `docs/operations/security/accepted-risks.md`).
 - 16 routine Dependabot PRs closed per the frozen-policy matrix — 12 carried no
-  advisory, 4 closed a MEDIUM advisory, which is below the critical/high bar
-  this repository accepts.
+  advisory, 4 closed a MEDIUM advisory whose bump is now applied directly in the
+  lockfile instead.
 - The repository homepage now points at the live demo instead of the studio
   showcase page.
 - `.taskmaster/` untracked from the public repository — the backlog is local
