@@ -111,7 +111,7 @@ dnspython>=2.9.0  # high: dns.name.from_wire_parser() excessive CPU use
 msgpack>=1.2.3  # high: unbounded memory leak in the C extension on strict_map_key validation failure
 filelock>=4.2.1  # high: ReadWriteLock reopens the lock database by name -> symlink/journal overwrite
 virtualenv>=21.14.9  # high: activation scripts execute commands from environment names and paths
-orjson>=3.12.0
+orjson>=3.13.0
 anyio>=4.14.2  # CVE-2026-63374 (critical IDNA 2003 hostname spoofing) + CVE-2026-63349 (high anyio.run_process extra_groups bypass) + CVE-2026-64847 (medium stderr-wedge DoS)
 soupsieve>=2.9.0  # CVE-2026-85999 + CVE-2026-86000 (medium ReDoS in IDENTIFIER/VALUE + RE_WS_END)
 greenlet>=3.3.1  # Required by sqlalchemy[asyncio]>=2.1; must be pinned explicitly to avoid orphaned-transitive ImportError on Render deploy
