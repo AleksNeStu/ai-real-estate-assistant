@@ -185,6 +185,8 @@ topology cannot be reintroduced by accident.
   test run can no longer delete another worker's file and fail the suite for no reason.
 - The health payload can no longer report a circuit breaker in place of the dependency it shares a
   name with — the defect that made the readiness probe blind to an unhealthy vector store (§2.7).
+- A response-cache invalidation that fails no longer turns a completed write into a 500: the upload
+  was stored, so the caller must not see an error for it.
 
 ### 3.3 The documentation
 

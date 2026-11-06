@@ -49,6 +49,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   vector store was unhealthy. A cluster would have kept routing traffic to the
   pod. The breaker entries are now keyed by their prefixed name, and a
   regression test pins that they cannot shadow a dependency.
+- **A failed cache invalidation failed the write that had already succeeded** —
+  the admin ingest endpoint cleared the response cache after the mutation, and
+  an exception there propagated as a 500: the upload was stored, but the caller
+  saw a failure. A cache backed by an unreachable Redis would have failed every
+  write the same way. The invalidation is best-effort now.
 - **Two health tests could never fail the build** — they were marked
   `xfail(strict=False)`, and they patched the dependency checks through a dotted
   import path, which the patcher resolves by importing the module: that import
