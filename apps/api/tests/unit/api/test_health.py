@@ -19,15 +19,17 @@ from api.health import (
     require_healthy,
 )
 
-# The two xfail-marked tests below are known to fail ONLY on Linux (see
-# F-20260903-01 / F-20260903-02).
+# The two health tests below were marked `xfail(strict=False)` for years
+# (F-20260903-01 / F-20260903-02), which meant they could never fail the
+# build — and therefore documented nothing. They are now ordinary, enforcing
+# tests on every platform: the dependency checks are patched on the module
+# object, and the slow check's sleep outlasts both timers, so the outcome
+# cannot depend on what happens to be installed on the machine or on which
+# timer a loaded event loop processes first.
 #
-# So the marker is CONDITIONAL: on Linux the test is a non-blocking xfail (the
-# known flake must not break the release gate), and everywhere else it is NOT
-# applied at all — the test runs as a normal, enforcing test. That is strictly
-# better than an unconditional `strict=False` xfail, which could never fail
-# anywhere and therefore documented nothing.
-IS_LINUX = sys.platform.startswith("linux")
+# `test_the_patch_seam_holds` pins the property that makes them deterministic:
+# the module the test patches must be the module the function under test reads
+# its globals from.
 
 
 class FakeResponse:
@@ -145,17 +147,25 @@ async def test_check_llm_provider_healthy_with_configured_key(monkeypatch):
     assert result.details == {"configured_providers": ["openai"], "default": "openai"}
 
 
-@pytest.mark.xfail(
-    reason="Linux CI flake (see F-20260903-01): the dependency checks were patched "
-    "through a dotted import path, which monkeypatch resolves by IMPORTING the "
-    "module by name. On the test image that can resolve to a different module "
-    "object than the one the function under test lives in, so the patch lands on "
-    "a copy and the real check runs instead. The test now patches the module "
-    "object directly, which closes the seam on every platform; the marker is "
-    "kept for Linux only, where the flake was first observed.",
-    condition=IS_LINUX,
-    strict=False,
-)
+def test_the_patch_seam_holds():
+    """The module the test patches must be the module the function reads from.
+
+    This is the property the two tests below depend on, and the reason they
+    used to be marked `xfail`: a dotted import path ("api.health.X") makes the
+    patcher IMPORT the module by name, and that import can resolve to a
+    different module object than the one the function under test was imported
+    from. The patch then lands on a copy, the real check runs, and the test
+    fails for a reason that has nothing to do with the code under test.
+
+    On the CI image the symptom was "the vector store was healthy"; on a
+    machine without chromadb the same test passed for the wrong reason. The
+    seam check turns that class of mystery into one precise assertion, on
+    every platform.
+    """
+    assert get_health_status.__globals__ is health_module.__dict__
+    assert health_module is sys.modules["api.health"]
+
+
 @pytest.mark.asyncio
 async def test_get_health_status_unhealthy_when_vector_store_unhealthy(monkeypatch):
     """Test that health status is UNHEALTHY when the vector store dependency
@@ -168,7 +178,13 @@ async def test_get_health_status_unhealthy_when_vector_store_unhealthy(monkeypat
     globals from. When that happened the real vector-store check ran, reported
     healthy, and the overall status came back healthy instead of unhealthy.
 
-    See F-20260903-01 in the findings ledger.
+    On the CI image that failure looked like a chromadb problem, but chromadb
+    was only the messenger: the real check succeeded because a live store was
+    installed there, while on a machine without it the same test passed for the
+    wrong reason (the check reported "not initialized"). Replacing the check
+    itself makes the outcome identical on every platform.
+
+    See F-20260903-01 in the findings ledger and TaskMaster #20.
     """
     settings = SimpleNamespace(version="9.9.9", database_url=None)
 
@@ -305,22 +321,13 @@ async def test_check_vector_store_uses_thread_for_blocking_count(monkeypatch):
     assert probe.invoked_on != loop_thread
 
 
-@pytest.mark.xfail(
-    reason="Linux CI flake (see F-20260903-02): the same dotted-import-path patching "
-    "seam as test_get_health_status_unhealthy_when_vector_store_unhealthy. The test "
-    "now patches the module object directly and waits with a generous outer bound, "
-    "so it enforces the contract everywhere; the marker is kept for Linux only, "
-    "where the flake was first observed.",
-    condition=IS_LINUX,
-    strict=False,
-)
 @pytest.mark.asyncio
 async def test_get_health_status_marks_slow_dependency_degraded(monkeypatch):
     """A slow dependency check must not block the response and must be DEGRADED.
 
     The dependency checks are patched on the module OBJECT, not through a dotted
     import path — see the note on the test above. See F-20260903-02 in the
-    findings ledger.
+    findings ledger and TaskMaster #20.
     """
     settings = SimpleNamespace(version="1.0.0")
 
