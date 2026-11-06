@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Input sanitization corrupted user text** (issue #377, reported by @xxchen-yu) —
+  `apps/api/utils/sanitization.py` passed a 62-byte `bytes` table to
+  `str.translate()`, which looks a bytes table up by ordinal. Every code point
+  below `0x3E` — spaces, digits, punctuation — was rewritten with a control
+  byte, so chat messages and search queries reached the LLM and the vector
+  store mangled (`"2 bedroom under 500000 EUR"` → `"2\x97bedroom\x82under..."`),
+  and CJK text lost its adjacent ASCII digits. The filter is now a code-point →
+  `None` mapping. Covered by `tests/unit/test_sanitization.py` and
+  `tests/integration/api/test_chat_sanitize_regression.py`.
+
+### Security (critical/high CVE batch)
+- **Pillow 12.3.0 → 13.0.0** — CRITICAL heap overflows (FlashPix, TIFF) and
+  Ghostscript argument injection.
+- **authlib 1.6.12 → 1.9.1** — CRITICAL empty-signature JWS deserialization,
+  HIGH HMAC key confusion, HIGH RFC 7592 client binding.
+- **certifi → 2026.10.18** — CRITICAL emSign root CA bundle with compromised
+  intermediate keys.
+- **pyasn1 → 0.6.5**, **oauthlib → 4.0.1**, **joserfc → 1.7.5**,
+  **dnspython → 2.9.0**, **msgpack → 1.2.3**, **filelock → 4.2.1**,
+  **virtualenv → 21.14.9** — HIGH quadratic-decoding DoS, device-flow token
+  validation, unbounded JWE recipients, memory-leak and symlink-overwrite fixes.
+- **fastembed → 0.9.1** — first release that allows `pillow<14`; earlier
+  releases cap `pillow<13` and would block the Pillow 13 floor.
+- **dompurify 3.4.16 → 3.4.17** — CRITICAL `SAFE_FOR_TEMPLATES` bypass via
+  shadow roots, HIGH `IN_PLACE` hook bypass.
+- **@sentry/nextjs → 10.75.2+** — CRITICAL middleware bypass through the tunnel
+  route.
+- **zod → 4.6.6** — HIGH memory exhaustion on oversized constrained collections.
+- **follow-redirects → 1.16.2** — HIGH cross-realm `sensitiveHeaders` drop.
+
+### Changed
+- **next 16.4.2 → 16.4.5**, **react / react-dom 19.2.7 → 19.3.1**,
+  **eslint-config-next 16.2.9 → 16.4.5** — version freshness.
+- Security floors raised in both `apps/api/requirements.txt` (installed by CI and
+  the container image) and `apps/api/pyproject.toml` (installed by CI), and
+  `apps/api/uv.lock` regenerated — the lockfile was the only place the pinned
+  versions lived, and nothing installed from it.
+
 ## [5.1.5.2] - 2026-09-12
 
 ### Security (HIGH/CRITICAL CVE fix batch)
