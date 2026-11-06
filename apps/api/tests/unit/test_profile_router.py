@@ -1,5 +1,6 @@
 """Tests for profile router endpoints (Task #88: User Profile Management)."""
 
+import contextlib
 import os
 from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -14,6 +15,27 @@ from db.database import get_db_context as get_db_dep
 
 _test_app = FastAPI()
 _test_app.include_router(profile.router)
+
+
+def _cleanup_uploaded_avatar(avatar_url: str) -> None:
+    """Remove exactly the avatar file this test created.
+
+    The previous cleanup removed EVERY file matching ``avatar_user-1_*`` from
+    the shared ``uploads/avatars`` directory. Under pytest-xdist (20 workers)
+    the upload and delete tests run in parallel against that one directory, so
+    one worker's cleanup deleted another worker's file and the second cleanup
+    then raised FileNotFoundError — an intermittent failure of the whole
+    backend suite that had nothing to do with the code under test.
+
+    Removing only this test's own file, and tolerating it already being gone,
+    makes the cleanup both precise and race-free.
+    """
+    filename = avatar_url.rsplit("/", 1)[-1]
+    if not filename:
+        return
+    path = os.path.join("uploads", "avatars", filename)
+    with contextlib.suppress(FileNotFoundError, OSError):
+        os.remove(path)
 
 
 def _make_user(
@@ -272,10 +294,7 @@ class TestUploadAvatar:
         assert body["message"] == "Avatar uploaded successfully"
 
         # Cleanup the created file
-        if os.path.exists("uploads/avatars"):
-            for f in os.listdir("uploads/avatars"):
-                if f.startswith("avatar_user-1_"):
-                    os.remove(os.path.join("uploads/avatars", f))
+        _cleanup_uploaded_avatar(body["avatar_url"])
 
     @pytest.mark.asyncio
     async def test_upload_jpeg_success(self, auth_user, mock_db):
@@ -292,10 +311,7 @@ class TestUploadAvatar:
         assert body["avatar_url"].endswith(".jpg")
 
         # Cleanup
-        if os.path.exists("uploads/avatars"):
-            for f in os.listdir("uploads/avatars"):
-                if f.startswith("avatar_user-1_"):
-                    os.remove(os.path.join("uploads/avatars", f))
+        _cleanup_uploaded_avatar(body["avatar_url"])
 
     @pytest.mark.asyncio
     async def test_upload_webp_success(self, auth_user, mock_db):
@@ -312,10 +328,7 @@ class TestUploadAvatar:
         assert body["avatar_url"].endswith(".webp")
 
         # Cleanup
-        if os.path.exists("uploads/avatars"):
-            for f in os.listdir("uploads/avatars"):
-                if f.startswith("avatar_user-1_"):
-                    os.remove(os.path.join("uploads/avatars", f))
+        _cleanup_uploaded_avatar(body["avatar_url"])
 
     @pytest.mark.asyncio
     async def test_upload_invalid_content_type(self, auth_user, mock_db):
@@ -378,10 +391,8 @@ class TestUploadAvatar:
             assert resp.json()["avatar_url"].endswith(".png")
 
         # Cleanup
-        if os.path.exists("uploads/avatars"):
-            for f in os.listdir("uploads/avatars"):
-                if f.startswith("avatar_user-1_"):
-                    os.remove(os.path.join("uploads/avatars", f))
+        if resp.status_code == 200:
+            _cleanup_uploaded_avatar(resp.json()["avatar_url"])
 
 
 # --- DELETE /profile/avatar ---
