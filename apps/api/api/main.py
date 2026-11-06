@@ -251,6 +251,34 @@ async def startup_event():
     logger.info("Vector Store will initialize on first request (lazy loading)...")
     app.state.vector_store = None  # Set by get_vector_store() on first use
 
+    # 1.0 Initialize the database schema BEFORE anything writes to it.
+    #     The two seed steps below write to the database and the vector store, so
+    #     the tables have to exist first. init_db() used to run AFTER them
+    #     (step 1.5), which meant that on a FRESH database both seed steps failed
+    #     with "no such table: users" / "no such table: cma_reports", the failures
+    #     were swallowed as non-fatal, and the demo came up with an empty
+    #     catalogue and an empty vector index. Measured 2026-11-06 on the public
+    #     deployment: /api/v1/search returned {"results":[],"count":0}.
+    #
+    #     The scope is deliberately unchanged for every deployment that is not a
+    #     demo: init_db() runs when JWT auth is enabled (as before) OR when a
+    #     seed step is going to run. create_all() creates the tables directly,
+    #     so on a deployment whose schema is owned by alembic migrations it must
+    #     not run before `alembic upgrade head` — hence the narrow condition.
+    _seeding = (
+        os.getenv("SEED_ON_STARTUP", "false").lower() == "true"
+        or os.getenv("DEMO_MODE", "false").lower() == "true"
+    )
+    if settings.auth_jwt_enabled or _seeding:
+        logger.info("Initializing Database Schema...")
+        try:
+            from db.database import init_db
+
+            await init_db()
+            logger.info("Database schema initialized successfully.")
+        except Exception as e:
+            logger.error("Failed to initialize database schema: %s", sanitize_for_log(e))
+
     # 1.1 Auto-seed demo data (opt-in via SEED_ON_STARTUP env var)
     if os.getenv("SEED_ON_STARTUP", "false").lower() == "true":
         logger.info("SEED_ON_STARTUP enabled — seeding demo data...")
@@ -280,18 +308,9 @@ async def startup_event():
                     await generate_comprehensive_demo_data(session)
                 logger.info("Comprehensive demo data generated successfully.")
             except Exception as demo_error:
-                logger.warning("Comprehensive demo data generation failed (non-fatal): %s", demo_error)
-
-    # 1.5 Initialize Auth Database (if JWT auth enabled)
-    if settings.auth_jwt_enabled:
-        logger.info("Initializing Auth Database...")
-        try:
-            from db.database import init_db
-
-            await init_db()
-            logger.info("Auth Database initialized successfully.")
-        except Exception as e:
-            logger.error("Failed to initialize Auth Database: %s", sanitize_for_log(e))
+                logger.warning(
+                    "Comprehensive demo data generation failed (non-fatal): %s", demo_error
+                )
 
     # 2. Initialize Email Service
     logger.info("Initializing Email Service...")
@@ -587,7 +606,7 @@ app.include_router(cma.router, prefix="/api/v1")
 app.include_router(feedback.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 
 
-@app.get("/health", tags=["System"])
+@app.get("/health/detailed", tags=["System"])
 async def health_check(include_dependencies: bool = True):
     """
     Health check endpoint to verify API status.

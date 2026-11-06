@@ -518,7 +518,10 @@ class AppSettings(BaseModel):
     max_properties: int = 2000
     batch_size: int = 100
     autoload_default_datasets: bool = False
-    vector_persist_enabled: bool = False
+    vector_persist_enabled: bool = Field(
+        default_factory=lambda: os.getenv("VECTOR_PERSIST_ENABLED", "false").strip().lower()
+        in {"1", "true", "yes", "on"}
+    )
     crm_webhook_url: Optional[str] = Field(default_factory=lambda: os.getenv("CRM_WEBHOOK_URL"))
     valuation_mode: str = Field(default_factory=lambda: os.getenv("VALUATION_MODE", "simple"))
     legal_check_mode: str = Field(default_factory=lambda: os.getenv("LEGAL_CHECK_MODE", "basic"))
