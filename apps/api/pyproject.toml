@@ -28,7 +28,7 @@ dependencies = [
     "passlib[bcrypt]>=1.7.4,<2.0.0",
     "bcrypt>=4.0.0,<5.0.0",  # Pin bcrypt 4.x for passlib compatibility (5.x breaks passlib)
     "httpx>=0.27.0,<1.0.0",
-    "authlib>=1.6.12,<2.0.0",
+    "authlib>=1.9.1,<2.0.0",  # empty-signature JWS deserialization (critical), HMAC key confusion, RFC 7592 client binding
     "jinja2>=3.1.0,<4.0.0",
     "cryptography>=46.0.6,<51.0.0",
     "email-validator>=2.1.0,<3.0.0",
@@ -48,7 +48,18 @@ dependencies = [
     # Excel data loader (Task #110)
     "openpyxl>=3.1.0,<4.0.0",
     "urllib3>=2.7.0",
-    "pillow>=12.3.0",
+    "pillow>=13.0.0",  # heap overflow / argument injection fixes in 13.0.0
+    # Security floors for transitive dependencies (kept in sync with requirements.txt).
+    "certifi>=2026.10.18",  # critical: compromised emSign root CA bundle
+    "pyasn1>=0.6.5",  # high: quadratic BER/CER/DER decoding
+    "oauthlib>=4.0.1",  # high: device-flow token endpoint client_id validation
+    "joserfc>=1.7.5",  # high: unbounded JWE recipients array
+    "dnspython>=2.9.0",  # high: from_wire_parser() excessive CPU use
+    "msgpack>=1.2.3",  # high: unbounded memory leak in the C extension
+    "filelock>=4.2.1",  # high: ReadWriteLock symlink/journal overwrite
+    "virtualenv>=21.14.9",  # high: activation scripts execute commands from env names
+    # 0.9.1 is the first fastembed release that allows pillow<14; earlier releases cap pillow<13.
+    "fastembed>=0.9.1,<1.0.0",
     "starlette>=1.3.1",
     "aiohttp>=3.14.3",
     "python-multipart>=0.0.18",  # FastAPI form data / file upload support
