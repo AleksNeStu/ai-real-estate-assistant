@@ -61,6 +61,7 @@ deploy/compose/data/audit/
 docs/research/
 docs/ADRs/
 docs/adr/
+docs/plans/
 docs/process/
 docs/releases/
 docs/specs/

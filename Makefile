@@ -329,7 +329,7 @@ deploy-prod:
 ## deploy-validate: Validate deployment configs without deploying
 deploy-validate:
 	@echo "Validating deployment configs..."
-	@for f in render.yaml vercel.json deploy/docker/Dockerfile.backend deploy/docker/Dockerfile.frontend deploy/compose/docker-compose.yml; do \
+	@for f in vercel.json deploy/docker/Dockerfile.backend deploy/docker/Dockerfile.frontend deploy/compose/docker-compose.yml; do \
 		if [ ! -f "$$f" ]; then echo "ERROR: Missing $$f"; exit 1; fi; \
 		echo "  ✓ $$f"; \
 	done
