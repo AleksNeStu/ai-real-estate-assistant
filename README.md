@@ -28,6 +28,7 @@
 - [Live Demo](#-live-demo)
 - [What's New in v5.1](#-whats-new-in-v51)
 - [What's New Since v5.1.5.3](#-whats-new-since-v5153-post-release-polish--discoverability)
+- [What's New in v5.1.6](#-whats-new-in-v516)
 - [Architecture](#-architecture)
 - [Quick Start](#-quick-start)
 - [Three Developer Differentiators](#-three-developer-differentiators)
@@ -93,6 +94,41 @@ Each item is a small, focused improvement in the demo and discovery surface.
   - Expanded `metadataBase`, `title.template`, `keywords`, `authors`, `creator`, `publisher`, `category`, and `icons` blocks for full SEO coverage in 9 locales.
 - **⚡ Lazy-load /market-trends charts** — extracted the recharts bundle (5+ MB) into a separately-imported client component (`next/dynamic` with `ssr: false`). Initial payload for `/market-trends` shrinks by ~5 MB; charts stream in after the page renders.
 - **📣 Distribution drafts ready** — six drafts under [`docs/marketing/`](docs/marketing/) (Show HN, four-subreddit Reddit plan, Product Hunt, three YouTube scripts, directory submission plan) — see [`docs/marketing/README.md`](docs/marketing/README.md) for the recommended launch sequence.
+
+## 🔐 What's New in v5.1.6
+
+A security-and-correctness release — the dependency floor is raised, the input
+sanitizer no longer eats digits, and every page finally has the same column measure.
+
+- **🛡️ 335 open Dependabot alerts → 0** — the critical/high batch is closed
+  (`Pillow` 13.0.0, `authlib` 1.9.1, `certifi` 2026.10.18, `dompurify` 3.4.17,
+  `@sentry/nextjs` 10.75.2+, `pyasn1`, `oauthlib`, `joserfc`, `dnspython`, `msgpack`,
+  `filelock`, `virtualenv`, `zod`, `follow-redirects`, `tornado` 6.6 and the
+  remaining medium/low advisories). The floors live in **both**
+  [`apps/api/requirements.txt`](apps/api/requirements.txt) — installed by CI and by
+  the container image — and
+  [`apps/api/pyproject.toml`](apps/api/pyproject.toml); `apps/api/uv.lock` was
+  regenerated. One accepted LOW (`deepmerge`, no upstream fix, build-time only)
+  is documented in
+  [`docs/operations/security/accepted-risks.md`](docs/operations/security/accepted-risks.md).
+- **🐛 Input sanitization no longer mangles text** (issue #377, reported by
+  [@xxchen-yu](https://github.com/xxchen-yu)) — the control-character filter was a
+  62-byte `bytes` table passed to `str.translate()`, which rewrites every code point
+  below `0x3E`, so `"2 bedroom under 500000 EUR"` reached the LLM as
+  `"2\x97bedroom\x82under…"`. It is now a code-point mapping that removes only the
+  intended control characters. Covered by new unit and integration tests.
+- **📐 One page-container contract** — the locale layout applies no width
+  constraint, so every page owned its column measure and sixteen wrapper variants
+  were in use; three pages ran edge to edge with no horizontal padding. All routes
+  now use `container mx-auto px-4 py-8` (and `max-w-5xl` for reading surfaces), with
+  the landing hero, the chat split pane and the centered auth card kept as their own
+  layouts.
+- **⬆️ Freshness** — `next` 16.4.5, `react`/`react-dom` 19.3.1, `eslint-config-next`
+  16.4.5.
+- **🧹 Housekeeping** — 16 routine Dependabot PRs closed, the repository homepage
+  points at the live demo, and the TaskMaster backlog stays local to the maintainer.
+
+Full notes: [v5.1.6 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.6).
 
 ## 💻 Local Demo Setup
 
@@ -240,6 +276,7 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 
 | Version | Date | Highlights |
 |---|---|---|
+| [v5.1.6](CHANGELOG.md#516---2026-11-06) | 2026-11-06 | 335 → 0 open Dependabot alerts, input-sanitization fix (#377), one page-container contract across all routes |
 | [v5.1.5.2](CHANGELOG.md#5152---2026-09-12) | 2026-09-12 | HIGH/CRITICAL CVE fix batch: Next.js RCE (CVSS 9.0), gitpython RCE (CVSS 9.8), sharp libheif, js-yaml CPU-DoS |
 | [v5.1.5](CHANGELOG.md#515---2026-09-06) | 2026-09-06 | Visibility/SEO/GEO surface, star-history hosted embed, Dependabot roll-up, CI hardening |
 | [v5.0.12](CHANGELOG.md#5012---2026-06-22) | 2026-06-22 | Flaky-test fix, deploy independence, release verification workflow |
