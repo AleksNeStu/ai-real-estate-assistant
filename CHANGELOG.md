@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **The `e2e` CI job could not install Playwright browsers** — the `ubuntu-latest`
+  runner image migrated to Ubuntu 26.04 (runner-images#14748) and Playwright 1.57
+  ships no chromium build for `ubuntu26.04-x64`, so the root `npm ci` failed in
+  the `prepare` script with "Playwright does not support chromium on
+  ubuntu26.04-x64". The job is now pinned to `ubuntu-24.04`.
 - **Input sanitization corrupted user text** (issue #377, reported by @xxchen-yu) —
   `apps/api/utils/sanitization.py` passed a 62-byte `bytes` table to
   `str.translate()`, which looks a bytes table up by ordinal. Every code point

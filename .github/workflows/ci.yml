@@ -426,7 +426,12 @@ jobs:
           fi
 
   e2e:
-    runs-on: ubuntu-latest
+    # Pinned to ubuntu-24.04: the ubuntu-latest image migrated to Ubuntu 26.04
+    # (runner-images#14748) and Playwright 1.57 has no chromium build for
+    # ubuntu26.04-x64, so `npx playwright install` (the root `prepare` script,
+    # run by `npm ci`) fails with
+    # "Playwright does not support chromium on ubuntu26.04-x64".
+    runs-on: ubuntu-24.04
     if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [frontend-build]
     timeout-minutes: 25
