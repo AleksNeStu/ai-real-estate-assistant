@@ -230,8 +230,10 @@ acceptance criteria and a test strategy:
 - The deployment stack is a committed, reviewable file in the private repository; the host copy
   matches it.
 - The tunnel ingress rule and the DNS record were read back from the provider's API after the change.
-- The application gates: backend lint and unit suite, frontend lint, type check, unit suite and
-  production build — all green on the committed tree.
+- The application gates: backend lint, backend unit suite and backend integration suite, frontend
+  lint, type check, unit suite and production build — all green on the committed tree. (The two
+  backend suites are run separately, the way the CI matrix runs them; running both in one pytest
+  invocation makes them share one in-process rate limiter and produces spurious 429s.)
 - The public tree contains no host name, no platform name, no service identifier, no fleet node and
   no local filesystem path. The one exception is the needle list inside the CI-surface test: it is
   the detector, and the two platform-identifying strings in it are assembled from fragments so the
