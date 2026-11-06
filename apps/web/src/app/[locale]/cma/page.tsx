@@ -4,7 +4,7 @@ import { CMAWizard } from '@/components/cma/cma-wizard';
 
 export default function CMAPage() {
   return (
-    <div className="container mx-auto py-6 px-4 max-w-5xl">
+    <div className="container mx-auto max-w-5xl px-4 py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold">Comparative Market Analysis</h1>
         <p className="text-muted-foreground mt-1">

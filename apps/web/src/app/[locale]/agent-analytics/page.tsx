@@ -458,7 +458,7 @@ export default function AgentAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-6 space-y-6">
+      <div className="container mx-auto px-4 py-8 space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Agent Analytics</h1>
           <p className="text-muted-foreground">Loading your performance data...</p>
@@ -478,7 +478,7 @@ export default function AgentAnalyticsPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto py-6">
+      <div className="container mx-auto px-4 py-8">
         <Card className="border-destructive">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-destructive">
@@ -492,7 +492,7 @@ export default function AgentAnalyticsPage() {
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="container mx-auto px-4 py-8 space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold">Agent Analytics</h1>

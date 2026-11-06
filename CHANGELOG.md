@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Page columns were inconsistent across routes** — the locale layout applies no
+  width constraint, so every page owned its own measure. Sixteen different
+  wrapper variants were in use: four pages (`agent-analytics`, `leads`, `usage`
+  and one more) had no horizontal padding at all and ran edge-to-edge, four
+  pages used ad-hoc `max-w-6xl`/`max-w-7xl` caps with `px-6 py-10`, and the
+  vertical rhythm varied between `py-6`, `py-8`, `py-10` and `py-12`. All route
+  wrappers now follow one contract — `container mx-auto px-4 py-8` for content
+  pages, `container mx-auto max-w-5xl px-4 py-8` for reading surfaces, with the
+  landing hero, the chat split pane and the centered auth card kept as their
+  own documented layouts.
+- **The landing hero was pinned to the left edge** — Tailwind v4's `container`
+  utility sets `max-width` but does not center itself, and the landing page was
+  the only route that used `container` without `mx-auto`. On a 1440px viewport
+  every other page was centered and the hero was not.
+- **Placeholder copy** — the neighbourhood report showed "Map integration coming
+  soon" above real coordinates; it now states that the map preview is
+  unavailable in the report and labels the coordinates as such.
 - **The `e2e` CI job could not install Playwright browsers** — the `ubuntu-latest`
   runner image migrated to Ubuntu 26.04 (runner-images#14748) and Playwright 1.57
   ships no chromium build for `ubuntu26.04-x64`, so the root `npm ci` failed in
@@ -67,10 +84,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   versions lived, and nothing installed from it.
 - 234 stale Dependabot alerts dismissed: they all pointed at `poetry.lock`,
   which has not existed in the repository since the Poetry → pip migration, so
-  they could never close themselves and hid the real findings. Open alerts on
-  the live manifests: 335 → **1** (0 critical, 0 high, 0 medium; the single
-  remaining LOW is `deepmerge`, which has no upstream fix and is accepted and
-  documented in `docs/operations/security/accepted-risks.md`).
+  they could never close themselves and hid the real findings. The remaining
+  `deepmerge` LOW has no upstream fix and is dismissed as `tolerable_risk`,
+  documented in `docs/operations/security/accepted-risks.md`. **Open Dependabot
+  alerts on the default branch: 335 → 0.**
 - 16 routine Dependabot PRs closed per the frozen-policy matrix — 12 carried no
   advisory, 4 closed a MEDIUM advisory whose bump is now applied directly in the
   lockfile instead.

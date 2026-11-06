@@ -235,9 +235,13 @@ commit and therefore allowed under frozen-policy "Security patches" row. No stan
   support of the demo) or `jest` (the test suite) — both remove product or test
   capability, which the frozen-repo policy treats as a worse outcome than the
   accepted LOW risk.
-- **Disposition:** the alert is dismissed via the API with reason `tolerable_risk`.
-  Re-check when upstream publishes a fix for `deepmerge` (the `deepmerge` 4.x line is
-  the only affected range; a 5.x release would need an API review before adoption).
+- **Disposition:** the alert is dismissed via the API with reason `tolerable_risk`
+  (done 2026-11-06). Re-check when upstream publishes a fix for `deepmerge` (the
+  `deepmerge` 4.x line is the only affected range; a 5.x release would need an API
+  review before adoption).
+
+With that dismissal, the repository has **0 open Dependabot alerts** on the default
+branch (`dev`), verified via `gh api repos/AleksNeStu/ai-real-estate-assistant/dependabot/alerts?state=open`.
 
 As of 2026-08-26 review there were **zero MEDIUM** and **zero LOW** Dependabot alerts
 open. The previous review (2026-08-25) reported 29 MEDIUM + 13 LOW; these 42 alerts have

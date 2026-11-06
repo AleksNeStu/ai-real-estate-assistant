@@ -18,7 +18,7 @@ import type { PromptTemplateInfo, NeighborhoodQualityResult } from "@/lib/types"
 
 export default function ToolsPage() {
   return (
-    <div className="container mx-auto p-6 space-y-8">
+    <div className="container mx-auto px-4 py-8 space-y-8">
       <h1 className="text-2xl font-semibold">Tools</h1>
       <MortgageSection />
       <CompareSection />

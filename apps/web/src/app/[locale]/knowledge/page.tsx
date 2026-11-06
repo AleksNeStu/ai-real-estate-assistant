@@ -119,7 +119,7 @@ export default function KnowledgePage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
+    <div className="container mx-auto max-w-5xl px-4 py-8">
       <div className="flex flex-col space-y-2 mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Knowledge</h1>
         <p className="text-muted-foreground">

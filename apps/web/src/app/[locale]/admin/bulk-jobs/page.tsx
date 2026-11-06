@@ -238,7 +238,7 @@ export default function BulkJobsPage() {
   };
 
   return (
-    <div className="container mx-auto py-6 px-4 max-w-6xl">
+    <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Bulk Import/Export Jobs</h1>
         <p className="text-muted-foreground">Manage bulk data import and export operations</p>

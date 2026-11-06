@@ -282,9 +282,9 @@ export function WhatsNearbySection({
             <div className="rounded-lg bg-muted h-48 flex items-center justify-center">
               <div className="text-center text-muted-foreground">
                 <MapPin className="h-8 w-8 mx-auto mb-2" aria-hidden="true" />
-                <p className="text-sm">Map integration coming soon</p>
+                <p className="text-sm">Map preview is not available in this report</p>
                 <p className="text-xs">
-                  Location: {result.latitude.toFixed(4)}, {result.longitude.toFixed(4)}
+                  Coordinates: {result.latitude.toFixed(4)}, {result.longitude.toFixed(4)}
                 </p>
               </div>
             </div>

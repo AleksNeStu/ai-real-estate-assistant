@@ -48,7 +48,7 @@ export default async function ShowcasePage({
   const t = await getTranslations('showcase');
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col space-y-12 max-w-4xl mx-auto">
         {/* Hero */}
         <header className="flex flex-col items-center text-center space-y-3">
