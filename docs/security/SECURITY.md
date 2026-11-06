@@ -100,6 +100,55 @@ except ValueError as e:
     raise HTTPException(status_code=400, detail=str(e))
 ```
 
+### ChromaDB Metadata Hardening (GHSA-36p7-vc44-83pf / CVE-2026-45833)
+
+Dependabot keeps `GHSA-36p7-vc44-83pf` open because **no upstream patch exists** in any
+released chromadb 0.5.x or 1.x line (the GHSA page reports "Patched versions: None").
+The vector-store code path is mitigated in-tree rather than at the dependency
+layer — every metadata value that reaches chromadb is funnelled through a
+strict-whitelist pre-serialiser, so the chromadb metadata type-confusion attack
+that the CVE describes cannot be reached from this app.
+
+The two-layer pre-serialiser, defined in
+[`apps/api/vector_store/chroma_store.py`](../apps/api/vector_store/chroma_store.py):
+
+1. **`_sanitize_val` (line 304) — inner pre-serialiser, called from
+   `property_to_document`** (which is the only path that builds a
+   `Document` for chromadb ingestion). Allows **only**
+   `None | str | int | bool | float | datetime-as-ISO-string`. Drops
+   everything else. `float`s that are `NaN` or non-finite are dropped.
+2. **`_sanitize_metadata` (line 472) — outer pre-serialiser, called from
+   `add_properties` directly before `vector_store._collection.add(...)`**.
+   Allows the same primitive set; **stringifies** any non-primitive via
+   `str(value)` so no dict / list / object ever reaches chromadb's
+   typed-metadata path.
+
+The chromadb CVE-2026-45833 attack vector requires non-primitive metadata
+values (typically dict-shaped) to reach the chromadb typed-input layer.
+Both sanitizers reject those types upstream. The `add_texts` /
+`add_documents` paths in this codebase therefore only ever see primitive
+metadata, which chromadb's own validation handles safely.
+
+Reachability assessment:
+- `add_properties` (line 369) — the only ingestion path; sanitization
+  mandatory before chromadb's `add` / `add_texts`.
+- `similarity_search_with_score` (line 680), `get` (line 350), and the
+  `delete` filters (lines 1214, 1232) all build their `filter` arguments
+  via `_build_chroma_filter` (line 574) which constructs structured
+  where-clauses server-side from typed Python values, not from
+  user-controlled string interpolation.
+- **No user-controlled string is ever passed through chromadb's
+  metadata-typing layer.** The CVE is therefore non-reachable in this
+  codebase as written.
+
+**Action:** the Dependabot alert will stay open until upstream ships a
+patch. Tracking the mitigation in-tree is by design; the tag gate
+(`v5.1.5.4` / `v5.1.6`) per `Rule 2` requires 0 open critical alerts, so
+the tag remains blocked at the dependency layer until either (a)
+upstream releases a patched chromadb, or (b) this app is rewritten to
+not use chromadb at all. Operator accepts the residual risk in the
+meantime.
+
 ### Pydantic Validation
 
 All request models use Pydantic for type validation and constraints:

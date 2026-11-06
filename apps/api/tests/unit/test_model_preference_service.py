@@ -451,7 +451,7 @@ class TestValidateFallbackChain:
             {"provider": "anthropic", "model_name": "claude-3-5-sonnet-20241022"},
             {"provider": "google", "model_name": "gemini-1.5-pro"},
             {"provider": "openai", "model_name": "gpt-4o"},
-            {"provider": "anthropic", "model_name": "claude-3-5-haiku-20241022"},
+            {"provider": "anthropic", "model_name": "claude-haiku-4-5-20251001"},
             {"provider": "google", "model_name": "gemini-1.5-flash"},
             {"provider": "openai", "model_name": "gpt-4-turbo"},
         ]

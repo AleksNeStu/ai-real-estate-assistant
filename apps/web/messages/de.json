@@ -447,7 +447,10 @@
     "results": "Results",
     "noResults": "No results",
     "tryAgain": "Try again",
-    "skipToContent": "Skip to main content"
+    "skipToContent": "Skip to main content",
+    "tryTheseChips": {
+      "heading": "Probiere eins davon"
+    }
   },
   "demo": {
     "banner": "Demo-Modus — Suche und Stadt-Daten verfügbar",
@@ -969,5 +972,47 @@
     "min": "Minimum value is {min}",
     "max": "Maximum value is {max}",
     "pattern": "Invalid format"
+  },
+  "tour": {
+    "welcome": {
+      "title": "Willkommen beim KI-Immobilienassistenten",
+      "body": "Eine kurze Tour durch die Funktionen dieser Demo. Überspringbar — du kannst jederzeit wiederkommen."
+    },
+    "search": {
+      "title": "Suche in natürlicher Sprache",
+      "body": "Versuche „2-Zimmer-Wohnung in Krakau unter 500k“ einzutippen — Filter werden automatisch extrahiert."
+    },
+    "chat": {
+      "title": "Chat für passende Inserate",
+      "body": "Stelle Folgefragen, erhalte Verfeinerungen. Multi-Turn-Kontext mit LLM-Fallback-Kette über mehrere Anbieter."
+    },
+    "valuation": {
+      "title": "KI-Bewertung mit Prognose",
+      "body": "Füge eine Objekt-ID ein oder gib Merkmale ein — erhalte den aktuellen Wert plus Prognosen für 1, 3, 5 und 10 Jahre mit Konfidenzband."
+    },
+    "languages": {
+      "title": "9 Sprachen",
+      "body": "Wechsle die Oberflächen- und Chat-Sprache über den Selektor oben rechts. EU-AI-Act-Konformitätskennzeichnungen enthalten."
+    },
+    "skip": "Überspringen",
+    "next": "Weiter",
+    "done": "Fertig"
+  },
+  "showcase": {
+    "heroTitle": "Showcase",
+    "heroSubtitle": "Forks, reale Einsätze und Fallstudien des KI-Immobilienassistenten.",
+    "forksTitle": "Forks & Mit diesem gebaut",
+    "forksEmpty": "Noch keine Forks oder Built-with-Listings.",
+    "forksEmptyHelper": "Das Repo geforkt und etwas gebaut? Issue oder PR öffnen, um es hier hinzuzufügen.",
+    "companiesTitle": "Firmen, die dies nutzen",
+    "companiesEmpty": "Noch keine Produktionseinsätze gelistet.",
+    "companiesEmptyHelper": "Stack produktiv im Einsatz? Melde dich per Issue oder GitHub-Diskussion, um gelistet zu werden.",
+    "quotesTitle": "Was Nutzer sagen",
+    "quotesEmpty": "Noch keine öffentlichen Stimmen.",
+    "quotesEmptyHelper": "Du hast es genutzt oder eingesetzt und willst ein Zitat teilen (mit Erlaubnis)? Melde dich per Issue.",
+    "ctaTitle": "Selbst ausprobieren",
+    "ctaSubtitle": "Die Live-Demo läuft ohne Anmeldung. Quellcode MIT-lizenziert, in 5 Minuten selbst hostbar.",
+    "ctaStar": "Repo markieren",
+    "ctaTryDemo": "Demo testen"
   }
 }

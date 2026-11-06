@@ -287,8 +287,19 @@ async def list_model_catalog():
 
 @router.get("/settings/test-runtime", response_model=ModelRuntimeTestResponse)
 async def test_runtime(provider: str = Query(...)):
-    """
-    Test connection/runtime status for a specific provider.
+    """Probe any registered provider's connection/route to readiness.
+
+    Pre-2026-10-19 this endpoint gated on ``p.is_local`` and rejected
+    every remote provider with HTTP 400. Phase D.6 opens it up: any
+    provider from ``ModelProviderFactory.list_providers()`` can be
+    probed. Local providers (Ollama) still call
+    ``list_available_models()`` to surface the runtime-fetched model
+    list; remote providers return ``available_models=[]`` (they don't
+    expose a runtime-fetched list, only the curated catalog).
+
+    Operators can now verify Together / Fireworks / HuggingFace /
+    Grok / etc. keys via this endpoint instead of waiting for a real
+    chat request to fail.
     """
     try:
         allowed_providers = set(ModelProviderFactory.list_providers())
@@ -296,20 +307,15 @@ async def test_runtime(provider: str = Query(...)):
             raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
 
         p = ModelProviderFactory.get_provider(provider)
-        if not p.is_local:
-            raise HTTPException(
-                status_code=400, detail=f"Provider '{provider}' is not a local runtime provider"
-            )
-
         runtime_available, runtime_error = p.validate_connection()
-        available_models = []
+        available_models: list[str] = []
         if runtime_available and hasattr(p, "list_available_models"):
             maybe_models = p.list_available_models()
             available_models = list(maybe_models) if maybe_models else []
 
         return ModelRuntimeTestResponse(
             provider=provider,
-            is_local=True,
+            is_local=p.is_local,
             runtime_available=runtime_available,
             available_models=available_models,
             runtime_error=runtime_error,

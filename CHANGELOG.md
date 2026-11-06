@@ -7,6 +7,135 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **The `e2e` CI job could not install Playwright browsers** — the `ubuntu-latest`
+  runner image migrated to Ubuntu 26.04 (runner-images#14748) and Playwright 1.57
+  ships no chromium build for `ubuntu26.04-x64`, so the root `npm ci` failed in
+  the `prepare` script with "Playwright does not support chromium on
+  ubuntu26.04-x64". The job is now pinned to `ubuntu-24.04`.
+- **Input sanitization corrupted user text** (issue #377, reported by @xxchen-yu) —
+  `apps/api/utils/sanitization.py` passed a 62-byte `bytes` table to
+  `str.translate()`, which looks a bytes table up by ordinal. Every code point
+  below `0x3E` — spaces, digits, punctuation — was rewritten with a control
+  byte, so chat messages and search queries reached the LLM and the vector
+  store mangled (`"2 bedroom under 500000 EUR"` → `"2\x97bedroom\x82under..."`),
+  and CJK text lost its adjacent ASCII digits. The filter is now a code-point →
+  `None` mapping. Covered by `tests/unit/test_sanitization.py` and
+  `tests/integration/api/test_chat_sanitize_regression.py`.
+
+### Security (critical/high CVE batch)
+- **Pillow 12.3.0 → 13.0.0** — CRITICAL heap overflows (FlashPix, TIFF) and
+  Ghostscript argument injection.
+- **authlib 1.6.12 → 1.9.1** — CRITICAL empty-signature JWS deserialization,
+  HIGH HMAC key confusion, HIGH RFC 7592 client binding.
+- **certifi → 2026.10.18** — CRITICAL emSign root CA bundle with compromised
+  intermediate keys.
+- **pyasn1 → 0.6.5**, **oauthlib → 4.0.1**, **joserfc → 1.7.5**,
+  **dnspython → 2.9.0**, **msgpack → 1.2.3**, **filelock → 4.2.1**,
+  **virtualenv → 21.14.9** — HIGH quadratic-decoding DoS, device-flow token
+  validation, unbounded JWE recipients, memory-leak and symlink-overwrite fixes.
+- **fastembed → 0.9.1** — first release that allows `pillow<14`; earlier
+  releases cap `pillow<13` and would block the Pillow 13 floor.
+- **dompurify 3.4.16 → 3.4.17** — CRITICAL `SAFE_FOR_TEMPLATES` bypass via
+  shadow roots, HIGH `IN_PLACE` hook bypass.
+- **@sentry/nextjs → 10.75.2+** — CRITICAL middleware bypass through the tunnel
+  route.
+- **zod → 4.6.6** — HIGH memory exhaustion on oversized constrained collections.
+- **follow-redirects → 1.16.2** — HIGH cross-realm `sensitiveHeaders` drop.
+
+### Security (remaining medium/low advisories)
+- **tornado → 6.6** — MEDIUM/LOW quadratic HTTP header parsing, chunked-body
+  event-loop blocking, protocol-relative open redirect.
+- **langgraph → 1.2.20**, **langgraph-sdk → 0.4.14**,
+  **opentelemetry-api → 1.45.2** — MEDIUM advisories in the backend lockfile.
+- **glob → 14.0.2**, **minimatch → 11.0.1**, **qs → 6.16.1**,
+  **serialize-javascript → 7.1.3** — MEDIUM/LOW advisories in the frontend
+  lockfile, applied as npm overrides (glob 14 also pulls minimatch 11, so the
+  9.0.9 and 10.2.6 copies are cleared together).
+- **deepmerge** — LOW prototype pollution with **no upstream fix** (4.3.1 is the
+  latest release). It reaches only build/test tooling (`workbox-build` via
+  next-pwa, `jest-config`), never the shipped bundle or the container. Accepted and
+  dismissed as `tolerable_risk`, documented in
+  `docs/operations/security/accepted-risks.md`.
+
+### Changed
+- **next 16.4.2 → 16.4.5**, **react / react-dom 19.2.7 → 19.3.1**,
+  **eslint-config-next 16.2.9 → 16.4.5** — version freshness.
+- Security floors raised in both `apps/api/requirements.txt` (installed by CI and
+  the container image) and `apps/api/pyproject.toml` (installed by CI), and
+  `apps/api/uv.lock` regenerated — the lockfile was the only place the pinned
+  versions lived, and nothing installed from it.
+- 234 stale Dependabot alerts dismissed: they all pointed at `poetry.lock`,
+  which has not existed in the repository since the Poetry → pip migration, so
+  they could never close themselves and hid the real findings. Open alerts on
+  the live manifests: 335 → **1** (0 critical, 0 high, 0 medium; the single
+  remaining LOW is `deepmerge`, which has no upstream fix and is accepted and
+  documented in `docs/operations/security/accepted-risks.md`).
+- 16 routine Dependabot PRs closed per the frozen-policy matrix — 12 carried no
+  advisory, 4 closed a MEDIUM advisory whose bump is now applied directly in the
+  lockfile instead.
+- The repository homepage now points at the live demo instead of the studio
+  showcase page.
+- `.taskmaster/` untracked from the public repository — the backlog is local
+  only, as the repo-alex scope rule requires.
+
+## [5.1.5.2] - 2026-09-12
+
+### Security (HIGH/CRITICAL CVE fix batch)
+- **next 16.2.12 → 16.3.4** (PR #309) — CRITICAL CVE fixes:
+  - GHSA-p293-qw3h-jr36 / CVE-2026-75604 (CVSS 9.0): Unauthenticated Remote Code
+    Execution on Windows-hosted servers.
+  - GHSA-2xp9-vwfh-vxw4: Unauthenticated Remote Code Execution in Image
+    Optimization API when AVIF files are used.
+- **sharp 0.34.5 → 0.35.4** (PR #309) — HIGH CVE fixes:
+  - GHSA-rgj7-g3m4-5g8c: sharp libheif vulnerabilities (GHSA-g89c-p67h-r497 +
+    GHSA-2jg2-4ch7-h545).
+- **gitpython ≥3.1.57 → ≥3.1.61** (PR #300) — CRITICAL + HIGH CVE fixes:
+  - CVE-2026-78676 / GHSA-284h-m62q-gf8w (CVSS 9.8): Dormant multi-line
+    git-config values corrupted into live injected directives.
+  - CVE-2026-78675 / GHSA-7833-fr7j-v32q (CVSS 8.4): Arbitrary local file
+    content disclosure via `[include]` directive in untrusted `.gitconfig`.
+  - CVE-2026-78677 / GHSA-8mcc-hrx5-hvxc (CVSS 7.5): `clone_from()`/`clone()`
+    omit `--separate-git-dir` from unsafe_git_clone_options.
+  - CVE-2026-78678 / GHSA-5xxx-qhh7-9287 + CVE-2026-78679 / GHSA-3wxw-xv34-2frg
+    (CVSS 6.5): TagReference.create positional reference bypass + incomplete
+    unsafe_git_revision_options denylist.
+- **js-yaml 3.15.1 → 3.15.2 + 4.3.1 → 4.3.2** (PRs #310, #311) — HIGH CVE fixes:
+  - CVE-2026-84375 / GHSA-2883-xcg3-v3hh (CVSS 7.5): maxTotalMergeKeys does
+    not limit CPU use for empty merge sources (network-DoS via unbounded
+    merge-key CPU).
+  - Hard-limit merge sequence size to 100.
+
+### Changed
+- All three version files bumped to `5.1.5.2`:
+  - `apps/api/pyproject.toml`
+  - `package.json` (root monorepo)
+  - `apps/web/package.json`
+- 13 routine dependabot PRs closed per frozen-policy matrix
+  (dependency bumps below critical/high → blocked).
+- 3 Dependabot alerts dismissed via API:
+  - `extract-zip` CVE-2026-19693 (HIGH, dev-only transitive via
+    `@puppeteer/browsers`, never loaded in production) → `not_used`.
+  - `joi` CVE-2026-84367 + CVE-2026-84368 (LOW, CVSS 3.7 prototype pollution,
+    below frozen-policy threshold, public demo does not exercise untrusted
+    schemas) → `tolerable_risk`.
+
+### Notes
+- All merges under frozen-policy exception per `CLAUDE.md` §"Public Repo
+  Maintenance" (HIGH/CRITICAL CVE bumps may merge without permission wait).
+- CI on the js-yaml merge commit hit the GitHub Actions runner dead-runner
+  pattern (`e2e` Playwright job hung on `BlobNotFound`); the run was cancelled
+  manually, blocking `workflow_run` → `deploy.yml` env-protection (HTTP 409
+  on deployment creation since cancelled CI ≠ success). Staging advance
+  recovers automatically on the next push that triggers fresh CI (the
+  `e2e` job's `continue-on-error: true` keeps the run `success` despite
+  any `e2e` failure; the natural timeout is `timeout-minutes: 25`).
+- `render.yaml` pins both Render services to `dev` branch — staging
+  auto-deploys on any push to `dev`, independent of GitHub Actions.
+- v5.1.5.2 supersedes v5.1.5.1 (which was the post-release patch bumping
+  pyproject to align with web at `5.1.5`). This release adds the four
+  CVE-fix PRs and brings all three version fields to `5.1.5.2`.
+
 ## [5.1.5] - 2026-09-06
 
 ### Added

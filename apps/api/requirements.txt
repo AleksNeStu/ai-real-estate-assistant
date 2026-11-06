@@ -1,5 +1,5 @@
 pandas>=2.2.3
-numpy>=2.1.0,<2.5.0
+numpy>=2.1.0,<2.6.0
 # pyarrow: pinned to >=23.0.1 to address CVE-2026-25087 / GHSA-rgxp-2hwp-jwgg
 # (use-after-free in Apache Arrow C++ IPC file pre-buffering). The Python
 # bindings don't expose the vulnerable C++ API, but the lower bound keeps
@@ -8,7 +8,7 @@ pyarrow>=23.0.1
 
 # Vector store / embeddings
 chromadb>=0.5.0
-fastembed>=0.5.0,<1.0.0
+fastembed>=0.9.1,<1.0.0  # 0.9.1 is the first release that allows pillow<14 (0.5-0.9.0 cap pillow<13, blocking the Pillow 13 security floor)
 langchain-chroma>=1.1.0,<2.0.0
 
 # Retry logic for external APIs
@@ -21,7 +21,7 @@ langchain-ollama>=1.1.0,<2.0.0
 
 # LangChain core and providers (aligned to core 1.x)
 langchain>=1.3.9,<2.0.0
-langchain-core>=1.4.8,<2.0.0
+langchain-core>=1.6.5,<2.0.0
 langchain-openai>=1.2.2,<2.0.0
 langchain-anthropic>=1.4.3,<2.0.0
 langchain-google-genai>=4.2.5,<5.0.0
@@ -34,7 +34,7 @@ google-generativeai>=0.8.0
 # Tokenization / compression
 tiktoken>=0.14.0
 zstandard>=0.23.0
-grpcio>=1.83.1
+grpcio>=1.84.0
 # protobuf is capped at <6.0.0 because google-ai-generativelanguage 0.6.x
 # (transitive via google-generativeai 0.8.x → langchain-google-genai 4.x)
 # requires protobuf<6.0.0. Bumping the lower bound to 7+ (or widening
@@ -90,7 +90,7 @@ asyncpg>=0.29.0  # Async PostgreSQL driver for production deployments
 alembic>=1.18.4  # Database migrations
 pyjwt>=2.13.0
 passlib[bcrypt]>=1.7.4
-authlib>=1.6.12
+authlib>=1.9.1  # GHSA: empty-signature JWS deserialization (critical), HMAC key confusion, RFC 7592 client binding
 httpx>=0.27.0,<1.0.0
 jinja2>=3.1.0
 
@@ -98,10 +98,20 @@ jinja2>=3.1.0
 python-docx>=1.1.2  # For DOCX text extraction
 pytesseract>=0.3.13  # OCR engine wrapper
 pdf2image>=1.17.0  # PDF to image conversion
-Pillow>=12.3.0  # Image processing — closes CVE-2026-59205/-59204/-59200/-59199/-59197 (heap OOB writes, decompression bomb)
+Pillow>=13.0.0  # Image processing — closes CVE-2026-59205/-59204/-59200/-59199/-59197 (heap OOB writes, decompression bomb) and the 13.0.0 heap overflow / argument injection set
 
 # Security patches for transitive dependencies
 urllib3>=2.7.0  # fastembed pins urllib3<2.8
-GitPython>=3.1.57  # CVE-2024-22190: RCE via config_writer (latest available)
-pyasn1>=0.6.4  # closes CVE-2026-59886 (uncontrolled resource consumption) + CVE-2026-59885 (quadratic OID DoS)
+GitPython>=3.1.62  # CVE-2024-22190: RCE via config_writer (latest available)
+pyasn1>=0.6.5  # closes CVE-2026-59886 (uncontrolled resource consumption) + CVE-2026-59885 (quadratic OID DoS) + the quadratic BER/CER/DER decoding set
+certifi>=2026.10.18  # critical: bundles emSign root CAs with compromised intermediate CA keys
+oauthlib>=4.0.1  # high: device-flow token endpoint validates client_id; attacker-supplied client_id grant
+joserfc>=1.7.5  # high: unbounded JWE recipients array -> CPU exhaustion
+dnspython>=2.9.0  # high: dns.name.from_wire_parser() excessive CPU use
+msgpack>=1.2.3  # high: unbounded memory leak in the C extension on strict_map_key validation failure
+filelock>=4.2.1  # high: ReadWriteLock reopens the lock database by name -> symlink/journal overwrite
+virtualenv>=21.14.9  # high: activation scripts execute commands from environment names and paths
 orjson>=3.12.0
+anyio>=4.14.2  # CVE-2026-63374 (critical IDNA 2003 hostname spoofing) + CVE-2026-63349 (high anyio.run_process extra_groups bypass) + CVE-2026-64847 (medium stderr-wedge DoS)
+soupsieve>=2.9.0  # CVE-2026-85999 + CVE-2026-86000 (medium ReDoS in IDENTIFIER/VALUE + RE_WS_END)
+greenlet>=3.3.1  # Required by sqlalchemy[asyncio]>=2.1; must be pinned explicitly to avoid orphaned-transitive ImportError on Render deploy
