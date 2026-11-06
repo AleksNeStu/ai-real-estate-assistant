@@ -33145,6 +33145,48 @@
         ]
       }
     },
+    "/health/detailed": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Health Check",
+        "description": "Health check endpoint to verify API status.\n\nArgs:\n    include_dependencies: Whether to check dependency health\n        (vector store, Redis, LLM providers)\n\nReturns:\n    Comprehensive health status including dependencies",
+        "operationId": "health_check_health_detailed_get",
+        "parameters": [
+          {
+            "name": "include_dependencies",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Include Dependencies"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health/live": {
       "get": {
         "description": "K8s liveness probe - checks if app is alive.\nSimple ping endpoint (no dependency checks).",

@@ -86,7 +86,6 @@ setting in that file.
   documented layout.
 
 ### 2.6 Documentation drift
-
 Broken quickstart commands that point at scripts which do not exist; a provider count stated as both
 13 and 16 in the same file; a commit count from a different repository; three stacked "What's New"
 sections, one anchored to a version with no changelog entry; seven documentation links that 404 for
@@ -95,6 +94,30 @@ security policy still titled "V4" while the product is v5.1.6; a stale OpenAPI s
 against 251 routes); a canonical URL that pointed every single page at the homepage; a sitemap that
 covered 9 of 21 public routes; and a social-preview image that is a 1280×800 screenshot declared as
 1200×630.
+
+### 2.7 The readiness probe could not see an unhealthy vector store
+
+Found while making an ignored test enforce itself — the most productive defect of the review.
+
+The health payload carries two kinds of entries in one dictionary: the dependency checks, and the
+circuit-breaker states. The breaker entries were keyed by the **raw breaker name**, and the search
+path registers a breaker named `vector_store`. So that breaker **overwrote the real vector-store
+dependency check** in the same dictionary.
+
+Two consequences:
+
+- The health report showed the breaker's state (healthy while closed) instead of the store's.
+- `/health/ready` — the Kubernetes readiness probe — reads `dependencies["vector_store"]` and
+  answered `503` only when that entry was unhealthy. With the shadowing entry in place it answered
+  **"ready" while the vector store was down**, so a cluster would have kept routing traffic to the
+  pod.
+
+The same shadowing made one of the two long-ignored health tests fail as soon as it was allowed to
+enforce: it asserts that an unhealthy vector store makes the endpoint unhealthy, and in a full
+parallel run another test had already registered the breaker.
+
+Fixed: the breaker entries are keyed by their prefixed name (`circuit_breaker:vector_store`), so a
+breaker can never shadow a dependency again. A regression test pins that.
 
 ## 3. What changed
 
@@ -160,6 +183,8 @@ topology cannot be reintroduced by accident.
   to process first. Six frontend suites that were skipped wholesale now run.
 - The avatar-upload tests clean up after themselves by filename instead of by glob, so the parallel
   test run can no longer delete another worker's file and fail the suite for no reason.
+- The health payload can no longer report a circuit breaker in place of the dependency it shares a
+  name with — the defect that made the readiness probe blind to an unhealthy vector store (§2.7).
 
 ### 3.3 The documentation
 
@@ -191,7 +216,7 @@ acceptance criteria and a test strategy:
 | Task #22 — a designed social-preview image | A design decision. The dimension mismatch was fixed so the declared size matches the file |
 | The free-tier secondary | Retiring it is irreversible and needs an explicit go |
 | The old origin's copy of the demo | Left running as a fallback. Decommissioning it needs an explicit go |
-| Synchronising the `main` branch | The two branches have no common ancestor, so a pull request between them cannot be merged. The branch is synchronised with a squash commit instead, and publishing it needs the operator's push |
+| Publishing the synchronised `main` branch | The two branches have no common ancestor, so a pull request between them cannot be merged. `main` now carries `dev`'s tree in a single ordinary commit on top of its own tip — append-only, no force-push, no merge commit. Publishing it needs the operator's push |
 | Seventy-odd documentation files that no page links to | Named here rather than rewritten. They are a documentation-hygiene backlog, not a defect |
 | The three near-duplicate quickstart guides and the duplicated agent-system documents | Named here rather than merged |
 

@@ -40,6 +40,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   inherited it. The layout no longer declares a canonical (a page with none is
   self-canonical); explicit canonicals are added per page through the new
   `apps/web/src/lib/metadata.ts`.
+- **The readiness probe could not see an unhealthy vector store** — the health
+  payload keyed its circuit-breaker entries by the raw breaker name, and the
+  search path registers a breaker named `vector_store`. That breaker overwrote
+  the real vector-store dependency check in the same dictionary, so the health
+  report showed the breaker's state instead of the store's, and `/health/ready`
+  — which reads `dependencies["vector_store"]` — answered "ready" while the
+  vector store was unhealthy. A cluster would have kept routing traffic to the
+  pod. The breaker entries are now keyed by their prefixed name, and a
+  regression test pins that they cannot shadow a dependency.
 - **Two health tests could never fail the build** — they were marked
   `xfail(strict=False)`, and they patched the dependency checks through a dotted
   import path, which the patcher resolves by importing the module: that import
