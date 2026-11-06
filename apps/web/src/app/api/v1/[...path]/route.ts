@@ -22,7 +22,9 @@ const HOP_BY_HOP_RESPONSE_HEADERS = new Set<string>([
 const FORWARDED_REQUEST_HEADERS = [
   'accept',
   'accept-language',
+  'authorization',
   'content-type',
+  'cookie',
   'user-agent',
   'x-user-email',
   'x-request-id',
@@ -148,7 +150,29 @@ async function proxyRequest(request: Request, context: ProxyContext): Promise<Re
   const responseHeaders = new Headers();
   for (const [name, value] of backendResponse.headers.entries()) {
     if (HOP_BY_HOP_RESPONSE_HEADERS.has(name.toLowerCase())) continue;
+    // `set-cookie` is handled separately below: `entries()` folds repeated
+    // Set-Cookie headers into one comma-joined value, which browsers then
+    // parse as a single (broken) cookie.
+    if (name.toLowerCase() === 'set-cookie') continue;
     responseHeaders.set(name, value);
+  }
+
+  // Forward every Set-Cookie the backend issued (session/access_token cookies)
+  // as a distinct header, so a logged-in browser keeps its session.
+  const setCookies =
+    typeof backendResponse.headers.getSetCookie === 'function'
+      ? backendResponse.headers.getSetCookie()
+      : [];
+  if (setCookies.length > 0) {
+    for (const cookie of setCookies) {
+      responseHeaders.append('set-cookie', cookie);
+    }
+  } else {
+    // Fallback for runtimes without `getSetCookie()`: keep the combined value.
+    const combined = backendResponse.headers.get('set-cookie');
+    if (combined) {
+      responseHeaders.set('set-cookie', combined);
+    }
   }
 
   return new Response(backendResponse.body, {

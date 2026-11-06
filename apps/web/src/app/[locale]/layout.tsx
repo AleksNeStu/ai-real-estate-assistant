@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Cinzel } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { MainNav } from '@/components/layout/main-nav';
+import { SiteFooter } from '@/components/layout/site-footer';
 import { SkipNav } from '@/components/layout/SkipNav';
 import { DemoBanner } from '@/components/layout/demo-banner';
 import { Providers } from '@/components/providers';
@@ -14,6 +15,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import type { Locale } from '@/i18n/config';
 import { routing } from '@/i18n/routing';
 import { SITE_URL, absoluteUrl } from '@/lib/site';
+import { languageAlternates } from '@/lib/metadata';
 import { buildStructuredData } from '@/lib/structured-data';
 
 const geistSans = Geist({
@@ -100,19 +102,14 @@ export async function generateMetadata({
     publisher: 'AleksNeStu',
     category: 'technology',
     alternates: {
-      canonical: absoluteUrl(`/${locale}`),
-      languages: {
-        pl: absoluteUrl('/pl'),
-        en: absoluteUrl('/en'),
-        ru: absoluteUrl('/ru'),
-        de: absoluteUrl('/de'),
-        es: absoluteUrl('/es'),
-        it: absoluteUrl('/it'),
-        pt: absoluteUrl('/pt'),
-        tr: absoluteUrl('/tr'),
-        uk: absoluteUrl('/uk'),
-        'x-default': absoluteUrl('/pl'),
-      },
+      // NO canonical here on purpose. A layout is inherited by every route
+      // below it and does not know which route it is rendering, so a canonical
+      // declared here is the same URL for all of them. The layout used to
+      // declare the home page's URL, which told search engines that all thirty
+      // routes were duplicates of the home page. Pages now fall back to
+      // self-canonical, which is correct; a route that needs an explicit one
+      // uses pageMetadata() from '@/lib/metadata'.
+      languages: languageAlternates(),
     },
     openGraph: {
       title: titles[locale as Locale] || titles.en,
@@ -238,6 +235,7 @@ export default async function LocaleLayout({
             <main id="main-content" className="flex-1">
               <ErrorBoundary>{children}</ErrorBoundary>
             </main>
+            <SiteFooter />
             <InstallPrompt />
             <OnboardingTour />
             <Toaster />

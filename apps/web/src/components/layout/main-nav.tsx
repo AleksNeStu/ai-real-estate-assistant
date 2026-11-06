@@ -29,7 +29,19 @@ import {
 
 const THEME_STORAGE_KEY = 'theme';
 
-// Routes visible in demo mode (auth-required routes are hidden, not locked)
+// Routes visible in demo mode (auth-required routes are hidden, not locked).
+//
+// The demo allowlist lives in `src/proxy.ts` (the `demoRoutes` array). It is the
+// source of truth for what an anonymous visitor may open without a session, and
+// it currently allows:
+//
+//   '/', '/search', '/city-overview', '/knowledge', '/analytics',
+//   '/market-trends', '/cma', '/tools', '/chat', '/agents'
+//
+// The nav must not advertise a route the proxy would redirect to the login page.
+// `/favorites` and `/documents` are in neither list — they need an account and
+// stay hidden in demo mode. `/chat` is reachable in demo mode through the proxy
+// but is deliberately not advertised here.
 const DEMO_VISIBLE_ROUTES = new Set([
   '/search',
   '/city-overview',
@@ -38,6 +50,7 @@ const DEMO_VISIBLE_ROUTES = new Set([
   '/market-trends',
   '/cma',
   '/tools',
+  '/agents',
 ]);
 // Routes always hidden in demo mode
 const DEMO_HIDDEN_ROUTES = new Set(['/settings']);

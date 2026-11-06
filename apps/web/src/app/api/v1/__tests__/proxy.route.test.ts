@@ -70,7 +70,7 @@ describe("API v1 proxy route", () => {
     expect(response.headers.get("X-Request-ID")).toBe("req-1");
   });
 
-  it("does not forward client cookie or client-supplied X-API-Key", async () => {
+  it("forwards the session cookie and authorization header, but overrides client-supplied X-API-Key", async () => {
     (global.fetch as unknown as jest.Mock).mockResolvedValueOnce(
       new Response(JSON.stringify({ ok: true }), {
         status: 200,
@@ -85,7 +85,8 @@ describe("API v1 proxy route", () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Cookie: "session=abc",
+        Cookie: "access_token=jwt-token",
+        Authorization: "Bearer jwt-token",
         "X-API-Key": "malicious-client-key",
       },
     });
@@ -94,7 +95,10 @@ describe("API v1 proxy route", () => {
 
     const [, init] = (global.fetch as unknown as jest.Mock).mock.calls[0] as [string, RequestInit & { headers?: Headers }];
     const headers = init.headers as Headers;
-    expect(headers.get("cookie")).toBeNull();
+    // The backend reads the session from the access_token cookie or the
+    // Authorization header — without them every authenticated surface 401s.
+    expect(headers.get("cookie")).toBe("access_token=jwt-token");
+    expect(headers.get("authorization")).toBe("Bearer jwt-token");
     expect(headers.get("X-API-Key")).toBe("server-secret-key");
   });
 

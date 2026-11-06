@@ -1007,5 +1007,17 @@
     "ctaSubtitle": "Demo działa bez rejestracji. Kod na licencji MIT, self-hostable w 5 minut.",
     "ctaStar": "Daj gwiazdkę",
     "ctaTryDemo": "Wypróbuj demo"
+  },
+  "footer": {
+    "title": "Nowe oferty prosto na Twoją skrzynkę",
+    "description": "Podaj adres e-mail, a będziemy wysyłać Ci nieruchomości pasujące do Twoich poszukiwań.",
+    "emailLabel": "Adres e-mail",
+    "emailPlaceholder": "ty@przyklad.pl",
+    "submit": "Powiadom mnie",
+    "submitting": "Wysyłanie...",
+    "success": "Dziękujemy — jesteś na liście.",
+    "consent": "Zapisując się, wyrażasz zgodę na otrzymywanie aktualności ofert e-mailem. Możesz zrezygnować w dowolnym momencie.",
+    "errorInvalidEmail": "Podaj prawidłowy adres e-mail.",
+    "errorGeneric": "Coś poszło nie tak. Spróbuj ponownie."
   }
 }

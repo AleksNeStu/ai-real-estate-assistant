@@ -1014,5 +1014,17 @@
     "ctaSubtitle": "La demo live funziona senza registrazione. Codice con licenza MIT, auto-ospitabile in 5 minuti.",
     "ctaStar": "Metti una stella",
     "ctaTryDemo": "Prova la demo"
+  },
+  "footer": {
+    "title": "Get new listings in your inbox",
+    "description": "Leave your email and we will send you the properties that match your search.",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "you@example.com",
+    "submit": "Notify me",
+    "submitting": "Sending...",
+    "success": "Thanks - you are on the list.",
+    "consent": "By subscribing you agree to receive property updates by email. You can unsubscribe at any time.",
+    "errorInvalidEmail": "Please enter a valid email address.",
+    "errorGeneric": "Something went wrong. Please try again."
   }
 }

@@ -47,7 +47,11 @@ const nextConfig: NextConfig = {
             ...(process.env.NEXT_PUBLIC_API_URL?.startsWith('http')
               ? [process.env.NEXT_PUBLIC_API_URL]
               : []),
-            'https://*.onrender.com',
+            // The browser talks to the API on the same origin through the Next
+            // proxy (`NEXT_PUBLIC_API_URL=/api/v1`), so `'self'` already covers
+            // it. The extra origin is the canonical host, for the case where the
+            // API URL is configured as an absolute URL.
+            'https://realestate.nestlab.tech',
             // Push notification services
             'https://fcm.googleapis.com',
             'https://updates.push.services.mozilla.com',

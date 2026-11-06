@@ -1,29 +1,65 @@
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import LoginPage from '../login/page';
-import { useRouter } from 'next/navigation';
+import { login } from '@/lib/auth';
+
+// Shared mock push reference so the module-level next/navigation mock uses it
+const mockPush = jest.fn();
 
 // Mock useRouter and useSearchParams
 jest.mock('next/navigation', () => ({
-  useRouter: jest.fn(),
-  useSearchParams: jest.fn(() => new URLSearchParams()),
+  useRouter: () => ({ push: mockPush, replace: jest.fn(), prefetch: jest.fn() }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
-// Skip: Test uses hardcoded labels but component uses i18n translations
-// The component renders with translation keys that need proper next-intl mock
-describe.skip('LoginPage', () => {
-  const mockPush = jest.fn();
+// The global next-intl mock returns the raw translation key. The page renders
+// user-visible English, so the mock resolves the real `en` messages.
+jest.mock('next-intl', () => {
+  const messages = jest.requireActual<Record<string, unknown>>('../../../../../messages/en.json');
+  const resolve = (path: string): unknown =>
+    path.split('.').reduce<unknown>(
+      (acc, part) =>
+        acc && typeof acc === 'object' ? (acc as Record<string, unknown>)[part] : undefined,
+      messages
+    );
+  const interpolate = (template: string, params?: Record<string, unknown>) =>
+    params
+      ? template.replace(/\{(\w+)\}/g, (match, name) =>
+          name in params ? String(params[name]) : match
+        )
+      : template;
+  return {
+    useTranslations:
+      (namespace?: string) =>
+      (key: string, params?: Record<string, unknown>) => {
+        const value = resolve(namespace ? `${namespace}.${key}` : key);
+        return typeof value === 'string' ? interpolate(value, params) : key;
+      },
+    useLocale: () => 'en',
+    useMessages: () => messages,
+    NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => children,
+  };
+});
 
+// Mock hooks and modules used by the login page
+jest.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({
+    refreshUser: jest.fn().mockResolvedValue(undefined),
+  }),
+}));
+jest.mock('@/lib/auth', () => ({
+  login: jest.fn().mockResolvedValue(undefined),
+  oauthLogin: jest.fn().mockResolvedValue(undefined),
+}));
+jest.mock('@/components/auth/OAuthButtons', () => ({
+  OAuthButtons: ({ isLoading }: { isLoading: boolean }) => (
+    <div data-testid="oauth-buttons">OAuth {isLoading ? 'loading' : 'ready'}</div>
+  ),
+}));
+
+describe('LoginPage', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
-    (useRouter as jest.Mock).mockReturnValue({
-      push: mockPush,
-    });
     jest.clearAllMocks();
     window.localStorage.clear();
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
   });
 
   it('renders login form correctly', () => {
@@ -50,14 +86,29 @@ describe.skip('LoginPage', () => {
     expect(submitButton).toBeDisabled();
     expect(document.querySelector('.animate-spin')).toBeTruthy();
 
-    // Fast-forward time wrapped in act
-    act(() => {
-      jest.runAllTimers();
-    });
-
-    // Wait for mock API call
+    // Wait for the mocked login call and the redirect to the locale root
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/');
+      expect(login).toHaveBeenCalledWith('test@example.com', 'password123');
+      expect(mockPush).toHaveBeenCalledWith('/en');
     });
+  });
+
+  it('shows an error message when login fails', async () => {
+    (login as jest.Mock).mockRejectedValueOnce(new Error('Invalid credentials'));
+
+    render(<LoginPage />);
+
+    const emailInput = screen.getByLabelText('Email');
+    const passwordInput = screen.getByLabelText('Password');
+    const submitButton = screen.getByRole('button', { name: /sign in/i });
+
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'wrong' } });
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('Invalid credentials');
+    });
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });

@@ -1,9 +1,9 @@
 /**
- * Canonical site URL for the public Render deployment.
- * Falls back to the Render subdomain when NEXT_PUBLIC_SITE_URL is not set.
+ * Canonical site URL for the public deployment.
+ * Falls back to the public site origin when NEXT_PUBLIC_SITE_URL is not set.
  */
 export const SITE_URL: URL = new URL(
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://realestate-web-dz1y.onrender.com'
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://realestate.nestlab.tech'
 );
 
 /**

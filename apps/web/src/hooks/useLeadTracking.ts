@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import {
   getOrCreateVisitorId,
@@ -74,7 +74,17 @@ interface UseLeadTrackingReturn {
  * ```
  */
 export function useLeadTracking(): UseLeadTrackingReturn {
-  const visitorId = getOrCreateVisitorId();
+  // `getOrCreateVisitorId` needs `document`, so it cannot run during the server
+  // render of a client component. Resolve it lazily on the client instead of
+  // throwing, so this hook is safe to use in any component.
+  const visitorId = useMemo(() => {
+    if (typeof document === 'undefined') return '';
+    try {
+      return getOrCreateVisitorId();
+    } catch {
+      return '';
+    }
+  }, []);
   const viewStartTimeRef = useRef<number | null>(null);
 
   // Track property view with time tracking

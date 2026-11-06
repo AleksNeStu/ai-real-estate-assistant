@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useLeadTracking } from '@/hooks/useLeadTracking';
 import type { AgentProfile } from '@/lib/types';
 
 interface AgentCardProps {
@@ -14,6 +15,19 @@ interface AgentCardProps {
 
 export function AgentCard({ agent, locale }: AgentCardProps) {
   const displayName = agent.name || agent.professional_email?.split('@')[0] || 'Agent';
+  const { trackContactRequest } = useLeadTracking();
+  const profileHref = `/${locale}/agents/${agent.id}`;
+
+  // Lead tracking: a click on Call/Email is a contact intent (best-effort).
+  const trackContact = (contactType: 'email' | 'phone') => {
+    try {
+      void trackContactRequest(contactType).catch(() => {
+        // ignore — telemetry must never break the link
+      });
+    } catch {
+      // ignore
+    }
+  };
 
   return (
     <Card className="group overflow-hidden transition-all hover:shadow-lg">
@@ -51,7 +65,12 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
           <div className="flex-1 p-4 sm:py-6 sm:pr-6">
             <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
               <div>
-                <h3 className="text-lg font-semibold">{displayName}</h3>
+                <h3 className="text-lg font-semibold">
+                  {/* The card leads to the agent detail page, where the contact form lives */}
+                  <Link href={profileHref} className="hover:text-primary transition-colors">
+                    {displayName}
+                  </Link>
+                </h3>
                 {agent.agency_name && (
                   <p className="text-sm text-muted-foreground">{agent.agency_name}</p>
                 )}
@@ -109,13 +128,13 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
 
             {/* Actions */}
             <div className="flex flex-wrap gap-2">
-              <Link href={`/${locale}/agents/${agent.id}`}>
+              <Link href={profileHref}>
                 <Button variant="outline" size="sm">
                   View Profile
                 </Button>
               </Link>
               {agent.professional_phone && (
-                <a href={`tel:${agent.professional_phone}`}>
+                <a href={`tel:${agent.professional_phone}`} onClick={() => trackContact('phone')}>
                   <Button variant="ghost" size="sm">
                     <Phone className="mr-1 h-4 w-4" aria-hidden="true" />
                     Call
@@ -123,7 +142,10 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
                 </a>
               )}
               {agent.professional_email && (
-                <a href={`mailto:${agent.professional_email}`}>
+                <a
+                  href={`mailto:${agent.professional_email}`}
+                  onClick={() => trackContact('email')}
+                >
                   <Button variant="ghost" size="sm">
                     <Mail className="mr-1 h-4 w-4" aria-hidden="true" />
                     Email
