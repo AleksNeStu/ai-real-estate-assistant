@@ -41,8 +41,16 @@ async def test_shutdown_stops_scheduler(monkeypatch):
     # Ensure scheduler exists
     from api import main as main_mod
 
-    main_mod.scheduler = _DummyScheduler()
-    app.state.scheduler = main_mod.scheduler
+    # Every assignment to module or app state goes through monkeypatch, so the
+    # test leaves nothing behind. A direct assignment leaks into every later
+    # test in the same worker: the app state's response_cache was replaced with
+    # a plain MagicMock and never restored, and a later test that posted to an
+    # endpoint that invalidates the cache then hit
+    # "TypeError: 'MagicMock' object can't be awaited" and failed for no
+    # reason.
+    scheduler = _DummyScheduler()
+    monkeypatch.setattr(main_mod, "scheduler", scheduler)
+    monkeypatch.setattr(app.state, "scheduler", scheduler, raising=False)
     await shutdown_event()
     assert main_mod.scheduler.stopped is True
 
@@ -51,14 +59,16 @@ class TestTask17Features:
     """Tests for TASK-017 Production Deployment Optimization features."""
 
     @pytest.mark.asyncio
-    async def test_startup_initializes_response_cache(monkeypatch):
+    async def test_startup_initializes_response_cache(self, monkeypatch):
         """Test that startup initializes ResponseCache (TASK-017)."""
         import api.main as main_mod
 
         # Mock dependencies using setattr on module
-        main_mod.EmailServiceFactory = SimpleNamespace(create_from_env=lambda: None)
-        main_mod.NotificationScheduler = _DummyScheduler
-        main_mod.get_vector_store = lambda: None
+        monkeypatch.setattr(
+            main_mod, "EmailServiceFactory", SimpleNamespace(create_from_env=lambda: None)
+        )
+        monkeypatch.setattr(main_mod, "NotificationScheduler", _DummyScheduler)
+        monkeypatch.setattr(main_mod, "get_vector_store", lambda: None)
 
         await startup_event()
 
@@ -68,14 +78,16 @@ class TestTask17Features:
         assert isinstance(app.state.start_time, float)
 
     @pytest.mark.asyncio
-    async def test_startup_initializes_connection_pool_manager(monkeypatch):
+    async def test_startup_initializes_connection_pool_manager(self, monkeypatch):
         """Test that startup initializes ConnectionPoolManager (TASK-017)."""
         import api.main as main_mod
 
         # Mock dependencies using setattr on module
-        main_mod.EmailServiceFactory = SimpleNamespace(create_from_env=lambda: None)
-        main_mod.NotificationScheduler = _DummyScheduler
-        main_mod.get_vector_store = lambda: None
+        monkeypatch.setattr(
+            main_mod, "EmailServiceFactory", SimpleNamespace(create_from_env=lambda: None)
+        )
+        monkeypatch.setattr(main_mod, "NotificationScheduler", _DummyScheduler)
+        monkeypatch.setattr(main_mod, "get_vector_store", lambda: None)
 
         await startup_event()
 
@@ -83,18 +95,19 @@ class TestTask17Features:
         assert hasattr(app.state, "pool_manager")
 
     @pytest.mark.asyncio
-    async def test_shutdown_clears_response_cache(monkeypatch):
+    async def test_shutdown_clears_response_cache(self, monkeypatch):
         """Test that shutdown clears ResponseCache (TASK-017)."""
         import api.main as main_mod
 
         # Mock scheduler
-        main_mod.scheduler = _DummyScheduler()
-        app.state.scheduler = main_mod.scheduler
+        scheduler = _DummyScheduler()
+        monkeypatch.setattr(main_mod, "scheduler", scheduler)
+        monkeypatch.setattr(app.state, "scheduler", scheduler, raising=False)
 
         # Create a mock response_cache with async clear_all
         mock_cache = MagicMock()
         mock_cache.clear_all = AsyncMock()
-        app.state.response_cache = mock_cache
+        monkeypatch.setattr(app.state, "response_cache", mock_cache, raising=False)
 
         await shutdown_event()
 
@@ -102,18 +115,19 @@ class TestTask17Features:
         mock_cache.clear_all.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_shutdown_closes_connection_pools(monkeypatch):
+    async def test_shutdown_closes_connection_pools(self, monkeypatch):
         """Test that shutdown closes connection pools (TASK-017)."""
         import api.main as main_mod
 
         # Mock scheduler
-        main_mod.scheduler = _DummyScheduler()
-        app.state.scheduler = main_mod.scheduler
+        scheduler = _DummyScheduler()
+        monkeypatch.setattr(main_mod, "scheduler", scheduler)
+        monkeypatch.setattr(app.state, "scheduler", scheduler, raising=False)
 
         # Create a mock pool_manager with async close_all
         mock_pool_manager = MagicMock()
         mock_pool_manager.close_all = AsyncMock()
-        app.state.pool_manager = mock_pool_manager
+        monkeypatch.setattr(app.state, "pool_manager", mock_pool_manager, raising=False)
 
         await shutdown_event()
 
@@ -125,13 +139,15 @@ class TestMetricsEndpoint:
     """Tests for the metrics endpoint (TASK-017)."""
 
     @pytest.mark.asyncio
-    async def test_metrics_endpoint_returns_prometheus_format(monkeypatch):
+    async def test_metrics_endpoint_returns_prometheus_format(self, monkeypatch):
         """Test that metrics endpoint returns Prometheus text format."""
         from api.main import metrics_endpoint
 
         # Set up app state with required attributes
-        app.state.start_time = time() - 100  # 100 seconds uptime
-        app.state.metrics = {"GET /api/v1/health": 5, "POST /api/v1/search": 3}
+        monkeypatch.setattr(app.state, "start_time", time() - 100, raising=False)
+        monkeypatch.setattr(
+            app.state, "metrics", {"GET /api/v1/health": 5, "POST /api/v1/search": 3}, raising=False
+        )
 
         # Set up mock response_cache
         mock_cache = MagicMock()
@@ -140,7 +156,7 @@ class TestMetricsEndpoint:
             "size": 42,
             "backend": "memory",
         }
-        app.state.response_cache = mock_cache
+        monkeypatch.setattr(app.state, "response_cache", mock_cache, raising=False)
 
         # Call endpoint
         result = await metrics_endpoint()
@@ -164,16 +180,15 @@ class TestMetricsEndpoint:
         assert "api_uptime_seconds" in body
 
     @pytest.mark.asyncio
-    async def test_metrics_endpoint_without_cache(monkeypatch):
+    async def test_metrics_endpoint_without_cache(self, monkeypatch):
         """Test metrics endpoint when cache is not configured."""
         from api.main import metrics_endpoint
 
         # Set up minimal app state
-        app.state.start_time = time() - 50
+        monkeypatch.setattr(app.state, "start_time", time() - 50, raising=False)
 
-        # Remove response_cache
-        if hasattr(app.state, "response_cache"):
-            delattr(app.state, "response_cache")
+        # Remove response_cache (monkeypatch restores it afterwards)
+        monkeypatch.delattr(app.state, "response_cache", raising=False)
 
         result = await metrics_endpoint()
 
