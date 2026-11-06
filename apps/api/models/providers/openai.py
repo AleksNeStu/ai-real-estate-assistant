@@ -39,7 +39,91 @@ class OpenAIProvider(RemoteModelProvider):
     def list_models(self) -> List[ModelInfo]:
         """List available OpenAI models."""
         return [
-            # Latest Models (2025)
+            # ── 2026 generation (verified live 2026-10-20) ──────────────
+            # Top-line flagship: 1M context, GA. Dateless IDs from 4.6+ gen
+            # in Anthropic, OpenAI follows the same pattern.
+            ModelInfo(
+                id="gpt-6-luna",
+                display_name="GPT-6 Luna (1M ctx, cheapest)",
+                provider_name=self.display_name,
+                context_window=1050000,
+                pricing=None,  # populate from openai.com/pricing before quoting
+                capabilities=[
+                    ModelCapability.STREAMING,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.JSON_MODE,
+                    ModelCapability.SYSTEM_MESSAGES,
+                ],
+                description="GA — cheapest 1M-context model. Strong general-purpose default.",
+                recommended_for=["general purpose", "long context", "budget"],
+            ),
+            ModelInfo(
+                id="gpt-6-sol",
+                display_name="GPT-6 Sol (1M ctx, flagship mid-tier)",
+                provider_name=self.display_name,
+                context_window=1050000,
+                pricing=None,
+                capabilities=[
+                    ModelCapability.STREAMING,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.JSON_MODE,
+                    ModelCapability.SYSTEM_MESSAGES,
+                ],
+                description="GA flagship mid-tier. Strong reasoning + coding at sub-flagship cost.",
+                recommended_for=["general chat", "reasoning", "coding"],
+            ),
+            ModelInfo(
+                id="gpt-5.6-luna",
+                display_name="GPT-5.6 Luna (1M ctx, budget reasoning)",
+                provider_name=self.display_name,
+                context_window=1050000,
+                pricing=None,
+                capabilities=[
+                    ModelCapability.STREAMING,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.JSON_MODE,
+                    ModelCapability.SYSTEM_MESSAGES,
+                ],
+                description="Budget reasoning tier on 5.6 generation. Cheap + 1M ctx.",
+                recommended_for=["cost-effective", "high throughput"],
+            ),
+            # Reasoning (o-series) — current line is o3 / o4-mini
+            ModelInfo(
+                id="o3",
+                display_name="o3 (200K ctx, GA reasoning)",
+                provider_name=self.display_name,
+                context_window=200000,
+                pricing=None,
+                capabilities=[
+                    ModelCapability.STREAMING,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.JSON_MODE,
+                    ModelCapability.SYSTEM_MESSAGES,
+                ],
+                description="GA reasoning model. Recommended o-series default.",
+                recommended_for=["complex reasoning", "math", "research"],
+            ),
+            ModelInfo(
+                id="o4-mini",
+                display_name="o4-mini (200K ctx, fast reasoning)",
+                provider_name=self.display_name,
+                context_window=200000,
+                pricing=None,
+                capabilities=[
+                    ModelCapability.STREAMING,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.JSON_MODE,
+                    ModelCapability.SYSTEM_MESSAGES,
+                ],
+                description="Faster reasoning tier; current o-mini recommendation.",
+                recommended_for=["coding", "STEM", "fast reasoning"],
+            ),
+            # ── Pre-existing 2025-2026 entries (kept; some deprecated) ──
+            # Per OpenAI deprecations page, gpt-3.5-turbo, gpt-4, gpt-4-turbo,
+            # o1, o3-mini ALL shut down 2026-10-23. They remain in this list
+            # to preserve per-task preferences already saved by users — but
+            # new picks should prefer the 2026 line above. UI flags the
+            # recommended tier so users migrate on their own schedule.
             # O3-Series - Latest reasoning models
             ModelInfo(
                 id="o3-mini",
@@ -245,9 +329,10 @@ class OpenAIProvider(RemoteModelProvider):
             return False, "API key not provided"
 
         try:
-            # Try to create a minimal model instance
-            self.create_model("gpt-3.5-turbo")
-            # If no error, connection is valid
+            # `gpt-3.5-turbo` shut down 2026-10-23 per OpenAI's deprecations
+            # page. Validate against a current GA model (`gpt-4o-mini`) so a
+            # live key returns True at probe time.
+            self.create_model("gpt-4o-mini")
             return True, None
         except Exception as e:
             return False, f"Connection failed: {str(e)}"

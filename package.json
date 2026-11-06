@@ -1,6 +1,6 @@
 {
   "name": "ai-real-estate-assistant-monorepo",
-  "version": "5.1.5",
+  "version": "5.1.5.3",
   "description": "Open-source AI real estate assistant with RAG, vector search, multi-provider LLM routing, FastAPI, Next.js, and ChromaDB.",
   "private": true,
   "directories": {
@@ -60,14 +60,14 @@
   "homepage": "https://realestate-web-dz1y.onrender.com/",
   "devDependencies": {
     "@playwright/test": "^1.57.0",
-    "concurrently": "^10.0.5",
+    "concurrently": "^10.0.6",
     "eslint": "^9.39.3",
     "lint-staged": "^15.4.3",
-    "prettier": "^3.5.2",
+    "prettier": "^3.9.9",
     "wait-on": "^8.0.5"
   },
   "overrides": {
-    "js-yaml": "^4.3.1"
+    "js-yaml": "^4.3.2"
   },
   "lint-staged": {
     "apps/web/**/*.{ts,tsx,js,jsx}": [

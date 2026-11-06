@@ -30,7 +30,15 @@
     }
   ],
   "categories": ["lifestyle", "utilities", "business"],
-  "screenshots": [],
+  "screenshots": [
+    {
+      "src": "/og-image.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "AI Real Estate Assistant — landing"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Search Properties",

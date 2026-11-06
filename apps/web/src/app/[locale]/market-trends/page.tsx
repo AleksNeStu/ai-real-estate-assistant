@@ -1,18 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-} from 'recharts';
+import dynamic from 'next/dynamic';
+
+// Recharts is a 5+ MB bundle; dynamic-import with ssr: false so it
+// only ships to the browser after the page has rendered. Both charts
+// (price trends and listing volume) live in the lazy component below.
+const MarketTrendsChartsLazy = dynamic(
+  () =>
+    import('@/components/market-trends/MarketTrendsCharts').then(
+      (m) => m.MarketTrendsCharts
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-80 w-full bg-muted animate-pulse rounded-lg" />
+    ),
+  }
+);
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -249,75 +254,9 @@ export default function MarketTrendsPage() {
           </div>
         )}
 
-        {/* Price Trends Chart */}
+        {/* Price + Volume Charts (dynamic-imported recharts bundle) */}
         {trends && trends.data_points.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Price Trends</CardTitle>
-              <CardDescription>
-                {trends.city ? `${trends.city} - ` : ''}Average and median prices over time
-                {trends.change_percent !== undefined && trends.change_percent !== null && (
-                  <span className="ml-2">
-                    ({trends.change_percent > 0 ? '+' : ''}
-                    {trends.change_percent.toFixed(1)}% change)
-                  </span>
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="period" tick={{ fontSize: 12 }} />
-                    <YAxis
-                      tick={{ fontSize: 12 }}
-                      tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
-                    />
-                    <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`]} />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="avgPrice"
-                      stroke="#1f77b4"
-                      strokeWidth={2}
-                      name="Average Price"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="medianPrice"
-                      stroke="#2ca02c"
-                      strokeWidth={2}
-                      name="Median Price"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Volume Chart */}
-        {trends && trends.data_points.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Listing Volume</CardTitle>
-              <CardDescription>Number of listings per period</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="period" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Bar dataKey="volume" fill="#8884d8" name="Listings" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+          <MarketTrendsChartsLazy chartData={chartData} />
         )}
 
         {/* Hottest/Coldest Districts */}

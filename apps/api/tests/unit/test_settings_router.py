@@ -477,9 +477,16 @@ class TestTestRuntime:
                 assert resp.status_code == 400
 
     @pytest.mark.asyncio
-    async def test_runtime_not_local(self):
+    async def test_runtime_accepts_remote_provider(self):
+        """Phase D.6 (2026-10-20): remote providers are now probeable
+        through ``/settings/test-runtime``. Pre-D.6 this test asserted
+        the endpoint rejected non-local providers with HTTP 400; the
+        contract is now "accept any provider and return the
+        ``validate_connection`` verdict"."""
         mock_provider = MagicMock()
         mock_provider.is_local = False
+        mock_provider.validate_connection.return_value = (True, None)
+        mock_provider.list_available_models.return_value = None
 
         with patch("api.routers.settings.ModelProviderFactory") as mock_factory:
             mock_factory.list_providers.return_value = ["openai"]
@@ -488,7 +495,11 @@ class TestTestRuntime:
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as c:
                 resp = await c.get("/settings/test-runtime?provider=openai")
-                assert resp.status_code == 400
+                assert resp.status_code == 200
+                body = resp.json()
+                assert body["provider"] == "openai"
+                assert body["is_local"] is False
+                assert body["runtime_available"] is True
 
     @pytest.mark.asyncio
     async def test_runtime_connection_failure(self):

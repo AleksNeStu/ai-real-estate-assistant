@@ -447,7 +447,10 @@
     "results": "Results",
     "noResults": "No results",
     "tryAgain": "Try again",
-    "skipToContent": "Skip to main content"
+    "skipToContent": "Skip to main content",
+    "tryTheseChips": {
+      "heading": "Prueba una de estas"
+    }
   },
   "demo": {
     "banner": "Modo demo — búsqueda y datos de ciudades disponibles",
@@ -969,5 +972,47 @@
     "min": "Minimum value is {min}",
     "max": "Maximum value is {max}",
     "pattern": "Invalid format"
+  },
+  "tour": {
+    "welcome": {
+      "title": "Bienvenido al Asistente Inmobiliario con IA",
+      "body": "Un recorrido rápido por las funciones que hacen útil esta demo. Opcional — puedes volver cuando quieras."
+    },
+    "search": {
+      "title": "Búsqueda en lenguaje natural",
+      "body": "Prueba a escribir «piso de 2 habitaciones en Cracovia por menos de 500k» — los filtros se extraen automáticamente."
+    },
+    "chat": {
+      "title": "Chat para encontrar listings",
+      "body": "Haz preguntas de seguimiento y obtén refinamientos. Contexto multi-turno con cadena de respaldo de LLM multi-proveedor."
+    },
+    "valuation": {
+      "title": "Valoración con IA y previsión",
+      "body": "Pega el ID de una propiedad o introduce características — obtén el valor actual más proyecciones a 1, 3, 5 y 10 años con banda de confianza."
+    },
+    "languages": {
+      "title": "9 idiomas",
+      "body": "Cambia el idioma de la interfaz y el chat desde el selector arriba a la derecha. Etiquetas de cumplimiento con EU AI Act incluidas."
+    },
+    "skip": "Saltar",
+    "next": "Siguiente",
+    "done": "Listo"
+  },
+  "showcase": {
+    "heroTitle": "Showcase",
+    "heroSubtitle": "Forks, despliegues reales y casos de estudio del Asistente Inmobiliario con IA.",
+    "forksTitle": "Forks y construido con esto",
+    "forksEmpty": "Aún no hay forks ni listados de proyectos basados.",
+    "forksEmptyHelper": "¿Has forkado el repo y construido algo? Abre un issue o PR para añadirlo aquí.",
+    "companiesTitle": "Empresas que lo usan",
+    "companiesEmpty": "Aún no se listan despliegues en producción.",
+    "companiesEmptyHelper": "¿Usas este stack en producción con datos reales? Escribe en un issue o discusión de GitHub para ser listado.",
+    "quotesTitle": "Qué dicen los usuarios",
+    "quotesEmpty": "Aún no hay citas públicas.",
+    "quotesEmptyHelper": "Si has usado o desplegado esto y quieres compartir una cita (con permiso), escribe en un issue.",
+    "ctaTitle": "Pruébalo tú mismo",
+    "ctaSubtitle": "La demo en vivo funciona sin registro. Código con licencia MIT, auto-hospedable en 5 minutos.",
+    "ctaStar": "Destacar el repo",
+    "ctaTryDemo": "Probar la demo"
   }
 }

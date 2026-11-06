@@ -52,8 +52,11 @@ jobs:
         with:
           images: ${{ env.BACKEND_IMAGE }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            # Match the project's 4-part version convention (e.g. v5.1.5.1, v5.1.5.2)
+            # by capturing everything after `v` as a raw tag — docker/metadata-action's
+            # `type=semver` rejects anything that isn't strict X.Y.Z semver, but this
+            # project uses 4-part (X.Y.Z.W) versions. See CHANGELOG.md release history.
+            type=match,pattern=v(.*),group=1
             type=sha,prefix=
             type=raw,value=latest,enable={{is_default_branch}}
 
@@ -135,8 +138,8 @@ jobs:
         with:
           images: ${{ env.FRONTEND_IMAGE }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            # See note in publish-backend job above re 4-part version convention.
+            type=match,pattern=v(.*),group=1
             type=sha,prefix=
             type=raw,value=latest,enable={{is_default_branch}}
 

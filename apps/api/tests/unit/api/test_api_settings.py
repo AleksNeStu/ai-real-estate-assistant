@@ -357,7 +357,14 @@ def test_test_runtime_unknown_provider_returns_400_unknown_value(mock_get_settin
 
 @patch("api.routers.settings.ModelProviderFactory")
 @patch("api.auth.get_settings")
-def test_test_runtime_non_local_provider_returns_400(mock_get_settings, mock_factory):
+def test_test_runtime_remote_provider_accepted_when_connection_valid(
+    mock_get_settings, mock_factory
+):
+    """Phase D.6 (2026-10-20): remote providers are now probeable
+    through ``/settings/test-runtime``. Pre-D.6 this test asserted the
+    endpoint rejected remote providers with HTTP 400; the contract is
+    now "accept any provider and return the ``validate_connection``
+    verdict"."""
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
@@ -365,11 +372,17 @@ def test_test_runtime_non_local_provider_returns_400(mock_get_settings, mock_fac
 
     provider = MagicMock()
     provider.is_local = False
+    provider.validate_connection.return_value = (True, None)
+    provider.list_available_models.return_value = None
     mock_factory.get_provider.return_value = provider
 
     response = client.get("/api/v1/settings/test-runtime?provider=openai", headers=HEADERS_NO_USER)
-    assert response.status_code == 400
-    assert "is not a local runtime provider" in response.json()["detail"]
+    assert response.status_code == 200
+    data = response.json()
+    assert data["provider"] == "openai"
+    assert data["is_local"] is False
+    assert data["runtime_available"] is True
+    assert data["runtime_error"] is None
 
 
 @patch("api.routers.settings.ModelProviderFactory")
@@ -413,7 +426,11 @@ def test_test_runtime_unknown_provider_returns_400(mock_get_settings, mock_facto
 
 @patch("api.routers.settings.ModelProviderFactory")
 @patch("api.auth.get_settings")
-def test_test_runtime_remote_provider_returns_400(mock_get_settings, mock_factory):
+def test_test_runtime_remote_provider_reports_validation_failure(mock_get_settings, mock_factory):
+    """Phase D.6: when ``validate_connection()`` reports a failure on a
+    remote provider (e.g. invalid API key), the endpoint returns HTTP
+    200 with ``runtime_available=False`` and the failure message —
+    same shape as the local-provider failure path."""
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
@@ -421,11 +438,17 @@ def test_test_runtime_remote_provider_returns_400(mock_get_settings, mock_factor
     mock_factory.list_providers.return_value = ["openai"]
     openai_provider = MagicMock()
     openai_provider.is_local = False
+    openai_provider.validate_connection.return_value = (False, "Invalid API key")
+    openai_provider.list_available_models.return_value = None
     mock_factory.get_provider.return_value = openai_provider
 
     response = client.get("/api/v1/settings/test-runtime?provider=openai", headers=HEADERS_NO_USER)
-    assert response.status_code == 400
-    assert "is not a local runtime provider" in response.json()["detail"]
+    assert response.status_code == 200
+    data = response.json()
+    assert data["provider"] == "openai"
+    assert data["is_local"] is False
+    assert data["runtime_available"] is False
+    assert data["runtime_error"] == "Invalid API key"
 
 
 @patch("api.routers.settings.ModelProviderFactory")

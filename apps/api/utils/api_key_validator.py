@@ -76,7 +76,7 @@ class APIKeyValidator:
             # Make a minimal test request - list models or minimal completion
             # Anthropic doesn't have a models.list endpoint, so we'll try a minimal message
             client.messages.create(
-                model="claude-3-5-haiku-20241022",
+                model="claude-haiku-4-5-20251001",
                 max_tokens=1,
                 messages=[{"role": "user", "content": "hi"}],
             )

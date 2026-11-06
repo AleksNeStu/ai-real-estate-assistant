@@ -94,7 +94,12 @@ private/
 .trae/
 
 # Frontend build artifacts (source is needed for frontend Docker build)
+# `**/.next/` — the double-star form. A bare `.next/` only matches the
+# context ROOT, so apps/web/.next (the local dev build output, ~890 MB)
+# was copied into the image; its stale `.next/dev/types/validator.ts` then
+# failed the frontend type check with TS1109/TS1005 and broke the build.
 .next/
+**/.next/
 next-env.d.ts
 frontend/
 

@@ -1,6 +1,6 @@
 [project]
 name = "ai-real-estate-assistant"
-version = "5.1.5"
+version = "5.1.5.3"
 description = "AI-powered real estate assistant with FastAPI backend and Next.js frontend"
 authors = [
     {name = "Alex Nesterovich", email = "alex@example.com"}
@@ -17,7 +17,7 @@ dependencies = [
     "openai>=1.0.0,<3.0.0",
     "anthropic>=0.87.0",
     "google-generativeai>=0.8.0,<1.0.0",
-    "pandas>=2.2.0,<3.0.0",
+    "pandas>=2.2.0,<4.0.0",
     "numpy>=1.26.0,<3.0.0",
     "faker>=27.0.0,<41.0.0",
     "yarl>=1.17.2,<2.0.0",
@@ -28,7 +28,7 @@ dependencies = [
     "passlib[bcrypt]>=1.7.4,<2.0.0",
     "bcrypt>=4.0.0,<5.0.0",  # Pin bcrypt 4.x for passlib compatibility (5.x breaks passlib)
     "httpx>=0.27.0,<1.0.0",
-    "authlib>=1.6.12,<2.0.0",
+    "authlib>=1.9.1,<2.0.0",  # empty-signature JWS deserialization (critical), HMAC key confusion, RFC 7592 client binding
     "jinja2>=3.1.0,<4.0.0",
     "cryptography>=46.0.6,<51.0.0",
     "email-validator>=2.1.0,<3.0.0",
@@ -48,7 +48,18 @@ dependencies = [
     # Excel data loader (Task #110)
     "openpyxl>=3.1.0,<4.0.0",
     "urllib3>=2.7.0",
-    "pillow>=12.3.0",
+    "pillow>=13.0.0",  # heap overflow / argument injection fixes in 13.0.0
+    # Security floors for transitive dependencies (kept in sync with requirements.txt).
+    "certifi>=2026.10.18",  # critical: compromised emSign root CA bundle
+    "pyasn1>=0.6.5",  # high: quadratic BER/CER/DER decoding
+    "oauthlib>=4.0.1",  # high: device-flow token endpoint client_id validation
+    "joserfc>=1.7.5",  # high: unbounded JWE recipients array
+    "dnspython>=2.9.0",  # high: from_wire_parser() excessive CPU use
+    "msgpack>=1.2.3",  # high: unbounded memory leak in the C extension
+    "filelock>=4.2.1",  # high: ReadWriteLock symlink/journal overwrite
+    "virtualenv>=21.14.9",  # high: activation scripts execute commands from env names
+    # 0.9.1 is the first fastembed release that allows pillow<14; earlier releases cap pillow<13.
+    "fastembed>=0.9.1,<1.0.0",
     "starlette>=1.3.1",
     "aiohttp>=3.14.3",
     "python-multipart>=0.0.18",  # FastAPI form data / file upload support
@@ -69,7 +80,16 @@ dependencies = [
     "langchain-community>=0.3.0,<1.0.0",
     # Pinned for HIGH CVE coverage (Dependabot alerts #219, #210, #211)
     "langsmith>=0.8.18",  # GHSA-f4xh-w4cj-qxq8: arbitrary server-side file read in TracingMiddleware
-    "tornado>=6.5.8",     # GHSA-mgf9-4pg-hj56 (gzip bomb) + GHSA-3x9g-8vmp-wqvf (auth-header leak) + CVE-2026-* multipart/cookie fixes
+    "tornado>=6.6",      # GHSA-mgf9-4pg-hj56 (gzip bomb) + GHSA-3x9g-8vmp-wqvf (auth-header leak) + CVE-2026-* multipart/cookie fixes + quadratic header parsing / chunked-body event-loop blocking
+    # Pinned for HIGH/CRITICAL CVE coverage (Dependabot alerts #373, #371, #372, #368, #367)
+    "anyio>=4.14.2",      # CVE-2026-63374 (critical, IDNA 2003 hostname spoofing) + CVE-2026-63349 + CVE-2026-64847
+    "soupsieve>=2.9.0",   # CVE-2026-85999 + CVE-2026-86000 (ReDoS in IDENTIFIER/VALUE + RE_WS_END)
+    # greenlet re-pinned: required by sqlalchemy[asyncio] >=2.1; uv re-resolution during
+    # the anyio/soupsieve bump dropped it (orphaned transitive). Symptom: ImportError
+    # at api.main.py:30 → get_vector_store → "SQLAlchemy asyncio module requires
+    # that the Python 'greenlet' library is installed" → Render healthcheck timeout
+    # → deploy marked update_failed even though app recovers afterward.
+    "greenlet>=3.3.1",
 ]
 
 [project.optional-dependencies]

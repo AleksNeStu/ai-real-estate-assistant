@@ -15,7 +15,16 @@ from typing import Any, Dict, List
 CONTROL_CHARS = bytearray(range(0x00, 0x20)) + bytearray(range(0x7F, 0xA0))
 # Allow tab, newline, carriage return
 ALLOWED_CONTROL = {0x09, 0x0A, 0x0D}
-CONTROL_CHARS_FILTER = bytes(b for b in CONTROL_CHARS if b not in ALLOWED_CONTROL)
+# Code-point -> None mapping for str.translate().
+#
+# This MUST be a mapping, not a bytes object: str.translate() looks a bytes
+# table up by ordinal, so a 62-byte table silently rewrites every code point
+# below 0x3E - which includes spaces, digits and punctuation - and mangles
+# non-Latin text (see issue #377). Mapping code points to None removes only
+# the control characters we intend to remove.
+CONTROL_CHARS_FILTER: dict[int, None] = {
+    cp: None for cp in CONTROL_CHARS if cp not in ALLOWED_CONTROL
+}
 
 # Max lengths for different input types
 DEFAULT_MAX_LENGTH = 10_000

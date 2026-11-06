@@ -1,9 +1,50 @@
+# Default: allow everything
 User-agent: *
 Allow: /
 
+# AI / LLM bots — explicit allow for citation and training
+# Most default to allowed; making it explicit helps recommendation engines
+# and signals that we WANT to be cited by AI assistants.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# Sitemap and LLM policy
 Sitemap: https://realestate-web-dz1y.onrender.com/sitemap.xml
 
-# Private areas
+# LLM-friendly content policy
+# https://realestate-web-dz1y.onrender.com/llms.txt
+
+# Private areas — noindex for all bots
 Disallow: /api/
 Disallow: /admin/
 Disallow: /*/auth/

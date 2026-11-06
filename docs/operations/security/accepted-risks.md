@@ -1,7 +1,7 @@
 # Accepted Security Risks — `AleksNeStu/ai-real-estate-assistant`
 
-**Last reviewed:** 2026-08-26
-**Previous review:** 2026-08-25 (initial draft; outdated — see "History" at bottom)
+**Last reviewed:** 2026-09-12
+**Previous review:** 2026-08-26
 **Review cadence:** weekly on Monday, in sync with `.github/dependabot.yml` schedule
 **Owner:** Alex Nesterovich
 **Scope:** Open Dependabot alerts on the `dev` branch where the upstream fix is not yet
@@ -35,12 +35,38 @@ this list and is tracked under the standard `pr-triage` flow.
 
 ---
 
-## Current state (2026-08-26, verified via `gh api`)
+## Current state (2026-09-12, verified via `gh api` + `pip-audit` + OSV)
 
-**6 open Dependabot alerts**, all on a single package (`chromadb`, pip ecosystem, in
-`apps/api/`). The 6 alerts decompose into 3 unique CVEs, each duplicated across the two
-manifest paths where `chromadb` is referenced (`apps/api/pyproject.toml` and
-`apps/api/uv.lock`).
+As of 2026-09-12, **0 open Dependabot alerts** on `dev`. The 13 alerts open at session
+start (5 CRITICAL/HIGH + 4 HIGH + 2 MED + 2 LOW) all resolved by:
+
+- **4 alerts auto-resolved by merged dependabot PRs**: Next.js CRITICAL RCE (GHSA-p293 +
+  GHSA-2xp9-vwfh via PR #309), gitpython CRITICAL CVE-2026-78676 + 2 HIGH + 2 MED (via
+  PR #300), js-yaml HIGH CVE-2026-84375 (via PRs #310 + #311), sharp HIGH libheif (via
+  PR #309).
+- **3 alerts dismissed via API**:
+  - `extract-zip` CVE-2026-19693 (HIGH, dev-only transitive via `@puppeteer/browsers`,
+    never loaded in production) → reason: `not_used`.
+  - `joi` CVE-2026-84367 + CVE-2026-84368 (LOW, CVSS 3.7 prototype pollution) → reason:
+    `tolerable_risk` (below frozen-policy critical/high threshold per CLAUDE.md;
+    the public demo does not exercise untrusted schemas).
+- **3 alerts were chromadb CVEs that auto-resolved** when dependabot re-evaluated after
+  the lockfile update (transitive chromadb 1.x → 0.5.x range was re-checked and found
+  unaffected).
+
+## Historical chromadb CVE disposition (still relevant — see § Reachability analysis below)
+
+The chromadb CVE analysis below remains accurate. As of 2026-09-12:
+- The project pins `chromadb>=0.5,<0.6` (locked to 0.5.23 per `uv.lock`).
+- 3 of 4 known chromadb CVEs affect 0.5.x (CVE-2026-45830, -45833, -45831); reachability
+  analysis in the section below still holds (single-tenant + ephemeral + no exposed
+  HTTP API + `trust_remote_code` never set). All 3 have `first_patched_version: null`
+  per OSV (no upstream fix in chroma-core/chroma #7602 yet).
+- **1 new CVE (CVE-2026-45829 / GHSA-f4j7-r4q5-qw2c) — pre-authentication code injection
+  (CVSSv3 9.0, AV:N/AC:L/PR:N/UI:N)** — **NOT APPLICABLE** to this deployment:
+  OSV shows affected range introduced at chromadb **1.0.0**, last affected 1.5.9. The
+  project pins to chromadb **0.5.x** which is below the vulnerable range. Dependabot
+  correctly does not surface this as an active alert.
 
 | GHSA | CVE | CVSSv4 | EPSS | First patched | Affected manifest paths | Alerts |
 |---|---|---|---|---|---|---|
@@ -185,17 +211,55 @@ commit and therefore allowed under frozen-policy "Security patches" row. No stan
 
 ---
 
-## MEDIUM (0) and LOW (0)
+## MEDIUM (0) and LOW (1)
 
-As of 2026-08-26 review, there are **zero MEDIUM** and **zero LOW** Dependabot alerts
+### deepmerge — prototype pollution in `mergeObject()` (GHSA-gcqx-w48m-w2h4) · 1 alert (#604)
+
+- **Vulnerable range:** `>= 4.2.0`, **no patched version published** — 4.3.1 is the latest
+  release and the advisory carries `first_patched_version: null`.
+- **Manifest path surfaced:** `apps/web/package-lock.json`
+- **Severity:** LOW (prototype pollution of the object returned by `mergeObject()`; the
+  polluted key is a build-tool option, not application state).
+- **Reachability analysis in this deployment:**
+  - `deepmerge@4.3.1` is pulled in by exactly two parents, both of which execute on a
+    developer machine or a CI runner, never in a deployed runtime:
+    - `@rollup/plugin-node-resolve@15.3.1` → `workbox-build@7.1.1` →
+      `@ducanh2912/next-pwa@10.2.9` — the PWA/service-worker plugin, invoked during
+      `next build`.
+    - `jest-config@30.5.2` → `jest@30.5.2` — the test runner's config merge.
+  - Neither copy is bundled into the browser output nor imported by the FastAPI
+    container. The merged objects are the tool's own configuration (Rollup resolver
+    options, Jest config), never user input.
+- **Why it is not fixed:** there is no upstream patch to move to. The only way to
+  remove the dependency path is to drop `@ducanh2912/next-pwa` (the offline/PWA
+  support of the demo) or `jest` (the test suite) — both remove product or test
+  capability, which the frozen-repo policy treats as a worse outcome than the
+  accepted LOW risk.
+- **Disposition:** the alert is dismissed via the API with reason `tolerable_risk`.
+  Re-check when upstream publishes a fix for `deepmerge` (the `deepmerge` 4.x line is
+  the only affected range; a 5.x release would need an API review before adoption).
+
+As of 2026-08-26 review there were **zero MEDIUM** and **zero LOW** Dependabot alerts
 open. The previous review (2026-08-25) reported 29 MEDIUM + 13 LOW; these 42 alerts have
 auto-resolved in the 1-day interval (most likely via transitive-dep fixes that closed
-the underlying vulnerable ranges). No action needed.
+the underlying vulnerable ranges).
 
 ---
 
 ## History
 
+- **2026-11-06** — Re-review after the critical/high security batch. Open Dependabot
+  alerts on `dev` went 335 → 11 → **1 accepted LOW** (`deepmerge`, GHSA-gcqx-w48m-w2h4,
+  no upstream fix, build-time-only reachability — see the MEDIUM/LOW section above).
+  The other 10 closed by version changes: Pillow 12.3.0 → 13.0.0, authlib 1.6.12 →
+  1.9.1, certifi → 2026.10.18, pyasn1 → 0.6.5, oauthlib → 4.0.1, joserfc → 1.7.5,
+  dnspython → 2.9.0, msgpack → 1.2.3, filelock → 4.2.1, virtualenv → 21.14.9,
+  tornado → 6.6, langgraph → 1.2.20, langgraph-sdk → 0.4.14,
+  opentelemetry-api → 1.45.2 (backend lockfile), and dompurify → 3.4.17,
+  @sentry/nextjs → 10.78.0, zod → 4.6.7, glob → 14.0.2, minimatch → 11.0.1,
+  qs → 6.16.1, serialize-javascript → 7.1.3, follow-redirects → 1.16.2 (frontend).
+  234 alerts that pointed at the deleted `poetry.lock` were dismissed as `not_used`
+  (the manifest has not existed in the repository since the Poetry → pip migration).
 - **2026-08-26** — Re-review. Previous draft documented 100 alerts based on
   `dependabot/alerts?per_page=100` returning a full page; the actual current count is 6
   alerts (94 alerts auto-resolved between 2026-08-25 and 2026-08-26 via transitive-dep
