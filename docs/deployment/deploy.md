@@ -34,4 +34,3 @@ pnpm start
 - Releases are tag-driven: push a `v*` tag to publish container images.
 - Deployment to your own environment is manual — the public repository does not
   ship an environment-specific deployment configuration.
-

@@ -67,4 +67,3 @@
 | MISSING_MESSAGE SSG warnings | pre-existing; tracked in TaskMaster #17 |
 
 **No push, no live GitHub settings mutation, no campaign executed.** Tasks 1-5 ready for the technical PR. Task 8 (public metadata + indexing) remains confirmation-gated.
-

@@ -217,9 +217,7 @@ async def get_or_create_visitor(
 
     # The contact fields are redacted: this endpoint is public, so the caller
     # may not own the lead that was found by visitor_id.
-    visible_email, visible_phone, visible_name = _redact_lead_identity(
-        lead, keep_email=body.email
-    )
+    visible_email, visible_phone, visible_name = _redact_lead_identity(lead, keep_email=body.email)
     response = LeadResponse.model_validate(lead)
     response.email = visible_email
     response.phone = visible_phone
@@ -537,9 +535,7 @@ async def get_high_value_leads(
     results = []
     for lead in leads:
         if redact:
-            visible_email, visible_phone = _redact_contact(
-                lead.get("email"), lead.get("phone")
-            )
+            visible_email, visible_phone = _redact_contact(lead.get("email"), lead.get("phone"))
             visible_name = _mask_name(lead.get("name"))
             lead = {
                 **lead,
