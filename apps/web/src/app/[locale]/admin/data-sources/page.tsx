@@ -379,7 +379,7 @@ export default function DataSourcesPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex flex-col space-y-2 mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Data Sources</h1>

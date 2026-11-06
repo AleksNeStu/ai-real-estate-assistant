@@ -229,7 +229,7 @@ export default function MonitoringPage() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-6 py-10">
+      <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-8 h-8 animate-spin mr-3" />
           Loading monitoring data...
@@ -239,7 +239,7 @@ export default function MonitoringPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-10">
+    <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex flex-col space-y-2">
