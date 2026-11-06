@@ -40,6 +40,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   inherited it. The layout no longer declares a canonical (a page with none is
   self-canonical); explicit canonicals are added per page through the new
   `apps/web/src/lib/metadata.ts`.
+- **Two health tests could never fail the build** — they were marked
+  `xfail(strict=False)`, and they patched the dependency checks through a dotted
+  import path, which the patcher resolves by importing the module: that import
+  can land on a different module object than the one the function under test
+  reads its globals from, and the patch then has no effect. The marker is now
+  conditional (the test enforces the contract everywhere except on the platform
+  where the flake was first observed), the checks are patched on the module
+  object directly, and the slow-check sleep now outlasts both the handler's
+  internal budget and the test's outer wait — so the outcome no longer depends
+  on which timer a loaded event loop happens to process first.
 - **The chromadb version was unpinned in the requirements file** —
   `requirements.txt` had `chromadb>=0.5.0` with no upper bound while
   `pyproject.toml` pinned `<0.6.0`. The container image and the CI dependency

@@ -151,7 +151,13 @@ topology cannot be reintroduced by accident.
   unauthenticated shape the probes use. The two health tests that were marked `xfail(strict=False)`
   — which could never fail the build — are now **conditionally** marked: they enforce the contract
   everywhere except on the one platform where they are known to flake, where they remain a
-  non-blocking `xfail`. Six frontend suites that were skipped wholesale now run.
+  non-blocking `xfail`. The cause of the flake was the patching seam, not the code under test: the
+  dependency checks were patched through a dotted import path, which the patcher resolves by
+  *importing* the module — and that import can land on a different module object than the one the
+  function under test reads its globals from. The checks are now patched on the module object
+  directly, and the slow check's sleep now outlasts both the handler's internal budget and the
+  test's outer wait — so the outcome no longer depends on which timer a loaded event loop happens
+  to process first. Six frontend suites that were skipped wholesale now run.
 - The avatar-upload tests clean up after themselves by filename instead of by glob, so the parallel
   test run can no longer delete another worker's file and fail the suite for no reason.
 
@@ -197,10 +203,12 @@ acceptance criteria and a test strategy:
 - The deployment stack is a committed, reviewable file in the private repository; the host copy
   matches it.
 - The tunnel ingress rule and the DNS record were read back from the provider's API after the change.
-- The application gates: lint, type check, backend unit suite, frontend test suite and the local CI
-  mirror.
-- The public tree contains no host name, no platform name, no service identifier and no local
-  filesystem path.
+- The application gates: backend lint and unit suite, frontend lint, type check, unit suite and
+  production build — all green on the committed tree.
+- The public tree contains no host name, no platform name, no service identifier, no fleet node and
+  no local filesystem path. The one exception is the needle list inside the CI-surface test: it is
+  the detector, and the two platform-identifying strings in it are assembled from fragments so the
+  file does not publish what it forbids.
 - The lead-redaction rules are covered by their own backend tests, and each test was verified to
   fail when its rule is broken — a test that cannot fail pins nothing.
 

@@ -49,19 +49,20 @@ Day +30          → Product Hunt (after audiences warmed up)
 
 ## Pre-launch blockers (resolve before Day 0)
 
-- [ ] Operator pushes Phase A commit `8e0c437a` (AI-citation layer) to
+- [ ] Operator pushes the current `dev` branch to
       `AleksNeStu/ai-real-estate-assistant` per CLAUDE.md Rule 1
-- [ ] Operator pushes Phase B commit `2a6e1e82` (onboarding tour +
-      try-these chips) per Rule 1
-- [ ] Deployment redeploys both — verify live demo with new features
+- [ ] The images are rebuilt and the demo stack is redeployed, so the live
+      site carries the lead capture (footer email form) and the lead-redaction
+      fix. **Until that happens the demo still exposes every captured lead's
+      name, email and phone number to an anonymous visitor.**
 - [ ] Live demo: tour appears on first visit, dismissable
 - [ ] Live demo: try-these chips appear on landing, navigate to /search
+- [ ] Live demo: the footer email field posts and the lead appears in
+      `/leads` — masked for the anonymous viewer
 - [ ] og:image renders in Twitter Card Validator
 - [ ] Lighthouse SEO ≥ 95 on demo URL
-- [ ] Operator custom-designs og-image (currently a 1200×630 crop of
-      `assets/screenshots/home-dark.png`)
 - [ ] Lighthouse Performance ≥ 85 on demo URL
-- [ ] Custom og-image designed (currently a crop of
+- [ ] Operator custom-designs og-image (currently a 1200×630 crop of
       `assets/screenshots/home-dark.png`)
 
 ## During-launch blockers (resolve during each post)
