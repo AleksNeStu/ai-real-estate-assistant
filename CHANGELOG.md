@@ -67,10 +67,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   versions lived, and nothing installed from it.
 - 234 stale Dependabot alerts dismissed: they all pointed at `poetry.lock`,
   which has not existed in the repository since the Poetry → pip migration, so
-  they could never close themselves and hid the real findings. Open alerts on
-  the live manifests: 335 → **1** (0 critical, 0 high, 0 medium; the single
-  remaining LOW is `deepmerge`, which has no upstream fix and is accepted and
-  documented in `docs/operations/security/accepted-risks.md`).
+  they could never close themselves and hid the real findings. The remaining
+  `deepmerge` LOW has no upstream fix and is dismissed as `tolerable_risk`,
+  documented in `docs/operations/security/accepted-risks.md`. **Open Dependabot
+  alerts on the default branch: 335 → 0.**
 - 16 routine Dependabot PRs closed per the frozen-policy matrix — 12 carried no
   advisory, 4 closed a MEDIUM advisory whose bump is now applied directly in the
   lockfile instead.
