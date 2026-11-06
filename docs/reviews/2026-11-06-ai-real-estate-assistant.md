@@ -214,11 +214,11 @@ acceptance criteria and a test strategy:
 |---|---|
 | **The live demo still runs the previous build** | The fixes in this document are in the working tree, not on the live site. The deployed image is the one published from the last tag, so the hosted demo has the seed ordering, the lead capture and the lead redaction only after these commits are pushed, the images are rebuilt and the stack is redeployed. The `/leads` exposure described in §2.4 is therefore **still open on the live site** until that happens |
 | Tasks #14, #15, #16 — the content and distribution chain | They publish under the operator's identity. The drafts are written and updated; each publication still needs its own go |
-| Task #20 — two health tests refactored to deterministic async-mocks | Two earlier attempts were reverted. The tests were made honest instead of being refactored again |
+| Task #20 — two health tests refactored to deterministic async-mocks | Two earlier attempts were reverted. The third attempt landed: the checks are patched on the module object and the slow check's sleep outlasts both timers, so the tests are deterministic and enforce the contract. The remaining step is a Linux CI run — the marker is kept for Linux until one confirms it — so the task stays open |
 | Task #22 — a designed social-preview image | A design decision. The dimension mismatch was fixed so the declared size matches the file |
 | The free-tier secondary | Retiring it is irreversible and needs an explicit go |
 | The old origin's copy of the demo | Left running as a fallback. Decommissioning it needs an explicit go |
-| Publishing the synchronised `main` branch | The two branches have no common ancestor, so a pull request between them cannot be merged. `main` now carries `dev`'s tree in a single ordinary commit on top of its own tip — append-only, no force-push, no merge commit. Publishing it needs the operator's push |
+| Publishing `dev` and `main` | `main` and `dev` have no common ancestor, so a pull request between them cannot be merged; `main` is synchronised by a union promotion that keeps `dev`'s paths and the paths only `main` has, as an ordinary fast-forward commit. That promotion was already done for the tree as it stood earlier today. These commits are not published yet, and another session pushed to `dev` in the meantime, so they need to be replayed on top of it before the push |
 | Seventy-odd documentation files that no page links to | Named here rather than rewritten. They are a documentation-hygiene backlog, not a defect |
 | The three near-duplicate quickstart guides and the duplicated agent-system documents | Named here rather than merged |
 
