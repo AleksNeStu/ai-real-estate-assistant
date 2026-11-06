@@ -82,7 +82,15 @@ def test_factory_creates_providers_with_settings(mock_settings_env):
         "opencode": None,
         "ollama": None,
     }
-    with patch.object(ModelProviderFactory, "_PROVIDER_KEY_MAP", test_key_map):
+    with (
+        patch.object(ModelProviderFactory, "_PROVIDER_KEY_MAP", test_key_map),
+        # `get_provider` reads the MODULE-level map, not the class attribute, so
+        # patching only the class attribute left the real key map in place. On a
+        # machine that has provider keys in its environment (every developer
+        # workstation does) the test then asserted against a REAL key — and
+        # printed it into the failure output. Patch both names.
+        patch("models.provider_factory._PROVIDER_KEY_MAP", test_key_map),
+    ):
         # OpenAI
         openai_provider = ModelProviderFactory.get_provider("openai")
         assert openai_provider.config["api_key"] == "sk-test-openai"
