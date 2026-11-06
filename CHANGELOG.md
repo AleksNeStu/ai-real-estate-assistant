@@ -7,11 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.6] - 2026-11-06
+
 ### Fixed
 - **Page columns were inconsistent across routes** — the locale layout applies no
   width constraint, so every page owned its own measure. Sixteen different
-  wrapper variants were in use: four pages (`agent-analytics`, `leads`, `usage`
-  and one more) had no horizontal padding at all and ran edge-to-edge, four
+  wrapper variants were in use: three pages (`agent-analytics`, `leads`,
+  `usage`) had no horizontal padding at all and ran edge-to-edge, four
   pages used ad-hoc `max-w-6xl`/`max-w-7xl` caps with `px-6 py-10`, and the
   vertical rhythm varied between `py-6`, `py-8`, `py-10` and `py-12`. All route
   wrappers now follow one contract — `container mx-auto px-4 py-8` for content
