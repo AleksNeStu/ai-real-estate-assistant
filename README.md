@@ -29,7 +29,7 @@ managed platform.
 
 - [Live Demo](#live-demo)
 - [Deploy it your way](#deploy-it-your-way)
-- [What's New in v5.1.7](#whats-new-in-v517)
+- [What's New in v5.1.8](#whats-new-in-v518)
 - [Local Demo Setup](#local-demo-setup)
 - [Deployment & Memory Notes](#deployment--memory-notes)
 - [Screenshots](#screenshots)
@@ -114,7 +114,7 @@ address of your server as repository secrets, and every release tag rolls your m
 images by itself. Nothing about your host is stored in this repository — the host, the user, the
 port and the path are all secrets you set yourself.
 
-## What's New in v5.1.7
+## What's New in v5.1.8
 
 The current release. Everything here works in demo mode, without a paid
 external API.
@@ -152,7 +152,7 @@ external API.
 - **Smaller page weight** — the charts bundle is loaded only when the charts
   are on screen, which takes about 5 MB off the market-trends page.
 
-Full notes: [v5.1.7 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.7) ·
+Full notes: [v5.1.8 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.8) ·
 [changelog](CHANGELOG.md).
 
 ## Local Demo Setup
@@ -301,7 +301,8 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 
 | Version | Date | Highlights |
 |---|---|---|
-| [v5.1.7](CHANGELOG.md#517---2026-11-07) | 2026-11-07 | Second deployment target (your own server, with or without CI), a request counter that cannot fail a request |
+| [v5.1.8](CHANGELOG.md#518---2026-11-07) | 2026-11-07 | A second deployment target (your own server, with or without CI), a README that reads, the studio in the contacts |
+| [v5.1.7](CHANGELOG.md#517---2026-11-07) | 2026-11-07 | The leads endpoint no longer hands every captured contact to an anonymous visitor, a request counter that cannot fail a request, the deploy pipeline public again |
 | [v5.1.6](CHANGELOG.md#516---2026-11-06) | 2026-11-06 | 335 → 0 open Dependabot alerts, input-sanitization fix (#377), one page-container contract across all routes |
 | [v5.1.5.2](CHANGELOG.md#5152---2026-09-12) | 2026-09-12 | HIGH/CRITICAL CVE fix batch: Next.js RCE (CVSS 9.0), gitpython RCE (CVSS 9.8), sharp libheif, js-yaml CPU-DoS |
 | [v5.1.5](CHANGELOG.md#515---2026-09-06) | 2026-09-06 | Visibility/SEO/GEO surface, star-history hosted embed, Dependabot roll-up, CI hardening |
