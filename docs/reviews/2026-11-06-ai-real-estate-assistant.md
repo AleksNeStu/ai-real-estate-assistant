@@ -204,6 +204,11 @@ infrastructure the studio runs.
   name with — the defect that made the readiness probe blind to an unhealthy vector store (§2.7).
 - A response-cache invalidation that fails no longer turns a completed write into a 500: the upload
   was stored, so the caller must not see an error for it.
+- A missing request counter no longer turns a successful response into a 500. The counter lives on the
+  application state, and anything that touches that state can remove it; the middleware then raised
+  `AttributeError` after the response had already been produced. The counter is recreated when it is
+  gone — losing the counts costs the counts and nothing else. This was the defect the parallel Linux
+  CI run caught: four tests failed on the strength of the counter, not of the code under test.
 
 ### 3.3 The documentation
 
@@ -211,8 +216,15 @@ The README's quickstart commands now name scripts that exist; the provider, comm
 counts are the real ones; the three stacked "What's New" sections collapsed into one; the seven dead
 documentation links are fixed; the security policy and the accepted-risk register carry current
 dates and no longer contradict themselves; the canonical URL and the sitemap match the pages that
-exist; the social-preview image is the size the metadata declares; and the host names, the platform
-name and the deployment recipe are out of the public tree.
+exist; the social-preview image is the size the metadata declares; and the studio's own host name,
+the fleet's node names and the machine-local paths are out of the public tree.
+
+The deployment pipeline itself came **back** into the public tree on 2026-11-07, on the operator's
+call: a visitor who lands on this repository should see a pipeline that actually deploys, and the
+demo keeps deploying to its hosted services. What stays private is everything that is not this
+project's own deployment — no credential value is committed, no path from the machine that wrote
+the repository is published, and no other infrastructure the studio runs is described. A test pins
+each of those, and another pins the pipeline's own safety properties.
 
 ### 3.4 A new review document, and three new tasks
 
@@ -230,9 +242,9 @@ acceptance criteria and a test strategy:
 | Item | Why it is still open |
 |---|---|
 | Tasks #14, #15, #16 — the content and distribution chain | They publish under the operator's identity. The drafts are written and updated; each publication still needs its own go |
-| The free-tier secondary | Retiring it is irreversible and needs an explicit go |
+| The demo's public address carries the Cloudflare account's own label | The operator asked for an address not tied to the account name. Every free `workers.dev` address on the only Cloudflare account this project has credentials for carries that account's label — the label is part of the account's own zone, not part of the worker's name. Two ways out, both the operator's: enable the `cloud-cloudflare-nestlab` MCP so the front door can be recreated in another account, or buy a domain of the demo's own |
 | The previous origin's copy of the demo | Left in place, stopped, with its files kept for the rollback. Decommissioning it needs an explicit go |
-| The Oracle copy of the demo | Left in place. Decommissioning it needs an explicit go |
+| The platform-hosted deployment | The repository's own deploy workflow still publishes to it, which is the point of the pipeline being visible. Retiring the services is irreversible and needs an explicit go |
 | Seventy-odd documentation files that no page links to | Named here rather than rewritten. They are a documentation-hygiene backlog, not a defect |
 | The three near-duplicate quickstart guides and the duplicated agent-system documents | Named here rather than merged |
 
@@ -243,7 +255,7 @@ itself:
 
 | Task | State | What is left, and who holds it |
 |---|---|---|
-| #27 — the demo on our own server, the topology hidden | **done** | The goal is met and verified: the demo answers on the operator's own server, at the same public URL, on the node that carries production, and the deployment topology is out of the public tree. Two operator-gated extras remain, deliberately not blocking it: retire the two fallback copies |
+| #27 — the demo on our own server, the topology hidden | **done** | The goal is met and verified: the demo answers on the operator's own server, behind a front door on a host of its own, with the studio's subdomain removed and the deployment topology out of the public tree. The topology came back to the public tree afterwards, on the operator's call — what stays private is everything that is not this project's own deployment |
 | #20 — the two ignored health tests | **done** | The `xfail` markers are gone, the checks are patched on the module object, a new test pins the seam itself, and the Linux CI run is green — the two tests enforce the contract on every platform |
 | #22 — the social-preview card | **done** | The card is a designed 1200×630 image built from the product's own identity and its own copy, and the dimension mismatch that started the task is fixed too |
 | #14, #15, #16 — the content and distribution chain | **pending** | All five drafts are written and ready, and the demo they point at is deliberately kept out of the index, so a link does not release the unfinished pages. Publishing under the operator's identity is the operator's step |
