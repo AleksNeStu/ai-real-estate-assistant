@@ -471,6 +471,35 @@ ai-real-estate-assistant/
 └── .github/                    # CI/CD, FUNDING, issue templates
 ```
 
+## Questions people actually ask
+
+**Can I run it on my own server?**
+Yes — that is what the project is for. One compose file, or let this
+repository's CI do it: give the [self-host deploy workflow](.github/workflows/deploy-selfhosted.yml)
+a key and an address as repository secrets, and every release tag rolls your
+machine onto the new images. See [Deploy it your way](#deploy-it-your-way).
+
+**Do I need a paid API key?**
+Not to look around. The demo answers with a local model, so it costs nothing
+to explore. For real answers you bring your own key — any of 16 providers, or
+a local Ollama — and the app falls back to the next one when a provider fails.
+
+**What is the difference to the hosted version?**
+The engine is the same. The hosted tier adds live data feeds, accounts, saved
+searches, alerts and an AI CRM — see [PropVector AI](https://propvectorai.com).
+
+**Which languages?**
+Nine in the interface: English, Polish, Russian, German, Spanish, Italian,
+Portuguese, Turkish and Ukrainian. The documentation is English-first.
+
+**Is the data mine?**
+Yes, for anything you run yourself: SQLite plus a ChromaDB index on a volume
+you own, in your country, behind your own authentication.
+
+**Can I use it commercially?**
+MIT. Fork it, change it, ship it. The hosted version is the commercial path
+for teams that want the managed pieces instead of running the stack.
+
 ## Testing
 
 ### Quick Commands
