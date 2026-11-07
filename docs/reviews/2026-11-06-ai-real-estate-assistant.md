@@ -130,20 +130,20 @@ domain, and a half-finished free tool there pulls the answer away from "a studio
 products". The demo therefore lives on a host of its own, and `realestate.nestlab.tech` was removed:
 the DNS record and the ingress rules on the three tunnels that served it are gone.
 
-**Where it went.** The demo runs on the operator's own Oracle Always Free ARM node, behind a
-Cloudflare Worker on a temporary `workers.dev` address,
-`https://ai-real-estate-demo.devs-scaler.workers.dev`. The Worker is the front door: it forwards every
-request to the node, and the node's firewall admits that one port from Cloudflare's ranges only. The
-application's own repository keeps a second, platform-hosted deployment — the repository's deploy
-workflow still publishes to it — but the address the public links point at is the front door's.
+**Where it went.** The demo runs on the operator's own server, behind a Cloudflare Worker on a
+temporary `workers.dev` address, `https://ai-real-estate-demo.devs-scaler.workers.dev`. The Worker is
+the front door: it forwards every request to the node, and the node admits that one port from the
+edge's ranges only. The application's own repository keeps a second, platform-hosted deployment — the
+repository's deploy workflow still publishes to it — but the address the public links point at is the
+front door's.
 
-**The idle-reclaim exposure, stated plainly.** The provider's published policy deems a compute
-instance **idle** when, over a seven-day window, its 95th-percentile CPU is below 20 %, its network
-below 20 % and its memory below 20 %. Measured on that instance when the demo was first moved off it:
-a load average of 0.06 on two cores and 19.4 % memory — **both under the thresholds** — and the
-tenancy can be ended on seven days' notice of inactivity. The operator's decision on 2026-11-07 was to
-put the demo there anyway, and to keep iterating on the application directly on that deployment; the
-risk is why the address is temporary and why the demo is deliberately not indexed.
+**The idle-reclaim exposure, stated plainly.** The host's provider deems a compute instance **idle**
+when, over a seven-day window, its 95th-percentile CPU is below 20 %, its network below 20 % and its
+memory below 20 %. Measured on that instance when the demo was first moved off it: a load average of
+0.06 on two cores and 19.4 % memory — **both under the thresholds** — and the tenancy can be ended on
+seven days' notice of inactivity. The operator's decision on 2026-11-07 was to put the demo there
+anyway, and to keep iterating on the application directly on that deployment; the risk is why the
+address is temporary and why the demo is deliberately not indexed.
 
 **What the demo now does.** It answers. The catalogue is seeded and persists between restarts, search
 returns real results, and the conversational assistant replies — with no paid model key, because the
