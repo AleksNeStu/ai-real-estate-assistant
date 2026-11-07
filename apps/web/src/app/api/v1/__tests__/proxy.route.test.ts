@@ -107,7 +107,7 @@ describe("API v1 proxy route", () => {
       new Response(null, {
         status: 204,
         headers: {
-          "Access-Control-Allow-Origin": "https://ai-real-estate-demo.devs-scaler.workers.dev",
+          "Access-Control-Allow-Origin": "https://realty.kittray.com",
           "Access-Control-Allow-Methods": "GET",
         },
       })
@@ -117,7 +117,7 @@ describe("API v1 proxy route", () => {
       url: "http://localhost/api/v1/search",
       method: "OPTIONS",
       headers: {
-        Origin: "https://ai-real-estate-demo.devs-scaler.workers.dev",
+        Origin: "https://realty.kittray.com",
         "Access-Control-Request-Method": "GET",
         "Access-Control-Request-Headers": "content-type",
       },
@@ -133,13 +133,13 @@ describe("API v1 proxy route", () => {
     // Without these the backend cannot recognise a browser request and drops
     // the allow-origin header, and a preflight loses the method and header it
     // is asking about — so the backend answers 405 instead of the preflight.
-    expect(headers.get("origin")).toBe("https://ai-real-estate-demo.devs-scaler.workers.dev");
+    expect(headers.get("origin")).toBe("https://realty.kittray.com");
     expect(headers.get("access-control-request-method")).toBe("GET");
     expect(headers.get("access-control-request-headers")).toBe("content-type");
 
     expect(response.status).toBe(204);
     expect(response.headers.get("Access-Control-Allow-Origin")).toBe(
-      "https://ai-real-estate-demo.devs-scaler.workers.dev"
+      "https://realty.kittray.com"
     );
   });
 

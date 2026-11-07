@@ -3,17 +3,17 @@ import { SITE_URL, absoluteUrl } from '../site';
 describe('site', () => {
   describe('SITE_URL', () => {
     it('uses the correct public origin', () => {
-      expect(SITE_URL.origin).toBe('https://ai-real-estate-demo.devs-scaler.workers.dev');
+      expect(SITE_URL.origin).toBe('https://realty.kittray.com');
     });
   });
 
   describe('absoluteUrl', () => {
     it('builds absolute URL with leading slash', () => {
-      expect(absoluteUrl('/en/search')).toBe('https://ai-real-estate-demo.devs-scaler.workers.dev/en/search');
+      expect(absoluteUrl('/en/search')).toBe('https://realty.kittray.com/en/search');
     });
 
     it('builds absolute URL without leading slash', () => {
-      expect(absoluteUrl('en/search')).toBe('https://ai-real-estate-demo.devs-scaler.workers.dev/en/search');
+      expect(absoluteUrl('en/search')).toBe('https://realty.kittray.com/en/search');
     });
   });
 });
@@ -40,6 +40,6 @@ describe('site with an empty build argument', () => {
   it('falls back to the public origin instead of throwing', async () => {
     jest.resetModules();
     const { SITE_URL: siteUrl } = await import('../site');
-    expect(siteUrl.origin).toBe('https://ai-real-estate-demo.devs-scaler.workers.dev');
+    expect(siteUrl.origin).toBe('https://realty.kittray.com');
   });
 });

@@ -9,7 +9,7 @@
 const CONFIGURED_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.trim();
 
 export const SITE_URL: URL = new URL(
-  CONFIGURED_SITE_URL || 'https://ai-real-estate-demo.devs-scaler.workers.dev'
+  CONFIGURED_SITE_URL || 'https://realty.kittray.com'
 );
 
 /**

@@ -57,7 +57,7 @@
   "bugs": {
     "url": "https://github.com/AleksNeStu/ai-real-estate-assistant/issues"
   },
-  "homepage": "https://ai-real-estate-demo.devs-scaler.workers.dev/",
+  "homepage": "https://realty.kittray.com/",
   "devDependencies": {
     "@playwright/test": "^1.57.0",
     "concurrently": "^10.0.6",

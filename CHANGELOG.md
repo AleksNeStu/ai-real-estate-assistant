@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.10] - 2026-11-07
+
+### Changed
+- **The public address is a domain of its own** — the demo now lives at
+  `https://realty.kittray.com` instead of a platform subdomain. The address is
+  a build argument (`SITE_URL`), so the canonical link, the `hreflang` set, the
+  social card and the sitemap all follow it; the fallback in `site.ts` and the
+  CSP entry in `next.config.ts` follow it too. The README badge, the
+  `package.json` homepage, `robots.txt`, `llms.txt` and the launch copy in
+  `docs/marketing/` now name the same address.
+
+### Fixed
+- **The browser's origin is allowed on the deployment** — the API's CORS
+  allowlist carried the old address only, so a request from the new one would
+  have been refused. The allowlist takes both addresses now.
+
 ## [5.1.9] - 2026-11-07
 
 ### Added

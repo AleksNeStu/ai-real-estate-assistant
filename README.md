@@ -21,7 +21,7 @@ happily as it runs on a managed platform.
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![CI](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Live Demo](https://img.shields.io/badge/Demo-Live-success?style=flat)](https://ai-real-estate-demo.devs-scaler.workers.dev/)
+[![Live Demo](https://img.shields.io/badge/Demo-Live-success?style=flat)](https://realty.kittray.com/)
 [![Latest Release](https://img.shields.io/github/v/release/AleksNeStu/ai-real-estate-assistant?style=flat&color=2ea44f)](https://github.com/AleksNeStu/ai-real-estate-assistant/releases)
 
 <!-- markdownlint-disable MD051 -->
@@ -48,7 +48,7 @@ happily as it runs on a managed platform.
 
 <div align="center">
 
-### [**Try the live demo →**](https://ai-real-estate-demo.devs-scaler.workers.dev/)
+### [**Try the live demo →**](https://realty.kittray.com/)
 
 **No login required — explore in demo mode**
 

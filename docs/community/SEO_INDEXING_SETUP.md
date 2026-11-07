@@ -1,6 +1,6 @@
 # SEO Indexing Setup — Google Search Console & Bing Webmaster Tools
 
-**Target:** `https://ai-real-estate-demo.devs-scaler.workers.dev/`
+**Target:** `https://realty.kittray.com/`
 **Scope:** Public procedure only. No tokens, API keys, or credentials anywhere in this guide.
 **Evidence storage:** `docs/community/private-evidence/` (gitignored — never commit screenshots or exports).
 
@@ -36,7 +36,7 @@ All steps use the public UI of each tool. No API calls are required.
 4. Enter the exact URL:
 
 ```
-https://ai-real-estate-demo.devs-scaler.workers.dev/
+https://realty.kittray.com/
 ```
 
 Click **Continue**.
@@ -62,7 +62,7 @@ The `<paste token here>` value is the long verification token Google shows on th
 sitemap.xml
 ```
 
-GSC already knows the site URL from the property, so the full submitted URL will be `https://ai-real-estate-demo.devs-scaler.workers.dev/sitemap.xml` (matches the `Sitemap:` directive in `public/robots.txt`).
+GSC already knows the site URL from the property, so the full submitted URL will be `https://realty.kittray.com/sitemap.xml` (matches the `Sitemap:` directive in `public/robots.txt`).
 
 4. Click **Submit**.
 
@@ -99,7 +99,7 @@ Use this for any page you update and want recrawled faster than the next sitemap
 3. Enter the URL:
 
 ```
-https://ai-real-estate-demo.devs-scaler.workers.dev/
+https://realty.kittray.com/
 ```
 
 ### 2.2 Verify ownership
@@ -110,7 +110,7 @@ Add a CNAME record at your DNS provider:
 
 | Type | Host | Value |
 |------|------|-------|
-| CNAME | `www` | `ai-real-estate-demo.devs-scaler.workers.dev` |
+| CNAME | `www` | `realty.kittray.com` |
 
 Then in Bing Webmaster Tools, choose **CNAME** verification and follow the on-screen prompt.
 
@@ -141,7 +141,7 @@ After verification, **remove `BingSiteAuth.xml` from the project** (it was only 
 3. Paste the full sitemap URL:
 
 ```
-https://ai-real-estate-demo.devs-scaler.workers.dev/sitemap.xml
+https://realty.kittray.com/sitemap.xml
 ```
 
 4. Click **Submit**.
@@ -168,8 +168,8 @@ Add a lightweight uptime monitor that pings the site periodically:
 
 | Tool | Setup |
 |------|-------|
-| **Uptime Kuma** (recommended — self-hosted) | Create an `HTTP` monitor for `https://ai-real-estate-demo.devs-scaler.workers.dev/` with a 10-minute interval. |
-| **cron-job.org** (free, no server needed) | Create a cron job hitting `https://ai-real-estate-demo.devs-scaler.workers.dev/` every 10 minutes. |
+| **Uptime Kuma** (recommended — self-hosted) | Create an `HTTP` monitor for `https://realty.kittray.com/` with a 10-minute interval. |
+| **cron-job.org** (free, no server needed) | Create a cron job hitting `https://realty.kittray.com/` every 10 minutes. |
 | **GitHub Actions** (simple schedule) | Add a workflow that curls the URL on a `schedule: cron: '*/10 * * * *'`. |
 
 The goal is to keep the site warm so crawlers rarely hit a cold instance.
@@ -190,7 +190,7 @@ Allow: /
 ... (Claude-Web, ClaudeBot, anthropic-ai, PerplexityBot, Google-Extended,
      CCBot, Bytespider, Applebot-Extended)
 
-Sitemap: https://ai-real-estate-demo.devs-scaler.workers.dev/sitemap.xml
+Sitemap: https://realty.kittray.com/sitemap.xml
 
 # Private areas — noindex for all bots
 Disallow: /api/
@@ -267,7 +267,7 @@ Use this checklist during the first week after adding the site to GSC. Perform e
 |----------|-----|
 | Google Search Console | https://search.google.com/search-console |
 | Bing Webmaster Tools | https://www.bing.com/webmasters |
-| robots.txt (live) | https://ai-real-estate-demo.devs-scaler.workers.dev/robots.txt |
-| Sitemap (live) | https://ai-real-estate-demo.devs-scaler.workers.dev/sitemap.xml |
-| GSC URL Inspection | Paste any `ai-real-estate-demo.devs-scaler.workers.dev/*` URL into the GSC search bar |
+| robots.txt (live) | https://realty.kittray.com/robots.txt |
+| Sitemap (live) | https://realty.kittray.com/sitemap.xml |
+| GSC URL Inspection | Paste any `realty.kittray.com/*` URL into the GSC search bar |
 | Evidence folder | `docs/community/private-evidence/` (gitignored) |

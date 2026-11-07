@@ -18,7 +18,7 @@
 
 **Demo (5-50s):**
 
-1. (5s) Open https://ai-real-estate-demo.devs-scaler.workers.dev/
+1. (5s) Open https://realty.kittray.com/
 2. (10s) Click "Start Searching"
 3. (15s) Type "2-bedroom apartment in Kraków under 500k, family-friendly"
 4. (20s) Show results appearing — filters extracted, listings matched
@@ -31,7 +31,7 @@
 
 > "Open-source, MIT-licensed, self-hostable. Six LLM providers with
 > automatic fallback. FastAPI + Next.js + ChromaDB. Live demo at
-> ai-real-estate-demo.devs-scaler.workers.dev. Source on GitHub: AleksNeStu /
+> realty.kittray.com. Source on GitHub: AleksNeStu /
 > ai-real-estate-assistant. Hosted tier at propvectorai.com."
 
 **CTA (70-90s):**
@@ -113,7 +113,7 @@
 
 **CTA (450-480s):**
 
-> "Live demo at ai-real-estate-demo.devs-scaler.workers.dev. Source on GitHub.
+> "Live demo at realty.kittray.com. Source on GitHub.
 > Self-hostable with Docker. Hosted tier at propvectorai.com. Thanks
 > for watching."
 

@@ -39,10 +39,10 @@ User-agent: Applebot-Extended
 Allow: /
 
 # Sitemap and LLM policy
-Sitemap: https://ai-real-estate-demo.devs-scaler.workers.dev/sitemap.xml
+Sitemap: https://realty.kittray.com/sitemap.xml
 
 # LLM-friendly content policy
-# https://ai-real-estate-demo.devs-scaler.workers.dev/llms.txt
+# https://realty.kittray.com/llms.txt
 
 # Private areas — noindex for all bots
 Disallow: /api/

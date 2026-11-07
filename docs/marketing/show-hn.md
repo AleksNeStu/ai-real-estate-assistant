@@ -50,7 +50,7 @@ live data feeds, accounts, and AI CRM for when you outgrow the demo.
 Stack: FastAPI · Next.js 16 · React 19 · ChromaDB · PostgreSQL · Docker ·
 GitHub Actions · Uptime Kuma.
 
-Live demo (no signup): https://ai-real-estate-demo.devs-scaler.workers.dev/
+Live demo (no signup): https://realty.kittray.com/
 Source: https://github.com/AleksNeStu/ai-real-estate-assistant
 
 Happy to answer questions about the RAG pipeline, multi-provider
@@ -91,7 +91,7 @@ Quick answers to the inevitable ones:
 
 ## Assets checklist before posting
 
-- [ ] Live demo URL responds 200: `https://ai-real-estate-demo.devs-scaler.workers.dev/`
+- [ ] Live demo URL responds 200: `https://realty.kittray.com/`
 - [ ] GitHub repo link works
 - [ ] og:image renders (Twitter Card Validator check)
 - [ ] One good demo GIF or screenshot linked in post

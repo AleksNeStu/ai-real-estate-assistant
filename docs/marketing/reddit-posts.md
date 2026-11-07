@@ -35,7 +35,7 @@ What makes it interesting technically:
 The codebase is open-core: the engine stays free, commercial features
 live in the hosted tier ([propvectorai.com](https://propvectorai.com)).
 
-Live demo (no signup): https://ai-real-estate-demo.devs-scaler.workers.dev/
+Live demo (no signup): https://realty.kittray.com/
 
 Architecture write-up if you want to skip the code:
 [large-saas-overview.md](https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/architecture/large-saas-overview.md)
@@ -83,7 +83,7 @@ Things I learned the hard way:
 The most fun part: v5.1 added AI property valuation with a 10-year
 forecast. Property detail pages show a neighborhood one-liner too.
 
-Live demo: https://ai-real-estate-demo.devs-scaler.workers.dev/
+Live demo: https://realty.kittray.com/
 
 If you're working on a side project with LLM routing, RAG, or
 multi-language UX, happy to share more code snippets in the comments.

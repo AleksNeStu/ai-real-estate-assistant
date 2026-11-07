@@ -152,7 +152,7 @@ The Caddy example in [docs/guides/deployment.md](docs/guides/deployment.md) walk
 
 ## Constrained single host — limited functionality
 
-The public demo at <https://ai-real-estate-demo.devs-scaler.workers.dev> runs on a single host with a persistent database
+The public demo at <https://realty.kittray.com> runs on a single host with a persistent database
 and a persistent vector index, so its catalogue survives a restart.
 
 The rest of this section is the **recipe for a much tighter budget** — a host that gives each service

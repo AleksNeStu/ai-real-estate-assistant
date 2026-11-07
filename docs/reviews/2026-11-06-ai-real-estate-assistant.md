@@ -37,7 +37,7 @@ to carry the work that was actually outstanding.
 
 ### 2.2 The demo was already deployed on the operator's own server — and nobody knew
 
-While auditing the fleet for a suitable host, the review found that `https://ai-real-estate-demo.devs-scaler.workers.dev`
+While auditing the fleet for a suitable host, the review found that `https://realty.kittray.com`
 **already served this application**, behind a Cloudflare tunnel, on the operator's own machine —
 with a working health endpoint, a tunnel of its own and a hostname of its own.
 
@@ -131,7 +131,7 @@ products". The demo therefore lives on a host of its own, and `realestate.nestla
 the DNS record and the ingress rules on the three tunnels that served it are gone.
 
 **Where it went.** The demo runs on the operator's own server, behind a Cloudflare Worker on a
-temporary `workers.dev` address, `https://ai-real-estate-demo.devs-scaler.workers.dev`. The Worker is
+domain of its own, `https://realty.kittray.com`. The Worker is
 the front door: it forwards every request to the node, and the node admits that one port from the
 edge's ranges only. The application's own repository keeps a second, platform-hosted deployment — the
 repository's deploy workflow still publishes to it — but the address the public links point at is the
