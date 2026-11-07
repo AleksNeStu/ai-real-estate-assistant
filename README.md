@@ -1,16 +1,18 @@
-# 🏠 AI Real Estate Assistant
+# AI Real Estate Assistant
 
----
+**Ask in natural language. Get matched listings.**
 
-> **NestLab Tech** — a founder-led AI studio in Poland (EU). We build our own products and take on a
-> limited number of client contracts each year.
+An open-source conversational assistant for property search, financial analysis and market insight.
+Ask for *"2-bedroom apartment in Kraków under 500k"* and it answers from a semantic index over your
+own catalogue — with 16 LLM providers, a full toolbelt behind the chat (mortgage, comparison, ROI,
+valuation), and nine languages.
+
+MIT licensed, no signup to look around, and it runs on your own server as happily as it runs on a
+managed platform.
+
+> **NestLab Tech** builds this in the gaps between client projects — a founder-led AI studio in
+> Poland (EU).
 > [Workflow automation, custom AI software and EU AI Act readiness](https://nestlab.tech/services?utm_source=github&utm_medium=referral&utm_campaign=product_showcase&utm_content=readme)
-
-
-> **AI-powered conversational platform for property search, analytics, and market insights.**
->
-> Ask in natural language — *"2-bedroom apartment in Kraków under 500k"* — get matched listings.
-> Try the live demo below, no signup needed.
 
 [![Python](https://img.shields.io/badge/Python-3.12+-blue?style=flat&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -25,29 +27,33 @@
 <!-- markdownlint-disable MD051 -->
 ## Table of Contents
 
-- [Live Demo](#-live-demo)
-- [What's New in v5.1.6](#-whats-new-in-v516)
-- [Architecture](#-architecture)
-- [Quick Start](#-quick-start)
-- [Three Developer Differentiators](#-three-developer-differentiators)
-- [Hosted Version: PropVector AI](#hosted-version-propvector-ai)
-- [Features](#-features)
-- [Screenshots](#-screenshots)
-- [Tech Stack](#-tech-stack)
-- [Project Growth](#-project-growth)
-- [Releases](#-releases)
-- [Project Structure](#-project-structure)
-- [Testing](#-testing)
-- [Documentation](#-documentation)
-- [Roadmap](#-roadmap)
-- [Branches](#-branches)
-- [Deployment](#-deployment)
-- [Configuration](#-configuration)
-- [Contributing](#-contributing)
-- [License](#-license)
-<!-- markdownlint-restore -->
+- [Live Demo](#live-demo)
+- [Deploy it your way](#deploy-it-your-way)
+- [What's New in v5.1.7](#whats-new-in-v517)
+- [Local Demo Setup](#local-demo-setup)
+- [Deployment & Memory Notes](#deployment--memory-notes)
+- [Screenshots](#screenshots)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Growth](#project-growth)
+- [Releases](#releases)
+- [Architecture](#architecture)
+- [Quick Start](#quick-start)
+- [Three Developer Differentiators](#three-developer-differentiators)
+- [The hosted version, and what comes next](#the-hosted-version-and-what-comes-next)
+- [Project Structure](#project-structure)
+- [Testing](#testing)
+- [Documentation](#documentation)
+- [Roadmap](#roadmap)
+- [Branches](#branches)
+- [Deployment](#deployment)
+- [Configuration](#configuration)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contributors](#contributors)
+- [Support](#support)
 
-## 🌐 Live Demo
+## Live Demo
 
 <div align="center">
 
@@ -57,96 +63,99 @@
 
 </div>
 
-Experience the full power of AI-driven real estate search without any setup:
+Everything is live in demo mode — no signup, no keys, no setup:
 
-- 🔍 **Natural Language Property Search** — ask questions like *"2-bedroom apartment in Kraków under 500k"* and get matched listings
-- 🤖 **AI-Powered Chat** — conversational interface for finding your perfect property
-- 📊 **Financial Tools** — mortgage calculator, rent-vs-buy comparison, ROI analysis, and TCO calculator
-- 🗺️ **Interactive Maps** — clustered property markers with area analytics
-- 🌍 **9 Languages** — English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, and Ukrainian
+- **Natural-language search** — ask *"2-bedroom apartment in Kraków under 500k"* and get matched listings
+- **A real toolbelt behind the chat** — mortgage calculator, rent-vs-buy, ROI, TCO, valuation with a multi-year price forecast
+- **Interactive maps** — clustered markers with area analytics
+- **Nine languages** — English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, Ukrainian
+- **Honest about its limits** — the demo answers with a local model so it costs nothing to explore; a real deployment uses the provider key you bring
 
-> **Note:** The demo uses simulated AI responses for instant exploration. Production deployment requires API keys.
+## Deploy it your way
 
-## 🔐 What's New in v5.1.6
+Two supported paths, and the choice is yours. Both run the same images.
 
-The current release — a security-and-correctness pass, plus the v5.1 feature
-set that shipped alongside it. Everything below works in demo mode without any
-paid external APIs.
+| | Platform-hosted | Your own server |
+|---|---|---|
+| **What you need** | an account on the platform | a machine with Docker and a spare gigabyte of RAM |
+| **What you do** | one click, the platform builds and serves it | copy one compose file, `docker compose up -d` |
+| **Your data** | on the platform | on your disk, in your country |
+| **Who upgrades it** | the platform | you — or CI, on every release tag |
 
-- **🛡️ 335 open Dependabot alerts → 0** — the critical/high batch is closed
-  (`Pillow` 13.0.0, `authlib` 1.9.1, `certifi` 2026.10.18, `dompurify` 3.4.17,
-  `@sentry/nextjs` 10.75.2+, `pyasn1`, `oauthlib`, `joserfc`, `dnspython`, `msgpack`,
-  `filelock`, `virtualenv`, `zod`, `follow-redirects`, `tornado` 6.6 and the
-  remaining medium/low advisories). The floors live in **both**
-  [`apps/api/requirements.txt`](apps/api/requirements.txt) — installed by CI and by
-  the container image — and
-  [`apps/api/pyproject.toml`](apps/api/pyproject.toml); `apps/api/uv.lock` was
-  regenerated. One accepted LOW (`deepmerge`, no upstream fix, build-time only)
-  is documented in
-  [`docs/operations/security/accepted-risks.md`](docs/operations/security/accepted-risks.md).
-- **🐛 Input sanitization no longer mangles text** (issue #377, reported by
-  [@xxchen-yu](https://github.com/xxchen-yu)) — the control-character filter was a
-  62-byte `bytes` table passed to `str.translate()`, which rewrites every code point
-  below `0x3E`, so `"2 bedroom under 500000 EUR"` reached the LLM as
-  `"2\x97bedroom\x82under…"`. It is now a code-point mapping that removes only the
-  intended control characters. Covered by new unit and integration tests.
-- **📐 One page-container contract** — the locale layout applies no width
-  constraint, so every page owned its column measure and sixteen wrapper variants
-  were in use; three pages ran edge to edge with no horizontal padding. All routes
-  now use `container mx-auto px-4 py-8` (and `max-w-5xl` for reading surfaces), with
-  the landing hero, the chat split pane and the centered auth card kept as their own
-  layouts.
-- **💰 AI property valuation with multi-year price forecast** — paste a property id
-  (or enter features manually) and get an LLM-powered estimate of current value plus
-  projected value at 1y, 3y, 5y, and 10y horizons, with a confidence band and key
-  drivers. Try it at `/valuation`.
-- **🏘️ AI neighborhood one-liner** — property detail pages feature a short
-  AI-generated summary of the neighborhood's character, lifestyle, and accessibility.
-  Falls back silently if the LLM is unavailable.
-- **💵 Inline monthly payment on listing cards** — every property card on the search
-  results page shows a small "$X / mo" estimate next to the title (20% down, 30-year
-  fixed, 6.5% APR by default; not a lending offer).
-- **🧭 First-visit onboarding tour** — a 5-step guided tour (welcome → search → chat
-  → valuation → languages) appears 1.5 s after the first visit, dismissable, with
-  localStorage memory so it never shows again. Implementation:
-  [`apps/web/src/components/onboarding/Tour.tsx`](apps/web/src/components/onboarding/Tour.tsx).
-- **🎯 "Try one of these" chips on the landing page** — six example natural-language
-  queries (`2-bedroom apartment in Kraków under 500k`, `Investment property, Gdańsk,
-  ROI > 5%`, …) navigate to `/<locale>/search?q=...` so the existing search bar picks
-  them up. Reusable on empty states via `<EmptyStateWithPrompts />`
-  ([`apps/web/src/components/demo/`](apps/web/src/components/demo/)).
-- **🔍 AI-citation layer** — the demo is first-class-discoverable by ChatGPT, Claude,
-  Perplexity, and Google AI Overviews:
-  - Expanded [`llms.txt`](apps/web/public/llms.txt) with 9-language market notes,
-    competitive context (vs Zillow / Rightmove / Idealista / Otodom), FAQ Q&A, "Known
-    limitations", explicit references to docs.
-  - Augmented [`robots.txt`](apps/web/public/robots.txt) with explicit `Allow` for
-    GPTBot, ChatGPT-User, Claude-Web, ClaudeBot, anthropic-ai, PerplexityBot,
-    Google-Extended, CCBot, Bytespider, Applebot-Extended.
-  - Added `FAQPage` JSON-LD alongside the existing Organization / WebSite /
-    SoftwareApplication schemas
-    ([`apps/web/src/lib/structured-data.ts`](apps/web/src/lib/structured-data.ts)).
-  - Added an `og:image.png` (1200×630) derived from `assets/screenshots/home-dark.png`
-    ([`apps/web/public/og-image.png`](apps/web/public/og-image.png)) wired through
-    `openGraph.images` + `twitter.images` in the locale layout.
-  - Expanded `metadataBase`, `title.template`, `keywords`, `authors`, `creator`,
-    `publisher`, `category`, and `icons` blocks for full SEO coverage in 9 locales.
-- **⚡ Lazy-load /market-trends charts** — extracted the recharts bundle (5+ MB) into
-  a separately-imported client component (`next/dynamic` with `ssr: false`). Initial
-  payload for `/market-trends` shrinks by ~5 MB; charts stream in after the page
-  renders.
-- **⬆️ Freshness** — `next` 16.4.5, `react`/`react-dom` 19.3.1, `eslint-config-next`
-  16.4.5.
-- **📣 Distribution drafts ready** — five drafts under [`docs/marketing/`](docs/marketing/)
-  (Show HN, Reddit plan, Product Hunt, YouTube scripts, directory submission plan) —
-  see [`docs/marketing/README.md`](docs/marketing/README.md) for the recommended launch
-  sequence.
-- **🧹 Housekeeping** — 16 routine Dependabot PRs closed, the repository homepage
-  points at the live demo, and the TaskMaster backlog stays local to the maintainer.
+### Platform-hosted, one click
 
-Full notes: [v5.1.6 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.6).
+[![Deploy to Render](https://img.shields.io/badge/Deploy%20to%20Render-46b3a0?style=for-the-badge&logo=render&logoColor=white)](https://render.com/deploy?repo=https://github.com/AleksNeStu/ai-real-estate-assistant)
 
-## 💻 Local Demo Setup
+The blueprint in [`render.yaml`](render.yaml) declares the web service and the API, the build steps and
+the health check. The platform builds the images, serves them and restarts them on every release.
+
+### Your own server, with or without CI
+
+[`deploy/docker-compose.selfhosted.yml`](deploy/docker-compose.selfhosted.yml) is the whole stack:
+a FastAPI backend and a Next.js frontend, one persistent volume, one published port. It needs no
+paid model key to answer.
+
+```bash
+curl -O https://raw.githubusercontent.com/AleksNeStu/ai-real-estate-assistant/dev/deploy/docker-compose.selfhosted.yml
+cat > .env <<'ENV'
+API_ACCESS_KEY=change-me
+JWT_SECRET_KEY=change-me
+SECURITY_PEPPER=change-me
+ENV
+docker compose -f docker-compose.selfhosted.yml up -d
+```
+
+Put a TLS terminator in front of it — a reverse proxy, a load balancer, a tunnel — and never expose
+the port raw.
+
+**With CI instead of a terminal:** this repository also ships a
+[self-host deploy workflow](.github/workflows/deploy-selfhosted.yml). Give it a deploy key and the
+address of your server as repository secrets, and every release tag rolls your machine onto the new
+images by itself. Nothing about your host is stored in this repository — the host, the user, the
+port and the path are all secrets you set yourself.
+
+## What's New in v5.1.7
+
+The current release. Everything here works in demo mode, without a paid
+external API.
+
+- **A second deployment target** — the release pipeline now rolls a server you
+  own, not only the managed platform. One compose file, one workflow, no
+  credentials in the tree.
+- **A request counter that cannot take a response down** — the metrics counter
+  was read without a guard, and a request that arrived before the first
+  measurement could be answered with a 500. It now heals itself instead.
+- **AI property valuation** — paste a property id, get an estimate of the
+  current value plus a projection for 1, 3, 5 and 10 years, with a confidence
+  band and the key drivers. Try it at `/valuation`.
+- **An AI neighborhood summary** on every property page — what the district
+  feels like, what is around it, how easy it is to move around. It falls back
+  silently when the model is unavailable.
+- **The monthly payment on the card** — every listing shows its estimated
+  monthly cost next to the title (20 % down, 30 years, 6.5 % APR by default;
+  not a lending offer).
+- **A first-visit tour** — five steps from the landing page to the features
+  that matter, shown once and remembered locally.
+- **Input that is no longer mangled** — the control-character filter was
+  rewriting every character below `0x3E`, so `"2 bedroom under 500000 EUR"`
+  reached the model as `"2\x97bedroom\x82under…"`. It now removes exactly the
+  control characters it means to, and the fix is covered by tests.
+- **One layout contract** — sixteen wrapper variants, three pages running edge
+  to edge. Every route now uses the same container, and the hero, the chat
+  pane and the auth card keep the layouts they actually need.
+- **A citation layer for AI search** — an expanded `llms.txt`, a `robots.txt`
+  that names the AI crawlers it wants, `FAQPage` JSON-LD next to the existing
+  schemas, a social preview image, and complete metadata in nine locales.
+- **335 dependency alerts closed** — every critical and high advisory resolved,
+  the floors pinned in both the lock file and the project file, one accepted
+  LOW documented with its reason.
+- **Smaller page weight** — the charts bundle is loaded only when the charts
+  are on screen, which takes about 5 MB off the market-trends page.
+
+Full notes: [v5.1.7 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.7) ·
+[changelog](CHANGELOG.md).
+
+## Local Demo Setup
 
 Run the full demo locally with comprehensive mock data in minutes:
 
@@ -183,7 +192,7 @@ Run the full demo locally with comprehensive mock data in minutes:
 
 **[→ Demo Setup Documentation](scripts/demo/README.md)** — Complete guide with troubleshooting.
 
-## 🖥️ Deployment & Memory Notes
+## Deployment & Memory Notes
 
 The backend uses an **environment-conditional lazy provider load** (`apps/api/models/provider_factory.py`) so it can run on a memory-constrained host. This is **only triggered when the `RENDER` env var is set to `"true"`**.
 
@@ -201,7 +210,7 @@ To override the gate (e.g. force lazy loading on a different platform), set `REN
 
 
 
-## 📸 Screenshots
+## Screenshots
 
 <div align="center">
 
@@ -223,30 +232,30 @@ To override the gate (e.g. force lazy loading on a different platform), set `REN
 `assets/screenshots/*-dark.png`. Light-theme variants are available in
 `docs/screenshots/`.*
 
-## ✨ Features
+## Features
 
-### 🤖 Multi-Provider AI
+### Multi-Provider AI
 16 LLM providers with intelligent routing — OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI, Fireworks AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, and local Ollama. Automatic fallback chain ensures reliability.
 
-### 🔍 Smart Property Search
+### Smart Property Search
 Natural language queries with automatic filter extraction. Hybrid semantic + keyword search powered by ChromaDB with MMR reranking for 30-40% better relevance.
 
-### 📊 Analytics & Financial Tools
+### Analytics & Financial Tools
 Mortgage calculator, rent-vs-buy comparison, investment ROI analysis, TCO calculator, Comparative Market Analysis (CMA) reports, and **AI price forecast with multi-year projection** (v5.1).
 
-### 🏘️ AI Neighborhood One-Liner (v5.1)
+### AI Neighborhood One-Liner (v5.1)
 Short 2-3 sentence AI summary of any neighborhood's character, lifestyle, and accessibility — appears on property detail pages.
 
-### 🗺️ Interactive Maps
+### Interactive Maps
 Mapbox/Leaflet maps with property clustering, area comparisons, and city-overview analytics.
 
-### 🌍 9 Languages
+### 9 Languages
 English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, and Ukrainian — with EU AI Act compliance labels.
 
-### 🔒 Enterprise Security
+### Enterprise Security
 OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode auth (API Key + JWT). Progressive 5-stage security pipeline with full scanning on all branches.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
@@ -260,7 +269,7 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 | CI/CD | GitHub Actions (CI + GHCR) |
 | Monitoring | Uptime Kuma + structured logs |
 
-## 📈 Project Growth
+## Project Growth
 
 ### GitHub Stats
 
@@ -288,10 +297,11 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 | **Contributors** | 5 (+ 1 bot)                                 |
 | **Languages**    | 9 supported                                 |
 
-## 🚀 Releases
+## Releases
 
 | Version | Date | Highlights |
 |---|---|---|
+| [v5.1.7](CHANGELOG.md#517---2026-11-07) | 2026-11-07 | Second deployment target (your own server, with or without CI), a request counter that cannot fail a request |
 | [v5.1.6](CHANGELOG.md#516---2026-11-06) | 2026-11-06 | 335 → 0 open Dependabot alerts, input-sanitization fix (#377), one page-container contract across all routes |
 | [v5.1.5.2](CHANGELOG.md#5152---2026-09-12) | 2026-09-12 | HIGH/CRITICAL CVE fix batch: Next.js RCE (CVSS 9.0), gitpython RCE (CVSS 9.8), sharp libheif, js-yaml CPU-DoS |
 | [v5.1.5](CHANGELOG.md#515---2026-09-06) | 2026-09-06 | Visibility/SEO/GEO surface, star-history hosted embed, Dependabot roll-up, CI hardening |
@@ -304,7 +314,7 @@ and [CHANGELOG.md](CHANGELOG.md) for the full version history. Going forward, ea
 release ships with a themed name and a short narrative paragraph — see
 [`.github/RELEASE_TEMPLATE.md`](.github/RELEASE_TEMPLATE.md).
 
-## 🏗️ Architecture
+## Architecture
 
 ```mermaid
 graph LR
@@ -321,7 +331,7 @@ graph LR
 
 See [docs/architecture/large-saas-overview.md](docs/architecture/large-saas-overview.md) for the full system design.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### PowerShell Scripts (recommended for Windows)
 
@@ -360,7 +370,7 @@ cd apps/web && npm install && npm run dev
 
 > **[5-Minute Quickstart →](docs/development/QUICKSTART_5MIN.md)** — Full setup with verification scripts.
 
-## 🏠 Three Developer Differentiators
+## Three Developer Differentiators
 
 ### 1. Multi-Provider LLM Routing
 16 LLM providers with automatic fallback chain — OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI, Fireworks AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, and local Ollama. Per-request provider selection via header or request parameter; no code changes required to switch models.
@@ -372,35 +382,54 @@ Query complexity classifier routes requests to RAG-only (simple), hybrid RAG+enh
 English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, and Ukrainian — with EU AI Act compliance labels on AI-generated outputs.
 
 <!-- HOSTED-FUNNEL-START -->
-## Hosted Version: PropVector AI
+## The hosted version, and what comes next
 
-PropVector AI is the hosted version of this project — the same core RAG
-and vector-search engine, with managed tiers for live data, accounts,
-AI CRM, and enterprise capabilities. The repo stays open-core: the core
-engine remains free, anything that gates revenue lives in the hosted product.
+This repository is the free, open-source version of the product. It is complete
+enough to run, to read, to extend and to put in front of your own users — and
+it stays that way.
 
-| Capability | OSS (this repo) | Hosted (PropVector AI) |
+The paid version is being built right now on top of the same engine, as
+**PropVector AI**. The split is deliberate and it does not change with the
+roadmap:
+
+| Capability | Open source (this repo) | Hosted (PropVector AI) |
 |---|---|---|
-| Core RAG property Q&A, demo dataset | Free | Included |
-| Bring-your-own LLM keys, local Ollama | Free | Included |
-| Vector search (ChromaDB) on sample data | Free | Included |
-| Live/MLS data feeds, enrichment pipeline | Not included | Pro |
-| Accounts, favorites, saved searches, alerts | Not included | Pro |
-| AI CRM (lead scoring, drip, pipeline) | Not included | Pro/Enterprise |
-| Multi-agent Agentic OS | Limited | Pro |
-| CRM connectors (HubSpot/Pipedrive), SSO, MFA | Not included | Enterprise |
-| White-label / self-host support contract | Not included | Enterprise (custom) |
+| Conversational property Q&A, demo catalogue | Free | Included |
+| Bring your own LLM keys, local Ollama | Free | Included |
+| Vector search (ChromaDB) over your own data | Free | Included |
+| Live data feeds and the enrichment pipeline | — | Pro |
+| Accounts, favourites, saved searches, alerts | — | Pro |
+| AI CRM (lead scoring, drip campaigns, pipeline) | — | Pro / Enterprise |
+| CRM connectors (HubSpot, Pipedrive), SSO, MFA | — | Enterprise |
+| White-label and self-host support contract | — | Enterprise (custom) |
 
-**Free $0** · **Pro $29/mo** · **Enterprise (custom)** — tiers reflect
-the public roadmap and may adjust before launch.
+**Free $0** · **Pro $29/mo** · **Enterprise (custom)** — the tiers reflect the
+public roadmap and may move before launch.
 
-[PropVector AI](https://propvectorai.com) is launching soon; the landing
-page ships alongside billing. The fastest way to reach the maintainer
-today is to [open a Discussion](https://github.com/AleksNeStu/ai-real-estate-assistant/discussions)
+[PropVector AI](https://propvectorai.com) is launching soon; the landing page
+ships alongside billing. The fastest way to reach the maintainer today is to
+[open a Discussion](https://github.com/AleksNeStu/ai-real-estate-assistant/discussions)
 with the `[Commercial]` prefix.
+
+### Ideas, forks, and other ways to work with us
+
+The backlog of this repository is written in the open, and suggestions are read
+and used — a feature request, a provider we do not support yet, a language we
+have not translated, a bug you hit while running it on your own server. All of
+it is welcome, and none of it needs to be filed as a formal proposal first.
+
+- **Suggest something** — [open an issue](https://github.com/AleksNeStu/ai-real-estate-assistant/issues).
+  Ideas, use cases, "I wish it did X" are all legitimate issues.
+- **Build on top of it** — fork it, change it, ship it under your own name. The
+  licence is MIT; you do not need to ask.
+- **Talk to us first** — a [Discussion](https://github.com/AleksNeStu/ai-real-estate-assistant/discussions)
+  is the right place for a feature you would like to shape, a deployment you
+  would like help with, or a partnership.
+- **Work with the studio** — NestLab Tech builds products like this one for
+  clients: [workflow automation, custom AI software, EU AI Act readiness](https://nestlab.tech/services?utm_source=github&utm_medium=referral&utm_campaign=product_showcase&utm_content=readme).
 <!-- HOSTED-FUNNEL-END -->
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 ai-real-estate-assistant/
@@ -425,7 +454,7 @@ ai-real-estate-assistant/
 └── .github/                    # CI/CD, FUNDING, issue templates
 ```
 
-## 🧪 Testing
+## Testing
 
 ### Quick Commands
 
@@ -458,7 +487,7 @@ ai-real-estate-assistant/
 
 **Performance:** Tests run in parallel using pytest-xdist (local) and GitHub Actions matrix (CI).
 
-## 📖 Documentation
+## Documentation
 
 | Doc | Description |
 |-----|-------------|
@@ -473,14 +502,14 @@ ai-real-estate-assistant/
 | [Project Review (2026-11-06)](docs/reviews/2026-11-06-ai-real-estate-assistant.md) | Full repo audit — findings and status |
 | [Changelog](CHANGELOG.md) | Version history |
 
-## 🗺️ Roadmap
+## Roadmap
 
 ### Future Direction *(no committed timeline)*
 
 > The following items represent the project's aspirational direction. They are **not**
 > scheduled commits — see [GitHub Issues](https://github.com/AleksNeStu/ai-real-estate-assistant/issues)
 > for any active discussion or tracking. Items may or may not ship; current version is
-> frozen at the latest tagged release (see [Releases](#-releases)).
+> frozen at the latest tagged release (see [Releases](#releases)).
 
 - **Multi-Tenant Architecture** — Complete data isolation with tenant-aware models and repositories
 - **Billing API** — Stripe integration for subscription management and usage-based pricing
@@ -490,23 +519,22 @@ ai-real-estate-assistant/
 - **Email Notifications** — Alerts for price drops, new listings, and market updates
 - **API Rate Limiting** — Per-user quotas and usage analytics
 
-## 🌿 Branches
+## Branches
 
 | Branch                                                                              | Status    | Description                    |
 | ----------------------------------------------------------------------------------- | --------- | ------------------------------ |
 | [`dev`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/dev)            | 🔥 Active | Current development & staging  |
 | [`main`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/main)           | 🟢 Stable  | Stable releases                |
 
-## 🚢 Deployment
+## Deployment
 
-- **Live demo:** [ai-real-estate-demo.devs-scaler.workers.dev](https://ai-real-estate-demo.devs-scaler.workers.dev/) — a Docker Compose stack (backend + frontend) on the operator's own server, behind an edge front door with TLS. It answers without a paid model key (demo mode) and is deliberately kept out of search indexes.
-- **Your own environment:** bring your own host and follow the [Deployment Guide](docs/deployment/DEPLOYMENT.md) — Docker Compose or Kubernetes.
+Three ways, one build. Pick the one that fits what you are trying to do.
 
-> **Note:** The public demo is a shared single-host deployment with a fixed memory budget. It is a demo, not a production SLA — self-host for anything load-bearing.
+- **Look at it first** — the [live demo](https://ai-real-estate-demo.devs-scaler.workers.dev/) runs the same images on a shared host, answers without a paid model key, and is deliberately kept out of search indexes. It is a demo on a fixed memory budget, not a production SLA.
+- **Let a platform host it** — [one click on Render](https://render.com/deploy?repo=https://github.com/AleksNeStu/ai-real-estate-assistant) from the blueprint in [`render.yaml`](render.yaml).
+- **Run it yourself** — [`deploy/docker-compose.selfhosted.yml`](deploy/docker-compose.selfhosted.yml) on any Docker host, with or without the [self-host deploy workflow](.github/workflows/deploy-selfhosted.yml) rolling it forward on every release tag. See [Deploy it your way](#deploy-it-your-way) above, and the [Deployment Guide](docs/deployment/DEPLOYMENT.md) for Docker and Kubernetes.
 
-See [Deployment Guide](docs/deployment/DEPLOYMENT.md) for Docker and Kubernetes setup.
-
-## ⚙️ Configuration
+## Configuration
 
 ```bash
 # Required — at least one LLM provider
@@ -526,7 +554,7 @@ REDIS_URL="redis://localhost:6379"          # Caching
 
 See [.env.example](.env.example) for the full list.
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow.
 
@@ -537,35 +565,46 @@ Please note that this project is released with a [Contributor Code of Conduct](.
 3. Commit: `type(scope): message`
 4. Open a PR against `dev`
 
-## 📄 License
+## License
 
 MIT License — see [LICENSE](LICENSE).
 
-## 💖 Contributors
+## Contributors
 
 [![Contributors](https://contrib.nn.ci/api?repo=AleksNeStu/ai-real-estate-assistant)](https://github.com/AleksNeStu/ai-real-estate-assistant/graphs/contributors)
 
-Want to help shape the project? See [Contributing](#-contributing) above.
+Want to help shape the project? See [Contributing](#contributing) above.
 
-## 💖 Support
+## Support
 
-If you find this project helpful:
+If this project saved you a weekend, you can say so here:
 
 [![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-Sponsor-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/AleksNeStu)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support-ffdd00?style=for-the-badge&logo=buymeacoffee&logoColor=000000)](https://www.buymeacoffee.com/AleksNeStu)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-ff5f5f?style=for-the-badge&logo=kofi&logoColor=white)](https://ko-fi.com/AleksNeStu)
 
-### 🏠 Commercial Support
+**Commercial and partnership work** — deployment help, customisation, CRM
+integration, or building the next version together — goes through the studio
+that maintains this project:
 
-Need deployment help, customization, or CRM integration? Start a [Discussion](https://github.com/AleksNeStu/ai-real-estate-assistant/discussions) with `[Commercial]` prefix.
+<div align="center">
+
+**[NestLab Tech](https://nestlab.tech?utm_source=github&utm_medium=readme&utm_campaign=support&utm_content=readme)** ·
+[Services](https://nestlab.tech/services?utm_source=github&utm_medium=readme&utm_campaign=support&utm_content=readme) ·
+[PropVector AI](https://propvectorai.com?utm_source=github&utm_medium=readme&utm_campaign=support&utm_content=readme)
+
+</div>
+
+Or open a [Discussion](https://github.com/AleksNeStu/ai-real-estate-assistant/discussions)
+with the `[Commercial]` prefix and it reaches the same team.
 
 ---
 
 <div align="center">
 
-**⭐ Star this repo if you find it helpful!**
+**Star this repo if you find it helpful — it is what makes the next version possible.**
 
-Made with ❤️ using Python, FastAPI, and Next.js
+Made with Python, FastAPI and Next.js.
 
 Copyright © 2025-2026 [Alex Nesterovich](https://github.com/AleksNeStu)
 
