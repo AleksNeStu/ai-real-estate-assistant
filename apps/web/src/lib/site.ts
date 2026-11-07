@@ -1,9 +1,15 @@
 /**
  * Canonical site URL for the public deployment.
- * Falls back to the public site origin when NEXT_PUBLIC_SITE_URL is not set.
+ *
+ * The address arrives as a build argument (Next inlines every NEXT_PUBLIC_*),
+ * so it can be missing OR empty - a build without the argument sets the
+ * variable to an empty string, and `new URL('')` throws. Both cases fall back
+ * to the public site origin.
  */
+const CONFIGURED_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+
 export const SITE_URL: URL = new URL(
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ai-real-estate-demo.devs-scaler.workers.dev'
+  CONFIGURED_SITE_URL || 'https://ai-real-estate-demo.devs-scaler.workers.dev'
 );
 
 /**

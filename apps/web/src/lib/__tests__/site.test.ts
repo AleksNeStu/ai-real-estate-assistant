@@ -17,3 +17,28 @@ describe('site', () => {
     });
   });
 });
+
+describe('site with an empty build argument', () => {
+  // The public address is a BUILD argument. A build that does not pass it
+  // sets the variable to an empty string, and `new URL('')` throws - which
+  // fails the whole frontend build (the sitemap collection included).
+  const original = process.env.NEXT_PUBLIC_SITE_URL;
+
+  beforeEach(() => {
+    jest.resetModules();
+    process.env.NEXT_PUBLIC_SITE_URL = '';
+  });
+
+  afterAll(() => {
+    if (original === undefined) {
+      delete process.env.NEXT_PUBLIC_SITE_URL;
+    } else {
+      process.env.NEXT_PUBLIC_SITE_URL = original;
+    }
+  });
+
+  it('falls back to the public origin instead of throwing', () => {
+    const { SITE_URL: siteUrl } = require('../site');
+    expect(siteUrl.origin).toBe('https://ai-real-estate-demo.devs-scaler.workers.dev');
+  });
+});
