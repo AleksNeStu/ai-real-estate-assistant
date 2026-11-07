@@ -1,0 +1,147 @@
+# AI Real Estate Assistant — self-hosted deployment
+#
+# Two ways to run this project on your own server, and this file is the second
+# one (the first is the platform-hosted deployment, which needs no server at
+# all). Copy it to the server, put the values in `.env` next to it, and:
+#
+#   docker compose -f docker-compose.selfhosted.yml pull
+#   docker compose -f docker-compose.selfhosted.yml up -d
+#
+# The images are published by this repository's own release workflow on every
+# `v*` tag, for both linux/amd64 and linux/arm64. The tag is a VARIABLE, so
+# you pin the version you want and nothing else:
+#
+#   AIRE_IMAGE_TAG=5.1.7 docker compose -f docker-compose.selfhosted.yml up -d
+#
+# A fork publishes under its own name - point the stack at those images with:
+#
+#   AIRE_IMAGE_REPO=ghcr.io/<owner>/<repo> docker compose -f docker-compose.selfhosted.yml up -d
+#
+# WHAT YOU HAVE TO PROVIDE (the file reads them from `.env`, never from the
+# repository):
+#   API_ACCESS_KEY    the key the frontend's proxy injects server-side. It
+#                     never reaches the browser.
+#   JWT_SECRET_KEY    signs the session tokens.
+#   SECURITY_PEPPER   the pepper for the password hashing.
+#
+# Everything else has a working default. The defaults are the ones this
+# project runs with in its own demo deployment: no paid model key (the app
+# answers with its local demo model), a seeded catalogue, and a persistent
+# volume for the database and the vector index.
+#
+# WHY THE STATE LIVES IN ITS OWN PATH
+#   The application's defaults would put the SQLite file and the audit log
+#   inside its own `data` PYTHON PACKAGE, which a bind mount would shadow -
+#   the container then dies with "No module named 'data.csv_loader'". So the
+#   state lives on its own path and both writers are pointed at it explicitly.
+#
+# MEMORY
+#   The limits below are the ones this project ships with on a 4 GB machine.
+#   Lower them for a smaller server, raise them for a bigger one.
+
+services:
+  backend:
+    image: ${AIRE_IMAGE_REPO:-ghcr.io/aleksnestu/ai-real-estate-assistant}/backend:${AIRE_IMAGE_TAG:-latest}
+    container_name: aire-backend
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      - ENVIRONMENT=staging
+      - PORT=8000
+      # No paid model key is needed: in demo mode the app answers with its
+      # local model. Set a provider key and DEMO_MODE=false to use a real one.
+      - DEMO_MODE=${DEMO_MODE:-true}
+      - AUTH_JWT_ENABLED=${AUTH_JWT_ENABLED:-true}
+      - INTERNET_ENABLED=${INTERNET_ENABLED:-false}
+      - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS:-}
+      # --- data ---
+      - SEED_ON_STARTUP=${SEED_ON_STARTUP:-true}
+      - VECTOR_PERSIST_ENABLED=${VECTOR_PERSIST_ENABLED:-true}
+      - CHROMA_FORCE_PERSIST=1
+      # --- where the state lives ---
+      - DATABASE_URL=sqlite+aiosqlite:////app/state/auth.db
+      - AUDIT_LOG_DIR=/app/state/audit
+      # --- background workers: a small server does not need them ---
+      - UPTIME_MONITOR_ENABLED=${UPTIME_MONITOR_ENABLED:-false}
+      - ENABLE_NOTIFICATIONS=${ENABLE_NOTIFICATIONS:-false}
+      - CACHE_ENABLED=${CACHE_ENABLED:-false}
+      - WEB_CONURRENCY=1
+      - DB_POOL_SIZE=5
+      - DB_MAX_OVERFLOW=5
+      - POOL_MAX_WORKERS=4
+      - CHROMA_INDEXING_WORKERS=2
+    volumes:
+      # ./state -> the SQLite database and the audit log.
+      # MUST be writable by the image's app user (uid/gid 999) - the container
+      # runs non-root and cannot write a root-owned directory.
+      - ./state:/app/state
+      # ./chroma_db -> the vector index. Not a Python package, so the mount is safe.
+      - ./chroma_db:/app/chroma_db
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      # The first boot pre-bundles the embedding model and embeds the demo
+      # catalogue; give it room before the healthcheck starts counting failures.
+      start_period: 300s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "2.0"
+        reservations:
+          memory: 512M
+          cpus: "0.5"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    image: ${AIRE_IMAGE_REPO:-ghcr.io/aleksnestu/ai-real-estate-assistant}/frontend:${AIRE_IMAGE_TAG:-latest}
+    container_name: aire-frontend
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      - NODE_ENV=production
+      - HOSTNAME=0.0.0.0
+      - PORT=3000
+      # The browser calls the API on the SAME ORIGIN (/api/v1) and the Next route
+      # handler proxies it to the backend, injecting the API key server-side.
+      # That is why no API key ever reaches the browser.
+      - NEXT_PUBLIC_API_URL=/api/v1
+      - BACKEND_API_URL=http://aire-backend:8000/api/v1
+      - NEXT_PUBLIC_DEMO_MODE=${NEXT_PUBLIC_DEMO_MODE:-true}
+      # The public hostname of YOUR deployment. Server-rendered metadata
+      # (canonical, og:image, JSON-LD) reads it at runtime.
+      - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-}
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    ports:
+      # The only port this stack opens. Put a TLS terminator in front of it
+      # (a reverse proxy, a tunnel, a load balancer) - never expose it raw.
+      - "${AIRE_BIND:-127.0.0.1}:${AIRE_PORT:-3000}:3000"
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+          cpus: "1.0"
+        reservations:
+          memory: 256M
+          cpus: "0.25"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
