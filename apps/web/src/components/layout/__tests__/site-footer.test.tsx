@@ -37,6 +37,16 @@ describe('SiteFooter', () => {
     expect(screen.getByRole('button', { name: 't:submit' })).toBeInTheDocument();
   });
 
+  it('states that this is the free version and links to the studio', () => {
+    render(<SiteFooter />);
+
+    expect(screen.getByText('t:studioNote')).toBeInTheDocument();
+
+    const studioLink = screen.getByRole('link', { name: 't:studioLink' });
+    expect(studioLink).toHaveAttribute('href', 'https://nestlab.tech');
+    expect(studioLink).toHaveAttribute('rel', expect.stringContaining('noopener'));
+  });
+
   it('posts the email to the visitor lead endpoint', async () => {
     render(<SiteFooter />);
 
