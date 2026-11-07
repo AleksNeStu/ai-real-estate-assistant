@@ -18,7 +18,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![CI](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Live Demo](https://img.shields.io/badge/Demo-Live-success?style=flat)](https://realestate.nestlab.tech/)
+[![Live Demo](https://img.shields.io/badge/Demo-Live-success?style=flat)](https://ai-real-estate-demo.devs-scaler.workers.dev/)
 [![Hosted Soon: PropVector AI](https://img.shields.io/badge/Hosted_Soon-PropVector_AI-6f42c1?style=flat)](https://propvectorai.com?utm_source=github&utm_medium=readme&utm_campaign=hosted-badge)
 [![Latest Release](https://img.shields.io/github/v/release/AleksNeStu/ai-real-estate-assistant?style=flat&color=2ea44f)](https://github.com/AleksNeStu/ai-real-estate-assistant/releases)
 
@@ -51,7 +51,7 @@
 
 <div align="center">
 
-### [**🚀 Try the Live Demo →**](https://realestate.nestlab.tech/)
+### [**🚀 Try the Live Demo →**](https://ai-real-estate-demo.devs-scaler.workers.dev/)
 
 **No login required — explore in demo mode**
 
@@ -499,7 +499,7 @@ ai-real-estate-assistant/
 
 ## 🚢 Deployment
 
-- **Live demo:** [realestate.nestlab.tech](https://realestate.nestlab.tech/) — a single Docker Compose stack (backend + frontend + Redis) behind a reverse proxy with TLS.
+- **Live demo:** [ai-real-estate-demo.devs-scaler.workers.dev](https://ai-real-estate-demo.devs-scaler.workers.dev/) — a Docker Compose stack (backend + frontend) on the operator's own server, behind an edge front door with TLS. It answers without a paid model key (demo mode) and is deliberately kept out of search indexes.
 - **Your own environment:** bring your own host and follow the [Deployment Guide](docs/deployment/DEPLOYMENT.md) — Docker Compose or Kubernetes.
 
 > **Note:** The public demo is a shared single-host deployment with a fixed memory budget. It is a demo, not a production SLA — self-host for anything load-bearing.

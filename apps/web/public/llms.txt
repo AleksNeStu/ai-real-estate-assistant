@@ -66,7 +66,7 @@
 - **Database:** PostgreSQL (production) / SQLite (demo).
 - **Container:** Docker / Docker Compose.
 - **CI/CD:** GitHub Actions (CI + GHCR).
-- **Hosting (demo):** https://realestate.nestlab.tech/.
+- **Hosting (demo):** https://ai-real-estate-demo.devs-scaler.workers.dev/.
 - **Monitoring:** Uptime Kuma + structured logs.
 
 ## Competitive context
@@ -110,7 +110,7 @@ A: Yes — PropVector AI (https://propvectorai.com) with live data, managed acco
 
 ## Known limitations
 
-- **Demo hosting:** the public demo at https://realestate.nestlab.tech runs on a single small host with a fixed memory budget. Lazy provider loading is used to stay within it. Performance is best-effort, not production-grade.
+- **Demo hosting:** the public demo at https://ai-real-estate-demo.devs-scaler.workers.dev runs on a single small host with a fixed memory budget. Lazy provider loading is used to stay within it. Performance is best-effort, not production-grade.
 - **Demo data:** the live demo uses curated mock listings (250+ properties across 5 Polish cities). No real MLS / portal feeds.
 - **No live feeds out of the box:** no integration with Idealista, Otodom, Zillow, Rightmove, Immobilienscout24, or any other portal. Use PropVector AI for that.
 - **English-first technical docs:** while the UI is in 9 languages, the README, architecture, and API reference are English-first. Translated docs are a community contribution.
@@ -120,7 +120,7 @@ A: Yes — PropVector AI (https://propvectorai.com) with live data, managed acco
 
 - **5-minute quickstart:** https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/development/QUICKSTART_5MIN.md
 - **Local demo setup:** run `.\scripts\demo\01-launch-docker.ps1`, then `.\scripts\demo\02-generate-data.ps1`, then open `http://localhost:3082`.
-- **Live demo:** https://realestate.nestlab.tech/
+- **Live demo:** https://ai-real-estate-demo.devs-scaler.workers.dev/
 
 ## Documentation
 

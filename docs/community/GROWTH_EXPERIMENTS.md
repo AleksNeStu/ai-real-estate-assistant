@@ -7,7 +7,7 @@
 | Field | Current Value |
 |-------|---------------|
 | **Description** | `AI-powered real estate platform with conversational property search, analytics, and market insights. Built with FastAPI + Next.js + ChromaDB.` (133 chars) |
-| **Homepage** | `https://realestate.nestlab.tech/` |
+| **Homepage** | `https://ai-real-estate-demo.devs-scaler.workers.dev/` |
 | **Topics** (20) | `ai`, `assistant`, `chatbot`, `chromadb`, `conversational-ai`, `docker`, `fastapi`, `llm`, `mapbox`, `mortgage-calculator`, `multi-llm`, `nextjs`, `property-search`, `proptech`, `python`, `python3`, `rag`, `real-estate`, `typescript`, `vector-database` |
 
 ## Proposed Changes
@@ -21,7 +21,7 @@
 ### Homepage
 | | Value |
 |---|---|
-| **Proposed** | `https://realestate.nestlab.tech/` |
+| **Proposed** | `https://ai-real-estate-demo.devs-scaler.workers.dev/` |
 | **Change** | None |
 
 ### Topics

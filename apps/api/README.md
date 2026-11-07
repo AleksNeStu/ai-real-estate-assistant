@@ -132,4 +132,4 @@ Docker images are published to GHCR (`ghcr.io/aleksnestu/ai-real-estate-assistan
 See the [Deployment Guide](../../docs/deployment/DEPLOYMENT.md) for container and
 self-host setup.
 
-For the public demo, see [https://realestate.nestlab.tech/api/health](https://realestate.nestlab.tech/api/health).
+For the public demo, see [https://ai-real-estate-demo.devs-scaler.workers.dev/api/health](https://ai-real-estate-demo.devs-scaler.workers.dev/api/health).

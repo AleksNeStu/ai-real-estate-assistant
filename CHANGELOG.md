@@ -107,9 +107,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   own deployment: no credential value is committed, no path from the machine
   that wrote the repository is published, and no other infrastructure the studio
   runs is described. A test pins each of those.
-- **The demo has a new home and the same address** — it runs on the operator's
-  own server behind the same public URL. The canonical URL, `robots.txt`,
-  `llms.txt`, the `package.json` homepage and the README all point at it.
+- **The demo has a new home and a new address** — it runs on the operator's own
+  node behind a front door of its own, on a temporary Cloudflare Workers
+  address. The studio's subdomain was removed: the DNS record and the tunnel
+  ingress rules that served it are gone, because a product demo on a subdomain
+  of the studio's domain forks the studio's entity. The canonical URL,
+  `robots.txt`, `llms.txt`, the `package.json` homepage and the README all
+  point at the new address.
 - **The documentation matches the repository again** — the quickstart names
   scripts that exist, the provider, commit and contributor counts are the real
   ones, the dead links are fixed, the security policy and the accepted-risk
