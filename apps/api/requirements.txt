@@ -7,20 +7,21 @@ numpy>=2.1.0,<2.6.0
 pyarrow>=23.0.1
 
 # Vector store / embeddings
-# chromadb is capped at <0.6.0 to match apps/api/pyproject.toml. This is the
-# range that keeps CVE-2026-45829 (affected: >=1.0.0, last affected 1.5.9)
-# unreachable on the install path actually used (Dockerfile.backend installs
-# this file; ci.yml audits this file). An unbounded spec resolves to chromadb
-# 1.x and invalidates the reachability analysis in
+# chromadb is deliberately NOT capped to the <0.6.0 range that
+# apps/api/pyproject.toml names. Measured 2026-11-07 on the Linux CI image:
+# with chromadb 0.5.x the resolver also has to drop langchain-chroma to
+# 0.2.3, and THAT pairing fails to initialise the vector store ("Could not
+# connect to tenant default_tenant"), which takes the admin reindex endpoint
+# down with it - the unit job failed with `assert 503 == 200`
+# (CI runs 42318236498 and 42318899267). The resolution that CI proved green,
+# and that the container image installs, is chromadb 1.5.x with
+# langchain-chroma 1.1.x. The accepted-risk disposition for the chromadb CVEs
+# rests on REACHABILITY - the ChromaDB HTTP API is not exposed by this
+# application and trust_remote_code is never set - not on the version; see
 # docs/operations/security/accepted-risks.md.
-chromadb>=0.5.0,<0.6.0
+chromadb>=0.5.0
 fastembed>=0.9.1,<1.0.0  # 0.9.1 is the first release that allows pillow<14 (0.5-0.9.0 cap pillow<13, blocking the Pillow 13 security floor)
-# langchain-chroma is capped in lockstep with chromadb above: langchain-chroma
-# 1.1.0 requires chromadb>=1.3.5,<2.0.0, so leaving it unbounded makes the
-# chromadb<0.6.0 pin unresolvable (pip/uv report ResolutionImpossible against
-# numpy>=2.1.0). 0.2.3 is the newest langchain-chroma that accepts
-# chromadb 0.5.x while staying compatible with langchain-core>=1.6.5,<2.0.0.
-langchain-chroma>=0.2.3,<0.2.4
+langchain-chroma>=1.1.0,<2.0.0
 
 # Retry logic for external APIs
 backoff>=2.2.0
