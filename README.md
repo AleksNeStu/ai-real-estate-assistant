@@ -546,6 +546,7 @@ for teams that want the managed pieces instead of running the stack.
 | [Deployment](docs/deployment/DEPLOYMENT.md) | Docker & Kubernetes setup |
 | [Troubleshooting](docs/development/TROUBLESHOOTING.md) | Common issues |
 | [Project Review (2026-11-06)](docs/reviews/2026-11-06-ai-real-estate-assistant.md) | Full repo audit — findings and status |
+| [Brand and discovery](docs/marketing/brand-and-discovery.md) | How this project reaches people: SEO, GEO, intent, and the mark |
 | [Changelog](CHANGELOG.md) | Version history |
 
 ## Roadmap
