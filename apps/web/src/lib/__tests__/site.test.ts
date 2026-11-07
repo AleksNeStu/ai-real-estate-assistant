@@ -37,8 +37,9 @@ describe('site with an empty build argument', () => {
     }
   });
 
-  it('falls back to the public origin instead of throwing', () => {
-    const { SITE_URL: siteUrl } = require('../site');
+  it('falls back to the public origin instead of throwing', async () => {
+    jest.resetModules();
+    const { SITE_URL: siteUrl } = await import('../site');
     expect(siteUrl.origin).toBe('https://ai-real-estate-demo.devs-scaler.workers.dev');
   });
 });
