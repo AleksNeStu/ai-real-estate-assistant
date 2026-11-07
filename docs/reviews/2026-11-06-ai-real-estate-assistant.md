@@ -157,19 +157,21 @@ deployment replaces the product's own — deliberately inviting — `robots.txt`
 everything. The demo stays reachable, because it is still the thing that can be handed to somebody
 to try; it just stays out of the index. Turning both off is the release step.
 
-**What left the public tree.** The platform blueprint and the deploy workflow moved to a private
-repository next to the stack that replaced them. The free-tier pair keeps running as a secondary and
-is no longer advertised anywhere.
+**What is in the public tree.** The platform blueprint and the deploy workflow are public again. They
+were moved to a private operations repository for one day, on the reasoning that a public repository
+should not publish a deployment topology. The operator's call was the opposite one: a visitor who
+lands on this repository should see a pipeline that actually deploys, and the demo keeps deploying to
+its hosted services. So the pipeline stays, and the private repository keeps what is not this
+project's own deployment — the secondary stack on the studio's own host.
 
-**What that costs.** Six of the deploy workflow's safety properties — the owner guard, the CI gate
-before any deploy, deploying the exact commit the CI tested, the "both halves healthy or neither"
-rule, the per-branch serialisation and the "never auto-merge" assertion — were pinned by tests
-that read the workflow file. Those tests could not stay in the public tree, because the file is no
-longer there. The properties are now documented in the private repository and checked by hand
-whenever that file is edited; they are **no longer machine-enforced by any CI**. The public tree
-gained a different guard in their place: a test asserting that the public repository contains no
-deploy workflow, no platform blueprint and no infrastructure identifier in any tracked file, so the
-topology cannot be reintroduced by accident.
+**What that costs, and what replaces it.** The deploy workflow's safety properties — the owner
+guard, the CI gate before any deploy, deploying the exact commit the CI tested, the "both halves
+healthy or neither" rule, the per-branch serialisation and the "never auto-merge" assertion — were
+pinned by tests that read the workflow file, and those tests could not stay while the file was
+gone. With the file back in the public tree they are pinned here again, and the guard that replaced
+them now guards what is genuinely private: no committed credential value in the deploy files, no
+path from the machine that wrote the repository in any tracked file, and no description of any other
+infrastructure the studio runs.
 
 ### 3.2 The application
 

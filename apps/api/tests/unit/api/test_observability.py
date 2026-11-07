@@ -390,3 +390,64 @@ def test_exception_handler_checks_base_exception_handler():
     assert r.status_code == 500
     assert r.json()["detail"] == "base handler"
     assert base_handler_called
+
+
+def test_request_succeeds_when_metrics_state_was_removed():
+    """A missing request counter must not turn a successful response into a 500.
+
+    The counter lives on the application state, and anything that touches that
+    state can remove it. When it is gone the middleware recreates it and the
+    request still succeeds - the counts restart, the response does not fail.
+    """
+    app = FastAPI()
+    logger = logging.getLogger("test")
+    add_observability(app, logger)
+
+    @app.get("/ping")
+    def _ping():
+        return {"ok": True}
+
+    del app.state.metrics
+
+    client = TestClient(app)
+    r = client.get("/ping")
+
+    assert r.status_code == 200
+    assert r.json() == {"ok": True}
+    assert app.state.metrics["GET /ping"] == 1
+
+
+def test_request_succeeds_when_metrics_state_is_not_a_dict():
+    """A corrupted request counter is replaced rather than raised through."""
+    app = FastAPI()
+    logger = logging.getLogger("test")
+    add_observability(app, logger)
+
+    @app.get("/ping")
+    def _ping():
+        return {"ok": True}
+
+    app.state.metrics = "not-a-dict"
+
+    client = TestClient(app)
+    r = client.get("/ping")
+
+    assert r.status_code == 200
+    assert app.state.metrics["GET /ping"] == 1
+
+
+def test_request_counter_is_kept_across_requests():
+    """The counter accumulates instead of being reset on every request."""
+    app = FastAPI()
+    logger = logging.getLogger("test")
+    add_observability(app, logger)
+
+    @app.get("/ping")
+    def _ping():
+        return {"ok": True}
+
+    client = TestClient(app)
+    client.get("/ping")
+    client.get("/ping")
+
+    assert app.state.metrics["GET /ping"] == 2

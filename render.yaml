@@ -1,0 +1,108 @@
+services:
+  # Staging backend (dev branch)
+  - type: web
+    name: realestate-api
+    plan: free
+    branch: dev
+    runtime: docker
+    dockerfilePath: deploy/docker/Dockerfile.backend
+    dockerContext: .
+    repo: https://github.com/AleksNeStu/ai-real-estate-assistant
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: ENVIRONMENT
+        value: staging
+      - key: DEFAULT_PROVIDER
+        value: zai
+      - key: DEFAULT_MODEL
+        value: glm-4.7-flash
+      # LLM Provider Keys
+      - key: ZHIPUAI_API_KEY
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: API_ACCESS_KEY
+        sync: false
+      - key: CORS_ALLOW_ORIGINS
+        value: https://realestate-web-dz1y.onrender.com
+      - key: AUTH_JWT_ENABLED
+        value: "true"
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: INTERNET_ENABLED
+        value: "false"
+      # SEED_ON_STARTUP=false: full DB seed at startup (loads FastEmbed,
+      # embeds thousands of properties) OOMs the 512 MB Render free
+      # tier. Set to true only on instances with >= 2 GB RAM. The
+      # diploma demo runs without seeded data — search/chat UIs work,
+      # the database is just empty.
+      - key: SEED_ON_STARTUP
+        value: "false"
+      - key: VECTOR_PERSIST_ENABLED
+        value: "false"
+      - key: SENTRY_DSN
+        sync: false
+      - key: DEMO_MODE
+        value: "true"
+      # ---- Free-tier (512 MB) memory budget knobs ----
+      # Render's free plan hard-caps each service at 512 MB. The default
+      # uvicorn worker count is `2 * $CPU + 1`, which on a shared 0.25 CPU
+      # box still spawns 1+ workers — each worker duplicates the FastAPI
+      # + LangChain + ONNX runtime heap (~400 MB / worker). With 2 workers
+      # the OOM is immediate. Pin to 1 worker.
+      - key: WEB_CONCURRENCY
+        value: "1"
+      # Disable background workers that hold heap resident even when
+      # no request is in flight.
+      - key: UPTIME_MONITOR_ENABLED
+        value: "false"
+      - key: ENABLE_NOTIFICATIONS
+        value: "false"
+      # Smaller pool / queue sizes (defaults assume more memory).
+      - key: DB_POOL_SIZE
+        value: "3"
+      - key: DB_MAX_OVERFLOW
+        value: "3"
+      - key: CHROMA_INDEXING_WORKERS
+        value: "1"
+      - key: POOL_MAX_WORKERS
+        value: "2"
+      # Cache init pulls in a client even if no Redis is reachable —
+      # the free plan has no Redis sidecar. Disable to skip the import.
+      - key: CACHE_ENABLED
+        value: "false"
+      # ---- /free-tier memory knobs ----
+    healthCheckPath: /health
+
+  # Frontend (dev branch — API deploy triggers rebuild for prod via workflow)
+  - type: web
+    name: realestate-web
+    plan: free
+    branch: dev
+    runtime: docker
+    dockerfilePath: deploy/docker/Dockerfile.frontend
+    dockerContext: .
+    repo: https://github.com/AleksNeStu/ai-real-estate-assistant
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: HOSTNAME
+        value: "0.0.0.0"
+      - key: BACKEND_API_URL
+        value: https://realestate-api-wkm7.onrender.com/api/v1
+      - key: API_ACCESS_KEY
+        sync: false
+      - key: NEXT_PUBLIC_API_URL
+        value: /api/v1
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_SENTRY_DSN
+        sync: false
+      - key: NEXT_PUBLIC_DEMO_MODE
+        value: "true"
+    healthCheckPath: /
