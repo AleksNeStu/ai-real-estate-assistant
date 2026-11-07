@@ -152,5 +152,11 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
+          # The public address of the deployment is baked into the bundle at
+          # build time (Next inlines NEXT_PUBLIC_*). It comes from the
+          # repository variable SITE_URL, so changing the address is one
+          # setting and one release - not an edit in the source tree.
+          build-args: |
+            NEXT_PUBLIC_SITE_URL=${{ vars.SITE_URL }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
