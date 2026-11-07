@@ -1,5 +1,6 @@
 import createMiddleware from 'next-intl/middleware';
 import { NextResponse, type NextRequest } from 'next/server';
+import { applyIndexingGuard } from '@/lib/indexing';
 import { routing } from './i18n/routing';
 
 const { locales: routingLocales, defaultLocale } = routing;
@@ -28,7 +29,7 @@ const { locales: routingLocales, defaultLocale } = routing;
 // Create the next-intl middleware
 const intlMiddleware = createMiddleware(routing);
 
-export async function proxy(request: NextRequest) {
+async function handleRequest(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Handle API routes separately (no i18n)
@@ -132,6 +133,18 @@ export async function proxy(request: NextRequest) {
 
   // Token exists, return the intl response (or continue)
   return intlResponse;
+}
+
+/**
+ * Indexing guard.
+ *
+ * A deployment that is not ready to be published must be able to say so at
+ * runtime, without a rebuild. See `src/lib/indexing.ts` for the rule.
+ */
+export async function proxy(request: NextRequest) {
+  const response = await handleRequest(request);
+  applyIndexingGuard(response.headers);
+  return response;
 }
 
 /**

@@ -87,6 +87,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   other.
 - **A site-wide hreflang map** — nine locales plus an `x-default` pointer, kept
   in one place so a page-level canonical does not drop the language cluster.
+- **A runtime indexing switch** — `SEARCH_INDEXING=false` makes every page
+  answer `X-Robots-Tag: noindex, nofollow`. The flag is read from the runtime
+  environment, so one image serves an indexable deployment and a private one
+  without a rebuild, and the default leaves the indexable surface the
+  repository ships untouched. Covered by `src/__tests__/indexing.test.ts`.
 
 ### Changed
 - **The deployment topology left the public tree** — the platform blueprint and
@@ -100,6 +105,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   scripts that exist, the provider, commit and contributor counts are the real
   ones, the dead links are fixed, the security policy and the accepted-risk
   register carry current dates, and the OpenAPI snapshot was regenerated.
+- **The social-preview card is a designed card** — the 1200×630 image was a
+  cropped screenshot of the application. It is now a card built from the
+  product's own identity: its icon, its name, its own tagline and its own
+  example queries, with no claim the product does not make.
 
 ## [5.1.6] - 2026-11-06
 
