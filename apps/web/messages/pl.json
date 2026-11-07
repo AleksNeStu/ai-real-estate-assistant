@@ -1018,6 +1018,8 @@
     "success": "Dziękujemy — jesteś na liście.",
     "consent": "Zapisując się, wyrażasz zgodę na otrzymywanie aktualności ofert e-mailem. Możesz zrezygnować w dowolnym momencie.",
     "errorInvalidEmail": "Podaj prawidłowy adres e-mail.",
-    "errorGeneric": "Coś poszło nie tak. Spróbuj ponownie."
+    "errorGeneric": "Coś poszło nie tak. Spróbuj ponownie.",
+    "studioNote": "To darmowa wersja z otwartym kodem. Wersja hostowana powstaje w NestLab.",
+    "studioLink": "Odwiedz nestlab.tech"
   }
 }

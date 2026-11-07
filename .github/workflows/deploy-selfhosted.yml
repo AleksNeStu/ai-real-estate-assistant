@@ -135,12 +135,18 @@ jobs:
 
           # The images are published by the release workflow, which runs in
           # parallel with this one. The pull can therefore fail for a while
-          # before the tag exists - retry instead of failing the deploy.
+          # before the tag exists - retry instead of failing the deploy. A
+          # pull that fails for a reason a retry cannot fix (a file the
+          # deploy user may not read, a missing compose file) stops at once.
           pulled=0
           for attempt in $(seq 1 20); do
-            if docker compose -f "$COMPOSE_FILE" pull; then
+            if docker compose -f "$COMPOSE_FILE" pull 2>&1 | tee /tmp/aire-pull.log; then
               pulled=1
               break
+            fi
+            if grep -qiE "permission denied|no such file|not found" /tmp/aire-pull.log; then
+              echo "the pull failed for a reason a retry cannot fix" >&2
+              exit 1
             fi
             echo "images not published yet (attempt $attempt/20), waiting 30s"
             sleep 30

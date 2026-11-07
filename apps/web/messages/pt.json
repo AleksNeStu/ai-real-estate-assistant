@@ -1025,6 +1025,8 @@
     "success": "Thanks - you are on the list.",
     "consent": "By subscribing you agree to receive property updates by email. You can unsubscribe at any time.",
     "errorInvalidEmail": "Please enter a valid email address.",
-    "errorGeneric": "Something went wrong. Please try again."
+    "errorGeneric": "Something went wrong. Please try again.",
+    "studioNote": "Esta é a versão gratuita de código aberto. A versão alojada está em desenvolvimento na NestLab.",
+    "studioLink": "Visite nestlab.tech"
   }
 }
