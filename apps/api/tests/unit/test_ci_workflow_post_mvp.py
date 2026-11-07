@@ -187,8 +187,11 @@ def test_selfhosted_workflow_is_generic_and_guarded() -> None:
 
     # Only the owner of this repository deploys.
     assert "github.repository_owner == 'AleksNeStu'" in text
-    # And only when a target server is configured at all.
-    assert "secrets.DEPLOY_HOST != ''" in text
+    # And a repository without a target server deploys nothing. The check
+    # cannot live in the job condition - GitHub does not expand a secret
+    # there - so it is the first step of the job.
+    assert "secrets.DEPLOY_HOST" in text
+    assert "configured=false" in text
     # Every endpoint of the deployment comes from a secret.
     for secret in ("DEPLOY_HOST", "DEPLOY_USER", "DEPLOY_PORT", "DEPLOY_PATH"):
         assert f"secrets.{secret}" in text
