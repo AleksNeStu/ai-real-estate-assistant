@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.9] - 2026-11-07
+
+### Added
+- **A mark of the project's own** — a roof over a single point: the property,
+  and the listing inside it. Zinc-950 on a zinc-50 tile, in the monochrome
+  language `DESIGN.md` asks for (the old icon was a blue circle with a bolt,
+  which contradicted it), legible at sixteen pixels. It ships as the app icon,
+  the favicon, the PWA icons in SVG and PNG, the social card, and the mark at
+  the top of the README.
+- **A social card that says something** — mark, name, promise, and the four
+  facts a visitor needs: MIT, self-hosted, 16 LLM providers, 9 languages.
+- **A studio the reader can reach** — the README names the hosted version, the
+  EU AI Act product, the studio itself and the rest of the studio's work.
+
+### Changed
+- **The README is half the length** — 657 lines became 384. The page that had
+  grown into a manual is now the short version: what the project is, how to
+  run it, what it does, and where the details live. The long parts — the
+  memory notes per setup, the project tree, the local demo scripts, the
+  configuration table — are links to the documents that already hold them, so
+  the README and the documentation cannot drift apart.
+
+### Fixed
+- **The PWA manifest pointed at an icon file that did not exist** — the
+  shortcut icons were a 404, so installing the application broke. Both PNG
+  forms of the mark are generated now, the theme colour follows the brand
+  instead of the old blue, and the declared screenshot size matches the card
+  that ships.
+
 ## [5.1.8] - 2026-11-07
 
 ### Added
