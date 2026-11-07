@@ -140,8 +140,13 @@ jobs:
           # user may not read, a compose file that is not there. A tag that
           # is not published YET says "failed to resolve reference" and is
           # exactly what this loop waits for.
+          #
+          # The window is 40 attempts of 30 seconds - twenty minutes. A
+          # multi-architecture image build of this project takes longer than
+          # ten minutes, and a first deploy that gives up mid-build is a
+          # deploy that has to be repeated by hand.
           pulled=0
-          for attempt in $(seq 1 20); do
+          for attempt in $(seq 1 40); do
             if docker compose -f "$COMPOSE_FILE" pull 2>&1 | tee /tmp/aire-pull.log; then
               pulled=1
               break
@@ -150,7 +155,7 @@ jobs:
               echo "the pull failed for a reason a retry cannot fix" >&2
               exit 1
             fi
-            echo "images not published yet (attempt $attempt/20), waiting 30s"
+            echo "images not published yet (attempt $attempt/40), waiting 30s"
             sleep 30
           done
           if [ "$pulled" -ne 1 ]; then
