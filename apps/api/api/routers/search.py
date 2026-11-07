@@ -16,7 +16,7 @@ from api.models import (
 )
 from core.circuit_breaker import ServiceDegradedError, get_breaker
 from core.security_utils import sanitize_for_log
-from data.schemas import Property
+from data.schemas import Property, normalize_property_metadata
 from services.ranking_explainer import create_ranking_explainer
 from utils.sanitization import sanitize_search_query
 from vector_store.chroma_store import ChromaPropertyStore
@@ -207,7 +207,9 @@ async def search_properties(
 
                 # Construct Property model
                 # validation_error might occur if metadata is incomplete
-                prop = Property.model_validate(metadata)
+                # The vector store stores the coordinates as `lat`/`lon`; the
+                # schema names them `latitude`/`longitude`.
+                prop = Property.model_validate(normalize_property_metadata(metadata))
 
                 # Include explanation if available
                 explanation_model = None

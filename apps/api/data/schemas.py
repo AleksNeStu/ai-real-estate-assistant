@@ -8,12 +8,33 @@ ensuring data quality and consistency across the application.
 import logging
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Mapping, Optional, cast
 
 import pandas as pd
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 logger = logging.getLogger(__name__)
+
+
+def normalize_property_metadata(metadata: Mapping[str, Any]) -> Dict[str, Any]:
+    """Return vector-store metadata under the Property schema's field names.
+
+    The vector store writes the coordinates as ``lat``/``lon`` - the geo filters
+    in ``vector_store/chroma_store.py`` query exactly those keys, so the writer
+    cannot change them - while this schema names them ``latitude``/
+    ``longitude``. Without this translation every listing returned from the
+    vector store arrived with null coordinates: the map stayed empty and the
+    city overview showed no average price.
+
+    Both spellings are accepted, so a collection written before the change
+    keeps working.
+    """
+    normalized = dict(metadata)
+    if normalized.get("latitude") is None and normalized.get("lat") is not None:
+        normalized["latitude"] = normalized["lat"]
+    if normalized.get("longitude") is None and normalized.get("lon") is not None:
+        normalized["longitude"] = normalized["lon"]
+    return normalized
 
 
 class PropertyType(str, Enum):

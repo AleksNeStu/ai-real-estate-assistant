@@ -16,7 +16,7 @@ from analytics.comparable_selector import ComparableSelector
 from api.dependencies import get_vector_store
 from api.deps.auth import get_current_active_user
 from core.security_utils import sanitize_for_log
-from data.schemas import Property, PropertyCollection
+from data.schemas import Property, PropertyCollection, normalize_property_metadata
 from db.database import get_db
 from db.models import User
 from db.repositories import CMAReportRepository
@@ -36,7 +36,14 @@ router = APIRouter(tags=["CMA"])
 
 def _document_to_property(doc: Any) -> Property:
     """Convert a ChromaDB Document to a Property object."""
-    metadata = doc.metadata or {}
+    metadata = normalize_property_metadata(doc.metadata or {})
+
+    # The vector store writes only the amenities it knows about, so the ones it
+    # omits arrive here as None - and a None in a `bool` field is a validation
+    # error, not a default. Coerce them to False.
+    def _flag(name: str) -> bool:
+        return bool(metadata.get(name))
+
     return Property(
         id=str(metadata.get("id", "")),
         title=metadata.get("title"),
@@ -56,14 +63,14 @@ def _document_to_property(doc: Any) -> Property:
         floor=metadata.get("floor"),
         total_floors=metadata.get("total_floors"),
         energy_rating=metadata.get("energy_rating"),
-        has_parking=metadata.get("has_parking"),
-        has_garden=metadata.get("has_garden"),
-        has_elevator=metadata.get("has_elevator"),
-        has_balcony=metadata.get("has_balcony"),
-        is_furnished=metadata.get("is_furnished"),
-        has_pool=metadata.get("has_pool"),
-        has_garage=metadata.get("has_garage"),
-        pets_allowed=metadata.get("pets_allowed"),
+        has_parking=_flag("has_parking"),
+        has_garden=_flag("has_garden"),
+        has_elevator=_flag("has_elevator"),
+        has_balcony=_flag("has_balcony"),
+        is_furnished=_flag("is_furnished"),
+        has_pool=_flag("has_pool"),
+        has_garage=_flag("has_garage"),
+        pets_allowed=_flag("pets_allowed"),
     )
 
 

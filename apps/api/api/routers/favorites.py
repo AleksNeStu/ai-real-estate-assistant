@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.deps.auth import get_current_active_user
+from data.schemas import normalize_property_metadata
 from db.database import get_db
 from db.models import User
 from db.repositories import CollectionRepository, FavoriteRepository
@@ -29,7 +30,7 @@ def _get_vector_store(request: Request) -> Optional[ChromaPropertyStore]:
 
 def _document_to_property_dict(doc: Any) -> dict[str, Any]:
     """Convert a ChromaDB Document to a property dictionary."""
-    metadata = doc.metadata or {}
+    metadata = normalize_property_metadata(doc.metadata or {})
     return {
         "id": metadata.get("id"),
         "title": metadata.get("title"),

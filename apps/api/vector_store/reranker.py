@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union
 from langchain_core.documents import Document
 
 from core.security_utils import sanitize_for_log
-from data.schemas import Property
+from data.schemas import Property, normalize_property_metadata
 
 if TYPE_CHECKING:
     from services.ranking_config_service import RankingWeights
@@ -341,7 +341,9 @@ class StrategicReranker(PropertyReranker):
                     try:
                         # Convert doc metadata to Property object
                         # Use loose validation or default values for missing fields to avoid validation errors
-                        prop_data = metadata.copy()
+                        # The vector store stores the coordinates as `lat`/`lon`;
+                        # the schema names them `latitude`/`longitude`.
+                        prop_data = normalize_property_metadata(metadata)
 
                         # Ensure required fields for Property validation if missing
                         if "city" not in prop_data:
