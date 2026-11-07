@@ -39,6 +39,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   from the `SITE_URL` repository variable, so changing it is one setting and
   one release.
 
+### Fixed
+- **A build without the address argument no longer fails** — the argument
+  arrives as an empty string rather than as an unset variable, the fallback
+  did not cover that case, and `new URL('')` threw while the sitemap was
+  collected. The fallback now covers the empty string, with a test.
+
 ## [5.1.7] - 2026-11-07
 
 ### Security
