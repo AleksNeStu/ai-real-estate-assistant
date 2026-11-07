@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.11] - 2026-11-07
+
+### Fixed
+- **The coordinates reach the property schema** — the vector store writes them
+  as `lat`/`lon` (the geo filters query exactly those keys) while the Property
+  schema names them `latitude`/`longitude`, so every listing came back from
+  the API with null coordinates: the map stayed empty and the City Overview
+  showed no average price. The metadata is now translated at the
+  metadata→Property boundary, and both spellings are accepted so a collection
+  written before the change keeps working. Verified against the live
+  deployment's 250 documents: all 250 now validate and carry coordinates.
+- **The CMA reader answered 422 on the demo's own data** — it passed
+  `metadata.get("is_furnished")` and its neighbours, `None` where the vector
+  store stores no such key, into the schema's `bool` fields. Coerced to
+  `False`.
+
 ## [5.1.10] - 2026-11-07
 
 ### Changed
