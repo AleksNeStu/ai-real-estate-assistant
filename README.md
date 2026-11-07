@@ -54,6 +54,8 @@ happily as it runs on a managed platform.
 
 </div>
 
+![The application at realty.kittray.com](docs/screenshots/home.png)
+
 Everything is live in demo mode — no signup, no keys, no setup:
 
 - **Natural-language search** — ask *"2-bedroom apartment in Kraków under 500k"* and get matched listings
@@ -62,18 +64,32 @@ Everything is live in demo mode — no signup, no keys, no setup:
 - **Nine languages** — English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, Ukrainian
 - **Honest about its limits** — the demo answers with a local model so it costs nothing to explore; a real deployment uses the provider key you bring
 
+**Go straight to a part of it:**
+
+| | |
+|---|---|
+| [Search](https://realty.kittray.com/en/search) | Semantic search over the demo catalogue, with filters and a map |
+| [Assistant](https://realty.kittray.com/en/chat) | The chat and its tools — mortgage, ROI, comparison |
+| [City overview](https://realty.kittray.com/en/city-overview) | Per-city market analytics |
+| [Documents](https://realty.kittray.com/en/documents) | Upload and query your own files |
+| [Agents](https://realty.kittray.com/en/agents) | The agent directory and their listings |
+
 ## Deploy it your way
 
-Two supported paths, and the choice is yours. Both run the same images.
+There is a live deployment of this project — the demo above runs the release
+images, in demo mode, on a server its maintainer controls. You do not have to
+stop there: the same images are published on every release, and three ways to
+run them are supported today.
 
-| | Platform-hosted | Your own server |
-|---|---|---|
-| **What you need** | an account on the platform | a machine with Docker and a spare gigabyte of RAM |
-| **What you do** | one click, the platform builds and serves it | copy one compose file, `docker compose up -d` |
-| **Your data** | on the platform | on your disk, in your country |
-| **Who upgrades it** | the platform | you — or CI, on every release tag |
+| | A hosted platform | Your own VPS | The published images |
+|---|---|---|---|
+| **What you need** | an account on the platform | a machine with Docker and a spare gigabyte of RAM | a machine with Docker |
+| **What you do** | one click, the platform builds and serves it | copy one compose file, `docker compose up -d` | pull two images, point them at your own secrets |
+| **Who builds it** | the platform | you — or CI, on every release tag | you, or CI |
+| **Your data** | on the platform | on your disk, in your country | on your disk, in your country |
+| **Best for** | a demo, a trial, a first look | production, on your own terms | an existing setup that already runs containers |
 
-### Platform-hosted, one click
+### On a hosted platform, one click
 
 [![Deploy to Render](https://img.shields.io/badge/Deploy%20to%20Render-46b3a0?style=for-the-badge&logo=render&logoColor=white)](https://render.com/deploy?repo=https://github.com/AleksNeStu/ai-real-estate-assistant)
 
@@ -81,7 +97,7 @@ The blueprint in [`render.yaml`](render.yaml) declares the web service and the
 API, the build steps and the health check. The platform builds the images,
 serves them and restarts them on every release.
 
-### Your own server, with or without CI
+### On your own VPS server
 
 [`deploy/docker-compose.selfhosted.yml`](deploy/docker-compose.selfhosted.yml)
 is the whole stack: a FastAPI backend and a Next.js frontend, one persistent
@@ -100,24 +116,47 @@ docker compose -f docker-compose.selfhosted.yml up -d
 Put a TLS terminator in front of it — a reverse proxy, a load balancer, a
 tunnel — and never expose the port raw.
 
-**With CI instead of a terminal:** this repository also ships a
+### With CI instead of a terminal
+
+This repository also ships a
 [self-host deploy workflow](.github/workflows/deploy-selfhosted.yml). Give it a
 deploy key and the address of your server as repository secrets, and every
 release tag rolls your machine onto the new images by itself. Nothing about
 your host is stored in this repository — the host, the user, the port and the
 path are all secrets you set yourself.
 
-The full guide, including the memory footprint per setup and the Kubernetes
-variant, is in the [deployment guide](docs/deployment/DEPLOYMENT.md).
+### Or just pull the images
+
+Every release publishes both images to GitHub Container Registry, multi-arch
+(amd64 and arm64):
+
+```bash
+docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/backend:5.1.10
+docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/frontend:5.1.10
+```
+
+The full guide — the memory footprint per setup, the published tags and the
+Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.md).
 
 ## What's new
 
-**v5.1.8** — a second deployment target, a README that reads, and the studio
-in the contacts.
+**v5.1.10** — the demo lives on a domain of its own.
 
-- **Deploy to your own server** — the release pipeline now rolls a server you
-  own, not only the managed platform. One compose file, one workflow, no
-  credentials in the tree.
+- **A public address that can be printed on a business card** — the demo moved
+  from a platform subdomain to `https://realty.kittray.com`, on a domain
+  delegated to Cloudflare. The Worker that fronts the deployment keeps its
+  custom domain, so the front door did not change — only the name on it.
+- **One address in the tree** — the README badge, the live-demo link, the
+  `package.json` homepage, `robots.txt`, the sitemap line, `llms.txt`, the
+  launch copy and the canonical URL all follow the same value. The public
+  address of a deployment is a build argument (`SITE_URL`), so changing it is
+  one setting and one release.
+- **A mark, a card and half the README** (v5.1.9) — the icon is now a roof
+  over a point, in the monochrome the design system asks for; the social
+  preview says what the project is; the README is the short version.
+- **A second deployment target** (v5.1.8) — the release pipeline now rolls a
+  server you own, not only the managed platform. One compose file, one
+  workflow, no credentials in the tree.
 - **AI property valuation** — paste a property id, get an estimate of the
   current value plus a projection for 1, 3, 5 and 10 years, with a confidence
   band and the key drivers. Try it at `/valuation`.
@@ -129,19 +168,13 @@ in the contacts.
   not a lending offer).
 - **A first-visit tour** — five steps from the landing page to the features
   that matter, shown once and remembered locally.
-- **Input that is no longer mangled** — the control-character filter was
-  rewriting every character below `0x3E`, so `"2 bedroom under 500000 EUR"`
-  reached the model as `"2\x97bedroom\x82under…"`. It now removes exactly the
-  control characters it means to.
 - **A citation layer for AI search** — an expanded `llms.txt`, a `robots.txt`
   that names the AI crawlers it wants, `FAQPage` JSON-LD next to the existing
   schemas, a social preview image, and complete metadata in nine locales.
 - **335 dependency alerts closed** — every critical and high advisory resolved,
   the floors pinned in both the lock file and the project file.
-- **Smaller page weight** — the charts bundle is loaded only when the charts
-  are on screen, which takes about 5 MB off the market-trends page.
 
-Full notes: [v5.1.8 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.8) ·
+Full notes: [v5.1.10 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.10) ·
 [changelog](CHANGELOG.md).
 
 ## What it does
