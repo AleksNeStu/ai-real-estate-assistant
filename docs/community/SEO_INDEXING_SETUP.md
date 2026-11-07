@@ -1,8 +1,16 @@
 # SEO Indexing Setup — Google Search Console & Bing Webmaster Tools
 
-**Target:** `https://realestate.nestlab.tech/`
+**Target:** `https://ai-real-estate-demo.devs-scaler.workers.dev/`
 **Scope:** Public procedure only. No tokens, API keys, or credentials anywhere in this guide.
 **Evidence storage:** `docs/community/private-evidence/` (gitignored — never commit screenshots or exports).
+
+> **The demo is deliberately not indexed.** The product is unfinished, and the
+> operator does not want it released in this state. The demo deployment answers
+> `X-Robots-Tag: noindex, nofollow` on every page and serves a `robots.txt` that
+> disallows everything, so it is not in any search engine's index and cannot be
+> submitted. This guide describes the procedure for a FUTURE release on a
+> domain of its own — a `workers.dev` host cannot be verified as a search-console
+> property, because verification needs a DNS record on a domain you control.
 
 ---
 
@@ -28,7 +36,7 @@ All steps use the public UI of each tool. No API calls are required.
 4. Enter the exact URL:
 
 ```
-https://realestate.nestlab.tech/
+https://ai-real-estate-demo.devs-scaler.workers.dev/
 ```
 
 Click **Continue**.
@@ -54,7 +62,7 @@ The `<paste token here>` value is the long verification token Google shows on th
 sitemap.xml
 ```
 
-GSC already knows the site URL from the property, so the full submitted URL will be `https://realestate.nestlab.tech/sitemap.xml` (matches the `Sitemap:` directive in `public/robots.txt`).
+GSC already knows the site URL from the property, so the full submitted URL will be `https://ai-real-estate-demo.devs-scaler.workers.dev/sitemap.xml` (matches the `Sitemap:` directive in `public/robots.txt`).
 
 4. Click **Submit**.
 
@@ -91,7 +99,7 @@ Use this for any page you update and want recrawled faster than the next sitemap
 3. Enter the URL:
 
 ```
-https://realestate.nestlab.tech/
+https://ai-real-estate-demo.devs-scaler.workers.dev/
 ```
 
 ### 2.2 Verify ownership
@@ -102,7 +110,7 @@ Add a CNAME record at your DNS provider:
 
 | Type | Host | Value |
 |------|------|-------|
-| CNAME | `www` | `realestate.nestlab.tech` |
+| CNAME | `www` | `ai-real-estate-demo.devs-scaler.workers.dev` |
 
 Then in Bing Webmaster Tools, choose **CNAME** verification and follow the on-screen prompt.
 
@@ -133,7 +141,7 @@ After verification, **remove `BingSiteAuth.xml` from the project** (it was only 
 3. Paste the full sitemap URL:
 
 ```
-https://realestate.nestlab.tech/sitemap.xml
+https://ai-real-estate-demo.devs-scaler.workers.dev/sitemap.xml
 ```
 
 4. Click **Submit**.
@@ -160,8 +168,8 @@ Add a lightweight uptime monitor that pings the site periodically:
 
 | Tool | Setup |
 |------|-------|
-| **Uptime Kuma** (recommended — self-hosted) | Create an `HTTP` monitor for `https://realestate.nestlab.tech/` with a 10-minute interval. |
-| **cron-job.org** (free, no server needed) | Create a cron job hitting `https://realestate.nestlab.tech/` every 10 minutes. |
+| **Uptime Kuma** (recommended — self-hosted) | Create an `HTTP` monitor for `https://ai-real-estate-demo.devs-scaler.workers.dev/` with a 10-minute interval. |
+| **cron-job.org** (free, no server needed) | Create a cron job hitting `https://ai-real-estate-demo.devs-scaler.workers.dev/` every 10 minutes. |
 | **GitHub Actions** (simple schedule) | Add a workflow that curls the URL on a `schedule: cron: '*/10 * * * *'`. |
 
 The goal is to keep the site warm so crawlers rarely hit a cold instance.
@@ -182,7 +190,7 @@ Allow: /
 ... (Claude-Web, ClaudeBot, anthropic-ai, PerplexityBot, Google-Extended,
      CCBot, Bytespider, Applebot-Extended)
 
-Sitemap: https://realestate.nestlab.tech/sitemap.xml
+Sitemap: https://ai-real-estate-demo.devs-scaler.workers.dev/sitemap.xml
 
 # Private areas — noindex for all bots
 Disallow: /api/
@@ -259,7 +267,7 @@ Use this checklist during the first week after adding the site to GSC. Perform e
 |----------|-----|
 | Google Search Console | https://search.google.com/search-console |
 | Bing Webmaster Tools | https://www.bing.com/webmasters |
-| robots.txt (live) | https://realestate.nestlab.tech/robots.txt |
-| Sitemap (live) | https://realestate.nestlab.tech/sitemap.xml |
-| GSC URL Inspection | Paste any `realestate.nestlab.tech/*` URL into the GSC search bar |
+| robots.txt (live) | https://ai-real-estate-demo.devs-scaler.workers.dev/robots.txt |
+| Sitemap (live) | https://ai-real-estate-demo.devs-scaler.workers.dev/sitemap.xml |
+| GSC URL Inspection | Paste any `ai-real-estate-demo.devs-scaler.workers.dev/*` URL into the GSC search bar |
 | Evidence folder | `docs/community/private-evidence/` (gitignored) |

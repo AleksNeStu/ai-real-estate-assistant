@@ -37,7 +37,7 @@ to carry the work that was actually outstanding.
 
 ### 2.2 The demo was already deployed on the operator's own server — and nobody knew
 
-While auditing the fleet for a suitable host, the review found that `https://realestate.nestlab.tech`
+While auditing the fleet for a suitable host, the review found that `https://ai-real-estate-demo.devs-scaler.workers.dev`
 **already served this application**, behind a Cloudflare tunnel, on the operator's own machine —
 with a working health endpoint, a tunnel of its own and a hostname of its own.
 
@@ -121,34 +121,33 @@ breaker can never shadow a dependency again. A regression test pins that.
 
 ## 3. What changed
 
-### 3.1 Hosting — the demo moved to the operator's own server
+### 3.1 Hosting — the demo runs on the operator's own node, behind a front door of its own
 
-**Why not the free cloud tier.** The terms of that tier do not forbid public-facing hosting, and it
-carries no service-level agreement. But the provider's own published policy deems a compute instance
-**idle** when, over a seven-day window, its 95th-percentile CPU is below 20 %, its network below
-20 % and its memory below 20 %. Measured on that instance at the time of the review: a load average
-of 0.06 on two cores and 19.4 % memory — **both under the thresholds**. The tenancy can also be
-ended on seven days' notice of inactivity. A URL that other people are told to rely on does not
-belong on that tier.
+**The studio's domain is not the demo's domain.** `nestlab.tech` is the studio's canonical entity: one
+domain, one `Organization.description`, one `sameAs` set. A product demo parked on a subdomain of it
+forks that entity — the search and AI engines answer "what is nestlab.tech" from whatever sits on the
+domain, and a half-finished free tool there pulls the answer away from "a studio with four SaaS
+products". The demo therefore lives on a host of its own, and `realestate.nestlab.tech` was removed:
+the DNS record and the ingress rules on the three tunnels that served it are gone.
 
-**Where it went.** The demo now runs on the operator's own node, behind the Cloudflare tunnel that
-node already runs, at `https://realestate.nestlab.tech` — the same hostname it had before, with
-only its origin changed. The hostname keeps its three labels on purpose: the fleet's naming rule is
-that a staging hostname inside the shared zone is `<product>-staging-<role>.nestlab.tech`, because
-the free edge certificate covers one label only and a deeper name cannot complete a handshake.
+**Where it went.** The demo runs on the operator's own Oracle Always Free ARM node, behind a
+Cloudflare Worker on a temporary `workers.dev` address,
+`https://ai-real-estate-demo.devs-scaler.workers.dev`. The Worker is the front door: it forwards every
+request to the node, and the node's firewall admits that one port from Cloudflare's ranges only. The
+application's own repository keeps a second, platform-hosted deployment — the repository's deploy
+workflow still publishes to it — but the address the public links point at is the front door's.
+
+**The idle-reclaim exposure, stated plainly.** The provider's published policy deems a compute
+instance **idle** when, over a seven-day window, its 95th-percentile CPU is below 20 %, its network
+below 20 % and its memory below 20 %. Measured on that instance when the demo was first moved off it:
+a load average of 0.06 on two cores and 19.4 % memory — **both under the thresholds** — and the
+tenancy can be ended on seven days' notice of inactivity. The operator's decision on 2026-11-07 was to
+put the demo there anyway, and to keep iterating on the application directly on that deployment; the
+risk is why the address is temporary and why the demo is deliberately not indexed.
 
 **What the demo now does.** It answers. The catalogue is seeded and persists between restarts, search
 returns real results, and the conversational assistant replies — with no paid model key, because the
 application substitutes a local canned-response model in demo mode.
-
-**Which node it runs on.** The operator's production node — the server that carries the operator's
-own production workload, measured idle for this purpose, with a tunnel of its own and the headroom
-for the stack — and not the shared node that carries the other products' staging stacks. A public
-demo does not belong on a shared substrate where somebody else's staging deployment can disturb it.
-
-**The name did not change, and no new name was added.** A new public hostname for an unfinished
-product is a new indexable surface, and the operator asked for the opposite. The demo kept the
-address it always had; only the machine behind it moved.
 
 **And it is not indexed.** The product is not finished, and the operator does not want it released in
 this state. Two mechanisms keep it out of the index, both of them per deployment and both reversible
@@ -157,19 +156,21 @@ deployment replaces the product's own — deliberately inviting — `robots.txt`
 everything. The demo stays reachable, because it is still the thing that can be handed to somebody
 to try; it just stays out of the index. Turning both off is the release step.
 
-**What left the public tree.** The platform blueprint and the deploy workflow moved to a private
-repository next to the stack that replaced them. The free-tier pair keeps running as a secondary and
-is no longer advertised anywhere.
+**What is in the public tree.** The platform blueprint and the deploy workflow are public again. They
+were moved to a private operations repository for one day, on the reasoning that a public repository
+should not publish a deployment topology. The operator's call was the opposite one: a visitor who
+lands on this repository should see a pipeline that actually deploys, and the demo keeps deploying to
+its hosted services. So the pipeline stays, and the private repository keeps what is not this
+project's own deployment — the secondary stack on the studio's own host.
 
-**What that costs.** Six of the deploy workflow's safety properties — the owner guard, the CI gate
-before any deploy, deploying the exact commit the CI tested, the "both halves healthy or neither"
-rule, the per-branch serialisation and the "never auto-merge" assertion — were pinned by tests
-that read the workflow file. Those tests could not stay in the public tree, because the file is no
-longer there. The properties are now documented in the private repository and checked by hand
-whenever that file is edited; they are **no longer machine-enforced by any CI**. The public tree
-gained a different guard in their place: a test asserting that the public repository contains no
-deploy workflow, no platform blueprint and no infrastructure identifier in any tracked file, so the
-topology cannot be reintroduced by accident.
+**What that costs, and what replaces it.** The deploy workflow's safety properties — the owner
+guard, the CI gate before any deploy, deploying the exact commit the CI tested, the "both halves
+healthy or neither" rule, the per-branch serialisation and the "never auto-merge" assertion — were
+pinned by tests that read the workflow file, and those tests could not stay while the file was
+gone. With the file back in the public tree they are pinned here again, and the guard that replaced
+them now guards what is genuinely private: no committed credential value in the deploy files, no
+path from the machine that wrote the repository in any tracked file, and no description of any other
+infrastructure the studio runs.
 
 ### 3.2 The application
 

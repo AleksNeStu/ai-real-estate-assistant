@@ -240,6 +240,22 @@ def client_id_from_api_key(api_key: str | None) -> str | None:
     return hash_fingerprint(api_key, length=12)
 
 
+def _count_request(app: FastAPI, key: str) -> None:
+    """Count one request in the application's request counter.
+
+    The counter lives on the application state, which anything that touches
+    that state can replace or remove - a test fixture, a reload, a plugin.
+    A missing counter must never turn a successful response into a 500, so
+    the dictionary is recreated when it is gone and the count continues from
+    zero. Losing the counters is a smaller problem than losing the request.
+    """
+    metrics = getattr(app.state, "metrics", None)
+    if not isinstance(metrics, dict):
+        metrics = {}
+        app.state.metrics = metrics  # type: ignore[assignment]
+    metrics[key] = int(metrics.get(key, 0)) + 1
+
+
 def add_observability(app: FastAPI, logger: logging.Logger) -> None:
     # Initialize rate limiter - use Redis if available, otherwise in-memory
     redis_url = os.getenv("REDIS_URL")
@@ -327,7 +343,7 @@ def add_observability(app: FastAPI, logger: logging.Logger) -> None:
                 },
             )
             key = f"{request.method} {request.url.path}"
-            app.state.metrics[key] = int(app.state.metrics.get(key, 0)) + 1
+            _count_request(app, key)
             handler = app.exception_handlers.get(type(exc)) or app.exception_handlers.get(Exception)
             if handler is not None:
                 response = handler(request, exc)
@@ -362,6 +378,6 @@ def add_observability(app: FastAPI, logger: logging.Logger) -> None:
         )
 
         key = f"{request.method} {request.url.path}"
-        app.state.metrics[key] = int(app.state.metrics.get(key, 0)) + 1
+        _count_request(app, key)
 
         return response

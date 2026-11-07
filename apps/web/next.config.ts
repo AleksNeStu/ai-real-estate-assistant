@@ -51,7 +51,7 @@ const nextConfig: NextConfig = {
             // proxy (`NEXT_PUBLIC_API_URL=/api/v1`), so `'self'` already covers
             // it. The extra origin is the canonical host, for the case where the
             // API URL is configured as an absolute URL.
-            'https://realestate.nestlab.tech',
+            'https://ai-real-estate-demo.devs-scaler.workers.dev',
             // Push notification services
             'https://fcm.googleapis.com',
             'https://updates.push.services.mozilla.com',

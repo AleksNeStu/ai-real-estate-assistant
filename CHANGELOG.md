@@ -74,6 +74,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   matching one prefix in a shared directory, so a parallel test worker could
   delete another worker's file and fail the whole suite for no reason. The
   cleanup now removes exactly the file the test created.
+- **A missing request counter could turn a successful response into a 500** —
+  the counter lives on the application state, and anything that touches that
+  state can remove it; the middleware then raised `AttributeError` after the
+  response was already produced. The counter is now recreated when it is gone,
+  so losing the counts costs the counts and nothing else.
 
 ### Added
 - **Site-wide lead capture** — a footer with an email field posts to the
@@ -94,13 +99,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   repository ships untouched. Covered by `src/__tests__/indexing.test.ts`.
 
 ### Changed
-- **The deployment topology left the public tree** — the platform blueprint and
-  the deploy workflow moved to a private operations repository. A test asserts
-  that the public tree contains no deploy workflow, no blueprint and no
-  infrastructure identifier in any tracked file.
-- **The demo has a new home and the same address** — it runs on the operator's
-  own server behind the same public URL. The canonical URL, `robots.txt`,
-  `llms.txt`, the `package.json` homepage and the README all point at it.
+- **The deployment topology came back to the public tree** — the platform
+  blueprint and the deploy workflow moved to a private operations repository for
+  one day, and are public again. A visitor who lands on this repository should
+  see a pipeline that actually deploys, and the demo keeps deploying to its
+  hosted services. What stays private is everything that is not this project's
+  own deployment: no credential value is committed, no path from the machine
+  that wrote the repository is published, and no other infrastructure the studio
+  runs is described. A test pins each of those.
+- **The demo has a new home and a new address** — it runs on the operator's own
+  node behind a front door of its own, on a temporary Cloudflare Workers
+  address. The studio's subdomain was removed: the DNS record and the tunnel
+  ingress rules that served it are gone, because a product demo on a subdomain
+  of the studio's domain forks the studio's entity. The canonical URL,
+  `robots.txt`, `llms.txt`, the `package.json` homepage and the README all
+  point at the new address.
 - **The documentation matches the repository again** — the quickstart names
   scripts that exist, the provider, commit and contributor counts are the real
   ones, the dead links are fixed, the security policy and the accepted-risk

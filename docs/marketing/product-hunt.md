@@ -50,7 +50,7 @@ Alternatives (≤ 260 chars each):
 
 ## Links (PH takes one primary link; the repository is the secondary)
 
-- **Primary:** https://realestate.nestlab.tech/
+- **Primary:** https://ai-real-estate-demo.devs-scaler.workers.dev/
 - Live demo — no signup and no API key. The hosted instance runs in demo mode,
   so a visitor can try search, chat and valuation for free.
 - **Secondary:** https://github.com/AleksNeStu/ai-real-estate-assistant

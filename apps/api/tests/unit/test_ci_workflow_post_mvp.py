@@ -1,43 +1,76 @@
 """Guards on the public repository's CI surface.
 
-The deployment workflow and the platform blueprint were MOVED OUT of this public
-repository on 2026-11-06 — TaskMaster #27, "serve the demo from our own server
-behind a stable Cloudflare URL and hide the deployment topology from the public
-repo". They now live in a private operations repository, next to the stack that
-replaced them.
+The deployment workflow and the platform blueprint are part of this public
+repository again (operator decision, 2026-11-07). A visitor who lands on the
+repository should see a pipeline that actually deploys, and the demo keeps
+deploying to its hosted services. What lives in the private operations
+repository is the SECONDARY stack - the studio's own host - not this one.
 
-A public, frozen demo repository should not publish the service names, the
-deploy-secret names, the platform API calls or the environment-variable recipe
-of somebody's infrastructure. These tests pin THAT invariant, so the topology
-cannot be reintroduced by accident.
+So the deployment topology of THIS project is public on purpose. What stays
+private is everything that is not the project's own deployment:
 
-The properties the deploy workflow itself has to keep — the owner guard, the
-staging smoke gate, deploying the triggering SHA, serialising same-branch runs —
-are pinned where the workflow now lives, in a private operations repository.
-That location is deliberately not named here: naming it would publish the same
-thing this file exists to keep out of the public tree.
+- no credential VALUE is ever committed (the workflow reads them from the
+  repository secrets),
+- no personal path from the machine that wrote the repository,
+- no other infrastructure the studio runs (its nodes, its deployment tool).
+
+These tests pin those invariants, so the pipeline can stay visible without the
+tree becoming a map of somebody else's fleet.
 """
 
 from __future__ import annotations
 
+import re
 import subprocess
 from pathlib import Path
 
-# The public repository must not name the hosting platform, a service
-# identifier, a deploy secret, or a fleet node.
-#
-# The two platform-identifying needles are assembled from fragments on purpose:
-# this file is part of the public tree, so it must not publish the very strings
-# it forbids. (This file is excluded from its own scan for the same reason — it
-# is the detector, not a leak.)
-FORBIDDEN_IN_PUBLIC_TREE = (
-    "on" + "render" + ".com",
+# The deployment files that are public on purpose.
+DEPLOY_WORKFLOW = ".github/workflows/deploy.yml"
+DEPLOY_BLUEPRINT = "render.yaml"
+
+# The CI workflow that gates the deploys.
+CI_WORKFLOW = ".github/workflows/ci.yml"
+
+# The workflows a public repository of this project carries.
+EXPECTED_WORKFLOWS = {
+    "ci.yml",
+    "deploy.yml",
+    "dependabot-auto-merge.yml",
+    "llm-costs.yml",
+    "publish-ghcr.yml",
+}
+
+# Names of the studio's own infrastructure. This repository deploys its own
+# demo and must not describe anybody else's servers. The studio's own name is
+# NOT in this list: the link to the studio is the project's lead channel and
+# stays public on purpose.
+FOREIGN_INFRASTRUCTURE = (
     "dok" + "ploy",
-    "render_api_key",
-    "render_service_id",
-    "render_backend_url",
-    "render_frontend_url",
+    "vps2",
+    "vps3",
+    "vps4",
+    "vps5",
+    "vps10",
 )
+
+# A path on the machine that wrote the repository.
+PERSONAL_PATH = "C:" + "/Users/"
+
+# Shapes of a credential value. The workflow must read these from the
+# repository secrets, never carry them.
+CREDENTIAL_VALUE_PATTERNS = (
+    re.compile(r"rnd_[A-Za-z0-9]{10,}"),
+    re.compile(r"ghp_[A-Za-z0-9]{20,}"),
+    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY"),
+)
+
+# Files that are generated or are themselves detectors, and therefore cannot
+# be scanned for the patterns above without drowning in false positives.
+SCAN_EXEMPT = {
+    Path("apps/web/package-lock.json"),
+    Path(".gitleaks.toml"),
+    Path("apps/api/tests/unit/test_ci_workflow_post_mvp.py"),
+}
 
 
 def _repo_root() -> Path:
@@ -68,16 +101,15 @@ def _tracked_files() -> list[Path]:
     return [root / name for name in names]
 
 
-def _public_text_files() -> list[Path]:
-    """The tracked files that are readable text, minus this test file.
+def _relative(path: Path) -> Path:
+    return path.relative_to(_repo_root())
 
-    This file is excluded because it necessarily CONTAINS the forbidden
-    strings — they are the needle list. It is the detector, not a leak.
-    """
-    this_file = Path(__file__).resolve()
+
+def _public_text_files() -> list[Path]:
+    """The tracked files that are readable text, minus the exempt ones."""
     files: list[Path] = []
     for path in _tracked_files():
-        if path.resolve() == this_file:
+        if _relative(path) in SCAN_EXEMPT:
             continue
         try:
             path.read_text(encoding="utf-8")
@@ -96,31 +128,63 @@ def test_ci_workflow_has_no_mvp_disable_flag() -> None:
     assert "CI disabled notice" not in text
 
 
-def test_public_repo_has_no_deploy_workflow() -> None:
-    """The deploy pipeline is private now — it must not be reintroduced here."""
-    assert not _workflow_path("deploy.yml").exists()
-    assert not (_repo_root() / "render.yaml").exists()
+def test_public_repo_has_the_deploy_pipeline() -> None:
+    """The pipeline a visitor reads about must actually be in the tree."""
+    assert _workflow_path("deploy.yml").exists()
+    assert (_repo_root() / DEPLOY_BLUEPRINT).exists()
 
 
 def test_public_repo_workflow_set_is_the_expected_one() -> None:
-    """Only the workflows a public demo needs stay in the public tree."""
+    """Exactly the workflows a public demo needs, and the deploy among them."""
     present = {path.name for path in (_repo_root() / ".github" / "workflows").glob("*.yml")}
-    assert present == {
-        "ci.yml",
-        "dependabot-auto-merge.yml",
-        "llm-costs.yml",
-        "publish-ghcr.yml",
-    }
+    assert present == EXPECTED_WORKFLOWS
 
 
-def test_public_tree_names_no_infrastructure_identifier() -> None:
-    """No hosting platform, service id, deploy secret or fleet node in public."""
+def test_deploy_workflow_keeps_its_guards() -> None:
+    """The properties that make the pipeline safe to keep in a public repo.
+
+    These were pinned in the private operations repository while the workflow
+    lived there; they are pinned here now that it is public again.
+    """
+    text = _workflow_path("deploy.yml").read_text(encoding="utf-8")
+
+    # It only runs for the owner of this repository.
+    assert "github.repository_owner == 'AleksNeStu'" in text
+    # It deploys only after the CI workflow has finished.
+    assert "workflow_run:" in text
+    assert 'workflows: ["CI/CD AI Real Estate Assistant"]' in text
+    # It serialises same-branch deploys instead of cancelling them.
+    assert "concurrency:" in text
+    assert "cancel-in-progress: false" in text
+    # Every credential it uses comes from the repository secrets.
+    assert "secrets.RENDER_API_KEY" in text
+
+
+def test_deploy_files_carry_no_credential_value() -> None:
+    """The deploy pipeline reads its credentials; it never carries them."""
+    for relative in (DEPLOY_WORKFLOW, DEPLOY_BLUEPRINT):
+        text = (_repo_root() / relative).read_text(encoding="utf-8")
+        for pattern in CREDENTIAL_VALUE_PATTERNS:
+            assert not pattern.search(text), f"{relative} carries a credential value"
+
+
+def test_public_tree_names_no_foreign_infrastructure() -> None:
+    """This repository deploys its own demo and describes nobody else's fleet."""
     offenders: list[str] = []
     for path in _public_text_files():
         lowered = path.read_text(encoding="utf-8").lower()
-        for needle in FORBIDDEN_IN_PUBLIC_TREE:
+        for needle in FOREIGN_INFRASTRUCTURE:
             if needle in lowered:
-                offenders.append(f"{path.relative_to(_repo_root())}: {needle}")
-    assert not offenders, "infrastructure identifiers leaked into the public tree:\n" + "\n".join(
+                offenders.append(f"{_relative(path)}: {needle}")
+    assert not offenders, "foreign infrastructure named in the public tree:\n" + "\n".join(
         offenders
     )
+
+
+def test_public_tree_carries_no_personal_path() -> None:
+    """No path from the machine that wrote the repository is published."""
+    offenders: list[str] = []
+    for path in _public_text_files():
+        if PERSONAL_PATH in path.read_text(encoding="utf-8"):
+            offenders.append(str(_relative(path)))
+    assert not offenders, "personal path in the public tree:\n" + "\n".join(offenders)

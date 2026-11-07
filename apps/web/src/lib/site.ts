@@ -3,7 +3,7 @@
  * Falls back to the public site origin when NEXT_PUBLIC_SITE_URL is not set.
  */
 export const SITE_URL: URL = new URL(
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://realestate.nestlab.tech'
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ai-real-estate-demo.devs-scaler.workers.dev'
 );
 
 /**

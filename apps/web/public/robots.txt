@@ -39,10 +39,10 @@ User-agent: Applebot-Extended
 Allow: /
 
 # Sitemap and LLM policy
-Sitemap: https://realestate.nestlab.tech/sitemap.xml
+Sitemap: https://ai-real-estate-demo.devs-scaler.workers.dev/sitemap.xml
 
 # LLM-friendly content policy
-# https://realestate.nestlab.tech/llms.txt
+# https://ai-real-estate-demo.devs-scaler.workers.dev/llms.txt
 
 # Private areas — noindex for all bots
 Disallow: /api/
