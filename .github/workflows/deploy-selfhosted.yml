@@ -56,9 +56,10 @@ permissions:
 
 jobs:
   deploy:
-    # Only the owner of this repository deploys, and only when a target
-    # server is actually configured. A fork runs nothing.
-    if: github.repository_owner == 'AleksNeStu' && secrets.DEPLOY_HOST != ''
+    # Only the owner of this repository deploys. Whether a target server is
+    # configured at all is a SECRET question, and a secret cannot be read in
+    # a job-level condition - the first step below settles it instead.
+    if: github.repository_owner == 'AleksNeStu'
     runs-on: ubuntu-latest
     env:
       DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
@@ -70,8 +71,20 @@ jobs:
       DEPLOY_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
       IMAGE_REPO: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
     steps:
+      - name: Check the deployment target
+        id: target
+        run: |
+          set -euo pipefail
+          if [ -z "$DEPLOY_HOST" ]; then
+            echo "No deployment target is configured in this repository - nothing to do."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "configured=true" >> "$GITHUB_OUTPUT"
+
       - name: Resolve the image tag
         id: tag
+        if: steps.target.outputs.configured == 'true'
         run: |
           set -euo pipefail
           raw="${{ inputs.image_tag }}"
@@ -83,6 +96,7 @@ jobs:
           echo "Deploying image tag: $tag"
 
       - name: Prepare the SSH key
+        if: steps.target.outputs.configured == 'true'
         run: |
           set -euo pipefail
           install -m 700 -d ~/.ssh
@@ -99,6 +113,7 @@ jobs:
               "$DEPLOY_USER@$DEPLOY_HOST" 'echo "ssh ok"'
 
       - name: Roll the stack onto the new images
+        if: steps.target.outputs.configured == 'true'
         env:
           IMAGE_TAG: ${{ steps.tag.outputs.value }}
         run: |
@@ -153,6 +168,7 @@ jobs:
           REMOTE
 
       - name: Summary
+        if: steps.target.outputs.configured == 'true'
         run: |
           echo "### Deployed" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
