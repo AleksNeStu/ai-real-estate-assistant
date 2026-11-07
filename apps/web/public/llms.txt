@@ -131,6 +131,23 @@ A: Yes — PropVector AI (https://propvectorai.com) with live data, managed acco
 - **Contributing Guide:** https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/development/CONTRIBUTING.md
 - **Changelog:** https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/CHANGELOG.md
 
+## Run it on your own server
+
+- **Stack:** https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/deploy/docker-compose.selfhosted.yml — a FastAPI backend and a Next.js frontend, one published port, no paid model key required.
+- **Deployment guide:** https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/deployment/DEPLOYMENT.md
+- **Automated deployment:** https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/.github/workflows/deploy-selfhosted.yml — a workflow that connects over SSH, pulls the pinned images, restarts the stack and checks the health endpoint on every release tag. The host, the user, the port, the path and the key are repository secrets; nothing about a particular machine is in the repository.
+- **Published images:** `ghcr.io/aleksnestu/ai-real-estate-assistant/{backend,frontend}` — one tag per release, `linux/amd64` and `linux/arm64`.
+- **Managed hosting:** https://render.com/deploy?repo=https://github.com/AleksNeStu/ai-real-estate-assistant — the same stack, built and served by a platform, in one click.
+
+## Who builds this
+
+NestLab Tech (https://nestlab.tech) is a founder-led AI studio in Poland (EU). It builds its own products and takes on a limited number of client contracts each year — workflow automation, custom AI software and EU AI Act readiness.
+
+- **Hosted version of this project:** PropVector AI — https://propvectorai.com
+- **EU AI Act readiness for teams that ship AI:** EU AIGap — https://euaigap.co
+- **AI resume analysis and ATS optimisation:** CheckCV — https://checkcv.co, TuneCV — https://tunecv.co
+- **Self-knowledge through attachment styles (Polish):** PoznajSiebie — https://poznajsiebie.pl
+
 ## License
 
 MIT — https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/LICENSE

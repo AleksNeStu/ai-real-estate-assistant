@@ -1,5 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
-  <rect width="192" height="192" rx="12" fill="#2563eb"/>
-  <path d="M96 40c-30.9 0-56 25.1-56 56s25.1 56 56 56 56-25.1 56-56-25.1-56-56-56z" fill="white"/>
-  <path d="M60 100h12l28 40 28-28 12 28-28-40z" fill="white"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="192" height="192" role="img" aria-label="AI Real Estate Assistant">
+  <title>AI Real Estate Assistant</title>
+  <!-- A roof over a single point: the property, and the listing inside it.
+       Monochrome zinc, as DESIGN.md asks - the data and the map carry the
+       colour, the chrome stays quiet. -->
+  <rect width="512" height="512" rx="112" fill="#09090b"/>
+  <path d="M136 296 L256 176 L376 296" fill="none" stroke="#fafafa" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="256" cy="360" r="36" fill="#fafafa"/>
 </svg>

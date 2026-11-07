@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="AI Real Estate Assistant">
+  <title>AI Real Estate Assistant</title>
+  <!--
+    The mark: a roof over a single point.
+
+    DESIGN.md asks for an elegant, MONOCHROME visual language with a neutral
+    zinc palette - the property data and the map carry the colour, the chrome
+    stays quiet. So the mark is zinc-950 on a zinc-50 tile, and it survives
+    both the light and the dark interface.
+
+    The roof reads as a property; the point under it reads as the listing, the
+    map pin and the answer. At 16 pixels it is still two shapes.
+  -->
+  <rect width="512" height="512" rx="112" fill="#09090b"/>
+  <path d="M136 296 L256 176 L376 296" fill="none" stroke="#fafafa" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="256" cy="360" r="36" fill="#fafafa"/>
+</svg>

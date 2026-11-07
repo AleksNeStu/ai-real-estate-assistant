@@ -1,5 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" fill="#2563eb"/>
-  <circle cx="256" cy="220" r="120" fill="white"/>
-  <rect x="136" y="370" width="240" height="80" rx="16" fill="white"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="AI Real Estate Assistant">
+  <title>AI Real Estate Assistant</title>
+  <!-- The maskable variant: the background is full bleed (the platform cuts
+       the shape), and the mark sits inside the 80% safe zone. -->
+  <rect width="512" height="512" fill="#09090b"/>
+  <g transform="translate(256 256) scale(0.72) translate(-256 -256)">
+    <path d="M136 296 L256 176 L376 296" fill="none" stroke="#fafafa" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="256" cy="360" r="36" fill="#fafafa"/>
+  </g>
 </svg>

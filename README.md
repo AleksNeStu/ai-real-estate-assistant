@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="apps/web/public/logo.svg" width="96" alt="AI Real Estate Assistant" />
+</div>
+
 # AI Real Estate Assistant
 
 **Ask in natural language. Get matched listings.**
@@ -411,6 +415,18 @@ public roadmap and may move before launch.
 ships alongside billing. The fastest way to reach the maintainer today is to
 [open a Discussion](https://github.com/AleksNeStu/ai-real-estate-assistant/discussions)
 with the `[Commercial]` prefix.
+
+### More from the studio
+
+The same team builds these. This repository is the open door, not the whole shop.
+
+| | |
+|---|---|
+| **[PropVector AI](https://propvectorai.com)** | The hosted version of this project — live data, accounts, AI CRM, enterprise tiers. |
+| **[EU AIGap](https://euaigap.co)** | EU AI Act self-assessment for teams that ship AI: classify a system, find the gaps, export the documents. |
+| **[NestLab Tech](https://nestlab.tech)** | The studio itself — workflow automation, custom AI software and EU AI Act readiness for clients. |
+| **[CheckCV](https://checkcv.co)** · **[TuneCV](https://tunecv.co)** | AI resume analysis and ATS optimisation. |
+| **[PoznajSiebie](https://poznajsiebie.pl)** | Self-knowledge through attachment styles — in Polish. |
 
 ### Ideas, forks, and other ways to work with us
 
