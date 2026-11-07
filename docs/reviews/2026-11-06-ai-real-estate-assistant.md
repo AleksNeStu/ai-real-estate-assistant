@@ -141,6 +141,22 @@ the free edge certificate covers one label only and a deeper name cannot complet
 returns real results, and the conversational assistant replies — with no paid model key, because the
 application substitutes a local canned-response model in demo mode.
 
+**Which node it runs on.** The operator's production node — the server that carries the operator's
+own production workload, measured idle for this purpose, with a tunnel of its own and the headroom
+for the stack — and not the shared node that carries the other products' staging stacks. A public
+demo does not belong on a shared substrate where somebody else's staging deployment can disturb it.
+
+**The name did not change, and no new name was added.** A new public hostname for an unfinished
+product is a new indexable surface, and the operator asked for the opposite. The demo kept the
+address it always had; only the machine behind it moved.
+
+**And it is not indexed.** The product is not finished, and the operator does not want it released in
+this state. Two mechanisms keep it out of the index, both of them per deployment and both reversible
+without a rebuild: a runtime flag makes every page answer `X-Robots-Tag: noindex, nofollow`, and the
+deployment replaces the product's own — deliberately inviting — `robots.txt` with one that disallows
+everything. The demo stays reachable, because it is still the thing that can be handed to somebody
+to try; it just stays out of the index. Turning both off is the release step.
+
 **What left the public tree.** The platform blueprint and the deploy workflow moved to a private
 repository next to the stack that replaced them. The free-tier pair keeps running as a secondary and
 is no longer advertised anywhere.
@@ -212,13 +228,10 @@ acceptance criteria and a test strategy:
 
 | Item | Why it is still open |
 |---|---|
-| **The live demo still runs the previous build** | The fixes in this document are in the working tree, not on the live site. The deployed image is the one published from the last tag, so the hosted demo has the seed ordering, the lead capture and the lead redaction only after these commits are pushed, the images are rebuilt and the stack is redeployed. The `/leads` exposure described in §2.4 is therefore **still open on the live site** until that happens |
 | Tasks #14, #15, #16 — the content and distribution chain | They publish under the operator's identity. The drafts are written and updated; each publication still needs its own go |
-| Task #20 — two health tests refactored to deterministic async-mocks | Two earlier attempts were reverted. The third attempt landed: the checks are patched on the module object and the slow check's sleep outlasts both timers, so the tests are deterministic and enforce the contract. The remaining step is a Linux CI run — the marker is kept for Linux until one confirms it — so the task stays open |
-| Task #22 — a designed social-preview image | A design decision. The dimension mismatch was fixed so the declared size matches the file |
 | The free-tier secondary | Retiring it is irreversible and needs an explicit go |
-| The old origin's copy of the demo | Left running as a fallback. Decommissioning it needs an explicit go |
-| Publishing `dev` and `main` | `main` and `dev` have no common ancestor, so a pull request between them cannot be merged; `main` is synchronised by a union promotion that keeps `dev`'s paths and the paths only `main` has, as an ordinary fast-forward commit. That promotion was already done for the tree as it stood earlier today. These commits are not published yet, and another session pushed to `dev` in the meantime, so they need to be replayed on top of it before the push |
+| The previous origin's copy of the demo | Left in place, stopped, with its files kept for the rollback. Decommissioning it needs an explicit go |
+| The Oracle copy of the demo | Left in place. Decommissioning it needs an explicit go |
 | Seventy-odd documentation files that no page links to | Named here rather than rewritten. They are a documentation-hygiene backlog, not a defect |
 | The three near-duplicate quickstart guides and the duplicated agent-system documents | Named here rather than merged |
 
@@ -229,15 +242,20 @@ itself:
 
 | Task | State | What is left, and who holds it |
 |---|---|---|
-| #27 — the demo on our own server, the topology hidden | **done** | The goal is met and verified: the demo answers on our own node at the same public URL, and the deployment topology is out of the public tree. Two operator-gated extras remain, deliberately not blocking it: publish the commits and redeploy, and retire the two fallback copies |
-| #20 — the two ignored health tests | **in-progress** | The refactor landed: the `xfail` markers are gone, the checks are patched on the module object, and a new test pins the seam itself. The last two criteria — a green Linux run and a green CI job — need the push, so they wait on the operator |
-| #14, #15, #16 — the content and distribution chain | **pending** | All five drafts are written and ready. Publishing under the operator's identity is the operator's step, and the first wave also waits on the technical push |
-| #22 — the social-preview card | **blocked** | The dimension mismatch is fixed and verified. Only the design is left, and the design is the operator's decision; the task now says so instead of describing a placeholder that no longer exists |
+| #27 — the demo on our own server, the topology hidden | **done** | The goal is met and verified: the demo answers on the operator's own server, at the same public URL, on the node that carries production, and the deployment topology is out of the public tree. Two operator-gated extras remain, deliberately not blocking it: retire the two fallback copies |
+| #20 — the two ignored health tests | **done** | The `xfail` markers are gone, the checks are patched on the module object, a new test pins the seam itself, and the Linux CI run is green — the two tests enforce the contract on every platform |
+| #22 — the social-preview card | **done** | The card is a designed 1200×630 image built from the product's own identity and its own copy, and the dimension mismatch that started the task is fixed too |
+| #14, #15, #16 — the content and distribution chain | **pending** | All five drafts are written and ready, and the demo they point at is deliberately kept out of the index, so a link does not release the unfinished pages. Publishing under the operator's identity is the operator's step |
 
 ## 5. How this was verified
 
 - The demo answers on its public URL: a health probe, a catalogue search returning scored results,
   and a conversational turn returning an answer with sources — all through the public hostname.
+- The demo is not indexed: every page answers `X-Robots-Tag: noindex, nofollow`, and the served
+  `robots.txt` disallows everything. Both are per deployment, so the release step is one flag and
+  one file.
+- The leads endpoint no longer hands a captured contact to an anonymous visitor — checked against
+  the running demo, not against the code alone.
 - The vector index survives a restart and reloads from disk.
 - The deployment stack is a committed, reviewable file in the private repository; the host copy
   matches it.
