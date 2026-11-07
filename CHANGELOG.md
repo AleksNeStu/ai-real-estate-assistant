@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.7] - 2026-11-07
+
 ### Security
 - **The leads endpoint handed every captured contact detail to anonymous visitors** —
   in demo mode the backend user is an administrator, and the administrator branch
@@ -967,6 +969,7 @@ First production release of AI Real Estate Assistant.
 - SQLite database for property listings
 
 [Unreleased]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases
+[5.1.7]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.7
 [5.1.6]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.6
 [5.1.5.2]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.5.2
 [5.1.5]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases
