@@ -28,6 +28,10 @@ from pathlib import Path
 DEPLOY_WORKFLOW = ".github/workflows/deploy.yml"
 DEPLOY_BLUEPRINT = "render.yaml"
 
+# The second deployment target: a server the visitor owns.
+SELFHOSTED_WORKFLOW = ".github/workflows/deploy-selfhosted.yml"
+SELFHOSTED_COMPOSE = "deploy/docker-compose.selfhosted.yml"
+
 # The CI workflow that gates the deploys.
 CI_WORKFLOW = ".github/workflows/ci.yml"
 
@@ -35,6 +39,7 @@ CI_WORKFLOW = ".github/workflows/ci.yml"
 EXPECTED_WORKFLOWS = {
     "ci.yml",
     "deploy.yml",
+    "deploy-selfhosted.yml",
     "dependabot-auto-merge.yml",
     "llm-costs.yml",
     "publish-ghcr.yml",
@@ -162,10 +167,40 @@ def test_deploy_workflow_keeps_its_guards() -> None:
 
 def test_deploy_files_carry_no_credential_value() -> None:
     """The deploy pipeline reads its credentials; it never carries them."""
-    for relative in (DEPLOY_WORKFLOW, DEPLOY_BLUEPRINT):
+    for relative in (DEPLOY_WORKFLOW, DEPLOY_BLUEPRINT, SELFHOSTED_WORKFLOW, SELFHOSTED_COMPOSE):
         text = (_repo_root() / relative).read_text(encoding="utf-8")
         for pattern in CREDENTIAL_VALUE_PATTERNS:
             assert not pattern.search(text), f"{relative} carries a credential value"
+
+
+def test_selfhosted_workflow_is_generic_and_guarded() -> None:
+    """The second deployment target stays generic.
+
+    A visitor may copy this workflow into their own fork and point it at
+    their own server. That only works while the file names NO host, no user,
+    no port and no path of its own - every one of them is a secret.
+    """
+    text = _workflow_path("deploy-selfhosted.yml").read_text(encoding="utf-8")
+
+    # The stack a visitor copies to their server ships with this repository.
+    assert (_repo_root() / SELFHOSTED_COMPOSE).exists()
+
+    # Only the owner of this repository deploys.
+    assert "github.repository_owner == 'AleksNeStu'" in text
+    # And only when a target server is configured at all.
+    assert "secrets.DEPLOY_HOST != ''" in text
+    # Every endpoint of the deployment comes from a secret.
+    for secret in ("DEPLOY_HOST", "DEPLOY_USER", "DEPLOY_PORT", "DEPLOY_PATH"):
+        assert f"secrets.{secret}" in text
+    # The key is written to disk, not passed in the command line.
+    assert "secrets.DEPLOY_SSH_KEY" in text
+    # Serialised deploys, never cancelled half-way.
+    assert "cancel-in-progress: false" in text
+    # No address of any kind is written into the file.
+    assert not re.search(r"\b\d{1,3}(\.\d{1,3}){3}\b", text), (
+        "an IP address is written in the workflow"
+    )
+    assert "ssh-keyscan" in text
 
 
 def test_public_tree_names_no_foreign_infrastructure() -> None:

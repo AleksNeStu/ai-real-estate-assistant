@@ -1,0 +1,160 @@
+name: Deploy to a self-hosted server
+
+# A second deployment target, next to the platform-hosted one: this workflow
+# rolls a server YOU control onto the images this repository publishes.
+#
+# It is deliberately generic. Nothing about any particular host, port, user or
+# path is written here - every one of them arrives through the repository
+# secrets, so the same file works for a fork, a customer, or a teammate.
+#
+# The credentials it needs (Settings -> Secrets -> Actions):
+#
+#   DEPLOY_SSH_KEY          private key of the deploy user (PEM, no passphrase)
+#   DEPLOY_HOST             hostname or IP of the server
+#   DEPLOY_USER             the user to connect as
+#   DEPLOY_PORT             SSH port (optional, default 22)
+#   DEPLOY_PATH             directory on the server that holds the deployment
+#   DEPLOY_COMPOSE_FILE     compose file in that directory (optional,
+#                            default docker-compose.selfhosted.yml)
+#   DEPLOY_HEALTH_URL       URL that answers 200 once the stack is up
+#                            (optional - use an internal address, it must not
+#                            carry a token: it travels in the command line)
+#   DEPLOY_SSH_KNOWN_HOSTS  the server's host key (optional, pins the host)
+#
+# The server keeps its own configuration. The workflow only replaces the
+# images and restarts the stack:
+#
+#   <DEPLOY_PATH>/docker-compose.selfhosted.yml   the stack
+#   <DEPLOY_PATH>/.env                            the access key, the JWT secret
+#                                                 and the pepper
+#
+# The .env never leaves the server and never enters this repository.
+
+on:
+  # A release tag means "the images for this version now exist" - publish them,
+  # then roll the server onto them.
+  push:
+    tags:
+      - "v*"
+
+  # Manual roll-out, e.g. to move the server onto a specific version.
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to deploy (e.g. 5.1.7). Empty = the tag of this release."
+        required: false
+        default: ""
+        type: string
+
+concurrency:
+  group: deploy-selfhosted-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  deploy:
+    # Only the owner of this repository deploys, and only when a target
+    # server is actually configured. A fork runs nothing.
+    if: github.repository_owner == 'AleksNeStu' && secrets.DEPLOY_HOST != ''
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      DEPLOY_COMPOSE_FILE: ${{ secrets.DEPLOY_COMPOSE_FILE || 'docker-compose.selfhosted.yml' }}
+      DEPLOY_HEALTH_URL: ${{ secrets.DEPLOY_HEALTH_URL }}
+      DEPLOY_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+      IMAGE_REPO: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
+    steps:
+      - name: Resolve the image tag
+        id: tag
+        run: |
+          set -euo pipefail
+          raw="${{ inputs.image_tag }}"
+          if [ -z "$raw" ]; then
+            raw="${GITHUB_REF_NAME}"
+          fi
+          tag="${raw#v}"
+          echo "value=$tag" >> "$GITHUB_OUTPUT"
+          echo "Deploying image tag: $tag"
+
+      - name: Prepare the SSH key
+        run: |
+          set -euo pipefail
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          if [ -n "$DEPLOY_SSH_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$DEPLOY_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -p "$DEPLOY_PORT" "$DEPLOY_HOST" > ~/.ssh/known_hosts 2>/dev/null
+          fi
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_PORT" \
+              -o UserKnownHostsFile=~/.ssh/known_hosts \
+              -o StrictHostKeyChecking=yes \
+              "$DEPLOY_USER@$DEPLOY_HOST" 'echo "ssh ok"'
+
+      - name: Roll the stack onto the new images
+        env:
+          IMAGE_TAG: ${{ steps.tag.outputs.value }}
+        run: |
+          set -euo pipefail
+          # The variables travel as the remote command's environment; the
+          # script itself arrives over stdin. None of them is a credential -
+          # a path, a tag, an image repository and a health URL.
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_PORT" \
+              -o UserKnownHostsFile=~/.ssh/known_hosts \
+              -o StrictHostKeyChecking=yes \
+              "$DEPLOY_USER@$DEPLOY_HOST" \
+              "DEPLOY_PATH='$DEPLOY_PATH' COMPOSE_FILE='$DEPLOY_COMPOSE_FILE' \
+               IMAGE_TAG='$IMAGE_TAG' IMAGE_REPO='$IMAGE_REPO' \
+               DEPLOY_HEALTH_URL='$DEPLOY_HEALTH_URL' bash -s" <<'REMOTE'
+          set -euo pipefail
+          cd "$DEPLOY_PATH"
+          export AIRE_IMAGE_TAG="$IMAGE_TAG"
+          export AIRE_IMAGE_REPO="$IMAGE_REPO"
+
+          # The images are published by the release workflow, which runs in
+          # parallel with this one. The pull can therefore fail for a while
+          # before the tag exists - retry instead of failing the deploy.
+          pulled=0
+          for attempt in $(seq 1 20); do
+            if docker compose -f "$COMPOSE_FILE" pull; then
+              pulled=1
+              break
+            fi
+            echo "images not published yet (attempt $attempt/20), waiting 30s"
+            sleep 30
+          done
+          if [ "$pulled" -ne 1 ]; then
+            echo "the images for tag $IMAGE_TAG never became available" >&2
+            exit 1
+          fi
+
+          docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
+
+          if [ -n "$DEPLOY_HEALTH_URL" ]; then
+            for attempt in $(seq 1 30); do
+              if curl -fsS -o /dev/null --max-time 10 "$DEPLOY_HEALTH_URL"; then
+                echo "the stack answers at $DEPLOY_HEALTH_URL"
+                exit 0
+              fi
+              echo "waiting for the stack to answer (attempt $attempt/30)"
+              sleep 10
+            done
+            echo "the stack did not become healthy at $DEPLOY_HEALTH_URL" >&2
+            docker compose -f "$COMPOSE_FILE" ps >&2 || true
+            exit 1
+          fi
+          REMOTE
+
+      - name: Summary
+        run: |
+          echo "### Deployed" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- image tag: \`${{ steps.tag.outputs.value }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- images: \`$IMAGE_REPO\`" >> "$GITHUB_STEP_SUMMARY"
