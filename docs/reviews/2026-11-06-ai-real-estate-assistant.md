@@ -222,6 +222,18 @@ acceptance criteria and a test strategy:
 | Seventy-odd documentation files that no page links to | Named here rather than rewritten. They are a documentation-hygiene backlog, not a defect |
 | The three near-duplicate quickstart guides and the duplicated agent-system documents | Named here rather than merged |
 
+### 4.1 Follow-up dispositions
+
+Every task the review left open now carries a named next step and its gate, recorded in the task
+itself:
+
+| Task | State | What is left, and who holds it |
+|---|---|---|
+| #27 — the demo on our own server, the topology hidden | **done** | The goal is met and verified: the demo answers on our own node at the same public URL, and the deployment topology is out of the public tree. Two operator-gated extras remain, deliberately not blocking it: publish the commits and redeploy, and retire the two fallback copies |
+| #20 — the two ignored health tests | **in-progress** | The refactor landed: the `xfail` markers are gone, the checks are patched on the module object, and a new test pins the seam itself. The last two criteria — a green Linux run and a green CI job — need the push, so they wait on the operator |
+| #14, #15, #16 — the content and distribution chain | **pending** | All five drafts are written and ready. Publishing under the operator's identity is the operator's step, and the first wave also waits on the technical push |
+| #22 — the social-preview card | **blocked** | The dimension mismatch is fixed and verified. Only the design is left, and the design is the operator's decision; the task now says so instead of describing a placeholder that no longer exists |
+
 ## 5. How this was verified
 
 - The demo answers on its public URL: a health probe, a catalogue search returning scored results,
