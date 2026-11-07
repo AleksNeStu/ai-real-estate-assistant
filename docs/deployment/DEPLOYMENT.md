@@ -78,6 +78,57 @@ open http://localhost:3000
 
 The repository ships the Docker Compose stack; you run it on your own host.
 
+### The quick way — the published images
+
+The release workflow publishes an image per release tag, for `linux/amd64`
+and `linux/arm64`. `deploy/docker-compose.selfhosted.yml` runs exactly those
+images, so you do not build anything:
+
+```bash
+curl -O https://raw.githubusercontent.com/AleksNeStu/ai-real-estate-assistant/main/deploy/docker-compose.selfhosted.yml
+cat > .env <<'ENV'
+API_ACCESS_KEY=change-me
+JWT_SECRET_KEY=change-me
+SECURITY_PEPPER=change-me
+ENV
+docker compose -f docker-compose.selfhosted.yml up -d
+```
+
+Pin the version you want — a floating tag makes the running code unknowable:
+
+```bash
+AIRE_IMAGE_TAG=5.1.8 docker compose -f docker-compose.selfhosted.yml up -d
+```
+
+A fork publishes under its own name; point the stack at those images with
+`AIRE_IMAGE_REPO=ghcr.io/<owner>/<repo>`.
+
+### The automated way — CI deploys for you
+
+`.github/workflows/deploy-selfhosted.yml` does the whole thing on every
+release tag: it connects over SSH, pulls the pinned images, restarts the
+stack and checks the health endpoint. Give it the following repository
+secrets and there is nothing left to do by hand:
+
+| Secret | What it is |
+|---|---|
+| `DEPLOY_SSH_KEY` | the private key of a deploy user (PEM, no passphrase) |
+| `DEPLOY_HOST` | hostname or IP of the server |
+| `DEPLOY_USER` | the user to connect as |
+| `DEPLOY_PORT` | SSH port (optional, default 22) |
+| `DEPLOY_PATH` | the directory that holds the deployment |
+| `DEPLOY_COMPOSE_FILE` | the compose file in that directory (optional) |
+| `DEPLOY_HEALTH_URL` | a URL that answers 200 once the stack is up (optional) |
+
+The server keeps its own configuration — the workflow only replaces the
+images and restarts the stack. Put the compose file and a `.env` with the
+access key, the JWT secret and the pepper in `DEPLOY_PATH`, and the file
+permissions so that the deploy user can read the `.env`.
+
+### The manual way — build the images yourself
+
+If you would rather build from source than pull a published image:
+
 ### Step 1: Build the backend image
 
 ```bash
