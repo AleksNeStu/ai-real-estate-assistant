@@ -20,9 +20,12 @@ export function buildStructuredData(locale: Locale): Record<string, unknown> {
   const origin = SITE_URL.origin;
   const githubUrl = 'https://github.com/AleksNeStu/ai-real-estate-assistant';
   const propVectorUrl = 'https://propvectorai.com';
-  const liveDemoUrl = 'https://realestate-web-dz1y.onrender.com';
+  // The live demo IS the canonical origin — the app is served from the same
+  // host the structured data describes, so this follows SITE_URL instead of
+  // carrying a second hard-coded hostname that can drift from it.
+  const liveDemoUrl = origin;
 
-  // Stable @id anchors under the Render canonical origin
+  // Stable @id anchors under the canonical origin
   const orgId = `${origin}/#organization`;
   const siteId = `${origin}/#website`;
   const appId = `${origin}/#softwareapplication`;

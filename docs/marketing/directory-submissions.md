@@ -24,7 +24,7 @@ Tagline (≤ 100 chars): Conversational AI for property search —
 open-source, self-hostable, MIT
 Category: Real Estate
 Pricing: Free (open-source) | Paid hosted tier (propvectorai.com)
-URL: https://realestate-web-dz1y.onrender.com/
+URL: https://realestate.nestlab.tech/
 GitHub: https://github.com/AleksNeStu/ai-real-estate-assistant
 Description: Open-source conversational AI for property search. Ask in
 natural language ("2-bedroom apartment in Kraków under 500k") and get
@@ -44,7 +44,7 @@ providers with automatic fallback chain. 9 languages. MIT-licensed.
 
 ```
 Tool name: AI Real Estate Assistant
-URL: https://realestate-web-dz1y.onrender.com/
+URL: https://realestate.nestlab.tech/
 GitHub: https://github.com/AleksNeStu/ai-real-estate-assistant
 Category: AI Agents / Real Estate
 Pricing: Free (open-source) | Paid (hosted tier)
@@ -66,7 +66,7 @@ fallback. 9 languages. MIT-licensed.
 
 ```
 Tool: AI Real Estate Assistant
-URL: https://realestate-web-dz1y.onrender.com/
+URL: https://realestate.nestlab.tech/
 Category: Real Estate / Property Tech
 Short description: Conversational AI property search with natural
 language queries. Open-source, MIT-licensed, self-hostable.
@@ -100,7 +100,7 @@ See `product-hunt.md` for full draft.
 
 ```
 Startup name: AI Real Estate Assistant
-URL: https://realestate-web-dz1y.onrender.com/
+URL: https://realestate.nestlab.tech/
 Tagline: Conversational AI property search — open-source, MIT-licensed
 Description: Open-source conversational AI platform for property
 search, analytics, and market insights. Built with FastAPI + Next.js
@@ -139,7 +139,7 @@ is an open-source conversational AI platform for property search,
 analytics, and market insights. Built with FastAPI + Next.js 16 +
 ChromaDB. Multi-provider LLM routing with automatic fallback chain.
 9 languages with EU AI Act compliance labels. MIT-licensed.
-- Live demo: https://realestate-web-dz1y.onrender.com/
+- Live demo: https://realestate.nestlab.tech/
 - Architecture: https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/architecture/large-saas-overview.md
 ```
 

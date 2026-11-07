@@ -42,11 +42,21 @@ router = APIRouter(tags=["Admin"])
 
 
 async def _invalidate_response_cache(request: Request) -> None:
-    """Clear response cache after data mutations (Task #55)."""
+    """Clear response cache after data mutations (Task #55).
+
+    Best-effort by design: the mutation has already happened, so a cache that
+    cannot be cleared must not turn a successful upload into a 500. A cache
+    backed by an unreachable Redis would otherwise fail every write with a
+    confusing error instead of leaving a stale entry behind.
+    """
     cache = getattr(request.app.state, "response_cache", None)
-    if cache:
+    if not cache:
+        return
+    try:
         await cache.clear_all()
         logger.info("Response cache invalidated after data mutation")
+    except Exception as e:
+        logger.warning("Response cache invalidation failed (non-fatal): %s", sanitize_for_log(e))
 
 
 # File upload constants

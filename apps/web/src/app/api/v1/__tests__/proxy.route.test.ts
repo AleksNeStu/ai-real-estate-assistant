@@ -70,7 +70,7 @@ describe("API v1 proxy route", () => {
     expect(response.headers.get("X-Request-ID")).toBe("req-1");
   });
 
-  it("does not forward client cookie or client-supplied X-API-Key", async () => {
+  it("forwards the session cookie and authorization header, but overrides client-supplied X-API-Key", async () => {
     (global.fetch as unknown as jest.Mock).mockResolvedValueOnce(
       new Response(JSON.stringify({ ok: true }), {
         status: 200,
@@ -85,7 +85,8 @@ describe("API v1 proxy route", () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Cookie: "session=abc",
+        Cookie: "access_token=jwt-token",
+        Authorization: "Bearer jwt-token",
         "X-API-Key": "malicious-client-key",
       },
     });
@@ -94,8 +95,52 @@ describe("API v1 proxy route", () => {
 
     const [, init] = (global.fetch as unknown as jest.Mock).mock.calls[0] as [string, RequestInit & { headers?: Headers }];
     const headers = init.headers as Headers;
-    expect(headers.get("cookie")).toBeNull();
+    // The backend reads the session from the access_token cookie or the
+    // Authorization header — without them every authenticated surface 401s.
+    expect(headers.get("cookie")).toBe("access_token=jwt-token");
+    expect(headers.get("authorization")).toBe("Bearer jwt-token");
     expect(headers.get("X-API-Key")).toBe("server-secret-key");
+  });
+
+  it("forwards the CORS headers so a preflight reaches the backend intact", async () => {
+    (global.fetch as unknown as jest.Mock).mockResolvedValueOnce(
+      new Response(null, {
+        status: 204,
+        headers: {
+          "Access-Control-Allow-Origin": "https://realestate.nestlab.tech",
+          "Access-Control-Allow-Methods": "GET",
+        },
+      })
+    );
+
+    const request = makeRequest({
+      url: "http://localhost/api/v1/search",
+      method: "OPTIONS",
+      headers: {
+        Origin: "https://realestate.nestlab.tech",
+        "Access-Control-Request-Method": "GET",
+        "Access-Control-Request-Headers": "content-type",
+      },
+    });
+
+    const response = await OPTIONS(request, { params: Promise.resolve({ path: ["search"] }) });
+
+    const [, init] = (global.fetch as unknown as jest.Mock).mock.calls[0] as [
+      string,
+      RequestInit & { headers?: Headers },
+    ];
+    const headers = init.headers as Headers;
+    // Without these the backend cannot recognise a browser request and drops
+    // the allow-origin header, and a preflight loses the method and header it
+    // is asking about — so the backend answers 405 instead of the preflight.
+    expect(headers.get("origin")).toBe("https://realestate.nestlab.tech");
+    expect(headers.get("access-control-request-method")).toBe("GET");
+    expect(headers.get("access-control-request-headers")).toBe("content-type");
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get("Access-Control-Allow-Origin")).toBe(
+      "https://realestate.nestlab.tech"
+    );
   });
 
   it("supports empty path and omits X-API-Key when no access key env is set", async () => {

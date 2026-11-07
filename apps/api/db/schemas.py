@@ -771,6 +771,12 @@ class LeadWithScoreResponse(LeadResponse):
 
     latest_score: Optional["LeadScoreResponse"] = None
     interaction_count: int = 0
+    # The prioritized breakdown that `POST /leads` computes. The endpoint has
+    # always passed this value, but the model never declared the field, so
+    # pydantic (extra='ignore') dropped it and the client received a lead with
+    # no priority score — while the endpoint's own summary promised one.
+    # Declared here so the response matches what the endpoint advertises.
+    priority_score: Optional["PrioritizedScoreResponse"] = None
 
 
 class LeadListResponse(BaseModel):
@@ -1302,8 +1308,12 @@ class AgentGoalUpdate(BaseModel):
 
 
 # Resolve forward references
-LeadWithScoreResponse.model_rebuild()
-LeadDetailResponse.model_rebuild()
+# Neither model is rebuilt here. LeadWithScoreResponse forward-references
+# PrioritizedScoreResponse, which is defined much further down this module, and
+# LeadDetailResponse inherits from LeadWithScoreResponse — so rebuilding either
+# one here raises PydanticUndefinedAnnotation (a name that does not exist yet)
+# and takes the whole module import down with it. Both rebuilds live at the end
+# of the file, after every referenced class exists.
 
 
 # =============================================================================
@@ -2501,6 +2511,17 @@ class PrioritizedScoreResponse(BaseModel):
     recommendations: list[str] = Field(
         default_factory=list, description="Actionable recommendations"
     )
+
+
+# LeadWithScoreResponse references PrioritizedScoreResponse as a forward
+# reference, and the earlier model_rebuild() call (line ~1311) runs before this
+# class exists — so it could not resolve the annotation then. Rebuild here, now
+# that the referenced model is defined, or every instantiation of
+# LeadWithScoreResponse raises PydanticUndefinedAnnotation.
+# LeadDetailResponse inherits from LeadWithScoreResponse, so it needs the same
+# treatment and the same moment.
+LeadWithScoreResponse.model_rebuild()
+LeadDetailResponse.model_rebuild()
 
 
 class CreateAndScoreLeadRequest(BaseModel):

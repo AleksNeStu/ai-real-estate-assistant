@@ -53,6 +53,109 @@ router = APIRouter(prefix="/leads", tags=["Lead Scoring"])
 
 
 # =============================================================================
+# PII redaction
+# =============================================================================
+#
+# In demo mode `api.deps.auth.get_current_user` hands EVERY caller the synthetic
+# admin account (id="demo-user-id"), so an anonymous visitor would otherwise be
+# able to list every lead and read every lead's real email address. The helpers
+# below redact the contact fields for that actor while leaving the behaviour of a
+# genuinely authenticated admin/agent untouched.
+
+DEMO_USER_ID = "demo-user-id"
+DEMO_USER_EMAIL = "demo@example.com"
+
+
+def _is_demo_actor(user: Optional[User]) -> bool:
+    """True when the caller is the synthetic demo/anonymous identity."""
+    if user is None:
+        return True
+    if getattr(user, "id", None) == DEMO_USER_ID:
+        return True
+    if getattr(user, "email", None) == DEMO_USER_EMAIL:
+        return True
+    return False
+
+
+def _mask_email(email: Optional[str]) -> Optional[str]:
+    """Reduce an email address to a non-identifying hint (e.g. ``a***@example.com``)."""
+    if not email:
+        return None
+    local, separator, domain = email.partition("@")
+    if not separator:
+        return "***"
+    masked_local = "*" if len(local) <= 1 else f"{local[0]}***"
+    return f"{masked_local}@{domain}"
+
+
+def _mask_phone(phone: Optional[str]) -> Optional[str]:
+    """Reduce a phone number to its last two digits."""
+    if not phone:
+        return None
+    digits = "".join(char for char in phone if char.isdigit())
+    if len(digits) <= 2:
+        return "***"
+    return f"***{digits[-2:]}"
+
+
+def _mask_name(name: Optional[str]) -> Optional[str]:
+    """Reduce a person's name to a non-identifying initial (e.g. ``A***``).
+
+    A visitor's name is personal detail exactly as much as their address is,
+    and the public lead endpoints collect one (``POST /leads`` takes a name, a
+    phone number and an email address). Masking only the address would leave
+    the other two columns readable.
+    """
+    if not name:
+        return None
+    stripped = name.strip()
+    if not stripped:
+        return None
+    return f"{stripped[0]}***"
+
+
+def _redact_contact(
+    email: Optional[str],
+    phone: Optional[str],
+    *,
+    keep_email: Optional[str] = None,
+) -> tuple[Optional[str], Optional[str]]:
+    """Return an ``(email, phone)`` pair that is safe to hand to the caller.
+
+    The email is preserved only when it is exactly the address the caller
+    submitted (their own input, so echoing it leaks nothing new). Every other
+    address is masked. The phone is always masked: a phone number is never
+    supplied by the caller on the public tracking endpoints.
+    """
+    if keep_email and email and email.strip().lower() == keep_email.strip().lower():
+        visible_email = email
+    else:
+        visible_email = _mask_email(email)
+    return visible_email, _mask_phone(phone)
+
+
+def _redact_lead_identity(
+    lead: Any,
+    *,
+    keep_email: Optional[str] = None,
+    keep_name: Optional[str] = None,
+) -> tuple[Optional[str], Optional[str], Optional[str]]:
+    """Return the ``(email, phone, name)`` triple that is safe to hand out.
+
+    A field is left readable only when it is exactly what the caller just
+    submitted — their own input, echoed back, which leaks nothing new. Every
+    other visitor's details are masked.
+    """
+    email, phone = _redact_contact(lead.email, lead.phone, keep_email=keep_email)
+    name = lead.name
+    if keep_name and name and name.strip().lower() == keep_name.strip().lower():
+        visible_name = name
+    else:
+        visible_name = _mask_name(name)
+    return email, phone, visible_name
+
+
+# =============================================================================
 # Public Tracking Endpoints (no auth required)
 # =============================================================================
 
@@ -112,8 +215,14 @@ async def get_or_create_visitor(
         consent_given=body.consent_given,
     )
 
-    # Set cookie in response
-    return LeadResponse.model_validate(lead)
+    # The contact fields are redacted: this endpoint is public, so the caller
+    # may not own the lead that was found by visitor_id.
+    visible_email, visible_phone, visible_name = _redact_lead_identity(lead, keep_email=body.email)
+    response = LeadResponse.model_validate(lead)
+    response.email = visible_email
+    response.phone = visible_phone
+    response.name = visible_name
+    return response
 
 
 # =============================================================================
@@ -173,13 +282,17 @@ async def create_and_score_lead(
     std_scoring = LeadScoringService(session)
     await std_scoring.score_lead(lead.id)
 
+    visible_email, visible_phone, visible_name = _redact_lead_identity(
+        lead, keep_email=body.email, keep_name=body.name
+    )
+
     return LeadWithScoreResponse(
         id=lead.id,
         visitor_id=lead.visitor_id,
         user_id=lead.user_id,
-        email=lead.email,
-        phone=lead.phone,
-        name=lead.name,
+        email=visible_email,
+        phone=visible_phone,
+        name=visible_name,
         budget_min=lead.budget_min,
         budget_max=lead.budget_max,
         preferred_locations=lead.preferred_locations,
@@ -346,18 +459,26 @@ async def list_leads(
     )
 
     # Build response with scores
+    # A demo/anonymous caller must never read another visitor's real contact
+    # details, so the contact fields are masked for that actor only.
+    redact = _is_demo_actor(user)
     items = []
     for lead in leads:
         latest_score = await score_repo.get_latest_for_lead(lead.id)
         assignment = await assignment_repo.get_primary_for_lead(lead.id)
 
+        if redact:
+            visible_email, visible_phone, visible_name = _redact_lead_identity(lead)
+        else:
+            visible_email, visible_phone, visible_name = lead.email, lead.phone, lead.name
+
         lead_data = LeadWithScoreResponse(
             id=lead.id,
             visitor_id=lead.visitor_id,
             user_id=lead.user_id,
-            email=lead.email,
-            phone=lead.phone,
-            name=lead.name,
+            email=visible_email,
+            phone=visible_phone,
+            name=visible_name,
             budget_min=lead.budget_min,
             budget_max=lead.budget_max,
             preferred_locations=lead.preferred_locations,
@@ -410,7 +531,20 @@ async def get_high_value_leads(
         assigned_to_agent=agent_id,
     )
 
-    return [LeadWithScoreResponse(**lead) for lead in leads]
+    redact = _is_demo_actor(user)
+    results = []
+    for lead in leads:
+        if redact:
+            visible_email, visible_phone = _redact_contact(lead.get("email"), lead.get("phone"))
+            visible_name = _mask_name(lead.get("name"))
+            lead = {
+                **lead,
+                "email": visible_email,
+                "phone": visible_phone,
+                "name": visible_name,
+            }
+        results.append(LeadWithScoreResponse(**lead))
+    return results
 
 
 # =============================================================================
@@ -470,14 +604,19 @@ async def export_leads(
     )
 
     # Write data rows
+    redact = _is_demo_actor(user)
     for lead in leads:
+        if redact:
+            visible_email, visible_phone, visible_name = _redact_lead_identity(lead)
+        else:
+            visible_email, visible_phone, visible_name = lead.email, lead.phone, lead.name
         writer.writerow(
             [
                 lead.id,
                 lead.visitor_id,
-                lead.email or "",
-                lead.name or "",
-                lead.phone or "",
+                visible_email or "",
+                visible_name or "",
+                visible_phone or "",
                 lead.status,
                 lead.source or "",
                 lead.current_score,
@@ -542,13 +681,18 @@ async def get_lead(
     interactions = await interaction_repo.get_by_lead(lead_id, limit=20)
     assignment = await assignment_repo.get_primary_for_lead(lead_id)
 
+    if _is_demo_actor(user):
+        visible_email, visible_phone, visible_name = _redact_lead_identity(lead)
+    else:
+        visible_email, visible_phone, visible_name = lead.email, lead.phone, lead.name
+
     return LeadDetailResponse(
         id=lead.id,
         visitor_id=lead.visitor_id,
         user_id=lead.user_id,
-        email=lead.email,
-        phone=lead.phone,
-        name=lead.name,
+        email=visible_email,
+        phone=visible_phone,
+        name=visible_name,
         budget_min=lead.budget_min,
         budget_max=lead.budget_max,
         preferred_locations=lead.preferred_locations,
@@ -673,7 +817,14 @@ async def update_lead(
             )
 
     updated_lead = await lead_repo.update(lead, **body.model_dump(exclude_unset=True))
-    return LeadResponse.model_validate(updated_lead)
+
+    response = LeadResponse.model_validate(updated_lead)
+    if _is_demo_actor(user):
+        visible_email, visible_phone, visible_name = _redact_lead_identity(updated_lead)
+        response.email = visible_email
+        response.phone = visible_phone
+        response.name = visible_name
+    return response
 
 
 @router.patch(
@@ -706,7 +857,13 @@ async def update_lead_status(
             detail="Lead not found",
         )
 
-    return LeadResponse.model_validate(lead)
+    response = LeadResponse.model_validate(lead)
+    if _is_demo_actor(user):
+        visible_email, visible_phone, visible_name = _redact_lead_identity(lead)
+        response.email = visible_email
+        response.phone = visible_phone
+        response.name = visible_name
+    return response
 
 
 # =============================================================================

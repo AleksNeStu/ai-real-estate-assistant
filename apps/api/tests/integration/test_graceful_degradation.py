@@ -342,7 +342,7 @@ class TestHealthDegradation:
 
         health = await get_health_status(include_dependencies=False)
 
-        cb_key = "critical_service"
+        cb_key = "circuit_breaker:critical_service"
         assert cb_key in health.dependencies
         assert health.dependencies[cb_key].status == HealthStatus.UNHEALTHY
 
@@ -356,7 +356,7 @@ class TestHealthDegradation:
 
         health = await get_health_status(include_dependencies=False)
 
-        cb_key = "degraded_service"
+        cb_key = "circuit_breaker:degraded_service"
         assert cb_key in health.dependencies
         assert health.dependencies[cb_key].status == HealthStatus.DEGRADED
 
@@ -397,6 +397,6 @@ class TestDatabaseDegradation:
 
         health = await get_health_status(include_dependencies=False)
 
-        cb_key = "database"
+        cb_key = "circuit_breaker:database"
         assert cb_key in health.dependencies
         assert health.dependencies[cb_key].status == HealthStatus.UNHEALTHY

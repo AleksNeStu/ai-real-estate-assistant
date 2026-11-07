@@ -13,7 +13,7 @@
 | Auth | Per-product FastAPI JWT | See [docs/auth.md](../security/auth.md) |
 | Database | PostgreSQL 16 + SQLAlchemy + Alembic | See [docs/database.md](../database/database.md) |
 | AI | Multi-provider (OpenAI, Gemini) for conversational property search | — |
-| Deploy | Dokploy | See [docs/deploy.md](../deployment/deploy.md) |
+| Deploy | Docker / Docker Compose on your own host | See [docs/deploy.md](../deployment/deploy.md) |
 
 ## Monorepo structure
 

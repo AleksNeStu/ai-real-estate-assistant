@@ -18,7 +18,7 @@
 
 **Demo (5-50s):**
 
-1. (5s) Open https://realestate-web-dz1y.onrender.com/
+1. (5s) Open https://realestate.nestlab.tech/
 2. (10s) Click "Start Searching"
 3. (15s) Type "2-bedroom apartment in Kraków under 500k, family-friendly"
 4. (20s) Show results appearing — filters extracted, listings matched
@@ -31,7 +31,7 @@
 
 > "Open-source, MIT-licensed, self-hostable. Six LLM providers with
 > automatic fallback. FastAPI + Next.js + ChromaDB. Live demo at
-> realestate-web-dz1y.onrender.com. Source on GitHub: AleksNeStu /
+> realestate.nestlab.tech. Source on GitHub: AleksNeStu /
 > ai-real-estate-assistant. Hosted tier at propvectorai.com."
 
 **CTA (70-90s):**
@@ -94,12 +94,12 @@
 - Why: DACH and LatAm markets are materially different from
   English-first default
 
-**Section 5: Render free-tier memory trick (330-390s)**
+**Section 5: Memory-constrained-host trick (330-390s)**
 
-- Render free tier: 512 MB RAM cap
-- 13 LLM providers × eager import = 530 MB → over the cap
+- Constrained host: 512 MB RAM cap
+- 16 LLM providers × eager import = 530 MB → over the cap
 - Environment-conditional lazy loading: only active `DEFAULT_PROVIDER`
-  imports at startup on Render
+  imports at startup
 - Full eager loading on VPS / Docker (no memory constraint)
 - One code path, two memory profiles
 - Show code: `RENDER` env var check in provider_factory.py
@@ -113,7 +113,7 @@
 
 **CTA (450-480s):**
 
-> "Live demo at realestate-web-dz1y.onrender.com. Source on GitHub.
+> "Live demo at realestate.nestlab.tech. Source on GitHub.
 > Self-hostable with Docker. Hosted tier at propvectorai.com. Thanks
 > for watching."
 

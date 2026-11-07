@@ -1,7 +1,12 @@
-# Security Policy — AI Real Estate Assistant V4
+# Security Architecture — AI Real Estate Assistant v5.1.6
 
-**Last Updated:** 26.01.2026
-**Version:** 4.0
+> The **canonical security policy** (responsible disclosure, supported versions,
+> response timeline) is the root [`SECURITY.md`](../../SECURITY.md) — GitHub reads
+> that file for the "Security" tab. This document is the detailed technical
+> reference: layers, auth, hardening and the in-tree mitigations.
+
+**Last Updated:** 2026-11-06
+**Version:** 5.1.6
 
 This document outlines the security measures implemented in the AI Real Estate Assistant platform and provides guidelines for secure deployment and operation.
 
@@ -526,6 +531,17 @@ Security researchers who follow responsible disclosure will be:
 
 ## Changelog
 
+### 2026-11-06 - v5.1.6 security posture
+- 335 open Dependabot alerts closed to 0; one accepted LOW (`deepmerge`, build-time
+  only, no upstream fix) is registered in
+  [`docs/operations/security/accepted-risks.md`](../operations/security/accepted-risks.md)
+- Input sanitization reworked to a code-point mapping (issue #377) so digits and
+  ordinary text are no longer mangled before reaching the LLM
+- Dependency floors raised in both `apps/api/requirements.txt` and
+  `apps/api/pyproject.toml`; `apps/api/uv.lock` regenerated
+- Root `SECURITY.md` established as the canonical disclosure policy; this document
+  scoped to the security architecture
+
 ### 2026-01-26 - V4 Security Enhancements
 - Added security headers middleware (CSP, HSTS, X-Frame-Options)
 - Added request size limits to prevent DoS
@@ -548,6 +564,6 @@ Security researchers who follow responsible disclosure will be:
 
 ---
 
-**Document Version:** 4.0
-**Last Review:** 2026-01-26
-**Next Review:** 2026-04-26 (Quarterly)
+**Document Version:** 5.1.6
+**Last Review:** 2026-11-06
+**Next Review:** 2026-12-04 (Quarterly)

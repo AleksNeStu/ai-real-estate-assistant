@@ -30,6 +30,7 @@ import MapControls, {
 } from '@/components/search/map-controls';
 import { SaveSearchButton } from '@/components/search/save-search-button';
 import { PresetSelector } from '@/components/search/preset-selector';
+import { useTrackSearchDebounced } from '@/hooks/useLeadTracking';
 import type { FilterPreset } from '@/lib/types';
 
 const PropertyMap = dynamic(() => import('@/components/search/property-map'), {
@@ -53,6 +54,18 @@ const EXAMPLE_QUERIES = [
 function SearchPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { trackSearchDebounced, flushSearch } = useTrackSearchDebounced(1000);
+
+  // A pending search must not be lost when the visitor leaves the page.
+  useEffect(() => {
+    return () => {
+      try {
+        flushSearch();
+      } catch {
+        // Tracking is best-effort — never break navigation over it.
+      }
+    };
+  }, [flushSearch]);
 
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -228,6 +241,13 @@ function SearchPageContent() {
         setResults([]);
         setError(filterError);
         return;
+      }
+
+      // Lead tracking: record the search intent (debounced, best-effort).
+      try {
+        trackSearchDebounced(query.trim(), filters);
+      } catch {
+        // Tracking must never break the search.
       }
 
       const response = await searchProperties({

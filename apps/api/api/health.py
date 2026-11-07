@@ -377,8 +377,16 @@ async def get_health_status(include_dependencies: bool = True) -> HealthCheckRes
             breaker_status = HealthStatus.UNHEALTHY
         elif state["state"] == "half_open":
             breaker_status = HealthStatus.DEGRADED
-        circuit_breakers[name] = DependencyHealth(
-            name=f"circuit_breaker:{name}",
+        # The KEY has to carry the prefix, not just the name. The registry holds
+        # a breaker named "vector_store" — the search path registers one — and
+        # an unprefixed key made that breaker OVERWRITE the real vector-store
+        # dependency check in this payload. Two consequences: the health report
+        # showed the breaker's state instead of the store's, and the readiness
+        # probe, which reads dependencies["vector_store"], reported "ready"
+        # while the vector store was unhealthy.
+        breaker_key = f"circuit_breaker:{name}"
+        circuit_breakers[breaker_key] = DependencyHealth(
+            name=breaker_key,
             status=breaker_status,
             message=f"State: {state['state']}, failures: {state['total_failures']}/{state['total_calls']}",
             details=state,

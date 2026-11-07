@@ -7,52 +7,127 @@ import { NotificationSettings as SettingsType } from '@/lib/types';
 jest.mock('@/lib/api', () => ({
   getNotificationSettings: jest.fn(),
   updateNotificationSettings: jest.fn(),
+  sendNotificationPreview: jest.fn(),
 }));
 
+// The global next-intl mock returns the raw translation key. The component
+// renders user-visible English, so the mock resolves the real `en` messages
+// (including `{placeholder}` interpolation).
+jest.mock('next-intl', () => {
+  const messages = jest.requireActual<Record<string, unknown>>('../../../../messages/en.json');
+  const resolve = (path: string): unknown =>
+    path.split('.').reduce<unknown>(
+      (acc, part) =>
+        acc && typeof acc === 'object' ? (acc as Record<string, unknown>)[part] : undefined,
+      messages
+    );
+  const interpolate = (template: string, params?: Record<string, unknown>) =>
+    params
+      ? template.replace(/\{(\w+)\}/g, (match, name) =>
+          name in params ? String(params[name]) : match
+        )
+      : template;
+  return {
+    useTranslations:
+      (namespace?: string) =>
+      (key: string, params?: Record<string, unknown>) => {
+        const value = resolve(namespace ? `${namespace}.${key}` : key);
+        return typeof value === 'string' ? interpolate(value, params) : key;
+      },
+    useLocale: () => 'en',
+    useMessages: () => messages,
+    NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => children,
+  };
+});
+
 const mockSettings: SettingsType = {
-  email_digest: true,
-  frequency: 'weekly',
+  price_alerts_enabled: true,
+  new_listings_enabled: true,
+  saved_search_enabled: false,
+  market_updates_enabled: false,
+  alert_frequency: 'weekly',
+  email_enabled: true,
+  push_enabled: false,
+  in_app_enabled: true,
+  quiet_hours_start: '22:00',
+  quiet_hours_end: '07:00',
+  price_drop_threshold: 5,
+  daily_digest_time: '08:00',
+  weekly_digest_day: 'monday',
+  expert_mode: false,
+  marketing_emails: false,
+  unsubscribe_token: null,
+  unsubscribed_at: null,
+  unsubscribed_types: null,
+};
+
+// The payload the component sends on save (read-only unsubscribe fields excluded).
+const expectedUpdate = {
+  price_alerts_enabled: true,
+  new_listings_enabled: true,
+  saved_search_enabled: false,
+  market_updates_enabled: false,
+  alert_frequency: 'weekly' as const,
+  email_enabled: true,
+  push_enabled: false,
+  in_app_enabled: true,
+  quiet_hours_start: '22:00',
+  quiet_hours_end: '07:00',
+  price_drop_threshold: 5,
+  daily_digest_time: '08:00',
+  weekly_digest_day: 'monday',
   expert_mode: false,
   marketing_emails: false,
 };
 
-// Skip: Test expectations don't match current component structure
-// Component uses different labels (Price Alerts, New Listings, etc.)
-describe.skip('NotificationSettings Component', () => {
+describe('NotificationSettings Component', () => {
   beforeEach(() => {
     jest.resetAllMocks();
   });
 
+  it('prompts for an email when no user email is set', () => {
+    render(<NotificationSettings userEmail={null} />);
+    expect(
+      screen.getByText('Set an email in Identity settings above to access this section.')
+    ).toBeInTheDocument();
+  });
+
   it('renders loading state initially', () => {
     (getNotificationSettings as jest.Mock).mockImplementation(() => new Promise(() => {}));
-    render(<NotificationSettings />);
+    render(<NotificationSettings userEmail="user@example.com" />);
     expect(screen.getByText('Loading settings...')).toBeInTheDocument();
   });
 
   it('renders settings form after loading', async () => {
     (getNotificationSettings as jest.Mock).mockResolvedValue(mockSettings);
-    render(<NotificationSettings />);
+    render(<NotificationSettings userEmail="user@example.com" />);
 
     await waitFor(() => {
       expect(screen.getByText('Email Digests')).toBeInTheDocument();
     });
 
     // Check checkboxes
-    const digestCheckbox = screen.getByLabelText(/Consumer Digest/i);
-    expect(digestCheckbox).toBeChecked();
+    const priceAlertsCheckbox = screen.getByLabelText(/Price Alerts/i);
+    expect(priceAlertsCheckbox).toBeChecked();
+
+    const newListingsCheckbox = screen.getByLabelText(/New Listings/i);
+    expect(newListingsCheckbox).toBeChecked();
+
+    const savedSearchCheckbox = screen.getByLabelText(/Saved Search Updates/i);
+    expect(savedSearchCheckbox).not.toBeChecked();
 
     const expertCheckbox = screen.getByLabelText(/Expert Mode/i);
     expect(expertCheckbox).not.toBeChecked();
 
     // Check select
-    const frequencySelect = screen.getByLabelText(/Digest Frequency/i) as HTMLSelectElement;
+    const frequencySelect = screen.getByLabelText(/Alert Frequency/i) as HTMLSelectElement;
     expect(frequencySelect.value).toBe('weekly');
   });
 
   it('handles error when loading fails', async () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     (getNotificationSettings as jest.Mock).mockRejectedValue(new Error('API Error'));
-    render(<NotificationSettings />);
+    render(<NotificationSettings userEmail="user@example.com" />);
 
     await waitFor(() => {
       expect(screen.getByText('Failed to load settings. Please try again.')).toBeInTheDocument();
@@ -64,7 +139,7 @@ describe.skip('NotificationSettings Component', () => {
 
   it('toggles checkboxes', async () => {
     (getNotificationSettings as jest.Mock).mockResolvedValue(mockSettings);
-    render(<NotificationSettings />);
+    render(<NotificationSettings userEmail="user@example.com" />);
 
     await waitFor(() => {
       expect(screen.getByText('Email Digests')).toBeInTheDocument();
@@ -77,22 +152,25 @@ describe.skip('NotificationSettings Component', () => {
 
   it('changes frequency', async () => {
     (getNotificationSettings as jest.Mock).mockResolvedValue(mockSettings);
-    render(<NotificationSettings />);
+    render(<NotificationSettings userEmail="user@example.com" />);
 
     await waitFor(() => {
       expect(screen.getByText('Email Digests')).toBeInTheDocument();
     });
 
-    const frequencySelect = screen.getByLabelText(/Digest Frequency/i);
+    const frequencySelect = screen.getByLabelText(/Alert Frequency/i);
     fireEvent.change(frequencySelect, { target: { value: 'daily' } });
     expect((frequencySelect as HTMLSelectElement).value).toBe('daily');
   });
 
   it('saves settings successfully', async () => {
     (getNotificationSettings as jest.Mock).mockResolvedValue(mockSettings);
-    (updateNotificationSettings as jest.Mock).mockImplementation(async (s) => s);
+    (updateNotificationSettings as jest.Mock).mockImplementation(async (s) => ({
+      ...mockSettings,
+      ...s,
+    }));
 
-    render(<NotificationSettings />);
+    render(<NotificationSettings userEmail="user@example.com" />);
 
     await waitFor(() => {
       expect(screen.getByText('Email Digests')).toBeInTheDocument();
@@ -111,7 +189,7 @@ describe.skip('NotificationSettings Component', () => {
 
     await waitFor(() => {
       expect(updateNotificationSettings).toHaveBeenCalledWith({
-        ...mockSettings,
+        ...expectedUpdate,
         expert_mode: true,
       });
       expect(screen.getByText('Settings saved successfully.')).toBeInTheDocument();
@@ -123,7 +201,7 @@ describe.skip('NotificationSettings Component', () => {
     (getNotificationSettings as jest.Mock).mockResolvedValue(mockSettings);
     (updateNotificationSettings as jest.Mock).mockRejectedValue(new Error('Save failed'));
 
-    render(<NotificationSettings />);
+    render(<NotificationSettings userEmail="user@example.com" />);
 
     await waitFor(() => {
       expect(screen.getByText('Email Digests')).toBeInTheDocument();
@@ -133,7 +211,7 @@ describe.skip('NotificationSettings Component', () => {
     fireEvent.click(saveButton);
 
     await waitFor(() => {
-      expect(screen.getByText('Failed to save settings. Please try again.')).toBeInTheDocument();
+      expect(screen.getByText('Failed to save settings.')).toBeInTheDocument();
     });
     expect(errorSpy).not.toHaveBeenCalled();
     errorSpy.mockRestore();

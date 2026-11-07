@@ -129,6 +129,7 @@ mypy .              # Type check (strict)
 ## Deployment
 
 Docker images are published to GHCR (`ghcr.io/aleksnestu/ai-real-estate-assistant/backend`).
-See the [Deployment Guide](../../docs/deployment/DEPLOYMENT.md) for Dokploy / Render setup.
+See the [Deployment Guide](../../docs/deployment/DEPLOYMENT.md) for container and
+self-host setup.
 
-For the public demo, see [https://realestate-api-wkm7.onrender.com/health](https://realestate-api-wkm7.onrender.com/health).
+For the public demo, see [https://realestate.nestlab.tech/api/health](https://realestate.nestlab.tech/api/health).

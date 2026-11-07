@@ -57,7 +57,7 @@
   "bugs": {
     "url": "https://github.com/AleksNeStu/ai-real-estate-assistant/issues"
   },
-  "homepage": "https://realestate-web-dz1y.onrender.com/",
+  "homepage": "https://realestate.nestlab.tech/",
   "devDependencies": {
     "@playwright/test": "^1.57.0",
     "concurrently": "^10.0.6",

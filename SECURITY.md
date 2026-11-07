@@ -1,7 +1,7 @@
 # Security Policy — AI Real Estate Assistant
 
-**Last Updated:** 2026-03-29
-**Version:** 5.0
+**Last Updated:** 2026-11-06
+**Version:** 5.1.6
 
 ## Reporting Security Issues
 
@@ -39,13 +39,14 @@ If you discover a security vulnerability, please **disclose it privately**:
 
 | Version | Supported |
 |---------|-----------|
-| 4.x (dev) | Yes |
-| 3.x | No |
-| 2.x and earlier | No |
+| 5.1.x | Yes |
+| 5.0.x | Yes |
+| 4.x and earlier | No |
 
 ## Security Features
 
 For detailed information about the platform's security architecture, see [docs/security/SECURITY.md](docs/security/SECURITY.md).
+The register of consciously accepted dependency risks lives in [docs/operations/security/accepted-risks.md](docs/operations/security/accepted-risks.md).
 
 Key security measures include:
 

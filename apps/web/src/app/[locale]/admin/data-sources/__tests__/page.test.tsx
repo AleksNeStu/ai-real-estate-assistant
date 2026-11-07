@@ -1,7 +1,13 @@
 import '@testing-library/jest-dom';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import DataSourcesPage from '../page';
-import { fetchFromPortal, getExcelSheets, ingestData, listPortals } from '@/lib/api';
+import {
+  fetchFromPortal,
+  getExcelSheets,
+  ingestData,
+  listPortals,
+  listDataSources,
+} from '@/lib/api';
 
 jest.mock('@/lib/api', () => {
   class MockApiError extends Error {
@@ -15,6 +21,15 @@ jest.mock('@/lib/api', () => {
     }
   }
   return {
+    listDataSources: jest.fn(async () => ({
+      sources: [],
+      total: 0,
+      page: 1,
+      page_size: 20,
+    })),
+    syncDataSource: jest.fn(async () => ({})),
+    deleteDataSource: jest.fn(async () => undefined),
+    updateDataSource: jest.fn(async () => ({})),
     ingestData: jest.fn(async () => ({
       message: 'Ingestion successful',
       properties_processed: 2,
@@ -22,7 +37,20 @@ jest.mock('@/lib/api', () => {
       source_type: 'file',
       source_name: null,
     })),
+    ingestFileUpload: jest.fn(async () => ({
+      message: 'Ingestion successful',
+      properties_processed: 2,
+      errors: [],
+      source_type: 'file',
+      source_name: null,
+    })),
     getExcelSheets: jest.fn(async () => ({
+      file_url: 'https://example.com/data.xlsx',
+      sheet_names: ['Sheet1', 'Sheet2'],
+      default_sheet: 'Sheet1',
+      row_count: { Sheet1: 10, Sheet2: 20 },
+    })),
+    getExcelSheetsUpload: jest.fn(async () => ({
       file_url: 'https://example.com/data.xlsx',
       sheet_names: ['Sheet1', 'Sheet2'],
       default_sheet: 'Sheet1',
@@ -52,24 +80,39 @@ jest.mock('@/lib/api', () => {
   };
 });
 
-// Skip: DataSourceList component needs proper mocking
-// Button names and component structure have changed
-describe.skip('DataSourcesPage', () => {
+// The page renders two buttons named "Import Data": the tab that opens the
+// import panel and the submit button inside it. This helper returns both.
+const getImportButtons = () =>
+  screen.getAllByRole('button', { name: 'Import Data' }) as HTMLButtonElement[];
+
+describe('DataSourcesPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('loads the configured data sources on mount', async () => {
+    render(<DataSourcesPage />);
+
+    await waitFor(() => expect(listDataSources).toHaveBeenCalled());
+    expect(await screen.findByText('No data sources configured yet.')).toBeInTheDocument();
   });
 
   it('ingests CSV from URL', async () => {
     render(<DataSourcesPage />);
 
+    // Open the import panel
+    const [importTab] = getImportButtons();
+    fireEvent.click(importTab);
+
     fireEvent.change(screen.getByLabelText('File URL'), {
       target: { value: 'https://example.com/data.csv' },
     });
-    fireEvent.change(screen.getByLabelText('Source Name'), {
+    fireEvent.change(screen.getByLabelText(/Source Name/), {
       target: { value: 'Q1 Imports' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Import Data' }));
+    const [, importButton] = getImportButtons();
+    fireEvent.click(importButton);
 
     await waitFor(() => expect(ingestData).toHaveBeenCalled());
     expect((ingestData as jest.Mock).mock.calls[0][0]).toEqual({
@@ -83,6 +126,10 @@ describe.skip('DataSourcesPage', () => {
 
   it('loads Excel sheets and ingests selected sheet', async () => {
     render(<DataSourcesPage />);
+
+    // Open the import panel
+    const [importTab] = getImportButtons();
+    fireEvent.click(importTab);
 
     fireEvent.change(screen.getByLabelText('File URL'), {
       target: { value: 'https://example.com/data.xlsx' },
@@ -100,7 +147,8 @@ describe.skip('DataSourcesPage', () => {
       target: { value: '2' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Import Data' }));
+    const [, importButton] = getImportButtons();
+    fireEvent.click(importButton);
 
     await waitFor(() => expect(ingestData).toHaveBeenCalled());
     expect((ingestData as jest.Mock).mock.calls[0][0]).toEqual({
@@ -114,12 +162,15 @@ describe.skip('DataSourcesPage', () => {
   it('fetches from portal', async () => {
     render(<DataSourcesPage />);
 
+    // Open the import panel, then switch to the portal mode
+    const [importTab] = getImportButtons();
+    fireEvent.click(importTab);
     fireEvent.click(screen.getByRole('button', { name: 'Portal API' }));
 
     await waitFor(() => expect(listPortals).toHaveBeenCalled());
     await waitFor(() => expect(screen.getByLabelText('Portal')).toBeInTheDocument());
 
-    fireEvent.change(screen.getByLabelText('City'), { target: { value: 'Warsaw' } });
+    fireEvent.change(screen.getByLabelText(/City/), { target: { value: 'Warsaw' } });
 
     fireEvent.click(screen.getByRole('button', { name: 'Fetch from Portal' }));
 

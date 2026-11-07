@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { HeartButton } from './heart-button';
 import { MortgageEstimate } from './MortgageEstimate';
 import { CommuteBadge } from '@/components/commute';
+import { useLeadTracking } from '@/hooks/useLeadTracking';
 import type { Property, CommuteTimeResult, CommuteMode } from '@/lib/types';
 
 interface PropertyCardProps {
@@ -26,9 +27,62 @@ export function PropertyCard({
   showMortgageEstimate = true,
 }: PropertyCardProps) {
   const t = useTranslations('property.card');
+  const { trackPropertyView } = useLeadTracking();
+  const cardRef = useRef<HTMLElement | null>(null);
+  const stopTrackingRef = useRef<(() => void) | null>(null);
+
+  // Lead tracking: a property view is only recorded once the card is actually
+  // on screen, so a grid of results does not inflate the engagement score.
+  // Tracking must never break the page, so every failure is swallowed.
+  useEffect(() => {
+    const propertyId = property.id;
+    if (!propertyId) return;
+
+    let observer: IntersectionObserver | null = null;
+
+    const startTracking = () => {
+      if (stopTrackingRef.current) return;
+      try {
+        const { stopTracking } = trackPropertyView(propertyId);
+        stopTrackingRef.current = stopTracking;
+      } catch {
+        // Tracking is best-effort — never break rendering over it.
+      }
+    };
+
+    if (typeof IntersectionObserver === 'undefined') {
+      startTracking();
+    } else {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            startTracking();
+            observer?.disconnect();
+          }
+        },
+        { threshold: 0.5 }
+      );
+      if (cardRef.current) {
+        observer.observe(cardRef.current);
+      } else {
+        startTracking();
+      }
+    }
+
+    return () => {
+      observer?.disconnect();
+      try {
+        stopTrackingRef.current?.();
+      } catch {
+        // ignore — best-effort telemetry
+      }
+      stopTrackingRef.current = null;
+    };
+  }, [property.id, trackPropertyView]);
 
   return (
     <article
+      ref={cardRef}
       data-testid="property-card"
       className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden"
       aria-label={property.title || t('untitled')}

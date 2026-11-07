@@ -9,7 +9,7 @@ Before deploying, ensure you have:
 - A GitHub repository with the code
 - Generated `API_ACCESS_KEY` (run: `openssl rand -hex 32`)
 - Docker and Docker Compose (for local/containerized deployment)
-- Render account (for staging)
+- A host with a domain and TLS (for a public deployment)
 
 ---
 
@@ -17,7 +17,7 @@ Before deploying, ensure you have:
 
 ```
 ┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
-│   Browser       │──────│  Render (Front) │──────│  Render (Back)  │
+│   Browser       │──────│  Frontend       │──────│  Backend        │
 └─────────────────┘      │  Next.js App    │      │  FastAPI        │
                          │  /api/v1/*      │      │  Port 10000     │
                          └─────────────────┘      └─────────────────┘
@@ -74,59 +74,62 @@ open http://localhost:3000
 
 ---
 
-## Render Staging Deployment
+## Self-Hosted Deployment
 
-The project includes `render.yaml` for staging.
+The repository ships the Docker Compose stack; you run it on your own host.
 
-### Step 1: Create Backend Service
+### Step 1: Build the backend image
 
-1. Go to [render.com](https://render.com) → "New" → "Web Service"
-2. Connect repository: `AleksNeStu/ai-real-estate-assistant`
-3. Configure:
+```bash
+cd apps/api
+docker build -f ../../deploy/docker/Dockerfile.backend -t ai-real-estate-backend .
+```
 
-| Setting | Value |
-|---------|-------|
-| Branch | `dev` |
-| Build Command | `pip install -r requirements.txt` |
-| Start Command | `uvicorn api.main:app --host 0.0.0.0 --port $PORT` |
+### Step 2: Build the frontend image
 
-4. Add environment variables:
+```bash
+cd apps/web
+docker build -f ../../deploy/docker/Dockerfile.frontend -t ai-real-estate-frontend .
+```
+
+### Step 3: Start the stack
+
+```bash
+cp deploy/compose/.env.example deploy/compose/.env
+# Edit deploy/compose/.env with your keys
+
+docker compose -f deploy/compose/docker-compose.yml up -d
+```
+
+### Environment variables
+
+Backend:
 
 ```bash
 ENVIRONMENT=production
 API_ACCESS_KEY=<your-key>
 OPENAI_API_KEY=sk-...
-CORS_ALLOW_ORIGINS=https://your-frontend.onrender.com
+CORS_ALLOW_ORIGINS=https://your-frontend.example.com
 ```
 
-### Step 2: Create Frontend Service
-
-1. "New" → "Web Service" → same repository
-2. Configure:
-
-| Setting | Value |
-|---------|-------|
-| Root Directory | `apps/web` |
-| Branch | `dev` |
-| Build Command | `npm run build` |
-| Start Command | `npm run start` |
-
-3. Add environment variables:
+Frontend:
 
 ```bash
-BACKEND_API_URL=https://your-backend.onrender.com
+BACKEND_API_URL=https://your-backend.example.com
 API_ACCESS_KEY=<same-key-as-backend>
 NEXT_PUBLIC_API_URL=/api/v1
 ```
 
-### Step 3: Deploy
+### Step 4: Put a reverse proxy in front
 
-Click "Deploy" — Render builds and deploys automatically on push to `dev`.
+Terminate TLS with Caddy, Traefik, or Nginx and point your domain at the frontend.
+See [docs/guides/deployment.md](../guides/deployment.md) for the Caddy walkthrough.
 
-### Known Limitations (Free Tier)
+### Known Limitations (constrained host)
 
-- Cold start ~150s after inactivity (services spin down)
-- First request may return 502 — retry after a few minutes
+- A 512 MB cap is not enough for a local LLM, web search, or a multi-worker backend
+- The disk is ephemeral — anything user-generated is lost on the next deploy
+- Use a persistent volume and a real database for anything load-bearing
 
 ---
 
@@ -134,10 +137,10 @@ Click "Deploy" — Render builds and deploys automatically on push to `dev`.
 
 ```bash
 # Backend health
-curl https://your-backend.onrender.com/health
+curl https://your-backend.example.com/health
 
 # Auth test
-curl -X POST https://your-frontend.onrender.com/api/v1/verify-auth \
+curl -X POST https://your-frontend.example.com/api/v1/verify-auth \
   -H "X-API-Key: $API_ACCESS_KEY"
 ```
 
@@ -152,19 +155,19 @@ curl -X POST https://your-frontend.onrender.com/api/v1/verify-auth \
 
 ### 502 Bad Gateway
 
-- Backend may be cold-starting (wait 2-3 min)
-- Check backend logs in Render Dashboard
+- The backend may still be starting up (wait 2-3 min)
+- Check the backend container logs
 
 ### Build Failures
 
 - Verify all environment variables are set
-- Check build logs in Render Dashboard
+- Check the build logs
 
 ---
 
 ## Related
 
-- [DEPLOYMENT_VARIANTS.md](../../DEPLOYMENT_VARIANTS.md) — comparison of Local Docker, VPS, and Render free tier (feature matrix)
+- [DEPLOYMENT_VARIANTS.md](../../DEPLOYMENT_VARIANTS.md) — comparison of Local Docker, VPS, and a constrained host (feature matrix)
 - [Docker Deployment Guide](../guides/deployment.md)
 - [CI/CD Pipeline](../guides/ci-cd.md)
 - [Troubleshooting](../guides/troubleshooting.md)

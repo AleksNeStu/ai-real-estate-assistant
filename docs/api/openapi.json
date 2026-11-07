@@ -377,6 +377,47 @@
         "title": "AgentAssignmentResponse",
         "type": "object"
       },
+      "AgentFunnelResponse": {
+        "description": "Schema for agent lead funnel visualization.",
+        "properties": {
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "string"
+          },
+          "average_score": {
+            "default": 0.0,
+            "description": "Average lead score",
+            "title": "Average Score",
+            "type": "number"
+          },
+          "by_priority": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Lead counts by priority tier",
+            "title": "By Priority",
+            "type": "object"
+          },
+          "by_status": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Lead counts by status",
+            "title": "By Status",
+            "type": "object"
+          },
+          "total_leads": {
+            "title": "Total Leads",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "agent_id",
+          "total_leads"
+        ],
+        "title": "AgentFunnelResponse",
+        "type": "object"
+      },
       "AgentInquiryCreate": {
         "description": "Schema for creating an agent inquiry (contact form).",
         "properties": {
@@ -2077,6 +2118,19 @@
           "file"
         ],
         "title": "Body_ingest_file_upload_api_v1_admin_ingest_upload_post",
+        "type": "object"
+      },
+      "Body_set_demo_mode_api_v1_settings_demo_post": {
+        "properties": {
+          "demo_mode": {
+            "title": "Demo Mode",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "demo_mode"
+        ],
+        "title": "Body_set_demo_mode_api_v1_settings_demo_post",
         "type": "object"
       },
       "Body_upload_avatar_api_v1_profile_avatar_post": {
@@ -4224,6 +4278,177 @@
         "title": "ComparedProperty",
         "type": "object"
       },
+      "CreateAndScoreLeadRequest": {
+        "description": "Schema for creating a lead and immediately scoring it.",
+        "properties": {
+          "agent_id": {
+            "anyOf": [
+              {
+                "maxLength": 36,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id"
+          },
+          "budget_max": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Max"
+          },
+          "budget_min": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Min"
+          },
+          "consent_given": {
+            "default": false,
+            "description": "GDPR consent status",
+            "title": "Consent Given",
+            "type": "boolean"
+          },
+          "desired_move_date": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Desired Move Date"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "format": "email",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lead email address",
+            "title": "Email"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lead name",
+            "title": "Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "maxLength": 50,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lead phone number",
+            "title": "Phone"
+          },
+          "property_id": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Id"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lead source",
+            "title": "Source"
+          },
+          "target_price_max": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Price Max"
+          },
+          "target_price_min": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Price Min"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Linked user ID if registered",
+            "title": "User Id"
+          },
+          "visitor_id": {
+            "description": "Visitor UUID from cookie",
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Visitor Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "visitor_id"
+        ],
+        "title": "CreateAndScoreLeadRequest",
+        "type": "object"
+      },
       "DataEnrichmentRequest": {
         "properties": {
           "address": {
@@ -6283,7 +6508,7 @@
             "type": "number"
           },
           "weighted_score": {
-            "description": "Score × weight",
+            "description": "Score \u00d7 weight",
             "title": "Weighted Score",
             "type": "number"
           }
@@ -6860,6 +7085,34 @@
           }
         },
         "title": "FilterPresetUpdate",
+        "type": "object"
+      },
+      "ForecastPointResponse": {
+        "properties": {
+          "estimated_value": {
+            "title": "Estimated Value",
+            "type": "number"
+          },
+          "lower_bound": {
+            "title": "Lower Bound",
+            "type": "number"
+          },
+          "upper_bound": {
+            "title": "Upper Bound",
+            "type": "number"
+          },
+          "years_ahead": {
+            "title": "Years Ahead",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "years_ahead",
+          "estimated_value",
+          "lower_bound",
+          "upper_bound"
+        ],
+        "title": "ForecastPointResponse",
         "type": "object"
       },
       "GoalProgressListResponse": {
@@ -8097,6 +8350,184 @@
           "weights"
         ],
         "title": "LeadScoreBreakdown",
+        "type": "object"
+      },
+      "LeadScoreInputSchema": {
+        "description": "Schema for scoring a lead with budget fit and urgency.",
+        "properties": {
+          "agent_id": {
+            "anyOf": [
+              {
+                "maxLength": 36,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Assigned agent ID",
+            "title": "Agent Id"
+          },
+          "budget_max": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lead maximum budget",
+            "title": "Budget Max"
+          },
+          "budget_min": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lead minimum budget",
+            "title": "Budget Min"
+          },
+          "contact_requests": {
+            "default": 0,
+            "description": "Number of contact requests",
+            "minimum": 0.0,
+            "title": "Contact Requests",
+            "type": "integer"
+          },
+          "days_since_first_seen": {
+            "default": 0,
+            "description": "Days since first seen",
+            "minimum": 0.0,
+            "title": "Days Since First Seen",
+            "type": "integer"
+          },
+          "days_since_last_activity": {
+            "default": 999,
+            "description": "Days since last activity",
+            "minimum": 0.0,
+            "title": "Days Since Last Activity",
+            "type": "integer"
+          },
+          "desired_move_date": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Desired move timeline (e.g., 'asap', '1-3 months', ISO date)",
+            "title": "Desired Move Date"
+          },
+          "favorites": {
+            "default": 0,
+            "description": "Number of favorited properties",
+            "minimum": 0.0,
+            "title": "Favorites",
+            "type": "integer"
+          },
+          "has_email": {
+            "default": false,
+            "description": "Lead has provided email",
+            "title": "Has Email",
+            "type": "boolean"
+          },
+          "has_name": {
+            "default": false,
+            "description": "Lead has provided name",
+            "title": "Has Name",
+            "type": "boolean"
+          },
+          "has_phone": {
+            "default": false,
+            "description": "Lead has provided phone",
+            "title": "Has Phone",
+            "type": "boolean"
+          },
+          "inquiries": {
+            "default": 0,
+            "description": "Number of inquiries submitted",
+            "minimum": 0.0,
+            "title": "Inquiries",
+            "type": "integer"
+          },
+          "property_id": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Linked property ID",
+            "title": "Property Id"
+          },
+          "property_views": {
+            "default": 0,
+            "description": "Number of properties viewed",
+            "minimum": 0.0,
+            "title": "Property Views",
+            "type": "integer"
+          },
+          "searches": {
+            "default": 0,
+            "description": "Number of searches performed",
+            "minimum": 0.0,
+            "title": "Searches",
+            "type": "integer"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lead source",
+            "title": "Source"
+          },
+          "target_price_max": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Target property max price",
+            "title": "Target Price Max"
+          },
+          "target_price_min": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Target property min price",
+            "title": "Target Price Min"
+          }
+        },
+        "title": "LeadScoreInputSchema",
         "type": "object"
       },
       "LeadScoreResponse": {
@@ -10120,6 +10551,128 @@
         "title": "NearbyPOIs",
         "type": "object"
       },
+      "NegotiationPriceBand": {
+        "description": "Suggested price band.",
+        "properties": {
+          "lower": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lower"
+          },
+          "mid": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mid"
+          },
+          "upper": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upper"
+          },
+          "user_budget": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Budget"
+          }
+        },
+        "title": "NegotiationPriceBand",
+        "type": "object"
+      },
+      "NegotiationPropertyInfo": {
+        "description": "Summary of the analysed property.",
+        "properties": {
+          "area_sqm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Area Sqm"
+          },
+          "asking_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asking Price"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "property_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Type"
+          },
+          "rooms": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rooms"
+          }
+        },
+        "title": "NegotiationPropertyInfo",
+        "type": "object"
+      },
       "NegotiationRate": {
         "description": "Enumeration of negotiation rates.",
         "enum": [
@@ -10129,6 +10682,93 @@
         ],
         "title": "NegotiationRate",
         "type": "string"
+      },
+      "NegotiationRequest": {
+        "description": "Request model for negotiation analysis.",
+        "properties": {
+          "property_identifier": {
+            "description": "Property ID or address to analyse",
+            "minLength": 1,
+            "title": "Property Identifier",
+            "type": "string"
+          },
+          "tone": {
+            "default": "formal",
+            "description": "Tone for outreach template: formal, friendly, or assertive",
+            "title": "Tone",
+            "type": "string"
+          },
+          "user_budget": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Buyer's maximum budget",
+            "title": "User Budget"
+          }
+        },
+        "required": [
+          "property_identifier"
+        ],
+        "title": "NegotiationRequest",
+        "type": "object"
+      },
+      "NegotiationResponse": {
+        "description": "Response model for negotiation analysis.",
+        "properties": {
+          "arguments": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Arguments",
+            "type": "array"
+          },
+          "disclaimer": {
+            "title": "Disclaimer",
+            "type": "string"
+          },
+          "email_template": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email Template"
+          },
+          "opening_offer": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opening Offer"
+          },
+          "price_band": {
+            "$ref": "#/components/schemas/NegotiationPriceBand"
+          },
+          "property": {
+            "$ref": "#/components/schemas/NegotiationPropertyInfo"
+          }
+        },
+        "required": [
+          "property",
+          "price_band",
+          "disclaimer"
+        ],
+        "title": "NegotiationResponse",
+        "type": "object"
       },
       "NeighborhoodQualityInput": {
         "description": "Input for neighborhood quality index calculation.",
@@ -10439,6 +11079,97 @@
           "green_space_score"
         ],
         "title": "NeighborhoodQualityResponse",
+        "type": "object"
+      },
+      "NeighborhoodSummaryRequest": {
+        "properties": {
+          "area_sqm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Area Sqm"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "language": {
+            "default": "en",
+            "title": "Language",
+            "type": "string"
+          },
+          "max_sentences": {
+            "default": 3,
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Max Sentences",
+            "type": "integer"
+          },
+          "neighborhood": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Neighborhood"
+          },
+          "property_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Type"
+          },
+          "rooms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rooms"
+          }
+        },
+        "title": "NeighborhoodSummaryRequest",
+        "type": "object"
+      },
+      "NeighborhoodSummaryResponse": {
+        "properties": {
+          "language": {
+            "default": "en",
+            "title": "Language",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "summary"
+        ],
+        "title": "NeighborhoodSummaryResponse",
         "type": "object"
       },
       "NotificationPreviewRequest": {
@@ -10847,6 +11578,126 @@
           "pending_alerts_total"
         ],
         "title": "NotificationsAdminStats",
+        "type": "object"
+      },
+      "OSRMCommuteRequest": {
+        "description": "Request model for OSRM commute analysis.",
+        "properties": {
+          "destination_lat": {
+            "description": "Destination latitude",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Destination Lat",
+            "type": "number"
+          },
+          "destination_lon": {
+            "description": "Destination longitude",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Destination Lon",
+            "type": "number"
+          },
+          "destination_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Human-readable destination name",
+            "title": "Destination Name"
+          },
+          "mode": {
+            "default": "car",
+            "description": "Travel mode: 'car'/'driving', 'bike'/'bicycling', or 'foot'/'walking'",
+            "title": "Mode",
+            "type": "string"
+          },
+          "origin_lat": {
+            "description": "Origin latitude",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Origin Lat",
+            "type": "number"
+          },
+          "origin_lon": {
+            "description": "Origin longitude",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Origin Lon",
+            "type": "number"
+          }
+        },
+        "required": [
+          "origin_lat",
+          "origin_lon",
+          "destination_lat",
+          "destination_lon"
+        ],
+        "title": "OSRMCommuteRequest",
+        "type": "object"
+      },
+      "OSRMCommuteResponse": {
+        "description": "Response model for OSRM commute analysis.",
+        "properties": {
+          "data_source": {
+            "description": "Data source used: 'osrm' or 'haversine' (fallback)",
+            "title": "Data Source",
+            "type": "string"
+          },
+          "destination_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Destination Name"
+          },
+          "distance_km": {
+            "description": "Distance in kilometers",
+            "title": "Distance Km",
+            "type": "number"
+          },
+          "duration_minutes": {
+            "description": "Travel time in minutes",
+            "title": "Duration Minutes",
+            "type": "integer"
+          },
+          "duration_seconds": {
+            "description": "Travel time in seconds",
+            "title": "Duration Seconds",
+            "type": "integer"
+          },
+          "geometry": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Route geometry (GeoJSON coordinates)",
+            "title": "Geometry"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          }
+        },
+        "required": [
+          "duration_seconds",
+          "duration_minutes",
+          "distance_km",
+          "mode",
+          "data_source"
+        ],
+        "title": "OSRMCommuteResponse",
         "type": "object"
       },
       "PerformanceTrendPoint": {
@@ -11474,6 +12325,129 @@
         "title": "PriceAnalysisResponse",
         "type": "object"
       },
+      "PriceForecastRequest": {
+        "description": "Request for AI price forecast.\n\nEither property_id OR property_features must be provided.",
+        "properties": {
+          "horizon_years": {
+            "description": "Forecast horizons in years (each must be in [1, 10])",
+            "items": {
+              "type": "integer"
+            },
+            "title": "Horizon Years",
+            "type": "array"
+          },
+          "property_features": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free-form property features for hypothetical scenarios",
+            "title": "Property Features"
+          },
+          "property_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Existing property id (resolved from vector store)",
+            "title": "Property Id"
+          }
+        },
+        "title": "PriceForecastRequest",
+        "type": "object"
+      },
+      "PriceForecastResponse": {
+        "properties": {
+          "comparables_used": {
+            "default": 0,
+            "title": "Comparables Used",
+            "type": "integer"
+          },
+          "confidence": {
+            "title": "Confidence",
+            "type": "number"
+          },
+          "currency": {
+            "default": "EUR",
+            "title": "Currency",
+            "type": "string"
+          },
+          "current_estimate": {
+            "title": "Current Estimate",
+            "type": "number"
+          },
+          "disclaimer": {
+            "default": "AI estimate, not a formal appraisal. Forecasts are scenario-based and depend on market conditions that may change.",
+            "title": "Disclaimer",
+            "type": "string"
+          },
+          "drivers": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Drivers",
+            "type": "array"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "forecast": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastPointResponse"
+            },
+            "title": "Forecast",
+            "type": "array"
+          },
+          "horizon_years": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Horizon Years",
+            "type": "array"
+          },
+          "median_price_per_sqm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Price Per Sqm"
+          },
+          "neighborhood_median_price_per_sqm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Neighborhood Median Price Per Sqm"
+          }
+        },
+        "required": [
+          "current_estimate",
+          "horizon_years",
+          "forecast",
+          "confidence",
+          "explanation"
+        ],
+        "title": "PriceForecastResponse",
+        "type": "object"
+      },
       "PriceHistoryResponse": {
         "description": "Schema for property price history.",
         "properties": {
@@ -11619,6 +12593,67 @@
           "recorded_at"
         ],
         "title": "PriceSnapshotResponse",
+        "type": "object"
+      },
+      "PrioritizedScoreResponse": {
+        "description": "Schema for the prioritized lead scoring response.",
+        "properties": {
+          "budget_fit": {
+            "description": "Budget fit score (0-100)",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Budget Fit",
+            "type": "number"
+          },
+          "engagement": {
+            "description": "Engagement score (0-100)",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Engagement",
+            "type": "number"
+          },
+          "factors": {
+            "additionalProperties": true,
+            "description": "Scoring factors used",
+            "title": "Factors",
+            "type": "object"
+          },
+          "priority_tier": {
+            "description": "Priority tier: hot, warm, cool, cold",
+            "title": "Priority Tier",
+            "type": "string"
+          },
+          "recommendations": {
+            "description": "Actionable recommendations",
+            "items": {
+              "type": "string"
+            },
+            "title": "Recommendations",
+            "type": "array"
+          },
+          "score": {
+            "description": "Composite score (0-100)",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Score",
+            "type": "number"
+          },
+          "urgency": {
+            "description": "Urgency score (0-100)",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Urgency",
+            "type": "number"
+          }
+        },
+        "required": [
+          "score",
+          "budget_fit",
+          "urgency",
+          "engagement",
+          "priority_tier"
+        ],
+        "title": "PrioritizedScoreResponse",
         "type": "object"
       },
       "PrivacySettings": {
@@ -16756,9 +17791,9 @@
     }
   },
   "info": {
-    "description": "# AI Real Estate Assistant API\n\nConversational AI platform for property search, market analysis, and investment tools.\n\n## Authentication\n\n- **API Key** — pass via `X-API-Key` header for general access\n- **JWT Bearer** — pass via `Authorization: Bearer <token>` for user-scoped features (favorites, saved searches, market data, etc.)\n\n## Base URL\n\n```\n/api/v1\n```\n\nAll endpoints listed below are mounted under this prefix.\n",
+    "description": "# AI Real Estate Assistant API\n\nConversational AI platform for property search, market analysis, and investment tools.\n\n## Authentication\n\n- **API Key** \u2014 pass via `X-API-Key` header for general access\n- **JWT Bearer** \u2014 pass via `Authorization: Bearer <token>` for user-scoped features (favorites, saved searches, market data, etc.)\n\n## Base URL\n\n```\n/api/v1\n```\n\nAll endpoints listed below are mounted under this prefix.\n",
     "title": "AI Real Estate Assistant - Modern",
-    "version": "4.0.0"
+    "version": "1.0.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -21193,7 +22228,7 @@
     },
     "/api/v1/chat": {
       "post": {
-        "description": "Process a chat message using the hybrid agent with session persistence.",
+        "description": "Process a chat message using the hybrid agent with session persistence.\nRequires API key authentication.",
         "operationId": "chat_endpoint_api_v1_chat_post",
         "parameters": [
           {
@@ -21253,6 +22288,49 @@
         "summary": "Chat Endpoint",
         "tags": [
           "Chat",
+          "Chat"
+        ]
+      }
+    },
+    "/api/v1/chat/free": {
+      "post": {
+        "description": "Free tier chat \u2014 no API key required.\n\nUses the free LLM provider cascade (OpenRouter free \u2192 Google Flash \u2192 Ollama)\nwith hourly/daily rate limits per client IP.",
+        "operationId": "chat_free_endpoint_api_v1_chat_free_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Chat Free Endpoint",
+        "tags": [
+          "Chat (Free Tier)",
           "Chat"
         ]
       }
@@ -23691,7 +24769,7 @@
     },
     "/api/v1/feedback/metrics/relevance": {
       "get": {
-        "description": "Return aggregated search relevance metrics for admin monitoring.\nMeasures user-rated match accuracy against the ≥80% target.",
+        "description": "Return aggregated search relevance metrics for admin monitoring.\nMeasures user-rated match accuracy against the \u226580% target.",
         "operationId": "get_relevance_metrics_api_v1_feedback_metrics_relevance_get",
         "parameters": [
           {
@@ -23749,7 +24827,7 @@
     },
     "/api/v1/feedback/rating": {
       "post": {
-        "description": "Submit a thumbs-up/down rating for a search result.\nRatings are stored anonymously — no user authentication required.",
+        "description": "Submit a thumbs-up/down rating for a search result.\nRatings are stored anonymously \u2014 no user authentication required.",
         "operationId": "submit_rating_api_v1_feedback_rating_post",
         "requestBody": {
           "content": {
@@ -24679,6 +25757,46 @@
         "tags": [
           "Lead Scoring"
         ]
+      },
+      "post": {
+        "description": "Create a new lead and immediately calculate its priority score based on budget fit, urgency, and engagement signals.",
+        "operationId": "create_and_score_lead_api_v1_leads_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAndScoreLeadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeadWithScoreResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create and score a lead",
+        "tags": [
+          "Lead Scoring"
+        ]
       }
     },
     "/api/v1/leads/bulk/assign": {
@@ -24900,6 +26018,79 @@
         ]
       }
     },
+    "/api/v1/leads/funnel": {
+      "get": {
+        "description": "Get lead funnel statistics for the current agent or a specified agent. Shows leads by priority tier and status for visualization.",
+        "operationId": "get_agent_funnel_api_v1_leads_funnel_get",
+        "parameters": [
+          {
+            "description": "Agent ID (admin only, defaults to current user)",
+            "in": "query",
+            "name": "agent_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Agent ID (admin only, defaults to current user)",
+              "title": "Agent Id"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "access_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentFunnelResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get agent lead funnel",
+        "tags": [
+          "Lead Scoring"
+        ]
+      }
+    },
     "/api/v1/leads/high-value": {
       "get": {
         "description": "Get leads with scores above threshold (70+).",
@@ -24982,6 +26173,71 @@
           }
         ],
         "summary": "Get high-value leads",
+        "tags": [
+          "Lead Scoring"
+        ]
+      }
+    },
+    "/api/v1/leads/scores": {
+      "post": {
+        "description": "Calculate priority score for provided lead data without creating a record. Returns budget fit, urgency, and engagement breakdown.",
+        "operationId": "score_lead_data_api_v1_leads_scores_post",
+        "parameters": [
+          {
+            "in": "cookie",
+            "name": "access_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeadScoreInputSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrioritizedScoreResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Score lead data",
         "tags": [
           "Lead Scoring"
         ]
@@ -28687,6 +29943,74 @@
         ]
       }
     },
+    "/api/v1/settings/demo": {
+      "get": {
+        "description": "Get current demo mode preference.",
+        "operationId": "get_demo_mode_api_v1_settings_demo_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Get Demo Mode",
+        "tags": [
+          "Settings"
+        ]
+      },
+      "post": {
+        "description": "Set demo mode preference (stored in session for demo purposes).\n\nThis endpoint allows toggling demo mode at runtime without requiring authentication.\nIn a production environment, this would be a per-user setting stored in the database.\nFor demo purposes, we use a simple in-memory session store.",
+        "operationId": "set_demo_mode_api_v1_settings_demo_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_set_demo_mode_api_v1_settings_demo_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Set Demo Mode",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
     "/api/v1/settings/model-preferences": {
       "get": {
         "operationId": "get_model_preferences_api_v1_settings_model_preferences_get",
@@ -29163,7 +30487,7 @@
     },
     "/api/v1/settings/test-runtime": {
       "get": {
-        "description": "Test connection/runtime status for a specific provider.",
+        "description": "Probe any registered provider's connection/route to readiness.\n\nPre-2026-10-19 this endpoint gated on ``p.is_local`` and rejected\nevery remote provider with HTTP 400. Phase D.6 opens it up: any\nprovider from ``ModelProviderFactory.list_providers()`` can be\nprobed. Local providers (Ollama) still call\n``list_available_models()`` to surface the runtime-fetched model\nlist; remote providers return ``available_models=[]`` (they don't\nexpose a runtime-fetched list, only the curated catalog).\n\nOperators can now verify Together / Fireworks / HuggingFace /\nGrok / etc. keys via this endpoint instead of waiting for a real\nchat request to fail.",
         "operationId": "test_runtime_api_v1_settings_test_runtime_get",
         "parameters": [
           {
@@ -30114,6 +31438,54 @@
         ]
       }
     },
+    "/api/v1/tools/commute": {
+      "post": {
+        "description": "Calculate commute time using OSRM (Open Source Routing Machine).\n\nFree alternative to Google Routes API -- no API key required.\nSupports car, bike, and foot travel modes.\nFalls back to Haversine estimation when OSRM is unavailable.",
+        "operationId": "osrm_commute_analysis_api_v1_tools_commute_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OSRMCommuteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OSRMCommuteResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Osrm Commute Analysis",
+        "tags": [
+          "Tools",
+          "Tools"
+        ]
+      }
+    },
     "/api/v1/tools/commute-ranking": {
       "post": {
         "description": "Rank multiple properties by commute time to a destination.\n\nCompares commute times from multiple properties to a common destination\nand returns a ranked list from shortest to longest commute.",
@@ -30589,6 +31961,54 @@
         ]
       }
     },
+    "/api/v1/tools/negotiate": {
+      "post": {
+        "description": "Analyse market data for a property and suggest a negotiation strategy.\n\nReturns:\n- Fair price band (lower / mid / upper)\n- Recommended opening offer\n- Key negotiation arguments\n- Outreach email template based on selected tone\n- Legal disclaimer",
+        "operationId": "negotiate_api_v1_tools_negotiate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NegotiationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NegotiationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Negotiate",
+        "tags": [
+          "Tools",
+          "Tools"
+        ]
+      }
+    },
     "/api/v1/tools/neighborhood-quality": {
       "post": {
         "description": "Calculate enhanced neighborhood quality index.\n\nReturns scores for 8 factors:\n- Core: Safety, Schools, Amenities, Walkability, Green Space\n- New: Air Quality, Noise Level, Public Transport\n\nIncludes city comparison and nearby POIs for map visualization.",
@@ -30634,6 +32054,72 @@
         "tags": [
           "Tools",
           "Tools"
+        ]
+      }
+    },
+    "/api/v1/tools/neighborhood-summary": {
+      "post": {
+        "description": "Return a 2-3 sentence AI summary of a neighborhood.",
+        "operationId": "neighborhood_summary_api_v1_tools_neighborhood_summary_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-User-Email",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Email"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NeighborhoodSummaryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NeighborhoodSummaryResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Neighborhood Summary",
+        "tags": [
+          "Valuation",
+          "Valuation"
         ]
       }
     },
@@ -30729,6 +32215,72 @@
         "tags": [
           "Tools",
           "Tools"
+        ]
+      }
+    },
+    "/api/v1/tools/price-forecast": {
+      "post": {
+        "description": "Estimate current value and project value at the requested horizons.\n\nEither `property_id` (resolved from the vector store) OR `property_features`\nmust be supplied. The LLM returns a structured estimate with confidence and\ndrivers; a deterministic fallback is used if the LLM is unavailable.",
+        "operationId": "price_forecast_api_v1_tools_price_forecast_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-User-Email",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Email"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PriceForecastRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceForecastResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Price Forecast",
+        "tags": [
+          "Valuation",
+          "Valuation"
         ]
       }
     },
@@ -31593,6 +33145,48 @@
         ]
       }
     },
+    "/health/detailed": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Health Check",
+        "description": "Health check endpoint to verify API status.\n\nArgs:\n    include_dependencies: Whether to check dependency health\n        (vector store, Redis, LLM providers)\n\nReturns:\n    Comprehensive health status including dependencies",
+        "operationId": "health_check_health_detailed_get",
+        "parameters": [
+          {
+            "name": "include_dependencies",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Include Dependencies"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health/live": {
       "get": {
         "description": "K8s liveness probe - checks if app is alive.\nSimple ping endpoint (no dependency checks).",
@@ -31652,6 +33246,168 @@
           "System"
         ]
       }
+    },
+    "/monitoring/overview": {
+      "get": {
+        "description": "High-level monitoring overview for admin dashboard.\n\nReturns aggregated metrics for the monitoring dashboard UI.",
+        "operationId": "monitoring_overview_monitoring_overview_get",
+        "parameters": [
+          {
+            "in": "cookie",
+            "name": "access_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Monitoring Overview",
+        "tags": [
+          "Monitoring",
+          "Monitoring"
+        ]
+      }
+    },
+    "/monitoring/test-alert": {
+      "post": {
+        "description": "Test alert endpoint for monitoring notifications.\n\nSends a test alert to validate alerting configuration.\nRequires system admin permission.",
+        "operationId": "test_alert_monitoring_test_alert_post",
+        "parameters": [
+          {
+            "in": "cookie",
+            "name": "access_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Test Alert",
+        "tags": [
+          "Monitoring",
+          "Monitoring"
+        ]
+      }
+    },
+    "/ready": {
+      "get": {
+        "description": "Readiness probe - checks if the service is ready to handle requests.\n\nValidates database, Redis (if configured), and LLM provider availability.\nUsed by Kubernetes/Docker readiness probes and load balancers.",
+        "operationId": "readiness_check_ready_get",
+        "parameters": [
+          {
+            "in": "cookie",
+            "name": "access_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Readiness Check",
+        "tags": [
+          "Monitoring",
+          "Monitoring"
+        ]
+      }
     }
   },
   "tags": [
@@ -31670,6 +33426,10 @@
     {
       "description": "Mortgage, TCO, investment, commute, valuation, and other calculators",
       "name": "Tools"
+    },
+    {
+      "description": "v5.1: AI price forecast with multi-year projection and neighborhood one-liner",
+      "name": "Valuation"
     },
     {
       "description": "Property favorites and watchlist",

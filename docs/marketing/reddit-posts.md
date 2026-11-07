@@ -28,14 +28,14 @@ What makes it interesting technically:
 - Hybrid semantic + keyword retrieval with MMR reranking (30-40%
   relevance lift in internal evals)
 - Per-task and per-user LLM provider selection with priority cascade
-- Environment-conditional lazy provider loading (stays under Render's
-  512 MB free-tier cap without sacrificing full DX on a VPS)
+- Environment-conditional lazy provider loading (stays under a
+  512 MB cap without sacrificing full DX on a VPS)
 - 9 languages with EU AI Act compliance labels built in
 
 The codebase is open-core: the engine stays free, commercial features
 live in the hosted tier ([propvectorai.com](https://propvectorai.com)).
 
-Live demo (no signup): https://realestate-web-dz1y.onrender.com/
+Live demo (no signup): https://realestate.nestlab.tech/
 
 Architecture write-up if you want to skip the code:
 [large-saas-overview.md](https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/architecture/large-saas-overview.md)
@@ -66,10 +66,10 @@ Things I learned the hard way:
    The fallback chain lives in
    `apps/api/models/provider_factory.py`.
 
-2. **Render free tier + 512 MB is brutal.** Solved with environment-
-   conditional lazy provider loading — only the active `DEFAULT_PROVIDER`
-   is imported at startup; the rest load on first use. Full DX on a
-   VPS, Render-friendly on free.
+2. **512 MB of RAM is brutal.** Solved with environment-conditional
+   lazy provider loading — only the active `DEFAULT_PROVIDER` is
+   imported at startup; the rest load on first use. Full DX on a VPS,
+   and the demo still fits on a small host.
 
 3. **9 languages took longer than the RAG pipeline.** Translation keys,
    locale-aware date / currency / number formatting, hreflang SEO,
@@ -83,7 +83,7 @@ Things I learned the hard way:
 The most fun part: v5.1 added AI property valuation with a 10-year
 forecast. Property detail pages show a neighborhood one-liner too.
 
-Live demo: https://realestate-web-dz1y.onrender.com/
+Live demo: https://realestate.nestlab.tech/
 
 If you're working on a side project with LLM routing, RAG, or
 multi-language UX, happy to share more code snippets in the comments.
@@ -117,9 +117,9 @@ When one provider rate-limits, the demo keeps working. This is the
 difference between "AI demo" and "AI product."
 
 **Environment-conditional lazy loading is the difference between
-free-tier Render and a $50/month VPS.** On Render (512 MB cap), only
-the active `DEFAULT_PROVIDER` is imported at startup. On a VPS, all
-13 providers load eagerly. One code path, two memory profiles.
+a 512 MB host and a $50/month VPS.** On a small host, only the active
+`DEFAULT_PROVIDER` is imported at startup. On a VPS, all 16 providers
+load eagerly. One code path, two memory profiles.
 
 **LangChain vs raw SDKs.** We started with LangChain for tools,
 switched to raw `openai` / `anthropic` SDKs for production. The
@@ -160,8 +160,8 @@ chat. When Anthropic has an outage, Google picks up. Local Ollama is
 the always-on fallback for chat and embeddings.
 
 The provider factory (`apps/api/models/provider_factory.py`) returns
-a `(provider_name, model_name)` tuple per task. Lazy import on Render
-free tier (stays under 512 MB), eager import on VPS.
+a `(provider_name, model_name)` tuple per task. Lazy import on a
+memory-constrained host (stays under 512 MB), eager import on VPS.
 
 What surprised me:
 - **DeepSeek-Chat is shockingly good for cheap tasks** — neighborhood

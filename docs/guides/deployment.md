@@ -190,46 +190,23 @@ docker run -d --name caddy \
 
 ---
 
-## Render Staging Deployment
+## Staging Deployment
 
-The project includes a `render.yaml` for staging deployment on [Render](https://render.com).
+The public repository does not ship an environment-specific deployment config —
+you run the Docker Compose stack on your own host (see the Caddy walkthrough above).
 
 ### Services
 
-| Service | Branch | Purpose |
-|---------|--------|---------|
-| `realestate-api` | `dev` | Backend API (FastAPI) |
-| `realestate-web` | `dev` | Frontend (Next.js) |
+| Service | Purpose |
+|---------|---------|
+| `ai-real-estate-backend` | Backend API (FastAPI) |
+| `ai-real-estate-frontend` | Frontend (Next.js) |
 
-### Step 1: Connect Repository
+### Step 1: Configure the environment
 
-1. Go to [render.com](https://render.com)
-2. Click "New" → "Web Service"
-3. Connect your GitHub repository (`AleksNeStu/ai-real-estate-assistant`)
-
-### Step 2: Backend Configuration
-
-| Setting | Value |
-|---------|-------|
-| Root Directory | `/` |
-| Branch | `dev` |
-| Build Command | `pip install -r requirements.txt` |
-| Start Command | `uvicorn api.main:app --host 0.0.0.0 --port $PORT` |
-| Python Version | `3.12` |
-
-### Step 3: Frontend Configuration
-
-| Setting | Value |
-|---------|-------|
-| Root Directory | `apps/web` |
-| Branch | `dev` |
-| Framework Preset | Next.js |
-| Build Command | `npm run build` |
-| Start Command | `npm run start` |
-
-### Step 4: Environment Variables
-
-Add in Render Dashboard:
+```bash
+cp deploy/compose/.env.example deploy/compose/.env
+```
 
 **Backend:**
 
@@ -244,21 +221,22 @@ Add in Render Dashboard:
 
 | Name | Value |
 |------|-------|
-| `BACKEND_API_URL` | Your Render backend URL |
+| `BACKEND_API_URL` | Your backend URL |
 | `API_ACCESS_KEY` | Your production API key |
 | `NEXT_PUBLIC_API_URL` | `/api/v1` |
 
 **Important:** Never use `NEXT_PUBLIC_*` for secrets.
 
-### Step 5: Deploy
+### Step 2: Deploy
 
-Click "Deploy" — Render will build and deploy automatically.
+```bash
+docker compose -f deploy/compose/docker-compose.yml up -d
+```
 
-### Known Limitations (Free Tier)
+### Known Limitations (constrained host)
 
-- Cold start ~150s after inactivity (services spin down)
-- First request after idle may return 502 — retry after a few minutes
-- Limited resources (512MB RAM)
+- A 512 MB cap is not enough for a local LLM, web search, or a multi-worker backend
+- The disk is ephemeral — anything user-generated is lost on the next deploy
 
 ---
 

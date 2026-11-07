@@ -94,9 +94,9 @@ const mockAdvancedResult = {
   ],
 };
 
-// Skip: Recharts requires ResizeObserver which isn't available in jsdom
-// Would need to add ResizeObserver polyfill or mock recharts
-describe.skip('AdvancedInvestmentAnalyzer', () => {
+// The ResizeObserver polyfill lives in jest.setup.ts, so the recharts-based
+// charts (cash flow, scenarios, risk gauge) render in jsdom.
+describe('AdvancedInvestmentAnalyzer', () => {
   beforeEach(() => {
     (calculateAdvancedInvestment as jest.Mock).mockReset();
     (exportInvestmentToPDF as jest.Mock).mockReset();
@@ -166,7 +166,7 @@ describe.skip('AdvancedInvestmentAnalyzer', () => {
     fireEvent.click(screen.getByRole('button', { name: /Run Advanced Analysis/i }));
 
     await waitFor(() => {
-      expect(screen.getByText('12.1%')).toBeInTheDocument(); // IRR
+      expect(screen.getByText('12.5%')).toBeInTheDocument(); // IRR
     });
   });
 
@@ -310,7 +310,9 @@ describe.skip('AdvancedInvestmentAnalyzer', () => {
         expect(screen.getByRole('tab', { name: /Tax/i })).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByRole('tab', { name: /Tax/i }));
+      // Radix Tabs activates a tab on mousedown (not click), so the trigger
+      // needs a mouseDown event to switch the active panel.
+      fireEvent.mouseDown(screen.getByRole('tab', { name: /Tax/i }));
 
       await waitFor(() => {
         expect(screen.getByText('Tax Implications')).toBeInTheDocument();

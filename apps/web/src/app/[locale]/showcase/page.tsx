@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
+import { pageMetadata } from '@/lib/metadata';
+
 export async function generateMetadata({
   params,
 }: {
@@ -15,9 +17,11 @@ export async function generateMetadata({
     title: 'Showcase · Built With This',
     description:
       'Forks, real-world deployments, and case studies of AI Real Estate Assistant.',
-    alternates: {
-      canonical: `/${locale}/showcase`,
-    },
+    // Absolute canonical + the full hreflang map. The layout no longer
+    // declares a canonical (see the note in @/lib/metadata), and a page-level
+    // `alternates` replaces the inherited one, so the languages have to be
+    // repeated here.
+    ...pageMetadata(locale, '/showcase'),
   };
 }
 

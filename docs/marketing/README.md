@@ -2,8 +2,7 @@
 
 > **Audience:** Operator (AleksNeStu). All drafts ready for review and
 > manual publishing per Rule 1 (no agent-side publishing).
-> **Phase:** C of growth plan at
-> `C:/Users/he/.claude/plans/analyze-starts-history-and-fluffy-goose.md`.
+> **Phase:** C of the growth plan.
 
 ---
 
@@ -50,19 +49,34 @@ Day +30          → Product Hunt (after audiences warmed up)
 
 ## Pre-launch blockers (resolve before Day 0)
 
-- [ ] Operator pushes Phase A commit `8e0c437a` (AI-citation layer) to
-      `AleksNeStu/ai-real-estate-assistant` per CLAUDE.md Rule 1
-- [ ] Operator pushes Phase B commit `2a6e1e82` (onboarding tour +
-      try-these chips) per Rule 1
-- [ ] Render redeploys both — verify live demo with new features
+- [x] The current `dev` branch is published to
+      `AleksNeStu/ai-real-estate-assistant` (and to the two private mirrors)
+- [x] The images are rebuilt and the demo stack is redeployed, so the live
+      site carries the lead capture (footer email form) and the lead-redaction
+      fix. **Until that happens the demo still exposes every captured lead's
+      name, email and phone number to an anonymous visitor.**
 - [ ] Live demo: tour appears on first visit, dismissable
 - [ ] Live demo: try-these chips appear on landing, navigate to /search
+- [ ] Live demo: the footer email field posts and the lead appears in
+      `/leads` — masked for the anonymous viewer
 - [ ] og:image renders in Twitter Card Validator
 - [ ] Lighthouse SEO ≥ 95 on demo URL
-- [ ] Operator custom-designs og-image (currently placeholder)
 - [ ] Lighthouse Performance ≥ 85 on demo URL
-- [ ] Custom og-image designed (currently placeholder copy of
-      `assets/screenshots/home-dark.png`)
+- [x] The social-preview card is a designed 1200×630 card (it was a cropped
+      screenshot of the application)
+
+## The demo is deliberately not indexed
+
+The product is not finished, and it is not being released in this state. The
+demo deployment therefore answers `X-Robots-Tag: noindex, nofollow` on every
+page and serves a `robots.txt` that disallows everything, so the site stays
+reachable for a test but stays out of the index — the drafts can link to it
+without the unfinished pages entering a search index.
+
+**Before the first post, decide:** either keep it that way, or release it (see
+the release step in the deployment notes). If the demo is released, the
+`SEARCH_INDEXING` flag comes off and the product's own `robots.txt` comes back
+with the image.
 
 ## During-launch blockers (resolve during each post)
 

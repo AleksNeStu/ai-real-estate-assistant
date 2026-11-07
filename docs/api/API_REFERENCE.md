@@ -65,7 +65,7 @@ If you exceed the limit, you will receive:
 Cross-Origin Resource Sharing (CORS) is controlled via environment:
 - `ENVIRONMENT=production` pins allowed origins from `CORS_ALLOW_ORIGINS` (comma‑separated).
   - **Production safety**: Wildcard `*` origins are rejected in production. The application will fail to start if `CORS_ALLOW_ORIGINS` is empty or contains `*`.
-  - `CORS_ALLOW_ORIGINS` must be set to specific origins (e.g., `https://yourapp.com,https://your-app.onrender.com`).
+  - `CORS_ALLOW_ORIGINS` must be set to specific origins (e.g., `https://yourapp.com,https://your-app.example.com`).
 - `ENVIRONMENT` not `production` allows all origins (`*`) for local development.
 
 ### Notifications (Email)
@@ -220,7 +220,7 @@ Invoke-RestMethod `
 Example:
 ```powershell
 $env:ENVIRONMENT="production"
-$env:CORS_ALLOW_ORIGINS="https://yourapp.com,https://your-app.onrender.com"
+$env:CORS_ALLOW_ORIGINS="https://yourapp.com,https://your-app.example.com"
 ```
 
 Example (Admin notifications queue stats):
@@ -256,6 +256,7 @@ Example response:
 ```
 
 ### Endpoints
+
 ## GET /api/v1/admin/dashboard
 
 **Summary**: Admin Dashboard
@@ -1773,13 +1774,33 @@ Cancel a running bulk job. Only jobs in 'pending' or 'running' status can be can
 
 **Tags**: Chat, Chat
 
-Process a chat message using the hybrid agent with session persistence.
+Process a chat message using the hybrid agent with session persistence. Requires API key authentication.
 
 **Parameters**
 
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
 | X-User-Email | header | string \| null | no |  |
+
+**Request Body**
+
+- Required: yes
+- application/json: ChatRequest
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | ChatResponse |
+| 422 | Validation Error | HTTPValidationError |
+
+## POST /api/v1/chat/free
+
+**Summary**: Chat Free Endpoint
+
+**Tags**: Chat (Free Tier), Chat
+
+Free tier chat — no API key required. Uses the free LLM provider cascade (OpenRouter free → Google Flash → Ollama) with hourly/daily rate limits per client IP.
 
 **Request Body**
 
@@ -2948,6 +2969,26 @@ Get paginated list of leads. Agents see their assigned leads, admins see all.
 | 200 | Successful Response | LeadListResponse |
 | 422 | Validation Error | HTTPValidationError |
 
+## POST /api/v1/leads
+
+**Summary**: Create and score a lead
+
+**Tags**: Lead Scoring
+
+Create a new lead and immediately calculate its priority score based on budget fit, urgency, and engagement signals.
+
+**Request Body**
+
+- Required: yes
+- application/json: CreateAndScoreLeadRequest
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 201 | Successful Response | LeadWithScoreResponse |
+| 422 | Validation Error | HTTPValidationError |
+
 ## POST /api/v1/leads/bulk/assign
 
 **Summary**: Bulk assign leads
@@ -3023,6 +3064,28 @@ Export leads to CSV. Admin only.
 | 200 | Successful Response | object |
 | 422 | Validation Error | HTTPValidationError |
 
+## GET /api/v1/leads/funnel
+
+**Summary**: Get agent lead funnel
+
+**Tags**: Lead Scoring
+
+Get lead funnel statistics for the current agent or a specified agent. Shows leads by priority tier and status for visualization.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| agent_id | query | string \| null | no | Agent ID (admin only, defaults to current user) |
+| access_token | cookie | string \| null | no |  |
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | AgentFunnelResponse |
+| 422 | Validation Error | HTTPValidationError |
+
 ## GET /api/v1/leads/high-value
 
 **Summary**: Get high-value leads
@@ -3044,6 +3107,32 @@ Get leads with scores above threshold (70+).
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | array[LeadWithScoreResponse] |
+| 422 | Validation Error | HTTPValidationError |
+
+## POST /api/v1/leads/scores
+
+**Summary**: Score lead data
+
+**Tags**: Lead Scoring
+
+Calculate priority score for provided lead data without creating a record. Returns budget fit, urgency, and engagement breakdown.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
+**Request Body**
+
+- Required: yes
+- application/json: LeadScoreInputSchema
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | PrioritizedScoreResponse |
 | 422 | Validation Error | HTTPValidationError |
 
 ## POST /api/v1/leads/scores/recalculate
@@ -4435,6 +4524,40 @@ Search for properties using semantic search and metadata filters. Results are ca
 | 200 | Successful Response | SearchResponse |
 | 422 | Validation Error | HTTPValidationError |
 
+## GET /api/v1/settings/demo
+
+**Summary**: Get Demo Mode
+
+**Tags**: Settings
+
+Get current demo mode preference.
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | object |
+
+## POST /api/v1/settings/demo
+
+**Summary**: Set Demo Mode
+
+**Tags**: Settings
+
+Set demo mode preference (stored in session for demo purposes). This endpoint allows toggling demo mode at runtime without requiring authentication. In a production environment, this would be a per-user setting stored in the database. For demo purposes, we use a simple in-memory session store.
+
+**Request Body**
+
+- Required: yes
+- application/json: Body_set_demo_mode_api_v1_settings_demo_post
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | object |
+| 422 | Validation Error | HTTPValidationError |
+
 ## GET /api/v1/settings/model-preferences
 
 **Summary**: Get Model Preferences
@@ -4598,7 +4721,7 @@ One-click unsubscribe from notifications via token (Task #86).
 
 **Tags**: Settings
 
-Test connection/runtime status for a specific provider.
+Probe any registered provider's connection/route to readiness. Pre-2026-10-19 this endpoint gated on ``p.is_local`` and rejected every remote provider with HTTP 400. Phase D.6 opens it up: any provider from ``ModelProviderFactory.list_providers()`` can be probed. Local providers (Ollama) still call ``list_available_models()`` to surface the runtime-fetched model list; remote providers return ``available_models=[]`` (they don't expose a runtime-fetched list, only the curated catalog). Operators can now verify Together / Fireworks / HuggingFace / Grok / etc. keys via this endpoint instead of waiting for a real chat request to fail.
 
 **Parameters**
 
@@ -4909,6 +5032,26 @@ Advanced investment analysis with multi-year projections, tax implications, appr
 | 200 | Successful Response | AdvancedInvestmentResult |
 | 422 | Validation Error | HTTPValidationError |
 
+## POST /api/v1/tools/commute
+
+**Summary**: Osrm Commute Analysis
+
+**Tags**: Tools, Tools
+
+Calculate commute time using OSRM (Open Source Routing Machine). Free alternative to Google Routes API -- no API key required. Supports car, bike, and foot travel modes. Falls back to Haversine estimation when OSRM is unavailable.
+
+**Request Body**
+
+- Required: yes
+- application/json: OSRMCommuteRequest
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | OSRMCommuteResponse |
+| 422 | Validation Error | HTTPValidationError |
+
 ## POST /api/v1/tools/commute-ranking
 
 **Summary**: Commute Ranking
@@ -5099,6 +5242,26 @@ Calculate mortgage payments.
 | 200 | Successful Response | MortgageResult |
 | 422 | Validation Error | HTTPValidationError |
 
+## POST /api/v1/tools/negotiate
+
+**Summary**: Negotiate
+
+**Tags**: Tools, Tools
+
+Analyse market data for a property and suggest a negotiation strategy. Returns: - Fair price band (lower / mid / upper) - Recommended opening offer - Key negotiation arguments - Outreach email template based on selected tone - Legal disclaimer
+
+**Request Body**
+
+- Required: yes
+- application/json: NegotiationRequest
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | NegotiationResponse |
+| 422 | Validation Error | HTTPValidationError |
+
 ## POST /api/v1/tools/neighborhood-quality
 
 **Summary**: Neighborhood Quality
@@ -5117,6 +5280,32 @@ Calculate enhanced neighborhood quality index. Returns scores for 8 factors: - C
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | NeighborhoodQualityResponse |
+| 422 | Validation Error | HTTPValidationError |
+
+## POST /api/v1/tools/neighborhood-summary
+
+**Summary**: Neighborhood Summary
+
+**Tags**: Valuation, Valuation
+
+Return a 2-3 sentence AI summary of a neighborhood.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| X-User-Email | header | string \| null | no |  |
+
+**Request Body**
+
+- Required: yes
+- application/json: NeighborhoodSummaryRequest
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | NeighborhoodSummaryResponse |
 | 422 | Validation Error | HTTPValidationError |
 
 ## POST /api/v1/tools/portfolio-analysis
@@ -5155,6 +5344,32 @@ Analyze a portfolio of investment properties including aggregate metrics, divers
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | PriceAnalysisResponse |
+| 422 | Validation Error | HTTPValidationError |
+
+## POST /api/v1/tools/price-forecast
+
+**Summary**: Price Forecast
+
+**Tags**: Valuation, Valuation
+
+Estimate current value and project value at the requested horizons. Either `property_id` (resolved from the vector store) OR `property_features` must be supplied. The LLM returns a structured estimate with confidence and drivers; a deterministic fallback is used if the LLM is unavailable.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| X-User-Email | header | string \| null | no |  |
+
+**Request Body**
+
+- Required: yes
+- application/json: PriceForecastRequest
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | PriceForecastResponse |
 | 422 | Validation Error | HTTPValidationError |
 
 ## POST /api/v1/tools/rent-vs-buy
@@ -5437,6 +5652,27 @@ Health check endpoint to verify API status. Args: include_dependencies: Whether 
 | 200 | Successful Response | object |
 | 422 | Validation Error | HTTPValidationError |
 
+## GET /health/detailed
+
+**Summary**: Health Check
+
+**Tags**: System
+
+Health check endpoint to verify API status. Args: include_dependencies: Whether to check dependency health (vector store, Redis, LLM providers) Returns: Comprehensive health status including dependencies
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| include_dependencies | query | boolean | no |  |
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | object |
+| 422 | Validation Error | HTTPValidationError |
+
 ## GET /health/live
 
 **Summary**: Liveness Check
@@ -5478,3 +5714,66 @@ Prometheus-compatible metrics endpoint (TASK-017). Returns application metrics i
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | object |
+
+## GET /monitoring/overview
+
+**Summary**: Monitoring Overview
+
+**Tags**: Monitoring, Monitoring
+
+High-level monitoring overview for admin dashboard. Returns aggregated metrics for the monitoring dashboard UI.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | object |
+| 422 | Validation Error | HTTPValidationError |
+
+## POST /monitoring/test-alert
+
+**Summary**: Test Alert
+
+**Tags**: Monitoring, Monitoring
+
+Test alert endpoint for monitoring notifications. Sends a test alert to validate alerting configuration. Requires system admin permission.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | object |
+| 422 | Validation Error | HTTPValidationError |
+
+## GET /ready
+
+**Summary**: Readiness Check
+
+**Tags**: Monitoring, Monitoring
+
+Readiness probe - checks if the service is ready to handle requests. Validates database, Redis (if configured), and LLM provider availability. Used by Kubernetes/Docker readiness probes and load balancers.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | object |
+| 422 | Validation Error | HTTPValidationError |

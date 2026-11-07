@@ -2,7 +2,7 @@
 
 This document describes the supported deployment variants of the AI Real Estate Assistant, what features are available in each, and the trade-offs you should know about before choosing one.
 
-> **TL;DR — Local Docker and VPS deployments run the full feature set. The Render free-tier staging demo is memory-constrained (512 MB per service), so a subset of features is disabled by default.** If you want full functionality locally, use Docker Compose. If you want full functionality for real users, use a VPS.
+> **TL;DR — Local Docker and VPS deployments run the full feature set. A memory-constrained single host (512 MB per service) runs a subset of features by default.** If you want full functionality locally, use Docker Compose. If you want full functionality for real users, use a VPS.
 
 ---
 
@@ -12,7 +12,7 @@ This document describes the supported deployment variants of the AI Real Estate 
 |---------|----------|--------------------|---------------|
 | **Local Docker** | Contributors, evaluators, demos | 1 GB backend + 256 MB frontend (configurable) | ✅ Yes |
 | **VPS / dedicated server** | Real users, custom domain | Whatever your server has (≥ 2 GB recommended) | ✅ Yes |
-| **Render free tier** | Public demo link, marketing | 512 MB (Render hard cap) | ⚠️ Partial — see matrix |
+| **Constrained single host** | Public demo link, marketing | 512 MB | ⚠️ Partial — see matrix |
 
 A fourth option, **Kubernetes manifests** (`deploy/k8s/`), exists for orchestrating on any Kubernetes cluster. Functionally it matches a VPS deployment with more moving parts to manage.
 
@@ -20,22 +20,22 @@ A fourth option, **Kubernetes manifests** (`deploy/k8s/`), exists for orchestrat
 
 ## Feature availability matrix
 
-| Feature | Local Docker | VPS | Render free | Notes |
+| Feature | Local Docker | VPS | Constrained host | Notes |
 |---------|--------------|-----|-------------|-------|
 | Conversational AI (hosted LLM) | ✅ | ✅ | ✅ | Requires an API key for OpenAI / Anthropic / Google / etc. |
 | Conversational AI (local Ollama) | ✅ via `--profile local-llm` | ✅ | ❌ OOMs at 512 MB | Needs 4–8 GB RAM for a useful model |
-| Vector search (ChromaDB) | ✅ persistent volume | ✅ | ⚠️ in-memory only | `VECTOR_PERSIST_ENABLED=false` on Render; disk is ephemeral on free tier |
-| Web search (SearXNG) | ✅ via `--profile internet` | ✅ | ❌ | `INTERNET_ENABLED=false` on Render |
-| PostgreSQL | ✅ via `--profile postgres` | ✅ | ❌ SQLite only | Default in `render.yaml` |
+| Vector search (ChromaDB) | ✅ persistent volume | ✅ | ⚠️ in-memory only | `VECTOR_PERSIST_ENABLED=false`; disk is ephemeral |
+| Web search (SearXNG) | ✅ via `--profile internet` | ✅ | ❌ | `INTERNET_ENABLED=false` |
+| PostgreSQL | ✅ via `--profile postgres` | ✅ | ❌ SQLite only | SQLite is the default in the compose files |
 | OAuth (Google) | ✅ | ✅ | ✅ | Requires `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` envs |
 | SMTP / email | ✅ | ✅ | ✅ | Requires `SMTP_*` envs |
 | Notifications scheduler | ✅ | ✅ | ✅ | Conditional on env config |
-| Uptime monitor | ✅ | ✅ | ⚠️ (no scheduler on free) | Use an external monitor (UptimeRobot, Better Stack) |
+| Uptime monitor | ✅ | ✅ | ⚠️ (no scheduler) | Use an external monitor (UptimeRobot, Better Stack) |
 | Demo mode (MockLLM) | ✅ | ✅ | ✅ | Toggleable from the UI |
-| Response cache (Redis) | ✅ | ✅ | ❌ not provisioned in `render.yaml` | Backend env is set, but no Redis service runs alongside |
-| Persistent sessions | ✅ via volumes | ✅ | ❌ ephemeral filesystem | Render free instances restart on deploy |
+| Response cache (Redis) | ✅ | ✅ | ❌ not provisioned | Backend env is set, but no Redis service runs alongside |
+| Persistent sessions | ✅ via volumes | ✅ | ❌ ephemeral filesystem | The instance restarts on every deploy |
 | GPU acceleration (Ollama) | ✅ via `--profile local-llm,gpu` | ✅ | ❌ | Local development only; needs NVIDIA Container Toolkit |
-| Multi-worker backend | ✅ | ✅ | ⚠️ tight at 512 MB | Set `WEB_CONCURRENCY=1` on Render free |
+| Multi-worker backend | ✅ | ✅ | ⚠️ tight at 512 MB | Set `WEB_CONCURRENCY=1` |
 
 Legend: ✅ supported · ⚠️ supported with caveats · ❌ not supported / disabled
 
@@ -150,11 +150,16 @@ The Caddy example in [docs/guides/deployment.md](docs/guides/deployment.md) walk
 
 ---
 
-## Render free tier — limited functionality
+## Constrained single host — limited functionality
 
-The public staging demo at <https://realestate-api-wkm7.onrender.com> runs on Render's free plan. Each service is hard-capped at **512 MB RAM**, which is the dominant constraint on what can run there.
+The public demo at <https://realestate.nestlab.tech> runs on a single host with a persistent database
+and a persistent vector index, so its catalogue survives a restart.
 
-### What works
+The rest of this section is the **recipe for a much tighter budget** — a host that gives each service
+**512 MB RAM**. If you are deploying your own copy on a machine that small, the feature set and the
+environment recipe below are what you get. It is not a description of the hosted demo.
+
+### What works on a 512 MB host
 
 - Conversational AI with any hosted LLM provider (OpenAI, Anthropic, Google, etc.)
 - Demo mode (MockLLM)
@@ -162,22 +167,22 @@ The public staging demo at <https://realestate-api-wkm7.onrender.com> runs on Re
 - SMTP / email (if SMTP env vars are set)
 - The full chat, search, favorites, and lead-management UI
 
-### What is **not** available (and why)
+### What is **not** available at 512 MB (and why)
 
 | Feature | Status | Why |
 |---------|--------|-----|
 | Local LLM (Ollama) | ❌ | Would OOM at 512 MB; needs 4–8 GB for a useful model |
-| Web search (SearXNG) | ❌ | `INTERNET_ENABLED=false` in `render.yaml`; saves ~1 GB for the agent process |
-| Persistent ChromaDB | ⚠️ in-memory only | `VECTOR_PERSIST_ENABLED=false`; Render free tier has ephemeral disk |
-| Redis cache | ❌ | Not provisioned in `render.yaml`; backend is configured for Redis but no service runs alongside |
-| PostgreSQL | ❌ | SQLite only on free tier; ephemeral disk |
-| Uptime monitor worker | ❌ | Use an external monitor (UptimeRobot, Better Stack, Render's own) |
-| GPU acceleration | ❌ | Render free has no GPU instances |
+| Web search (SearXNG) | ❌ | `INTERNET_ENABLED=false`; saves ~1 GB for the agent process |
+| Persistent ChromaDB | ⚠️ in-memory only | `VECTOR_PERSIST_ENABLED=false`; the disk is ephemeral |
+| Redis cache | ❌ | Not provisioned; the backend is configured for Redis but no service runs alongside |
+| PostgreSQL | ❌ | SQLite only; ephemeral disk |
+| Uptime monitor worker | ❌ | Use an external monitor (UptimeRobot, Better Stack) |
+| GPU acceleration | ❌ | The host has no GPU |
 | Multi-worker backend | ⚠️ tight at 512 MB | Set `WEB_CONCURRENCY=1` to avoid OOM |
 
-### Free-tier memory configuration (diploma demo mode)
+### Constrained-host memory configuration (demo mode)
 
-The `render.yaml` at the repo root already pins the env vars below so the service can boot and stay under 512 MB. This is the "diploma demo" recipe — the app runs, the demo flows work, but a lot of optional features are intentionally turned off.
+Set the env vars below so the service can boot and stay under 512 MB. This is the "demo" recipe — the app runs, the demo flows work, but a lot of optional features are intentionally turned off.
 
 | Env var | Value | Why |
 |---------|-------|-----|
@@ -192,26 +197,26 @@ The `render.yaml` at the repo root already pins the env vars below so the servic
 | `DB_MAX_OVERFLOW` | `3` | Match the smaller pool ceiling. |
 | `CHROMA_INDEXING_WORKERS` | `1` | Single-threaded ChromaDB indexing. |
 | `POOL_MAX_WORKERS` | `2` | Smaller global thread pool. |
-| `CACHE_ENABLED` | `false` | Don't try to initialize the response cache (no Redis sidecar exists on the free plan). |
+| `CACHE_ENABLED` | `false` | Don't try to initialize the response cache (no Redis sidecar exists). |
 
 **Net effect of the knobs above:** the backend boots in ~250–350 MB of RSS (vs. ~600–800 MB with defaults), which fits under the 512 MB cap with ~150–250 MB of headroom for request bursts. The frontend is a Next.js standalone build (~150 MB RSS) and fits well within the same plan.
 
 **Trade-off:** in this mode, the demo can't answer questions that need real LLM reasoning, real embeddings, or real web search. The UI works end-to-end (chat, search, favorites, leads) but the LLM replies are scripted (MockLLM). For a diploma demo, that's usually fine — the goal is to show the architecture and UX, not the model quality.
 
-### How to deploy to Render
+### How to deploy on a constrained host
 
-See [docs/deployment/DEPLOYMENT.md](docs/deployment/DEPLOYMENT.md) for step-by-step instructions. The `render.yaml` at the repository root is the source of truth for the staging service config.
+See [docs/deployment/DEPLOYMENT.md](docs/deployment/DEPLOYMENT.md) for step-by-step instructions. The env vars in the table above are the source of truth for the constrained-host configuration.
 
-### When Render free is the right choice
+### When a constrained host is the right choice
 
 - You want a public URL that anyone can hit without setting up Docker
 - Marketing screenshots, link sharing, a "look, it works" demo
 - A cheap staging environment to verify a PR end-to-end
-- A **diploma / coursework demo** — the configured knobs (DEMO_MODE, no Ollama, no SearXNG, single worker) keep the service under 512 MB so the full UI is reachable end-to-end without paying for a Render plan. The trade-off is that the LLM replies are scripted (MockLLM), not real. See "Free-tier memory configuration" below.
+- A **diploma / coursework demo** — the configured knobs (DEMO_MODE, no Ollama, no SearXNG, single worker) keep the service under 512 MB so the full UI is reachable end-to-end on a small host. The trade-off is that the LLM replies are scripted (MockLLM), not real. See "Constrained-host memory configuration" above.
 
-### When Render free is the wrong choice
+### When a constrained host is the wrong choice
 
-- Real users with real traffic (cold starts + 512 MB cap are not production-ready)
+- Real users with real traffic (the memory cap is not production-ready)
 - You need vector search, web search, or a local LLM
 - You need a persistent database (anything user-generated will be lost on the next deploy)
 
@@ -223,13 +228,13 @@ For those workloads, use a VPS.
 
 | Your goal | Use this |
 |-----------|----------|
-| Try the app quickly without setting up anything | Render free (click the demo link) |
+| Try the app quickly without setting up anything | The public demo (click the demo link) |
 | Try the app locally with no build step | `docker-compose.quick.yml` |
 | Develop or evaluate locally with full features | `docker-compose.yml` (with optional profiles) |
 | Develop locally with GPU-accelerated Ollama | `docker-compose.yml` + `--profile local-llm,gpu` |
 | Host for real users on your own infrastructure | VPS with `docker-compose.yml` + `docker-compose.prod.yml` overlay |
 | Host on a Kubernetes cluster | `deploy/k8s/` manifests |
-| Public staging link for a PR / demo | Render free (acknowledge feature limits) |
+| Public staging link for a PR / demo | Constrained single host (acknowledge feature limits) |
 
 If you are unsure, start with `docker-compose.quick.yml` locally — it pulls pre-built images, takes about a minute, and gives you the full feature set without any compilation.
 
@@ -240,11 +245,10 @@ If you are unsure, start with `docker-compose.quick.yml` locally — it pulls pr
 - [QUICKSTART.md](QUICKSTART.md) — three ways to run the app
 - [LOCAL_DEMO.md](LOCAL_DEMO.md) — local demo scripts (auto-seeded data)
 - [DOCKER_NAMING.md](DOCKER_NAMING.md) — container naming convention
-- [docs/deployment/DEPLOYMENT.md](docs/deployment/DEPLOYMENT.md) — main deployment guide (Render focus)
+- [docs/deployment/DEPLOYMENT.md](docs/deployment/DEPLOYMENT.md) — main deployment guide
 - [docs/guides/deployment.md](docs/guides/deployment.md) — Docker + Caddy VPS guide
 - [docs/guides/local-development.md](docs/guides/local-development.md) — local dev workflow
 - [docs/guides/troubleshooting.md](docs/guides/troubleshooting.md) — common issues
-- [render.yaml](render.yaml) — Render service config (source of truth for staging)
 - [deploy/compose/docker-compose.yml](deploy/compose/docker-compose.yml) — local / VPS compose baseline
 - [deploy/compose/docker-compose.quick.yml](deploy/compose/docker-compose.quick.yml) — pre-built-image variant
 - [deploy/compose/docker-compose.prod.yml](deploy/compose/docker-compose.prod.yml) — production overlay

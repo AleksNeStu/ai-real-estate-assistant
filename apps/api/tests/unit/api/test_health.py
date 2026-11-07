@@ -6,6 +6,7 @@ import pytest
 from fastapi import HTTPException
 
 import api.dependencies as api_dependencies
+import api.health as health_module
 from api.health import (
     DependencyHealth,
     HealthCheckResponse,
@@ -17,6 +18,18 @@ from api.health import (
     get_health_status,
     require_healthy,
 )
+
+# The two health tests below were marked `xfail(strict=False)` for years
+# (F-20260903-01 / F-20260903-02), which meant they could never fail the
+# build — and therefore documented nothing. They are now ordinary, enforcing
+# tests on every platform: the dependency checks are patched on the module
+# object, and the slow check's sleep outlasts both timers, so the outcome
+# cannot depend on what happens to be installed on the machine or on which
+# timer a loaded event loop processes first.
+#
+# `test_the_patch_seam_holds` pins the property that makes them deterministic:
+# the module the test patches must be the module the function under test reads
+# its globals from.
 
 
 class FakeResponse:
@@ -92,7 +105,7 @@ async def test_check_llm_provider_degraded_without_providers(monkeypatch):
     )
     fake_httpx = SimpleNamespace(AsyncClient=lambda timeout=2.0: FakeAsyncClient(404))
     monkeypatch.setitem(sys.modules, "httpx", fake_httpx)
-    monkeypatch.setattr("api.health.get_settings", lambda: settings)
+    monkeypatch.setattr(health_module, "get_settings", lambda: settings)
     result = await check_llm_provider()
     assert result.status == HealthStatus.DEGRADED
     assert result.details == {"configured_providers": []}
@@ -110,7 +123,7 @@ async def test_check_llm_provider_includes_ollama_when_available(monkeypatch):
     )
     fake_httpx = SimpleNamespace(AsyncClient=lambda timeout=2.0: FakeAsyncClient(200))
     monkeypatch.setitem(sys.modules, "httpx", fake_httpx)
-    monkeypatch.setattr("api.health.get_settings", lambda: settings)
+    monkeypatch.setattr(health_module, "get_settings", lambda: settings)
     result = await check_llm_provider()
     assert result.status == HealthStatus.HEALTHY
     assert result.details == {"configured_providers": ["ollama"], "default": "openai"}
@@ -128,35 +141,50 @@ async def test_check_llm_provider_healthy_with_configured_key(monkeypatch):
     )
     fake_httpx = SimpleNamespace(AsyncClient=lambda timeout=2.0: FakeAsyncClient(500))
     monkeypatch.setitem(sys.modules, "httpx", fake_httpx)
-    monkeypatch.setattr("api.health.get_settings", lambda: settings)
+    monkeypatch.setattr(health_module, "get_settings", lambda: settings)
     result = await check_llm_provider()
     assert result.status == HealthStatus.HEALTHY
     assert result.details == {"configured_providers": ["openai"], "default": "openai"}
 
 
-@pytest.mark.xfail(
-    reason="Linux CI flake (see F-20260903-01): monkeypatch on api.health.check_vector_store "
-           "is silently overridden when the real check_vector_store's get_vector_store "
-           "cache resolves to the live chromadb instance. Repair attempted 2026-09-03 "
-           "(commit 5548055d + follow-ups) but the cross-platform deterministic "
-           "patching seam has not been identified. Tracked for follow-up; the test "
-           "is preserved as xfail so it documents the expected contract without "
-           "blocking CI.",
-    strict=False,
-)
+def test_the_patch_seam_holds():
+    """The module the test patches must be the module the function reads from.
+
+    This is the property the two tests below depend on, and the reason they
+    used to be marked `xfail`: a dotted import path ("api.health.X") makes the
+    patcher IMPORT the module by name, and that import can resolve to a
+    different module object than the one the function under test was imported
+    from. The patch then lands on a copy, the real check runs, and the test
+    fails for a reason that has nothing to do with the code under test.
+
+    On the CI image the symptom was "the vector store was healthy"; on a
+    machine without chromadb the same test passed for the wrong reason. The
+    seam check turns that class of mystery into one precise assertion, on
+    every platform.
+    """
+    assert get_health_status.__globals__ is health_module.__dict__
+    assert health_module is sys.modules["api.health"]
+
+
 @pytest.mark.asyncio
 async def test_get_health_status_unhealthy_when_vector_store_unhealthy(monkeypatch):
     """Test that health status is UNHEALTHY when the vector store dependency
     check reports UNHEALTHY.
 
-    Currently @pytest.mark.xfail due to a Linux CI flake — the
-    ``monkeypatch.setattr("api.health.check_vector_store", X)`` patch is
-    silently overridden by the real check_vector_store's chromadb init on
-    the test image (FastEmbed ships with chromadb installed). See commit
-    history and F-20260903-01 in the findings ledger.
+    The dependency checks are patched on the module OBJECT (see the import at
+    the top of this file), not through a dotted import path — a dotted path
+    makes monkeypatch import the module by name, which can resolve to a
+    different module object than the one ``get_health_status`` reads its
+    globals from. When that happened the real vector-store check ran, reported
+    healthy, and the overall status came back healthy instead of unhealthy.
 
-    The test body documents the intended contract — it should pass when
-    the patching seam is identified and the test can be re-enabled.
+    On the CI image that failure looked like a chromadb problem, but chromadb
+    was only the messenger: the real check succeeded because a live store was
+    installed there, while on a machine without it the same test passed for the
+    wrong reason (the check reported "not initialized"). Replacing the check
+    itself makes the outcome identical on every platform.
+
+    See F-20260903-01 in the findings ledger and TaskMaster #20.
     """
     settings = SimpleNamespace(version="9.9.9", database_url=None)
 
@@ -184,16 +212,74 @@ async def test_get_health_status_unhealthy_when_vector_store_unhealthy(monkeypat
             message="ok",
         )
 
-    monkeypatch.setattr("api.health.get_settings", lambda: settings)
-    monkeypatch.setattr("api.health.check_vector_store", _vector_unhealthy)
-    monkeypatch.setattr("api.health.check_redis", _redis_healthy)
-    monkeypatch.setattr("api.health.check_database", _database_none)
-    monkeypatch.setattr("api.health.check_llm_provider", _llm_healthy)
+    # Patch the module OBJECT, not a dotted import path. A dotted path makes
+    # monkeypatch import the module by name, which can resolve to a DIFFERENT
+    # module object than the one this test file imported at collection time —
+    # and then the patch lands on a copy while the function under test keeps
+    # using the original globals. That is what made this test fail under a
+    # loaded parallel run: the real vector-store check ran, reported healthy,
+    # and the overall status came back healthy instead of unhealthy.
+    monkeypatch.setattr(health_module, "get_settings", lambda: settings)
+    monkeypatch.setattr(health_module, "check_vector_store", _vector_unhealthy)
+    monkeypatch.setattr(health_module, "check_redis", _redis_healthy)
+    monkeypatch.setattr(health_module, "check_database", _database_none)
+    monkeypatch.setattr(health_module, "check_llm_provider", _llm_healthy)
 
     result = await get_health_status(include_dependencies=True)
     assert result.status == HealthStatus.UNHEALTHY
     assert result.dependencies["vector_store"].status == HealthStatus.UNHEALTHY
     assert result.version == "9.9.9"
+
+
+@pytest.mark.asyncio
+async def test_a_circuit_breaker_does_not_shadow_the_vector_store_dependency(monkeypatch):
+    """A breaker named "vector_store" must not overwrite the real dependency.
+
+    The search path registers a circuit breaker named "vector_store". The health
+    payload used to key the breaker entries by the RAW breaker name, so that
+    breaker overwrote the vector-store dependency check in the same dictionary.
+
+    Two things broke because of it: the health report showed the breaker's
+    state instead of the store's, and `/health/ready` — which reads
+    ``dependencies["vector_store"]`` — reported "ready" while the vector store
+    was unhealthy. Kubernetes would have kept routing traffic to the pod.
+    """
+    from core.circuit_breaker import CircuitState, get_breaker, reset_all_breakers
+
+    reset_all_breakers()
+    try:
+        breaker = get_breaker("vector_store")
+        breaker._state = CircuitState.OPEN
+
+        settings = SimpleNamespace(version="1.0.0")
+
+        async def _vector_unhealthy():
+            return DependencyHealth(
+                name="vector_store",
+                status=HealthStatus.UNHEALTHY,
+                message="vector store not initialized",
+            )
+
+        async def _none():
+            return None
+
+        monkeypatch.setattr(health_module, "check_vector_store", _vector_unhealthy)
+        monkeypatch.setattr(health_module, "check_redis", _none)
+        monkeypatch.setattr(health_module, "check_database", _none)
+        monkeypatch.setattr(health_module, "check_llm_provider", _none)
+        monkeypatch.setattr(health_module, "get_settings", lambda: settings)
+
+        result = await get_health_status(include_dependencies=True)
+
+        # The dependency check keeps the key it owns...
+        assert result.dependencies["vector_store"].status == HealthStatus.UNHEALTHY
+        # ...and the breaker is reported under its own prefixed key.
+        assert "circuit_breaker:vector_store" in result.dependencies
+        assert result.dependencies["circuit_breaker:vector_store"].status == HealthStatus.UNHEALTHY
+        # An unhealthy vector store makes the whole endpoint unhealthy.
+        assert result.status == HealthStatus.UNHEALTHY
+    finally:
+        reset_all_breakers()
 
 
 @pytest.mark.asyncio
@@ -223,7 +309,7 @@ async def test_check_vector_store_uses_thread_for_blocking_count(monkeypatch):
 
     # Patch the symbol bound into the api.health module so the new
     # asyncio.to_thread wrapping is exercised end-to-end.
-    monkeypatch.setattr("api.health.get_vector_store", _fake_get_vector_store)
+    monkeypatch.setattr(health_module, "get_vector_store", _fake_get_vector_store)
 
     loop_thread = threading.get_ident()
     result = await check_vector_store()
@@ -235,26 +321,26 @@ async def test_check_vector_store_uses_thread_for_blocking_count(monkeypatch):
     assert probe.invoked_on != loop_thread
 
 
-@pytest.mark.xfail(
-    reason="Linux CI flake (see F-20260903-02): same monkeypatch-loss-on-chromadb-init "
-           "issue as test_get_health_status_unhealthy_when_vector_store_unhealthy. "
-           "Patching api.health.check_vector_store (or the underlying get_vector_store) "
-           "is silently overridden on Linux CI where chromadb is preinstalled. "
-           "Preserved as xfail to document the contract without blocking CI.",
-    strict=False,
-)
 @pytest.mark.asyncio
 async def test_get_health_status_marks_slow_dependency_degraded(monkeypatch):
     """A slow dependency check must not block the response and must be DEGRADED.
 
-    Currently @pytest.mark.xfail due to a Linux CI flake — see
-    F-20260903-02 in the findings ledger. The test body documents the
-    intended contract (bounded check fires at 4s, response DEGRADED).
+    The dependency checks are patched on the module OBJECT, not through a dotted
+    import path — see the note on the test above. See F-20260903-02 in the
+    findings ledger and TaskMaster #20.
     """
     settings = SimpleNamespace(version="1.0.0")
 
     async def _slow_vector():
-        await asyncio.sleep(10)
+        # The sleep is deliberately far longer than both the handler's internal
+        # budget (4s) and the outer wait_for below (30s). With a shorter sleep
+        # the outcome depended on which of the two timers the event loop
+        # happened to process first on a loaded runner: when the loop was
+        # blocked long enough for the sleep to finish, the check returned
+        # HEALTHY and the test failed for no reason. Now the sleep cannot
+        # possibly win, so the only reachable outcome is DEGRADED — or a loud
+        # TimeoutError from the outer wait_for if the runner stalls outright.
+        await asyncio.sleep(60)
         return DependencyHealth(
             name="vector_store",
             status=HealthStatus.HEALTHY,
@@ -274,18 +360,23 @@ async def test_get_health_status_marks_slow_dependency_degraded(monkeypatch):
             message="ok",
         )
 
-    monkeypatch.setattr("api.health.check_vector_store", _slow_vector)
-    monkeypatch.setattr("api.health.check_redis", _ok_redis)
-    monkeypatch.setattr("api.health.check_database", _ok_database)
-    monkeypatch.setattr("api.health.check_llm_provider", _ok_llm)
-    monkeypatch.setattr("api.health.get_settings", lambda: settings)
+    monkeypatch.setattr(health_module, "check_vector_store", _slow_vector)
+    monkeypatch.setattr(health_module, "check_redis", _ok_redis)
+    monkeypatch.setattr(health_module, "check_database", _ok_database)
+    monkeypatch.setattr(health_module, "check_llm_provider", _ok_llm)
+    monkeypatch.setattr(health_module, "get_settings", lambda: settings)
 
     started = asyncio.get_event_loop().time()
     status_task = asyncio.create_task(get_health_status(include_dependencies=True))
-    result = await asyncio.wait_for(status_task, timeout=5.0)
+    # The health handler bounds each dependency check at 4s internally. The outer
+    # wait_for is a safety net, not the assertion - it is deliberately generous,
+    # because a saturated CI runner can delay the event loop's timers by several
+    # seconds and a tight outer bound turned this test into a load-sensitive
+    # flake (it failed on a busy runner and passed on an idle one).
+    result = await asyncio.wait_for(status_task, timeout=30.0)
     elapsed = asyncio.get_event_loop().time() - started
 
-    assert elapsed < 5.0
+    assert elapsed < 25.0, f"the health response waited {elapsed:.1f}s for a bounded check"
     assert result.dependencies["vector_store"].status == HealthStatus.DEGRADED
     assert "Timed out" in result.dependencies["vector_store"].message
 
@@ -314,7 +405,7 @@ async def test_require_healthy_raises_on_unhealthy_dependencies(monkeypatch):
     async def _fake_get_health_status(*_args, **_kwargs):
         return response
 
-    monkeypatch.setattr("api.health.get_health_status", _fake_get_health_status)
+    monkeypatch.setattr(health_module, "get_health_status", _fake_get_health_status)
     with pytest.raises(HTTPException) as exc_info:
         await require_healthy()
     assert "vector_store" in str(exc_info.value.detail)
@@ -326,7 +417,7 @@ async def test_check_database_returns_none_when_not_configured(monkeypatch):
     """Database check returns None when DATABASE_URL is not set."""
     settings = SimpleNamespace(database_url=None)
     monkeypatch.delenv("DATABASE_URL", raising=False)
-    monkeypatch.setattr("api.health.get_settings", lambda: settings)
+    monkeypatch.setattr(health_module, "get_settings", lambda: settings)
     result = await check_database()
     assert result is None
 
@@ -355,7 +446,7 @@ async def test_check_database_healthy_when_connection_succeeds(monkeypatch):
     fake_database = SimpleNamespace(get_engine=lambda: FakeEngine())
 
     monkeypatch.setenv("DATABASE_URL", "sqlite+aiosqlite:///test.db")
-    monkeypatch.setattr("api.health.get_settings", lambda: settings)
+    monkeypatch.setattr(health_module, "get_settings", lambda: settings)
     monkeypatch.setitem(sys.modules, "sqlalchemy", fake_sqlalchemy)
     monkeypatch.setitem(sys.modules, "db.database", fake_database)
 
@@ -378,7 +469,7 @@ async def test_check_database_unhealthy_on_error(monkeypatch):
     fake_database = SimpleNamespace(get_engine=lambda: FakeEngine())
 
     monkeypatch.setenv("DATABASE_URL", "postgresql://invalid:5432/db")
-    monkeypatch.setattr("api.health.get_settings", lambda: settings)
+    monkeypatch.setattr(health_module, "get_settings", lambda: settings)
     monkeypatch.setitem(sys.modules, "sqlalchemy", fake_sqlalchemy)
     monkeypatch.setitem(sys.modules, "db.database", fake_database)
 

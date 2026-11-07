@@ -20,6 +20,36 @@ jest.mock('@/lib/api', () => {
   };
 });
 
+// The global next-intl mock returns the raw translation key. The page renders
+// user-visible English, so the mock resolves the real `en` messages (including
+// `{placeholder}` interpolation such as the error apology and the request id).
+jest.mock('next-intl', () => {
+  const messages = jest.requireActual<Record<string, unknown>>('../../../../../messages/en.json');
+  const resolve = (path: string): unknown =>
+    path.split('.').reduce<unknown>(
+      (acc, part) =>
+        acc && typeof acc === 'object' ? (acc as Record<string, unknown>)[part] : undefined,
+      messages
+    );
+  const interpolate = (template: string, params?: Record<string, unknown>) =>
+    params
+      ? template.replace(/\{(\w+)\}/g, (match, name) =>
+          name in params ? String(params[name]) : match
+        )
+      : template;
+  return {
+    useTranslations:
+      (namespace?: string) =>
+      (key: string, params?: Record<string, unknown>) => {
+        const value = resolve(namespace ? `${namespace}.${key}` : key);
+        return typeof value === 'string' ? interpolate(value, params) : key;
+      },
+    useLocale: () => 'en',
+    useMessages: () => messages,
+    NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => children,
+  };
+});
+
 const mockStream = streamChatMessage as jest.Mock;
 beforeEach(() => {
   jest.clearAllMocks();
@@ -28,8 +58,7 @@ beforeEach(() => {
 // Mock scrollIntoView
 window.HTMLElement.prototype.scrollIntoView = jest.fn();
 
-// Skip: Component uses CitationDisplay which needs proper mocking
-describe.skip('ChatPage', () => {
+describe('ChatPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -44,8 +73,10 @@ describe.skip('ChatPage', () => {
 
   it('displays initial greeting', () => {
     render(<ChatPage />);
-    expect(screen.getByText('AI Real Estate Assistant')).toBeInTheDocument();
-    expect(screen.getByText(/Ask me anything about properties/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'AI Assistant' })).toBeInTheDocument();
+    expect(
+      screen.getByText('Ask questions about properties, neighborhoods, and market trends.')
+    ).toBeInTheDocument();
   });
 
   it('handles message submission', async () => {
@@ -191,7 +222,12 @@ describe.skip('ChatPage', () => {
       expect(screen.getByText('Answer')).toBeInTheDocument();
     });
 
-    expect(screen.getByText(/Sources \(1\) \(truncated\)/)).toBeInTheDocument();
+    expect(screen.getByText('Citations (1)')).toBeInTheDocument();
+    expect(screen.getByText('((truncated))')).toBeInTheDocument();
+    // The citation itself is listed; the snippet stays collapsed until expanded.
+    expect(screen.getByText('Source 1')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /show snippet/i }));
     expect(screen.getByText('Doc')).toBeInTheDocument();
   });
 

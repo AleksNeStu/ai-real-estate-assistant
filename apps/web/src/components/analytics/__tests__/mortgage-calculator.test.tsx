@@ -5,8 +5,43 @@ import { calculateMortgage, calculateTCO } from '@/lib/api';
 
 jest.mock('@/lib/api');
 
-// Skip: jsPDF export functionality requires complex mocking
-describe.skip('MortgageCalculator', () => {
+// jsPDF + html2canvas cannot run in jsdom - the export button is not what this
+// suite covers, so the module is replaced by a stub.
+jest.mock('@/lib/pdf-export', () => ({
+  exportTCOToPDF: jest.fn(),
+}));
+
+// The global next-intl mock returns the raw translation key. The component
+// renders user-visible English, so the mock resolves the real `en` messages
+// (including `{placeholder}` interpolation).
+jest.mock('next-intl', () => {
+  const messages = jest.requireActual<Record<string, unknown>>('../../../../messages/en.json');
+  const resolve = (path: string): unknown =>
+    path.split('.').reduce<unknown>(
+      (acc, part) =>
+        acc && typeof acc === 'object' ? (acc as Record<string, unknown>)[part] : undefined,
+      messages
+    );
+  const interpolate = (template: string, params?: Record<string, unknown>) =>
+    params
+      ? template.replace(/\{(\w+)\}/g, (match, name) =>
+          name in params ? String(params[name]) : match
+        )
+      : template;
+  return {
+    useTranslations:
+      (namespace?: string) =>
+      (key: string, params?: Record<string, unknown>) => {
+        const value = resolve(namespace ? `${namespace}.${key}` : key);
+        return typeof value === 'string' ? interpolate(value, params) : key;
+      },
+    useLocale: () => 'en',
+    useMessages: () => messages,
+    NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => children,
+  };
+});
+
+describe('MortgageCalculator', () => {
   const mockResult = {
     monthly_payment: 2533.43,
     total_interest: 412033.64,

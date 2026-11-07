@@ -2,6 +2,8 @@ import { MetadataRoute } from 'next';
 import { routing } from '@/i18n/routing';
 import { absoluteUrl } from '@/lib/site';
 
+// Public, indexable routes. Private areas (favorites, saved-searches,
+// settings, auth, admin) are excluded — robots.txt disallows them.
 const PUBLIC_PATHS = [
   '', // homepage
   '/search',
@@ -12,6 +14,13 @@ const PUBLIC_PATHS = [
   '/tools',
   '/knowledge',
   '/valuation',
+  '/showcase',
+  '/cma',
+  '/documents',
+  '/analytics',
+  '/agent-analytics',
+  '/leads',
+  '/usage',
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

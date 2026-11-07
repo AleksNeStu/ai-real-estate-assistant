@@ -1532,5 +1532,17 @@
     "skip": "Skip",
     "next": "Next",
     "done": "Done"
+  },
+  "footer": {
+    "title": "Get new listings in your inbox",
+    "description": "Leave your email and we will send you the properties that match your search.",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "you@example.com",
+    "submit": "Notify me",
+    "submitting": "Sending...",
+    "success": "Thanks - you are on the list.",
+    "consent": "By subscribing you agree to receive property updates by email. You can unsubscribe at any time.",
+    "errorInvalidEmail": "Please enter a valid email address.",
+    "errorGeneric": "Something went wrong. Please try again."
   }
 }

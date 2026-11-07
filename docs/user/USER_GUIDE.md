@@ -190,7 +190,7 @@ For local development, all origins are allowed.
 For production, set:
 ```powershell
 $env:ENVIRONMENT="production"
-$env:CORS_ALLOW_ORIGINS="https://yourapp.com,https://your-app.onrender.com"
+$env:CORS_ALLOW_ORIGINS="https://yourapp.com,https://your-app.example.com"
 ```
 
 **Production safety:** The backend validates that:

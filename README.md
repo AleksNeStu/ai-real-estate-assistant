@@ -2,7 +2,7 @@
 
 ---
 
-> **NestLab** — an AI automation studio in Poland (EU). We build our own products and take on a
+> **NestLab Tech** — a founder-led AI studio in Poland (EU). We build our own products and take on a
 > limited number of client contracts each year.
 > [Workflow automation, custom AI software and EU AI Act readiness](https://nestlab.tech/services?utm_source=github&utm_medium=referral&utm_campaign=product_showcase&utm_content=readme)
 
@@ -18,7 +18,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![CI](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Live Demo](https://img.shields.io/badge/Demo-Live-success?style=flat&logo=render)](https://realestate-web-dz1y.onrender.com/)
+[![Live Demo](https://img.shields.io/badge/Demo-Live-success?style=flat)](https://realestate.nestlab.tech/)
 [![Hosted Soon: PropVector AI](https://img.shields.io/badge/Hosted_Soon-PropVector_AI-6f42c1?style=flat)](https://propvectorai.com?utm_source=github&utm_medium=readme&utm_campaign=hosted-badge)
 [![Latest Release](https://img.shields.io/github/v/release/AleksNeStu/ai-real-estate-assistant?style=flat&color=2ea44f)](https://github.com/AleksNeStu/ai-real-estate-assistant/releases)
 
@@ -26,8 +26,6 @@
 ## Table of Contents
 
 - [Live Demo](#-live-demo)
-- [What's New in v5.1](#-whats-new-in-v51)
-- [What's New Since v5.1.5.3](#-whats-new-since-v5153-post-release-polish--discoverability)
 - [What's New in v5.1.6](#-whats-new-in-v516)
 - [Architecture](#-architecture)
 - [Quick Start](#-quick-start)
@@ -53,7 +51,7 @@
 
 <div align="center">
 
-### [**🚀 Try the Live Demo →**](https://realestate-web-dz1y.onrender.com/)
+### [**🚀 Try the Live Demo →**](https://realestate.nestlab.tech/)
 
 **No login required — explore in demo mode**
 
@@ -69,36 +67,11 @@ Experience the full power of AI-driven real estate search without any setup:
 
 > **Note:** The demo uses simulated AI responses for instant exploration. Production deployment requires API keys.
 
-## 🆕 What's New in v5.1
-
-Three small but demoable additions, shipped together as a focused release:
-
-- **AI Property Valuation with Multi-Year Price Forecast** — paste a property id (or enter features manually) and get an LLM-powered estimate of current value plus projected value at 1y, 3y, 5y, and 10y horizons, with a confidence band and key drivers. Try it at `/valuation`.
-- **Inline monthly payment on listing cards** — every property card on the search results page now shows a small "$X / mo" estimate next to the title (20% down, 30-year fixed, 6.5% APR by default; not a lending offer).
-- **AI Neighborhood One-Liner** — property detail pages now feature a short AI-generated summary of the neighborhood's character, lifestyle, and accessibility. Falls back silently if the LLM is unavailable.
-
-All three work in demo mode without any paid external APIs.
-
-## ✨ What's New Since v5.1.5.3 (post-release polish + discoverability)
-
-Layered on top of the v5.1 features without changing product behaviour.
-Each item is a small, focused improvement in the demo and discovery surface.
-
-- **🧭 First-visit onboarding tour** — a 5-step guided tour (welcome → search → chat → valuation → languages) appears 1.5 s after the first visit, dismissable, with localStorage memory so it never shows again. Implementation: [`apps/web/src/components/onboarding/Tour.tsx`](apps/web/src/components/onboarding/Tour.tsx).
-- **🎯 "Try one of these" chips on the landing page** — six example natural-language queries (`2-bedroom apartment in Kraków under 500k`, `Investment property, Gdańsk, ROI > 5%`, …) navigate to `/<locale>/search?q=...` so the existing search bar picks them up. Reusable on empty states via `<EmptyStateWithPrompts />` ([`apps/web/src/components/demo/`](apps/web/src/components/demo/)).
-- **🔍 AI-citation layer** — the demo is now first-class-discoverable by ChatGPT, Claude, Perplexity, and Google AI Overviews:
-  - Expanded [`llms.txt`](apps/web/public/llms.txt) with 9-language market notes, competitive context (vs Zillow / Rightmove / Idealista / Otodom), FAQ Q&A, "Known limitations", explicit references to docs.
-  - Augmented [`robots.txt`](apps/web/public/robots.txt) with explicit `Allow` for GPTBot, ChatGPT-User, Claude-Web, ClaudeBot, anthropic-ai, PerplexityBot, Google-Extended, CCBot, Bytespider, Applebot-Extended.
-  - Added `FAQPage` JSON-LD alongside the existing Organization / WebSite / SoftwareApplication schemas ([`apps/web/src/lib/structured-data.ts`](apps/web/src/lib/structured-data.ts)).
-  - Added a custom `og:image.png` placeholder derived from `assets/screenshots/home-dark.png` ([`apps/web/public/og-image.png`](apps/web/public/og-image.png)) wired through `openGraph.images` + `twitter.images` in the locale layout.
-  - Expanded `metadataBase`, `title.template`, `keywords`, `authors`, `creator`, `publisher`, `category`, and `icons` blocks for full SEO coverage in 9 locales.
-- **⚡ Lazy-load /market-trends charts** — extracted the recharts bundle (5+ MB) into a separately-imported client component (`next/dynamic` with `ssr: false`). Initial payload for `/market-trends` shrinks by ~5 MB; charts stream in after the page renders.
-- **📣 Distribution drafts ready** — six drafts under [`docs/marketing/`](docs/marketing/) (Show HN, four-subreddit Reddit plan, Product Hunt, three YouTube scripts, directory submission plan) — see [`docs/marketing/README.md`](docs/marketing/README.md) for the recommended launch sequence.
-
 ## 🔐 What's New in v5.1.6
 
-A security-and-correctness release — the dependency floor is raised, the input
-sanitizer no longer eats digits, and every page finally has the same column measure.
+The current release — a security-and-correctness pass, plus the v5.1 feature
+set that shipped alongside it. Everything below works in demo mode without any
+paid external APIs.
 
 - **🛡️ 335 open Dependabot alerts → 0** — the critical/high batch is closed
   (`Pillow` 13.0.0, `authlib` 1.9.1, `certifi` 2026.10.18, `dompurify` 3.4.17,
@@ -123,8 +96,51 @@ sanitizer no longer eats digits, and every page finally has the same column meas
   now use `container mx-auto px-4 py-8` (and `max-w-5xl` for reading surfaces), with
   the landing hero, the chat split pane and the centered auth card kept as their own
   layouts.
+- **💰 AI property valuation with multi-year price forecast** — paste a property id
+  (or enter features manually) and get an LLM-powered estimate of current value plus
+  projected value at 1y, 3y, 5y, and 10y horizons, with a confidence band and key
+  drivers. Try it at `/valuation`.
+- **🏘️ AI neighborhood one-liner** — property detail pages feature a short
+  AI-generated summary of the neighborhood's character, lifestyle, and accessibility.
+  Falls back silently if the LLM is unavailable.
+- **💵 Inline monthly payment on listing cards** — every property card on the search
+  results page shows a small "$X / mo" estimate next to the title (20% down, 30-year
+  fixed, 6.5% APR by default; not a lending offer).
+- **🧭 First-visit onboarding tour** — a 5-step guided tour (welcome → search → chat
+  → valuation → languages) appears 1.5 s after the first visit, dismissable, with
+  localStorage memory so it never shows again. Implementation:
+  [`apps/web/src/components/onboarding/Tour.tsx`](apps/web/src/components/onboarding/Tour.tsx).
+- **🎯 "Try one of these" chips on the landing page** — six example natural-language
+  queries (`2-bedroom apartment in Kraków under 500k`, `Investment property, Gdańsk,
+  ROI > 5%`, …) navigate to `/<locale>/search?q=...` so the existing search bar picks
+  them up. Reusable on empty states via `<EmptyStateWithPrompts />`
+  ([`apps/web/src/components/demo/`](apps/web/src/components/demo/)).
+- **🔍 AI-citation layer** — the demo is first-class-discoverable by ChatGPT, Claude,
+  Perplexity, and Google AI Overviews:
+  - Expanded [`llms.txt`](apps/web/public/llms.txt) with 9-language market notes,
+    competitive context (vs Zillow / Rightmove / Idealista / Otodom), FAQ Q&A, "Known
+    limitations", explicit references to docs.
+  - Augmented [`robots.txt`](apps/web/public/robots.txt) with explicit `Allow` for
+    GPTBot, ChatGPT-User, Claude-Web, ClaudeBot, anthropic-ai, PerplexityBot,
+    Google-Extended, CCBot, Bytespider, Applebot-Extended.
+  - Added `FAQPage` JSON-LD alongside the existing Organization / WebSite /
+    SoftwareApplication schemas
+    ([`apps/web/src/lib/structured-data.ts`](apps/web/src/lib/structured-data.ts)).
+  - Added an `og:image.png` (1200×630) derived from `assets/screenshots/home-dark.png`
+    ([`apps/web/public/og-image.png`](apps/web/public/og-image.png)) wired through
+    `openGraph.images` + `twitter.images` in the locale layout.
+  - Expanded `metadataBase`, `title.template`, `keywords`, `authors`, `creator`,
+    `publisher`, `category`, and `icons` blocks for full SEO coverage in 9 locales.
+- **⚡ Lazy-load /market-trends charts** — extracted the recharts bundle (5+ MB) into
+  a separately-imported client component (`next/dynamic` with `ssr: false`). Initial
+  payload for `/market-trends` shrinks by ~5 MB; charts stream in after the page
+  renders.
 - **⬆️ Freshness** — `next` 16.4.5, `react`/`react-dom` 19.3.1, `eslint-config-next`
   16.4.5.
+- **📣 Distribution drafts ready** — five drafts under [`docs/marketing/`](docs/marketing/)
+  (Show HN, Reddit plan, Product Hunt, YouTube scripts, directory submission plan) —
+  see [`docs/marketing/README.md`](docs/marketing/README.md) for the recommended launch
+  sequence.
 - **🧹 Housekeeping** — 16 routine Dependabot PRs closed, the repository homepage
   points at the live demo, and the TaskMaster backlog stays local to the maintainer.
 
@@ -169,17 +185,17 @@ Run the full demo locally with comprehensive mock data in minutes:
 
 ## 🖥️ Deployment & Memory Notes
 
-The backend uses an **environment-conditional lazy provider load** (`apps/api/models/provider_factory.py`) to stay under Render's free-tier 512 MB memory cap. This is **only triggered when the `RENDER` env var is set to `"true"`** (which Render does automatically on every service).
+The backend uses an **environment-conditional lazy provider load** (`apps/api/models/provider_factory.py`) so it can run on a memory-constrained host. This is **only triggered when the `RENDER` env var is set to `"true"`**.
 
-| Platform / Setup | `RENDER` set? | Provider loading | Memory baseline | Notes |
+| Setup | `RENDER` set? | Provider loading | Memory baseline | Notes |
 |---|---|---|---|---|
-| **Render** (free / starter) | ✅ yes | Lazy — only the active `DEFAULT_PROVIDER` (`zai`) is imported at startup; the other 12 are loaded on first use | ~480 MB | Workaround for 512 MB hard cap |
-| **VPS / bare metal** | ❌ no | Eager — all 13 providers imported at startup | ~530 MB | No memory constraint; full DX |
-| **Docker / docker-compose** (local or self-hosted) | ❌ no (unless you set it) | Eager — all 13 providers imported at startup | ~530 MB | Same as VPS |
-| **Other PaaS** (Fly.io, Railway, Render preview, AWS App Runner, etc.) | ❌ no | Eager — all 13 providers imported at startup | depends on instance type | Pick a plan with ≥1 GB RAM for safety |
+| **Memory-constrained host** | ✅ yes | Lazy — only the active `DEFAULT_PROVIDER` (`zai`) is imported at startup; the other 15 are loaded on first use | ~480 MB | Workaround for a small memory cap |
+| **VPS / bare metal** | ❌ no | Eager — all 16 providers imported at startup | ~530 MB | No memory constraint; full DX |
+| **Docker / docker-compose** (local or self-hosted) | ❌ no (unless you set it) | Eager — all 16 providers imported at startup | ~530 MB | Same as VPS |
+| **Other PaaS** | ❌ no | Eager — all 16 providers imported at startup | depends on instance type | Pick a plan with ≥1 GB RAM for safety |
 | **Local dev / CI** | ❌ no | Eager | ~530 MB | Tests assume this path |
 
-If you self-host on a VPS, Docker, or any non-Render platform, **you don't need to do anything** — the eager path gives you all 13 providers from the start with no artificial latency. The lazy path is a Render-specific workaround for the 512 MB free-tier cap and is **not** a best practice for memory-constrained production deployments in general.
+If you self-host on a VPS, Docker, or any platform with headroom, **you don't need to do anything** — the eager path gives you all 16 providers from the start with no artificial latency. The lazy path exists for small memory caps and is **not** a best practice for memory-constrained production deployments in general.
 
 To override the gate (e.g. force lazy loading on a different platform), set `RENDER=true` in the environment.
 
@@ -240,8 +256,8 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 | Relational DB | PostgreSQL / SQLite |
 | LLM Providers | OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI, Fireworks AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, local Ollama |
 | Container | Docker / Docker Compose |
-| Hosting (staging) | Render free tier |
-| CI/CD | GitHub Actions (CI + GHCR + Render deploy) |
+| Hosting (demo) | Single host behind a reverse proxy |
+| CI/CD | GitHub Actions (CI + GHCR) |
 | Monitoring | Uptime Kuma + structured logs |
 
 ## 📈 Project Growth
@@ -266,10 +282,10 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 
 | Metric           | Value                                       |
 | ---------------- | ------------------------------------------- |
-| **Commits**      | 1177+                                       |
+| **Commits**      | 191                                         |
 | **Tests**        | 7,000+ (6,254 backend + 1,000 frontend)     |
 | **Lines of Code** | 60,000+ (27K Python + 34K TypeScript)      |
-| **Contributors** | 7                                           |
+| **Contributors** | 5 (+ 1 bot)                                 |
 | **Languages**    | 9 supported                                 |
 
 ## 🚀 Releases
@@ -313,10 +329,10 @@ See [docs/architecture/large-saas-overview.md](docs/architecture/large-saas-over
 # Clone and start demo mode (no API keys required)
 git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
 cd ai-real-estate-assistant
-.\start-docker.ps1
+.\scripts\docker\start.ps1
 
-# Stop: .\stop-docker.ps1
-# Logs: .\logs-docker.ps1
+# Stop:  .\scripts\docker\stop.ps1
+# Logs:  .\scripts\docker\logs.ps1
 ```
 
 ### Docker (manual)
@@ -452,8 +468,9 @@ ai-real-estate-assistant/
 | [Contributing](docs/development/CONTRIBUTING.md) | Development workflow |
 | [Testing Guide](docs/testing/TESTING_GUIDE.md) | Writing and running tests |
 | [CI/CD Pipeline](docs/guides/ci-cd.md) | Progressive security pipeline |
-| [Deployment](docs/deployment/DEPLOYMENT.md) | Docker & Render staging |
+| [Deployment](docs/deployment/DEPLOYMENT.md) | Docker & Kubernetes setup |
 | [Troubleshooting](docs/development/TROUBLESHOOTING.md) | Common issues |
+| [Project Review (2026-11-06)](docs/reviews/2026-11-06-ai-real-estate-assistant.md) | Full repo audit — findings and status |
 | [Changelog](CHANGELOG.md) | Version history |
 
 ## 🗺️ Roadmap
@@ -482,12 +499,12 @@ ai-real-estate-assistant/
 
 ## 🚢 Deployment
 
-- **Staging:** [realestate-web-dz1y.onrender.com](https://realestate-web-dz1y.onrender.com/) — auto-deploys from `dev` branch
-- **Production:** deploys from `main` via `deploy.yml` workflow
+- **Live demo:** [realestate.nestlab.tech](https://realestate.nestlab.tech/) — a single Docker Compose stack (backend + frontend + Redis) behind a reverse proxy with TLS.
+- **Your own environment:** bring your own host and follow the [Deployment Guide](docs/deployment/DEPLOYMENT.md) — Docker Compose or Kubernetes.
 
-> **Note:** Render free tier services spin down after inactivity. First visit may take ~30-60s to cold start.
+> **Note:** The public demo is a shared single-host deployment with a fixed memory budget. It is a demo, not a production SLA — self-host for anything load-bearing.
 
-See [Deployment Guide](docs/deployment/DEPLOYMENT.md) for Docker, Render, and Kubernetes setup.
+See [Deployment Guide](docs/deployment/DEPLOYMENT.md) for Docker and Kubernetes setup.
 
 ## ⚙️ Configuration
 

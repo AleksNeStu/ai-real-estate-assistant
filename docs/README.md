@@ -1,11 +1,11 @@
 # Documentation Index
 
-Welcome to the documentation for the AI Real Estate Assistant (V4).
+Welcome to the documentation for the AI Real Estate Assistant (v5.1.6).
 
 ## Architecture
 - **[Architecture](architecture/ARCHITECTURE.md)**: System design, components, and data flow.
 - **[Agent System](architecture/AGENT_SYSTEM.md)**: Agent routing, tools, and patterns.
-- **[ADRs](ADRs/)**: Architectural Decision Records.
+- **[ADRs](adr/)**: Architectural Decision Records.
 
 ## User
 - **[User Guide](user/USER_GUIDE.md)**: How to use the application.
@@ -28,19 +28,23 @@ Welcome to the documentation for the AI Real Estate Assistant (V4).
 
 ## Deployment
 - **[Deployment](deployment/DEPLOYMENT.md)**: Production deployment guide.
-- **[Deployment (V4)](deployment/DEPLOYMENT_V4.md)**: Legacy notes and options.
 
 ## Process
-- **[PRD](process/PRD.MD)**: Product Requirements Document.
-- **[Roadmap](process/ROADMAP.md)**: Future plans and vision.
-- **[Backlog](process/BACKLOG.md)**: Prioritized tasks.
-- **[Definition of Done](process/DEFINITION_OF_DONE.md)**: Quality checklist.
-- **[Branch Protection](process/BRANCH_PROTECTION.md)**: GitHub protection rules and required checks.
-- **[Feature Ideas](process/FEATURE_IDEAS_AND_INTEGRATIONS.md)**: Ideation and integrations.
+- **[Community Issues](process/COMMUNITY_ISSUES.md)**: Tracked community issues.
 
 ## API
 - **[API Reference](api/API_REFERENCE.md)**: Backend API documentation.
 - `api/openapi.json`: Snapshotted OpenAPI schema.
+
+## Operations
+- **[Accepted Security Risks](operations/security/accepted-risks.md)**: The canonical register of consciously accepted dependency risks.
+
+## Security
+- **[Security Policy](../SECURITY.md)**: Reporting a vulnerability.
+- **[Security Architecture](security/SECURITY.md)**: Layers, auth, and hardening details.
+
+## Reviews
+- **[Project Review (2026-11-06)](reviews/2026-11-06-ai-real-estate-assistant.md)**: Full repo audit — findings and status.
 
 ## Scripts
 - **[Local Development Scripts](scripts/LOCAL_DEVELOPMENT.md)**: One-command start helpers.

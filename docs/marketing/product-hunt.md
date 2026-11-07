@@ -48,6 +48,15 @@ Alternatives (≤ 260 chars each):
 
 ---
 
+## Links (PH takes one primary link; the repository is the secondary)
+
+- **Primary:** https://realestate.nestlab.tech/
+- Live demo — no signup and no API key. The hosted instance runs in demo mode,
+  so a visitor can try search, chat and valuation for free.
+- **Secondary:** https://github.com/AleksNeStu/ai-real-estate-assistant
+
+---
+
 ## Topics (pick 3-5 from PH categories)
 
 - Artificial Intelligence
@@ -59,7 +68,7 @@ Alternatives (≤ 260 chars each):
 
 ## Maker-comment (operator to post first, immediately after launch)
 
-Hey HN folks 👋 — solo developer here.
+Hey Product Hunt folks 👋 — solo developer here.
 
 I built AI Real Estate Assistant because every "AI for real estate"
 tool I tried was either $200/month or hallucinated square footage.
@@ -77,8 +86,8 @@ get matched listings. Nothing did that. So I built it.
   (30-40% relevance lift in our internal evals)
 - Multi-provider LLM routing (OpenAI, Anthropic, Google, Grok,
   DeepSeek, local Ollama) with automatic fallback chain
-- Environment-conditional lazy provider loading (stays under Render's
-  512 MB free-tier cap, eager load on VPS)
+- Environment-conditional lazy provider loading (stays under a
+  512 MB cap, eager load on VPS)
 - 9 languages with EU AI Act compliance labels built in
 
 **What's NOT here:**

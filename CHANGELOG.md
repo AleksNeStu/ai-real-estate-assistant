@@ -7,6 +7,109 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+- **The leads endpoint handed every captured contact detail to anonymous visitors** —
+  in demo mode the backend user is an administrator, and the administrator branch
+  of the leads list returned every lead with its name, email and phone. All three
+  fields are now masked for callers who are not the lead's owner (the demo
+  user's own role is not masked, so the demo stays usable), and the CSV export
+  applies the same rule. A field the caller just submitted is echoed back
+  unmasked — that is their own input. Covered by
+  `tests/unit/test_leads_redaction.py`.
+
+### Fixed
+- **The demo came up with an empty catalogue** — the database schema was created
+  in step 1.5 of the start-up sequence, after the two seeding steps that write to
+  it (steps 1.1 and 1.2). On a fresh database both seeds failed with
+  "no such table", the failures were caught and logged as non-fatal, and search
+  returned nothing. Schema creation now runs first.
+- **`VECTOR_PERSIST_ENABLED` was never read** — the settings model declared it
+  as a plain `bool = False`, so the environment variable the deployment files
+  advertised had no effect. It now reads the environment like every other
+  setting in that file.
+- **`/health` was registered twice** — the monitoring route shadowed the richer
+  handler, so the payload carrying `version`, `dependencies` and the git commit
+  was unreachable. The rich payload moved to `/health/detailed`; `/health` keeps
+  the stable, unauthenticated shape the probes use.
+- **The session cookie was not forwarded** — the Next.js API proxy forwarded
+  neither `cookie` nor `authorization`, so every session-authenticated surface
+  returned 401 outside demo mode. Repeated `Set-Cookie` headers were also folded
+  into one comma-joined value, which browsers parse as a single broken cookie.
+- **The canonical URL pointed every page at the homepage** — the locale layout
+  declared `alternates.canonical` for the home page and every route below it
+  inherited it. The layout no longer declares a canonical (a page with none is
+  self-canonical); explicit canonicals are added per page through the new
+  `apps/web/src/lib/metadata.ts`.
+- **The readiness probe could not see an unhealthy vector store** — the health
+  payload keyed its circuit-breaker entries by the raw breaker name, and the
+  search path registers a breaker named `vector_store`. That breaker overwrote
+  the real vector-store dependency check in the same dictionary, so the health
+  report showed the breaker's state instead of the store's, and `/health/ready`
+  — which reads `dependencies["vector_store"]` — answered "ready" while the
+  vector store was unhealthy. A cluster would have kept routing traffic to the
+  pod. The breaker entries are now keyed by their prefixed name, and a
+  regression test pins that they cannot shadow a dependency.
+- **A failed cache invalidation failed the write that had already succeeded** —
+  the admin ingest endpoint cleared the response cache after the mutation, and
+  an exception there propagated as a 500: the upload was stored, but the caller
+  saw a failure. A cache backed by an unreachable Redis would have failed every
+  write the same way. The invalidation is best-effort now.
+- **Two health tests could never fail the build** — they were marked
+  `xfail(strict=False)`, and they patched the dependency checks through a dotted
+  import path, which the patcher resolves by importing the module: that import
+  can land on a different module object than the one the function under test
+  reads its globals from, and the patch then has no effect. The marker is now
+  conditional (the test enforces the contract everywhere except on the platform
+  where the flake was first observed), the checks are patched on the module
+  object directly, and the slow-check sleep now outlasts both the handler's
+  internal budget and the test's outer wait — so the outcome no longer depends
+  on which timer a loaded event loop happens to process first.
+- **The chromadb version was unpinned in the requirements file** —
+  `requirements.txt` had `chromadb>=0.5.0` with no upper bound while
+  `pyproject.toml` pinned `<0.6.0`. The container image and the CI dependency
+  audit both install from `requirements.txt`, so the accepted-risk analysis for
+  the chromadb CVEs rested on a pin that did not hold on the install path
+  actually used.
+- **The avatar-upload tests raced each other** — the cleanup deleted every file
+  matching one prefix in a shared directory, so a parallel test worker could
+  delete another worker's file and fail the whole suite for no reason. The
+  cleanup now removes exactly the file the test created.
+
+### Added
+- **Site-wide lead capture** — a footer with an email field posts to the
+  existing public visitor endpoint. No new API was added.
+- **The lead-tracking layer is wired in** — the visitor-tracking module and its
+  React hook had no callers at all, so the lead scoring, the leads list, the
+  agent analytics, the funnel endpoints and the CSV export all read an empty
+  interaction table.
+- **The agent contact form is reachable** — `/agents` is in the demo navigation
+  now, and the navigation allowlist and the proxy allowlist agree with each
+  other.
+- **A site-wide hreflang map** — nine locales plus an `x-default` pointer, kept
+  in one place so a page-level canonical does not drop the language cluster.
+- **A runtime indexing switch** — `SEARCH_INDEXING=false` makes every page
+  answer `X-Robots-Tag: noindex, nofollow`. The flag is read from the runtime
+  environment, so one image serves an indexable deployment and a private one
+  without a rebuild, and the default leaves the indexable surface the
+  repository ships untouched. Covered by `src/__tests__/indexing.test.ts`.
+
+### Changed
+- **The deployment topology left the public tree** — the platform blueprint and
+  the deploy workflow moved to a private operations repository. A test asserts
+  that the public tree contains no deploy workflow, no blueprint and no
+  infrastructure identifier in any tracked file.
+- **The demo has a new home and the same address** — it runs on the operator's
+  own server behind the same public URL. The canonical URL, `robots.txt`,
+  `llms.txt`, the `package.json` homepage and the README all point at it.
+- **The documentation matches the repository again** — the quickstart names
+  scripts that exist, the provider, commit and contributor counts are the real
+  ones, the dead links are fixed, the security policy and the accepted-risk
+  register carry current dates, and the OpenAPI snapshot was regenerated.
+- **The social-preview card is a designed card** — the 1200×630 image was a
+  cropped screenshot of the application. It is now a card built from the
+  product's own identity: its icon, its name, its own tagline and its own
+  example queries, with no claim the product does not make.
+
 ## [5.1.6] - 2026-11-06
 
 ### Fixed
@@ -850,6 +953,27 @@ First production release of AI Real Estate Assistant.
 - Command-line interface for queries
 - SQLite database for property listings
 
+[Unreleased]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases
+[5.1.6]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.6
+[5.1.5.2]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.5.2
+[5.1.5]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases
+[5.1.4]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.4
+[5.1.3]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.3
+[5.1.2]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.2
+[5.1.1]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.1
+[5.0.12]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.0.12
+[5.0.11]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.0.11
+[5.0.10]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.0.10
+[5.0.9]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.0.9
+[5.0.8]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.0.8
+[5.0.7]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.0.7
+[5.0.6]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.0.6
+[5.0.5]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases
+[5.0.4]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases
+[5.0.3]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.0.3
+[5.0.2]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.0.2
+[5.0.1]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.0.1
+[5.0.0]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.0.0
 [4.0.0-dev]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v4.0.0
 [3.0.0]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v3.0.0
 [2.0.0]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v2.0.0

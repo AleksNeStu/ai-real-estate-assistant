@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { contactAgent } from '@/lib/api';
+import { useLeadTracking } from '@/hooks/useLeadTracking';
 import type { AgentProfile, InquiryType } from '@/lib/types';
 
 interface ContactAgentFormProps {
@@ -39,6 +40,7 @@ export function ContactAgentForm({
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { trackInteraction } = useLeadTracking();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -62,6 +64,22 @@ export function ContactAgentForm({
         message: formData.message,
         property_id: propertyId,
       });
+
+      // Lead tracking: record the inquiry (best-effort, never breaks the form).
+      try {
+        await trackInteraction({
+          interaction_type: 'inquiry',
+          property_id: propertyId,
+          metadata: {
+            agent_id: agent.id,
+            inquiry_type: formData.inquiry_type,
+            has_message: Boolean(formData.message),
+          },
+        });
+      } catch {
+        // ignore — telemetry must not surface as a form failure
+      }
+
       setSuccess(true);
       setTimeout(() => {
         onSuccess?.();
