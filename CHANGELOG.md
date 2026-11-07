@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.8] - 2026-11-07
+
+### Added
+- **A second deployment target** — the release pipeline now rolls a server you
+  own, not only the managed platform. `.github/workflows/deploy-selfhosted.yml`
+  connects over SSH with a deploy key, pulls the pinned images, restarts the
+  stack and checks the health endpoint. Nothing about a host is written in the
+  tree: the host, the user, the port, the path and the compose file are
+  repository secrets, so a fork can point the same workflow at its own
+  machine. The stack it runs is `deploy/docker-compose.selfhosted.yml` — no paid
+  model key needed, a seeded demo catalogue, and the state on a path of its own
+  so a bind mount cannot shadow the application's own package.
+- **Two deployment paths in the README** — the managed platform and your own
+  server, side by side, with the compose file, the workflow and the commands
+  to start from.
+- **The studio in the contacts** — the footer of the application states that
+  this is the free, open-source version and links to the studio that builds
+  the hosted one, in all nine languages.
+
+### Changed
+- **The README reads like a project, not a changelog** — the headings lost
+  their emoji, the table of contents is generated from them, and the release
+  notes became a short highlights list whose details stay in the changelog
+  and on the release page. The hosted version is reframed as what comes next,
+  next to an open invitation: suggest a feature, fork it, discuss it, or work
+  with the studio.
+- **The public address is a build argument** — Next inlines every
+  `NEXT_PUBLIC_*` into the bundle, so the canonical URL, the social preview
+  and the sitemap were fixed when the image was built. The address now comes
+  from the `SITE_URL` repository variable, so changing it is one setting and
+  one release.
+
 ## [5.1.7] - 2026-11-07
 
 ### Security
