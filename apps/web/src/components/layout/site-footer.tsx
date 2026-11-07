@@ -130,6 +130,18 @@ export function SiteFooter() {
               <p className="mt-3 text-xs text-muted-foreground">{t('consent')}</p>
             </form>
           )}
+
+          <p className="mt-6 text-xs text-muted-foreground">
+            {t('studioNote')}{' '}
+            <a
+              href="https://nestlab.tech"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-foreground underline underline-offset-4 hover:no-underline"
+            >
+              {t('studioLink')}
+            </a>
+          </p>
         </div>
       </div>
     </footer>

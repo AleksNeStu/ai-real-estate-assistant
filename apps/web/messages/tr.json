@@ -1025,6 +1025,8 @@
     "success": "Thanks - you are on the list.",
     "consent": "By subscribing you agree to receive property updates by email. You can unsubscribe at any time.",
     "errorInvalidEmail": "Please enter a valid email address.",
-    "errorGeneric": "Something went wrong. Please try again."
+    "errorGeneric": "Something went wrong. Please try again.",
+    "studioNote": "Bu, ücretsiz ve açık kaynaklı sürümdür. Barındırılan sürüm NestLab tarafından geliştiriliyor.",
+    "studioLink": "nestlab.tech adresini ziyaret edin"
   }
 }
