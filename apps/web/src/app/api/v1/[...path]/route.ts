@@ -28,6 +28,13 @@ const FORWARDED_REQUEST_HEADERS = [
   'user-agent',
   'x-user-email',
   'x-request-id',
+  // CORS. Without `origin` the backend cannot tell that the request comes
+  // from a browser on another host, and it drops the allow-origin header; a
+  // preflight also loses the method and header it is asking about, so the
+  // backend answers 405 instead of the preflight response.
+  'origin',
+  'access-control-request-method',
+  'access-control-request-headers',
 ] as const;
 
 function isProductionRuntime(): boolean {
