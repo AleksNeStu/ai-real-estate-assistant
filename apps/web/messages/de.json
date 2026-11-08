@@ -257,8 +257,8 @@
         "description": "Bericht prüfen"
       },
       "export": {
-        "title": "Export",
-        "description": "Herunterladen oder teilen"
+        "description": "Herunterladen oder teilen",
+        "title": "Export"
       }
     },
     "subject": {
@@ -336,10 +336,10 @@
       "marketContext": "Marktkontext",
       "avgPricePerSqm": "Ø Preis/m²",
       "medianPrice": "Medianpreis",
-      "trend": "Trend",
       "inventory": "Bestand",
       "listings": "{count} Angebote",
-      "failedGenerate": "Bericht konnte nicht erzeugt werden"
+      "failedGenerate": "Bericht konnte nicht erzeugt werden",
+      "trend": "Trend"
     },
     "export": {
       "noReport": "Kein Bericht verfügbar. Gehe zurück und erzeuge zuerst einen Bericht.",
@@ -565,7 +565,6 @@
       "categoryPlaceholder": "Kategorie wählen (optional)",
       "description": "Beschreibung",
       "descriptionPlaceholder": "Optionale Beschreibung...",
-      "tags": "Tags",
       "tagsPlaceholder": "Vertrag, dringend, geprüft (kommagetrennt)",
       "expiryDate": "Ablaufdatum",
       "uploadButton": "Dokument hochladen",
@@ -574,7 +573,8 @@
       "cancel": "Abbrechen",
       "removeFile": "Ausgewählte Datei entfernen",
       "failedTitle": "Upload fehlgeschlagen",
-      "invalidType": "Ungültiger Dateityp: {ext}. Erlaubt: {types}"
+      "invalidType": "Ungültiger Dateityp: {ext}. Erlaubt: {types}",
+      "tags": "Tags"
     },
     "categories": {
       "selectCategory": "Kategorie wählen (optional)",
@@ -1006,9 +1006,9 @@
           "insurance": "Versicherung",
           "hoa": "Hausgeld",
           "utilities": "Nebenkosten",
-          "internet": "Internet",
           "parking": "Parken",
-          "maintenance": "Instandhaltung"
+          "maintenance": "Instandhaltung",
+          "internet": "Internet"
         },
         "perMonth": "{value}/Monat",
         "percentOfTotal": "{percent}% des Gesamtbetrags",
@@ -1075,10 +1075,10 @@
       "walkability": "Begehbarkeit",
       "greenSpace": "Grünflächen",
       "publicTransport": "ÖPNV",
-      "restaurants": "Restaurants",
       "shopping": "Einkaufen",
       "airQuality": "Luftqualität",
-      "noiseLevel": "Lärmpegel"
+      "noiseLevel": "Lärmpegel",
+      "restaurants": "Restaurants"
     },
     "factorBreakdown": {
       "title": "Aufschlüsselung der Qualitätsfaktoren",
@@ -1465,10 +1465,10 @@
       "any": "Beliebig",
       "apartment": "Wohnung",
       "house": "Haus",
-      "studio": "Studio",
-      "loft": "Loft",
       "townhouse": "Reihenhaus",
-      "other": "Sonstige"
+      "other": "Sonstige",
+      "studio": "Studio",
+      "loft": "Loft"
     },
     "emptyState": {
       "title": "Starte deine Immobiliensuche",
@@ -1602,7 +1602,6 @@
       "allTypes": "Alle Typen",
       "resetFilters": "Alle Filter zurücksetzen",
       "mapOptions": "Kartenoptionen",
-      "heatmap": "Heatmap",
       "mode": "Modus",
       "intensity": "Intensität: {value}",
       "clusterSizeValue": "Cluster-Größe: {size} px",
@@ -1611,7 +1610,8 @@
       "range300k600k": "300–600 Tsd. $",
       "range600k1M": "600 Tsd.–1 Mio. $",
       "allPrices": "Alle Preise",
-      "resetAll": "Alles zurücksetzen"
+      "resetAll": "Alles zurücksetzen",
+      "heatmap": "Heatmap"
     }
   },
   "settings": {
@@ -1803,11 +1803,11 @@
       "saveProfile": "Profil speichern",
       "saving": "Wird gespeichert...",
       "somethingWentWrong": "Etwas ist schiefgelaufen",
-      "status": "Status",
       "uploadPhoto": "Foto hochladen",
       "uploading": "Wird hochgeladen...",
       "verified": "Bestätigt",
-      "yes": "Ja"
+      "yes": "Ja",
+      "status": "Status"
     },
     "privacy": {
       "processing": "Wird verarbeitet...",
@@ -1908,7 +1908,6 @@
     "done": "Fertig"
   },
   "showcase": {
-    "heroTitle": "Showcase",
     "heroSubtitle": "Forks, reale Einsätze und Fallstudien des KI-Immobilienassistenten.",
     "forksTitle": "Forks & Mit diesem gebaut",
     "forksEmpty": "Noch keine Forks oder Built-with-Listings.",
@@ -1922,7 +1921,8 @@
     "ctaTitle": "Selbst ausprobieren",
     "ctaSubtitle": "Die Live-Demo läuft ohne Anmeldung. Quellcode MIT-lizenziert, in 5 Minuten selbst hostbar.",
     "ctaStar": "Repo markieren",
-    "ctaTryDemo": "Demo testen"
+    "ctaTryDemo": "Demo testen",
+    "heroTitle": "Schaufenster"
   },
   "footer": {
     "title": "Neue Angebote in deinem Postfach",
@@ -1947,7 +1947,29 @@
       "title": "Meine Favoriten",
       "description": "Alle gespeicherten Angebote an einem Ort.",
       "newCollection": "Neue Sammlung",
-      "collectionName": "Name der Sammlung"
+      "collectionName": "Name der Sammlung",
+      "loading": "Wird geladen...",
+      "auth": {
+        "signInPrompt": "Melde dich an, um deine Favoriten zu sehen",
+        "signIn": "Anmelden",
+        "description": "Speichere Lieblingsimmobilien und greife von jedem Gerät darauf zu."
+      },
+      "errors": {
+        "createCollection": "Sammlung konnte nicht erstellt werden"
+      },
+      "collections": {
+        "title": "Sammlungen",
+        "aria": "Sammlungen",
+        "all": "Alle Favoriten ({count})"
+      },
+      "list": {
+        "loading": "Favoriten werden geladen...",
+        "empty": "Noch keine Favoriten",
+        "unavailable": "Objekt nicht mehr verfügbar",
+        "emptyHint": "Klicke auf das Herz-Symbol einer Immobilie, um sie hier zu speichern.",
+        "browse": "Immobilien durchsuchen"
+      },
+      "savedCount": "{count, plural, one {# gespeicherte Immobilie} other {# gespeicherte Immobilien}}"
     },
     "savedSearches": {
       "title": "Gespeicherte Suchen",
@@ -2008,10 +2030,10 @@
         "total": "Leads insgesamt",
         "newLast24h": "+{count} in den letzten 24 Stunden",
         "highValue": "Leads mit hohem Wert",
-        "highValueHint": "Score > 70",
         "averageScore": "Durchschnittlicher Score",
         "conversionRate": "Conversion-Rate",
-        "converted": "umgewandelt: {count}"
+        "converted": "umgewandelt: {count}",
+        "highValueHint": "Score > 70"
       },
       "tabs": {
         "all": "Alle Leads",
@@ -2019,13 +2041,13 @@
         "new": "Neu"
       },
       "filters": {
-        "status": "Status",
         "allStatus": "Alle Status",
         "sortBy": "Sortieren nach",
         "scoreDesc": "Score (absteigend)",
         "scoreAsc": "Score (aufsteigend)",
         "lastActivity": "Letzte Aktivität",
-        "dateCreated": "Erstellt am"
+        "dateCreated": "Erstellt am",
+        "status": "Status"
       },
       "empty": {
         "noLeads": "Keine Leads gefunden",
@@ -2047,8 +2069,8 @@
         "markConverted": "Als umgewandelt markieren",
         "markLost": "Als verloren markieren",
         "score": "Lead-Score",
-        "scoreValue": "Score: {score}",
-        "contact": "Kontakt"
+        "contact": "Kontakt",
+        "scoreValue": "Score: {score}"
       }
     },
     "knowledge": {
@@ -2117,11 +2139,64 @@
     },
     "marketTrends": {
       "title": "Markttrends",
-      "description": "Preis- und Volumenbewegung auf den beobachteten Märkten."
+      "description": "Preis- und Volumenbewegung auf den beobachteten Märkten.",
+      "errors": {
+        "load": "Marktdaten konnten nicht geladen werden"
+      },
+      "filters": {
+        "title": "Filter",
+        "city": "Stadt",
+        "cityPlaceholder": "Stadtnamen eingeben",
+        "interval": "Intervall",
+        "monthly": "Monatlich",
+        "quarterly": "Vierteljährlich",
+        "yearly": "Jährlich",
+        "monthsBack": "Monate zurück"
+      },
+      "stats": {
+        "overallTrend": "Gesamttrend",
+        "totalListings": "Angebote insgesamt",
+        "new7d": "Neu (7 Tage)",
+        "priceDrops7d": "Preissenkungen (7 T.)"
+      },
+      "areas": {
+        "hottest": "Heißeste Gebiete",
+        "hottestHint": "Höchste Durchschnittspreise",
+        "affordable": "Am günstigsten",
+        "affordableHint": "Niedrigste Durchschnittspreise"
+      }
     },
     "cityOverview": {
       "title": "Stadtüberblick",
-      "description": "Kennzahlen auf Stadtteilebene für die Städte, die Sie verfolgen."
+      "description": "Kennzahlen auf Stadtteilebene für die Städte, die Sie verfolgen.",
+      "errors": {
+        "noData": "Keine Stadtdaten verfügbar. Die Objekt-Datenbank ist möglicherweise leer oder die API ist nicht erreichbar."
+      },
+      "loading": {
+        "title": "Stadtdaten werden geladen...",
+        "hint": "Das dauert einen Moment"
+      },
+      "empty": {
+        "title": "Keine Stadtdaten verfügbar"
+      },
+      "map": {
+        "title": "Karte aller Objekte",
+        "hint": "Klicke auf eine Markierung, um Details zur Stadt zu sehen",
+        "summary": "{count, plural, one {# Immobilie} other {# Immobilien}} in {cities, plural, one {# Stadt} other {# Städten}}"
+      },
+      "stats": {
+        "title": "Marktstatistiken nach Stadt",
+        "properties": "{count, plural, one {# Immobilie} other {# Immobilien}}",
+        "avg": "Ø"
+      },
+      "property": {
+        "untitled": "Objekt ohne Titel",
+        "priceOnRequest": "Preis auf Anfrage"
+      },
+      "cityProperties": {
+        "title": "Immobilien in {city}",
+        "shown": "{count, plural, one {# Immobilie} other {# Immobilien}}"
+      }
     },
     "agents": {
       "title": "Makler finden",
@@ -2236,12 +2311,12 @@
       },
       "crm": {
         "title": "CRM-Kontakt synchronisieren (CE-Platzhalter)",
-        "name": "Name",
         "phone": "Telefon",
         "email": "E-Mail",
         "sync": "Synchronisieren",
         "syncing": "Wird synchronisiert...",
-        "failed": "CRM-Synchronisierung fehlgeschlagen"
+        "failed": "CRM-Synchronisierung fehlgeschlagen",
+        "name": "Name"
       },
       "fields": {
         "count": "Anzahl: {value}",
@@ -2275,7 +2350,49 @@
     "valuation": {
       "title": "KI-Bewertung und Prognose",
       "description": "Modellierte Preisspanne für eine konkrete Adresse.",
-      "forecastChart": "Prognosediagramm"
+      "forecastChart": "Prognosediagramm",
+      "errors": {
+        "requiredFields": "Bitte gib mindestens Stadt, Fläche (m²) und Preis an (oder verwende eine Objekt-ID).",
+        "propertyId": "Bitte gib eine Objekt-ID ein.",
+        "forecastFailed": "Prognose fehlgeschlagen"
+      },
+      "propertyIdPlaceholder": "z. B. prop-12345",
+      "horizons": {
+        "title": "Prognosehorizonte",
+        "oneYear": "1 Jahr",
+        "threeYears": "3 Jahre",
+        "fiveYears": "5 Jahre",
+        "tenYears": "10 Jahre"
+      },
+      "form": {
+        "city": "Stadt",
+        "neighborhood": "Viertel",
+        "type": "Typ",
+        "typePlaceholder": "Wohnung, Haus…",
+        "area": "Fläche (m²)",
+        "rooms": "Zimmer",
+        "yearBuilt": "Baujahr",
+        "askingPrice": "Angebotspreis",
+        "currency": "Währung",
+        "currencyPlaceholder": "EUR, USD, GBP…",
+        "propertyId": "Objekt-ID (optional)",
+        "propertyIdHint": "Leer lassen, um die Merkmale unten manuell einzugeben.",
+        "enableHint": "Stadt und Fläche eingeben, um zu aktivieren.",
+        "estimating": "Schätzung läuft…",
+        "getForecast": "Prognose abrufen"
+      },
+      "chart": {
+        "aria": "Prognosediagramm"
+      },
+      "result": {
+        "currentEstimate": "Aktuelle Schätzung",
+        "confidence": "Konfidenz",
+        "comparablesUsed": "Vergleichsobjekte genutzt",
+        "cityMedian": "Stadt-Median",
+        "neighborhoodMedian": "Viertel-Median",
+        "keyDrivers": "Wichtigste Treiber",
+        "today": "Heute"
+      }
     },
     "usage": {
       "title": "Nutzungsübersicht",
@@ -2370,10 +2487,10 @@
         "overall": "insgesamt",
         "totalRevenue": "Gesamtumsatz",
         "highValueLeads": "Leads mit hohem Wert",
-        "scoreAtLeast": "Score ≥ 70",
         "avgTimeToClose": "Ø Zeit bis Abschluss",
         "avgDealValue": "Ø Abschlusswert",
-        "pendingCommission": "Offene Provision"
+        "pendingCommission": "Offene Provision",
+        "scoreAtLeast": "Score ≥ 70"
       },
       "tabs": {
         "overview": "Überblick",
@@ -2459,8 +2576,8 @@
           "service": "Dienst:",
           "timestamp": "Zeitstempel:",
           "uptime": "Laufzeit:",
-          "version": "Version:",
-          "git": "Git-Commit:"
+          "git": "Git-Commit:",
+          "version": "Version:"
         },
         "readiness": {
           "title": "Bereitschaft",
@@ -2506,14 +2623,13 @@
       "connectors": {
         "title": "MCP-Konnektoren",
         "description": "Externe Werkzeuge, die der Assistent aufrufen kann.",
-        "edition": "Edition: {edition}",
         "healthCheckAll": "Alle prüfen",
         "healthCheck": "Status prüfen",
         "overall": {
           "title": "Gesamtstatus",
           "connectorsChecked": "Geprüfte Connectoren:",
-          "edition": "Edition:",
-          "timestamp": "Zeitstempel:"
+          "timestamp": "Zeitstempel:",
+          "edition": "Edition:"
         },
         "requestId": "Anfrage-ID: {id}",
         "loading": "Connectoren werden geladen...",
@@ -2526,10 +2642,10 @@
           "instantiated": "Instanziiert",
           "noInstance": "Keine Instanz",
           "apiKeyRequired": "API-Schlüssel erforderlich",
-          "streaming": "Streaming",
           "ceAccessible": "In CE verfügbar",
           "enabled": "Aktiviert",
-          "disabled": "Deaktiviert"
+          "disabled": "Deaktiviert",
+          "streaming": "Streaming"
         },
         "results": {
           "responseTime": "Antwortzeit:",
@@ -2540,9 +2656,6 @@
         },
         "detail": {
           "basicInfo": "Allgemeine Informationen",
-          "name": "Name:",
-          "edition": "Edition:",
-          "status": "Status:",
           "minEdition": "Mindestedition:",
           "error": "Fehler: {message}",
           "capabilities": "Fähigkeiten",
@@ -2552,7 +2665,10 @@
           "currentRequests": "Aktuelle Anfragen:",
           "remaining": "Verbleibend:",
           "instanceStatus": "Instanzstatus",
-          "configuration": "Konfiguration"
+          "configuration": "Konfiguration",
+          "name": "Name:",
+          "edition": "Edition:",
+          "status": "Status:"
         },
         "status": {
           "active": "Aktiv",
@@ -2569,7 +2685,8 @@
         },
         "errors": {
           "load": "Connectoren konnten nicht geladen werden"
-        }
+        },
+        "edition": "Edition: {edition}"
       },
       "dataSources": {
         "title": "Datenquellen",
@@ -2685,11 +2802,11 @@
         "requiredFields": "Bitte fülle alle Pflichtfelder aus",
         "propertyLocationHint": "Standort des Objekts nicht verfügbar. Fahrzeiten können nicht berechnet werden."
       },
-      "nameLabel": "Name",
       "latitudeLabel": "Breitengrad",
       "longitudeLabel": "Längengrad",
       "via": "über",
-      "arrival": "Ankunft: {time}"
+      "arrival": "Ankunft: {time}",
+      "nameLabel": "Name"
     }
   },
   "states": {

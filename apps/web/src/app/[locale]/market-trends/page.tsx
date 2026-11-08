@@ -8,15 +8,10 @@ import { useTranslations } from 'next-intl';
 // only ships to the browser after the page has rendered. Both charts
 // (price trends and listing volume) live in the lazy component below.
 const MarketTrendsChartsLazy = dynamic(
-  () =>
-    import('@/components/market-trends/MarketTrendsCharts').then(
-      (m) => m.MarketTrendsCharts
-    ),
+  () => import('@/components/market-trends/MarketTrendsCharts').then((m) => m.MarketTrendsCharts),
   {
     ssr: false,
-    loading: () => (
-      <div className="h-80 w-full bg-muted animate-pulse rounded-lg" />
-    ),
+    loading: () => <div className="h-80 w-full bg-muted animate-pulse rounded-lg" />,
   }
 );
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -78,7 +73,7 @@ export default function MarketTrendsPage() {
       } else if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Failed to load market data');
+        setError(t('errors.load'));
       }
     } finally {
       setLoading(false);
@@ -121,34 +116,34 @@ export default function MarketTrendsPage() {
         {/* Filters */}
         <Card>
           <CardHeader>
-            <CardTitle>Filters</CardTitle>
+            <CardTitle>{t('filters.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
+                <Label htmlFor="city">{t('filters.city')}</Label>
                 <Input
                   id="city"
-                  placeholder="Enter city name"
+                  placeholder={t('filters.cityPlaceholder')}
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="interval">Interval</Label>
+                <Label htmlFor="interval">{t('filters.interval')}</Label>
                 <Select value={interval} onValueChange={(v) => setInterval(v as typeof interval)}>
                   <SelectTrigger id="interval">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="month">Monthly</SelectItem>
-                    <SelectItem value="quarter">Quarterly</SelectItem>
-                    <SelectItem value="year">Yearly</SelectItem>
+                    <SelectItem value="month">{t('filters.monthly')}</SelectItem>
+                    <SelectItem value="quarter">{t('filters.quarterly')}</SelectItem>
+                    <SelectItem value="year">{t('filters.yearly')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="months">Months Back</Label>
+                <Label htmlFor="months">{t('filters.monthsBack')}</Label>
                 <Input
                   id="months"
                   type="number"
@@ -193,7 +188,7 @@ export default function MarketTrendsPage() {
                     <TrendIcon className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Overall Trend</p>
+                    <p className="text-sm text-muted-foreground">{t('stats.overallTrend')}</p>
                     <p className={`text-xl font-semibold capitalize ${trendColor}`}>
                       {indicators.overall_trend}
                     </p>
@@ -209,7 +204,7 @@ export default function MarketTrendsPage() {
                     <Building2 className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Listings</p>
+                    <p className="text-sm text-muted-foreground">{t('stats.totalListings')}</p>
                     <p className="text-xl font-semibold">
                       {indicators.total_listings.toLocaleString()}
                     </p>
@@ -225,7 +220,7 @@ export default function MarketTrendsPage() {
                     <Activity className="h-6 w-6 text-success" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">New (7 days)</p>
+                    <p className="text-sm text-muted-foreground">{t('stats.new7d')}</p>
                     <p className="text-xl font-semibold">
                       {indicators.new_listings_7d.toLocaleString()}
                     </p>
@@ -241,7 +236,7 @@ export default function MarketTrendsPage() {
                     <DollarSign className="h-6 w-6 text-destructive" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Price Drops (7d)</p>
+                    <p className="text-sm text-muted-foreground">{t('stats.priceDrops7d')}</p>
                     <p className="text-xl font-semibold">
                       {indicators.price_drops_7d.toLocaleString()}
                     </p>
@@ -264,8 +259,8 @@ export default function MarketTrendsPage() {
               {indicators.hottest_districts.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-success">Hottest Areas</CardTitle>
-                    <CardDescription>Highest average prices</CardDescription>
+                    <CardTitle className="text-success">{t('areas.hottest')}</CardTitle>
+                    <CardDescription>{t('areas.hottestHint')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -288,8 +283,8 @@ export default function MarketTrendsPage() {
               {indicators.coldest_districts.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-info">Most Affordable</CardTitle>
-                    <CardDescription>Lowest average prices</CardDescription>
+                    <CardTitle className="text-info">{t('areas.affordable')}</CardTitle>
+                    <CardDescription>{t('areas.affordableHint')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">

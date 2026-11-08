@@ -1947,7 +1947,29 @@
       "title": "My Favorites",
       "description": "Properties you've saved for later.",
       "newCollection": "New Collection",
-      "collectionName": "Collection name"
+      "collectionName": "Collection name",
+      "loading": "Loading...",
+      "auth": {
+        "signInPrompt": "Sign in to view your favorites",
+        "signIn": "Sign In",
+        "description": "Save properties you love and access them from any device."
+      },
+      "errors": {
+        "createCollection": "Failed to create collection"
+      },
+      "collections": {
+        "title": "Collections",
+        "aria": "Collections",
+        "all": "All Favorites ({count})"
+      },
+      "list": {
+        "loading": "Loading favorites...",
+        "empty": "No favorites yet",
+        "unavailable": "Property no longer available",
+        "emptyHint": "Click the heart icon on any property to save it here.",
+        "browse": "Browse Properties"
+      },
+      "savedCount": "{count, plural, one {# saved property} other {# saved properties}}"
     },
     "savedSearches": {
       "title": "Saved Searches",
@@ -2117,11 +2139,64 @@
     },
     "marketTrends": {
       "title": "Market Trends",
-      "description": "Analyze price trends and market indicators across different areas."
+      "description": "Analyze price trends and market indicators across different areas.",
+      "errors": {
+        "load": "Failed to load market data"
+      },
+      "filters": {
+        "title": "Filters",
+        "city": "City",
+        "cityPlaceholder": "Enter city name",
+        "interval": "Interval",
+        "monthly": "Monthly",
+        "quarterly": "Quarterly",
+        "yearly": "Yearly",
+        "monthsBack": "Months Back"
+      },
+      "stats": {
+        "overallTrend": "Overall Trend",
+        "totalListings": "Total Listings",
+        "new7d": "New (7 days)",
+        "priceDrops7d": "Price Drops (7d)"
+      },
+      "areas": {
+        "hottest": "Hottest Areas",
+        "hottestHint": "Highest average prices",
+        "affordable": "Most Affordable",
+        "affordableHint": "Lowest average prices"
+      }
     },
     "cityOverview": {
       "title": "City Overview",
-      "description": "Explore property markets across Poland. Click on a city card to see detailed listings."
+      "description": "Explore property markets across Poland. Click on a city card to see detailed listings.",
+      "errors": {
+        "noData": "No city data available. The property database may be empty or the API is unreachable."
+      },
+      "loading": {
+        "title": "Loading city data...",
+        "hint": "This may take a moment"
+      },
+      "empty": {
+        "title": "No City Data Available"
+      },
+      "map": {
+        "title": "All Properties Map",
+        "hint": "Click a marker to view city details",
+        "summary": "{count, plural, one {# property} other {# properties}} across {cities, plural, one {# city} other {# cities}}"
+      },
+      "stats": {
+        "title": "Market Statistics by City",
+        "properties": "{count, plural, one {# property} other {# properties}}",
+        "avg": "avg"
+      },
+      "property": {
+        "untitled": "Untitled Property",
+        "priceOnRequest": "Price on request"
+      },
+      "cityProperties": {
+        "title": "{city} Properties",
+        "shown": "{count, plural, one {# property shown} other {# properties shown}}"
+      }
     },
     "agents": {
       "title": "Find an Agent",
@@ -2275,7 +2350,49 @@
     "valuation": {
       "title": "AI Property Valuation & Forecast",
       "forecastChart": "Forecast chart",
-      "description": "Modeled price range for a specific address."
+      "description": "Modeled price range for a specific address.",
+      "errors": {
+        "requiredFields": "Please fill in at least city, area (sqm), and price (or use a property id).",
+        "propertyId": "Please enter a property id.",
+        "forecastFailed": "Forecast failed"
+      },
+      "propertyIdPlaceholder": "e.g. prop-12345",
+      "horizons": {
+        "title": "Forecast horizons",
+        "oneYear": "1 year",
+        "threeYears": "3 years",
+        "fiveYears": "5 years",
+        "tenYears": "10 years"
+      },
+      "form": {
+        "city": "City",
+        "neighborhood": "Neighborhood",
+        "type": "Type",
+        "typePlaceholder": "apartment, house…",
+        "area": "Area (sqm)",
+        "rooms": "Rooms",
+        "yearBuilt": "Year built",
+        "askingPrice": "Asking price",
+        "currency": "Currency",
+        "currencyPlaceholder": "EUR, USD, GBP…",
+        "propertyId": "Property ID (optional)",
+        "propertyIdHint": "Leave blank to enter features manually below.",
+        "enableHint": "Enter city & area to enable.",
+        "estimating": "Estimating…",
+        "getForecast": "Get forecast"
+      },
+      "chart": {
+        "aria": "Forecast chart"
+      },
+      "result": {
+        "currentEstimate": "Current estimate",
+        "confidence": "Confidence",
+        "comparablesUsed": "Comparables used",
+        "cityMedian": "City median",
+        "neighborhoodMedian": "Neighborhood median",
+        "keyDrivers": "Key drivers",
+        "today": "Today"
+      }
     },
     "usage": {
       "title": "Usage Dashboard",

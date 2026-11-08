@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { formatPrice as formatPriceInLocale } from '@/lib/format';
 import type { CMAComparable } from '@/lib/types';
@@ -20,6 +20,7 @@ export function StepAdjustments({
   onPrev,
 }: StepAdjustmentsProps) {
   const locale = useLocale();
+  const t = useTranslations('cma.adjustments');
   const handleAdjustmentChange = (compIndex: number, adjIndex: number, newPercent: number) => {
     const updatedComparables = [...comparables];
     const adjustments = [...updatedComparables[compIndex].adjustments];
@@ -110,17 +111,14 @@ export function StepAdjustments({
 
   return (
     <div className="space-y-6">
-      <div className="text-sm text-muted-foreground mb-4">
-        Review and adjust the valuation factors for each comparable property. Positive adjustments
-        increase the comparable&apos;s value; negative adjustments decrease it.
-      </div>
+      <div className="text-sm text-muted-foreground mb-4">{t('description')}</div>
 
       {comparables.map((comp, compIndex) => (
         <div key={comp.property_id} className="border rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-medium">Comparable {compIndex + 1}</h4>
+            <h4 className="text-sm font-medium">{t('comparable', { index: compIndex + 1 })}</h4>
             <span className="text-sm text-muted-foreground">
-              Similarity: {comp.similarity_score.toFixed(1)}
+              {t('similarity')} {comp.similarity_score.toFixed(1)}
             </span>
           </div>
 
@@ -129,15 +127,21 @@ export function StepAdjustments({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-2 px-2 font-medium text-muted-foreground">Factor</th>
-                  <th className="text-left py-2 px-2 font-medium text-muted-foreground">Subject</th>
                   <th className="text-left py-2 px-2 font-medium text-muted-foreground">
-                    Comparable
+                    {t('factor')}
+                  </th>
+                  <th className="text-left py-2 px-2 font-medium text-muted-foreground">
+                    {t('subject')}
+                  </th>
+                  <th className="text-left py-2 px-2 font-medium text-muted-foreground">
+                    {t('comparableLabel')}
                   </th>
                   <th className="text-center py-2 px-2 font-medium text-muted-foreground w-24">
-                    Adj. %
+                    {t('adjPercent')}
                   </th>
-                  <th className="text-right py-2 px-2 font-medium text-muted-foreground">Amount</th>
+                  <th className="text-right py-2 px-2 font-medium text-muted-foreground">
+                    {t('amount')}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -186,7 +190,7 @@ export function StepAdjustments({
 
           {/* Total */}
           <div className="flex justify-between items-center mt-3 pt-2 border-t bg-muted/30 rounded">
-            <span className="text-sm font-medium">Total Adjustments</span>
+            <span className="text-sm font-medium">{t('totalAdjustments')}</span>
             <div className="text-right">
               <span
                 className={`text-lg font-semibold ${
@@ -197,7 +201,7 @@ export function StepAdjustments({
                 {formatCurrency(Math.abs(getTotalAdjustments(comp)))}
               </span>
               <p className="text-xs text-muted-foreground">
-                Adjusted Price: {formatCurrency(comp.adjusted_price)}
+                {t('adjustedPrice')} {formatCurrency(comp.adjusted_price)}
               </p>
             </div>
           </div>
@@ -206,21 +210,21 @@ export function StepAdjustments({
 
       {/* Summary */}
       <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-        <h4 className="text-sm font-medium mb-2">Adjustment Summary</h4>
+        <h4 className="text-sm font-medium mb-2">{t('adjustmentSummary')}</h4>
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div>
-            <p className="text-muted-foreground">Avg Adjustment</p>
+            <p className="text-muted-foreground">{t('avgAdjustment')}</p>
             <p className="font-medium">{formatCurrency(getAverageAdjustment(comparables))}</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Price Range</p>
+            <p className="text-muted-foreground">{t('priceRange')}</p>
             <p className="font-medium">
               {formatCurrency(getLowestPrice(comparables))} -{' '}
               {formatCurrency(getHighestPrice(comparables))}
             </p>
           </div>
           <div>
-            <p className="text-muted-foreground">Median Price</p>
+            <p className="text-muted-foreground">{t('medianPrice')}</p>
             <p className="font-medium">{formatCurrency(getMedianPrice(comparables))}</p>
           </div>
         </div>
@@ -229,9 +233,9 @@ export function StepAdjustments({
       {/* Navigation */}
       <div className="flex justify-between pt-4">
         <Button variant="outline" onClick={onPrev}>
-          Back
+          {t('back')}
         </Button>
-        <Button onClick={onNext}>Next: Preview Report</Button>
+        <Button onClick={onNext}>{t('nextPreview')}</Button>
       </div>
     </div>
   );

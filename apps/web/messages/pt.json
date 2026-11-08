@@ -776,11 +776,11 @@
         "ariaLabel": "Gráfico de linha dos cenários de valorização: projeções do valor do imóvel em condições pessimistas, realistas e otimistas",
         "value": "Valor",
         "perYear": "{rate}%/ano",
-        "total": "Total:",
         "year": "Ano {year}",
         "pessimistic": "Pessimista",
         "realistic": "Realista",
-        "optimistic": "Otimista"
+        "optimistic": "Otimista",
+        "total": "Total:"
       },
       "multiYear": {
         "title": "Projeção plurianual de fluxo de caixa",
@@ -1006,9 +1006,9 @@
           "insurance": "Seguro",
           "hoa": "Condomínio",
           "utilities": "Contas",
-          "internet": "Internet",
           "parking": "Estacionamento",
-          "maintenance": "Manutenção"
+          "maintenance": "Manutenção",
+          "internet": "Internet"
         },
         "perMonth": "{value}/mês",
         "percentOfTotal": "{percent}% do total",
@@ -1466,9 +1466,9 @@
       "apartment": "Apartamento",
       "house": "Casa",
       "studio": "Estúdio",
-      "loft": "Loft",
       "townhouse": "Casa em banda",
-      "other": "Outros"
+      "other": "Outros",
+      "loft": "Loft"
     },
     "emptyState": {
       "title": "Começa a tua pesquisa de imóveis",
@@ -1591,7 +1591,6 @@
       "pricePerSqm": "Preço/m²",
       "yield": "Rentabilidade",
       "heatmapIntensity": "Intensidade do mapa de calor",
-      "clusters": "Clusters",
       "toggleClusters": "Alternar clusters",
       "clusterSize": "Tamanho do cluster",
       "maxZoom": "Zoom máximo para agrupar",
@@ -1611,7 +1610,8 @@
       "range300k600k": "300–600 mil $",
       "range600k1M": "600 mil–1 M $",
       "allPrices": "Todos os preços",
-      "resetAll": "Repor tudo"
+      "resetAll": "Repor tudo",
+      "clusters": "Clusters"
     }
   },
   "settings": {
@@ -1727,7 +1727,6 @@
       "refreshing": "Atualizando...",
       "pricingUnavailable": "Os preços podem não estar disponíveis para alguns modelos hospedados.",
       "provider": "Provedor:",
-      "local": "Local",
       "hosted": "Hospedado",
       "apiKeyRequired": "Requer chave de API",
       "noApiKeyRequired": "Não requer chave de API",
@@ -1758,7 +1757,8 @@
       "errorUnavailable": "O modelo selecionado não está disponível para este fornecedor.",
       "errorSave": "Não foi possível guardar o modelo padrão. Tente de novo.",
       "needsEmailSave": "Defina um e-mail nas definições de identidade para guardar as preferências de modelo.",
-      "providerLabel": "Fornecedor"
+      "providerLabel": "Fornecedor",
+      "local": "Local"
     },
     "saved": "Configurações salvas com sucesso.",
     "error": "Falha ao salvar as configurações.",
@@ -1908,7 +1908,6 @@
     "done": "Concluído"
   },
   "showcase": {
-    "heroTitle": "Showcase",
     "heroSubtitle": "Forks, implantações reais e estudos de caso do Assistente Imobiliário com IA.",
     "forksTitle": "Forks e projetos baseados",
     "forksEmpty": "Ainda sem forks ou listagens de projetos baseados.",
@@ -1922,7 +1921,8 @@
     "ctaTitle": "Experimente você mesmo",
     "ctaSubtitle": "A demo ao vivo funciona sem cadastro. Código com licença MIT, auto-hospedável em 5 minutos.",
     "ctaStar": "Marcar o repo",
-    "ctaTryDemo": "Experimentar a demo"
+    "ctaTryDemo": "Experimentar a demo",
+    "heroTitle": "Vitrine"
   },
   "footer": {
     "title": "Recebe novos anúncios na tua caixa de entrada",
@@ -1947,7 +1947,29 @@
       "title": "Os meus favoritos",
       "description": "Todos os anúncios guardados, num só lugar.",
       "newCollection": "Nova coleção",
-      "collectionName": "Nome da coleção"
+      "collectionName": "Nome da coleção",
+      "loading": "A carregar...",
+      "auth": {
+        "signInPrompt": "Inicie sessão para ver os seus favoritos",
+        "signIn": "Iniciar sessão",
+        "description": "Salve os imóveis de que gosta e acesse-os em qualquer dispositivo."
+      },
+      "errors": {
+        "createCollection": "Não foi possível criar a coleção"
+      },
+      "collections": {
+        "title": "Coleções",
+        "aria": "Coleções",
+        "all": "Todos os favoritos ({count})"
+      },
+      "list": {
+        "loading": "A carregar favoritos...",
+        "empty": "Ainda não há favoritos",
+        "unavailable": "O imóvel já não está disponível",
+        "emptyHint": "Clique no ícone de coração de qualquer imóvel para o guardar aqui.",
+        "browse": "Explorar imóveis"
+      },
+      "savedCount": "{count, plural, one {# imóvel salvo} other {# imóveis salvos}}"
     },
     "savedSearches": {
       "title": "Pesquisas guardadas",
@@ -2117,11 +2139,64 @@
     },
     "marketTrends": {
       "title": "Tendências do mercado",
-      "description": "Variação de preços e volumes nos mercados acompanhados."
+      "description": "Variação de preços e volumes nos mercados acompanhados.",
+      "errors": {
+        "load": "Não foi possível carregar os dados de mercado"
+      },
+      "filters": {
+        "title": "Filtros",
+        "city": "Cidade",
+        "cityPlaceholder": "Introduza o nome da cidade",
+        "interval": "Intervalo",
+        "monthly": "Mensal",
+        "quarterly": "Trimestral",
+        "yearly": "Anual",
+        "monthsBack": "Meses atrás"
+      },
+      "stats": {
+        "overallTrend": "Tendência geral",
+        "totalListings": "Anúncios totais",
+        "new7d": "Novos (7 dias)",
+        "priceDrops7d": "Quedas de preço (7 d.)"
+      },
+      "areas": {
+        "hottest": "Zonas mais procuradas",
+        "hottestHint": "Preços médios mais altos",
+        "affordable": "Mais acessíveis",
+        "affordableHint": "Preços médios mais baixos"
+      }
     },
     "cityOverview": {
       "title": "Panorama da cidade",
-      "description": "Indicadores de bairro para as cidades que segue."
+      "description": "Indicadores de bairro para as cidades que segue.",
+      "errors": {
+        "noData": "Não há dados da cidade. A base de imóveis pode estar vazia ou a API inacessível."
+      },
+      "loading": {
+        "title": "A carregar os dados da cidade...",
+        "hint": "Isto pode demorar um momento"
+      },
+      "empty": {
+        "title": "Não há dados da cidade"
+      },
+      "map": {
+        "title": "Mapa de todos os imóveis",
+        "hint": "Clique num marcador para ver os detalhes da cidade",
+        "summary": "{count, plural, one {# imóvel} other {# imóveis}} em {cities, plural, one {# cidade} other {# cidades}}"
+      },
+      "stats": {
+        "title": "Estatísticas de mercado por cidade",
+        "properties": "{count, plural, one {# imóvel} other {# imóveis}}",
+        "avg": "média"
+      },
+      "property": {
+        "untitled": "Imóvel sem título",
+        "priceOnRequest": "Preço a pedido"
+      },
+      "cityProperties": {
+        "title": "Imóveis em {city}",
+        "shown": "{count, plural, one {# imóvel} other {# imóveis}}"
+      }
     },
     "agents": {
       "title": "Encontrar agentes",
@@ -2275,7 +2350,49 @@
     "valuation": {
       "title": "Avaliação e previsão com IA",
       "description": "Intervalo de preço modelado para um endereço concreto.",
-      "forecastChart": "Gráfico de previsão"
+      "forecastChart": "Gráfico de previsão",
+      "errors": {
+        "requiredFields": "Preencha pelo menos cidade, área (m²) e preço (ou use um ID de imóvel).",
+        "propertyId": "Introduza um ID de imóvel.",
+        "forecastFailed": "Previsão falhou"
+      },
+      "propertyIdPlaceholder": "ex. prop-12345",
+      "horizons": {
+        "title": "Horizontes de previsão",
+        "oneYear": "1 ano",
+        "threeYears": "3 anos",
+        "fiveYears": "5 anos",
+        "tenYears": "10 anos"
+      },
+      "form": {
+        "city": "Cidade",
+        "neighborhood": "Bairro",
+        "type": "Tipo",
+        "typePlaceholder": "apartamento, casa…",
+        "area": "Área (m²)",
+        "rooms": "Quartos",
+        "yearBuilt": "Ano de construção",
+        "askingPrice": "Preço pedido",
+        "currency": "Moeda",
+        "currencyPlaceholder": "EUR, USD, GBP…",
+        "propertyId": "ID do imóvel (opcional)",
+        "propertyIdHint": "Deixe em branco para inserir as características manualmente abaixo.",
+        "enableHint": "Informe cidade e área para ativar.",
+        "estimating": "Estimando…",
+        "getForecast": "Obter previsão"
+      },
+      "chart": {
+        "aria": "Gráfico de previsão"
+      },
+      "result": {
+        "currentEstimate": "Estimativa atual",
+        "confidence": "Confiança",
+        "comparablesUsed": "Comparáveis usados",
+        "cityMedian": "Mediana da cidade",
+        "neighborhoodMedian": "Mediana do bairro",
+        "keyDrivers": "Fatores principais",
+        "today": "Hoje"
+      }
     },
     "usage": {
       "title": "Painel de utilização",
@@ -2526,10 +2643,10 @@
           "instantiated": "Instanciado",
           "noInstance": "Sem instância",
           "apiKeyRequired": "Requer chave de API",
-          "streaming": "Streaming",
           "ceAccessible": "Acessível na CE",
           "enabled": "Ativado",
-          "disabled": "Desativado"
+          "disabled": "Desativado",
+          "streaming": "Streaming"
         },
         "results": {
           "responseTime": "Tempo de resposta:",
@@ -2686,10 +2803,10 @@
         "propertyLocationHint": "Localização do imóvel indisponível. Não é possível calcular os tempos de trajeto."
       },
       "nameLabel": "Nome",
-      "latitudeLabel": "Latitude",
-      "longitudeLabel": "Longitude",
       "via": "via",
-      "arrival": "Chegada: {time}"
+      "arrival": "Chegada: {time}",
+      "latitudeLabel": "Latitude",
+      "longitudeLabel": "Longitude"
     }
   },
   "states": {

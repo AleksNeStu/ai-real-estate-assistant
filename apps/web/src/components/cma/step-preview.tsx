@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { formatPrice as formatPriceInLocale } from '@/lib/format';
 import { generateCMAReport } from '@/lib/api';
@@ -24,8 +24,8 @@ export function StepPreview({
   onNext,
   onPrev,
 }: StepPreviewProps) {
-
   const locale = useLocale();
+  const t = useTranslations('cma.preview');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,7 +38,7 @@ export function StepPreview({
 
   const generateReport = async () => {
     if (!subjectProperty?.id) {
-      setError('No subject property selected');
+      setError(t('noSubject'));
       return;
     }
 
@@ -54,7 +54,7 @@ export function StepPreview({
       });
       onReportGenerated(result);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to generate report';
+      const message = err instanceof Error ? err.message : t('failedGenerate');
       setError(message);
     } finally {
       setIsGenerating(false);
@@ -74,9 +74,9 @@ export function StepPreview({
   };
 
   const getConfidenceLabel = (score: number): string => {
-    if (score >= 80) return 'High';
-    if (score >= 60) return 'Medium';
-    return 'Low';
+    if (score >= 80) return t('confidenceHigh');
+    if (score >= 60) return t('confidenceMedium');
+    return t('confidenceLow');
   };
 
   if (isGenerating) {
@@ -86,7 +86,7 @@ export function StepPreview({
           className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"
           aria-hidden="true"
         ></div>
-        <p className="text-muted-foreground">Generating CMA report...</p>
+        <p className="text-muted-foreground">{t('generating')}</p>
       </div>
     );
   }
@@ -99,9 +99,9 @@ export function StepPreview({
         </div>
         <div className="flex justify-between">
           <Button variant="outline" onClick={onPrev}>
-            Back
+            {t('back')}
           </Button>
-          <Button onClick={generateReport}>Try Again</Button>
+          <Button onClick={generateReport}>{t('tryAgain')}</Button>
         </div>
       </div>
     );
@@ -110,15 +110,13 @@ export function StepPreview({
   if (!report) {
     return (
       <div className="space-y-4">
-        <div className="text-center py-8 text-muted-foreground">
-          No report generated yet. Click Generate to create the CMA report.
-        </div>
+        <div className="text-center py-8 text-muted-foreground">{t('noReport')}</div>
         <div className="flex justify-between">
           <Button variant="outline" onClick={onPrev}>
-            Back
+            {t('back')}
           </Button>
           <Button onClick={generateReport} disabled={!subjectProperty?.id}>
-            Generate Report
+            {t('generateReport')}
           </Button>
         </div>
       </div>
@@ -129,17 +127,17 @@ export function StepPreview({
     <div className="space-y-6">
       {/* Executive Summary */}
       <div className="border rounded-lg p-4">
-        <h3 className="font-semibold text-lg mb-4">Executive Summary</h3>
+        <h3 className="font-semibold text-lg mb-4">{t('executiveSummary')}</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Estimated Value */}
           <div className="bg-primary/5 rounded-lg p-4">
-            <p className="text-sm text-muted-foreground">Estimated Market Value</p>
+            <p className="text-sm text-muted-foreground">{t('estimatedValue')}</p>
             <p className="text-3xl font-bold text-primary mt-1">
               {formatCurrency(report.valuation.estimated_value)}
             </p>
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-sm text-muted-foreground">Range:</span>
+              <span className="text-sm text-muted-foreground">{t('range')}</span>
               <span className="text-sm font-medium">
                 {formatCurrency(report.valuation.value_range_low)} -{' '}
                 {formatCurrency(report.valuation.value_range_high)}
@@ -149,7 +147,7 @@ export function StepPreview({
 
           {/* Confidence Score */}
           <div className="bg-muted/30 rounded-lg p-4">
-            <p className="text-sm text-muted-foreground">Confidence Score</p>
+            <p className="text-sm text-muted-foreground">{t('confidenceScore')}</p>
             <div className="flex items-baseline gap-2 mt-1">
               <span
                 className={`text-3xl font-bold ${getConfidenceColor(
@@ -180,7 +178,7 @@ export function StepPreview({
         {/* Price per sqm */}
         <div className="mt-4 p-3 bg-muted/20 rounded">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Price per m²</span>
+            <span className="text-sm text-muted-foreground">{t('pricePerSqm')}</span>
             <span className="font-semibold">
               {formatCurrency(report.valuation.price_per_sqm)}/m²
             </span>
@@ -190,24 +188,24 @@ export function StepPreview({
 
       {/* Subject Property Summary */}
       <div className="border rounded-lg p-4">
-        <h3 className="font-semibold mb-3">Subject Property</h3>
+        <h3 className="font-semibold mb-3">{t('subjectProperty')}</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
-            <span className="text-muted-foreground">Location</span>
+            <span className="text-muted-foreground">{t('location')}</span>
             <p className="font-medium mt-1">{subjectProperty?.address || subjectProperty?.city}</p>
           </div>
           <div>
-            <span className="text-muted-foreground">Area</span>
+            <span className="text-muted-foreground">{t('area')}</span>
             <p className="font-medium mt-1">
               {subjectProperty?.area_sqm ? `${subjectProperty.area_sqm} m²` : 'N/A'}
             </p>
           </div>
           <div>
-            <span className="text-muted-foreground">Rooms</span>
+            <span className="text-muted-foreground">{t('rooms')}</span>
             <p className="font-medium mt-1">{subjectProperty?.rooms || 'N/A'}</p>
           </div>
           <div>
-            <span className="text-muted-foreground">Type</span>
+            <span className="text-muted-foreground">{t('type')}</span>
             <p className="font-medium mt-1 capitalize">{subjectProperty?.property_type}</p>
           </div>
         </div>
@@ -215,7 +213,9 @@ export function StepPreview({
 
       {/* Comparables Summary */}
       <div className="border rounded-lg p-4">
-        <h3 className="font-semibold mb-3">Comparables ({report.comparables.length})</h3>
+        <h3 className="font-semibold mb-3">
+          {t('comparables', { count: report.comparables.length })}
+        </h3>
         <div className="space-y-2">
           {report.comparables.map((comp, index) => (
             <div
@@ -224,9 +224,11 @@ export function StepPreview({
             >
               <div className="flex items-center gap-3">
                 <span className="text-muted-foreground w-6">#{index + 1}</span>
-                <span>Property {comp.property_id.slice(0, 8)}...</span>
+                <span>
+                  {t('property')} {comp.property_id.slice(0, 8)}...
+                </span>
                 <span className="text-xs text-muted-foreground">
-                  Score: {comp.similarity_score.toFixed(1)}
+                  {t('score')} {comp.similarity_score.toFixed(1)}
                 </span>
               </div>
               <span className="font-medium">{formatCurrency(comp.adjusted_price)}</span>
@@ -238,30 +240,30 @@ export function StepPreview({
       {/* Market Context */}
       {report.market_context && (
         <div className="border rounded-lg p-4">
-          <h3 className="font-semibold mb-3">Market Context</h3>
+          <h3 className="font-semibold mb-3">{t('marketContext')}</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
-              <span className="text-muted-foreground">Avg Price/m²</span>
+              <span className="text-muted-foreground">{t('avgPricePerSqm')}</span>
               <p className="font-medium mt-1">
                 {formatCurrency((report.market_context.avg_price_per_sqm as number) || 0)}
               </p>
             </div>
             <div>
-              <span className="text-muted-foreground">Median Price</span>
+              <span className="text-muted-foreground">{t('medianPrice')}</span>
               <p className="font-medium mt-1">
                 {formatCurrency((report.market_context.median_price as number) || 0)}
               </p>
             </div>
             <div>
-              <span className="text-muted-foreground">Trend</span>
+              <span className="text-muted-foreground">{t('trend')}</span>
               <p className="font-medium mt-1 capitalize">
                 {(report.market_context.trend as string) || 'N/A'}
               </p>
             </div>
             <div>
-              <span className="text-muted-foreground">Inventory</span>
+              <span className="text-muted-foreground">{t('inventory')}</span>
               <p className="font-medium mt-1">
-                {(report.market_context.inventory_count as number) || 0} listings
+                {t('listings', { count: (report.market_context.inventory_count as number) || 0 })}
               </p>
             </div>
           </div>
@@ -271,9 +273,9 @@ export function StepPreview({
       {/* Navigation */}
       <div className="flex justify-between pt-4">
         <Button variant="outline" onClick={onPrev}>
-          Back
+          {t('back')}
         </Button>
-        <Button onClick={onNext}>Next: Export Options</Button>
+        <Button onClick={onNext}>{t('nextExport')}</Button>
       </div>
     </div>
   );

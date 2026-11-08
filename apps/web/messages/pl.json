@@ -336,10 +336,10 @@
       "marketContext": "Kontekst rynkowy",
       "avgPricePerSqm": "Średnia cena/m²",
       "medianPrice": "Cena mediana",
-      "trend": "Trend",
       "inventory": "Zapasy",
       "listings": "{count} ofert",
-      "failedGenerate": "Nie udało się wygenerować raportu"
+      "failedGenerate": "Nie udało się wygenerować raportu",
+      "trend": "Trend"
     },
     "export": {
       "noReport": "Brak raportu. Wróć i najpierw wygeneruj raport.",
@@ -1000,9 +1000,9 @@
           "insurance": "Ubezpieczenie",
           "hoa": "Wspólnota",
           "utilities": "Media",
+          "maintenance": "Utrzymanie",
           "internet": "Internet",
-          "parking": "Parking",
-          "maintenance": "Utrzymanie"
+          "parking": "Parking"
         },
         "perMonth": "{value} miesięcznie",
         "percentOfTotal": "{percent}% sumy",
@@ -1107,8 +1107,8 @@
           "description": "Parki i miejsca rekreacji"
         },
         "transport": {
-          "label": "Transport",
-          "description": "Punkty dostępu do transportu publicznego"
+          "description": "Punkty dostępu do transportu publicznego",
+          "label": "Transport"
         },
         "safety": {
           "label": "Bezpieczeństwo",
@@ -1323,11 +1323,11 @@
       "yearBuilt": "Rok budowy",
       "propertyType": "Typ nieruchomości",
       "heating": "Ogrzewanie",
-      "parking": "Parking",
       "description": "Opis",
       "location": "Lokalizacja",
       "features": "Cechy",
-      "contact": "Skontaktuj się z agentem"
+      "contact": "Skontaktuj się z agentem",
+      "parking": "Parking"
     },
     "estimateLabel": "Szacowana rata miesięczna: {value}",
     "estimateTitle": "Szacowana rata miesięczna przy wkładzie {down}%, {years} lat stałych pod {rate}% APR. To nie jest oferta kredytowa."
@@ -1466,9 +1466,9 @@
       "apartment": "Mieszkanie",
       "house": "Dom",
       "studio": "Kawalerka",
-      "loft": "Loft",
       "townhouse": "Bliźniak",
-      "other": "Inne"
+      "other": "Inne",
+      "loft": "Loft"
     },
     "emptyState": {
       "title": "Rozpocznij wyszukiwanie nieruchomości",
@@ -1715,7 +1715,6 @@
       },
       "modelCatalog": "Katalog modeli",
       "supportedProviders": "Obsługiwani dostawcy:",
-      "model": "Model",
       "context": "Kontekst",
       "inputPer1m": "Wejście / 1M",
       "outputPer1m": "Wyjście / 1M",
@@ -1758,7 +1757,8 @@
       "errorUnavailable": "Wybrany model nie jest dostępny dla tego dostawcy.",
       "errorSave": "Nie udało się zapisać modelu domyślnego. Spróbuj ponownie.",
       "needsEmailSave": "Ustaw adres e-mail w ustawieniach tożsamości, aby zapisać preferencje modelu.",
-      "providerLabel": "Dostawca"
+      "providerLabel": "Dostawca",
+      "model": "Model"
     },
     "saved": "Ustawienia zapisane.",
     "error": "Nie udało się zapisać ustawień.",
@@ -1803,11 +1803,11 @@
       "saveProfile": "Zapisz profil",
       "saving": "Zapisywanie...",
       "somethingWentWrong": "Coś poszło nie tak",
-      "status": "Status",
       "uploadPhoto": "Prześlij zdjęcie",
       "uploading": "Przesyłanie...",
       "verified": "Zweryfikowane",
-      "yes": "Tak"
+      "yes": "Tak",
+      "status": "Status"
     },
     "privacy": {
       "processing": "Przetwarzanie...",
@@ -1856,13 +1856,13 @@
       "loading": "Wczytywanie preferencji...",
       "failedToReset": "Nie udało się zresetować preferencji modelu.",
       "failedToSave": "Nie udało się zapisać preferencji modelu.",
-      "model": "Model",
       "provider": "Dostawca",
       "reset": "Resetuj",
       "resetToDefault": "Przywróć domyślne ustawienie systemowe.",
       "save": "Zapisz",
       "selectBoth": "Wybierz dostawcę i model.",
-      "systemDefault": "Domyślne systemowe"
+      "systemDefault": "Domyślne systemowe",
+      "model": "Model"
     }
   },
   "tools": {
@@ -1947,7 +1947,29 @@
       "title": "Moje ulubione",
       "description": "Wszystkie zapisane oferty w jednym miejscu.",
       "newCollection": "Nowa kolekcja",
-      "collectionName": "Nazwa kolekcji"
+      "collectionName": "Nazwa kolekcji",
+      "loading": "Ładowanie...",
+      "auth": {
+        "signInPrompt": "Zaloguj się, aby zobaczyć ulubione",
+        "signIn": "Zaloguj się",
+        "description": "Zapisuj ulubione nieruchomości i otwieraj je z dowolnego urządzenia."
+      },
+      "errors": {
+        "createCollection": "Nie udało się utworzyć kolekcji"
+      },
+      "collections": {
+        "title": "Kolekcje",
+        "aria": "Kolekcje",
+        "all": "Wszystkie ulubione ({count})"
+      },
+      "list": {
+        "loading": "Ładowanie ulubionych...",
+        "empty": "Brak ulubionych",
+        "unavailable": "Nieruchomość już niedostępna",
+        "emptyHint": "Kliknij ikonę serca przy nieruchomości, aby zapisać ją tutaj.",
+        "browse": "Przeglądaj nieruchomości"
+      },
+      "savedCount": "{count, plural, one {# zapisana nieruchomość} few {# zapisane nieruchomości} many {# zapisanych nieruchomości} other {# zapisanych nieruchomości}}"
     },
     "savedSearches": {
       "title": "Zapisane wyszukiwania",
@@ -2019,13 +2041,13 @@
         "new": "Nowe"
       },
       "filters": {
-        "status": "Status",
         "allStatus": "Wszystkie statusy",
         "sortBy": "Sortuj według",
         "scoreDesc": "Wynik (od najwyższego)",
         "scoreAsc": "Wynik (od najniższego)",
         "lastActivity": "Ostatnia aktywność",
-        "dateCreated": "Data utworzenia"
+        "dateCreated": "Data utworzenia",
+        "status": "Status"
       },
       "empty": {
         "noLeads": "Nie znaleziono leadów",
@@ -2117,11 +2139,64 @@
     },
     "marketTrends": {
       "title": "Trendy rynkowe",
-      "description": "Zmiany cen i wolumenu na śledzonych rynkach."
+      "description": "Zmiany cen i wolumenu na śledzonych rynkach.",
+      "errors": {
+        "load": "Nie udało się wczytać danych rynkowych"
+      },
+      "filters": {
+        "title": "Filtry",
+        "city": "Miasto",
+        "cityPlaceholder": "Podaj nazwę miasta",
+        "interval": "Interwał",
+        "monthly": "Miesięcznie",
+        "quarterly": "Kwartalnie",
+        "yearly": "Rocznie",
+        "monthsBack": "Miesięcy wstecz"
+      },
+      "stats": {
+        "overallTrend": "Trend ogólny",
+        "totalListings": "Wszystkich ofert",
+        "new7d": "Nowe (7 dni)",
+        "priceDrops7d": "Spadki cen (7 dni)"
+      },
+      "areas": {
+        "hottest": "Najgorętsze okolice",
+        "hottestHint": "Najwyższe średnie ceny",
+        "affordable": "Najtańsze",
+        "affordableHint": "Najniższe średnie ceny"
+      }
     },
     "cityOverview": {
       "title": "Przegląd miasta",
-      "description": "Wskaźniki dzielnicowe dla miast, które śledzisz."
+      "description": "Wskaźniki dzielnicowe dla miast, które śledzisz.",
+      "errors": {
+        "noData": "Brak danych miasta. Baza nieruchomości może być pusta albo API jest niedostępne."
+      },
+      "loading": {
+        "title": "Ładowanie danych miasta...",
+        "hint": "To potrwa chwilę"
+      },
+      "empty": {
+        "title": "Brak danych miasta"
+      },
+      "map": {
+        "title": "Mapa wszystkich nieruchomości",
+        "hint": "Kliknij znacznik, aby zobaczyć szczegóły miasta",
+        "summary": "{count, plural, one {# nieruchomość} few {# nieruchomości} many {# nieruchomości} other {# nieruchomości}} w {cities, plural, one {# mieście} few {# miastach} many {# miastach} other {# miastach}}"
+      },
+      "stats": {
+        "title": "Statystyki rynku według miast",
+        "properties": "{count, plural, one {# nieruchomość} few {# nieruchomości} many {# nieruchomości} other {# nieruchomości}}",
+        "avg": "średnio"
+      },
+      "property": {
+        "untitled": "Nieruchomość bez nazwy",
+        "priceOnRequest": "Cena na zapytanie"
+      },
+      "cityProperties": {
+        "title": "Nieruchomości w mieście {city}",
+        "shown": "{count, plural, one {# nieruchomość} few {# nieruchomości} many {# nieruchomości} other {# nieruchomości}}"
+      }
     },
     "agents": {
       "title": "Znajdź agentów",
@@ -2275,7 +2350,49 @@
     "valuation": {
       "title": "AI wycena i prognoza nieruchomości",
       "description": "Modelowy zakres cen dla konkretnego adresu.",
-      "forecastChart": "Wykres prognozy"
+      "forecastChart": "Wykres prognozy",
+      "errors": {
+        "requiredFields": "Podaj co najmniej miasto, powierzchnię (m²) i cenę (lub użyj identyfikatora nieruchomości).",
+        "propertyId": "Podaj identyfikator nieruchomości.",
+        "forecastFailed": "Prognoza nie powiodła się"
+      },
+      "propertyIdPlaceholder": "np. prop-12345",
+      "horizons": {
+        "title": "Horyzonty prognozy",
+        "oneYear": "1 rok",
+        "threeYears": "3 lata",
+        "fiveYears": "5 lat",
+        "tenYears": "10 lat"
+      },
+      "form": {
+        "city": "Miasto",
+        "neighborhood": "Dzielnica",
+        "type": "Typ",
+        "typePlaceholder": "mieszkanie, dom…",
+        "area": "Powierzchnia (m²)",
+        "rooms": "Pokoje",
+        "yearBuilt": "Rok budowy",
+        "askingPrice": "Cena wywoławcza",
+        "currency": "Waluta",
+        "currencyPlaceholder": "EUR, USD, GBP…",
+        "propertyId": "Identyfikator nieruchomości (opcjonalnie)",
+        "propertyIdHint": "Pozostaw puste, aby wprowadzić cechy ręcznie poniżej.",
+        "enableHint": "Podaj miasto i powierzchnię, aby włączyć.",
+        "estimating": "Szacowanie…",
+        "getForecast": "Oblicz prognozę"
+      },
+      "chart": {
+        "aria": "Wykres prognozy"
+      },
+      "result": {
+        "currentEstimate": "Obecna wycena",
+        "confidence": "Pewność",
+        "comparablesUsed": "Wykorzystano porównywalnych",
+        "cityMedian": "Mediana dla miasta",
+        "neighborhoodMedian": "Mediana dla dzielnicy",
+        "keyDrivers": "Kluczowe czynniki",
+        "today": "Dziś"
+      }
     },
     "usage": {
       "title": "Panel użycia",
@@ -2542,7 +2659,6 @@
           "basicInfo": "Informacje podstawowe",
           "name": "Nazwa:",
           "edition": "Edycja:",
-          "status": "Status:",
           "minEdition": "Minimalna edycja:",
           "error": "Błąd: {message}",
           "capabilities": "Możliwości",
@@ -2552,7 +2668,8 @@
           "currentRequests": "Bieżące żądania:",
           "remaining": "Pozostało:",
           "instanceStatus": "Stan instancji",
-          "configuration": "Konfiguracja"
+          "configuration": "Konfiguracja",
+          "status": "Status:"
         },
         "status": {
           "active": "Aktywny",
@@ -2580,8 +2697,8 @@
         "description": "Masowy przenoszenie ofert do i z systemu.",
         "tabs": {
           "jobs": "Zadania",
-          "import": "Import",
-          "export": "Eksport"
+          "export": "Eksport",
+          "import": "Import"
         },
         "requestId": "Identyfikator żądania: {id}",
         "filters": {

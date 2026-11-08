@@ -31,10 +31,10 @@ const DEFAULT_FORM: FeatureForm = {
 };
 
 const HORIZON_OPTIONS = [
-  { label: '1 year', value: 1 },
-  { label: '3 years', value: 3 },
-  { label: '5 years', value: 5 },
-  { label: '10 years', value: 10 },
+  { labelKey: 'oneYear', value: 1 },
+  { labelKey: 'threeYears', value: 3 },
+  { labelKey: 'fiveYears', value: 5 },
+  { labelKey: 'tenYears', value: 10 },
 ];
 
 function fmtCurrency(value: number, currency: string, locale = 'en-US'): string {
@@ -94,18 +94,14 @@ export default function ValuationPage() {
     setError(null);
     setResult(null);
     if (!canSubmit) {
-      setError(
-        useFeatures
-          ? 'Please fill in at least city, area (sqm), and price (or use a property id).'
-          : 'Please enter a property id.'
-      );
+      setError(useFeatures ? t('errors.requiredFields') : t('errors.propertyId'));
       return;
     }
     setLoading(true);
     try {
       const res = await priceForecastApi({
         property_id: useFeatures ? undefined : propertyId.trim(),
-        property_features: useFeatures ? features ?? undefined : undefined,
+        property_features: useFeatures ? (features ?? undefined) : undefined,
         horizon_years: horizons,
       });
       setResult(res);
@@ -113,7 +109,7 @@ export default function ValuationPage() {
       const msg =
         err && typeof err === 'object' && 'message' in err
           ? String((err as { message: unknown }).message)
-          : 'Forecast failed';
+          : t('errors.forecastFailed');
       setError(msg);
     } finally {
       setLoading(false);
@@ -140,23 +136,21 @@ export default function ValuationPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label htmlFor="property_id" className="text-sm font-medium">
-              Property ID (optional)
+              {t('form.propertyId')}
             </label>
             <input
               id="property_id"
               type="text"
-              placeholder="e.g. prop-12345"
+              placeholder={t('propertyIdPlaceholder')}
               className="w-full rounded border px-3 py-2 bg-background"
               value={propertyId}
               onChange={(e) => setPropertyId(e.target.value)}
               disabled={loading}
             />
-            <p className="text-xs text-muted-foreground">
-              Leave blank to enter features manually below.
-            </p>
+            <p className="text-xs text-muted-foreground">{t('form.propertyIdHint')}</p>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Forecast horizons</label>
+            <label className="text-sm font-medium">{t('horizons.title')}</label>
             <div className="flex flex-wrap gap-2">
               {HORIZON_OPTIONS.map((opt) => {
                 const active = horizons.includes(opt.value);
@@ -180,7 +174,7 @@ export default function ValuationPage() {
                         : 'bg-background text-foreground hover:bg-muted',
                     ].join(' ')}
                   >
-                    {opt.label}
+                    {t(`horizons.${opt.labelKey}`)}
                   </button>
                 );
               })}
@@ -191,58 +185,58 @@ export default function ValuationPage() {
         {useFeatures ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <Field
-              label="City"
+              label={t('form.city')}
               value={form.city}
               onChange={(v) => setForm((f) => ({ ...f, city: v }))}
               disabled={loading}
             />
             <Field
-              label="Neighborhood"
+              label={t('form.neighborhood')}
               value={form.neighborhood}
               onChange={(v) => setForm((f) => ({ ...f, neighborhood: v }))}
               disabled={loading}
             />
             <Field
-              label="Type"
+              label={t('form.type')}
               value={form.property_type}
               onChange={(v) => setForm((f) => ({ ...f, property_type: v }))}
               disabled={loading}
-              placeholder="apartment, house…"
+              placeholder={t('form.typePlaceholder')}
             />
             <Field
-              label="Area (sqm)"
+              label={t('form.area')}
               value={form.area_sqm}
               onChange={(v) => setForm((f) => ({ ...f, area_sqm: v }))}
               disabled={loading}
               inputMode="decimal"
             />
             <Field
-              label="Rooms"
+              label={t('form.rooms')}
               value={form.rooms}
               onChange={(v) => setForm((f) => ({ ...f, rooms: v }))}
               disabled={loading}
               inputMode="decimal"
             />
             <Field
-              label="Year built"
+              label={t('form.yearBuilt')}
               value={form.year_built}
               onChange={(v) => setForm((f) => ({ ...f, year_built: v }))}
               disabled={loading}
               inputMode="numeric"
             />
             <Field
-              label="Asking price"
+              label={t('form.askingPrice')}
               value={form.price}
               onChange={(v) => setForm((f) => ({ ...f, price: v }))}
               disabled={loading}
               inputMode="decimal"
             />
             <Field
-              label="Currency"
+              label={t('form.currency')}
               value={form.currency}
               onChange={(v) => setForm((f) => ({ ...f, currency: v }))}
               disabled={loading}
-              placeholder="EUR, USD, GBP…"
+              placeholder={t('form.currencyPlaceholder')}
             />
           </div>
         ) : null}
@@ -257,19 +251,19 @@ export default function ValuationPage() {
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                Estimating…
+                {t('form.estimating')}
               </>
             ) : (
               <>
                 <TrendingUp className="h-4 w-4" aria-hidden />
-                Get forecast
+                {t('form.getForecast')}
               </>
             )}
           </button>
           {useFeatures ? (
             <p className="text-xs text-muted-foreground inline-flex items-center gap-1">
               <MapPin className="h-3 w-3" aria-hidden />
-              Enter city &amp; area to enable.
+              {t('form.enableHint')}
             </p>
           ) : null}
         </div>
@@ -316,39 +310,38 @@ function Field({ label, value, onChange, disabled, placeholder, inputMode }: Fie
 }
 
 function ForecastResultView({ result }: { result: PriceForecastResponse }) {
+  const t = useTranslations('pages.valuation');
   const currency = result.currency || 'EUR';
   const askingPrice = null; // we don't get the asking price back; rely on chart only
   return (
-    <section
-      data-testid="valuation-result"
-      className="rounded-lg border bg-card p-6 space-y-6"
-    >
+    <section data-testid="valuation-result" className="rounded-lg border bg-card p-6 space-y-6">
       <div className="flex flex-wrap items-end gap-4">
         <div>
           <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            Current estimate
+            {t('result.currentEstimate')}
           </div>
-          <div
-            data-testid="valuation-current"
-            className="text-4xl font-bold tracking-tight"
-          >
+          <div data-testid="valuation-current" className="text-4xl font-bold tracking-tight">
             {fmtCurrency(result.current_estimate, currency)}
           </div>
         </div>
         <div className="ml-auto text-right text-xs text-muted-foreground space-y-1">
           <div>
-            Confidence:{' '}
+            {t('result.confidence')}:{' '}
             <span className="font-medium text-foreground">
               {Math.round(result.confidence * 100)}%
             </span>
           </div>
-          <div>Comparables used: {result.comparables_used}</div>
+          <div>
+            {t('result.comparablesUsed')}: {result.comparables_used}
+          </div>
           {result.median_price_per_sqm ? (
-            <div>City median: {fmtCurrency(result.median_price_per_sqm, currency)} / sqm</div>
+            <div>
+              {t('result.cityMedian')}: {fmtCurrency(result.median_price_per_sqm, currency)} / sqm
+            </div>
           ) : null}
           {result.neighborhood_median_price_per_sqm ? (
             <div>
-              Neighborhood median:{' '}
+              {t('result.neighborhoodMedian')}:{' '}
               {fmtCurrency(result.neighborhood_median_price_per_sqm, currency)} / sqm
             </div>
           ) : null}
@@ -360,14 +353,11 @@ function ForecastResultView({ result }: { result: PriceForecastResponse }) {
       {result.drivers && result.drivers.length ? (
         <div>
           <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">
-            Key drivers
+            {t('result.keyDrivers')}
           </div>
           <ul className="flex flex-wrap gap-2">
             {result.drivers.map((d: string, i: number) => (
-              <li
-                key={i}
-                className="rounded-full border bg-muted/30 px-3 py-1 text-xs"
-              >
+              <li key={i} className="rounded-full border bg-muted/30 px-3 py-1 text-xs">
                 {d}
               </li>
             ))}
@@ -393,10 +383,8 @@ function ForecastResultView({ result }: { result: PriceForecastResponse }) {
  * the public demo must stay small and SSR-friendly.
  */
 function ForecastChart({ result }: { result: PriceForecastResponse }) {
-  const points = [
-    { years_ahead: 0, estimated_value: result.current_estimate },
-    ...result.forecast,
-  ];
+  const t = useTranslations('pages.valuation');
+  const points = [{ years_ahead: 0, estimated_value: result.current_estimate }, ...result.forecast];
   if (points.length < 2) return null;
 
   const padding = 40;
@@ -407,13 +395,16 @@ function ForecastChart({ result }: { result: PriceForecastResponse }) {
   const maxX = Math.max(...xs);
   const allValues = points.flatMap((p) => {
     const f = result.forecast.find((x: ForecastPoint) => x.years_ahead === p.years_ahead);
-    return [p.estimated_value, f?.lower_bound ?? p.estimated_value, f?.upper_bound ?? p.estimated_value];
+    return [
+      p.estimated_value,
+      f?.lower_bound ?? p.estimated_value,
+      f?.upper_bound ?? p.estimated_value,
+    ];
   });
   const minY = Math.min(...allValues) * 0.95;
   const maxY = Math.max(...allValues) * 1.05;
 
-  const x = (yr: number) =>
-    padding + ((yr - minX) / Math.max(maxX - minX, 1)) * (w - 2 * padding);
+  const x = (yr: number) => padding + ((yr - minX) / Math.max(maxX - minX, 1)) * (w - 2 * padding);
   const y = (val: number) =>
     h - padding - ((val - minY) / Math.max(maxY - minY, 1)) * (h - 2 * padding);
 
@@ -438,7 +429,7 @@ function ForecastChart({ result }: { result: PriceForecastResponse }) {
         viewBox={`0 0 ${w} ${h}`}
         className="w-full mx-auto"
         role="img"
-        aria-label="Forecast chart"
+        aria-label={t('chart.aria')}
       >
         <path d={bandPath} style={{ fill: 'hsl(var(--chart-4) / 0.15)' }} />
         <path
@@ -458,7 +449,7 @@ function ForecastChart({ result }: { result: PriceForecastResponse }) {
             style={{ fill: 'hsl(var(--chart-4))' }}
           >
             <title>
-              {p.years_ahead === 0 ? 'Today' : `+${p.years_ahead}y`}:{' '}
+              {p.years_ahead === 0 ? t('result.today') : `+${p.years_ahead}y`}:{' '}
               {fmtCurrency(p.estimated_value, result.currency)}
             </title>
           </circle>
@@ -474,7 +465,7 @@ function ForecastChart({ result }: { result: PriceForecastResponse }) {
             fill="currentColor"
             opacity={0.6}
           >
-            {p.years_ahead === 0 ? 'Today' : `+${p.years_ahead}y`}
+            {p.years_ahead === 0 ? t('result.today') : `+${p.years_ahead}y`}
           </text>
         ))}
       </svg>

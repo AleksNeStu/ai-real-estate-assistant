@@ -50,7 +50,7 @@ export default function FavoritesPage() {
         aria-live="polite"
       >
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
-        <span className="sr-only">Loading...</span>
+        <span className="sr-only">{tCommon('loading')}</span>
       </div>
     );
   }
@@ -62,12 +62,10 @@ export default function FavoritesPage() {
         <PageHeader title={t('title')} description={t('description')} />
         <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
           <Heart className="h-16 w-16 text-muted-foreground mb-4" aria-hidden="true" />
-          <p className="text-lg font-medium mb-2">Sign in to view your favorites</p>
-          <p className="text-muted-foreground mb-6">
-            Save properties you love and access them from any device.
-          </p>
+          <p className="text-lg font-medium mb-2">{t('auth.signInPrompt')}</p>
+          <p className="text-muted-foreground mb-6">{t('auth.description')}</p>
           <Link href={`/${locale}/auth/login`}>
-            <Button>Sign In</Button>
+            <Button>{t('auth.signIn')}</Button>
           </Link>
         </div>
       </div>
@@ -96,13 +94,11 @@ export default function FavoritesPage() {
           actions={
             <Button variant="outline" onClick={() => setShowNewCollectionModal(true)}>
               <FolderPlus className="h-4 w-4 mr-2" />
-              New Collection
+              {t('newCollection')}
             </Button>
           }
         >
-          <p className="text-muted-foreground">
-            {favorites.length} saved {favorites.length === 1 ? 'property' : 'properties'}
-          </p>
+          <p className="text-muted-foreground">{t('savedCount', { count: favorites.length })}</p>
         </PageHeader>
 
         {/* Error state */}
@@ -119,9 +115,10 @@ export default function FavoritesPage() {
           {/* Collections Sidebar */}
           <div className="space-y-4">
             <div className="rounded-lg border bg-card p-4">
-              <h2 className="font-semibold mb-4">Collections</h2>
-              <div className="space-y-2" role="listbox" aria-label="Collections">
-                <button type="button"
+              <h2 className="font-semibold mb-4">{t('collections.title')}</h2>
+              <div className="space-y-2" role="listbox" aria-label={t('collections.aria')}>
+                <button
+                  type="button"
                   onClick={() => setSelectedCollection(null)}
                   className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 ${
                     selectedCollection === null
@@ -131,11 +128,12 @@ export default function FavoritesPage() {
                   role="option"
                   aria-selected={selectedCollection === null}
                 >
-                  All Favorites ({favorites.length})
+                  {t('collections.all', { count: favorites.length })}
                 </button>
 
                 {collections.map((collection) => (
-                  <button type="button"
+                  <button
+                    type="button"
                     key={collection.id}
                     onClick={() => setSelectedCollection(collection.id)}
                     className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 ${
@@ -165,18 +163,16 @@ export default function FavoritesPage() {
                   className="h-8 w-8 animate-spin text-muted-foreground"
                   aria-hidden="true"
                 />
-                <span className="sr-only">Loading favorites...</span>
+                <span className="sr-only">{t('list.loading')}</span>
               </div>
             ) : favorites.length === 0 ? (
               <div className="flex flex-col items-center justify-center min-h-[300px] text-center border rounded-lg border-dashed">
                 <Heart className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold">No favorites yet</h3>
-                <p className="text-sm text-muted-foreground mt-2 max-w-sm">
-                  Click the heart icon on any property to save it here.
-                </p>
+                <h3 className="text-lg font-semibold">{t('list.empty')}</h3>
+                <p className="text-sm text-muted-foreground mt-2 max-w-sm">{t('list.emptyHint')}</p>
                 <Link href={`/${locale}/search`}>
                   <Button variant="outline" className="mt-4">
-                    Browse Properties
+                    {t('list.browse')}
                   </Button>
                 </Link>
               </div>
@@ -188,7 +184,7 @@ export default function FavoritesPage() {
                       <PropertyCard property={favorite.property} />
                     ) : (
                       <div className="rounded-lg border bg-card p-6 text-center">
-                        <p className="text-muted-foreground">Property no longer available</p>
+                        <p className="text-muted-foreground">{t('list.unavailable')}</p>
                         <p className="text-xs text-muted-foreground mt-2">
                           ID: {favorite.property_id}
                         </p>

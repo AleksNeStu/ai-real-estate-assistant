@@ -25,11 +25,11 @@
       "edit": "Editar",
       "health": {
         "degraded": "Degradada",
-        "error": "Error",
         "healthy": "Correcta",
         "pending": "Pendiente",
         "syncing": "Sincronizando...",
-        "unhealthy": "Con fallos"
+        "unhealthy": "Con fallos",
+        "error": "Error"
       },
       "hoursAgo": "hace {count} h",
       "justNow": "Ahora mismo",
@@ -48,13 +48,13 @@
     },
     "systemHealth": {
       "dependencies": "Dependencias",
-      "errorPrefix": "Error:",
       "fetchError": "No se pudo obtener el estado del sistema",
       "loading": "Cargando...",
       "title": "Estado del sistema",
       "unknownError": "Error desconocido",
       "uptime": "Tiempo en marcha",
-      "version": "Versión"
+      "version": "Versión",
+      "errorPrefix": "Error:"
     }
   },
   "agents": {
@@ -245,8 +245,8 @@
         "description": "Selecciona el inmueble a evaluar"
       },
       "comparables": {
-        "title": "Comparables",
-        "description": "Elige inmuebles similares"
+        "description": "Elige inmuebles similares",
+        "title": "Comparables"
       },
       "adjustments": {
         "title": "Ajustes",
@@ -293,11 +293,8 @@
     },
     "adjustments": {
       "description": "Revisa y ajusta los factores de valoración de cada comparable. Los ajustes positivos aumentan el valor del comparable; los negativos lo reducen.",
-      "comparable": "Comparable {index}",
       "similarity": "Similitud:",
-      "factor": "Factor",
       "subject": "Sujeto",
-      "comparableLabel": "Comparable",
       "adjPercent": "Ajuste %",
       "amount": "Importe",
       "totalAdjustments": "Ajustes totales",
@@ -307,7 +304,10 @@
       "priceRange": "Rango de precio",
       "medianPrice": "Precio mediano",
       "back": "Volver",
-      "nextPreview": "Siguiente: vista previa del informe"
+      "nextPreview": "Siguiente: vista previa del informe",
+      "comparable": "Comparable {index}",
+      "factor": "Factor",
+      "comparableLabel": "Comparable"
     },
     "preview": {
       "noSubject": "No hay ningún inmueble sujeto seleccionado",
@@ -330,7 +330,6 @@
       "area": "Superficie",
       "rooms": "Habitaciones",
       "type": "Tipo",
-      "comparables": "Comparables ({count})",
       "property": "Inmueble",
       "score": "Puntuación:",
       "marketContext": "Contexto de mercado",
@@ -339,7 +338,8 @@
       "trend": "Tendencia",
       "inventory": "Inventario",
       "listings": "{count} anuncios",
-      "failedGenerate": "No se pudo generar el informe"
+      "failedGenerate": "No se pudo generar el informe",
+      "comparables": "Comparables ({count})"
     },
     "export": {
       "noReport": "No hay informe disponible. Vuelve atrás y genera primero un informe.",
@@ -508,7 +508,6 @@
     "exporting": "Exportando...",
     "saving": "Guardando...",
     "testing": "Probando...",
-    "error": "Error",
     "success": "Correcto",
     "toggleTheme": "Cambiar tema",
     "close": "Cerrar",
@@ -537,7 +536,8 @@
     "backOnline": "Has vuelto a estar en línea",
     "offlineMessage": "Estás sin conexión. Algunas funciones pueden no estar disponibles.",
     "newVersionAvailable": "¡Hay una nueva versión disponible!",
-    "dismissUpdate": "Descartar"
+    "dismissUpdate": "Descartar",
+    "error": "Error"
   },
   "demo": {
     "banner": "Modo demo — búsqueda y datos de ciudades disponibles",
@@ -776,11 +776,11 @@
         "ariaLabel": "Gráfico de líneas de escenarios de apreciación: proyecciones del valor de la propiedad en condiciones pesimistas, realistas y optimistas",
         "value": "Valor",
         "perYear": "{rate}%/año",
-        "total": "Total:",
         "year": "Año {year}",
         "pessimistic": "Pesimista",
         "realistic": "Realista",
-        "optimistic": "Optimista"
+        "optimistic": "Optimista",
+        "total": "Total:"
       },
       "multiYear": {
         "title": "Proyección multianual del flujo de caja",
@@ -1006,9 +1006,9 @@
           "insurance": "Seguro",
           "hoa": "Cuota de comunidad",
           "utilities": "Suministros",
-          "internet": "Internet",
           "parking": "Estacionamiento",
-          "maintenance": "Mantenimiento"
+          "maintenance": "Mantenimiento",
+          "internet": "Internet"
         },
         "perMonth": "{value}/mes",
         "percentOfTotal": "{percent}% del total",
@@ -1212,7 +1212,6 @@
       "dataSources": "Fuentes de datos",
       "detailedFactorInfo": "Información detallada de los factores",
       "detailedFactorDescription": "Valores brutos y fuentes de datos de cada factor",
-      "factor": "Factor",
       "score": "Puntuación",
       "rawValue": "Valor bruto",
       "confidence": "Confianza",
@@ -1225,7 +1224,8 @@
       "amenities": "Servicios",
       "airQuality": "Calidad del aire",
       "noiseLevel": "Nivel de ruido",
-      "publicTransport": "Transporte público"
+      "publicTransport": "Transporte público",
+      "factor": "Factor"
     },
     "newFactors": {
       "title": "Factores de calidad ampliados",
@@ -1323,11 +1323,11 @@
       "yearBuilt": "Año de construcción",
       "propertyType": "Tipo de inmueble",
       "heating": "Calefacción",
-      "parking": "Parking",
       "description": "Descripción",
       "location": "Ubicación",
       "features": "Características",
-      "contact": "Contactar con el agente"
+      "contact": "Contactar con el agente",
+      "parking": "Parking"
     },
     "estimateLabel": "Cuota mensual estimada: {value}",
     "estimateTitle": "Cuota mensual estimada con {down} % de entrada, {years} años fijo al {rate} % TAE. No es una oferta de préstamo."
@@ -1466,9 +1466,9 @@
       "apartment": "Piso",
       "house": "Casa",
       "studio": "Estudio",
-      "loft": "Loft",
       "townhouse": "Casa adosada",
-      "other": "Otros"
+      "other": "Otros",
+      "loft": "Loft"
     },
     "emptyState": {
       "title": "Empieza tu búsqueda de inmuebles",
@@ -1727,7 +1727,6 @@
       "refreshing": "Actualizando...",
       "pricingUnavailable": "Los precios pueden no estar disponibles para algunos modelos alojados.",
       "provider": "Proveedor:",
-      "local": "Local",
       "hosted": "Alojado",
       "apiKeyRequired": "Requiere clave de API",
       "noApiKeyRequired": "No requiere clave de API",
@@ -1758,7 +1757,8 @@
       "errorUnavailable": "El modelo seleccionado no está disponible para este proveedor.",
       "errorSave": "No se ha podido guardar el modelo por defecto. Inténtalo de nuevo.",
       "needsEmailSave": "Indica un correo en los ajustes de identidad para guardar las preferencias de modelo.",
-      "providerLabel": "Proveedor"
+      "providerLabel": "Proveedor",
+      "local": "Local"
     },
     "saved": "Ajustes guardados correctamente.",
     "error": "No se han podido guardar los ajustes.",
@@ -1908,7 +1908,6 @@
     "done": "Listo"
   },
   "showcase": {
-    "heroTitle": "Showcase",
     "heroSubtitle": "Forks, despliegues reales y casos de estudio del Asistente Inmobiliario con IA.",
     "forksTitle": "Forks y construido con esto",
     "forksEmpty": "Aún no hay forks ni listados de proyectos basados.",
@@ -1922,7 +1921,8 @@
     "ctaTitle": "Pruébalo tú mismo",
     "ctaSubtitle": "La demo en vivo funciona sin registro. Código con licencia MIT, auto-hospedable en 5 minutos.",
     "ctaStar": "Destacar el repo",
-    "ctaTryDemo": "Probar la demo"
+    "ctaTryDemo": "Probar la demo",
+    "heroTitle": "Escaparate"
   },
   "footer": {
     "title": "Recibe nuevas ofertas en tu correo",
@@ -1947,7 +1947,29 @@
       "title": "Mis favoritos",
       "description": "Todos los anuncios guardados, en un solo lugar.",
       "newCollection": "Nueva colección",
-      "collectionName": "Nombre de la colección"
+      "collectionName": "Nombre de la colección",
+      "loading": "Cargando...",
+      "auth": {
+        "signInPrompt": "Inicia sesión para ver tus favoritos",
+        "signIn": "Iniciar sesión",
+        "description": "Guarda los inmuebles que te gusten y accede desde cualquier dispositivo."
+      },
+      "errors": {
+        "createCollection": "No se pudo crear la colección"
+      },
+      "collections": {
+        "title": "Colecciones",
+        "aria": "Colecciones",
+        "all": "Todos los favoritos ({count})"
+      },
+      "list": {
+        "loading": "Cargando favoritos...",
+        "empty": "Todavía no hay favoritos",
+        "unavailable": "La propiedad ya no está disponible",
+        "emptyHint": "Haz clic en el icono del corazón de cualquier inmueble para guardarlo aquí.",
+        "browse": "Explorar inmuebles"
+      },
+      "savedCount": "{count, plural, one {# inmueble guardado} other {# inmuebles guardados}}"
     },
     "savedSearches": {
       "title": "Búsquedas guardadas",
@@ -2117,11 +2139,64 @@
     },
     "marketTrends": {
       "title": "Tendencias del mercado",
-      "description": "Movimiento de precios y volumen en los mercados vigilados."
+      "description": "Movimiento de precios y volumen en los mercados vigilados.",
+      "errors": {
+        "load": "No se pudieron cargar los datos de mercado"
+      },
+      "filters": {
+        "title": "Filtros",
+        "city": "Ciudad",
+        "cityPlaceholder": "Introduce el nombre de la ciudad",
+        "interval": "Intervalo",
+        "monthly": "Mensual",
+        "quarterly": "Trimestral",
+        "yearly": "Anual",
+        "monthsBack": "Meses atrás"
+      },
+      "stats": {
+        "overallTrend": "Tendencia general",
+        "totalListings": "Anuncios totales",
+        "new7d": "Nuevos (7 días)",
+        "priceDrops7d": "Bajadas de precio (7 d.)"
+      },
+      "areas": {
+        "hottest": "Zonas más demandadas",
+        "hottestHint": "Precios medios más altos",
+        "affordable": "Más asequibles",
+        "affordableHint": "Precios medios más bajos"
+      }
     },
     "cityOverview": {
       "title": "Resumen de la ciudad",
-      "description": "Indicadores por barrio para las ciudades que sigues."
+      "description": "Indicadores por barrio para las ciudades que sigues.",
+      "errors": {
+        "noData": "No hay datos de la ciudad. La base de propiedades puede estar vacía o la API no es accesible."
+      },
+      "loading": {
+        "title": "Cargando datos de la ciudad...",
+        "hint": "Esto puede tardar un momento"
+      },
+      "empty": {
+        "title": "No hay datos de la ciudad"
+      },
+      "map": {
+        "title": "Mapa de todas las propiedades",
+        "hint": "Haz clic en un marcador para ver los detalles de la ciudad",
+        "summary": "{count, plural, one {# inmueble} other {# inmuebles}} en {cities, plural, one {# ciudad} other {# ciudades}}"
+      },
+      "stats": {
+        "title": "Estadísticas de mercado por ciudad",
+        "properties": "{count, plural, one {# inmueble} other {# inmuebles}}",
+        "avg": "promedio"
+      },
+      "property": {
+        "untitled": "Propiedad sin título",
+        "priceOnRequest": "Precio a consultar"
+      },
+      "cityProperties": {
+        "title": "Inmuebles en {city}",
+        "shown": "{count, plural, one {# inmueble} other {# inmuebles}}"
+      }
     },
     "agents": {
       "title": "Buscar agentes",
@@ -2275,7 +2350,49 @@
     "valuation": {
       "title": "Valoración y previsión con IA",
       "description": "Rango de precio modelado para una dirección concreta.",
-      "forecastChart": "Gráfico de previsión"
+      "forecastChart": "Gráfico de previsión",
+      "errors": {
+        "requiredFields": "Rellena al menos ciudad, superficie (m²) y precio (o usa un ID de propiedad).",
+        "propertyId": "Introduce un ID de propiedad.",
+        "forecastFailed": "La predicción falló"
+      },
+      "propertyIdPlaceholder": "p. ej. prop-12345",
+      "horizons": {
+        "title": "Horizontes de predicción",
+        "oneYear": "1 año",
+        "threeYears": "3 años",
+        "fiveYears": "5 años",
+        "tenYears": "10 años"
+      },
+      "form": {
+        "city": "Ciudad",
+        "neighborhood": "Barrio",
+        "type": "Tipo",
+        "typePlaceholder": "apartamento, casa…",
+        "area": "Superficie (m²)",
+        "rooms": "Habitaciones",
+        "yearBuilt": "Año de construcción",
+        "askingPrice": "Precio de salida",
+        "currency": "Moneda",
+        "currencyPlaceholder": "EUR, USD, GBP…",
+        "propertyId": "ID del inmueble (opcional)",
+        "propertyIdHint": "Déjalo en blanco para introducir las características manualmente abajo.",
+        "enableHint": "Introduce ciudad y superficie para activarlo.",
+        "estimating": "Estimando…",
+        "getForecast": "Obtener previsión"
+      },
+      "chart": {
+        "aria": "Gráfico de predicción"
+      },
+      "result": {
+        "currentEstimate": "Estimación actual",
+        "confidence": "Confianza",
+        "comparablesUsed": "Comparables usados",
+        "cityMedian": "Mediana de la ciudad",
+        "neighborhoodMedian": "Mediana del barrio",
+        "keyDrivers": "Factores clave",
+        "today": "Hoy"
+      }
     },
     "usage": {
       "title": "Panel de uso",
@@ -2526,10 +2643,10 @@
           "instantiated": "Instanciado",
           "noInstance": "Sin instancia",
           "apiKeyRequired": "Requiere clave de API",
-          "streaming": "Streaming",
           "ceAccessible": "Accesible en CE",
           "enabled": "Activado",
-          "disabled": "Deshabilitado"
+          "disabled": "Deshabilitado",
+          "streaming": "Streaming"
         },
         "results": {
           "responseTime": "Tiempo de respuesta:",
@@ -2544,7 +2661,6 @@
           "edition": "Edición:",
           "status": "Estado:",
           "minEdition": "Edición mínima:",
-          "error": "Error: {message}",
           "capabilities": "Capacidades",
           "rateLimit": "Límite de peticiones",
           "requestsPerMin": "Peticiones/min:",
@@ -2552,14 +2668,15 @@
           "currentRequests": "Peticiones actuales:",
           "remaining": "Restantes:",
           "instanceStatus": "Estado de la instancia",
-          "configuration": "Configuración"
+          "configuration": "Configuración",
+          "error": "Error: {message}"
         },
         "status": {
           "active": "Activo",
           "disabled": "Deshabilitado",
-          "error": "Error",
           "not_instantiated": "Sin instanciar",
-          "unknown": "Desconocido"
+          "unknown": "Desconocido",
+          "error": "Error"
         },
         "health": {
           "healthy": "Sano",

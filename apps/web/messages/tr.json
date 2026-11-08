@@ -1466,9 +1466,9 @@
       "apartment": "Daire",
       "house": "Ev",
       "studio": "Stüdyo",
-      "loft": "Loft",
       "townhouse": "Sıralı ev",
-      "other": "Diğer"
+      "other": "Diğer",
+      "loft": "Loft"
     },
     "emptyState": {
       "title": "Emlak aramanıza başlayın",
@@ -1715,7 +1715,6 @@
       },
       "modelCatalog": "Model kataloğu",
       "supportedProviders": "Desteklenen sağlayıcılar:",
-      "model": "Model",
       "context": "Bağlam",
       "inputPer1m": "Girdi / 1M",
       "outputPer1m": "Çıktı / 1M",
@@ -1758,7 +1757,8 @@
       "errorUnavailable": "Seçilen model bu sağlayıcı için kullanılamıyor.",
       "errorSave": "Varsayılan model kaydedilemedi. Lütfen tekrar deneyin.",
       "needsEmailSave": "Model tercihlerini kaydetmek için Kimlik ayarlarında bir e-posta girin.",
-      "providerLabel": "Sağlayıcı"
+      "providerLabel": "Sağlayıcı",
+      "model": "Model"
     },
     "saved": "Ayarlar başarıyla kaydedildi.",
     "error": "Ayarlar kaydedilemedi.",
@@ -1856,13 +1856,13 @@
       "loading": "Tercihler yükleniyor...",
       "failedToReset": "Model tercihi sıfırlanamadı.",
       "failedToSave": "Model tercihi kaydedilemedi.",
-      "model": "Model",
       "provider": "Sağlayıcı",
       "reset": "Sıfırla",
       "resetToDefault": "Sistem varsayılanına sıfırla.",
       "save": "Kaydet",
       "selectBoth": "Hem sağlayıcı hem model seçin.",
-      "systemDefault": "Sistem varsayılanı"
+      "systemDefault": "Sistem varsayılanı",
+      "model": "Model"
     }
   },
   "tools": {
@@ -1947,7 +1947,29 @@
       "title": "Favorilerim",
       "description": "Kaydettiğiniz tüm ilanlar tek bir yerde.",
       "newCollection": "Yeni koleksiyon",
-      "collectionName": "Koleksiyon adı"
+      "collectionName": "Koleksiyon adı",
+      "loading": "Yükleniyor...",
+      "auth": {
+        "signInPrompt": "Favorilerinizi görmek için giriş yapın",
+        "signIn": "Giriş yap",
+        "description": "Beğendiğiniz mülkleri kaydedin ve her cihazdan erişin."
+      },
+      "errors": {
+        "createCollection": "Koleksiyon oluşturulamadı"
+      },
+      "collections": {
+        "title": "Koleksiyonlar",
+        "aria": "Koleksiyonlar",
+        "all": "Tüm favoriler ({count})"
+      },
+      "list": {
+        "loading": "Favoriler yükleniyor...",
+        "empty": "Henüz favori yok",
+        "unavailable": "Emlak artık mevcut değil",
+        "emptyHint": "Buraya kaydetmek için bir mülkteki kalp simgesine tıklayın.",
+        "browse": "Mülkleri keşfedin"
+      },
+      "savedCount": "{count, plural, one {# kayıtlı mülk} other {# kayıtlı mülk}}"
     },
     "savedSearches": {
       "title": "Kayıtlı aramalar",
@@ -2117,11 +2139,64 @@
     },
     "marketTrends": {
       "title": "Piyasa eğilimleri",
-      "description": "İzlenen piyasalarda fiyat ve hacim hareketleri."
+      "description": "İzlenen piyasalarda fiyat ve hacim hareketleri.",
+      "errors": {
+        "load": "Piyasa verileri yüklenemedi"
+      },
+      "filters": {
+        "title": "Filtreler",
+        "city": "Şehir",
+        "cityPlaceholder": "Şehir adı girin",
+        "interval": "Aralık",
+        "monthly": "Aylık",
+        "quarterly": "Üç aylık",
+        "yearly": "Yıllık",
+        "monthsBack": "Geriye dönük ay"
+      },
+      "stats": {
+        "overallTrend": "Genel eğilim",
+        "totalListings": "Toplam ilan",
+        "new7d": "Yeni (7 gün)",
+        "priceDrops7d": "Fiyat düşüşleri (7 g.)"
+      },
+      "areas": {
+        "hottest": "En çok talep gören bölgeler",
+        "hottestHint": "En yüksek ortalama fiyatlar",
+        "affordable": "En uygun fiyatlılar",
+        "affordableHint": "En düşük ortalama fiyatlar"
+      }
     },
     "cityOverview": {
       "title": "Şehir genel bakış",
-      "description": "Takip ettiğiniz şehirler için mahalle göstergeleri."
+      "description": "Takip ettiğiniz şehirler için mahalle göstergeleri.",
+      "errors": {
+        "noData": "Şehir verisi yok. Emlak veritabanı boş olabilir veya API'ye erişilemiyor olabilir."
+      },
+      "loading": {
+        "title": "Şehir verileri yükleniyor...",
+        "hint": "Bu biraz sürebilir"
+      },
+      "empty": {
+        "title": "Şehir Verisi Yok"
+      },
+      "map": {
+        "title": "Tüm Emlaklar Haritası",
+        "hint": "Şehir detaylarını görmek için bir işaretçiye tıklayın",
+        "summary": "{cities, plural, one {# şehirde} other {# şehirde}} {count, plural, one {# mülk} other {# mülk}}"
+      },
+      "stats": {
+        "title": "Şehre Göre Piyasa İstatistikleri",
+        "properties": "{count, plural, one {# mülk} other {# mülk}}",
+        "avg": "ort."
+      },
+      "property": {
+        "untitled": "Adsız Emlak",
+        "priceOnRequest": "Fiyat için sorun"
+      },
+      "cityProperties": {
+        "title": "{city} mülkleri",
+        "shown": "{count, plural, one {# mülk} other {# mülk}}"
+      }
     },
     "agents": {
       "title": "Danışman bul",
@@ -2275,7 +2350,49 @@
     "valuation": {
       "title": "Yapay zekâ değerleme ve tahmin",
       "description": "Belirli bir adres için modellenmiş fiyat aralığı.",
-      "forecastChart": "Tahmin grafiği"
+      "forecastChart": "Tahmin grafiği",
+      "errors": {
+        "requiredFields": "En az şehir, alan (m²) ve fiyat girin (veya emlak kimliği kullanın).",
+        "propertyId": "Bir emlak kimliği girin.",
+        "forecastFailed": "Tahmin başarısız oldu"
+      },
+      "propertyIdPlaceholder": "örn. prop-12345",
+      "horizons": {
+        "title": "Tahmin ufukları",
+        "oneYear": "1 yıl",
+        "threeYears": "3 yıl",
+        "fiveYears": "5 yıl",
+        "tenYears": "10 yıl"
+      },
+      "form": {
+        "city": "Şehir",
+        "neighborhood": "Mahalle",
+        "type": "Tür",
+        "typePlaceholder": "daire, ev…",
+        "area": "Alan (m²)",
+        "rooms": "Oda",
+        "yearBuilt": "Yapım yılı",
+        "askingPrice": "İstenen fiyat",
+        "currency": "Para birimi",
+        "currencyPlaceholder": "EUR, USD, GBP…",
+        "propertyId": "Mülk ID (isteğe bağlı)",
+        "propertyIdHint": "Özellikleri elle girmek için boş bırakın.",
+        "enableHint": "Etkinleştirmek için şehir ve alan girin.",
+        "estimating": "Tahmin ediliyor…",
+        "getForecast": "Tahmin al"
+      },
+      "chart": {
+        "aria": "Tahmin grafiği"
+      },
+      "result": {
+        "currentEstimate": "Mevcut tahmin",
+        "confidence": "Güven",
+        "comparablesUsed": "Kullanılan emsaller",
+        "cityMedian": "Şehir medyanı",
+        "neighborhoodMedian": "Mahalle medyanı",
+        "keyDrivers": "Ana etkenler",
+        "today": "Bugün"
+      }
     },
     "usage": {
       "title": "Kullanım panosu",

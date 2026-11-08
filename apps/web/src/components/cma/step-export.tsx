@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { downloadCMAPdf } from '@/lib/api';
 import type { CMAReport } from '@/lib/types';
@@ -12,6 +13,7 @@ interface StepExportProps {
 }
 
 export function StepExport({ report, onReset, onPrev }: StepExportProps) {
+  const t = useTranslations('cma.export');
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -33,7 +35,7 @@ export function StepExport({ report, onReset, onPrev }: StepExportProps) {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to download PDF';
+      const message = err instanceof Error ? err.message : t('failedDownload');
       setDownloadError(message);
     } finally {
       setIsDownloading(false);
@@ -79,12 +81,10 @@ export function StepExport({ report, onReset, onPrev }: StepExportProps) {
   if (!report) {
     return (
       <div className="space-y-4">
-        <div className="text-center py-8 text-muted-foreground">
-          No report available. Please go back and generate a report first.
-        </div>
+        <div className="text-center py-8 text-muted-foreground">{t('noReport')}</div>
         <div className="flex justify-start">
           <Button variant="outline" onClick={onPrev}>
-            Back
+            {t('back')}
           </Button>
         </div>
       </div>
@@ -106,10 +106,8 @@ export function StepExport({ report, onReset, onPrev }: StepExportProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h3 className="text-lg font-semibold">Report Generated Successfully</h3>
-        <p className="text-sm text-muted-foreground mt-1">
-          Your Comparative Market Analysis report is ready for export.
-        </p>
+        <h3 className="text-lg font-semibold">{t('reportGenerated')}</h3>
+        <p className="text-sm text-muted-foreground mt-1">{t('reportReady')}</p>
       </div>
 
       {/* Export options */}
@@ -134,12 +132,12 @@ export function StepExport({ report, onReset, onPrev }: StepExportProps) {
               </svg>
             </div>
             <div>
-              <h4 className="font-medium text-sm">PDF Report</h4>
-              <p className="text-xs text-muted-foreground">Professional format</p>
+              <h4 className="font-medium text-sm">{t('pdfReport')}</h4>
+              <p className="text-xs text-muted-foreground">{t('professionalFormat')}</p>
             </div>
           </div>
           <Button className="w-full" onClick={handleDownloadPdf} disabled={isDownloading}>
-            {isDownloading ? 'Downloading...' : 'Download PDF'}
+            {isDownloading ? t('downloading') : t('downloadPdf')}
           </Button>
         </div>
 
@@ -163,12 +161,12 @@ export function StepExport({ report, onReset, onPrev }: StepExportProps) {
               </svg>
             </div>
             <div>
-              <h4 className="font-medium text-sm">JSON Data</h4>
-              <p className="text-xs text-muted-foreground">Raw data export</p>
+              <h4 className="font-medium text-sm">{t('jsonData')}</h4>
+              <p className="text-xs text-muted-foreground">{t('rawDataExport')}</p>
             </div>
           </div>
           <Button className="w-full" onClick={handleDownloadJson}>
-            Download JSON
+            {t('downloadJson')}
           </Button>
         </div>
 
@@ -192,12 +190,12 @@ export function StepExport({ report, onReset, onPrev }: StepExportProps) {
               </svg>
             </div>
             <div>
-              <h4 className="font-medium text-sm">Share Link</h4>
-              <p className="text-xs text-muted-foreground">Copy shareable URL</p>
+              <h4 className="font-medium text-sm">{t('shareLink')}</h4>
+              <p className="text-xs text-muted-foreground">{t('copyShareableUrl')}</p>
             </div>
           </div>
           <Button className="w-full" variant="outline" onClick={handleCopyLink}>
-            {copiedLink ? 'Copied!' : 'Copy Link'}
+            {copiedLink ? t('copied') : t('copyLink')}
           </Button>
         </div>
       </div>
@@ -212,12 +210,15 @@ export function StepExport({ report, onReset, onPrev }: StepExportProps) {
       {/* Report info */}
       <div className="text-sm text-muted-foreground bg-muted/30 rounded p-3">
         <p>
-          Report ID: <span className="font-mono">{report.id}</span>
+          {t('reportId')} <span className="font-mono">{report.id}</span>
         </p>
         <p className="mt-1">
-          Created: {new Date(report.created_at).toLocaleString()}
+          {t('created')} {new Date(report.created_at).toLocaleString()}
           {report.expires_at && (
-            <span> • Expires: {new Date(report.expires_at).toLocaleString()}</span>
+            <span>
+              {' '}
+              • {t('expires')} {new Date(report.expires_at).toLocaleString()}
+            </span>
           )}
         </p>
       </div>
@@ -225,9 +226,9 @@ export function StepExport({ report, onReset, onPrev }: StepExportProps) {
       {/* Navigation */}
       <div className="flex justify-between pt-4">
         <Button variant="outline" onClick={onPrev}>
-          Back
+          {t('back')}
         </Button>
-        <Button onClick={onReset}>Create New Report</Button>
+        <Button onClick={onReset}>{t('createNew')}</Button>
       </div>
     </div>
   );

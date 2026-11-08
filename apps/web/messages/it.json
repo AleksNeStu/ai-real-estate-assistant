@@ -91,10 +91,10 @@
       "contactInfo": "Contatti",
       "office": "Ufficio",
       "phone": "Telefono",
-      "email": "Email",
       "license": "Licenza",
       "agency": "Agenzia",
-      "noListings": "Nessun annuncio attivo"
+      "noListings": "Nessun annuncio attivo",
+      "email": "E-mail"
     },
     "contactForm": {
       "title": "Contatta {name}",
@@ -167,9 +167,7 @@
     "login": {
       "title": "Bentornato",
       "description": "Inserisci la tua email per accedere al tuo account",
-      "emailLabel": "Email",
       "emailPlaceholder": "name@example.com",
-      "passwordLabel": "Password",
       "forgotPassword": "Password dimenticata?",
       "noAccount": "Non hai un account?",
       "submit": "Accedi",
@@ -177,26 +175,28 @@
       "orContinueWith": "Oppure continua con",
       "or": "o",
       "continueAsGuest": "Prova senza account",
-      "tryDemo": "Prova Demo — senza account"
+      "tryDemo": "Prova Demo — senza account",
+      "emailLabel": "E-mail",
+      "passwordLabel": "Password"
     },
     "register": {
       "title": "Crea un account",
       "description": "Inserisci i tuoi dati per iniziare",
       "fullNameLabel": "Nome e cognome",
-      "emailLabel": "Email",
-      "passwordLabel": "Password",
       "confirmPasswordLabel": "Conferma password",
       "haveAccount": "Hai già un account?",
-      "submit": "Crea account"
+      "submit": "Crea account",
+      "emailLabel": "E-mail",
+      "passwordLabel": "Password"
     },
     "forgotPassword": {
       "title": "Password dimenticata?",
       "description": "Inserisci la tua email e ti invieremo un link per reimpostare la password",
-      "emailLabel": "Email",
       "submit": "Invia link di reimpostazione",
       "backToLogin": "Torna al login",
       "checkEmail": "Controlla la tua posta",
-      "resetSent": "Abbiamo inviato un link per reimpostare la password al tuo indirizzo email."
+      "resetSent": "Abbiamo inviato un link per reimpostare la password al tuo indirizzo email.",
+      "emailLabel": "E-mail"
     },
     "resetPassword": {
       "title": "Reimposta password",
@@ -293,11 +293,9 @@
     },
     "adjustments": {
       "description": "Rivedi e correggi i fattori di valutazione per ogni comparable. Le rettifiche positive aumentano il valore del comparable, quelle negative lo riducono.",
-      "comparable": "Comparable {index}",
       "similarity": "Somiglianza:",
       "factor": "Fattore",
       "subject": "Soggetto",
-      "comparableLabel": "Comparable",
       "adjPercent": "Rett. %",
       "amount": "Importo",
       "totalAdjustments": "Rettifiche totali",
@@ -307,7 +305,9 @@
       "priceRange": "Fascia di prezzo",
       "medianPrice": "Prezzo mediano",
       "back": "Indietro",
-      "nextPreview": "Avanti: anteprima del rapporto"
+      "nextPreview": "Avanti: anteprima del rapporto",
+      "comparable": "Comparabile {index}",
+      "comparableLabel": "Comparabile"
     },
     "preview": {
       "noSubject": "Nessun immobile soggetto selezionato",
@@ -440,9 +440,9 @@
         "pdf": "PDF",
         "docx": "DOCX",
         "web": "Web",
-        "database": "Database",
         "api": "API",
-        "unknown": "Fonte"
+        "unknown": "Fonte",
+        "database": "Database"
       }
     },
     "retry": {
@@ -1006,9 +1006,9 @@
           "insurance": "Assicurazione",
           "hoa": "Spese condominiali",
           "utilities": "Utenze",
-          "internet": "Internet",
           "parking": "Parcheggio",
-          "maintenance": "Manutenzione"
+          "maintenance": "Manutenzione",
+          "internet": "Internet"
         },
         "perMonth": "{value}/mese",
         "percentOfTotal": "{percent}% del totale",
@@ -1038,7 +1038,6 @@
   },
   "nav": {
     "mainNavigation": "Navigazione principale",
-    "home": "Home",
     "search": "Cerca",
     "favorites": "Preferiti",
     "documents": "Documenti",
@@ -1050,7 +1049,8 @@
     "settings": "Impostazioni",
     "marketTrends": "Tendenze di mercato",
     "savedSearches": "Ricerche salvate",
-    "tools": "Strumenti"
+    "tools": "Strumenti",
+    "home": "Home"
   },
   "neighborhood": {
     "title": "Approfondimenti sul quartiere",
@@ -1177,7 +1177,6 @@
       "description": "Come questo quartiere si confronta con la media della città",
       "descriptionCity": "Come questo quartiere si confronta con la media di {city}",
       "dataNotAvailable": "Non sono disponibili dati di confronto con la città per questa posizione.",
-      "percentile": "percentile",
       "outstanding": "Straordinario",
       "excellent": "Eccellente",
       "aboveAverage": "Sopra la media",
@@ -1196,7 +1195,8 @@
       "pointsBelow": "{count} punti sotto la media",
       "equalToAverage": "Uguale alla media cittadina",
       "percentileLabel": "Posizione percentile: {value}",
-      "scoreComparisonLabel": "Confronto dei punteggi: quest'area {area}, media cittadina {average}"
+      "scoreComparisonLabel": "Confronto dei punteggi: quest'area {area}, media cittadina {average}",
+      "percentile": "percentile"
     },
     "details": {
       "quality": "Qualità del quartiere",
@@ -1466,9 +1466,9 @@
       "apartment": "Appartamento",
       "house": "Casa",
       "studio": "Monolocale",
-      "loft": "Loft",
       "townhouse": "Casa a schiera",
-      "other": "Altro"
+      "other": "Altro",
+      "loft": "Loft"
     },
     "emptyState": {
       "title": "Inizia la tua ricerca immobiliare",
@@ -1602,7 +1602,6 @@
       "allTypes": "Tutti i tipi",
       "resetFilters": "Reimposta tutti i filtri",
       "mapOptions": "Opzioni della mappa",
-      "heatmap": "Heatmap",
       "mode": "Modalità",
       "intensity": "Intensità: {value}",
       "clusterSizeValue": "Dimensione del cluster: {size} px",
@@ -1611,7 +1610,8 @@
       "range300k600k": "300–600 mila $",
       "range600k1M": "600 mila–1 mln $",
       "allPrices": "Tutti i prezzi",
-      "resetAll": "Reimposta tutto"
+      "resetAll": "Reimposta tutto",
+      "heatmap": "Mappa di calore"
     }
   },
   "settings": {
@@ -1709,16 +1709,14 @@
       "noModels": "Nessun modello disponibile",
       "pricing": {
         "title": "Prezzi dei modelli",
+        "per1kTokens": "per 1K token",
         "input": "Input",
-        "output": "Output",
-        "per1kTokens": "per 1K token"
+        "output": "Output"
       },
       "modelCatalog": "Catalogo dei modelli",
       "supportedProviders": "Provider supportati:",
       "model": "Modello",
       "context": "Contesto",
-      "inputPer1m": "Input / 1M",
-      "outputPer1m": "Output / 1M",
       "capabilities": "Capacità",
       "downloadedModels": "Modelli scaricati",
       "localModelsOffline": "Modelli locali e uso offline",
@@ -1726,7 +1724,6 @@
       "failedToLoadCatalog": "Caricamento del catalogo non riuscito",
       "refreshing": "Aggiornamento...",
       "pricingUnavailable": "I prezzi potrebbero non essere disponibili per alcuni modelli ospitati.",
-      "provider": "Provider:",
       "local": "Locale",
       "hosted": "Ospitato",
       "apiKeyRequired": "Richiede chiave API",
@@ -1758,6 +1755,9 @@
       "errorUnavailable": "Il modello selezionato non è disponibile per questo provider.",
       "errorSave": "Salvataggio del modello predefinito non riuscito. Riprova.",
       "needsEmailSave": "Imposta un indirizzo e-mail nelle impostazioni Identità per salvare le preferenze del modello.",
+      "inputPer1m": "Input / 1M",
+      "outputPer1m": "Output / 1M",
+      "provider": "Provider:",
       "providerLabel": "Provider"
     },
     "saved": "Impostazioni salvate correttamente.",
@@ -1857,12 +1857,12 @@
       "failedToReset": "Impossibile reimpostare la preferenza del modello.",
       "failedToSave": "Impossibile salvare la preferenza del modello.",
       "model": "Modello",
-      "provider": "Provider",
       "reset": "Reimposta",
       "resetToDefault": "Riporta al valore predefinito di sistema.",
       "save": "Salva",
       "selectBoth": "Seleziona sia il provider sia il modello.",
-      "systemDefault": "Predefinito di sistema"
+      "systemDefault": "Predefinito di sistema",
+      "provider": "Provider"
     }
   },
   "tools": {
@@ -1908,7 +1908,6 @@
     "done": "Fatto"
   },
   "showcase": {
-    "heroTitle": "Showcase",
     "heroSubtitle": "Fork, distribuzioni concrete e casi di studio dell'Assistente Immobiliare IA.",
     "forksTitle": "Fork e progetti basati",
     "forksEmpty": "Ancora nessun fork o progetto basato elencato.",
@@ -1922,7 +1921,8 @@
     "ctaTitle": "Provalo tu stesso",
     "ctaSubtitle": "La demo live funziona senza registrazione. Codice con licenza MIT, auto-ospitabile in 5 minuti.",
     "ctaStar": "Metti una stella",
-    "ctaTryDemo": "Prova la demo"
+    "ctaTryDemo": "Prova la demo",
+    "heroTitle": "Vetrina"
   },
   "footer": {
     "title": "Ricevi le nuove offerte nella tua posta",
@@ -1947,7 +1947,29 @@
       "title": "I miei preferiti",
       "description": "Tutti gli annunci salvati, in un unico posto.",
       "newCollection": "Nuova raccolta",
-      "collectionName": "Nome della raccolta"
+      "collectionName": "Nome della raccolta",
+      "loading": "Caricamento...",
+      "auth": {
+        "signInPrompt": "Accedi per vedere i tuoi preferiti",
+        "signIn": "Accedi",
+        "description": "Salva gli immobili che ti piacciono e accedili da qualsiasi dispositivo."
+      },
+      "errors": {
+        "createCollection": "Impossibile creare la raccolta"
+      },
+      "collections": {
+        "title": "Raccolte",
+        "aria": "Raccolte",
+        "all": "Tutti i preferiti ({count})"
+      },
+      "list": {
+        "loading": "Caricamento dei preferiti...",
+        "empty": "Nessun preferito",
+        "unavailable": "L’immobile non è più disponibile",
+        "emptyHint": "Fai clic sull'icona del cuore su un immobile per salvarlo qui.",
+        "browse": "Sfoglia gli immobili"
+      },
+      "savedCount": "{count, plural, one {# immobile salvato} other {# immobili salvati}}"
     },
     "savedSearches": {
       "title": "Ricerche salvate",
@@ -2117,11 +2139,64 @@
     },
     "marketTrends": {
       "title": "Tendenze del mercato",
-      "description": "Andamento di prezzi e volumi nei mercati monitorati."
+      "description": "Andamento di prezzi e volumi nei mercati monitorati.",
+      "errors": {
+        "load": "Impossibile caricare i dati di mercato"
+      },
+      "filters": {
+        "title": "Filtri",
+        "city": "Città",
+        "cityPlaceholder": "Inserisci il nome della città",
+        "interval": "Intervallo",
+        "monthly": "Mensile",
+        "quarterly": "Trimestrale",
+        "yearly": "Annuale",
+        "monthsBack": "Mesi indietro"
+      },
+      "stats": {
+        "overallTrend": "Andamento generale",
+        "totalListings": "Annunci totali",
+        "new7d": "Nuovi (7 giorni)",
+        "priceDrops7d": "Cali di prezzo (7 g.)"
+      },
+      "areas": {
+        "hottest": "Zone più richieste",
+        "hottestHint": "Prezzi medi più alti",
+        "affordable": "Più accessibili",
+        "affordableHint": "Prezzi medi più bassi"
+      }
     },
     "cityOverview": {
       "title": "Panoramica della città",
-      "description": "Indicatori di quartiere per le città che segui."
+      "description": "Indicatori di quartiere per le città che segui.",
+      "errors": {
+        "noData": "Nessun dato sulla città. Il database degli immobili potrebbe essere vuoto o l’API non raggiungibile."
+      },
+      "loading": {
+        "title": "Caricamento dei dati della città...",
+        "hint": "Potrebbe richiedere un momento"
+      },
+      "empty": {
+        "title": "Nessun dato sulla città"
+      },
+      "map": {
+        "title": "Mappa di tutti gli immobili",
+        "hint": "Fai clic su un indicatore per vedere i dettagli della città",
+        "summary": "{count, plural, one {# immobile} other {# immobili}} in {cities, plural, one {# città} other {# città}}"
+      },
+      "stats": {
+        "title": "Statistiche di mercato per città",
+        "properties": "{count, plural, one {# immobile} other {# immobili}}",
+        "avg": "media"
+      },
+      "property": {
+        "untitled": "Immobile senza titolo",
+        "priceOnRequest": "Prezzo su richiesta"
+      },
+      "cityProperties": {
+        "title": "Immobili a {city}",
+        "shown": "{count, plural, one {# immobile} other {# immobili}}"
+      }
     },
     "agents": {
       "title": "Trova agenti",
@@ -2275,7 +2350,49 @@
     "valuation": {
       "title": "Valutazione e previsione con IA",
       "description": "Intervallo di prezzo modelato per un indirizzo preciso.",
-      "forecastChart": "Grafico delle previsioni"
+      "forecastChart": "Grafico delle previsioni",
+      "errors": {
+        "requiredFields": "Compila almeno città, superficie (m²) e prezzo (oppure usa un ID immobile).",
+        "propertyId": "Inserisci un ID immobile.",
+        "forecastFailed": "Previsione non riuscita"
+      },
+      "propertyIdPlaceholder": "es. prop-12345",
+      "horizons": {
+        "title": "Orizzonti di previsione",
+        "oneYear": "1 anno",
+        "threeYears": "3 anni",
+        "fiveYears": "5 anni",
+        "tenYears": "10 anni"
+      },
+      "form": {
+        "city": "Città",
+        "neighborhood": "Quartiere",
+        "type": "Tipo",
+        "typePlaceholder": "appartamento, casa…",
+        "area": "Superficie (m²)",
+        "rooms": "Locali",
+        "yearBuilt": "Anno di costruzione",
+        "askingPrice": "Prezzo di vendita",
+        "currency": "Valuta",
+        "currencyPlaceholder": "EUR, USD, GBP…",
+        "propertyId": "ID dell'immobile (opzionale)",
+        "propertyIdHint": "Lascia vuoto per inserire le caratteristiche manualmente qui sotto.",
+        "enableHint": "Inserisci città e superficie per abilitare.",
+        "estimating": "Stima in corso…",
+        "getForecast": "Ottieni previsione"
+      },
+      "chart": {
+        "aria": "Grafico della previsione"
+      },
+      "result": {
+        "currentEstimate": "Stima attuale",
+        "confidence": "Affidabilità",
+        "comparablesUsed": "Comparabili utilizzati",
+        "cityMedian": "Mediana della città",
+        "neighborhoodMedian": "Mediana del quartiere",
+        "keyDrivers": "Fattori chiave",
+        "today": "Oggi"
+      }
     },
     "usage": {
       "title": "Panel di utilizzo",
@@ -2464,12 +2581,12 @@
         },
         "readiness": {
           "title": "Stato di prontezza",
-          "database": "Database:",
           "dbLatency": "Latenza DB:",
           "redis": "Redis:",
           "disabled": "Disabilitato",
           "llm": "Provider LLM:",
-          "lastCheck": "Ultimo controllo:"
+          "lastCheck": "Ultimo controllo:",
+          "database": "Database:"
         },
         "metrics": {
           "totalProperties": "Immobili totali",
@@ -2526,10 +2643,10 @@
           "instantiated": "Istantiato",
           "noInstance": "Nessuna istanza",
           "apiKeyRequired": "Richiede chiave API",
-          "streaming": "Streaming",
           "ceAccessible": "Accessibile in CE",
           "enabled": "Abilitato",
-          "disabled": "Disabilitato"
+          "disabled": "Disabilitato",
+          "streaming": "Streaming"
         },
         "results": {
           "responseTime": "Tempo di risposta:",

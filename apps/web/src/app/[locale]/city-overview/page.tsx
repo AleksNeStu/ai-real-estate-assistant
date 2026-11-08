@@ -41,15 +41,16 @@ const POPULAR_CITIES = [
 
 export default function CityOverviewPage() {
   const t = useTranslations('pages.cityOverview');
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [hasError, setHasError] = useState(false);
   const [cityStats, setCityStats] = useState<CityStats[]>([]);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
 
   useEffect(() => {
     const loadCityData = async () => {
       setLoading(true);
-      setError(null);
+      setHasError(false);
 
       const results = await Promise.allSettled(
         POPULAR_CITIES.map(async (city) => {
@@ -89,9 +90,7 @@ export default function CityOverviewPage() {
 
       setCityStats(stats.sort((a, b) => b.propertyCount - a.propertyCount));
       if (stats.length === 0) {
-        setError(
-          'No city data available. The property database may be empty or the API is unreachable.'
-        );
+        setHasError(true);
       }
       setLoading(false);
     };
@@ -129,13 +128,13 @@ export default function CityOverviewPage() {
             aria-live="polite"
           >
             <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" aria-hidden="true" />
-            <p className="text-lg font-medium">Loading city data...</p>
-            <p className="text-sm text-muted-foreground">This may take a moment</p>
+            <p className="text-lg font-medium">{t('loading.title')}</p>
+            <p className="text-sm text-muted-foreground">{t('loading.hint')}</p>
           </div>
         )}
 
         {/* Error state */}
-        {error && !loading && cityStats.length === 0 && (
+        {hasError && !loading && cityStats.length === 0 && (
           <div
             className="flex flex-col items-center justify-center h-96 text-center border rounded-lg bg-muted/50"
             role="alert"
@@ -144,14 +143,14 @@ export default function CityOverviewPage() {
             <div className="p-4 rounded-full bg-muted mb-4">
               <AlertCircle className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
             </div>
-            <h2 className="text-2xl font-bold mb-2">No City Data Available</h2>
-            <p className="text-muted-foreground max-w-md mb-4">{error}</p>
+            <h2 className="text-2xl font-bold mb-2">{t('empty.title')}</h2>
+            <p className="text-muted-foreground max-w-md mb-4">{t('errors.noData')}</p>
             <button
               type="button"
               onClick={() => window.location.reload()}
               className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             >
-              Retry
+              {tCommon('retry')}
             </button>
           </div>
         )}
@@ -162,7 +161,7 @@ export default function CityOverviewPage() {
             {/* Map with all cities */}
             {allPoints.length > 0 && (
               <div className="space-y-4">
-                <h2 className="text-2xl font-semibold">All Properties Map</h2>
+                <h2 className="text-2xl font-semibold">{t('map.title')}</h2>
                 <div className="relative">
                   <PropertyMapboxMap
                     points={allPoints}
@@ -174,9 +173,9 @@ export default function CityOverviewPage() {
                     className="h-[600px]"
                   />
                   <div className="absolute top-4 left-4 z-10 bg-background/90 backdrop-blur rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">Click a marker to view city details</p>
+                    <p className="text-sm font-medium">{t('map.hint')}</p>
                     <p className="text-xs text-muted-foreground">
-                      {allPoints.length} properties across {cityStats.length} cities
+                      {t('map.summary', { count: allPoints.length, cities: cityStats.length })}
                     </p>
                   </div>
                 </div>
@@ -185,7 +184,7 @@ export default function CityOverviewPage() {
 
             {/* City cards grid */}
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold">Market Statistics by City</h2>
+              <h2 className="text-2xl font-semibold">{t('stats.title')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {cityStats.map((stat) => (
                   <div
@@ -218,7 +217,9 @@ export default function CityOverviewPage() {
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
                           <Building2 className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                          <span className="text-sm">{stat.propertyCount} properties</span>
+                          <span className="text-sm">
+                            {t('stats.properties', { count: stat.propertyCount })}
+                          </span>
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -228,7 +229,7 @@ export default function CityOverviewPage() {
                           />
                           <div className="text-sm">
                             <span className="font-medium">${stat.avgPrice.toLocaleString()}</span>
-                            <span className="text-muted-foreground"> avg</span>
+                            <span className="text-muted-foreground"> {t('stats.avg')}</span>
                           </div>
                         </div>
 
@@ -246,13 +247,15 @@ export default function CityOverviewPage() {
             {selectedCityData && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-semibold">{selectedCityData.city} Properties</h2>
+                  <h2 className="text-2xl font-semibold">
+                    {t('cityProperties.title', { city: selectedCityData.city })}
+                  </h2>
                   <button
                     type="button"
                     onClick={() => setSelectedCity(null)}
                     className="text-sm text-muted-foreground hover:text-foreground"
                   >
-                    Close
+                    {tCommon('close')}
                   </button>
                 </div>
 
@@ -268,7 +271,7 @@ export default function CityOverviewPage() {
                   <div className="absolute top-4 left-4 z-10 bg-background/90 backdrop-blur rounded-lg border p-3 shadow-sm">
                     <p className="text-sm font-medium">{selectedCityData.city}</p>
                     <p className="text-xs text-muted-foreground">
-                      {selectedCityData.points.length} properties shown
+                      {t('cityProperties.shown', { count: selectedCityData.points.length })}
                     </p>
                   </div>
                 </div>
@@ -284,12 +287,14 @@ export default function CityOverviewPage() {
                         <MapPin className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
                       </div>
                       <div className="p-4 space-y-2">
-                        <h3 className="font-semibold">{point.title ?? 'Untitled Property'}</h3>
+                        <h3 className="font-semibold">{point.title ?? t('property.untitled')}</h3>
                         <p className="text-sm text-muted-foreground">
                           {point.city}, {point.country}
                         </p>
                         <div className="font-bold text-lg">
-                          {point.price ? `$${point.price.toLocaleString()}` : 'Price on request'}
+                          {point.price
+                            ? `$${point.price.toLocaleString()}`
+                            : t('property.priceOnRequest')}
                         </div>
                       </div>
                     </div>
