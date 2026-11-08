@@ -12,6 +12,7 @@ import pytest
 # Add scripts directory to path for imports
 PROJECT_ROOT = Path(__file__).parent.parent.parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+sys.path.insert(0, str(PROJECT_ROOT / "scripts" / "utils"))
 
 from port.port_manager import PortManager  # noqa: E402
 from service_discovery import ServiceDiscovery  # noqa: E402
