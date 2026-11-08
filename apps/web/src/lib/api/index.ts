@@ -5,6 +5,10 @@
  * like `import { ... } from '@/lib/api'` continue to work unchanged.
  */
 
+// Deployment capabilities: what this deployment can actually do
+export { getCapabilities } from './capabilities';
+export type { DeploymentCapabilities } from './capabilities';
+
 // Base client utilities and error types
 export {
   ApiError,
