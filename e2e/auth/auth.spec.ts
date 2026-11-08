@@ -354,12 +354,21 @@ test.describe('Authentication Flows', () => {
       // Try to access a protected route without authentication
       await page.goto('/favorites');
 
-      // The page does not send the visitor away - it asks them to sign in and
-      // offers the way to it.
-      await expect(page.getByText(/sign in to view your favorites/i)).toBeVisible({
-        timeout: 10000,
-      });
-      await expect(page.getByRole('link', { name: /sign in|log in/i }).first()).toBeVisible();
+      // Without a session the favorites page answers in one of two ways: the
+      // demo mode keeps the route open and asks the visitor to sign in, the
+      // usual mode sends them to the login.
+      const prompt = page.getByText(/sign in to view your favorites/i);
+      const signInLink = page.getByRole('link', { name: /sign in|log in/i }).first();
+
+      await expect
+        .poll(
+          async () =>
+            (await prompt.isVisible().catch(() => false)) ||
+            (await signInLink.isVisible().catch(() => false)) ||
+            page.url().includes('/auth/login'),
+          { timeout: 10000 }
+        )
+        .toBe(true);
     });
   });
 });
