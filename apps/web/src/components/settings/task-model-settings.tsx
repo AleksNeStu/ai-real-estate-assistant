@@ -20,19 +20,19 @@ import type {
 } from '@/lib/types';
 
 const TASK_TYPE_LABELS: Record<TaskType, string> = {
-  chat: 'Chat',
-  search: 'Search',
-  tools: 'Tools',
-  analysis: 'Analysis',
-  embedding: 'Embedding',
+  chat: 'chat',
+  search: 'search',
+  tools: 'tools',
+  analysis: 'analysis',
+  embedding: 'embedding',
 };
 
 const TASK_TYPE_DESCRIPTIONS: Record<TaskType, string> = {
-  chat: 'Conversational responses and general queries',
-  search: 'Property search query processing',
-  tools: 'Tool execution and function calling',
-  analysis: 'Market analysis and complex reasoning',
-  embedding: 'Vector embedding generation',
+  chat: 'chatDescription',
+  search: 'searchDescription',
+  tools: 'toolsDescription',
+  analysis: 'analysisDescription',
+  embedding: 'embeddingDescription',
 };
 
 const TASK_TYPES: TaskType[] = ['chat', 'search', 'tools', 'analysis', 'embedding'];
@@ -135,14 +135,16 @@ function TaskRow({
     <div className="flex items-center gap-4 py-4 border-b last:border-b-0">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="font-medium">{TASK_TYPE_LABELS[taskType]}</span>
+          <span className="font-medium">{t(`taskTypes.${TASK_TYPE_LABELS[taskType]}`)}</span>
           {isUsingDefault && (
             <span className="text-xs bg-muted px-2 py-0.5 rounded">
               {t('taskModel.systemDefault')}
             </span>
           )}
         </div>
-        <p className="text-sm text-muted-foreground">{TASK_TYPE_DESCRIPTIONS[taskType]}</p>
+        <p className="text-sm text-muted-foreground">
+          {t(`taskTypes.${TASK_TYPE_DESCRIPTIONS[taskType]}`)}
+        </p>
       </div>
 
       <div className="flex items-center gap-2">
@@ -151,7 +153,7 @@ function TaskRow({
           value={provider}
           onChange={(e) => handleProviderChange(e.target.value)}
           disabled={loading || saving}
-          aria-label={`${TASK_TYPE_LABELS[taskType]} provider`}
+          aria-label={`${t(`taskTypes.${TASK_TYPE_LABELS[taskType]}`)} provider`}
         >
           <option value="">{t('taskModel.provider')}</option>
           {providers.map((p) => (
@@ -166,7 +168,7 @@ function TaskRow({
           value={modelName}
           onChange={(e) => setModelName(e.target.value)}
           disabled={loading || saving || !provider}
-          aria-label={`${TASK_TYPE_LABELS[taskType]} model`}
+          aria-label={`${t(`taskTypes.${TASK_TYPE_LABELS[taskType]}`)} model`}
         >
           <option value="">{t('taskModel.model')}</option>
           {modelsForProvider.map((m) => (
@@ -236,7 +238,7 @@ export function TaskModelSettings({ catalog, userEmail }: TaskModelSettingsProps
         setPreferences(prefsResponse.items);
         setSystemDefaults(defaultsResponse);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load preferences');
+        setError(err instanceof Error ? err.message : t('taskModel.loadFailed'));
       } finally {
         setLoading(false);
       }

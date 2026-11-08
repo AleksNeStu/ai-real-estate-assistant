@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { divIcon, type LatLngBoundsExpression } from 'leaflet';
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+import { useTranslations } from 'next-intl';
 
 import { computeBounds, computeCenter, type PropertyMapPoint } from './property-map-utils';
 import { clusterMapPoints, type ClusteredMapItem } from './property-map-clustering';
@@ -59,6 +60,8 @@ function ClusterMarker({
 }
 
 export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) {
+  const t = useTranslations('property');
+  const tSearch = useTranslations('search');
   const center = useMemo(() => computeCenter(points) ?? { lat: 52.2297, lon: 21.0122 }, [points]);
   const bounds = useMemo(() => computeBounds(points), [points]);
   const [zoom, setZoom] = useState(12);
@@ -89,7 +92,7 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
 
   return (
     <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
-      <div className="h-[420px] w-full" aria-label="Property map" role="application">
+      <div className="h-[420px] w-full" aria-label={tSearch('propertyMap')} role="application">
         <MapContainer
           center={[center.lat, center.lon]}
           zoom={12}
@@ -109,14 +112,15 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
                 <Marker key={p.id} position={[p.lat, p.lon]} icon={markerIcon}>
                   <Popup>
                     <div className="space-y-1">
-                      <div className="font-semibold">{p.title ?? 'Untitled Property'}</div>
+                      <div className="font-semibold">{p.title ?? t('card.untitled')}</div>
                       <div className="text-sm">
-                        {[p.city, p.country].filter(Boolean).join(', ') || 'Location unavailable'}
+                        {[p.city, p.country].filter(Boolean).join(', ') ||
+                          t('card.locationUnavailable')}
                       </div>
                       <div className="text-sm font-medium">
                         {typeof p.price === 'number'
                           ? `$${p.price.toLocaleString()}`
-                          : 'Price on request'}
+                          : t('card.priceOnRequest')}
                       </div>
                     </div>
                   </Popup>
@@ -125,7 +129,7 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
             }
 
             const titles = item.points
-              .map((p) => p.title ?? 'Untitled Property')
+              .map((p) => p.title ?? t('card.untitled'))
               .filter(Boolean)
               .slice(0, 5);
 
@@ -138,7 +142,9 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
               >
                 <Popup>
                   <div className="space-y-2">
-                    <div className="font-semibold">{item.count} properties in this area</div>
+                    <div className="font-semibold">
+                      {t('map.propertiesInArea', { count: item.count })}
+                    </div>
                     {titles.length ? (
                       <ul className="list-disc pl-4 text-sm space-y-1">
                         {titles.map((t, idx) => (
@@ -146,7 +152,7 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
                         ))}
                       </ul>
                     ) : (
-                      <div className="text-sm">Zoom in to see individual properties.</div>
+                      <div className="text-sm">{tSearch('mapZoomHint')}</div>
                     )}
                   </div>
                 </Popup>

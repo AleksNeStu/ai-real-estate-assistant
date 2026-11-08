@@ -31,11 +31,10 @@ export function EmptyStateWithPrompts({
   className,
 }: EmptyStateWithPromptsProps) {
   const t = useTranslations('common');
-  const resolvedTitle = title ?? t('emptySearchTitle') ?? 'Nothing to show yet';
-  const resolvedBody =
-    body ??
-    t('emptySearchBody') ??
-    'Try one of the example queries below to see the demo in action.';
+  // `t()` returns the key path when a message is missing, so the English
+  // string is not a reachable fallback — the key has to exist.
+  const resolvedTitle = title ?? t('emptySearchTitle');
+  const resolvedBody = body ?? t('emptySearchBody');
 
   return (
     <div

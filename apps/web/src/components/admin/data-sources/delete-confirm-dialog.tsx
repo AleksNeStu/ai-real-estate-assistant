@@ -1,6 +1,7 @@
 'use client';
 
 import { AlertCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import type { DataSource } from '@/lib/types';
 
@@ -19,6 +20,9 @@ export function DeleteConfirmDialog({
   onConfirm,
   isDeleting = false,
 }: DeleteConfirmDialogProps) {
+  const t = useTranslations('pages.admin.dataSources');
+  const tCommon = useTranslations('common');
+
   if (!isOpen || !source) return null;
 
   return (
@@ -40,24 +44,21 @@ export function DeleteConfirmDialog({
           </div>
           <div className="flex-1">
             <h3 className="text-lg font-semibold mb-2" id="delete-dialog-title">
-              Delete Data Source
+              {t('deleteTitle')}
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Are you sure you want to delete <strong>{source.name}</strong>? This will also delete
-              all sync history and cannot be undone.
+              {t('deleteConfirm', { name: source.name })}
             </p>
-            <p className="text-xs text-muted-foreground mb-4">
-              Records already imported from this source will remain in the system.
-            </p>
+            <p className="text-xs text-muted-foreground mb-4">{t('deleteNote')}</p>
           </div>
         </div>
 
         <div className="flex justify-end gap-2 mt-4">
           <Button variant="outline" onClick={onClose} disabled={isDeleting}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button variant="destructive" onClick={() => onConfirm(source.id)} disabled={isDeleting}>
-            {isDeleting ? 'Deleting...' : 'Delete'}
+            {isDeleting ? t('deleting') : t('delete')}
           </Button>
         </div>
       </div>

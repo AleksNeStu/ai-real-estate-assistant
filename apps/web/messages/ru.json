@@ -82,7 +82,13 @@
       "rating": "Рейтинг",
       "listings": "Количество объявлений",
       "reviews": "Количество отзывов",
-      "clear": "Сбросить фильтры"
+      "clear": "Сбросить фильтры",
+      "apply": "Применить фильтры",
+      "cityPlaceholder": "Введите город...",
+      "specialtyPlaceholder": "например, Жилая, Коммерческая...",
+      "anyRating": "Любой рейтинг",
+      "any": "Любой",
+      "stars": "{count}+ звёзд"
     },
     "profile": {
       "title": "Профиль агента",
@@ -94,7 +100,17 @@
       "email": "Эл. почта",
       "license": "Лицензия",
       "agency": "Агентство",
-      "noListings": "Активных объявлений нет"
+      "noListings": "Активных объявлений нет",
+      "loadError": "Не удалось загрузить профиль агента",
+      "backToAgents": "Назад к агентам",
+      "notFound": "Агент не найден",
+      "browseAgents": "Смотреть агентов",
+      "defaultName": "Агент",
+      "aboutAgent": "О {name}",
+      "noBio": "Описание отсутствует.",
+      "listingsTab": "Объявления ({count})",
+      "contactTab": "Контакты",
+      "primary": "Основное"
     },
     "contactForm": {
       "title": "Связаться с {name}",
@@ -155,7 +171,18 @@
         "completed": "Завершён"
       }
     },
-    "selectType": "Выберите тип"
+    "selectType": "Выберите тип",
+    "errors": {
+      "load": "Не удалось загрузить агентов"
+    },
+    "sort": {
+      "rating": "Рейтинг (по убыванию)",
+      "reviews": "Больше всего отзывов",
+      "listings": "Больше всего объявлений",
+      "created": "Сначала новые",
+      "placeholder": "Сортировать по"
+    },
+    "verifiedAria": "Проверенный агент"
   },
   "auth": {
     "signIn": "Войти",
@@ -196,7 +223,9 @@
       "submit": "Отправить ссылку",
       "backToLogin": "Вернуться к входу",
       "checkEmail": "Проверьте почту",
-      "resetSent": "Мы отправили ссылку для сброса пароля на ваш email."
+      "resetSent": "Мы отправили ссылку для сброса пароля на ваш email.",
+      "checkInbox": "Проверьте почтовый ящик — там ссылка для сброса пароля.",
+      "resend": "Отправить ещё раз"
     },
     "resetPassword": {
       "title": "Сбросить пароль",
@@ -204,7 +233,12 @@
       "newPasswordLabel": "Новый пароль",
       "confirmPasswordLabel": "Подтвердите пароль",
       "submit": "Сбросить пароль",
-      "success": "Пароль успешно сброшен"
+      "success": "Пароль успешно сброшен",
+      "invalidToken": "Неверный или отсутствующий токен сброса",
+      "passwordHint": "Мин. 8 символов, заглавная и строчная буква, цифра",
+      "confirmHint": "Введите пароль повторно",
+      "canLogin": "Теперь вы можете войти с новым паролем.",
+      "goToLogin": "Перейти ко входу"
     },
     "verifyEmail": {
       "title": "Подтвердите email",
@@ -233,10 +267,24 @@
       "passwordMismatch": "Пароли не совпадают",
       "weakPassword": "Пароль должен содержать минимум 8 символов",
       "emailAlreadyExists": "Аккаунт с таким email уже существует",
-      "invalidEmail": "Введите корректный email"
+      "invalidEmail": "Введите корректный email",
+      "uppercaseRequired": "Пароль должен содержать хотя бы одну заглавную букву",
+      "lowercaseRequired": "Пароль должен содержать хотя бы одну строчную букву",
+      "digitRequired": "Пароль должен содержать хотя бы одну цифру",
+      "resetFailed": "Не удалось сбросить пароль",
+      "registerFailed": "Не удалось зарегистрироваться",
+      "resetEmailFailed": "Не удалось отправить письмо для сброса пароля"
     },
     "loading": "Загрузка...",
-    "userMenu": "Меню пользователя"
+    "userMenu": "Меню пользователя",
+    "oauth": {
+      "failed": "Ошибка аутентификации",
+      "success": "Вы успешно вошли!",
+      "welcome": "Добро пожаловать!",
+      "redirecting": "Перенаправление на страницу входа...",
+      "signingIn": "Выполняется вход...",
+      "pleaseWait": "Пожалуйста, подождите..."
+    }
   },
   "cma": {
     "steps": {
@@ -526,7 +574,13 @@
     "tryAgain": "Попробуйте снова",
     "skipToContent": "Перейти к основному содержимому",
     "tryTheseChips": {
-      "heading": "Попробуйте один из этих"
+      "heading": "Попробуйте один из этих",
+      "p1": "Двухкомнатная квартира в Кракове дешевле 500 тыс.",
+      "p2": "Дом с садом в Варшаве",
+      "p3": "Студия в центре Вроцлава",
+      "p4": "Инвестиционный объект, Гданьск, ROI > 5%",
+      "p5": "Сравни ипотечные варианты для 400 тыс.",
+      "p6": "Аренда для владельцев животных дешевле 3000 PLN/мес."
     },
     "logIn": "Войти",
     "installApp": "Установить приложение",
@@ -537,14 +591,22 @@
     "backOnline": "Вы снова в сети",
     "offlineMessage": "Вы не в сети. Некоторые функции могут быть недоступны.",
     "newVersionAvailable": "Доступна новая версия!",
-    "dismissUpdate": "Закрыть"
+    "dismissUpdate": "Закрыть",
+    "emptySearchTitle": "Пока нечего показать",
+    "emptySearchBody": "Попробуйте один из примеров запросов ниже, чтобы увидеть демо в работе."
   },
   "demo": {
     "banner": "Демо-режим — доступен поиск и данные по городам",
     "login": "Войти",
     "lockedFeature": "Войдите, чтобы получить доступ",
     "signInForFull": "Войдите для AI-ассистента и других функций",
-    "signUpCta": "Зарегистрируйтесь для доступа ко всем функциям"
+    "signUpCta": "Зарегистрируйтесь для доступа ко всем функциям",
+    "badgeLabel": "Демо",
+    "badgeTooltip": "Демонстрационные данные — это не настоящие объявления",
+    "emptyTitle": "Пока нечего показать",
+    "emptyHint": "Попробуйте один из примеров запросов ниже, чтобы увидеть демо в работе.",
+    "modeDisabled": "Отключено",
+    "toggleFailed": "Не удалось переключить режим демо: {message}"
   },
   "documents": {
     "title": "Документы",
@@ -635,7 +697,11 @@
     "goHome": "На главную",
     "chatUnavailable": "Чат временно недоступен",
     "chatErrorFallback": "Произошла непредвиденная ошибка. Попробуйте ещё раз.",
-    "retry": "Повторить"
+    "retry": "Повторить",
+    "pageNotFoundDescription": "Страница, которую вы ищете, не существует или была перемещена.",
+    "searchProperties": "Искать объекты",
+    "errorId": "Идентификатор ошибки: {id}",
+    "unexpectedError": "При загрузке этой страницы произошла непредвиденная ошибка."
   },
   "favorites": {
     "title": "Моё избранное",
@@ -1267,7 +1333,11 @@
     "quality": {
       "badge": "Качество района: {rating} ({score}/100)",
       "score": "Качество района: {score}/100"
-    }
+    },
+    "summaryFailed": "Не удалось подготовить сводку по району: {message}",
+    "loadingSummary": "Загрузка сводки по району",
+    "preparingSummary": "Подготовка сводки…",
+    "summaryUnavailable": "Сводка по району сейчас недоступна."
   },
   "portfolio": {
     "title": "Анализ портфеля",
@@ -1306,7 +1376,9 @@
       "locationUnavailable": "Местоположение недоступно",
       "addToFavorites": "Добавить в избранное",
       "removeFromFavorites": "Убрать из избранного",
-      "loginRequired": "Войдите, чтобы сохранить этот объект"
+      "loginRequired": "Войдите, чтобы сохранить этот объект",
+      "viewDetails": "Подробнее",
+      "bedsUnit": "комнат"
     },
     "favorite": {
       "add": "Добавить в избранное",
@@ -1330,7 +1402,10 @@
       "contact": "Связаться с агентом"
     },
     "estimateLabel": "Расчётный ежемесячный платёж: {value}",
-    "estimateTitle": "Расчётный ежемесячный платёж при первоначальном взносе {down}%, {years} лет под фиксированные {rate}% APR. Это не кредитное предложение."
+    "estimateTitle": "Расчётный ежемесячный платёж при первоначальном взносе {down}%, {years} лет под фиксированные {rate}% APR. Это не кредитное предложение.",
+    "map": {
+      "propertiesInArea": "{count, plural, one {# объект} few {# объекта} many {# объектов} other {# объектов}} в этом районе"
+    }
   },
   "rentVsBuy": {
     "title": "Калькулятор Аренда vs Покупка",
@@ -1557,7 +1632,10 @@
       "loginRequired": "Войдите, чтобы сохранять фильтры",
       "saveFailed": "Не удалось сохранить фильтр",
       "save": "Сохранить фильтр",
-      "saving": "Сохранение..."
+      "saving": "Сохранение...",
+      "useLoginRequired": "Войдите, чтобы пользоваться сохранёнными фильтрами",
+      "loadFailed": "Не удалось загрузить сохранённые фильтры",
+      "deleteAria": "Удалить сохранённый фильтр"
     },
     "clearPriceFilter": "Сбросить фильтр цены",
     "filterByPropertyType": "Фильтр по типу объекта",
@@ -1612,7 +1690,9 @@
       "range600k1M": "600 тыс.–1 млн $",
       "allPrices": "Все цены",
       "resetAll": "Сбросить всё"
-    }
+    },
+    "mapZoomHint": "Приблизьте, чтобы увидеть отдельные объекты.",
+    "mapAttribution": "OpenStreetMap"
   },
   "settings": {
     "title": "Настройки",
@@ -1862,7 +1942,8 @@
       "resetToDefault": "Вернуть системное значение по умолчанию.",
       "save": "Сохранить",
       "selectBoth": "Выберите провайдера и модель.",
-      "systemDefault": "Системное по умолчанию"
+      "systemDefault": "Системное по умолчанию",
+      "loadFailed": "Не удалось загрузить настройки"
     }
   },
   "tools": {
@@ -1905,7 +1986,9 @@
     },
     "skip": "Пропустить",
     "next": "Далее",
-    "done": "Готово"
+    "done": "Готово",
+    "ariaLabel": "Обучающий тур",
+    "closeAria": "Закрыть тур"
   },
   "showcase": {
     "heroTitle": "Реализации",
@@ -2690,7 +2773,151 @@
       },
       "dataSources": {
         "title": "Источники данных",
-        "description": "Откуда берутся объявления."
+        "description": "Откуда берутся объявления.",
+        "status": {
+          "connected": "Подключено",
+          "disconnected": "Отключено",
+          "error": "Ошибка"
+        },
+        "lastSync": "Последняя синхронизация",
+        "syncNow": "Синхронизировать",
+        "configure": "Настроить",
+        "actionsMenu": "Меню действий",
+        "addFirstSource": "Добавьте первый источник",
+        "addSource": "Добавить источник",
+        "autoSync": "Автосинхронизация: {schedule}",
+        "autoSyncEnabled": "Автосинхронизация: включена",
+        "configuredSources": "Настроенные источники ({count})",
+        "daysAgo": "{count} дн. назад",
+        "deleteConfirm": "Вы уверены, что хотите удалить {name}? Это также удалит всю историю синхронизации, и отменить это будет нельзя.",
+        "deleteNote": "Записи, уже импортированные из этого источника, останутся в системе.",
+        "deleteTitle": "Удалить источник данных",
+        "deleting": "Удаление...",
+        "edit": "Изменить",
+        "health": {
+          "degraded": "Работает с перебоями",
+          "error": "Ошибка",
+          "healthy": "В порядке",
+          "pending": "Ожидание",
+          "syncing": "Синхронизация...",
+          "unhealthy": "Не работает"
+        },
+        "hoursAgo": "{count} ч. назад",
+        "justNow": "Только что",
+        "loadingSources": "Загрузка источников данных...",
+        "minutesAgo": "{count} мин назад",
+        "neverSynced": "Никогда не синхронизировалось",
+        "noSources": "Источники данных ещё не настроены.",
+        "records": "{count} записей",
+        "sourceTypes": {
+          "fileUpload": "Загрузка файлов",
+          "json": "JSON",
+          "portalApi": "API портала",
+          "url": "URL"
+        },
+        "syncing": "Синхронизация...",
+        "tabs": {
+          "sources": "Источники ({count})",
+          "import": "Импорт данных"
+        },
+        "importMode": {
+          "url": "По ссылке",
+          "file": "Загрузить файл",
+          "portal": "API портала"
+        },
+        "import": {
+          "title": "Импорт данных",
+          "fileUrl": "Ссылка на файл",
+          "fileUrlHint": "Поддерживаются файлы CSV (.csv) и Excel (.xlsx, .xls, .ods)",
+          "selectFile": "Выберите файл",
+          "fileHint": "Максимальный размер файла: 25 МБ. Поддерживаются: .xlsx, .xls, .ods, .csv",
+          "selected": "Выбрано:",
+          "fileSize": "{size} МБ",
+          "sourceName": "Название источника (необязательно)",
+          "sourceNamePlaceholder": "например, Объекты за I квартал 2024",
+          "excelOptions": "Параметры Excel",
+          "loadSheets": "Загрузить листы",
+          "selectSheet": "Выберите лист",
+          "sheetOption": "{name} ({count} строк)",
+          "headerRow": "Строка заголовка (с нуля)",
+          "importing": "Импорт...",
+          "action": "Импортировать данные"
+        },
+        "portal": {
+          "title": "Получить из портала",
+          "loading": "Загрузка доступных порталов...",
+          "none": "Нет доступных адаптеров порталов. Настройте их в бэкенде.",
+          "label": "Портал",
+          "notConfigured": "(не настроен)",
+          "city": "Город * (обязательно)",
+          "cityPlaceholder": "например, Варшава",
+          "filters": "Фильтры (необязательно)",
+          "minPrice": "Минимальная цена",
+          "minPricePlaceholder": "например, 1000",
+          "maxPrice": "Максимальная цена",
+          "maxPricePlaceholder": "например, 5000",
+          "minRooms": "Минимум комнат",
+          "minRoomsPlaceholder": "например, 1",
+          "maxRooms": "Максимум комнат",
+          "maxRoomsPlaceholder": "например, 4",
+          "propertyType": "Тип объекта",
+          "propertyTypeAny": "Любой",
+          "propertyTypeApartment": "Квартира",
+          "propertyTypeHouse": "Дом",
+          "propertyTypeStudio": "Студия",
+          "listingType": "Тип объявления",
+          "listingTypeRent": "Аренда",
+          "listingTypeSale": "Продажа",
+          "maxResults": "Максимум результатов",
+          "sourceNamePlaceholder": "например, Аренда в Варшаве",
+          "fetching": "Получение...",
+          "action": "Получить из портала"
+        },
+        "errors": {
+          "unknown": "Неизвестная ошибка",
+          "urlRequired": "Сначала укажите ссылку на файл.",
+          "urlMustBeExcel": "Ссылка должна вести на файл Excel (.xlsx, .xls или .ods).",
+          "fileRequired": "Сначала выберите файл.",
+          "fileMustBeExcel": "Файл должен быть файлом Excel (.xlsx, .xls или .ods).",
+          "fileToUpload": "Выберите файл для загрузки.",
+          "urlMissing": "Укажите ссылку на файл.",
+          "portalRequired": "Выберите портал.",
+          "cityRequired": "Укажите город."
+        },
+        "result": {
+          "title": "Импорт выполнен успешно",
+          "propertiesProcessed": "Обработано объектов: {count}",
+          "sourceType": "Тип источника: {type}",
+          "sourceName": "Название источника: {name}",
+          "warnings": "Предупреждения ({count})"
+        },
+        "editDialog": {
+          "title": "Редактировать источник данных",
+          "statusPending": "Ожидает",
+          "statusActive": "Активен",
+          "statusDisabled": "Отключён",
+          "sectionBasic": "Основное",
+          "name": "Название",
+          "status": "Статус",
+          "sectionFilters": "Фильтры",
+          "sectionScheduling": "Расписание",
+          "autoSyncEnabled": "Автосинхронизация включена",
+          "syncSchedule": "Расписание синхронизации",
+          "syncSchedulePlaceholder": "например, 0 */6 * * *",
+          "cronHint": "Cron-выражение (необязательно)",
+          "saving": "Сохранение...",
+          "saveChanges": "Сохранить изменения",
+          "propertyTypeApartment": "Квартира",
+          "propertyTypeHouse": "Дом",
+          "propertyTypeLand": "Участок",
+          "propertyTypeCommercial": "Коммерческое помещение",
+          "propertyTypeGarage": "Гараж",
+          "listingTypeSale": "Продажа",
+          "listingTypeRent": "Аренда"
+        },
+        "delete": "Удалить",
+        "enabled": "Включено",
+        "requestId": "Идентификатор запроса: {id}"
       },
       "bulkJobs": {
         "title": "Задания массового импорта и экспорта",
@@ -2818,5 +3045,62 @@
       "title": "Что-то пошло не так",
       "description": "Не удалось загрузить данные. Попробуйте ещё раз через мгновение."
     }
+  },
+  "scheduleViewing": {
+    "title": "Записаться на просмотр",
+    "close": "Закрыть окно",
+    "requestWith": "Запросите просмотр объекта у {name}. Подтверждение придёт в ближайшее время.",
+    "nameLabel": "Ваше имя *",
+    "emailLabel": "Ваш эл. почта *",
+    "phoneLabel": "Ваш телефон",
+    "dateLabel": "Предпочтительная дата *",
+    "timeLabel": "Предпочтительное время *",
+    "durationLabel": "Длительность (минуты)",
+    "notesLabel": "Примечания",
+    "notesPlaceholder": "Особые пожелания или вопросы?",
+    "submit": "Запросить просмотр",
+    "successTitle": "Просмотр запрошен!",
+    "successMessage": "Агент подтвердит время в ближайшее время.",
+    "failed": "Не удалось записаться на просмотр",
+    "cancel": "Отмена",
+    "requesting": "Отправка..."
+  },
+  "taskTypes": {
+    "chat": "Чат",
+    "search": "Поиск",
+    "tools": "Инструменты",
+    "analysis": "Анализ",
+    "embedding": "Эмбеддинги",
+    "chatDescription": "Диалоговые ответы и общие запросы",
+    "searchDescription": "Обработка запросов поиска недвижимости",
+    "toolsDescription": "Вызов инструментов и функций",
+    "analysisDescription": "Анализ рынка и сложные рассуждения",
+    "embeddingDescription": "Генерация векторных эмбеддингов"
+  },
+  "listingGenerator": {
+    "generate": "Создать объявление",
+    "generating": "Создание...",
+    "showResults": "Показать результат",
+    "hideResults": "Скрыть",
+    "hideResultsAria": "Скрыть результат",
+    "showResultsAria": "Показать результат",
+    "resultTitle": "Созданное содержимое объявления",
+    "description": "Описание",
+    "headlines": "Заголовки",
+    "socialMedia": "Соцсети",
+    "noDescription": "Описание не создано",
+    "noHeadlines": "Заголовки не созданы",
+    "noSocial": "Контент для соцсетей не создан",
+    "copyHeadline": "Скопировать заголовок",
+    "failed": "Не удалось создать объявление",
+    "chars": "Знаков: {count}",
+    "charsOf": "Знаков: {count} / {max}",
+    "copied": "Скопировано",
+    "copy": "Копировать",
+    "copyAll": "Копировать всё",
+    "headlinesGenerated": "Создано заголовков: {count}"
+  },
+  "pwa": {
+    "installFailed": "Не удалось установить: {message}"
   }
 }

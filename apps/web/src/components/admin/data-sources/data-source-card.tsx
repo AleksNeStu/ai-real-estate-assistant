@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Database,
   Globe,
@@ -33,6 +34,7 @@ export function DataSourceCard({
   onDelete,
   isSyncing = false,
 }: DataSourceCardProps) {
+  const t = useTranslations('pages.admin.dataSources');
   const [showMenu, setShowMenu] = useState(false);
 
   const getSourceTypeIcon = () => {
@@ -53,11 +55,11 @@ export function DataSourceCard({
   const getSourceTypeLabel = () => {
     switch (source.source_type) {
       case 'file_upload':
-        return 'File Upload';
+        return t('sourceTypes.fileUpload');
       case 'url':
         return 'URL';
       case 'portal_api':
-        return 'Portal API';
+        return t('sourceTypes.portalApi');
       case 'json':
         return 'JSON';
       default:
@@ -66,7 +68,7 @@ export function DataSourceCard({
   };
 
   const formatLastSync = () => {
-    if (!source.last_sync_at) return 'Never synced';
+    if (!source.last_sync_at) return t('neverSynced');
     const date = new Date(source.last_sync_at);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
@@ -74,10 +76,10 @@ export function DataSourceCard({
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
+    if (diffMins < 1) return t('justNow');
+    if (diffMins < 60) return t('minutesAgo', { count: diffMins });
+    if (diffHours < 24) return t('hoursAgo', { count: diffHours });
+    return t('daysAgo', { count: diffDays });
   };
 
   const getStatusIcon = () => {
@@ -112,7 +114,7 @@ export function DataSourceCard({
             size="sm"
             className="h-8 w-8 p-0"
             onClick={() => setShowMenu(!showMenu)}
-            aria-label="Actions menu"
+            aria-label={t('actionsMenu')}
             aria-expanded={showMenu}
           >
             <MoreVertical className="w-4 h-4" aria-hidden="true" />
@@ -121,7 +123,11 @@ export function DataSourceCard({
           {showMenu && (
             <>
               {/* The overlay only closes the menu for the mouse. */}
-      <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} aria-hidden="true" />
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setShowMenu(false)}
+                aria-hidden="true"
+              />
               <div className="absolute right-0 top-8 z-20 w-36 bg-card border rounded-md shadow-lg py-1">
                 <button
                   type="button"
@@ -133,7 +139,7 @@ export function DataSourceCard({
                   disabled={isSyncing}
                 >
                   <Edit className="w-4 h-4" />
-                  Edit
+                  {t('edit')}
                 </button>
                 <button
                   type="button"
@@ -145,7 +151,7 @@ export function DataSourceCard({
                   disabled={isSyncing || source.status === 'syncing'}
                 >
                   <RefreshCw className="w-4 h-4" />
-                  Sync Now
+                  {t('syncNow')}
                 </button>
                 <button
                   type="button"
@@ -157,7 +163,7 @@ export function DataSourceCard({
                   disabled={isSyncing}
                 >
                   <Trash2 className="w-4 h-4" />
-                  Delete
+                  {t('delete')}
                 </button>
               </div>
             </>
@@ -170,11 +176,11 @@ export function DataSourceCard({
         <div className="flex items-center gap-1.5">
           {getStatusIcon()}
           <span className="text-muted-foreground">
-            {isSyncing ? 'Syncing...' : formatLastSync()}
+            {isSyncing ? t('syncing') : formatLastSync()}
           </span>
         </div>
         <div className="text-right text-muted-foreground">
-          {source.total_records.toLocaleString()} records
+          {t('records', { count: source.total_records })}
         </div>
       </div>
 
@@ -194,7 +200,7 @@ export function DataSourceCard({
       {/* Auto Sync Badge */}
       {source.auto_sync_enabled && (
         <div className="mt-2 text-xs text-muted-foreground">
-          Auto-sync: {source.sync_schedule || 'Enabled'}
+          {t('autoSync', { schedule: source.sync_schedule || t('enabled') })}
         </div>
       )}
     </div>

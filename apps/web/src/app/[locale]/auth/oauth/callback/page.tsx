@@ -5,8 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, XCircle, CheckCircle2 } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTranslations } from 'next-intl';
 
 function OAuthCallbackContent() {
+  const t = useTranslations('auth');
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -18,14 +20,14 @@ function OAuthCallbackContent() {
     if (error) {
       return {
         status: 'error' as const,
-        message: errorDescription || 'Authentication failed',
+        message: errorDescription || t('oauth.failed'),
       };
     }
     return {
       status: 'success' as const,
-      message: 'Successfully signed in!',
+      message: t('oauth.success'),
     };
-  }, [error, errorDescription]);
+  }, [error, errorDescription, t]);
 
   // Handle redirects in effect (side effects, not state updates)
   useEffect(() => {
@@ -55,14 +57,14 @@ function OAuthCallbackContent() {
           )}
         </div>
         <CardTitle className="text-2xl">
-          {status === 'success' && 'Welcome!'}
-          {status === 'error' && 'Authentication failed'}
+          {status === 'success' && t('oauth.welcome')}
+          {status === 'error' && t('oauth.failed')}
         </CardTitle>
         <CardDescription>{message}</CardDescription>
       </CardHeader>
       <CardContent>
         {status === 'error' && (
-          <p className="text-sm text-center text-muted-foreground">Redirecting to login page...</p>
+          <p className="text-sm text-center text-muted-foreground">{t('oauth.redirecting')}</p>
         )}
       </CardContent>
     </Card>
@@ -77,6 +79,7 @@ function OAuthCallbackContent() {
  * just needs to wait for the redirect and then forward to the dashboard.
  */
 export default function OAuthCallbackPage() {
+  const t = useTranslations('auth');
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <Suspense
@@ -88,8 +91,8 @@ export default function OAuthCallbackPage() {
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               </div>
-              <CardTitle className="text-2xl">Signing in...</CardTitle>
-              <CardDescription>Please wait...</CardDescription>
+              <CardTitle className="text-2xl">{t('oauth.signingIn')}</CardTitle>
+              <CardDescription>{t('oauth.pleaseWait')}</CardDescription>
             </CardHeader>
           </Card>
         }

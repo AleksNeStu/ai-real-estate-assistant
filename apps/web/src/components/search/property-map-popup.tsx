@@ -11,8 +11,8 @@ interface PropertyMapPopupProps {
   isFavorited?: boolean;
 }
 
-function formatPrice(price: number | undefined): string {
-  if (price === undefined) return 'Price on request';
+function formatPrice(price: number | undefined, priceOnRequest: string): string {
+  if (price === undefined) return priceOnRequest;
   if (price >= 1000000) {
     return `$${(price / 1000000).toFixed(1)}M`;
   }
@@ -59,19 +59,22 @@ export function PropertyMapPopup({
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <MapPin className="h-3 w-3" />
           <span className="line-clamp-1">
-            {[point.city, point.country].filter(Boolean).join(', ') || 'Location unavailable'}
+            {[point.city, point.country].filter(Boolean).join(', ') ||
+              t('card.locationUnavailable')}
           </span>
         </div>
 
         {/* Price */}
-        <div className="text-lg font-bold text-primary">{formatPrice(point.price)}</div>
+        <div className="text-lg font-bold text-primary">
+          {formatPrice(point.price, t('card.priceOnRequest'))}
+        </div>
 
         {/* Specs */}
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           {point.rooms !== undefined && (
             <div className="flex items-center gap-1">
               <BedDouble className="h-3 w-3" />
-              <span>{point.rooms} beds</span>
+              <span>{t('card.beds', { count: point.rooms })}</span>
             </div>
           )}
           {point.area_sqm !== undefined && (
@@ -85,7 +88,9 @@ export function PropertyMapPopup({
 
         {/* Price per sqm */}
         {point.price_per_sqm !== undefined && (
-          <div className="text-xs text-muted-foreground">{formatPrice(point.price_per_sqm)}/m²</div>
+          <div className="text-xs text-muted-foreground">
+            {formatPrice(point.price_per_sqm, t('card.priceOnRequest'))}/m²
+          </div>
         )}
 
         {/* Actions */}
@@ -96,7 +101,7 @@ export function PropertyMapPopup({
               className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
             >
               <ExternalLink className="h-3 w-3" />
-              View Details
+              {t('card.viewDetails')}
             </button>
           )}
           {onToggleFavorite && (
@@ -106,7 +111,9 @@ export function PropertyMapPopup({
                 'p-1.5 rounded-md border transition-colors',
                 isFavorited ? 'bg-destructive/10 border-destructive/30 text-destructive' : 'hover:bg-muted',
               ].join(' ')}
-              aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+              aria-label={
+                isFavorited ? t('card.removeFromFavorites') : t('card.addToFavorites')
+              }
             >
               <Heart className={['h-4 w-4', isFavorited ? 'fill-current' : ''].join(' ')} />
             </button>
@@ -117,10 +124,15 @@ export function PropertyMapPopup({
   );
 }
 
-// Export a function to generate HTML for Mapbox popup (since Mapbox uses HTML strings)
-export function generatePopupHTML(point: PropertyMapPoint): string {
+// Export a function to generate HTML for Mapbox popup (since Mapbox uses HTML strings).
+// The copy is passed in because this function is not a component and cannot call
+// useTranslations itself.
+export function generatePopupHTML(
+  point: PropertyMapPoint,
+  copy: { priceOnRequest: string; untitled: string; locationUnavailable: string; beds: string }
+): string {
   const formatPrice = (price: number | undefined): string => {
-    if (price === undefined) return 'Price on request';
+    if (price === undefined) return copy.priceOnRequest;
     if (price >= 1000000) {
       return `$${(price / 1000000).toFixed(1)}M`;
     }
@@ -128,7 +140,7 @@ export function generatePopupHTML(point: PropertyMapPoint): string {
   };
 
   const specs = [
-    point.rooms !== undefined ? `${point.rooms} beds` : null,
+    point.rooms !== undefined ? `${point.rooms} ${copy.beds}` : null,
     point.area_sqm !== undefined ? `${point.area_sqm} m²` : null,
     point.property_type ? point.property_type : null,
   ]
@@ -139,10 +151,10 @@ export function generatePopupHTML(point: PropertyMapPoint): string {
     <div style="min-width:180px;max-width:240px;font-family:inherit;">
       <div style="padding:8px;">
         <div style="font-weight:600;font-size:14px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-          ${point.title || 'Untitled Property'}
+          ${point.title || copy.untitled}
         </div>
         <div style="font-size:12px;color:hsl(var(--muted-foreground));margin-bottom:4px;">
-          ${[point.city, point.country].filter(Boolean).join(', ') || 'Location unavailable'}
+          ${[point.city, point.country].filter(Boolean).join(', ') || copy.locationUnavailable}
         </div>
         <div style="font-size:18px;font-weight:700;color:hsl(var(--chart-1));margin-bottom:4px;">
           ${formatPrice(point.price)}

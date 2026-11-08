@@ -46,9 +46,17 @@
     "tryAgain": "Try again",
     "skipToContent": "Skip to main content",
     "tryTheseChips": {
-      "heading": "Try one of these"
+      "heading": "Try one of these",
+      "p1": "2-bedroom apartment in Kraków under 500k",
+      "p2": "Family house with garden, Warsaw",
+      "p3": "Studio near city center, Wrocław",
+      "p4": "Investment property, Gdańsk, ROI > 5%",
+      "p5": "Compare mortgage options for 400k",
+      "p6": "Pet-friendly rentals under 3000 PLN/mo"
     },
-    "logIn": "Log in"
+    "logIn": "Log in",
+    "emptySearchTitle": "Nothing to show yet",
+    "emptySearchBody": "Try one of the example queries below to see the demo in action."
   },
   "nav": {
     "mainNavigation": "Main navigation",
@@ -107,7 +115,9 @@
       "submit": "Send Reset Link",
       "backToLogin": "Back to login",
       "checkEmail": "Check your email",
-      "resetSent": "We've sent a password reset link to your email address."
+      "resetSent": "We've sent a password reset link to your email address.",
+      "checkInbox": "Please check your inbox for the reset link.",
+      "resend": "Resend email"
     },
     "resetPassword": {
       "title": "Reset password",
@@ -115,7 +125,12 @@
       "newPasswordLabel": "New Password",
       "confirmPasswordLabel": "Confirm New Password",
       "submit": "Reset Password",
-      "success": "Password reset successfully"
+      "success": "Password reset successfully",
+      "invalidToken": "Invalid or missing reset token",
+      "passwordHint": "Min. 8 chars, uppercase, lowercase, digit",
+      "confirmHint": "Re-enter your password",
+      "canLogin": "You can now log in with your new password.",
+      "goToLogin": "Go to login"
     },
     "verifyEmail": {
       "title": "Verify your email",
@@ -144,7 +159,21 @@
       "passwordMismatch": "Passwords do not match",
       "weakPassword": "Password must be at least 8 characters",
       "emailAlreadyExists": "An account with this email already exists",
-      "invalidEmail": "Please enter a valid email address"
+      "invalidEmail": "Please enter a valid email address",
+      "uppercaseRequired": "Password must contain at least one uppercase letter",
+      "lowercaseRequired": "Password must contain at least one lowercase letter",
+      "digitRequired": "Password must contain at least one digit",
+      "resetFailed": "Failed to reset password",
+      "registerFailed": "Registration failed",
+      "resetEmailFailed": "Failed to send reset email"
+    },
+    "oauth": {
+      "failed": "Authentication failed",
+      "success": "Successfully signed in!",
+      "welcome": "Welcome!",
+      "redirecting": "Redirecting to login page...",
+      "signingIn": "Signing in...",
+      "pleaseWait": "Please wait..."
     }
   },
   "property": {
@@ -159,7 +188,9 @@
       "locationUnavailable": "Location unavailable",
       "addToFavorites": "Add to favorites",
       "removeFromFavorites": "Remove from favorites",
-      "loginRequired": "Log in to save this property"
+      "loginRequired": "Log in to save this property",
+      "viewDetails": "View Details",
+      "bedsUnit": "beds"
     },
     "favorite": {
       "add": "Add to favorites",
@@ -183,7 +214,10 @@
       "contact": "Contact agent"
     },
     "estimateLabel": "Estimated monthly payment {value}",
-    "estimateTitle": "Estimated monthly payment with {down}% down, {years}-year fixed at {rate}% APR. Not a lending offer."
+    "estimateTitle": "Estimated monthly payment with {down}% down, {years}-year fixed at {rate}% APR. Not a lending offer.",
+    "map": {
+      "propertiesInArea": "{count, plural, one {# property} other {# properties}} in this area"
+    }
   },
   "search": {
     "title": "Find Your Property",
@@ -315,7 +349,10 @@
       "loginRequired": "Please log in to save filter presets",
       "saveFailed": "Failed to save preset",
       "save": "Save Preset",
-      "saving": "Saving..."
+      "saving": "Saving...",
+      "useLoginRequired": "Log in to use presets",
+      "loadFailed": "Failed to load presets",
+      "deleteAria": "Delete preset"
     },
     "clearPriceFilter": "Clear price filter",
     "filterByPropertyType": "Filter by property type",
@@ -363,7 +400,9 @@
       "range600k1M": "$600k-$1M",
       "allPrices": "All Prices",
       "resetAll": "Reset All"
-    }
+    },
+    "mapZoomHint": "Zoom in to see individual properties.",
+    "mapAttribution": "OpenStreetMap"
   },
   "mortgage": {
     "title": "Mortgage Calculator",
@@ -921,7 +960,11 @@
     "quality": {
       "badge": "Neighborhood Quality: {rating} ({score}/100)",
       "score": "Neighborhood Quality: {score}/100"
-    }
+    },
+    "summaryFailed": "Neighborhood summary failed: {message}",
+    "loadingSummary": "Loading neighborhood summary",
+    "preparingSummary": "Preparing summary…",
+    "summaryUnavailable": "Neighborhood summary unavailable right now."
   },
   "settings": {
     "title": "Settings",
@@ -1171,7 +1214,8 @@
       "title": "Task Model Preferences",
       "needsEmail": "Set an email in Identity settings to enable per-task model preferences.",
       "description": "Configure different AI models for different types of tasks. Each task type can use the model that fits it best.",
-      "loading": "Loading preferences..."
+      "loading": "Loading preferences...",
+      "loadFailed": "Failed to load preferences"
     }
   },
   "chat": {
@@ -1685,7 +1729,11 @@
     "chatUnavailable": "Chat is temporarily unavailable",
     "chatErrorFallback": "An unexpected error occurred. Please try again.",
     "retry": "Retry",
-    "goHome": "Go to homepage"
+    "goHome": "Go to homepage",
+    "pageNotFoundDescription": "The page you are looking for does not exist or has been moved.",
+    "searchProperties": "Search properties",
+    "errorId": "Error ID: {id}",
+    "unexpectedError": "An unexpected error occurred while loading this page."
   },
   "validation": {
     "required": "This field is required",
@@ -1721,7 +1769,13 @@
       "rating": "Rating",
       "listings": "Number of Listings",
       "reviews": "Number of Reviews",
-      "clear": "Clear Filters"
+      "clear": "Clear Filters",
+      "apply": "Apply Filters",
+      "cityPlaceholder": "Enter city...",
+      "specialtyPlaceholder": "e.g., Residential, Commercial...",
+      "anyRating": "Any rating",
+      "any": "Any",
+      "stars": "{count}+ Stars"
     },
     "profile": {
       "title": "Agent Profile",
@@ -1733,7 +1787,17 @@
       "email": "Email",
       "license": "License",
       "agency": "Agency",
-      "noListings": "No active listings"
+      "noListings": "No active listings",
+      "loadError": "Failed to load agent profile",
+      "backToAgents": "Back to Agents",
+      "notFound": "Agent not found",
+      "browseAgents": "Browse Agents",
+      "defaultName": "Agent",
+      "aboutAgent": "About {name}",
+      "noBio": "No bio available.",
+      "listingsTab": "Listings ({count})",
+      "contactTab": "Contact",
+      "primary": "Primary"
     },
     "contactForm": {
       "title": "Contact {name}",
@@ -1794,7 +1858,18 @@
         "completed": "Completed"
       }
     },
-    "selectType": "Select type"
+    "selectType": "Select type",
+    "errors": {
+      "load": "Failed to load agents"
+    },
+    "sort": {
+      "rating": "Rating (High to Low)",
+      "reviews": "Most Reviews",
+      "listings": "Most Listings",
+      "created": "Newest First",
+      "placeholder": "Sort by"
+    },
+    "verifiedAria": "Verified agent"
   },
   "documents": {
     "title": "Documents",
@@ -1880,7 +1955,13 @@
     "login": "Sign in",
     "lockedFeature": "Sign in to access this feature",
     "signInForFull": "Sign in for AI assistant and more",
-    "signUpCta": "Sign up to unlock all features"
+    "signUpCta": "Sign up to unlock all features",
+    "badgeLabel": "Demo",
+    "badgeTooltip": "Demo data — not real listings",
+    "emptyTitle": "Nothing to show yet",
+    "emptyHint": "Try one of the example queries below to see the demo in action.",
+    "modeDisabled": "Disabled",
+    "toggleFailed": "Failed to toggle demo mode: {message}"
   },
   "showcase": {
     "heroTitle": "Showcase",
@@ -1922,7 +2003,9 @@
     },
     "skip": "Skip",
     "next": "Next",
-    "done": "Done"
+    "done": "Done",
+    "ariaLabel": "Onboarding tour",
+    "closeAria": "Close tour"
   },
   "footer": {
     "title": "Get new listings in your inbox",
@@ -2690,7 +2773,151 @@
       },
       "dataSources": {
         "title": "Data Sources",
-        "description": "Manage data sources for property imports and sync status."
+        "description": "Manage data sources for property imports and sync status.",
+        "status": {
+          "connected": "Connected",
+          "disconnected": "Disconnected",
+          "error": "Error"
+        },
+        "lastSync": "Last Sync",
+        "syncNow": "Sync Now",
+        "configure": "Configure",
+        "actionsMenu": "Actions menu",
+        "edit": "Edit",
+        "syncing": "Syncing...",
+        "justNow": "Just now",
+        "minutesAgo": "{count}m ago",
+        "hoursAgo": "{count}h ago",
+        "daysAgo": "{count}d ago",
+        "neverSynced": "Never synced",
+        "records": "{count} records",
+        "autoSync": "Auto-sync: {schedule}",
+        "autoSyncEnabled": "Auto-sync: Enabled",
+        "sourceTypes": {
+          "fileUpload": "File Upload",
+          "url": "URL",
+          "portalApi": "Portal API",
+          "json": "JSON"
+        },
+        "health": {
+          "error": "Error",
+          "syncing": "Syncing...",
+          "pending": "Pending",
+          "healthy": "Healthy",
+          "degraded": "Degraded",
+          "unhealthy": "Unhealthy"
+        },
+        "loadingSources": "Loading data sources...",
+        "configuredSources": "Configured Sources ({count})",
+        "addSource": "Add Source",
+        "noSources": "No data sources configured yet.",
+        "addFirstSource": "Add Your First Source",
+        "deleteTitle": "Delete Data Source",
+        "deleteConfirm": "Are you sure you want to delete {name}? This will also delete all sync history and cannot be undone.",
+        "deleteNote": "Records already imported from this source will remain in the system.",
+        "deleting": "Deleting...",
+        "tabs": {
+          "sources": "Sources ({count})",
+          "import": "Import Data"
+        },
+        "importMode": {
+          "url": "From URL",
+          "file": "Upload File",
+          "portal": "Portal API"
+        },
+        "import": {
+          "title": "Import Data",
+          "fileUrl": "File URL",
+          "fileUrlHint": "Supports CSV (.csv) and Excel (.xlsx, .xls, .ods) files",
+          "selectFile": "Select File",
+          "fileHint": "Max file size: 25MB. Supports: .xlsx, .xls, .ods, .csv",
+          "selected": "Selected:",
+          "fileSize": "{size} MB",
+          "sourceName": "Source Name (optional)",
+          "sourceNamePlaceholder": "e.g., Q1 2024 Properties",
+          "excelOptions": "Excel Options",
+          "loadSheets": "Load Sheets",
+          "selectSheet": "Select Sheet",
+          "sheetOption": "{name} ({count} rows)",
+          "headerRow": "Header Row (0-indexed)",
+          "importing": "Importing...",
+          "action": "Import Data"
+        },
+        "portal": {
+          "title": "Fetch from Portal",
+          "loading": "Loading available portals...",
+          "none": "No portal adapters available. Configure adapters in the backend.",
+          "label": "Portal",
+          "notConfigured": "(not configured)",
+          "city": "City * (required)",
+          "cityPlaceholder": "e.g., Warsaw",
+          "filters": "Filters (optional)",
+          "minPrice": "Min Price",
+          "minPricePlaceholder": "e.g., 1000",
+          "maxPrice": "Max Price",
+          "maxPricePlaceholder": "e.g., 5000",
+          "minRooms": "Min Rooms",
+          "minRoomsPlaceholder": "e.g., 1",
+          "maxRooms": "Max Rooms",
+          "maxRoomsPlaceholder": "e.g., 4",
+          "propertyType": "Property Type",
+          "propertyTypeAny": "Any",
+          "propertyTypeApartment": "Apartment",
+          "propertyTypeHouse": "House",
+          "propertyTypeStudio": "Studio",
+          "listingType": "Listing Type",
+          "listingTypeRent": "Rent",
+          "listingTypeSale": "Sale",
+          "maxResults": "Max Results",
+          "sourceNamePlaceholder": "e.g., Warsaw Rentals",
+          "fetching": "Fetching...",
+          "action": "Fetch from Portal"
+        },
+        "errors": {
+          "unknown": "Unknown error",
+          "urlRequired": "Please enter a file URL first.",
+          "urlMustBeExcel": "URL must point to an Excel file (.xlsx, .xls, or .ods).",
+          "fileRequired": "Please select a file first.",
+          "fileMustBeExcel": "File must be an Excel file (.xlsx, .xls, or .ods).",
+          "fileToUpload": "Please select a file to upload.",
+          "urlMissing": "Please enter a file URL.",
+          "portalRequired": "Please select a portal.",
+          "cityRequired": "Please enter a city."
+        },
+        "result": {
+          "title": "Import Successful",
+          "propertiesProcessed": "Properties processed: {count}",
+          "sourceType": "Source type: {type}",
+          "sourceName": "Source name: {name}",
+          "warnings": "Warnings ({count})"
+        },
+        "editDialog": {
+          "title": "Edit Data Source",
+          "statusPending": "Pending",
+          "statusActive": "Active",
+          "statusDisabled": "Disabled",
+          "sectionBasic": "Basic",
+          "name": "Name",
+          "status": "Status",
+          "sectionFilters": "Filters",
+          "sectionScheduling": "Scheduling",
+          "autoSyncEnabled": "Auto-sync enabled",
+          "syncSchedule": "Sync Schedule",
+          "syncSchedulePlaceholder": "e.g. 0 */6 * * *",
+          "cronHint": "Cron expression (optional)",
+          "saving": "Saving...",
+          "saveChanges": "Save Changes",
+          "propertyTypeApartment": "Apartment",
+          "propertyTypeHouse": "House",
+          "propertyTypeLand": "Land",
+          "propertyTypeCommercial": "Commercial",
+          "propertyTypeGarage": "Garage",
+          "listingTypeSale": "Sale",
+          "listingTypeRent": "Rent"
+        },
+        "delete": "Delete",
+        "enabled": "Enabled",
+        "requestId": "Request ID: {id}"
       },
       "bulkJobs": {
         "title": "Bulk Import/Export Jobs",
@@ -2818,5 +3045,62 @@
       "title": "Something went wrong",
       "description": "The data could not be loaded. Try again in a moment."
     }
+  },
+  "scheduleViewing": {
+    "title": "Schedule a Viewing",
+    "close": "Close dialog",
+    "requestWith": "Request a property viewing with {name}. They will confirm your appointment soon.",
+    "nameLabel": "Your Name *",
+    "emailLabel": "Your Email *",
+    "phoneLabel": "Your Phone",
+    "dateLabel": "Preferred Date *",
+    "timeLabel": "Preferred Time *",
+    "durationLabel": "Duration (minutes)",
+    "notesLabel": "Notes",
+    "notesPlaceholder": "Any special requests or questions?",
+    "submit": "Request Viewing",
+    "successTitle": "Viewing Requested!",
+    "successMessage": "The agent will confirm your appointment soon.",
+    "failed": "Failed to schedule viewing",
+    "cancel": "Cancel",
+    "requesting": "Requesting..."
+  },
+  "taskTypes": {
+    "chat": "Chat",
+    "search": "Search",
+    "tools": "Tools",
+    "analysis": "Analysis",
+    "embedding": "Embedding",
+    "chatDescription": "Conversational responses and general queries",
+    "searchDescription": "Property search query processing",
+    "toolsDescription": "Tool execution and function calling",
+    "analysisDescription": "Market analysis and complex reasoning",
+    "embeddingDescription": "Vector embedding generation"
+  },
+  "listingGenerator": {
+    "generate": "Generate Listing",
+    "generating": "Generating...",
+    "showResults": "Show Results",
+    "hideResults": "Hide",
+    "hideResultsAria": "Hide results",
+    "showResultsAria": "Show results",
+    "resultTitle": "Generated Listing Content",
+    "description": "Description",
+    "headlines": "Headlines",
+    "socialMedia": "Social Media",
+    "noDescription": "No description generated",
+    "noHeadlines": "No headlines generated",
+    "noSocial": "No social content generated",
+    "copyHeadline": "Copy headline",
+    "failed": "Generation failed",
+    "chars": "{count} chars",
+    "charsOf": "{count} / {max} chars",
+    "copied": "Copied",
+    "copy": "Copy",
+    "copyAll": "Copy All",
+    "headlinesGenerated": "{count} headlines generated"
+  },
+  "pwa": {
+    "installFailed": "Install failed: {message}"
   }
 }

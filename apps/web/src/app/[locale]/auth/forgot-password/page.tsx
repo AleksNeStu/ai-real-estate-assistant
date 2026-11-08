@@ -34,7 +34,7 @@ export default function ForgotPasswordPage() {
       await forgotPassword(email);
       setIsSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send reset email');
+      setError(err instanceof Error ? err.message : t('errors.resetEmailFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -46,10 +46,7 @@ export default function ForgotPasswordPage() {
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
             <div className="rounded-full bg-success/15 dark:bg-success/20 p-3">
-              <CheckCircle2
-                className="h-6 w-6 text-success dark:text-success"
-                aria-hidden="true"
-              />
+              <CheckCircle2 className="h-6 w-6 text-success dark:text-success" aria-hidden="true" />
             </div>
           </div>
           <CardTitle className="text-2xl">{t('forgotPassword.checkEmail')}</CardTitle>

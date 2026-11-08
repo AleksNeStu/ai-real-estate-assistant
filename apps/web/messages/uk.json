@@ -82,7 +82,13 @@
       "rating": "Рейтинг",
       "listings": "Кількість оголошень",
       "reviews": "Кількість відгуків",
-      "clear": "Очистити фільтри"
+      "clear": "Очистити фільтри",
+      "apply": "Застосувати фільтри",
+      "cityPlaceholder": "Введіть місто...",
+      "specialtyPlaceholder": "напр., Житлова, Комерційна...",
+      "anyRating": "Будь-який рейтинг",
+      "any": "Будь-який",
+      "stars": "{count}+ зірок"
     },
     "profile": {
       "title": "Профіль агента",
@@ -94,7 +100,17 @@
       "email": "Електронна пошта",
       "license": "Ліцензія",
       "agency": "Агентство",
-      "noListings": "Активних оголошень немає"
+      "noListings": "Активних оголошень немає",
+      "loadError": "Не вдалося завантажити профіль агента",
+      "backToAgents": "Назад до агентів",
+      "notFound": "Агента не знайдено",
+      "browseAgents": "Переглянути агентів",
+      "defaultName": "Агент",
+      "aboutAgent": "Про {name}",
+      "noBio": "Опис відсутній.",
+      "listingsTab": "Оголошення ({count})",
+      "contactTab": "Контакти",
+      "primary": "Основне"
     },
     "contactForm": {
       "title": "Зв’язатися з {name}",
@@ -155,7 +171,18 @@
         "completed": "Завершено"
       }
     },
-    "selectType": "Виберіть тип"
+    "selectType": "Виберіть тип",
+    "errors": {
+      "load": "Не вдалося завантажити агентів"
+    },
+    "sort": {
+      "rating": "Рейтинг (за спаданням)",
+      "reviews": "Найбільше відгуків",
+      "listings": "Найбільше оголошень",
+      "created": "Спочатку нові",
+      "placeholder": "Сортувати за"
+    },
+    "verifiedAria": "Перевірений агент"
   },
   "auth": {
     "signIn": "Увійти",
@@ -196,7 +223,9 @@
       "submit": "Надіслати посилання для скидання",
       "backToLogin": "Повернутися до входу",
       "checkEmail": "Перевірте свою пошту",
-      "resetSent": "Ми надіслали посилання для скидання пароля на вашу адресу електронної пошти."
+      "resetSent": "Ми надіслали посилання для скидання пароля на вашу адресу електронної пошти.",
+      "checkInbox": "Перевірте пошту — там посилання для скидання пароля.",
+      "resend": "Надіслати ще раз"
     },
     "resetPassword": {
       "title": "Скидання пароля",
@@ -204,7 +233,12 @@
       "newPasswordLabel": "Новий пароль",
       "confirmPasswordLabel": "Підтвердьте новий пароль",
       "submit": "Скинути пароль",
-      "success": "Пароль успішно скинуто"
+      "success": "Пароль успішно скинуто",
+      "invalidToken": "Недійсний або відсутній токен скидання",
+      "passwordHint": "Мін. 8 символів, велика та мала літера, цифра",
+      "confirmHint": "Введіть пароль повторно",
+      "canLogin": "Тепер ви можете увійти з новим паролем.",
+      "goToLogin": "Перейти до входу"
     },
     "verifyEmail": {
       "title": "Підтвердьте свою електронну пошту",
@@ -233,10 +267,24 @@
       "passwordMismatch": "Паролі не збігаються",
       "weakPassword": "Пароль має містити щонайменше 8 символів",
       "emailAlreadyExists": "Обліковий запис із цією поштою вже існує",
-      "invalidEmail": "Введіть коректну адресу електронної пошти"
+      "invalidEmail": "Введіть коректну адресу електронної пошти",
+      "uppercaseRequired": "Пароль має містити хоча б одну велику літеру",
+      "lowercaseRequired": "Пароль має містити хоча б одну малу літеру",
+      "digitRequired": "Пароль має містити хоча б одну цифру",
+      "resetFailed": "Не вдалося скинути пароль",
+      "registerFailed": "Не вдалося зареєструватися",
+      "resetEmailFailed": "Не вдалося надіслати лист для скидання пароля"
     },
     "loading": "Завантаження...",
-    "userMenu": "Меню користувача"
+    "userMenu": "Меню користувача",
+    "oauth": {
+      "failed": "Помилка автентифікації",
+      "success": "Ви успішно увійшли!",
+      "welcome": "Вітаємо!",
+      "redirecting": "Перенаправлення на сторінку входу...",
+      "signingIn": "Виконується вхід...",
+      "pleaseWait": "Будь ласка, зачекайте..."
+    }
   },
   "cma": {
     "steps": {
@@ -526,7 +574,13 @@
     "tryAgain": "Спробувати ще раз",
     "skipToContent": "Перейти до основного вмісту",
     "tryTheseChips": {
-      "heading": "Спробуйте один із цих"
+      "heading": "Спробуйте один із цих",
+      "p1": "Двокімнатна квартира у Кракові дешевше 500 тис.",
+      "p2": "Будинок із садом у Варшаві",
+      "p3": "Студія в центрі Вроцлава",
+      "p4": "Інвестиційний об'єкт, Гданськ, ROI > 5%",
+      "p5": "Порівняйте варіанти іпотеки на 400 тис.",
+      "p6": "Оренда для власників тварин дешевше 3000 PLN/міс."
     },
     "logIn": "Увійти",
     "installApp": "Встановити застосунок",
@@ -537,14 +591,22 @@
     "backOnline": "Ви знову в мережі",
     "offlineMessage": "Ви не в мережі. Деякі функції можуть бути недоступні.",
     "newVersionAvailable": "Доступна нова версія!",
-    "dismissUpdate": "Закрити"
+    "dismissUpdate": "Закрити",
+    "emptySearchTitle": "Поки що немає чого показати",
+    "emptySearchBody": "Спробуйте один із прикладів запитів нижче, щоб побачити демо в дії."
   },
   "demo": {
     "banner": "Демо-режим — доступний пошук та дані міст",
     "login": "Увійти",
     "lockedFeature": "Увійдіть, щоб отримати доступ",
     "signInForFull": "Увійдіть для AI-асистента та інших функцій",
-    "signUpCta": "Зареєструйтеся для доступу до всіх функцій"
+    "signUpCta": "Зареєструйтеся для доступу до всіх функцій",
+    "badgeLabel": "Демо",
+    "badgeTooltip": "Демонстраційні дані — це не справжні оголошення",
+    "emptyTitle": "Поки що немає чого показати",
+    "emptyHint": "Спробуйте один із прикладів запитів нижче, щоб побачити демо в дії.",
+    "modeDisabled": "Вимкнено",
+    "toggleFailed": "Не вдалося перемкнути демо-режим: {message}"
   },
   "documents": {
     "title": "Документи",
@@ -635,7 +697,11 @@
     "goHome": "На головну сторінку",
     "chatUnavailable": "Чат тимчасово недоступний",
     "chatErrorFallback": "Сталася непередбачена помилка. Спробуйте ще раз.",
-    "retry": "Повторити"
+    "retry": "Повторити",
+    "pageNotFoundDescription": "Сторінку, яку ви шукаєте, не існує або її перемістили.",
+    "searchProperties": "Шукати об'єкти",
+    "errorId": "Ідентифікатор помилки: {id}",
+    "unexpectedError": "Під час завантаження цієї сторінки сталася непередбачена помилка."
   },
   "favorites": {
     "title": "Моє обране",
@@ -1267,7 +1333,11 @@
     "quality": {
       "badge": "Якість району: {rating} ({score}/100)",
       "score": "Якість району: {score}/100"
-    }
+    },
+    "summaryFailed": "Не вдалося підготувати зведення по району: {message}",
+    "loadingSummary": "Завантаження зведення по району",
+    "preparingSummary": "Підготовка зведення…",
+    "summaryUnavailable": "Зведення по району зараз недоступне."
   },
   "portfolio": {
     "title": "Аналізатор портфеля",
@@ -1306,7 +1376,9 @@
       "locationUnavailable": "Розташування недоступне",
       "addToFavorites": "Додати до обраного",
       "removeFromFavorites": "Видалити з обраного",
-      "loginRequired": "Увійдіть, щоб зберегти цей об’єкт"
+      "loginRequired": "Увійдіть, щоб зберегти цей об’єкт",
+      "viewDetails": "Переглянути деталі",
+      "bedsUnit": "кімнат"
     },
     "favorite": {
       "add": "Додати до обраного",
@@ -1330,7 +1402,10 @@
       "contact": "Зв’язатися з агентом"
     },
     "estimateLabel": "Очікуваний щомісячний платіж: {value}",
-    "estimateTitle": "Очікуваний щомісячний платіж за авансом {down} %, {years} років під фіксовані {rate} % APR. Це не кредитна пропозиція."
+    "estimateTitle": "Очікуваний щомісячний платіж за авансом {down} %, {years} років під фіксовані {rate} % APR. Це не кредитна пропозиція.",
+    "map": {
+      "propertiesInArea": "{count, plural, one {# об'єкт} few {# об'єкти} many {# об'єктів} other {# об'єктів}} у цій зоні"
+    }
   },
   "rentVsBuy": {
     "title": "Калькулятор Оренда vs Купівля",
@@ -1564,7 +1639,10 @@
       "loginRequired": "Увійдіть, щоб зберігати фільтри",
       "saveFailed": "Не вдалося зберегти фільтр",
       "save": "Зберегти фільтр",
-      "saving": "Збереження..."
+      "saving": "Збереження...",
+      "useLoginRequired": "Увійдіть, щоб користуватися збереженими фільтрами",
+      "loadFailed": "Не вдалося завантажити збережені фільтри",
+      "deleteAria": "Видалити збережений фільтр"
     },
     "clearPriceFilter": "Очистити фільтр ціни",
     "filterByPropertyType": "Фільтр за типом об'єкта",
@@ -1612,7 +1690,9 @@
       "range600k1M": "600 тис.–1 млн $",
       "allPrices": "Усі ціни",
       "resetAll": "Скинути все"
-    }
+    },
+    "mapZoomHint": "Наблизьте, щоб побачити окремі об'єкти.",
+    "mapAttribution": "OpenStreetMap"
   },
   "settings": {
     "title": "Налаштування",
@@ -1862,7 +1942,8 @@
       "provider": "Провайдер",
       "model": "Модель",
       "save": "Зберегти",
-      "reset": "Скинути"
+      "reset": "Скинути",
+      "loadFailed": "Не вдалося завантажити налаштування"
     }
   },
   "tools": {
@@ -1905,7 +1986,9 @@
     },
     "skip": "Пропустити",
     "next": "Далі",
-    "done": "Готово"
+    "done": "Готово",
+    "ariaLabel": "Навчальний тур",
+    "closeAria": "Закрити тур"
   },
   "showcase": {
     "heroTitle": "Реалізації",
@@ -2690,7 +2773,151 @@
       },
       "dataSources": {
         "title": "Джерела даних",
-        "description": "Звідки беруться оголошення."
+        "description": "Звідки беруться оголошення.",
+        "status": {
+          "connected": "Підключено",
+          "disconnected": "Відключено",
+          "error": "Помилка"
+        },
+        "lastSync": "Остання синхронізація",
+        "syncNow": "Синхронізувати зараз",
+        "configure": "Налаштувати",
+        "actionsMenu": "Меню дій",
+        "edit": "Редагувати",
+        "syncing": "Синхронізація...",
+        "justNow": "Щойно",
+        "minutesAgo": "{count} хв тому",
+        "hoursAgo": "{count} год тому",
+        "daysAgo": "{count} дн тому",
+        "neverSynced": "Ніколи не синхронізувалося",
+        "records": "{count} записів",
+        "autoSync": "Автосинхронізація: {schedule}",
+        "autoSyncEnabled": "Автосинхронізація: увімкнено",
+        "sourceTypes": {
+          "fileUpload": "Завантаження файлів",
+          "url": "URL",
+          "portalApi": "Портал API",
+          "json": "JSON"
+        },
+        "health": {
+          "error": "Помилка",
+          "syncing": "Синхронізація...",
+          "pending": "Очікує",
+          "healthy": "Справний",
+          "degraded": "Погіршений стан",
+          "unhealthy": "Несправний"
+        },
+        "loadingSources": "Завантажуємо джерела даних...",
+        "configuredSources": "Налаштовані джерела ({count})",
+        "addSource": "Додати джерело",
+        "noSources": "Джерела даних ще не налаштовані.",
+        "addFirstSource": "Додайте ваше перше джерело",
+        "deleteTitle": "Видалити джерело даних",
+        "deleteConfirm": "Ви впевнені, що хочете видалити {name}? Це також видалить усю історію синхронізації, і цю дію не можна скасувати.",
+        "deleteNote": "Записи, які вже імпортовано з цього джерела, залишаться в системі.",
+        "deleting": "Видаляємо...",
+        "tabs": {
+          "sources": "Джерела ({count})",
+          "import": "Імпорт даних"
+        },
+        "importMode": {
+          "url": "За URL",
+          "file": "Завантажити файл",
+          "portal": "API порталу"
+        },
+        "import": {
+          "title": "Імпорт даних",
+          "fileUrl": "URL файлу",
+          "fileUrlHint": "Підтримуються файли CSV (.csv) та Excel (.xlsx, .xls, .ods)",
+          "selectFile": "Виберіть файл",
+          "fileHint": "Максимальний розмір файлу: 25 МБ. Підтримуються: .xlsx, .xls, .ods, .csv",
+          "selected": "Вибрано:",
+          "fileSize": "{size} МБ",
+          "sourceName": "Назва джерела (необов'язково)",
+          "sourceNamePlaceholder": "напр., Об'єкти за I квартал 2024",
+          "excelOptions": "Параметри Excel",
+          "loadSheets": "Завантажити аркуші",
+          "selectSheet": "Виберіть аркуш",
+          "sheetOption": "{name} ({count} рядків)",
+          "headerRow": "Рядок заголовка (від 0)",
+          "importing": "Імпорт...",
+          "action": "Імпортувати дані"
+        },
+        "portal": {
+          "title": "Отримати з порталу",
+          "loading": "Завантаження доступних порталів...",
+          "none": "Немає доступних адаптерів порталів. Налаштуйте їх у бекенді.",
+          "label": "Портал",
+          "notConfigured": "(не налаштовано)",
+          "city": "Місто * (обов'язково)",
+          "cityPlaceholder": "напр., Варшава",
+          "filters": "Фільтри (необов'язково)",
+          "minPrice": "Мінімальна ціна",
+          "minPricePlaceholder": "напр., 1000",
+          "maxPrice": "Максимальна ціна",
+          "maxPricePlaceholder": "напр., 5000",
+          "minRooms": "Мінімум кімнат",
+          "minRoomsPlaceholder": "напр., 1",
+          "maxRooms": "Максимум кімнат",
+          "maxRoomsPlaceholder": "напр., 4",
+          "propertyType": "Тип об'єкта",
+          "propertyTypeAny": "Будь-який",
+          "propertyTypeApartment": "Квартира",
+          "propertyTypeHouse": "Будинок",
+          "propertyTypeStudio": "Студія",
+          "listingType": "Тип оголошення",
+          "listingTypeRent": "Оренда",
+          "listingTypeSale": "Продаж",
+          "maxResults": "Максимум результатів",
+          "sourceNamePlaceholder": "напр., Оренда у Варшаві",
+          "fetching": "Отримання...",
+          "action": "Отримати з порталу"
+        },
+        "errors": {
+          "unknown": "Невідома помилка",
+          "urlRequired": "Спершу вкажіть посилання на файл.",
+          "urlMustBeExcel": "Посилання має вести на файл Excel (.xlsx, .xls або .ods).",
+          "fileRequired": "Спершу виберіть файл.",
+          "fileMustBeExcel": "Файл має бути файлом Excel (.xlsx, .xls або .ods).",
+          "fileToUpload": "Виберіть файл для завантаження.",
+          "urlMissing": "Вкажіть посилання на файл.",
+          "portalRequired": "Виберіть портал.",
+          "cityRequired": "Вкажіть місто."
+        },
+        "result": {
+          "title": "Імпорт виконано успішно",
+          "propertiesProcessed": "Оброблено об'єктів: {count}",
+          "sourceType": "Тип джерела: {type}",
+          "sourceName": "Назва джерела: {name}",
+          "warnings": "Попередження ({count})"
+        },
+        "editDialog": {
+          "title": "Редагувати джерело даних",
+          "statusPending": "Очікує",
+          "statusActive": "Активне",
+          "statusDisabled": "Вимкнено",
+          "sectionBasic": "Основне",
+          "name": "Назва",
+          "status": "Статус",
+          "sectionFilters": "Фільтри",
+          "sectionScheduling": "Розклад",
+          "autoSyncEnabled": "Автосинхронізацію увімкнено",
+          "syncSchedule": "Розклад синхронізації",
+          "syncSchedulePlaceholder": "напр., 0 */6 * * *",
+          "cronHint": "Cron-вираз (необов'язково)",
+          "saving": "Збереження...",
+          "saveChanges": "Зберегти зміни",
+          "propertyTypeApartment": "Квартира",
+          "propertyTypeHouse": "Будинок",
+          "propertyTypeLand": "Ділянка",
+          "propertyTypeCommercial": "Комерційне приміщення",
+          "propertyTypeGarage": "Гараж",
+          "listingTypeSale": "Продаж",
+          "listingTypeRent": "Оренда"
+        },
+        "delete": "Видалити",
+        "enabled": "Увімкнено",
+        "requestId": "Ідентифікатор запиту: {id}"
       },
       "bulkJobs": {
         "title": "Завдання масового імпорту та експорту",
@@ -2818,5 +3045,62 @@
       "title": "Щось пішло не так",
       "description": "Не вдалося завантажити дані. Спробуйте ще раз за мить."
     }
+  },
+  "scheduleViewing": {
+    "title": "Записатися на перегляд",
+    "close": "Закрити вікно",
+    "requestWith": "Запросіть перегляд об'єкта у {name}. Підтвердження надійде незабаром.",
+    "nameLabel": "Ваше ім'я *",
+    "emailLabel": "Ваша ел. пошта *",
+    "phoneLabel": "Ваш телефон",
+    "dateLabel": "Бажана дата *",
+    "timeLabel": "Бажаний час *",
+    "durationLabel": "Тривалість (хвилини)",
+    "notesLabel": "Примітки",
+    "notesPlaceholder": "Особливі побажання чи запитання?",
+    "submit": "Запросити перегляд",
+    "successTitle": "Перегляд замовлено!",
+    "successMessage": "Агент підтвердить час найближчим часом.",
+    "failed": "Не вдалося записатися на перегляд",
+    "cancel": "Скасувати",
+    "requesting": "Надсилання..."
+  },
+  "taskTypes": {
+    "chat": "Чат",
+    "search": "Пошук",
+    "tools": "Інструменти",
+    "analysis": "Аналіз",
+    "embedding": "Ембеддинги",
+    "chatDescription": "Діалогові відповіді та загальні запитання",
+    "searchDescription": "Обробка запитів пошуку нерухомості",
+    "toolsDescription": "Виклик інструментів і функцій",
+    "analysisDescription": "Аналіз ринку та складне міркування",
+    "embeddingDescription": "Генерація векторних ембеддингів"
+  },
+  "listingGenerator": {
+    "generate": "Створити оголошення",
+    "generating": "Створення...",
+    "showResults": "Показати результат",
+    "hideResults": "Сховати",
+    "hideResultsAria": "Сховати результат",
+    "showResultsAria": "Показати результат",
+    "resultTitle": "Створений вміст оголошення",
+    "description": "Опис",
+    "headlines": "Заголовки",
+    "socialMedia": "Соцмережі",
+    "noDescription": "Опис не створено",
+    "noHeadlines": "Заголовки не створено",
+    "noSocial": "Контент для соцмереж не створено",
+    "copyHeadline": "Скопіювати заголовок",
+    "failed": "Не вдалося створити оголошення",
+    "chars": "{count} символів",
+    "charsOf": "{count} / {max} символів",
+    "copied": "Скопійовано",
+    "copy": "Скопіювати",
+    "copyAll": "Скопіювати все",
+    "headlinesGenerated": "Створено заголовків: {count}"
+  },
+  "pwa": {
+    "installFailed": "Не вдалося встановити: {message}"
   }
 }

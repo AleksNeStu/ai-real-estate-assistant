@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Sparkles, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { neighborhoodSummaryApi } from '@/lib/api';
 
 interface NeighborhoodSummaryProps {
@@ -31,6 +32,7 @@ export function NeighborhoodSummary({
   maxSentences = 3,
   className,
 }: NeighborhoodSummaryProps) {
+  const t = useTranslations();
   const [summary, setSummary] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -104,7 +106,7 @@ export function NeighborhoodSummary({
             <div className="h-3 w-11/12 rounded bg-muted animate-pulse" />
             <div className="h-3 w-9/12 rounded bg-muted animate-pulse" />
             <div className="h-3 w-7/12 rounded bg-muted animate-pulse" />
-            <span className="sr-only">Loading neighborhood summary</span>
+            <span className="sr-only">{t('neighborhood.loadingSummary')}</span>
           </div>
         ) : summary ? (
           <p className="mt-1 text-sm leading-relaxed text-foreground">
@@ -112,12 +114,12 @@ export function NeighborhoodSummary({
           </p>
         ) : error ? (
           <p className="mt-1 text-xs italic text-muted-foreground">
-            Neighborhood summary unavailable right now.
+            {t('neighborhood.summaryUnavailable')}
           </p>
         ) : (
           <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
-            <span>Preparing summary…</span>
+            <span>{t('neighborhood.preparingSummary')}</span>
           </div>
         )}
       </div>

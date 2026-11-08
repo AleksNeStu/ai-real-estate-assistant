@@ -34,40 +34,40 @@ function ResetPasswordForm() {
   useEffect(() => {
     const tokenParam = searchParams.get('token');
     if (!tokenParam) {
-      setError('Invalid or missing reset token');
+      setError(t('resetPassword.invalidToken'));
     } else {
       setToken(tokenParam);
     }
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!token) {
-      setError('Invalid or missing reset token');
+      setError(t('resetPassword.invalidToken'));
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('errors.passwordMismatch'));
       return;
     }
 
     // Password validation
     if (password.length < 8) {
-      setError('Password must be at least 8 characters');
+      setError(t('errors.weakPassword'));
       return;
     }
     if (!/[A-Z]/.test(password)) {
-      setError('Password must contain at least one uppercase letter');
+      setError(t('errors.uppercaseRequired'));
       return;
     }
     if (!/[a-z]/.test(password)) {
-      setError('Password must contain at least one lowercase letter');
+      setError(t('errors.lowercaseRequired'));
       return;
     }
     if (!/\d/.test(password)) {
-      setError('Password must contain at least one digit');
+      setError(t('errors.digitRequired'));
       return;
     }
 
@@ -78,7 +78,7 @@ function ResetPasswordForm() {
       await resetPassword(token, password);
       setIsSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to reset password');
+      setError(err instanceof Error ? err.message : t('errors.resetFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -90,23 +90,18 @@ function ResetPasswordForm() {
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
             <div className="rounded-full bg-success/15 dark:bg-success/20 p-3">
-              <CheckCircle2
-                className="h-6 w-6 text-success dark:text-success"
-                aria-hidden="true"
-              />
+              <CheckCircle2 className="h-6 w-6 text-success dark:text-success" aria-hidden="true" />
             </div>
           </div>
           <CardTitle className="text-2xl">{t('resetPassword.title')}</CardTitle>
           <CardDescription>{t('resetPassword.success')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-center text-muted-foreground">
-            You can now log in with your new password.
-          </p>
+          <p className="text-sm text-center text-muted-foreground">{t('resetPassword.canLogin')}</p>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
           <Button className="w-full" onClick={() => router.push('/auth/login')}>
-            Go to login
+            {t('resetPassword.goToLogin')}
           </Button>
         </CardFooter>
       </Card>
@@ -140,7 +135,7 @@ function ResetPasswordForm() {
               disabled={isLoading || !token}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Min. 8 chars, uppercase, lowercase, digit"
+              placeholder={t('resetPassword.passwordHint')}
             />
           </div>
           <div className="grid gap-2">
@@ -152,7 +147,7 @@ function ResetPasswordForm() {
               disabled={isLoading || !token}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Re-enter your password"
+              placeholder={t('resetPassword.confirmHint')}
             />
           </div>
         </CardContent>

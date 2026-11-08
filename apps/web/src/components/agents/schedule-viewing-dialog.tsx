@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Calendar, Clock, Loader2, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -44,6 +45,7 @@ export function ScheduleViewingDialog({
   onSuccess,
   onCancel,
 }: ScheduleViewingDialogProps) {
+  const t = useTranslations();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,13 +83,14 @@ export function ScheduleViewingDialog({
         onSuccess?.();
       }, 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to schedule viewing');
+      setError(err instanceof Error ? err.message : t('scheduleViewing.failed'));
     } finally {
       setLoading(false);
     }
   };
 
-  const displayName = agent.name || agent.professional_email?.split('@')[0] || 'Agent';
+  const displayName =
+    agent.name || agent.professional_email?.split('@')[0] || t('agents.profile.defaultName');
 
   // Get minimum date (today)
   const today = new Date().toISOString().split('T')[0];
@@ -99,8 +102,8 @@ export function ScheduleViewingDialog({
           <div className="mb-4 rounded-full bg-success/15 p-3">
             <Calendar className="h-6 w-6 text-success" />
           </div>
-          <h3 className="mb-2 text-lg font-semibold">Viewing Requested!</h3>
-          <p className="text-muted-foreground">The agent will confirm your appointment soon.</p>
+          <h3 className="mb-2 text-lg font-semibold">{t('scheduleViewing.successTitle')}</h3>
+          <p className="text-muted-foreground">{t('scheduleViewing.successMessage')}</p>
         </CardContent>
       </Card>
     );
@@ -109,22 +112,27 @@ export function ScheduleViewingDialog({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg">Schedule a Viewing</CardTitle>
+        <CardTitle className="text-lg">{t('scheduleViewing.title')}</CardTitle>
         {onCancel && (
-          <Button variant="ghost" size="icon" onClick={onCancel} aria-label="Close dialog">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onCancel}
+            aria-label={t('scheduleViewing.close')}
+          >
             <X className="h-4 w-4" aria-hidden="true" />
           </Button>
         )}
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground mb-4">
-          Request a property viewing with {displayName}. They will confirm your appointment soon.
+          {t('scheduleViewing.requestWith', { name: displayName })}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="client_name">Your Name *</Label>
+              <Label htmlFor="client_name">{t('scheduleViewing.nameLabel')}</Label>
               <Input
                 id="client_name"
                 value={formData.client_name}
@@ -134,7 +142,7 @@ export function ScheduleViewingDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="client_email">Your Email *</Label>
+              <Label htmlFor="client_email">{t('scheduleViewing.emailLabel')}</Label>
               <Input
                 id="client_email"
                 type="email"
@@ -147,7 +155,7 @@ export function ScheduleViewingDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="client_phone">Your Phone</Label>
+            <Label htmlFor="client_phone">{t('scheduleViewing.phoneLabel')}</Label>
             <Input
               id="client_phone"
               type="tel"
@@ -159,7 +167,7 @@ export function ScheduleViewingDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="date">Preferred Date *</Label>
+              <Label htmlFor="date">{t('scheduleViewing.dateLabel')}</Label>
               <Input
                 id="date"
                 type="date"
@@ -170,7 +178,7 @@ export function ScheduleViewingDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="time">Preferred Time *</Label>
+              <Label htmlFor="time">{t('scheduleViewing.timeLabel')}</Label>
               <select
                 id="time"
                 value={formData.time}
@@ -188,7 +196,7 @@ export function ScheduleViewingDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="duration">Duration (minutes)</Label>
+            <Label htmlFor="duration">{t('scheduleViewing.durationLabel')}</Label>
             <Input
               id="duration"
               type="number"
@@ -206,12 +214,12 @@ export function ScheduleViewingDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
+            <Label htmlFor="notes">{t('scheduleViewing.notesLabel')}</Label>
             <textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Any special requests or questions?"
+              placeholder={t('scheduleViewing.notesPlaceholder')}
               rows={3}
               className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
             />
@@ -226,19 +234,19 @@ export function ScheduleViewingDialog({
           <div className="flex justify-end gap-2">
             {onCancel && (
               <Button type="button" variant="outline" onClick={onCancel}>
-                Cancel
+                {t('scheduleViewing.cancel')}
               </Button>
             )}
             <Button type="submit" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-                  Requesting...
+                  {t('scheduleViewing.requesting')}
                 </>
               ) : (
                 <>
                   <Clock className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Request Viewing
+                  {t('scheduleViewing.submit')}
                 </>
               )}
             </Button>

@@ -23,6 +23,7 @@ import { warn } from '@/lib/logger';
 import HeatmapLegend from './heatmap-legend';
 import GeoDrawControl, { type PolygonCoordinates } from './geo-draw-control';
 import { generatePopupHTML } from './property-map-popup';
+import { useTranslations } from 'next-intl';
 
 interface MapboxPropertyMapProps {
   points: PropertyMapPoint[];
@@ -117,6 +118,8 @@ export default function PropertyMapboxMap({
   height = '420px',
   mobileHeight = '60vh',
 }: MapboxPropertyMapProps) {
+  const t = useTranslations('property');
+  const tSearch = useTranslations('search');
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapboxMap | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -270,7 +273,14 @@ export default function PropertyMapboxMap({
         new mapboxgl.Marker({ element: el })
           .setLngLat([p.lon, p.lat])
           .setPopup(
-            new mapboxgl.Popup({ offset: 15, maxWidth: '280px' }).setHTML(generatePopupHTML(p))
+            new mapboxgl.Popup({ offset: 15, maxWidth: '280px' }).setHTML(
+              generatePopupHTML(p, {
+                priceOnRequest: t('card.priceOnRequest'),
+                untitled: t('card.untitled'),
+                locationUnavailable: t('card.locationUnavailable'),
+                beds: t('card.bedsUnit'),
+              })
+            )
           )
           .addTo(mapInstance);
       } else {
@@ -418,7 +428,7 @@ export default function PropertyMapboxMap({
         ref={mapContainer}
         className="w-full"
         style={{ height: mapHeight }}
-        aria-label="Property map with Mapbox"
+        aria-label={tSearch('propertyMapWithMapbox')}
       />
       {!mapboxToken && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted/50">

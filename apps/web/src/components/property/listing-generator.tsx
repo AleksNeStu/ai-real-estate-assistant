@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Sparkles, Copy, Check, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,7 @@ export function ListingGenerator({
   className,
   compact = false,
 }: ListingGeneratorProps) {
+  const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +66,7 @@ export function ListingGenerator({
         setIsOpen(true);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Generation failed');
+      setError(err instanceof Error ? err.message : t('listingGenerator.failed'));
     } finally {
       setIsLoading(false);
     }
@@ -111,7 +113,7 @@ export function ListingGenerator({
           ) : (
             <Sparkles className="h-4 w-4" aria-hidden="true" />
           )}
-          {isLoading ? 'Generating...' : 'Generate Listing'}
+          {isLoading ? t('listingGenerator.generating') : t('listingGenerator.generate')}
         </Button>
 
         {result && !compact && (
@@ -120,18 +122,20 @@ export function ListingGenerator({
             size="sm"
             onClick={() => setIsOpen(!isOpen)}
             className="gap-1"
-            aria-label={isOpen ? 'Hide results' : 'Show results'}
+            aria-label={
+              isOpen ? t('listingGenerator.hideResultsAria') : t('listingGenerator.showResultsAria')
+            }
             aria-expanded={isOpen}
           >
             {isOpen ? (
               <>
                 <ChevronUp className="h-4 w-4" aria-hidden="true" />
-                Hide
+                {t('listingGenerator.hideResults')}
               </>
             ) : (
               <>
                 <ChevronDown className="h-4 w-4" aria-hidden="true" />
-                Show Results
+                {t('listingGenerator.showResults')}
               </>
             )}
           </Button>
@@ -152,14 +156,14 @@ export function ListingGenerator({
       {result && isOpen && (
         <Card className="mt-4">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Generated Listing Content</CardTitle>
+            <CardTitle className="text-lg">{t('listingGenerator.resultTitle')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="description" className="w-full">
               <TabsList className="mb-4">
-                <TabsTrigger value="description">Description</TabsTrigger>
-                <TabsTrigger value="headlines">Headlines</TabsTrigger>
-                <TabsTrigger value="social">Social Media</TabsTrigger>
+                <TabsTrigger value="description">{t('listingGenerator.description')}</TabsTrigger>
+                <TabsTrigger value="headlines">{t('listingGenerator.headlines')}</TabsTrigger>
+                <TabsTrigger value="social">{t('listingGenerator.socialMedia')}</TabsTrigger>
               </TabsList>
 
               {/* Description Tab */}
@@ -168,7 +172,9 @@ export function ListingGenerator({
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">
-                        {result.char_counts.description?.toLocaleString()} chars
+                        {t('listingGenerator.chars', {
+                          count: result.char_counts.description?.toLocaleString() ?? 0,
+                        })}
                       </span>
                       <Button
                         variant="ghost"
@@ -179,12 +185,12 @@ export function ListingGenerator({
                         {copiedField === 'description' ? (
                           <>
                             <Check className="h-3 w-3" />
-                            Copied
+                            {t('listingGenerator.copied')}
                           </>
                         ) : (
                           <>
                             <Copy className="h-3 w-3" />
-                            Copy
+                            {t('listingGenerator.copy')}
                           </>
                         )}
                       </Button>
@@ -194,7 +200,9 @@ export function ListingGenerator({
                     </div>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-sm">No description generated</p>
+                  <p className="text-muted-foreground text-sm">
+                    {t('listingGenerator.noDescription')}
+                  </p>
                 )}
               </TabsContent>
 
@@ -204,7 +212,7 @@ export function ListingGenerator({
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">
-                        {result.headlines.length} headlines generated
+                        {t('listingGenerator.headlinesGenerated', { count: result.headlines.length })}
                       </span>
                       <Button
                         variant="ghost"
@@ -215,12 +223,12 @@ export function ListingGenerator({
                         {copiedField === 'headlines' ? (
                           <>
                             <Check className="h-3 w-3" />
-                            Copied
+                            {t('listingGenerator.copied')}
                           </>
                         ) : (
                           <>
                             <Copy className="h-3 w-3" />
-                            Copy All
+                            {t('listingGenerator.copyAll')}
                           </>
                         )}
                       </Button>
@@ -242,7 +250,9 @@ export function ListingGenerator({
                               onClick={() => handleCopy(headline, `hl-${index}`)}
                               className="h-6 w-6 p-0"
                               aria-label={
-                                copiedField === `hl-${index}` ? 'Copied' : 'Copy headline'
+                                copiedField === `hl-${index}`
+                                  ? t('listingGenerator.copied')
+                                  : t('listingGenerator.copyHeadline')
                               }
                             >
                               {copiedField === `hl-${index}` ? (
@@ -257,7 +267,9 @@ export function ListingGenerator({
                     </ul>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-sm">No headlines generated</p>
+                  <p className="text-muted-foreground text-sm">
+                    {t('listingGenerator.noHeadlines')}
+                  </p>
                 )}
               </TabsContent>
 
@@ -275,8 +287,10 @@ export function ListingGenerator({
                           )
                         )}
                       >
-                        {result.char_counts.social?.toLocaleString()} /{' '}
-                        {PLATFORM_LIMITS.facebook.toLocaleString()} chars
+                        {t('listingGenerator.charsOf', {
+                          count: result.char_counts.social?.toLocaleString() ?? 0,
+                          max: PLATFORM_LIMITS.facebook.toLocaleString(),
+                        })}
                       </span>
                       <Button
                         variant="ghost"
@@ -287,12 +301,12 @@ export function ListingGenerator({
                         {copiedField === 'social' ? (
                           <>
                             <Check className="h-3 w-3" />
-                            Copied
+                            {t('listingGenerator.copied')}
                           </>
                         ) : (
                           <>
                             <Copy className="h-3 w-3" />
-                            Copy
+                            {t('listingGenerator.copy')}
                           </>
                         )}
                       </Button>
@@ -302,7 +316,9 @@ export function ListingGenerator({
                     </div>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-sm">No social content generated</p>
+                  <p className="text-muted-foreground text-sm">
+                    {t('listingGenerator.noSocial')}
+                  </p>
                 )}
               </TabsContent>
             </Tabs>

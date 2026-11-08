@@ -14,10 +14,10 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  const t = await getTranslations('showcase');
   return {
-    title: 'Showcase · Built With This',
-    description:
-      'Forks, real-world deployments, and case studies of AI Real Estate Assistant.',
+    title: `${t('heroTitle')} · ${t('forksTitle')}`,
+    description: t('heroSubtitle'),
     // Absolute canonical + the full hreflang map. The layout no longer
     // declares a canonical (see the note in @/lib/metadata), and a page-level
     // `alternates` replaces the inherited one, so the languages have to be

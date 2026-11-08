@@ -82,7 +82,13 @@
       "rating": "Bewertung",
       "listings": "Anzahl der Angebote",
       "reviews": "Anzahl der Bewertungen",
-      "clear": "Filter zurücksetzen"
+      "clear": "Filter zurücksetzen",
+      "apply": "Filter anwenden",
+      "cityPlaceholder": "Stadt eingeben...",
+      "specialtyPlaceholder": "z. B. Wohnimmobilien, Gewerbe...",
+      "anyRating": "Beliebige Bewertung",
+      "any": "Beliebig",
+      "stars": "{count}+ Sterne"
     },
     "profile": {
       "title": "Agentenprofil",
@@ -94,7 +100,17 @@
       "email": "E-Mail",
       "license": "Lizenz",
       "agency": "Agentur",
-      "noListings": "Keine aktiven Angebote"
+      "noListings": "Keine aktiven Angebote",
+      "loadError": "Maklerprofil konnte nicht geladen werden",
+      "backToAgents": "Zurück zu den Maklern",
+      "notFound": "Makler nicht gefunden",
+      "browseAgents": "Makler ansehen",
+      "defaultName": "Makler",
+      "aboutAgent": "Über {name}",
+      "noBio": "Keine Beschreibung vorhanden.",
+      "listingsTab": "Inserate ({count})",
+      "contactTab": "Kontakt",
+      "primary": "Primär"
     },
     "contactForm": {
       "title": "{name} kontaktieren",
@@ -155,7 +171,18 @@
         "completed": "Abgeschlossen"
       }
     },
-    "selectType": "Typ auswählen"
+    "selectType": "Typ auswählen",
+    "errors": {
+      "load": "Makler konnten nicht geladen werden"
+    },
+    "sort": {
+      "rating": "Bewertung (absteigend)",
+      "reviews": "Meiste Bewertungen",
+      "listings": "Meiste Inserate",
+      "created": "Neueste zuerst",
+      "placeholder": "Sortieren nach"
+    },
+    "verifiedAria": "Verifizierter Makler"
   },
   "auth": {
     "signIn": "Anmelden",
@@ -196,7 +223,9 @@
       "submit": "Link zum Zurücksetzen senden",
       "backToLogin": "Zurück zur Anmeldung",
       "checkEmail": "Prüfe dein Postfach",
-      "resetSent": "Wir haben einen Link zum Zurücksetzen des Passworts an deine E-Mail-Adresse gesendet."
+      "resetSent": "Wir haben einen Link zum Zurücksetzen des Passworts an deine E-Mail-Adresse gesendet.",
+      "checkInbox": "Bitte prüfe dein Postfach auf den Link zum Zurücksetzen.",
+      "resend": "E-Mail erneut senden"
     },
     "resetPassword": {
       "title": "Passwort zurücksetzen",
@@ -204,7 +233,12 @@
       "newPasswordLabel": "Neues Passwort",
       "confirmPasswordLabel": "Neues Passwort bestätigen",
       "submit": "Passwort zurücksetzen",
-      "success": "Passwort erfolgreich zurückgesetzt"
+      "success": "Passwort erfolgreich zurückgesetzt",
+      "invalidToken": "Ungültiges oder fehlendes Reset-Token",
+      "passwordHint": "Min. 8 Zeichen, Groß- und Kleinbuchstabe, Ziffer",
+      "confirmHint": "Passwort erneut eingeben",
+      "canLogin": "Du kannst dich jetzt mit deinem neuen Passwort anmelden.",
+      "goToLogin": "Zur Anmeldung"
     },
     "verifyEmail": {
       "title": "E-Mail-Adresse bestätigen",
@@ -233,10 +267,24 @@
       "passwordMismatch": "Passwörter stimmen nicht überein",
       "weakPassword": "Das Passwort muss mindestens 8 Zeichen lang sein",
       "emailAlreadyExists": "Ein Konto mit dieser E-Mail-Adresse existiert bereits",
-      "invalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein"
+      "invalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein",
+      "uppercaseRequired": "Das Passwort muss mindestens einen Großbuchstaben enthalten",
+      "lowercaseRequired": "Das Passwort muss mindestens einen Kleinbuchstaben enthalten",
+      "digitRequired": "Das Passwort muss mindestens eine Ziffer enthalten",
+      "resetFailed": "Passwort konnte nicht zurückgesetzt werden",
+      "registerFailed": "Registrierung fehlgeschlagen",
+      "resetEmailFailed": "E-Mail zum Zurücksetzen konnte nicht gesendet werden"
     },
     "loading": "Wird geladen...",
-    "userMenu": "Benutzermenü"
+    "userMenu": "Benutzermenü",
+    "oauth": {
+      "failed": "Authentifizierung fehlgeschlagen",
+      "success": "Erfolgreich angemeldet!",
+      "welcome": "Willkommen!",
+      "redirecting": "Weiterleitung zur Anmeldeseite...",
+      "signingIn": "Anmeldung läuft...",
+      "pleaseWait": "Bitte warten..."
+    }
   },
   "cma": {
     "steps": {
@@ -526,7 +574,13 @@
     "tryAgain": "Erneut versuchen",
     "skipToContent": "Zum Hauptinhalt springen",
     "tryTheseChips": {
-      "heading": "Probiere eins davon"
+      "heading": "Probiere eins davon",
+      "p1": "2-Zimmer-Wohnung in Krakau unter 500 Tsd.",
+      "p2": "Familienhaus mit Garten in Warschau",
+      "p3": "Studio im Zentrum von Breslau",
+      "p4": "Anlageimmobilie, Danzig, ROI > 5 %",
+      "p5": "Kreditoptionen für 400 Tsd. vergleichen",
+      "p6": "Haustierfreundliche Vermietungen unter 3000 PLN/Monat"
     },
     "logIn": "Anmelden",
     "installApp": "App installieren",
@@ -537,14 +591,22 @@
     "backOnline": "Du bist wieder online",
     "offlineMessage": "Du bist offline. Einige Funktionen sind möglicherweise nicht verfügbar.",
     "newVersionAvailable": "Eine neue Version ist verfügbar!",
-    "dismissUpdate": "Schließen"
+    "dismissUpdate": "Schließen",
+    "emptySearchTitle": "Noch nichts zu zeigen",
+    "emptySearchBody": "Probiere eine der Beispielabfragen unten aus, um die Demo in Aktion zu sehen."
   },
   "demo": {
     "banner": "Demo-Modus — Suche und Stadt-Daten verfügbar",
     "login": "Anmelden",
     "lockedFeature": "Melden Sie sich an, um diese Funktion zu nutzen",
     "signInForFull": "Anmelden für AI-Assistent und mehr",
-    "signUpCta": "Registrieren für alle Funktionen"
+    "signUpCta": "Registrieren für alle Funktionen",
+    "badgeLabel": "Demo",
+    "badgeTooltip": "Demodaten — keine echten Inserate",
+    "emptyTitle": "Noch nichts zu zeigen",
+    "emptyHint": "Probiere eine der Beispielabfragen unten aus, um die Demo in Aktion zu sehen.",
+    "modeDisabled": "Deaktiviert",
+    "toggleFailed": "Demo-Modus konnte nicht umgeschaltet werden: {message}"
   },
   "documents": {
     "title": "Dokumente",
@@ -635,7 +697,11 @@
     "goHome": "Zur Startseite",
     "chatUnavailable": "Der Chat ist vorübergehend nicht verfügbar",
     "chatErrorFallback": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "pageNotFoundDescription": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+    "searchProperties": "Immobilien suchen",
+    "errorId": "Fehler-ID: {id}",
+    "unexpectedError": "Beim Laden dieser Seite ist ein unerwarteter Fehler aufgetreten."
   },
   "favorites": {
     "title": "Meine Favoriten",
@@ -1267,7 +1333,11 @@
     "quality": {
       "badge": "Qualität des Viertels: {rating} ({score}/100)",
       "score": "Qualität des Viertels: {score}/100"
-    }
+    },
+    "summaryFailed": "Viertelübersicht fehlgeschlagen: {message}",
+    "loadingSummary": "Viertelübersicht wird geladen",
+    "preparingSummary": "Übersicht wird vorbereitet…",
+    "summaryUnavailable": "Die Viertelübersicht ist derzeit nicht verfügbar."
   },
   "portfolio": {
     "title": "Portfolio-Analyse",
@@ -1306,7 +1376,9 @@
       "locationUnavailable": "Standort nicht verfügbar",
       "addToFavorites": "Zu Favoriten hinzufügen",
       "removeFromFavorites": "Aus Favoriten entfernen",
-      "loginRequired": "Melde dich an, um diese Immobilie zu speichern"
+      "loginRequired": "Melde dich an, um diese Immobilie zu speichern",
+      "viewDetails": "Details ansehen",
+      "bedsUnit": "Zimmer"
     },
     "favorite": {
       "add": "Zu Favoriten hinzufügen",
@@ -1330,7 +1402,10 @@
       "contact": "Agent kontaktieren"
     },
     "estimateLabel": "Geschätzte monatliche Rate: {value}",
-    "estimateTitle": "Geschätzte monatliche Rate bei {down} % Eigenkapital, {years} Jahre fest zu {rate} % APR. Kein Kreditangebot."
+    "estimateTitle": "Geschätzte monatliche Rate bei {down} % Eigenkapital, {years} Jahre fest zu {rate} % APR. Kein Kreditangebot.",
+    "map": {
+      "propertiesInArea": "{count, plural, one {# Immobilie} other {# Immobilien}} in diesem Gebiet"
+    }
   },
   "rentVsBuy": {
     "title": "Miete vs Kauf Rechner",
@@ -1564,7 +1639,10 @@
       "loginRequired": "Melde dich an, um Filter zu speichern",
       "saveFailed": "Filter konnte nicht gespeichert werden",
       "save": "Filter speichern",
-      "saving": "Speichern..."
+      "saving": "Speichern...",
+      "useLoginRequired": "Anmelden, um gespeicherte Filter zu nutzen",
+      "loadFailed": "Gespeicherte Filter konnten nicht geladen werden",
+      "deleteAria": "Gespeicherten Filter löschen"
     },
     "clearPriceFilter": "Preisfilter zurücksetzen",
     "filterByPropertyType": "Nach Objekttyp filtern",
@@ -1612,7 +1690,9 @@
       "allPrices": "Alle Preise",
       "resetAll": "Alles zurücksetzen",
       "heatmap": "Heatmap"
-    }
+    },
+    "mapZoomHint": "Zoome hinein, um einzelne Immobilien zu sehen.",
+    "mapAttribution": "OpenStreetMap"
   },
   "settings": {
     "title": "Einstellungen",
@@ -1862,7 +1942,8 @@
       "resetToDefault": "Auf den Systemstandard zurücksetzen.",
       "save": "Speichern",
       "selectBoth": "Bitte wählen Sie Anbieter und Modell aus.",
-      "systemDefault": "Systemstandard"
+      "systemDefault": "Systemstandard",
+      "loadFailed": "Einstellungen konnten nicht geladen werden"
     }
   },
   "tools": {
@@ -1905,7 +1986,9 @@
     },
     "skip": "Überspringen",
     "next": "Weiter",
-    "done": "Fertig"
+    "done": "Fertig",
+    "ariaLabel": "Einführungstour",
+    "closeAria": "Tour schließen"
   },
   "showcase": {
     "heroSubtitle": "Forks, reale Einsätze und Fallstudien des KI-Immobilienassistenten.",
@@ -2690,7 +2773,151 @@
       },
       "dataSources": {
         "title": "Datenquellen",
-        "description": "Woher die Angebote stammen."
+        "description": "Woher die Angebote stammen.",
+        "status": {
+          "connected": "Verbunden",
+          "disconnected": "Getrennt",
+          "error": "Fehler"
+        },
+        "lastSync": "Letzte Synchronisierung",
+        "syncNow": "Jetzt synchronisieren",
+        "configure": "Konfigurieren",
+        "actionsMenu": "Aktionen-Menü",
+        "addFirstSource": "Erste Quelle hinzufügen",
+        "addSource": "Quelle hinzufügen",
+        "autoSync": "Automatische Synchronisierung: {schedule}",
+        "autoSyncEnabled": "Automatische Synchronisierung: aktiviert",
+        "configuredSources": "Konfigurierte Quellen ({count})",
+        "daysAgo": "vor {count} Tagen",
+        "deleteConfirm": "Möchten Sie {name} wirklich löschen? Damit wird auch der gesamte Synchronisierungsverlauf gelöscht und das lässt sich nicht rückgängig machen.",
+        "deleteNote": "Bereits aus dieser Quelle importierte Datensätze bleiben im System erhalten.",
+        "deleteTitle": "Datenquelle löschen",
+        "deleting": "Wird gelöscht...",
+        "edit": "Bearbeiten",
+        "health": {
+          "degraded": "Eingeschränkt",
+          "error": "Fehler",
+          "healthy": "Gesund",
+          "pending": "Ausstehend",
+          "syncing": "Wird synchronisiert...",
+          "unhealthy": "Nicht gesund"
+        },
+        "hoursAgo": "vor {count} Std.",
+        "justNow": "Gerade eben",
+        "loadingSources": "Datenquellen werden geladen...",
+        "minutesAgo": "vor {count} Min.",
+        "neverSynced": "Noch nie synchronisiert",
+        "noSources": "Es sind noch keine Datenquellen konfiguriert.",
+        "records": "{count} Datensätze",
+        "sourceTypes": {
+          "fileUpload": "Dateiupload",
+          "json": "JSON",
+          "portalApi": "Portal-API",
+          "url": "URL"
+        },
+        "syncing": "Wird synchronisiert...",
+        "tabs": {
+          "sources": "Quellen ({count})",
+          "import": "Daten importieren"
+        },
+        "importMode": {
+          "url": "Von URL",
+          "file": "Datei hochladen",
+          "portal": "Portal-API"
+        },
+        "import": {
+          "title": "Daten importieren",
+          "fileUrl": "Datei-URL",
+          "fileUrlHint": "Unterstützt CSV (.csv) und Excel (.xlsx, .xls, .ods)",
+          "selectFile": "Datei auswählen",
+          "fileHint": "Maximale Dateigröße: 25 MB. Unterstützt: .xlsx, .xls, .ods, .csv",
+          "selected": "Ausgewählt:",
+          "fileSize": "{size} MB",
+          "sourceName": "Quellenname (optional)",
+          "sourceNamePlaceholder": "z. B. Immobilien Q1 2024",
+          "excelOptions": "Excel-Optionen",
+          "loadSheets": "Blätter laden",
+          "selectSheet": "Blatt auswählen",
+          "sheetOption": "{name} ({count} Zeilen)",
+          "headerRow": "Kopfzeile (0-basiert)",
+          "importing": "Import läuft...",
+          "action": "Daten importieren"
+        },
+        "portal": {
+          "title": "Vom Portal abrufen",
+          "loading": "Verfügbare Portale werden geladen...",
+          "none": "Keine Portal-Adapter verfügbar. Konfiguriere sie im Backend.",
+          "label": "Portal",
+          "notConfigured": "(nicht konfiguriert)",
+          "city": "Stadt * (erforderlich)",
+          "cityPlaceholder": "z. B. Warschau",
+          "filters": "Filter (optional)",
+          "minPrice": "Mindestpreis",
+          "minPricePlaceholder": "z. B. 1000",
+          "maxPrice": "Höchstpreis",
+          "maxPricePlaceholder": "z. B. 5000",
+          "minRooms": "Mindestanzahl Zimmer",
+          "minRoomsPlaceholder": "z. B. 1",
+          "maxRooms": "Höchstanzahl Zimmer",
+          "maxRoomsPlaceholder": "z. B. 4",
+          "propertyType": "Objekttyp",
+          "propertyTypeAny": "Beliebig",
+          "propertyTypeApartment": "Wohnung",
+          "propertyTypeHouse": "Haus",
+          "propertyTypeStudio": "Studio",
+          "listingType": "Anzeigetyp",
+          "listingTypeRent": "Miete",
+          "listingTypeSale": "Kauf",
+          "maxResults": "Maximale Trefferzahl",
+          "sourceNamePlaceholder": "z. B. Mietobjekte Warschau",
+          "fetching": "Wird abgerufen...",
+          "action": "Vom Portal abrufen"
+        },
+        "errors": {
+          "unknown": "Unbekannter Fehler",
+          "urlRequired": "Bitte zuerst eine Datei-URL eingeben.",
+          "urlMustBeExcel": "Die URL muss auf eine Excel-Datei (.xlsx, .xls oder .ods) zeigen.",
+          "fileRequired": "Bitte zuerst eine Datei auswählen.",
+          "fileMustBeExcel": "Die Datei muss eine Excel-Datei (.xlsx, .xls oder .ods) sein.",
+          "fileToUpload": "Bitte eine Datei zum Hochladen auswählen.",
+          "urlMissing": "Bitte eine Datei-URL eingeben.",
+          "portalRequired": "Bitte ein Portal auswählen.",
+          "cityRequired": "Bitte eine Stadt eingeben."
+        },
+        "result": {
+          "title": "Import erfolgreich",
+          "propertiesProcessed": "Verarbeitete Objekte: {count}",
+          "sourceType": "Quellentyp: {type}",
+          "sourceName": "Quellenname: {name}",
+          "warnings": "Warnungen ({count})"
+        },
+        "editDialog": {
+          "title": "Datenquelle bearbeiten",
+          "statusPending": "Ausstehend",
+          "statusActive": "Aktiv",
+          "statusDisabled": "Deaktiviert",
+          "sectionBasic": "Allgemein",
+          "name": "Name",
+          "status": "Status",
+          "sectionFilters": "Filter",
+          "sectionScheduling": "Zeitplan",
+          "autoSyncEnabled": "Automatische Synchronisierung aktiviert",
+          "syncSchedule": "Synchronisierungsplan",
+          "syncSchedulePlaceholder": "z. B. 0 */6 * * *",
+          "cronHint": "Cron-Ausdruck (optional)",
+          "saving": "Wird gespeichert...",
+          "saveChanges": "Änderungen speichern",
+          "propertyTypeApartment": "Wohnung",
+          "propertyTypeHouse": "Haus",
+          "propertyTypeLand": "Grundstück",
+          "propertyTypeCommercial": "Gewerbeobjekt",
+          "propertyTypeGarage": "Garage",
+          "listingTypeSale": "Kauf",
+          "listingTypeRent": "Miete"
+        },
+        "delete": "Löschen",
+        "enabled": "Aktiviert",
+        "requestId": "Anfrage-ID: {id}"
       },
       "bulkJobs": {
         "title": "Massenimport und -export",
@@ -2818,5 +3045,62 @@
       "title": "Etwas ist schiefgelaufen",
       "description": "Die Daten konnten nicht geladen werden. Versuche es gleich noch einmal."
     }
+  },
+  "scheduleViewing": {
+    "title": "Besichtigung vereinbaren",
+    "close": "Dialog schließen",
+    "requestWith": "Bitte {name} um eine Besichtigung. Die Terminbestätigung kommt in Kürze.",
+    "nameLabel": "Dein Name *",
+    "emailLabel": "Deine E-Mail *",
+    "phoneLabel": "Deine Telefonnummer",
+    "dateLabel": "Wunschtermin *",
+    "timeLabel": "Wunschzeit *",
+    "durationLabel": "Dauer (Minuten)",
+    "notesLabel": "Notizen",
+    "notesPlaceholder": "Besondere Wünsche oder Fragen?",
+    "submit": "Besichtigung anfragen",
+    "successTitle": "Besichtigung angefragt!",
+    "successMessage": "Der Makler bestätigt deinen Termin in Kürze.",
+    "failed": "Besichtigung konnte nicht vereinbart werden",
+    "cancel": "Abbrechen",
+    "requesting": "Wird angefragt..."
+  },
+  "taskTypes": {
+    "chat": "Chat",
+    "search": "Suche",
+    "tools": "Werkzeuge",
+    "analysis": "Analyse",
+    "embedding": "Embeddings",
+    "chatDescription": "Konversationsantworten und allgemeine Fragen",
+    "searchDescription": "Verarbeitung von Immobiliensuchanfragen",
+    "toolsDescription": "Ausführung von Werkzeugen und Funktionen",
+    "analysisDescription": "Marktanalyse und komplexes Schließen",
+    "embeddingDescription": "Erzeugung von Vektor-Embeddings"
+  },
+  "listingGenerator": {
+    "generate": "Inserat erstellen",
+    "generating": "Wird erstellt...",
+    "showResults": "Ergebnis anzeigen",
+    "hideResults": "Ausblenden",
+    "hideResultsAria": "Ergebnis ausblenden",
+    "showResultsAria": "Ergebnis anzeigen",
+    "resultTitle": "Erstellter Inhalt für das Inserat",
+    "description": "Beschreibung",
+    "headlines": "Überschriften",
+    "socialMedia": "Social Media",
+    "noDescription": "Keine Beschreibung erstellt",
+    "noHeadlines": "Keine Überschriften erstellt",
+    "noSocial": "Keine Social-Media-Inhalte erstellt",
+    "copyHeadline": "Überschrift kopieren",
+    "failed": "Erstellung fehlgeschlagen",
+    "chars": "{count} Zeichen",
+    "charsOf": "{count} / {max} Zeichen",
+    "copied": "Kopiert",
+    "copy": "Kopieren",
+    "copyAll": "Alle kopieren",
+    "headlinesGenerated": "{count} Überschriften erstellt"
+  },
+  "pwa": {
+    "installFailed": "Installation fehlgeschlagen: {message}"
   }
 }

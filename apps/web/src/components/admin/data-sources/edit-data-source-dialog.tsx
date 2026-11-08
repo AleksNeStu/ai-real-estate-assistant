@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import type { DataSource, DataSourceUpdate, DataSourceStatus } from '@/lib/types';
 
@@ -13,14 +14,10 @@ interface EditDataSourceDialogProps {
   isSaving?: boolean;
 }
 
-const STATUS_OPTIONS: { value: DataSourceStatus; label: string }[] = [
-  { value: 'pending', label: 'Pending' },
-  { value: 'active', label: 'Active' },
-  { value: 'disabled', label: 'Disabled' },
-];
+const STATUS_VALUES: DataSourceStatus[] = ['pending', 'active', 'disabled'];
 
-const PROPERTY_TYPES = ['apartment', 'house', 'land', 'commercial', 'garage'];
-const LISTING_TYPES = ['sale', 'rent'];
+const PROPERTY_TYPES = ['apartment', 'house', 'land', 'commercial', 'garage'] as const;
+const LISTING_TYPES = ['sale', 'rent'] as const;
 
 export function EditDataSourceDialog({
   source,
@@ -29,6 +26,8 @@ export function EditDataSourceDialog({
   onSave,
   isSaving = false,
 }: EditDataSourceDialogProps) {
+  const t = useTranslations('pages.admin.dataSources');
+  const tCommon = useTranslations('common');
   // key={editSource?.id} in parent ensures remount on source change
   const [name, setName] = useState(source?.name ?? '');
   const [status, setStatus] = useState<DataSourceStatus>(source?.status ?? 'pending');
@@ -72,7 +71,7 @@ export function EditDataSourceDialog({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="text-lg font-semibold" id="edit-dialog-title">
-            Edit Data Source
+            {t('editDialog.title')}
           </h3>
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={onClose}>
             <X className="w-4 h-4" />
@@ -83,11 +82,13 @@ export function EditDataSourceDialog({
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Basic Info */}
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-muted-foreground">Basic</h4>
+            <h4 className="text-sm font-medium text-muted-foreground">
+              {t('editDialog.sectionBasic')}
+            </h4>
 
             <div>
               <label htmlFor="edit-name" className="block text-sm font-medium mb-1">
-                Name
+                {t('editDialog.name')}
               </label>
               <input
                 id="edit-name"
@@ -103,7 +104,7 @@ export function EditDataSourceDialog({
 
             <div>
               <label htmlFor="edit-status" className="block text-sm font-medium mb-1">
-                Status
+                {t('editDialog.status')}
               </label>
               <select
                 id="edit-status"
@@ -111,9 +112,9 @@ export function EditDataSourceDialog({
                 onChange={(e) => setStatus(e.target.value as DataSourceStatus)}
                 className="w-full rounded-md border bg-background px-3 py-2 text-sm"
               >
-                {STATUS_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
+                {STATUS_VALUES.map((value) => (
+                  <option key={value} value={value}>
+                    {t(`editDialog.status${value.charAt(0).toUpperCase()}${value.slice(1)}`)}
                   </option>
                 ))}
               </select>
@@ -123,7 +124,9 @@ export function EditDataSourceDialog({
           {/* Config Filters */}
           {configKeys.length > 0 && (
             <div className="space-y-3">
-              <h4 className="text-sm font-medium text-muted-foreground">Filters</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">
+                {t('editDialog.sectionFilters')}
+              </h4>
               <div className="grid grid-cols-2 gap-3">
                 {Object.entries(config).map(([key, value]) => (
                   <div
@@ -136,7 +139,7 @@ export function EditDataSourceDialog({
                     >
                       {key.replace(/_/g, ' ')}
                     </label>
-                    {renderConfigInput(key, value, updateConfigField)}
+                    {renderConfigInput(key, value, updateConfigField, t)}
                   </div>
                 ))}
               </div>
@@ -145,7 +148,9 @@ export function EditDataSourceDialog({
 
           {/* Scheduling */}
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-muted-foreground">Scheduling</h4>
+            <h4 className="text-sm font-medium text-muted-foreground">
+              {t('editDialog.sectionScheduling')}
+            </h4>
 
             <div className="flex items-center gap-2">
               <input
@@ -156,13 +161,13 @@ export function EditDataSourceDialog({
                 className="rounded border"
               />
               <label htmlFor="edit-auto-sync" className="text-sm">
-                Auto-sync enabled
+                {t('editDialog.autoSyncEnabled')}
               </label>
             </div>
 
             <div>
               <label htmlFor="edit-schedule" className="block text-sm font-medium mb-1">
-                Sync Schedule
+                {t('editDialog.syncSchedule')}
               </label>
               <input
                 id="edit-schedule"
@@ -170,9 +175,9 @@ export function EditDataSourceDialog({
                 value={syncSchedule}
                 onChange={(e) => setSyncSchedule(e.target.value)}
                 className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                placeholder="e.g. 0 */6 * * *"
+                placeholder={t('editDialog.syncSchedulePlaceholder')}
               />
-              <p className="text-xs text-muted-foreground mt-1">Cron expression (optional)</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('editDialog.cronHint')}</p>
             </div>
           </div>
         </form>
@@ -180,13 +185,13 @@ export function EditDataSourceDialog({
         {/* Footer */}
         <div className="flex justify-end gap-2 p-4 border-t">
           <Button variant="outline" onClick={onClose} disabled={isSaving}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             onClick={handleSubmit as unknown as () => void}
             disabled={isSaving || !name.trim()}
           >
-            {isSaving ? 'Saving...' : 'Save Changes'}
+            {isSaving ? t('editDialog.saving') : t('editDialog.saveChanges')}
           </Button>
         </div>
       </div>
@@ -197,7 +202,8 @@ export function EditDataSourceDialog({
 function renderConfigInput(
   key: string,
   value: unknown,
-  onChange: (key: string, value: unknown) => void
+  onChange: (key: string, value: unknown) => void,
+  t: (key: string) => string
 ) {
   if (key === 'property_type') {
     return (
@@ -208,9 +214,9 @@ function renderConfigInput(
         className="w-full rounded-md border bg-background px-3 py-2 text-sm"
       >
         <option value="">—</option>
-        {PROPERTY_TYPES.map((t) => (
-          <option key={t} value={t}>
-            {t}
+        {PROPERTY_TYPES.map((type) => (
+          <option key={type} value={type}>
+            {t(`editDialog.propertyType${type.charAt(0).toUpperCase()}${type.slice(1)}`)}
           </option>
         ))}
       </select>
@@ -226,9 +232,9 @@ function renderConfigInput(
         className="w-full rounded-md border bg-background px-3 py-2 text-sm"
       >
         <option value="">—</option>
-        {LISTING_TYPES.map((t) => (
-          <option key={t} value={t}>
-            {t}
+        {LISTING_TYPES.map((type) => (
+          <option key={type} value={type}>
+            {t(`editDialog.listingType${type.charAt(0).toUpperCase()}${type.slice(1)}`)}
           </option>
         ))}
       </select>

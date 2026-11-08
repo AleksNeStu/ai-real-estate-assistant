@@ -1,6 +1,7 @@
 'use client';
 
 import { FlaskConical } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface DemoDataBadgeProps {
   variant?: 'card' | 'inline';
@@ -22,7 +23,8 @@ export function DemoDataBadge({
   variant = 'card',
   className,
 }: DemoDataBadgeProps) {
-  const label = 'Demo data — not real listings';
+  const t = useTranslations('demo');
+  const label = t('badgeTooltip');
 
   const base =
     'inline-flex items-center gap-1 rounded-full bg-warning/10 text-warning dark:text-caution border border-caution/20';
@@ -37,7 +39,7 @@ export function DemoDataBadge({
       aria-label={label}
     >
       <FlaskConical className="h-3 w-3" aria-hidden="true" />
-      <span className="font-medium uppercase tracking-wide">Demo</span>
+      <span className="font-medium uppercase tracking-wide">{t('badgeLabel')}</span>
     </span>
   );
 }

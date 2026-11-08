@@ -1,6 +1,7 @@
 'use client';
 
 import { Progress } from '@/components/ui/progress';
+import { useTranslations } from 'next-intl';
 
 interface DataSourceHealthBadgeProps {
   healthScore: number;
@@ -13,6 +14,8 @@ export function DataSourceHealthBadge({
   status,
   className = '',
 }: DataSourceHealthBadgeProps) {
+  const t = useTranslations('pages.admin.dataSources');
+
   const getColorClass = () => {
     if (status === 'error') return 'bg-destructive';
     if (status === 'syncing') return 'bg-warning';
@@ -23,12 +26,12 @@ export function DataSourceHealthBadge({
   };
 
   const getLabel = () => {
-    if (status === 'error') return 'Error';
-    if (status === 'syncing') return 'Syncing...';
-    if (status === 'pending') return 'Pending';
-    if (healthScore >= 80) return 'Healthy';
-    if (healthScore >= 50) return 'Degraded';
-    return 'Unhealthy';
+    if (status === 'error') return t('health.error');
+    if (status === 'syncing') return t('health.syncing');
+    if (status === 'pending') return t('health.pending');
+    if (healthScore >= 80) return t('health.healthy');
+    if (healthScore >= 50) return t('health.degraded');
+    return t('health.unhealthy');
   };
 
   return (

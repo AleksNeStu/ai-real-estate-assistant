@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { Filter, Plus, Trash2, Star, Loader2, ChevronDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -28,6 +29,7 @@ interface PresetSelectorProps {
 }
 
 export function PresetSelector({ onPresetSelect, currentFilters, className }: PresetSelectorProps) {
+  const t = useTranslations('search');
   const [presets, setPresets] = useState<FilterPreset[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,9 +44,9 @@ export function PresetSelector({ onPresetSelect, currentFilters, className }: Pr
       setPresets(response.items);
     } catch (err) {
       if (err instanceof ApiError && err.category === 'auth') {
-        setError('Log in to use presets');
+        setError(t('preset.useLoginRequired'));
       } else {
-        setError('Failed to load presets');
+        setError(t('preset.loadFailed'));
       }
     } finally {
       setLoading(false);
@@ -157,8 +159,8 @@ export function PresetSelector({ onPresetSelect, currentFilters, className }: Pr
                     <button type="button"
                       onClick={(e) => handleSetDefault(preset, e)}
                       className="p-1 hover:bg-muted rounded"
-                      title="Set as default"
-                      aria-label={`Set ${preset.name} as default`}
+                      title={t('preset.setDefault')}
+                      aria-label={`${t('preset.setDefault')} — ${preset.name}`}
                     >
                       <Star
                         className="h-3 w-3 text-muted-foreground hover:text-warning"
@@ -170,8 +172,8 @@ export function PresetSelector({ onPresetSelect, currentFilters, className }: Pr
                     onClick={(e) => handleDeletePreset(preset, e)}
                     className="p-1 hover:bg-muted rounded"
                     disabled={deletingId === preset.id}
-                    title="Delete preset"
-                    aria-label={`Delete preset ${preset.name}`}
+                    title={t('preset.deleteAria')}
+                    aria-label={`${t('preset.deleteAria')} — ${preset.name}`}
                   >
                     <Trash2
                       className="h-3 w-3 text-muted-foreground hover:text-destructive"

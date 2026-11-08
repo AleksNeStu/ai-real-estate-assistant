@@ -50,6 +50,7 @@ type TabType = 'sources' | 'import';
 
 export default function DataSourcesPage() {
   const t = useTranslations('pages.admin.dataSources');
+  const tCommon = useTranslations('common');
   // Data sources state
   const [sources, setSources] = useState<DataSource[]>([]);
   const [loadingSources, setLoadingSources] = useState(true);
@@ -132,7 +133,7 @@ export default function DataSourcesPage() {
   }, [loadDataSources]);
 
   const extractErrorState = (err: unknown): ErrorState => {
-    let message = 'Unknown error';
+    let message = t('errors.unknown');
     let requestId: string | undefined = undefined;
 
     if (err instanceof ApiError) {
@@ -220,12 +221,12 @@ export default function DataSourcesPage() {
   const onLoadSheets = async () => {
     const url = fileUrl.trim();
     if (!url) {
-      setError({ message: 'Please enter a file URL first.' });
+      setError({ message: t('errors.urlRequired') });
       return;
     }
 
     if (!isExcelFile(url)) {
-      setError({ message: 'URL must point to an Excel file (.xlsx, .xls, or .ods).' });
+      setError({ message: t('errors.urlMustBeExcel') });
       return;
     }
 
@@ -252,12 +253,12 @@ export default function DataSourcesPage() {
 
   const onLoadSheetsUpload = async () => {
     if (!uploadFile) {
-      setError({ message: 'Please select a file first.' });
+      setError({ message: t('errors.fileRequired') });
       return;
     }
 
     if (!isExcelFileObj(uploadFile)) {
-      setError({ message: 'File must be an Excel file (.xlsx, .xls, or .ods).' });
+      setError({ message: t('errors.fileMustBeExcel') });
       return;
     }
 
@@ -286,7 +287,7 @@ export default function DataSourcesPage() {
   const onIngest = async () => {
     if (importMode === 'file') {
       if (!uploadFile) {
-        setError({ message: 'Please select a file to upload.' });
+        setError({ message: t('errors.fileToUpload') });
         return;
       }
 
@@ -312,7 +313,7 @@ export default function DataSourcesPage() {
 
     const url = fileUrl.trim();
     if (!url) {
-      setError({ message: 'Please enter a file URL.' });
+      setError({ message: t('errors.urlMissing') });
       return;
     }
 
@@ -339,12 +340,12 @@ export default function DataSourcesPage() {
 
   const onFetchFromPortal = async () => {
     if (!selectedPortal) {
-      setError({ message: 'Please select a portal.' });
+      setError({ message: t('errors.portalRequired') });
       return;
     }
 
     if (!portalCity.trim()) {
-      setError({ message: 'Please enter a city.' });
+      setError({ message: t('errors.cityRequired') });
       return;
     }
 
@@ -398,7 +399,7 @@ export default function DataSourcesPage() {
           onClick={() => setActiveTab('sources')}
         >
           <Database className="w-4 h-4 inline mr-2" />
-          Sources ({sources.length})
+          {t('tabs.sources', { count: sources.length })}
         </button>
         <button
           type="button"
@@ -410,7 +411,7 @@ export default function DataSourcesPage() {
           onClick={() => setActiveTab('import')}
         >
           <Upload className="w-4 h-4 inline mr-2" />
-          Import Data
+          {t('tabs.import')}
         </button>
       </div>
 
@@ -446,7 +447,7 @@ export default function DataSourcesPage() {
               }}
             >
               <Globe className="w-4 h-4 inline mr-2" />
-              From URL
+              {t('importMode.url')}
             </button>
             <button
               type="button"
@@ -462,7 +463,7 @@ export default function DataSourcesPage() {
               }}
             >
               <Upload className="w-4 h-4 inline mr-2" />
-              Upload File
+              {t('importMode.file')}
             </button>
             <button
               type="button"
@@ -478,7 +479,7 @@ export default function DataSourcesPage() {
               }}
             >
               <Globe className="w-4 h-4 inline mr-2" />
-              Portal API
+              {t('importMode.portal')}
             </button>
           </div>
 
@@ -487,14 +488,14 @@ export default function DataSourcesPage() {
             <div className="border rounded-lg p-6">
               <div className="flex items-center gap-2 mb-4">
                 <FileUp className="w-5 h-5" />
-                <h2 className="text-xl font-semibold">Import Data</h2>
+                <h2 className="text-xl font-semibold">{t('import.title')}</h2>
               </div>
 
               <div className="space-y-4">
                 {importMode === 'url' && (
                   <div>
                     <label htmlFor="fileUrl" className="block text-sm font-medium mb-2">
-                      File URL
+                      {t('import.fileUrl')}
                     </label>
                     <input
                       id="fileUrl"
@@ -505,16 +506,14 @@ export default function DataSourcesPage() {
                       onChange={(e) => setFileUrl(e.target.value)}
                       disabled={loading}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Supports CSV (.csv) and Excel (.xlsx, .xls, .ods) files
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{t('import.fileUrlHint')}</p>
                   </div>
                 )}
 
                 {importMode === 'file' && (
                   <div>
                     <label htmlFor="fileUpload" className="block text-sm font-medium mb-2">
-                      Select File
+                      {t('import.selectFile')}
                     </label>
                     <input
                       id="fileUpload"
@@ -528,13 +527,14 @@ export default function DataSourcesPage() {
                       }}
                       disabled={loading}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Max file size: 25MB. Supports: .xlsx, .xls, .ods, .csv
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{t('import.fileHint')}</p>
                     {uploadFile && (
                       <p className="text-sm text-muted-foreground mt-2">
-                        Selected: <strong>{uploadFile.name}</strong> (
-                        {(uploadFile.size / 1024 / 1024).toFixed(2)} MB)
+                        {t('import.selected')} <strong>{uploadFile.name}</strong> (
+                        {t('import.fileSize', {
+                          size: (uploadFile.size / 1024 / 1024).toFixed(2),
+                        })}
+                        )
                       </p>
                     )}
                   </div>
@@ -542,13 +542,13 @@ export default function DataSourcesPage() {
 
                 <div>
                   <label htmlFor="sourceName" className="block text-sm font-medium mb-2">
-                    Source Name (optional)
+                    {t('import.sourceName')}
                   </label>
                   <input
                     id="sourceName"
                     className="border p-2 w-full rounded"
                     type="text"
-                    placeholder="e.g., Q1 2024 Properties"
+                    placeholder={t('import.sourceNamePlaceholder')}
                     value={sourceName}
                     onChange={(e) => setSourceName(e.target.value)}
                     disabled={loading}
@@ -561,7 +561,7 @@ export default function DataSourcesPage() {
                   <div className="border-t pt-4 mt-4">
                     <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                       <FileSpreadsheet className="w-4 h-4" />
-                      Excel Options
+                      {t('import.excelOptions')}
                     </h3>
                     <div className="grid gap-4">
                       <div className="flex gap-2">
@@ -574,12 +574,12 @@ export default function DataSourcesPage() {
                           {loadingSheets ? (
                             <>
                               <Loader2 className="w-4 h-4 mr-2 animate-spin inline" />
-                              Loading...
+                              {tCommon('loading')}
                             </>
                           ) : (
                             <>
                               <Table className="w-4 h-4 mr-2 inline" />
-                              Load Sheets
+                              {t('import.loadSheets')}
                             </>
                           )}
                         </button>
@@ -589,7 +589,7 @@ export default function DataSourcesPage() {
                         <>
                           <div>
                             <label htmlFor="sheetSelect" className="block text-sm font-medium mb-2">
-                              Select Sheet
+                              {t('import.selectSheet')}
                             </label>
                             <select
                               id="sheetSelect"
@@ -600,7 +600,10 @@ export default function DataSourcesPage() {
                             >
                               {sheets.map((sheet) => (
                                 <option key={sheet.name} value={sheet.name}>
-                                  {sheet.name} ({sheet.rowCount} rows)
+                                  {t('import.sheetOption', {
+                                    name: sheet.name,
+                                    count: sheet.rowCount,
+                                  })}
                                 </option>
                               ))}
                             </select>
@@ -608,7 +611,7 @@ export default function DataSourcesPage() {
 
                           <div>
                             <label htmlFor="headerRow" className="block text-sm font-medium mb-2">
-                              Header Row (0-indexed)
+                              {t('import.headerRow')}
                             </label>
                             <input
                               id="headerRow"
@@ -635,12 +638,12 @@ export default function DataSourcesPage() {
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Importing...
+                      {t('import.importing')}
                     </>
                   ) : (
                     <>
                       <Upload className="w-4 h-4" />
-                      Import Data
+                      {t('import.action')}
                     </>
                   )}
                 </button>
@@ -653,23 +656,21 @@ export default function DataSourcesPage() {
             <div className="border rounded-lg p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Globe className="w-5 h-5" />
-                <h2 className="text-xl font-semibold">Fetch from Portal</h2>
+                <h2 className="text-xl font-semibold">{t('portal.title')}</h2>
               </div>
 
               {loadingPortals ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-6 h-6 animate-spin mr-2" />
-                  Loading available portals...
+                  {t('portal.loading')}
                 </div>
               ) : portals.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No portal adapters available. Configure adapters in the backend.
-                </div>
+                <div className="text-center py-8 text-muted-foreground">{t('portal.none')}</div>
               ) : (
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="portalSelect" className="block text-sm font-medium mb-2">
-                      Portal
+                      {t('portal.label')}
                     </label>
                     <select
                       id="portalSelect"
@@ -681,7 +682,7 @@ export default function DataSourcesPage() {
                       {portals.map((portal) => (
                         <option key={portal.name} value={portal.name} disabled={!portal.configured}>
                           {portal.display_name}
-                          {!portal.configured && ' (not configured)'}
+                          {!portal.configured && ` ${t('portal.notConfigured')}`}
                         </option>
                       ))}
                     </select>
@@ -689,13 +690,13 @@ export default function DataSourcesPage() {
 
                   <div>
                     <label htmlFor="portalCity" className="block text-sm font-medium mb-2">
-                      City * (required)
+                      {t('portal.city')}
                     </label>
                     <input
                       id="portalCity"
                       className="border p-2 w-full rounded"
                       type="text"
-                      placeholder="e.g., Warsaw"
+                      placeholder={t('portal.cityPlaceholder')}
                       value={portalCity}
                       onChange={(e) => setPortalCity(e.target.value)}
                       disabled={loading}
@@ -705,13 +706,13 @@ export default function DataSourcesPage() {
                   <div className="border-t pt-4 mt-4">
                     <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                       <Filter className="w-4 h-4" />
-                      Filters (optional)
+                      {t('portal.filters')}
                     </h3>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label htmlFor="minPrice" className="block text-sm font-medium mb-2">
-                          Min Price
+                          {t('portal.minPrice')}
                         </label>
                         <input
                           id="minPrice"
@@ -719,7 +720,7 @@ export default function DataSourcesPage() {
                           type="number"
                           min="0"
                           step="100"
-                          placeholder="e.g., 1000"
+                          placeholder={t('portal.minPricePlaceholder')}
                           value={portalMinPrice}
                           onChange={(e) => setPortalMinPrice(e.target.value)}
                           disabled={loading}
@@ -728,7 +729,7 @@ export default function DataSourcesPage() {
 
                       <div>
                         <label htmlFor="maxPrice" className="block text-sm font-medium mb-2">
-                          Max Price
+                          {t('portal.maxPrice')}
                         </label>
                         <input
                           id="maxPrice"
@@ -736,7 +737,7 @@ export default function DataSourcesPage() {
                           type="number"
                           min="0"
                           step="100"
-                          placeholder="e.g., 5000"
+                          placeholder={t('portal.maxPricePlaceholder')}
                           value={portalMaxPrice}
                           onChange={(e) => setPortalMaxPrice(e.target.value)}
                           disabled={loading}
@@ -745,7 +746,7 @@ export default function DataSourcesPage() {
 
                       <div>
                         <label htmlFor="minRooms" className="block text-sm font-medium mb-2">
-                          Min Rooms
+                          {t('portal.minRooms')}
                         </label>
                         <input
                           id="minRooms"
@@ -753,7 +754,7 @@ export default function DataSourcesPage() {
                           type="number"
                           min="0"
                           step="0.5"
-                          placeholder="e.g., 1"
+                          placeholder={t('portal.minRoomsPlaceholder')}
                           value={portalMinRooms}
                           onChange={(e) => setPortalMinRooms(e.target.value)}
                           disabled={loading}
@@ -762,7 +763,7 @@ export default function DataSourcesPage() {
 
                       <div>
                         <label htmlFor="maxRooms" className="block text-sm font-medium mb-2">
-                          Max Rooms
+                          {t('portal.maxRooms')}
                         </label>
                         <input
                           id="maxRooms"
@@ -770,7 +771,7 @@ export default function DataSourcesPage() {
                           type="number"
                           min="0"
                           step="0.5"
-                          placeholder="e.g., 4"
+                          placeholder={t('portal.maxRoomsPlaceholder')}
                           value={portalMaxRooms}
                           onChange={(e) => setPortalMaxRooms(e.target.value)}
                           disabled={loading}
@@ -779,7 +780,7 @@ export default function DataSourcesPage() {
 
                       <div>
                         <label htmlFor="propertyType" className="block text-sm font-medium mb-2">
-                          Property Type
+                          {t('portal.propertyType')}
                         </label>
                         <select
                           id="propertyType"
@@ -788,16 +789,16 @@ export default function DataSourcesPage() {
                           onChange={(e) => setPortalPropertyType(e.target.value)}
                           disabled={loading}
                         >
-                          <option value="">Any</option>
-                          <option value="apartment">Apartment</option>
-                          <option value="house">House</option>
-                          <option value="studio">Studio</option>
+                          <option value="">{t('portal.propertyTypeAny')}</option>
+                          <option value="apartment">{t('portal.propertyTypeApartment')}</option>
+                          <option value="house">{t('portal.propertyTypeHouse')}</option>
+                          <option value="studio">{t('portal.propertyTypeStudio')}</option>
                         </select>
                       </div>
 
                       <div>
                         <label htmlFor="listingType" className="block text-sm font-medium mb-2">
-                          Listing Type
+                          {t('portal.listingType')}
                         </label>
                         <select
                           id="listingType"
@@ -806,15 +807,15 @@ export default function DataSourcesPage() {
                           onChange={(e) => setPortalListingType(e.target.value)}
                           disabled={loading}
                         >
-                          <option value="rent">Rent</option>
-                          <option value="sale">Sale</option>
+                          <option value="rent">{t('portal.listingTypeRent')}</option>
+                          <option value="sale">{t('portal.listingTypeSale')}</option>
                         </select>
                       </div>
                     </div>
 
                     <div className="mt-4">
                       <label htmlFor="limit" className="block text-sm font-medium mb-2">
-                        Max Results
+                        {t('portal.maxResults')}
                       </label>
                       <input
                         id="limit"
@@ -831,13 +832,13 @@ export default function DataSourcesPage() {
 
                   <div>
                     <label htmlFor="portalSourceName" className="block text-sm font-medium mb-2">
-                      Source Name (optional)
+                      {t('import.sourceName')}
                     </label>
                     <input
                       id="portalSourceName"
                       className="border p-2 w-full rounded"
                       type="text"
-                      placeholder="e.g., Warsaw Rentals"
+                      placeholder={t('portal.sourceNamePlaceholder')}
                       value={sourceName}
                       onChange={(e) => setSourceName(e.target.value)}
                       disabled={loading}
@@ -853,12 +854,12 @@ export default function DataSourcesPage() {
                     {loading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Fetching...
+                        {t('portal.fetching')}
                       </>
                     ) : (
                       <>
                         <Globe className="w-4 h-4" />
-                        Fetch from Portal
+                        {t('portal.action')}
                       </>
                     )}
                   </button>
@@ -874,9 +875,11 @@ export default function DataSourcesPage() {
         <div className="flex items-start gap-3 p-4 bg-destructive/10 text-destructive rounded mt-4">
           <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="font-medium">Error</p>
+            <p className="font-medium">{tCommon('error')}</p>
             <p className="text-sm">{error.message}</p>
-            {error.requestId && <p className="text-xs mt-1">Request ID: {error.requestId}</p>}
+            {error.requestId && (
+              <p className="text-xs mt-1">{t('requestId', { id: error.requestId })}</p>
+            )}
           </div>
           <button
             type="button"
@@ -893,15 +896,21 @@ export default function DataSourcesPage() {
         <div className="flex items-start gap-3 p-4 bg-success/10 text-success dark:bg-success/30 dark:text-success rounded mt-4">
           <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="font-medium">Import Successful</p>
+            <p className="font-medium">{t('result.title')}</p>
             <p className="text-sm">{result.message}</p>
-            <p className="text-xs mt-1">Properties processed: {result.properties_processed}</p>
-            {result.source_type && <p className="text-xs">Source type: {result.source_type}</p>}
-            {result.source_name && <p className="text-xs">Source name: {result.source_name}</p>}
+            <p className="text-xs mt-1">
+              {t('result.propertiesProcessed', { count: result.properties_processed })}
+            </p>
+            {result.source_type && (
+              <p className="text-xs">{t('result.sourceType', { type: result.source_type })}</p>
+            )}
+            {result.source_name && (
+              <p className="text-xs">{t('result.sourceName', { name: result.source_name })}</p>
+            )}
             {result.errors.length > 0 && (
               <details className="mt-2">
                 <summary className="text-xs cursor-pointer">
-                  Warnings ({result.errors.length})
+                  {t('result.warnings', { count: result.errors.length })}
                 </summary>
                 <ul className="text-xs mt-1 list-disc list-inside">
                   {result.errors.map((err, i) => (

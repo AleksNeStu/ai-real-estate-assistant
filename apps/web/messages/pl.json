@@ -82,7 +82,13 @@
       "rating": "Ocena",
       "listings": "Liczba ofert",
       "reviews": "Liczba opinii",
-      "clear": "Wyczyść filtry"
+      "clear": "Wyczyść filtry",
+      "apply": "Zastosuj filtry",
+      "cityPlaceholder": "Podaj miasto...",
+      "specialtyPlaceholder": "np. Mieszkania, Komercyjne...",
+      "anyRating": "Dowolna ocena",
+      "any": "Dowolna",
+      "stars": "{count}+ gwiazdek"
     },
     "profile": {
       "title": "Profil agenta",
@@ -94,7 +100,17 @@
       "email": "E-mail",
       "license": "Licencja",
       "agency": "Agencja",
-      "noListings": "Brak aktywnych ofert"
+      "noListings": "Brak aktywnych ofert",
+      "loadError": "Nie udało się wczytać profilu agenta",
+      "backToAgents": "Wróć do agentów",
+      "notFound": "Nie znaleziono agenta",
+      "browseAgents": "Przeglądaj agentów",
+      "defaultName": "Agent",
+      "aboutAgent": "O {name}",
+      "noBio": "Brak opisu.",
+      "listingsTab": "Oferty ({count})",
+      "contactTab": "Kontakt",
+      "primary": "Główna"
     },
     "contactForm": {
       "title": "Skontaktuj się z {name}",
@@ -155,7 +171,18 @@
         "completed": "Zakończona"
       }
     },
-    "selectType": "Wybierz typ"
+    "selectType": "Wybierz typ",
+    "errors": {
+      "load": "Nie udało się wczytać agentów"
+    },
+    "sort": {
+      "rating": "Ocena (od najwyższej)",
+      "reviews": "Najwięcej opinii",
+      "listings": "Najwięcej ofert",
+      "created": "Najnowsi",
+      "placeholder": "Sortuj według"
+    },
+    "verifiedAria": "Zweryfikowany agent"
   },
   "auth": {
     "signIn": "Zaloguj się",
@@ -196,7 +223,9 @@
       "submit": "Wyślij link resetujący",
       "backToLogin": "Wróć do logowania",
       "checkEmail": "Sprawdź swoją skrzynkę",
-      "resetSent": "Wysłaliśmy link do resetowania hasła na Twój adres email."
+      "resetSent": "Wysłaliśmy link do resetowania hasła na Twój adres email.",
+      "checkInbox": "Sprawdź skrzynkę odbiorczą, aby znaleźć link resetujący.",
+      "resend": "Wyślij ponownie"
     },
     "resetPassword": {
       "title": "Resetuj hasło",
@@ -204,7 +233,12 @@
       "newPasswordLabel": "Nowe hasło",
       "confirmPasswordLabel": "Potwierdź nowe hasło",
       "submit": "Resetuj hasło",
-      "success": "Hasło zostało zresetowane"
+      "success": "Hasło zostało zresetowane",
+      "invalidToken": "Nieprawidłowy lub brakujący token resetowania",
+      "passwordHint": "Min. 8 znaków, wielka i mała litera, cyfra",
+      "confirmHint": "Wpisz hasło ponownie",
+      "canLogin": "Możesz się teraz zalogować nowym hasłem.",
+      "goToLogin": "Przejdź do logowania"
     },
     "verifyEmail": {
       "title": "Zweryfikuj swój email",
@@ -233,10 +267,24 @@
       "passwordMismatch": "Hasła nie są zgodne",
       "weakPassword": "Hasło musi mieć co najmniej 8 znaków",
       "emailAlreadyExists": "Konto z tym emailem już istnieje",
-      "invalidEmail": "Wprowadź prawidłowy adres email"
+      "invalidEmail": "Wprowadź prawidłowy adres email",
+      "uppercaseRequired": "Hasło musi zawierać co najmniej jedną wielką literę",
+      "lowercaseRequired": "Hasło musi zawierać co najmniej jedną małą literę",
+      "digitRequired": "Hasło musi zawierać co najmniej jedną cyfrę",
+      "resetFailed": "Nie udało się zresetować hasła",
+      "registerFailed": "Rejestracja nie powiodła się",
+      "resetEmailFailed": "Nie udało się wysłać wiadomości z resetem hasła"
     },
     "loading": "Ładowanie...",
-    "userMenu": "Menu użytkownika"
+    "userMenu": "Menu użytkownika",
+    "oauth": {
+      "failed": "Uwierzytelnianie nie powiodło się",
+      "success": "Pomyślnie zalogowano!",
+      "welcome": "Witaj!",
+      "redirecting": "Przekierowanie na stronę logowania...",
+      "signingIn": "Logowanie...",
+      "pleaseWait": "Proszę czekać..."
+    }
   },
   "cma": {
     "steps": {
@@ -526,7 +574,13 @@
     "tryAgain": "Spróbuj ponownie",
     "skipToContent": "Przejdź do treści głównej",
     "tryTheseChips": {
-      "heading": "Spróbuj jednego z tych"
+      "heading": "Spróbuj jednego z tych",
+      "p1": "Mieszkanie z dwoma pokojami w Krakowie poniżej 500 tys.",
+      "p2": "Dom jednorodzinny z ogrodem w Warszawie",
+      "p3": "Kawalerka w centrum Wrocławia",
+      "p4": "Nieruchomość inwestycyjna, Gdańsk, ROI > 5%",
+      "p5": "Porównaj opcje kredytowe dla 400 tys.",
+      "p6": "Wynajem przyjazny zwierzętom poniżej 3000 zł/mies."
     },
     "logIn": "Zaloguj się",
     "installApp": "Zainstaluj aplikację",
@@ -537,14 +591,22 @@
     "backOnline": "Jesteś z powrotem online",
     "offlineMessage": "Jesteś offline. Niektóre funkcje mogą być niedostępne.",
     "newVersionAvailable": "Dostępna jest nowa wersja!",
-    "dismissUpdate": "Zamknij"
+    "dismissUpdate": "Zamknij",
+    "emptySearchTitle": "Nie ma jeszcze czego pokazać",
+    "emptySearchBody": "Wypróbuj jedno z poniższych przykładowych zapytań, aby zobaczyć demo w działaniu."
   },
   "demo": {
     "banner": "Tryb demo — wyszukiwanie i dane miast są dostępne",
     "login": "Zaloguj się",
     "lockedFeature": "Zaloguj się, aby uzyskać dostęp",
     "signInForFull": "Zaloguj się dla AI asystenta i więcej",
-    "signUpCta": "Zarejestruj się aby odblokować wszystko"
+    "signUpCta": "Zarejestruj się aby odblokować wszystko",
+    "badgeLabel": "Demo",
+    "badgeTooltip": "Dane demo — to nie są prawdziwe oferty",
+    "emptyTitle": "Nie ma jeszcze czego pokazać",
+    "emptyHint": "Wypróbuj jedno z poniższych przykładowych zapytań, aby zobaczyć demo w działaniu.",
+    "modeDisabled": "Wyłączone",
+    "toggleFailed": "Nie udało się przełączyć trybu demo: {message}"
   },
   "documents": {
     "title": "Dokumenty",
@@ -635,7 +697,11 @@
     "goHome": "Przejdź do strony głównej",
     "chatUnavailable": "Czat jest chwilowo niedostępny",
     "chatErrorFallback": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie.",
-    "retry": "Ponów"
+    "retry": "Ponów",
+    "pageNotFoundDescription": "Strona, której szukasz, nie istnieje lub została przeniesiona.",
+    "searchProperties": "Szukaj nieruchomości",
+    "errorId": "Identyfikator błędu: {id}",
+    "unexpectedError": "Podczas ładowania tej strony wystąpił nieoczekiwany błąd."
   },
   "favorites": {
     "title": "Moje ulubione",
@@ -1267,7 +1333,11 @@
     "quality": {
       "badge": "Jakość dzielnicy: {rating} ({score}/100)",
       "score": "Jakość dzielnicy: {score}/100"
-    }
+    },
+    "summaryFailed": "Nie udało się przygotować podsumowania dzielnicy: {message}",
+    "loadingSummary": "Wczytywanie podsumowania dzielnicy",
+    "preparingSummary": "Przygotowywanie podsumowania…",
+    "summaryUnavailable": "Podsumowanie dzielnicy jest chwilowo niedostępne."
   },
   "portfolio": {
     "title": "Analiza portfela",
@@ -1306,7 +1376,9 @@
       "locationUnavailable": "Lokalizacja niedostępna",
       "addToFavorites": "Dodaj do ulubionych",
       "removeFromFavorites": "Usuń z ulubionych",
-      "loginRequired": "Zaloguj się, aby zapisać tę nieruchomość"
+      "loginRequired": "Zaloguj się, aby zapisać tę nieruchomość",
+      "viewDetails": "Zobacz szczegóły",
+      "bedsUnit": "pokoi"
     },
     "favorite": {
       "add": "Dodaj do ulubionych",
@@ -1330,7 +1402,10 @@
       "parking": "Parking"
     },
     "estimateLabel": "Szacowana rata miesięczna: {value}",
-    "estimateTitle": "Szacowana rata miesięczna przy wkładzie {down}%, {years} lat stałych pod {rate}% APR. To nie jest oferta kredytowa."
+    "estimateTitle": "Szacowana rata miesięczna przy wkładzie {down}%, {years} lat stałych pod {rate}% APR. To nie jest oferta kredytowa.",
+    "map": {
+      "propertiesInArea": "{count, plural, one {# nieruchomość} few {# nieruchomości} many {# nieruchomości} other {# nieruchomości}} w tym obszarze"
+    }
   },
   "rentVsBuy": {
     "title": "Kalkulator Wynajem vs Kupno",
@@ -1557,7 +1632,10 @@
       "loginRequired": "Zaloguj się, aby zapisywać filtry",
       "saveFailed": "Nie udało się zapisać filtra",
       "save": "Zapisz filtr",
-      "saving": "Zapisywanie..."
+      "saving": "Zapisywanie...",
+      "useLoginRequired": "Zaloguj się, aby korzystać z zapisanych filtrów",
+      "loadFailed": "Nie udało się wczytać zapisanych filtrów",
+      "deleteAria": "Usuń zapisany filtr"
     },
     "clearPriceFilter": "Wyczyść filtr ceny",
     "filterByPropertyType": "Filtruj według typu nieruchomości",
@@ -1612,7 +1690,9 @@
       "range600k1M": "600 tys.–1 mln $",
       "allPrices": "Wszystkie ceny",
       "resetAll": "Zresetuj wszystko"
-    }
+    },
+    "mapZoomHint": "Przybliż, aby zobaczyć pojedyncze nieruchomości.",
+    "mapAttribution": "OpenStreetMap"
   },
   "settings": {
     "title": "Ustawienia",
@@ -1862,7 +1942,8 @@
       "save": "Zapisz",
       "selectBoth": "Wybierz dostawcę i model.",
       "systemDefault": "Domyślne systemowe",
-      "model": "Model"
+      "model": "Model",
+      "loadFailed": "Nie udało się wczytać preferencji"
     }
   },
   "tools": {
@@ -1905,7 +1986,9 @@
     },
     "skip": "Pomiń",
     "next": "Dalej",
-    "done": "Gotowe"
+    "done": "Gotowe",
+    "ariaLabel": "Samouczek",
+    "closeAria": "Zamknij samouczek"
   },
   "showcase": {
     "heroTitle": "Realizacje",
@@ -2690,7 +2773,151 @@
       },
       "dataSources": {
         "title": "Źródła danych",
-        "description": "Skąd pochodzą oferty."
+        "description": "Skąd pochodzą oferty.",
+        "status": {
+          "connected": "Połączono",
+          "disconnected": "Rozłączono",
+          "error": "Błąd"
+        },
+        "lastSync": "Ostatnia synchronizacja",
+        "syncNow": "Synchronizuj teraz",
+        "configure": "Konfiguruj",
+        "actionsMenu": "Menu działań",
+        "addFirstSource": "Dodaj pierwsze źródło",
+        "addSource": "Dodaj źródło",
+        "autoSync": "Automatyczna synchronizacja: {schedule}",
+        "autoSyncEnabled": "Automatyczna synchronizacja: włączona",
+        "configuredSources": "Skonfigurowane źródła ({count})",
+        "daysAgo": "{count} dni temu",
+        "deleteConfirm": "Czy na pewno chcesz usunąć {name}? Usunie to także całą historię synchronizacji i nie można tego cofnąć.",
+        "deleteNote": "Rekordy już zaimportowane z tego źródła pozostaną w systemie.",
+        "deleteTitle": "Usuń źródło danych",
+        "deleting": "Usuwanie...",
+        "edit": "Edytuj",
+        "health": {
+          "degraded": "Ograniczona",
+          "error": "Błąd",
+          "healthy": "Zdrowe",
+          "pending": "Oczekujące",
+          "syncing": "Synchronizowanie...",
+          "unhealthy": "Niedozdrowe"
+        },
+        "hoursAgo": "{count} godz. temu",
+        "justNow": "Przed chwilą",
+        "loadingSources": "Wczytywanie źródeł danych...",
+        "minutesAgo": "{count} min temu",
+        "neverSynced": "Nigdy nie zsynchronizowano",
+        "noSources": "Nie skonfigurowano jeszcze żadnych źródeł danych.",
+        "records": "{count} rekordów",
+        "sourceTypes": {
+          "fileUpload": "Przesyłanie plików",
+          "json": "JSON",
+          "portalApi": "API portalu",
+          "url": "URL"
+        },
+        "syncing": "Synchronizowanie...",
+        "tabs": {
+          "sources": "Źródła ({count})",
+          "import": "Import danych"
+        },
+        "importMode": {
+          "url": "Z adresu URL",
+          "file": "Prześlij plik",
+          "portal": "API portalu"
+        },
+        "import": {
+          "title": "Import danych",
+          "fileUrl": "Adres URL pliku",
+          "fileUrlHint": "Obsługuje pliki CSV (.csv) i Excel (.xlsx, .xls, .ods)",
+          "selectFile": "Wybierz plik",
+          "fileHint": "Maksymalny rozmiar pliku: 25 MB. Obsługuje: .xlsx, .xls, .ods, .csv",
+          "selected": "Wybrano:",
+          "fileSize": "{size} MB",
+          "sourceName": "Nazwa źródła (opcjonalnie)",
+          "sourceNamePlaceholder": "np. Nieruchomości Q1 2024",
+          "excelOptions": "Opcje Excel",
+          "loadSheets": "Wczytaj arkusze",
+          "selectSheet": "Wybierz arkusz",
+          "sheetOption": "{name} ({count} wierszy)",
+          "headerRow": "Wiersz nagłówkowy (od 0)",
+          "importing": "Importowanie...",
+          "action": "Importuj dane"
+        },
+        "portal": {
+          "title": "Pobierz z portalu",
+          "loading": "Wczytywanie dostępnych portali...",
+          "none": "Brak dostępnych adapterów portali. Skonfiguruj je w backendzie.",
+          "label": "Portal",
+          "notConfigured": "(nie skonfigurowany)",
+          "city": "Miasto * (wymagane)",
+          "cityPlaceholder": "np. Warszawa",
+          "filters": "Filtry (opcjonalnie)",
+          "minPrice": "Cena minimalna",
+          "minPricePlaceholder": "np. 1000",
+          "maxPrice": "Cena maksymalna",
+          "maxPricePlaceholder": "np. 5000",
+          "minRooms": "Minimalna liczba pokoi",
+          "minRoomsPlaceholder": "np. 1",
+          "maxRooms": "Maksymalna liczba pokoi",
+          "maxRoomsPlaceholder": "np. 4",
+          "propertyType": "Typ nieruchomości",
+          "propertyTypeAny": "Dowolny",
+          "propertyTypeApartment": "Mieszkanie",
+          "propertyTypeHouse": "Dom",
+          "propertyTypeStudio": "Kawalerka",
+          "listingType": "Rodzaj oferty",
+          "listingTypeRent": "Wynajem",
+          "listingTypeSale": "Sprzedaż",
+          "maxResults": "Maksymalna liczba wyników",
+          "sourceNamePlaceholder": "np. Wynajmy w Warszawie",
+          "fetching": "Pobieranie...",
+          "action": "Pobierz z portalu"
+        },
+        "errors": {
+          "unknown": "Nieznany błąd",
+          "urlRequired": "Najpierw podaj adres URL pliku.",
+          "urlMustBeExcel": "Adres URL musi wskazywać na plik Excel (.xlsx, .xls lub .ods).",
+          "fileRequired": "Najpierw wybierz plik.",
+          "fileMustBeExcel": "Plik musi być plikiem Excel (.xlsx, .xls lub .ods).",
+          "fileToUpload": "Wybierz plik do przesłania.",
+          "urlMissing": "Podaj adres URL pliku.",
+          "portalRequired": "Wybierz portal.",
+          "cityRequired": "Podaj miasto."
+        },
+        "result": {
+          "title": "Import zakończony powodzeniem",
+          "propertiesProcessed": "Przetworzono nieruchomości: {count}",
+          "sourceType": "Typ źródła: {type}",
+          "sourceName": "Nazwa źródła: {name}",
+          "warnings": "Ostrzeżenia ({count})"
+        },
+        "editDialog": {
+          "title": "Edytuj źródło danych",
+          "statusPending": "Oczekujące",
+          "statusActive": "Aktywne",
+          "statusDisabled": "Wyłączone",
+          "sectionBasic": "Podstawowe",
+          "name": "Nazwa",
+          "status": "Status",
+          "sectionFilters": "Filtry",
+          "sectionScheduling": "Harmonogram",
+          "autoSyncEnabled": "Automatyczna synchronizacja włączona",
+          "syncSchedule": "Harmonogram synchronizacji",
+          "syncSchedulePlaceholder": "np. 0 */6 * * *",
+          "cronHint": "Wyrażenie cron (opcjonalnie)",
+          "saving": "Zapisywanie...",
+          "saveChanges": "Zapisz zmiany",
+          "propertyTypeApartment": "Mieszkanie",
+          "propertyTypeHouse": "Dom",
+          "propertyTypeLand": "Działka",
+          "propertyTypeCommercial": "Lokal komercyjny",
+          "propertyTypeGarage": "Garaż",
+          "listingTypeSale": "Sprzedaż",
+          "listingTypeRent": "Wynajem"
+        },
+        "delete": "Usuń",
+        "enabled": "Włączone",
+        "requestId": "Identyfikator żądania: {id}"
       },
       "bulkJobs": {
         "title": "Zadania masowego importu i eksportu",
@@ -2818,5 +3045,62 @@
       "title": "Coś poszło nie tak",
       "description": "Nie udało się wczytać danych. Spróbuj ponownie za chwilę."
     }
+  },
+  "scheduleViewing": {
+    "title": "Umów prezentację",
+    "close": "Zamknij okno",
+    "requestWith": "Zaproś o prezentację nieruchomości u {name}. Potwierdzenie terminu otrzymasz wkrótce.",
+    "nameLabel": "Twoje imię *",
+    "emailLabel": "Twój e-mail *",
+    "phoneLabel": "Twój telefon",
+    "dateLabel": "Preferowana data *",
+    "timeLabel": "Preferowana godzina *",
+    "durationLabel": "Czas trwania (minuty)",
+    "notesLabel": "Uwagi",
+    "notesPlaceholder": "Jakieś specjalne życzenia lub pytania?",
+    "submit": "Zaproś o prezentację",
+    "successTitle": "Prezentacja zamówiona!",
+    "successMessage": "Agent potwierdzi termin wkrótce.",
+    "failed": "Nie udało się umówić prezentacji",
+    "cancel": "Anuluj",
+    "requesting": "Wysyłanie..."
+  },
+  "taskTypes": {
+    "chat": "Czat",
+    "search": "Wyszukiwanie",
+    "tools": "Narzędzia",
+    "analysis": "Analiza",
+    "embedding": "Osadzenia",
+    "chatDescription": "Odpowiedzi konwersacyjne i ogólne zapytania",
+    "searchDescription": "Przetwarzanie zapytań wyszukiwania nieruchomości",
+    "toolsDescription": "Wywoływanie narzędzi i funkcji",
+    "analysisDescription": "Analiza rynku i złożone rozumowanie",
+    "embeddingDescription": "Generowanie osadzeń wektorowych"
+  },
+  "listingGenerator": {
+    "generate": "Wygeneruj ofertę",
+    "generating": "Generowanie...",
+    "showResults": "Pokaż wyniki",
+    "hideResults": "Ukryj",
+    "hideResultsAria": "Ukryj wyniki",
+    "showResultsAria": "Pokaż wyniki",
+    "resultTitle": "Wygenerowana treść oferty",
+    "description": "Opis",
+    "headlines": "Nagłówki",
+    "socialMedia": "Media społecznościowe",
+    "noDescription": "Nie wygenerowano opisu",
+    "noHeadlines": "Nie wygenerowano nagłówków",
+    "noSocial": "Nie wygenerowano treści social media",
+    "copyHeadline": "Kopiuj nagłówek",
+    "failed": "Generowanie nie powiodło się",
+    "chars": "{count} znaków",
+    "charsOf": "{count} / {max} znaków",
+    "copied": "Skopiowano",
+    "copy": "Kopiuj",
+    "copyAll": "Kopiuj wszystko",
+    "headlinesGenerated": "Wygenerowano nagłówków: {count}"
+  },
+  "pwa": {
+    "installFailed": "Instalacja nie powiodła się: {message}"
   }
 }

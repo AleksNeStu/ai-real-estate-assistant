@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   ArrowLeft,
   MapPin,
@@ -33,6 +34,7 @@ interface AgentProfilePageProps {
 }
 
 export default function AgentProfilePage({ params }: AgentProfilePageProps) {
+  const t = useTranslations();
   // Unwrap params Promise using React.use()
   const resolvedParams = use(params);
   const agentId = resolvedParams.id;
@@ -64,7 +66,7 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
           setSelectedPropertyId(listingsData.items[0].property_id);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load agent profile');
+        setError(err instanceof Error ? err.message : t('agents.profile.loadError'));
       } finally {
         setLoading(false);
       }
@@ -104,14 +106,14 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
         <Link href={`/${locale}/agents`}>
           <Button variant="ghost" size="sm" className="mb-6">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Agents
+            {t('agents.profile.backToAgents')}
           </Button>
         </Link>
         <ErrorState
-          title={error || 'Agent not found'}
+          title={error || t('agents.profile.notFound')}
           action={
             <Link href={`/${locale}/agents`}>
-              <Button>Browse Agents</Button>
+              <Button>{t('agents.profile.browseAgents')}</Button>
             </Link>
           }
         />
@@ -119,7 +121,8 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
     );
   }
 
-  const displayName = agent.name || agent.professional_email?.split('@')[0] || 'Agent';
+  const displayName =
+    agent.name || agent.professional_email?.split('@')[0] || t('agents.profile.defaultName');
   const initials = displayName
     .split(' ')
     .map((n) => n[0])
@@ -163,7 +166,7 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
                 {agent.is_verified && (
                   <Badge variant="secondary" className="bg-success/15 text-success">
                     <BadgeCheck className="mr-1 h-3 w-3" />
-                    Verified
+                    {t('agents.verified')}
                   </Badge>
                 )}
               </div>
@@ -181,17 +184,19 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
                   <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 fill-warning text-warning" />
                     <span className="font-medium">{agent.average_rating.toFixed(1)}</span>
-                    <span className="text-muted-foreground">({agent.total_reviews} reviews)</span>
+                    <span className="text-muted-foreground">
+                      ({t('agents.reviews', { count: agent.total_reviews })})
+                    </span>
                   </div>
                 )}
                 <div className="flex items-center gap-1">
                   <Briefcase className="h-4 w-4" />
-                  <span>{agent.total_sales} sales</span>
+                  <span>{t('agents.sales', { count: agent.total_sales })}</span>
                 </div>
                 {agent.total_rentals > 0 && (
                   <div className="flex items-center gap-1">
                     <Briefcase className="h-4 w-4" />
-                    <span>{agent.total_rentals} rentals</span>
+                    <span>{t('agents.rentals', { count: agent.total_rentals })}</span>
                   </div>
                 )}
               </div>
@@ -219,12 +224,12 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
               <div className="flex flex-wrap gap-2">
                 <Button onClick={() => setShowContactForm(!showContactForm)}>
                   <Mail className="mr-2 h-4 w-4" />
-                  Contact Agent
+                  {t('agents.contact')}
                 </Button>
                 {selectedPropertyId && (
                   <Button variant="outline" onClick={() => setShowScheduleForm(!showScheduleForm)}>
                     <Calendar className="mr-2 h-4 w-4" />
-                    Schedule Viewing
+                    {t('agents.scheduleViewing')}
                   </Button>
                 )}
               </div>
@@ -260,22 +265,26 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
-          <TabsTrigger value="about">About</TabsTrigger>
-          <TabsTrigger value="listings">Listings ({listings.length})</TabsTrigger>
-          <TabsTrigger value="contact">Contact</TabsTrigger>
+          <TabsTrigger value="about">{t('agents.profile.about')}</TabsTrigger>
+          <TabsTrigger value="listings">
+            {t('agents.profile.listingsTab', { count: listings.length })}
+          </TabsTrigger>
+          <TabsTrigger value="contact">{t('agents.profile.contactTab')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="about">
           <Card>
             <CardHeader>
-              <CardTitle>About {displayName}</CardTitle>
+              <CardTitle>{t('agents.profile.aboutAgent', { name: displayName })}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {agent.bio && (
                 <p className="text-muted-foreground whitespace-pre-line">{agent.bio}</p>
               )}
 
-              {!agent.bio && <p className="text-muted-foreground italic">No bio available.</p>}
+              {!agent.bio && (
+                <p className="text-muted-foreground italic">{t('agents.profile.noBio')}</p>
+              )}
 
               <Separator />
 
@@ -284,7 +293,7 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
                 <div>
                   <h4 className="font-medium mb-2 flex items-center gap-2">
                     <Globe className="h-4 w-4" />
-                    Languages
+                    {t('agents.languages')}
                   </h4>
                   <div className="flex flex-wrap gap-1">
                     {agent.languages.map((lang) => (
@@ -299,7 +308,7 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
               {/* License */}
               {agent.license_number && (
                 <div>
-                  <h4 className="font-medium mb-1">License</h4>
+                  <h4 className="font-medium mb-1">{t('agents.profile.license')}</h4>
                   <p className="text-sm text-muted-foreground">
                     {agent.license_number}
                     {agent.license_state && ` (${agent.license_state})`}
@@ -313,11 +322,13 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
         <TabsContent value="listings">
           <Card>
             <CardHeader>
-              <CardTitle>Active Listings</CardTitle>
+              <CardTitle>{t('agents.profile.listings')}</CardTitle>
             </CardHeader>
             <CardContent>
               {listings.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No active listings</p>
+                <p className="text-muted-foreground text-center py-8">
+                  {t('agents.profile.noListings')}
+                </p>
               ) : (
                 <div className="space-y-4">
                   {listings.map((listing) => (
@@ -329,7 +340,7 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
                         <p className="font-medium">{listing.property_id}</p>
                         <div className="flex gap-2 mt-1">
                           <Badge variant="outline">{listing.listing_type}</Badge>
-                          {listing.is_primary && <Badge>Primary</Badge>}
+                          {listing.is_primary && <Badge>{t('agents.profile.primary')}</Badge>}
                         </div>
                       </div>
                       <Button
@@ -341,7 +352,7 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
                         }}
                       >
                         <Calendar className="mr-2 h-4 w-4" />
-                        Schedule Viewing
+                        {t('agents.scheduleViewing')}
                       </Button>
                     </div>
                   ))}
@@ -354,14 +365,14 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
         <TabsContent value="contact">
           <Card>
             <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
+              <CardTitle>{t('agents.profile.contactInfo')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {agent.professional_phone && (
                 <div className="flex items-center gap-3">
                   <Phone className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Phone</p>
+                    <p className="text-sm text-muted-foreground">{t('agents.profile.phone')}</p>
                     <a
                       href={`tel:${agent.professional_phone}`}
                       className="font-medium hover:underline"
@@ -376,7 +387,7 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
                 <div className="flex items-center gap-3">
                   <Mail className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
+                    <p className="text-sm text-muted-foreground">{t('agents.profile.email')}</p>
                     <a
                       href={`mailto:${agent.professional_email}`}
                       className="font-medium hover:underline"
@@ -391,7 +402,7 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
                 <div className="flex items-center gap-3">
                   <MapPin className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Office</p>
+                    <p className="text-sm text-muted-foreground">{t('agents.profile.office')}</p>
                     <p className="font-medium">{agent.office_address}</p>
                   </div>
                 </div>
@@ -401,7 +412,7 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
                 <div className="flex items-center gap-3">
                   <Building2 className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Agency</p>
+                    <p className="text-sm text-muted-foreground">{t('agents.profile.agency')}</p>
                     <p className="font-medium">{agent.agency_name}</p>
                   </div>
                 </div>
@@ -418,7 +429,7 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
                   }}
                 >
                   <Mail className="mr-2 h-4 w-4" />
-                  Send Message
+                  {t('agents.contactForm.submit')}
                 </Button>
               </div>
             </CardContent>

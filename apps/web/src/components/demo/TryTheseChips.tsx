@@ -18,14 +18,9 @@ interface TryTheseChipsProps {
   heading?: string;
 }
 
-const PROMPTS = [
-  '2-bedroom apartment in Kraków under 500k',
-  'Family house with garden, Warsaw',
-  'Studio near city center, Wrocław',
-  'Investment property, Gdańsk, ROI > 5%',
-  'Compare mortgage options for 400k',
-  'Pet-friendly rentals under 3000 PLN/mo',
-];
+// The example queries are translated, so the chip sends the search a
+// question in the language the visitor is reading.
+const PROMPT_KEYS = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'] as const;
 
 /**
  * "Try one of these" example-query chips for first-time visitors.
@@ -34,8 +29,7 @@ const PROMPTS = [
  * existing search bar can pick it up. Reusable on landing, /search empty
  * state, /chat prompt input, and /market-trends empty state.
  *
- * Localization gap (intentional, this session): English-only prompts.
- * Add to next-intl `common` namespace as `tryTheseChips.*` for i18n.
+ * The example queries come from the `common.tryTheseChips` namespace.
  */
 export function TryTheseChips({
   searchHref,
@@ -43,16 +37,7 @@ export function TryTheseChips({
   heading,
 }: TryTheseChipsProps) {
   const t = useTranslations('common');
-  // Fall back to English when the locale doesn't have the key yet
-  // (Polish ships; other 8 locales follow via F-20260925-5 follow-up).
-  const tHeading = (() => {
-    try {
-      return t('tryTheseChips.heading');
-    } catch {
-      return 'Try one of these';
-    }
-  })();
-  const resolvedHeading = heading ?? tHeading;
+  const resolvedHeading = heading ?? t('tryTheseChips.heading');
   const base = searchHref ?? '/search';
   const hrefFor = (prompt: string) =>
     `${base}?q=${encodeURIComponent(prompt)}`;
@@ -64,13 +49,13 @@ export function TryTheseChips({
         <span>{resolvedHeading}</span>
       </div>
       <div className="flex flex-wrap gap-2">
-        {PROMPTS.map((prompt) => (
+        {PROMPT_KEYS.map((key) => (
           <Link
-            key={prompt}
-            href={hrefFor(prompt)}
+            key={key}
+            href={hrefFor(t(`tryTheseChips.${key}`))}
             className="inline-flex items-center rounded-full border border-input bg-background/60 px-3 py-1.5 text-xs text-foreground hover:bg-accent hover:text-accent-foreground transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
           >
-            {prompt}
+            {t(`tryTheseChips.${key}`)}
           </Link>
         ))}
       </div>

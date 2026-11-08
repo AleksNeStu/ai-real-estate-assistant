@@ -16,11 +16,13 @@ jest.mock('next/navigation', () => ({
 jest.mock('next-intl', () => {
   const messages = jest.requireActual<Record<string, unknown>>('../../../../../messages/en.json');
   const resolve = (path: string): unknown =>
-    path.split('.').reduce<unknown>(
-      (acc, part) =>
-        acc && typeof acc === 'object' ? (acc as Record<string, unknown>)[part] : undefined,
-      messages
-    );
+    path
+      .split('.')
+      .reduce<unknown>(
+        (acc, part) =>
+          acc && typeof acc === 'object' ? (acc as Record<string, unknown>)[part] : undefined,
+        messages
+      );
   const interpolate = (template: string, params?: Record<string, unknown>) =>
     params
       ? template.replace(/\{(\w+)\}/g, (match, name) =>
@@ -28,12 +30,10 @@ jest.mock('next-intl', () => {
         )
       : template;
   return {
-    useTranslations:
-      (namespace?: string) =>
-      (key: string, params?: Record<string, unknown>) => {
-        const value = resolve(namespace ? `${namespace}.${key}` : key);
-        return typeof value === 'string' ? interpolate(value, params) : key;
-      },
+    useTranslations: (namespace?: string) => (key: string, params?: Record<string, unknown>) => {
+      const value = resolve(namespace ? `${namespace}.${key}` : key);
+      return typeof value === 'string' ? interpolate(value, params) : key;
+    },
     useLocale: () => 'en',
     useMessages: () => messages,
     NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => children,

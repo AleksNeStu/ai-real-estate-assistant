@@ -24,10 +24,10 @@ import { AgentCard } from '@/components/agents/agent-card';
 import { EmptyState } from '@/components/ui/states';
 
 const SORT_OPTIONS = [
-  { value: 'rating', label: 'Rating (High to Low)' },
-  { value: 'reviews', label: 'Most Reviews' },
-  { value: 'listings', label: 'Most Listings' },
-  { value: 'created', label: 'Newest First' },
+  { value: 'rating', labelKey: 'rating' },
+  { value: 'reviews', labelKey: 'reviews' },
+  { value: 'listings', labelKey: 'listings' },
+  { value: 'created', labelKey: 'created' },
 ] as const;
 
 type SortOption = (typeof SORT_OPTIONS)[number]['value'];
@@ -35,6 +35,7 @@ type SortOption = (typeof SORT_OPTIONS)[number]['value'];
 export default function AgentsPage({ params }: { params: Promise<{ locale: string }> }) {
   const t = useTranslations();
   const tPage = useTranslations('pages.agents');
+  const tCommon = useTranslations('common');
 
   const [agents, setAgents] = useState<AgentProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,11 +75,11 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
       setAgents(response.items);
       setTotal(response.total);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load agents');
+      setError(err instanceof Error ? err.message : t('agents.errors.load'));
     } finally {
       setLoading(false);
     }
-  }, [filters, page]);
+  }, [filters, page, t]);
 
   useEffect(() => {
     loadAgents();
@@ -115,11 +116,7 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
-      <PageHeader
-        className="mb-8"
-        title={tPage('title')}
-        description={tPage('description')}
-      />
+      <PageHeader className="mb-8" title={tPage('title')} description={tPage('description')} />
 
       {/* Search and Filter Bar */}
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -128,7 +125,7 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search by city..."
+              placeholder={tPage('searchByCity')}
               value={localCity}
               onChange={(e) => setLocalCity(e.target.value)}
               className="pl-9"
@@ -145,12 +142,12 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
             }}
           >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sort by" />
+              <SelectValue placeholder={t('agents.sort.placeholder')} />
             </SelectTrigger>
             <SelectContent>
               {SORT_OPTIONS.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
-                  {option.label}
+                  {t(`agents.sort.${option.labelKey}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -162,12 +159,12 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
           {hasActiveFilters && (
             <Button variant="ghost" size="sm" onClick={clearFilters}>
               <X className="mr-2 h-4 w-4" />
-              Clear Filters
+              {t('agents.filters.clear')}
             </Button>
           )}
           <Button variant="outline" size="sm" onClick={applyFilters}>
             <SlidersHorizontal className="mr-2 h-4 w-4" />
-            Apply Filters
+            {t('agents.filters.apply')}
           </Button>
           <Button variant="ghost" size="icon" onClick={loadAgents}>
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -182,7 +179,7 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
             <div className="space-y-2">
               <Label>{t('agents.filters.city')}</Label>
               <Input
-                placeholder="Enter city..."
+                placeholder={t('agents.filters.cityPlaceholder')}
                 value={localCity}
                 onChange={(e) => setLocalCity(e.target.value)}
               />
@@ -191,7 +188,7 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
             <div className="space-y-2">
               <Label>{t('agents.filters.specialty')}</Label>
               <Input
-                placeholder="e.g., Residential, Commercial..."
+                placeholder={t('agents.filters.specialtyPlaceholder')}
                 value={localSpecialty}
                 onChange={(e) => setLocalSpecialty(e.target.value)}
               />
@@ -201,13 +198,13 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
               <Label>{t('agents.filters.minRating')}</Label>
               <Select value={localMinRating} onValueChange={(value) => setLocalMinRating(value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Any rating" />
+                  <SelectValue placeholder={t('agents.filters.anyRating')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  <SelectItem value="4">4+ Stars</SelectItem>
-                  <SelectItem value="4.5">4.5+ Stars</SelectItem>
-                  <SelectItem value="4.8">4.8+ Stars</SelectItem>
+                  <SelectItem value="any">{t('agents.filters.any')}</SelectItem>
+                  <SelectItem value="4">{t('agents.filters.stars', { count: 4 })}</SelectItem>
+                  <SelectItem value="4.5">{t('agents.filters.stars', { count: 4.5 })}</SelectItem>
+                  <SelectItem value="4.8">{t('agents.filters.stars', { count: 4.8 })}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -219,12 +216,12 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
                 onValueChange={(value: SortOption) => setLocalSortBy(value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Sort by" />
+                  <SelectValue placeholder={t('agents.sort.placeholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {SORT_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                      {t(`agents.sort.${option.labelKey}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -240,7 +237,7 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
           <CardContent className="flex items-center gap-2 p-4 text-destructive">
             <span>{error}</span>
             <Button variant="ghost" size="sm" onClick={loadAgents}>
-              Retry
+              {tCommon('retry')}
             </Button>
           </CardContent>
         </Card>

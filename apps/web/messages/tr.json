@@ -82,7 +82,13 @@
       "rating": "Puan",
       "listings": "İlan sayısı",
       "reviews": "Değerlendirme sayısı",
-      "clear": "Filtreleri temizle"
+      "clear": "Filtreleri temizle",
+      "apply": "Filtreleri uygula",
+      "cityPlaceholder": "Şehir girin...",
+      "specialtyPlaceholder": "örn. Konut, Ticari...",
+      "anyRating": "Herhangi bir puan",
+      "any": "Herhangi",
+      "stars": "{count}+ yıldız"
     },
     "profile": {
       "title": "Ajan profili",
@@ -94,7 +100,17 @@
       "email": "E-posta",
       "license": "Lisans",
       "agency": "Acente",
-      "noListings": "Aktif ilan yok"
+      "noListings": "Aktif ilan yok",
+      "loadError": "Danışman profili yüklenemedi",
+      "backToAgents": "Danışmanlara dön",
+      "notFound": "Danışman bulunamadı",
+      "browseAgents": "Danışmanlara göz at",
+      "defaultName": "Danışman",
+      "aboutAgent": "{name} hakkında",
+      "noBio": "Hakkında bilgi yok.",
+      "listingsTab": "İlanlar ({count})",
+      "contactTab": "İletişim",
+      "primary": "Birincil"
     },
     "contactForm": {
       "title": "{name} ile iletişime geçin",
@@ -155,7 +171,18 @@
         "completed": "Tamamlandı"
       }
     },
-    "selectType": "Tür seçin"
+    "selectType": "Tür seçin",
+    "errors": {
+      "load": "Danışmanlar yüklenemedi"
+    },
+    "sort": {
+      "rating": "Puan (yüksekten düşüğe)",
+      "reviews": "En çok yorum",
+      "listings": "En çok ilan",
+      "created": "Önce en yeniler",
+      "placeholder": "Sıralama ölçütü"
+    },
+    "verifiedAria": "Doğrulanmış danışman"
   },
   "auth": {
     "signIn": "Giriş yap",
@@ -196,7 +223,9 @@
       "submit": "Sıfırlama bağlantısı gönder",
       "backToLogin": "Girişe dön",
       "checkEmail": "E-postanızı kontrol edin",
-      "resetSent": "Parola sıfırlama bağlantısını e-posta adresinize gönderdik."
+      "resetSent": "Parola sıfırlama bağlantısını e-posta adresinize gönderdik.",
+      "checkInbox": "Sıfırlama bağlantısı için gelen kutunuzu kontrol edin.",
+      "resend": "E-postayı tekrar gönder"
     },
     "resetPassword": {
       "title": "Parola sıfırlama",
@@ -204,7 +233,12 @@
       "newPasswordLabel": "Yeni parola",
       "confirmPasswordLabel": "Yeni parolayı doğrula",
       "submit": "Parolayı sıfırla",
-      "success": "Parola başarıyla sıfırlandı"
+      "success": "Parola başarıyla sıfırlandı",
+      "invalidToken": "Geçersiz veya eksik sıfırlama belirteci",
+      "passwordHint": "En az 8 karakter, büyük harf, küçük harf, rakam",
+      "confirmHint": "Şifrenizi yeniden girin",
+      "canLogin": "Artık yeni şifrenizle giriş yapabilirsiniz.",
+      "goToLogin": "Girişe git"
     },
     "verifyEmail": {
       "title": "E-posta adresinizi doğrulayın",
@@ -233,10 +267,24 @@
       "passwordMismatch": "Parolalar eşleşmiyor",
       "weakPassword": "Parola en az 8 karakter olmalıdır",
       "emailAlreadyExists": "Bu e-posta adresiyle bir hesap zaten var",
-      "invalidEmail": "Lütfen geçerli bir e-posta adresi girin"
+      "invalidEmail": "Lütfen geçerli bir e-posta adresi girin",
+      "uppercaseRequired": "Şifre en az bir büyük harf içermelidir",
+      "lowercaseRequired": "Şifre en az bir küçük harf içermelidir",
+      "digitRequired": "Şifre en az bir rakam içermelidir",
+      "resetFailed": "Şifre sıfırlanamadı",
+      "registerFailed": "Kayıt başarısız oldu",
+      "resetEmailFailed": "Sıfırlama e-postası gönderilemedi"
     },
     "loading": "Yükleniyor...",
-    "userMenu": "Kullanıcı menüsü"
+    "userMenu": "Kullanıcı menüsü",
+    "oauth": {
+      "failed": "Kimlik doğrulama başarısız oldu",
+      "success": "Başarıyla giriş yapıldı!",
+      "welcome": "Hoş geldiniz!",
+      "redirecting": "Giriş sayfasına yönlendiriliyor...",
+      "signingIn": "Giriş yapılıyor...",
+      "pleaseWait": "Lütfen bekleyin..."
+    }
   },
   "cma": {
     "steps": {
@@ -526,7 +574,13 @@
     "tryAgain": "Yeniden dene",
     "skipToContent": "Ana içeriğe geç",
     "tryTheseChips": {
-      "heading": "Bunlardan birini deneyin"
+      "heading": "Bunlardan birini deneyin",
+      "p1": "Krakow'da 500 bin altı 2 odalı daire",
+      "p2": "Varşova'da bahçeli aile evi",
+      "p3": "Wroclaw merkezinde stüdyo daire",
+      "p4": "Yatırım gayrimenkulu, Gdansk, ROI > %5",
+      "p5": "400 bin için kredi seçeneklerini karşılaştır",
+      "p6": "Aylık 3000 PLN altında evcil hayvan dostu kiralıklar"
     },
     "logIn": "Giriş yap",
     "installApp": "Uygulamayı yükle",
@@ -537,14 +591,22 @@
     "backOnline": "Tekrar çevrimiçisiniz",
     "offlineMessage": "Çevrimdışısınız. Bazı özellikler kullanılamayabilir.",
     "newVersionAvailable": "Yeni bir sürüm mevcut!",
-    "dismissUpdate": "Kapat"
+    "dismissUpdate": "Kapat",
+    "emptySearchTitle": "Henüz gösterilecek bir şey yok",
+    "emptySearchBody": "Demo'yu görmek için aşağıdaki örnek sorgulardan birini deneyin."
   },
   "demo": {
     "banner": "Demo modu — arama ve şehir verileri mevcut",
     "login": "Giriş yap",
     "lockedFeature": "Bu özelliğe erişmek için giriş yapın",
     "signInForFull": "AI asistanı ve daha fazlası için giriş yap",
-    "signUpCta": "Tüm özelliklerin kilidini açmak için kaydol"
+    "signUpCta": "Tüm özelliklerin kilidini açmak için kaydol",
+    "badgeLabel": "Demo",
+    "badgeTooltip": "Demo verileri — gerçek ilanlar değil",
+    "emptyTitle": "Henüz gösterilecek bir şey yok",
+    "emptyHint": "Demo'yu görmek için aşağıdaki örnek sorgulardan birini deneyin.",
+    "modeDisabled": "Devre dışı",
+    "toggleFailed": "Demo modu değiştirilemedi: {message}"
   },
   "documents": {
     "title": "Belgeler",
@@ -635,7 +697,11 @@
     "goHome": "Ana sayfaya dön",
     "chatUnavailable": "Sohbet geçici olarak kullanılamıyor",
     "chatErrorFallback": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.",
-    "retry": "Tekrar dene"
+    "retry": "Tekrar dene",
+    "pageNotFoundDescription": "Aradığınız sayfa mevcut değil veya taşınmış.",
+    "searchProperties": "Mülk ara",
+    "errorId": "Hata kimliği: {id}",
+    "unexpectedError": "Bu sayfa yüklenirken beklenmeyen bir hata oluştu."
   },
   "favorites": {
     "title": "Favorilerim",
@@ -1267,7 +1333,11 @@
     "quality": {
       "badge": "Mahalle kalitesi: {rating} ({score}/100)",
       "score": "Mahalle kalitesi: {score}/100"
-    }
+    },
+    "summaryFailed": "Mahalle özeti oluşturulamadı: {message}",
+    "loadingSummary": "Mahalle özeti yükleniyor",
+    "preparingSummary": "Özet hazırlanıyor…",
+    "summaryUnavailable": "Mahalle özeti şu anda kullanılamıyor."
   },
   "portfolio": {
     "title": "Portföy analizcisi",
@@ -1306,7 +1376,9 @@
       "locationUnavailable": "Konum bilgisi yok",
       "addToFavorites": "Favorilere ekle",
       "removeFromFavorites": "Favorilerden çıkar",
-      "loginRequired": "Bu ilanı kaydetmek için giriş yapın"
+      "loginRequired": "Bu ilanı kaydetmek için giriş yapın",
+      "viewDetails": "Ayrıntıları görüntüle",
+      "bedsUnit": "oda"
     },
     "favorite": {
       "add": "Favorilere ekle",
@@ -1330,7 +1402,10 @@
       "contact": "Danışmanla iletişime geçin"
     },
     "estimateLabel": "Tahmini aylık taksit: {value}",
-    "estimateTitle": "Tahmini aylık taksit, {down} % peşinat ve {years} yıl boyunca % {rate} sabit faizle. Kredi teklifi değildir."
+    "estimateTitle": "Tahmini aylık taksit, {down} % peşinat ve {years} yıl boyunca % {rate} sabit faizle. Kredi teklifi değildir.",
+    "map": {
+      "propertiesInArea": "bu bölgede {count, plural, one {# mülk} other {# mülk}}"
+    }
   },
   "rentVsBuy": {
     "title": "Kiralama vs Satın Alma Hesaplayıcı",
@@ -1564,7 +1639,10 @@
       "loginRequired": "Filtreleri kaydetmek için giriş yapın",
       "saveFailed": "Filtre kaydedilemedi",
       "save": "Filtreyi kaydet",
-      "saving": "Kaydediliyor..."
+      "saving": "Kaydediliyor...",
+      "useLoginRequired": "Kayıtlı filtreleri kullanmak için giriş yapın",
+      "loadFailed": "Kayıtlı filtreler yüklenemedi",
+      "deleteAria": "Kayıtlı filtreyi sil"
     },
     "clearPriceFilter": "Fiyat filtresini temizle",
     "filterByPropertyType": "Mülk türüne göre filtrele",
@@ -1612,7 +1690,9 @@
       "range600k1M": "600 bin–1 milyon $",
       "allPrices": "Tüm fiyatlar",
       "resetAll": "Tümünü sıfırla"
-    }
+    },
+    "mapZoomHint": "Tek mülkleri görmek için yakınlaştırın.",
+    "mapAttribution": "OpenStreetMap"
   },
   "settings": {
     "title": "Ayarlar",
@@ -1862,7 +1942,8 @@
       "save": "Kaydet",
       "selectBoth": "Hem sağlayıcı hem model seçin.",
       "systemDefault": "Sistem varsayılanı",
-      "model": "Model"
+      "model": "Model",
+      "loadFailed": "Tercihler yüklenemedi"
     }
   },
   "tools": {
@@ -1905,7 +1986,9 @@
     },
     "skip": "Atla",
     "next": "İleri",
-    "done": "Bitti"
+    "done": "Bitti",
+    "ariaLabel": "Tanıtım turu",
+    "closeAria": "Turu kapat"
   },
   "showcase": {
     "heroTitle": "Vitrin",
@@ -2690,7 +2773,151 @@
       },
       "dataSources": {
         "title": "Veri kaynakları",
-        "description": "İlanlar nereden geliyor."
+        "description": "İlanlar nereden geliyor.",
+        "status": {
+          "connected": "Bağlı",
+          "disconnected": "Bağlı değil",
+          "error": "Hata"
+        },
+        "lastSync": "Son eşitleme",
+        "syncNow": "Şimdi eşitle",
+        "configure": "Yapılandır",
+        "actionsMenu": "İşlemler menüsü",
+        "addFirstSource": "İlk kaynağınızı ekleyin",
+        "addSource": "Kaynak ekle",
+        "autoSync": "Otomatik eşitleme: {schedule}",
+        "autoSyncEnabled": "Otomatik eşitleme: etkin",
+        "configuredSources": "Yapılandırılmış kaynaklar ({count})",
+        "daysAgo": "{count} gün önce",
+        "deleteConfirm": "{name} kaynağını silmek istediğinizden emin misiniz? Bu işlem tüm eşitleme geçmişini de siler ve geri alınamaz.",
+        "deleteNote": "Bu kaynaktan içe aktarılmış kayıtlar sistemde kalır.",
+        "deleteTitle": "Veri kaynağını sil",
+        "deleting": "Siliniyor...",
+        "edit": "Düzenle",
+        "health": {
+          "degraded": "Kısmi çalışıyor",
+          "error": "Hata",
+          "healthy": "Sağlıklı",
+          "pending": "Beklemede",
+          "syncing": "Eşitleniyor...",
+          "unhealthy": "Sağlıksız"
+        },
+        "hoursAgo": "{count} saat önce",
+        "justNow": "Az önce",
+        "loadingSources": "Veri kaynakları yükleniyor...",
+        "minutesAgo": "{count} dakika önce",
+        "neverSynced": "Hiç eşitlenmedi",
+        "noSources": "Henüz yapılandırılmış veri kaynağı yok.",
+        "records": "{count} kayıt",
+        "sourceTypes": {
+          "fileUpload": "Dosya yükleme",
+          "json": "JSON",
+          "portalApi": "Portal API",
+          "url": "URL"
+        },
+        "syncing": "Eşitleniyor...",
+        "tabs": {
+          "sources": "Kaynaklar ({count})",
+          "import": "Veri içe aktar"
+        },
+        "importMode": {
+          "url": "URL'den",
+          "file": "Dosya yükle",
+          "portal": "Portal API"
+        },
+        "import": {
+          "title": "Veri içe aktar",
+          "fileUrl": "Dosya URL'si",
+          "fileUrlHint": "CSV (.csv) ve Excel (.xlsx, .xls, .ods) dosyaları desteklenir",
+          "selectFile": "Dosya seç",
+          "fileHint": "Maksimum dosya boyutu: 25 MB. Desteklenen: .xlsx, .xls, .ods, .csv",
+          "selected": "Seçilen:",
+          "fileSize": "{size} MB",
+          "sourceName": "Kaynak adı (isteğe bağlı)",
+          "sourceNamePlaceholder": "örn. 2024 Q1 Emlakları",
+          "excelOptions": "Excel seçenekleri",
+          "loadSheets": "Sayfaları yükle",
+          "selectSheet": "Sayfa seç",
+          "sheetOption": "{name} ({count} satır)",
+          "headerRow": "Başlık satırı (0'dan başlar)",
+          "importing": "İçe aktarılıyor...",
+          "action": "Veri içe aktar"
+        },
+        "portal": {
+          "title": "Portaldan getir",
+          "loading": "Kullanılabilir portallar yükleniyor...",
+          "none": "Kullanılabilir portal bağdaştırıcısı yok. Backend'de yapılandırın.",
+          "label": "Portal",
+          "notConfigured": "(yapılandırılmamış)",
+          "city": "Şehir * (zorunlu)",
+          "cityPlaceholder": "örn. Varşova",
+          "filters": "Filtreler (isteğe bağlı)",
+          "minPrice": "En düşük fiyat",
+          "minPricePlaceholder": "örn. 1000",
+          "maxPrice": "En yüksek fiyat",
+          "maxPricePlaceholder": "örn. 5000",
+          "minRooms": "En az oda sayısı",
+          "minRoomsPlaceholder": "örn. 1",
+          "maxRooms": "En çok oda sayısı",
+          "maxRoomsPlaceholder": "örn. 4",
+          "propertyType": "Mülk türü",
+          "propertyTypeAny": "Herhangi",
+          "propertyTypeApartment": "Daire",
+          "propertyTypeHouse": "Ev",
+          "propertyTypeStudio": "Stüdyo",
+          "listingType": "İlan türü",
+          "listingTypeRent": "Kiralık",
+          "listingTypeSale": "Satılık",
+          "maxResults": "Maksimum sonuç",
+          "sourceNamePlaceholder": "örn. Varşova Kiralıklar",
+          "fetching": "Getiriliyor...",
+          "action": "Portaldan getir"
+        },
+        "errors": {
+          "unknown": "Bilinmeyen hata",
+          "urlRequired": "Önce dosya URL'sini girin.",
+          "urlMustBeExcel": "URL bir Excel dosyasına (.xlsx, .xls veya .ods) işaret etmelidir.",
+          "fileRequired": "Önce bir dosya seçin.",
+          "fileMustBeExcel": "Dosya bir Excel dosyası (.xlsx, .xls veya .ods) olmalıdır.",
+          "fileToUpload": "Yüklenecek dosyayı seçin.",
+          "urlMissing": "Dosya URL'sini girin.",
+          "portalRequired": "Bir portal seçin.",
+          "cityRequired": "Bir şehir girin."
+        },
+        "result": {
+          "title": "İçe aktarma başarılı",
+          "propertiesProcessed": "İşlenen mülk sayısı: {count}",
+          "sourceType": "Kaynak türü: {type}",
+          "sourceName": "Kaynak adı: {name}",
+          "warnings": "Uyarılar ({count})"
+        },
+        "editDialog": {
+          "title": "Veri kaynağını düzenle",
+          "statusPending": "Beklemede",
+          "statusActive": "Etkin",
+          "statusDisabled": "Devre dışı",
+          "sectionBasic": "Temel",
+          "name": "Ad",
+          "status": "Durum",
+          "sectionFilters": "Filtreler",
+          "sectionScheduling": "Zamanlama",
+          "autoSyncEnabled": "Otomatik eşitleme etkin",
+          "syncSchedule": "Eşitleme zamanlaması",
+          "syncSchedulePlaceholder": "örn. 0 */6 * * *",
+          "cronHint": "Cron ifadesi (isteğe bağlı)",
+          "saving": "Kaydediliyor...",
+          "saveChanges": "Değişiklikleri kaydet",
+          "propertyTypeApartment": "Daire",
+          "propertyTypeHouse": "Ev",
+          "propertyTypeLand": "Arsa",
+          "propertyTypeCommercial": "Ticari alan",
+          "propertyTypeGarage": "Garaj",
+          "listingTypeSale": "Satılık",
+          "listingTypeRent": "Kiralık"
+        },
+        "delete": "Sil",
+        "enabled": "Etkin",
+        "requestId": "İstek kimliği: {id}"
       },
       "bulkJobs": {
         "title": "Toplu içe/dışa aktarma işleri",
@@ -2818,5 +3045,62 @@
       "title": "Bir şeyler ters gitti",
       "description": "Veriler yüklenemedi. Birazdan tekrar deneyin."
     }
+  },
+  "scheduleViewing": {
+    "title": "Görüşme planla",
+    "close": "Pencereyi kapat",
+    "requestWith": "{name} adlı kişiden mülk görüşmesi talep edin. Randevunuzu kısa sürede onaylayacak.",
+    "nameLabel": "Adınız *",
+    "emailLabel": "E-posta adresiniz *",
+    "phoneLabel": "Telefonunuz",
+    "dateLabel": "Tercih edilen tarih *",
+    "timeLabel": "Tercih edilen saat *",
+    "durationLabel": "Süre (dakika)",
+    "notesLabel": "Notlar",
+    "notesPlaceholder": "Özel istekleriniz veya sorularınız var mı?",
+    "submit": "Görüşme talep et",
+    "successTitle": "Görüşme talep edildi!",
+    "successMessage": "Danışman randevunuzu kısa sürede onaylayacak.",
+    "failed": "Görüşme planlanamadı",
+    "cancel": "İptal",
+    "requesting": "Talep ediliyor..."
+  },
+  "taskTypes": {
+    "chat": "Sohbet",
+    "search": "Arama",
+    "tools": "Araçlar",
+    "analysis": "Analiz",
+    "embedding": "Gömme",
+    "chatDescription": "Sohbet yanıtları ve genel sorular",
+    "searchDescription": "Emlak arama sorgularının işlenmesi",
+    "toolsDescription": "Araç çalıştırma ve fonksiyon çağrıları",
+    "analysisDescription": "Piyasa analizi ve karmaşık akıl yürütme",
+    "embeddingDescription": "Vektör gömme üretimi"
+  },
+  "listingGenerator": {
+    "generate": "İlan oluştur",
+    "generating": "Oluşturuluyor...",
+    "showResults": "Sonuçları göster",
+    "hideResults": "Gizle",
+    "hideResultsAria": "Sonuçları gizle",
+    "showResultsAria": "Sonuçları göster",
+    "resultTitle": "Oluşturulan ilan içeriği",
+    "description": "Açıklama",
+    "headlines": "Başlıklar",
+    "socialMedia": "Sosyal medya",
+    "noDescription": "Açıklama oluşturulmadı",
+    "noHeadlines": "Başlık oluşturulmadı",
+    "noSocial": "Sosyal medya içeriği oluşturulmadı",
+    "copyHeadline": "Başlığı kopyala",
+    "failed": "Oluşturma başarısız oldu",
+    "chars": "{count} karakter",
+    "charsOf": "{count} / {max} karakter",
+    "copied": "Kopyalandı",
+    "copy": "Kopyala",
+    "copyAll": "Tümünü kopyala",
+    "headlinesGenerated": "{count} başlık oluşturuldu"
+  },
+  "pwa": {
+    "installFailed": "Yükleme başarısız oldu: {message}"
   }
 }

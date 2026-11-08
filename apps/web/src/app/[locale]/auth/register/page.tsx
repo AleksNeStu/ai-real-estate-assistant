@@ -47,7 +47,7 @@ export default function RegisterPage() {
       // Redirect to home page
       router.push('/');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Registration failed';
+      const message = err instanceof Error ? err.message : t('errors.registerFailed');
       setError(message);
     } finally {
       setIsLoading(false);
@@ -97,7 +97,7 @@ export default function RegisterPage() {
               id="password"
               name="password"
               type="password"
-              placeholder="Min. 8 chars, uppercase, lowercase, digit"
+              placeholder={t('resetPassword.passwordHint')}
               required
               disabled={isLoading}
               minLength={8}
