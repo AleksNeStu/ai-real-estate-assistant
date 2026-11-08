@@ -1484,8 +1484,8 @@
     "propertyMapWithMapbox": "Mapboxlu mülk haritası"
   },
   "settings": {
-    "title": "Settings",
-    "description": "Manage your account settings and preferences.",
+    "title": "Ayarlar",
+    "description": "Hesap ayarlarınızı ve tercihlerinizi yönetin.",
     "tabs": {
       "identity": "Kimlik",
       "notifications": "Bildirimler",
@@ -1493,23 +1493,23 @@
     },
     "identity": {
       "title": "Kimlik",
-      "description": "Set the email address used to scope settings to your account.",
-      "emailLabel": "Email",
-      "emailPlaceholder": "Enter your email",
-      "save": "Save",
-      "saved": "Email saved.",
-      "cleared": "Email cleared.",
-      "invalidEmail": "Please enter a valid email address.",
+      "description": "Ayarların hesabınıza bağlanmasını sağlayan e-posta adresini belirleyin.",
+      "emailLabel": "E-posta",
+      "emailPlaceholder": "E-posta adresinizi girin",
+      "save": "Kaydet",
+      "saved": "E-posta kaydedildi.",
+      "cleared": "E-posta temizlendi.",
+      "invalidEmail": "Lütfen geçerli bir e-posta adresi girin.",
       "hint": "Tarayıcınızda yerel olarak saklanır ve {header} olarak gönderilir."
     },
     "notifications": {
       "title": "Bildirimler",
-      "description": "Configure how you receive notifications.",
-      "emailNotifications": "Email Notifications",
-      "pushNotifications": "Push Notifications",
-      "savedSearchAlerts": "Saved Search Alerts",
-      "priceDropAlerts": "Price Drop Alerts",
-      "newListingAlerts": "New Listing Alerts",
+      "description": "Bildirimleri nasıl alacağınızı yapılandırın.",
+      "emailNotifications": "E-posta bildirimleri",
+      "pushNotifications": "Anlık bildirimler",
+      "savedSearchAlerts": "Kaydedilmiş arama uyarıları",
+      "priceDropAlerts": "Fiyat düşüşü uyarıları",
+      "newListingAlerts": "Yeni ilan uyarıları",
       "instant": "Anında"
     },
     "models": {
@@ -1523,10 +1523,10 @@
       "connectionFailed": "Bağlantı başarısız.",
       "noModels": "Kullanılabilir model yok",
       "pricing": {
-        "title": "Model Pricing",
-        "input": "Input",
-        "output": "Output",
-        "per1kTokens": "per 1K tokens"
+        "title": "Model fiyatlandırması",
+        "input": "Girdi",
+        "output": "Çıktı",
+        "per1kTokens": "1K token başına"
       },
       "modelCatalog": "Model kataloğu",
       "supportedProviders": "Desteklenen sağlayıcılar:",
@@ -1575,8 +1575,8 @@
       "needsEmailSave": "Model tercihlerini kaydetmek için Kimlik ayarlarında bir e-posta girin.",
       "providerLabel": "Sağlayıcı"
     },
-    "saved": "Settings saved successfully.",
-    "error": "Failed to save settings.",
+    "saved": "Ayarlar başarıyla kaydedildi.",
+    "error": "Ayarlar kaydedilemedi.",
     "emailRequired": "Bu bölüme erişmek için yukarıdaki Kimlik ayarlarında bir e-posta girin.",
     "profile": {
       "loadingProfile": "Profil yükleniyor...",

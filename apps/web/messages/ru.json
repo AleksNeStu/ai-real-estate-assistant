@@ -1487,7 +1487,7 @@
     "identity": {
       "title": "Идентификация",
       "description": "Установите email для привязки настроек к аккаунту.",
-      "emailLabel": "Email",
+      "emailLabel": "E-mail",
       "emailPlaceholder": "Введите email",
       "save": "Сохранить",
       "saved": "Email сохранён.",

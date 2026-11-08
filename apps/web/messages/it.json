@@ -1473,8 +1473,8 @@
     "propertyMapWithMapbox": "Mappa degli immobili con Mapbox"
   },
   "settings": {
-    "title": "Settings",
-    "description": "Manage your account settings and preferences.",
+    "title": "Impostazioni",
+    "description": "Gestisci le impostazioni e le preferenze del tuo account.",
     "tabs": {
       "identity": "Identità",
       "notifications": "Notifiche",
@@ -1482,23 +1482,23 @@
     },
     "identity": {
       "title": "Identità",
-      "description": "Set the email address used to scope settings to your account.",
+      "description": "Imposta l’indirizzo email che collega le impostazioni al tuo account.",
       "emailLabel": "Email",
-      "emailPlaceholder": "Enter your email",
-      "save": "Save",
-      "saved": "Email saved.",
-      "cleared": "Email cleared.",
-      "invalidEmail": "Please enter a valid email address.",
+      "emailPlaceholder": "Inserisci la tua email",
+      "save": "Salva",
+      "saved": "Email salvata.",
+      "cleared": "Email rimossa.",
+      "invalidEmail": "Inserisci un indirizzo email valido.",
       "hint": "Salvato localmente nel browser e inviato come {header}."
     },
     "notifications": {
       "title": "Notifiche",
-      "description": "Configure how you receive notifications.",
-      "emailNotifications": "Email Notifications",
-      "pushNotifications": "Push Notifications",
-      "savedSearchAlerts": "Saved Search Alerts",
-      "priceDropAlerts": "Price Drop Alerts",
-      "newListingAlerts": "New Listing Alerts",
+      "description": "Configura come ricevi le notifiche.",
+      "emailNotifications": "Notifiche via email",
+      "pushNotifications": "Notifiche push",
+      "savedSearchAlerts": "Avvisi sulle ricerche salvate",
+      "priceDropAlerts": "Avvisi sui cali di prezzo",
+      "newListingAlerts": "Avvisi sui nuovi annunci",
       "instant": "Istantaneo"
     },
     "models": {
@@ -1512,10 +1512,10 @@
       "connectionFailed": "Connessione non riuscita.",
       "noModels": "Nessun modello disponibile",
       "pricing": {
-        "title": "Model Pricing",
+        "title": "Prezzi dei modelli",
         "input": "Input",
         "output": "Output",
-        "per1kTokens": "per 1K tokens"
+        "per1kTokens": "per 1K token"
       },
       "modelCatalog": "Catalogo dei modelli",
       "supportedProviders": "Provider supportati:",
@@ -1564,8 +1564,8 @@
       "needsEmailSave": "Imposta un indirizzo e-mail nelle impostazioni Identità per salvare le preferenze del modello.",
       "providerLabel": "Provider"
     },
-    "saved": "Settings saved successfully.",
-    "error": "Failed to save settings.",
+    "saved": "Impostazioni salvate correttamente.",
+    "error": "Salvataggio delle impostazioni non riuscito.",
     "emailRequired": "Imposta un indirizzo e-mail nelle impostazioni Identità qui sopra per accedere a questa sezione.",
     "profile": {
       "loadingProfile": "Caricamento del profilo...",

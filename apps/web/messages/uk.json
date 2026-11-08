@@ -1484,8 +1484,8 @@
     "propertyMapWithMapbox": "Карта об'єктів з Mapbox"
   },
   "settings": {
-    "title": "Settings",
-    "description": "Manage your account settings and preferences.",
+    "title": "Налаштування",
+    "description": "Керуйте налаштуваннями та перевагами облікового запису.",
     "tabs": {
       "identity": "Ідентифікація",
       "notifications": "Сповіщення",
@@ -1493,23 +1493,23 @@
     },
     "identity": {
       "title": "Ідентифікація",
-      "description": "Set the email address used to scope settings to your account.",
-      "emailLabel": "Email",
-      "emailPlaceholder": "Enter your email",
-      "save": "Save",
-      "saved": "Email saved.",
-      "cleared": "Email cleared.",
-      "invalidEmail": "Please enter a valid email address.",
+      "description": "Вкажіть електронну адресу, за якою налаштування прив’язуються до облікового запису.",
+      "emailLabel": "Ел. пошта",
+      "emailPlaceholder": "Введіть свою електронну пошту",
+      "save": "Зберегти",
+      "saved": "Електронну пошту збережено.",
+      "cleared": "Електронну пошту очищено.",
+      "invalidEmail": "Введіть коректну адресу електронної пошти.",
       "hint": "Зберігається локально в браузері та надсилається як {header}."
     },
     "notifications": {
       "title": "Сповіщення",
-      "description": "Configure how you receive notifications.",
-      "emailNotifications": "Email Notifications",
-      "pushNotifications": "Push Notifications",
-      "savedSearchAlerts": "Saved Search Alerts",
-      "priceDropAlerts": "Price Drop Alerts",
-      "newListingAlerts": "New Listing Alerts",
+      "description": "Налаштуйте, як отримувати сповіщення.",
+      "emailNotifications": "Сповіщення електронною поштою",
+      "pushNotifications": "Push-сповіщення",
+      "savedSearchAlerts": "Сповіщення про збережені пошуки",
+      "priceDropAlerts": "Сповіщення про зниження ціни",
+      "newListingAlerts": "Сповіщення про нові оголошення",
       "instant": "Миттєво"
     },
     "models": {
@@ -1523,10 +1523,10 @@
       "connectionFailed": "З’єднання не вдалося.",
       "noModels": "Немає доступних моделей",
       "pricing": {
-        "title": "Model Pricing",
-        "input": "Input",
-        "output": "Output",
-        "per1kTokens": "per 1K tokens"
+        "title": "Тарифи моделей",
+        "input": "Введення",
+        "output": "Виведення",
+        "per1kTokens": "за 1K токенів"
       },
       "modelCatalog": "Каталог моделей",
       "supportedProviders": "Підтримувані провайдери:",
@@ -1575,8 +1575,8 @@
       "needsEmailSave": "Вкажіть адресу пошти в налаштуваннях особи, щоб зберегти налаштування моделі.",
       "providerLabel": "Провайдер"
     },
-    "saved": "Settings saved successfully.",
-    "error": "Failed to save settings.",
+    "saved": "Налаштування збережено.",
+    "error": "Не вдалося зберегти налаштування.",
     "emailRequired": "Вкажіть адресу пошти в налаштуваннях особи вище, щоб відкрити цей розділ.",
     "profile": {
       "loadingProfile": "Завантажуємо профіль...",

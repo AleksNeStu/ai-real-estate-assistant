@@ -1487,7 +1487,7 @@
     "identity": {
       "title": "Tożsamość",
       "description": "Ustaw adres email powiązany z kontem.",
-      "emailLabel": "Email",
+      "emailLabel": "E-mail",
       "emailPlaceholder": "Wprowadź swój email",
       "save": "Zapisz",
       "saved": "Email zapisany.",

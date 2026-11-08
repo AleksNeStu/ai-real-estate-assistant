@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.13] - 2026-11-08
+
+### Fixed
+- **The settings page speaks the language of the visitor** — the heading of the
+  page, the identity form and the notification switches stayed English in
+  German, Spanish, Italian, Portuguese, Turkish and Ukrainian. They are
+  translated now, in all nine locales. The words a language writes the English
+  way ("Email", "Input", "Local") keep the spelling of that language.
+
 ## [5.1.12] - 2026-11-08
 
 ### Added
