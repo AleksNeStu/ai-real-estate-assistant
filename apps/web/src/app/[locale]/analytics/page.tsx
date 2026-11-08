@@ -44,6 +44,12 @@ const RentVsBuyCalculator = dynamic(
 
 export default function AnalyticsPage() {
   const t = useTranslations('pages.analytics');
+  // The four calculators already carry their title in the catalogue; the
+  // advanced investment section is page copy of its own.
+  const tMortgage = useTranslations('mortgage');
+  const tInvestment = useTranslations('investment');
+  const tPortfolio = useTranslations('portfolio');
+  const tRentVsBuy = useTranslations('rentVsBuy');
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
@@ -53,7 +59,7 @@ export default function AnalyticsPage() {
         <section className="rounded-lg border bg-card p-6">
           <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
             <BarChart3 className="h-6 w-6" />
-            Mortgage Calculator
+            {tMortgage('title')}
           </h2>
           <MortgageCalculator />
         </section>
@@ -61,7 +67,7 @@ export default function AnalyticsPage() {
         <section className="rounded-lg border bg-card p-6">
           <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
             <TrendingUp className="h-6 w-6" />
-            Investment Property Analyzer
+            {tInvestment('title')}
           </h2>
           <InvestmentAnalyzer />
         </section>
@@ -69,7 +75,7 @@ export default function AnalyticsPage() {
         <section className="rounded-lg border bg-card p-6">
           <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
             <Calculator className="h-6 w-6" />
-            Advanced Investment Analytics
+            {t('sections.advancedInvestment')}
           </h2>
           <AdvancedInvestmentAnalyzer />
         </section>
@@ -77,7 +83,7 @@ export default function AnalyticsPage() {
         <section className="rounded-lg border bg-card p-6">
           <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
             <PieChart className="h-6 w-6" />
-            Portfolio Analyzer
+            {tPortfolio('title')}
           </h2>
           <PortfolioAnalyzer />
         </section>
@@ -85,7 +91,7 @@ export default function AnalyticsPage() {
         <section className="rounded-lg border bg-card p-6">
           <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
             <Scale className="h-6 w-6" />
-            Rent vs Buy Calculator
+            {tRentVsBuy('title')}
           </h2>
           <RentVsBuyCalculator />
         </section>

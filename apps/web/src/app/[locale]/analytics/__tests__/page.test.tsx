@@ -2,6 +2,17 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import AnalyticsPage from '../page';
+import en from '../../../../../messages/en.json';
+
+/**
+ * The "advanced investment" heading is page copy of its own, so it travels in
+ * the message fragments and lands in the catalogue with the central merge.
+ * Until it is there, the next-intl mock renders the key itself — the
+ * expectation follows the catalogue and falls back to that key.
+ */
+const advancedInvestmentHeading =
+  (en.pages.analytics as { sections?: { advancedInvestment?: string } }).sections
+    ?.advancedInvestment ?? 'sections.advancedInvestment';
 
 // Mock next/dynamic to render components directly instead of lazy-loading
 jest.mock('next/dynamic', () => {
@@ -64,7 +75,7 @@ describe('AnalyticsPage', () => {
     render(<AnalyticsPage />);
     expect(screen.getByText('Mortgage Calculator')).toBeInTheDocument();
     expect(screen.getByText('Investment Property Analyzer')).toBeInTheDocument();
-    expect(screen.getByText('Advanced Investment Analytics')).toBeInTheDocument();
+    expect(screen.getByText(advancedInvestmentHeading)).toBeInTheDocument();
     expect(screen.getByText('Portfolio Analyzer')).toBeInTheDocument();
     expect(screen.getByText('Rent vs Buy Calculator')).toBeInTheDocument();
   });

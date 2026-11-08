@@ -26,6 +26,8 @@ interface ScenarioFormProps {
 }
 
 function ScenarioForm({ title, formData, onChange, disabled }: ScenarioFormProps) {
+  const tm = useTranslations('mortgage');
+  const ti = useTranslations('investment');
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     onChange({
@@ -43,7 +45,7 @@ function ScenarioForm({ title, formData, onChange, disabled }: ScenarioFormProps
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
             <Label htmlFor={`${title}-price`} className="text-xs">
-              Property Price
+              {tm('propertyPrice')}
             </Label>
             <Input
               id={`${title}-price`}
@@ -58,7 +60,7 @@ function ScenarioForm({ title, formData, onChange, disabled }: ScenarioFormProps
           </div>
           <div className="space-y-1">
             <Label htmlFor={`${title}-down`} className="text-xs">
-              Down Payment %
+              {ti('tcoComparison.fields.downPayment')}
             </Label>
             <Input
               id={`${title}-down`}
@@ -75,7 +77,7 @@ function ScenarioForm({ title, formData, onChange, disabled }: ScenarioFormProps
           </div>
           <div className="space-y-1">
             <Label htmlFor={`${title}-rate`} className="text-xs">
-              Interest Rate %
+              {ti('tcoComparison.fields.interestRate')}
             </Label>
             <Input
               id={`${title}-rate`}
@@ -91,7 +93,7 @@ function ScenarioForm({ title, formData, onChange, disabled }: ScenarioFormProps
           </div>
           <div className="space-y-1">
             <Label htmlFor={`${title}-years`} className="text-xs">
-              Loan Years
+              {ti('tcoComparison.fields.loanYears')}
             </Label>
             <Input
               id={`${title}-years`}
@@ -112,7 +114,7 @@ function ScenarioForm({ title, formData, onChange, disabled }: ScenarioFormProps
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
             <Label htmlFor={`${title}-hoa`} className="text-xs">
-              Monthly HOA
+              {tm('tco.monthlyHoa')}
             </Label>
             <Input
               id={`${title}-hoa`}
@@ -127,7 +129,7 @@ function ScenarioForm({ title, formData, onChange, disabled }: ScenarioFormProps
           </div>
           <div className="space-y-1">
             <Label htmlFor={`${title}-tax`} className="text-xs">
-              Annual Tax
+              {ti('tcoComparison.fields.annualTax')}
             </Label>
             <Input
               id={`${title}-tax`}
@@ -142,7 +144,7 @@ function ScenarioForm({ title, formData, onChange, disabled }: ScenarioFormProps
           </div>
           <div className="space-y-1">
             <Label htmlFor={`${title}-insurance`} className="text-xs">
-              Annual Insurance
+              {tm('tco.annualInsurance')}
             </Label>
             <Input
               id={`${title}-insurance`}
@@ -157,7 +159,7 @@ function ScenarioForm({ title, formData, onChange, disabled }: ScenarioFormProps
           </div>
           <div className="space-y-1">
             <Label htmlFor={`${title}-utilities`} className="text-xs">
-              Monthly Utilities
+              {tm('tco.monthlyUtilities')}
             </Label>
             <Input
               id={`${title}-utilities`}
@@ -232,6 +234,7 @@ function ResultCard({ result, name, isRecommended }: ResultCardProps) {
 
 export function TCOComparison({ className }: TCOComparisonProps) {
   const t = useTranslations('mortgage');
+  const ti = useTranslations('investment');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TCOComparisonResult | null>(null);
@@ -299,10 +302,7 @@ export function TCOComparison({ className }: TCOComparisonProps) {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>{t('tco.compareScenarios')}</CardTitle>
-          <CardDescription>
-            Compare Total Cost of Ownership between two property scenarios with trade-off analysis
-            and recommendations.
-          </CardDescription>
+          <CardDescription>{ti('tcoComparison.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           {/* Input Forms Side by Side */}
@@ -325,7 +325,7 @@ export function TCOComparison({ className }: TCOComparisonProps) {
           <div className="flex justify-center">
             <Button onClick={handleCompare} disabled={loading} size="lg">
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
-              Compare Scenarios
+              {ti('tcoComparison.compareScenarios')}
             </Button>
           </div>
 
@@ -363,7 +363,10 @@ export function TCOComparison({ className }: TCOComparisonProps) {
                     })}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {result.scenario_a_name} vs {result.scenario_b_name}
+                    {ti('tcoComparison.versus', {
+                      first: result.scenario_a_name,
+                      second: result.scenario_b_name,
+                    })}
                   </p>
                 </div>
 
@@ -381,7 +384,10 @@ export function TCOComparison({ className }: TCOComparisonProps) {
                     })}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {result.scenario_a_name} vs {result.scenario_b_name}
+                    {ti('tcoComparison.versus', {
+                      first: result.scenario_a_name,
+                      second: result.scenario_b_name,
+                    })}
                   </p>
                 </div>
 
@@ -389,7 +395,11 @@ export function TCOComparison({ className }: TCOComparisonProps) {
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground mb-2">{t('tco.breakEvenPoint')}</p>
                   {result.break_even_years ? (
-                    <p className="text-2xl font-bold">{result.break_even_years.toFixed(1)} years</p>
+                    <p className="text-2xl font-bold">
+                      {ti('tcoComparison.breakEvenYears', {
+                        years: result.break_even_years.toFixed(1),
+                      })}
+                    </p>
                   ) : (
                     <p className="text-2xl font-bold text-muted-foreground">N/A</p>
                   )}
@@ -408,7 +418,11 @@ export function TCOComparison({ className }: TCOComparisonProps) {
                     <ArrowRight className="h-5 w-5 text-info mt-0.5" aria-hidden="true" />
                   )}
                   <div>
-                    <p className="font-medium">Recommendation: {result.recommendation}</p>
+                    <p className="font-medium">
+                      {ti('tcoComparison.recommendation', {
+                        recommendation: result.recommendation,
+                      })}
+                    </p>
                     <p className="text-sm text-muted-foreground mt-1">
                       {result.recommendation_reason}
                     </p>
@@ -421,7 +435,7 @@ export function TCOComparison({ className }: TCOComparisonProps) {
                 <div className="p-4 bg-muted rounded-lg">
                   <h4 className="font-medium mb-2 flex items-center gap-2">
                     <Check className="h-4 w-4 text-success" aria-hidden="true" />
-                    {result.scenario_a_name} Advantages
+                    {ti('tcoComparison.advantages', { name: result.scenario_a_name })}
                   </h4>
                   <ul className="text-sm space-y-1">
                     {result.a_advantages.map((adv, i) => (
@@ -434,7 +448,7 @@ export function TCOComparison({ className }: TCOComparisonProps) {
                 <div className="p-4 bg-muted rounded-lg">
                   <h4 className="font-medium mb-2 flex items-center gap-2">
                     <Check className="h-4 w-4 text-success" aria-hidden="true" />
-                    {result.scenario_b_name} Advantages
+                    {ti('tcoComparison.advantages', { name: result.scenario_b_name })}
                   </h4>
                   <ul className="text-sm space-y-1">
                     {result.b_advantages.map((adv, i) => (

@@ -30,6 +30,8 @@ interface PresetSelectorProps {
 
 export function PresetSelector({ onPresetSelect, currentFilters, className }: PresetSelectorProps) {
   const t = useTranslations('search');
+  const tPresets = useTranslations('shellComponents.presets');
+  const tCommon = useTranslations('common');
   const [presets, setPresets] = useState<FilterPreset[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +72,7 @@ export function PresetSelector({ onPresetSelect, currentFilters, className }: Pr
 
   const handleDeletePreset = async (preset: FilterPreset, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm(`Delete preset "${preset.name}"?`)) return;
+    if (!confirm(tPresets('deleteConfirm', { name: preset.name }))) return;
 
     try {
       setDeletingId(preset.id);
@@ -122,7 +124,7 @@ export function PresetSelector({ onPresetSelect, currentFilters, className }: Pr
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className={className}>
             <Filter className="h-4 w-4 mr-2" aria-hidden="true" />
-            Presets
+            {tPresets('title')}
             <ChevronDown className="h-4 w-4 ml-2" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
@@ -130,13 +132,13 @@ export function PresetSelector({ onPresetSelect, currentFilters, className }: Pr
           {loading ? (
             <div className="flex items-center justify-center py-4">
               <Loader2 className="h-4 w-4 animate-spin mr-2" aria-hidden="true" />
-              Loading...
+              {tCommon('loading')}
             </div>
           ) : error ? (
             <div className="px-2 py-4 text-center text-sm text-muted-foreground">{error}</div>
           ) : presets.length === 0 ? (
             <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-              No saved presets yet
+              {tPresets('empty')}
             </div>
           ) : (
             presets.map((preset) => (
@@ -191,7 +193,7 @@ export function PresetSelector({ onPresetSelect, currentFilters, className }: Pr
             className={!hasFilters ? 'opacity-50' : ''}
           >
             <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
-            Save Current Filters
+            {tPresets('saveCurrentFilters')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

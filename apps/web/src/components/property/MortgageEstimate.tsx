@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { TrendingUp } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { formatMonthlyPayment } from '@/lib/mortgage';
 
 interface MortgageEstimateProps {
@@ -36,6 +37,7 @@ export function MortgageEstimate({
   loanYears = 30,
   className,
 }: MortgageEstimateProps) {
+  const t = useTranslations('property');
   const estimate = formatMonthlyPayment(price, {
     currency,
     locale,
@@ -57,12 +59,16 @@ export function MortgageEstimate({
       ]
         .filter(Boolean)
         .join(' ')}
-      aria-label={`Estimated monthly payment ${estimate.display}`}
-      title={`Estimated monthly payment with ${downPaymentPercent}% down, ${loanYears}-year fixed at ${interestRate}% APR. Not a lending offer.`}
+      aria-label={t('estimateLabel', { value: estimate.display })}
+      title={t('estimateTitle', {
+        down: downPaymentPercent,
+        years: loanYears,
+        rate: interestRate,
+      })}
     >
       <TrendingUp className="h-3 w-3" aria-hidden />
       <span>{estimate.display}</span>
-      <span className="text-success/70 dark:text-chart-7/60 font-normal">est.</span>
+      <span className="text-success/70 dark:text-chart-7/60 font-normal">{t('estimate.abbr')}</span>
     </div>
   );
 }

@@ -182,7 +182,11 @@
       "created": "Сначала новые",
       "placeholder": "Сортировать по"
     },
-    "verifiedAria": "Проверенный агент"
+    "verifiedAria": "Проверенный агент",
+    "cardExtra": {
+      "call": "Позвонить",
+      "moreAreas": "ещё {count}"
+    }
   },
   "auth": {
     "signIn": "Войти",
@@ -285,6 +289,9 @@
       "redirecting": "Перенаправление на страницу входа...",
       "signingIn": "Выполняется вход...",
       "pleaseWait": "Пожалуйста, подождите..."
+    },
+    "demo": {
+      "exploreDemoFirst": "Сначала попробуйте демо"
     }
   },
   "cma": {
@@ -413,6 +420,9 @@
       "expires": "Действует до:",
       "createNew": "Создать новый отчёт",
       "failedDownload": "Не удалось скачать PDF"
+    },
+    "comparablesExtra": {
+      "notAvailable": "нет данных"
     }
   },
   "chat": {
@@ -611,7 +621,12 @@
     "emptyHint": "Попробуйте один из примеров запросов ниже, чтобы увидеть демо в работе.",
     "modeDisabled": "Отключено",
     "toggleFailed": "Не удалось переключить режим демо: {message}",
-    "modeEnabled": "Включён"
+    "modeEnabled": "Включён",
+    "modeState": {
+      "label": "Демо-режим:",
+      "on": "ВКЛ",
+      "off": "ВЫКЛ"
+    }
   },
   "documents": {
     "title": "Документы",
@@ -932,6 +947,58 @@
         "recency": "Актуальность",
         "amenities": "Удобства"
       }
+    },
+    "advancedAnalyzer": {
+      "emptyHint": "Введите ниже данные о недвижимости, чтобы сформировать многолетний прогноз и анализ рисков.",
+      "formIntro": "Введите данные о недвижимости и финансировании для расширенного анализа.",
+      "runAnalysis": "Запустить расширенный анализ",
+      "exportReport": "Экспортировать отчёт",
+      "taxMethodNote": "Расчёт выполнен исходя из предельной налоговой ставки {taxRate}% и доли земельной стоимости {landRatio}%. Амортизация начисляется линейным методом в течение 27,5 лет (жильё в США)."
+    },
+    "analyzer": {
+      "analyze": "Проанализировать инвестицию",
+      "showFinancing": "Показать параметры финансирования",
+      "hideFinancing": "Скрыть параметры финансирования",
+      "showExpenses": "Показать эксплуатационные расходы",
+      "hideExpenses": "Скрыть эксплуатационные расходы",
+      "scoreLabels": {
+        "yield": "балл доходности",
+        "capRate": "балл капитализации",
+        "cashFlow": "балл денежного потока",
+        "netYield": "балл чистой доходности",
+        "risk": "балл риска"
+      }
+    },
+    "areaComparison": {
+      "title": "Сравнение районов",
+      "amenities": {
+        "parking": "парковка",
+        "garden": "сад",
+        "pool": "бассейн",
+        "furnished": "с мебелью",
+        "balcony": "балкон",
+        "elevator": "лифт"
+      }
+    },
+    "priceHistoryChart": {
+      "snapshotsRecorded": "записей цен: {count}",
+      "anomaliesDetected": "{count, plural, one {# обнаруженная аномалия цены} few {# обнаруженные аномалии цены} many {# обнаруженных аномалий цены} other {# обнаруженных аномалий цены}}",
+      "priceLabel": "Цена: {price}",
+      "pricePerSqmLabel": "Цена за м²: {price}"
+    },
+    "tcoComparison": {
+      "fields": {
+        "downPayment": "Первоначальный взнос %",
+        "interestRate": "Процентная ставка %",
+        "loanYears": "Срок кредита (лет)",
+        "annualTax": "Налог за год"
+      },
+      "description": "Сравните совокупную стоимость владения по двум сценариям недвижимости с анализом компромиссов и рекомендацией.",
+      "compareScenarios": "Сравнить сценарии",
+      "recommendation": "Рекомендация: {recommendation}",
+      "advantages": "Преимущества: {name}",
+      "breakEvenYears": "{years} лет",
+      "versus": "{first} против {second}"
     }
   },
   "knowledge": {
@@ -1430,7 +1497,14 @@
     "summaryFailed": "Не удалось подготовить сводку по району: {message}",
     "loadingSummary": "Загрузка сводки по району",
     "preparingSummary": "Подготовка сводки…",
-    "summaryUnavailable": "Сводка по району сейчас недоступна."
+    "summaryUnavailable": "Сводка по району сейчас недоступна.",
+    "cityComparisonCard": {
+      "scoresHigherThanNoCity": "Этот район набирает больше баллов, чем {percentile}% районов города"
+    },
+    "whatsNearbyExtra": {
+      "categoryCount": "{count} {label}",
+      "coordinates": "Координаты: {latitude}, {longitude}"
+    }
   },
   "portfolio": {
     "title": "Анализ портфеля",
@@ -1498,6 +1572,18 @@
     "estimateTitle": "Расчётный ежемесячный платёж при первоначальном взносе {down}%, {years} лет под фиксированные {rate}% APR. Это не кредитное предложение.",
     "map": {
       "propertiesInArea": "{count, plural, one {# объект} few {# объекта} many {# объектов} other {# объектов}} в этом районе"
+    },
+    "estimate": {
+      "abbr": "ок."
+    },
+    "mapbox": {
+      "tokenMissing": "Токен Mapbox не настроен. Добавьте NEXT_PUBLIC_MAPBOX_TOKEN в переменные окружения.",
+      "drawPolygon": "Нарисуйте многоугольник, чтобы отфильтровать объекты",
+      "swipeUp": "Прокрутите вверх, чтобы увидеть список",
+      "dominant": "преобладающий",
+      "priceRange": "Диапазон цен: {min} – {max}",
+      "average": "Среднее: {amount}",
+      "clickToZoom": "Нажмите, чтобы приблизить"
     }
   },
   "rentVsBuy": {
@@ -1785,7 +1871,10 @@
       "resetAll": "Сбросить всё"
     },
     "mapZoomHint": "Приблизьте, чтобы увидеть отдельные объекты.",
-    "mapAttribution": "OpenStreetMap"
+    "mapAttribution": "OpenStreetMap",
+    "page": {
+      "requestId": "Идентификатор запроса: {id}"
+    }
   },
   "settings": {
     "title": "Настройки",
@@ -2037,6 +2126,9 @@
       "selectBoth": "Выберите провайдера и модель.",
       "systemDefault": "Системное по умолчанию",
       "loadFailed": "Не удалось загрузить настройки"
+    },
+    "providers": {
+      "supported": "OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI, Fireworks AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode и Ollama (локально)."
     }
   },
   "tools": {
@@ -2378,7 +2470,11 @@
     "agents": {
       "title": "Найти агентов",
       "description": "Агенты, работающие на рынке, который вас интересует.",
-      "searchByCity": "Поиск по городу..."
+      "searchByCity": "Поиск по городу...",
+      "pagination": {
+        "found": "{count, plural, one {Найден # агент} few {Найдено # агента} many {Найдено # агентов} other {Найдено # агента}}",
+        "page": "Страница {page} из {total}"
+      }
     },
     "settings": {
       "title": "Настройки",
@@ -2522,7 +2618,10 @@
     },
     "analytics": {
       "title": "Аналитика и инструменты",
-      "description": "Аналитика портфеля и калькуляторы за ней."
+      "description": "Аналитика портфеля и калькуляторы за ней.",
+      "sections": {
+        "advancedInvestment": "Расширенная аналитика инвестиций"
+      }
     },
     "valuation": {
       "title": "ИИ-оценка и прогноз недвижимости",
@@ -3128,6 +3227,9 @@
       "longitudeLabel": "Долгота",
       "via": "через",
       "arrival": "Прибытие: {time}"
+    },
+    "commuteExtra": {
+      "emptyHint": "Добавьте место работы или другие частые пункты назначения, чтобы проверить время в пути."
     }
   },
   "states": {
@@ -3230,6 +3332,38 @@
         "q8": "Есть ли размещаемая версия с реальными данными?",
         "a8": "Да — PropVector AI (propvectorai.com) предлагает размещаемые тарифы с живыми данными, управляемыми аккаунтами и корпоративными возможностями. Открытый репозиторий остаётся сфокусированным на ядре движка и разворачиваемом демо."
       }
+    }
+  },
+  "analytics": {
+    "anomalyList": {
+      "totalCount": "всего {count}",
+      "markReviewed": "Отметить как проверенное",
+      "dismissedBy": "Отклонено пользователем {name}",
+      "dismissedBySystem": "Отклонено системой",
+      "scope": {
+        "property": "Объект: {id}",
+        "city": "Город: {id}",
+        "district": "Район: {id}",
+        "market": "Рынок: {id}",
+        "region": "Регион: {id}"
+      }
+    }
+  },
+  "shellComponents": {
+    "presets": {
+      "title": "Сохранённые фильтры",
+      "empty": "Сохранённых фильтров пока нет",
+      "saveCurrentFilters": "Сохранить текущие фильтры",
+      "deleteConfirm": "Удалить фильтр «{name}»?"
+    },
+    "weekdays": {
+      "sunday": "Воскресенье",
+      "monday": "Понедельник",
+      "tuesday": "Вторник",
+      "wednesday": "Среда",
+      "thursday": "Четверг",
+      "friday": "Пятница",
+      "saturday": "Суббота"
     }
   }
 }

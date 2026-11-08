@@ -1,8 +1,26 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { formatMessage } from 'next-intl';
 import AgentsPage from '../page';
 import * as api from '@/lib/api';
+import en from '../../../../../messages/en.json';
 import type { AgentProfile } from '@/lib/types';
+
+/**
+ * Resolve a message from the English catalogue. The key is the fallback: that is
+ * exactly what the next-intl mock renders while the translation fragments are
+ * still waiting for the central merge into the catalogues.
+ */
+const copy = (namespace: string, key: string, params?: Record<string, unknown>): string => {
+  const value = [namespace, key]
+    .join('.')
+    .split('.')
+    .reduce<unknown>(
+      (acc, part) => (acc as Record<string, unknown> | undefined)?.[part],
+      en as unknown
+    );
+  return typeof value === 'string' ? formatMessage(value, params) : key;
+};
 
 // Mock @/lib/api
 jest.mock('@/lib/api', () => ({
@@ -222,7 +240,9 @@ describe('AgentsPage', () => {
     render(<AgentsPage params={Promise.resolve({ locale: 'en' })} />);
 
     await waitFor(() => {
-      expect(screen.getByText('2 agents found')).toBeInTheDocument();
+      expect(
+        screen.getByText(copy('pages.agents.pagination', 'found', { count: 2 }))
+      ).toBeInTheDocument();
     });
   });
 
@@ -238,7 +258,9 @@ describe('AgentsPage', () => {
     render(<AgentsPage params={Promise.resolve({ locale: 'en' })} />);
 
     await waitFor(() => {
-      expect(screen.getByText('1 agent found')).toBeInTheDocument();
+      expect(
+        screen.getByText(copy('pages.agents.pagination', 'found', { count: 1 }))
+      ).toBeInTheDocument();
     });
   });
 
@@ -343,7 +365,9 @@ describe('AgentsPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Previous')).toBeInTheDocument();
       expect(screen.getByText('Next')).toBeInTheDocument();
-      expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
+      expect(
+        screen.getByText(copy('pages.agents.pagination', 'page', { page: 1, total: 3 }))
+      ).toBeInTheDocument();
     });
   });
 

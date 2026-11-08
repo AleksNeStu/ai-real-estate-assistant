@@ -39,6 +39,7 @@ export function WhatsNearbySection({
   showMap = false,
 }: WhatsNearbySectionProps) {
   const t = useTranslations('neighborhood');
+  const tExtra = useTranslations('neighborhood.whatsNearbyExtra');
   const [activeTab, setActiveTab] = useState('schools');
 
   const nearbyPois = result.nearby_pois;
@@ -147,7 +148,9 @@ export function WhatsNearbySection({
   const renderPOIList = (pois: NearbyPOI[], category: POICategory) => {
     if (!pois || pois.length === 0) {
       return (
-        <EmptyState title={`No ${category.label.toLowerCase()} found nearby`} />
+        <EmptyState
+          title={t('whatsNearby.noFoundNearby', { category: category.label.toLowerCase() })}
+        />
       );
     }
 
@@ -217,7 +220,7 @@ export function WhatsNearbySection({
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
             <span className="text-sm">
-              <span className="font-semibold">{getTotalCount()}</span> places nearby
+              {t('whatsNearby.placesNearby', { count: getTotalCount() })}
             </span>
           </div>
           {categories.map((cat) => {
@@ -227,7 +230,7 @@ export function WhatsNearbySection({
               <div key={cat.key} className="flex items-center gap-1">
                 <span className={`text-xs ${cat.color}`}>{cat.icon}</span>
                 <span className="text-xs text-muted-foreground">
-                  {count} {cat.label.toLowerCase()}
+                  {tExtra('categoryCount', { count, label: cat.label.toLowerCase() })}
                 </span>
               </div>
             );
@@ -282,7 +285,10 @@ export function WhatsNearbySection({
                 <MapPin className="h-8 w-8 mx-auto mb-2" aria-hidden="true" />
                 <p className="text-sm">{t('whatsNearby.mapUnavailable')}</p>
                 <p className="text-xs">
-                  Coordinates: {result.latitude.toFixed(4)}, {result.longitude.toFixed(4)}
+                  {tExtra('coordinates', {
+                    latitude: result.latitude.toFixed(4),
+                    longitude: result.longitude.toFixed(4),
+                  })}
                 </p>
               </div>
             </div>

@@ -179,10 +179,7 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
       <Card>
         <CardHeader>
           <CardTitle>{t('newFactors.title')}</CardTitle>
-          <CardDescription>
-            Additional environmental and accessibility metrics for a complete neighborhood
-            assessment
-          </CardDescription>
+          <CardDescription>{t('newFactors.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -265,7 +262,7 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
                   {/* Data source info */}
                   {detail && (
                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-3 pb-3 border-b border-border">
-                      <span>Source: {detail.data_source}</span>
+                      <span>{`${t('newFactors.source')} ${detail.data_source}`}</span>
                       <div
                         className="flex items-center gap-1"
                         title={t('newFactors.confidenceLabel', {
@@ -302,18 +299,17 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
             <div className="mt-4 pt-4 border-t">
               <p className="text-xs text-muted-foreground">
                 <Info className="h-3 w-3 inline mr-1" aria-hidden="true" />
-                Data freshness: Air Quality updated{' '}
-                {result.data_freshness.air_quality
-                  ? new Date(result.data_freshness.air_quality).toLocaleDateString()
-                  : 'N/A'}
-                , Noise Level updated{' '}
-                {result.data_freshness.noise_level
-                  ? new Date(result.data_freshness.noise_level).toLocaleDateString()
-                  : 'N/A'}
-                , Transport updated{' '}
-                {result.data_freshness.public_transport
-                  ? new Date(result.data_freshness.public_transport).toLocaleDateString()
-                  : 'N/A'}
+                {t('newFactors.dataFreshness', {
+                  airQuality: result.data_freshness.air_quality
+                    ? new Date(result.data_freshness.air_quality).toLocaleDateString()
+                    : 'N/A',
+                  noiseLevel: result.data_freshness.noise_level
+                    ? new Date(result.data_freshness.noise_level).toLocaleDateString()
+                    : 'N/A',
+                  transport: result.data_freshness.public_transport
+                    ? new Date(result.data_freshness.public_transport).toLocaleDateString()
+                    : 'N/A',
+                })}
               </p>
             </div>
           )}

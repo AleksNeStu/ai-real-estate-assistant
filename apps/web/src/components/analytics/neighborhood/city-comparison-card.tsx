@@ -97,7 +97,9 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
       <CardHeader>
         <CardTitle>{t('cityComparison.title')}</CardTitle>
         <CardDescription>
-          How this neighborhood compares to {result.city || 'the city'} average
+          {result.city
+            ? t('cityComparison.descriptionCity', { city: result.city })
+            : t('cityComparison.description')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -147,9 +149,14 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
               {getPercentileLabel(comparison.percentile)}
             </h4>
             <p className="text-sm text-muted-foreground mb-2">
-              This neighborhood scores higher than{' '}
-              <span className="font-semibold">{comparison.percentile}%</span> of areas in{' '}
-              {result.city || 'the city'}
+              {result.city
+                ? t('cityComparison.scoresHigherThan', {
+                    percentile: comparison.percentile,
+                    city: result.city,
+                  })
+                : t('cityComparisonCard.scoresHigherThanNoCity', {
+                    percentile: comparison.percentile,
+                  })}
             </p>
             <div className="flex items-center gap-2 justify-center sm:justify-start">
               <span className="text-sm text-muted-foreground">{t('cityComparison.cityAverage')}</span>
@@ -247,9 +254,7 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
             <div className="md:col-span-2 rounded-lg border border-border bg-muted p-4">
               <div className="flex items-center gap-2">
                 <Minus className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                <p className="text-sm text-muted-foreground">
-                  This neighborhood scores close to the city average across all factors.
-                </p>
+                <p className="text-sm text-muted-foreground">{t('cityComparison.averageAcross')}</p>
               </div>
             </div>
           )}

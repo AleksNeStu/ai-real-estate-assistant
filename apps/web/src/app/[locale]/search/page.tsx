@@ -697,7 +697,7 @@ function SearchPageContent() {
                 action={
                   requestId ? (
                     <p className="font-mono text-xs text-muted-foreground">
-                      Request ID: {requestId}
+                      {t('page.requestId', { id: requestId })}
                     </p>
                   ) : null
                 }

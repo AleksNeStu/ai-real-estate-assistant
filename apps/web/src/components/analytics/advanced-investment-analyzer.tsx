@@ -100,6 +100,7 @@ export function AdvancedInvestmentAnalyzer() {
   const tp = useTranslations('portfolio');
   const tm = useTranslations('mortgage');
   const trv = useTranslations('rentVsBuy');
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
   const [errorState, setErrorState] = useState<ErrorState | null>(null);
   const [result, setResult] = useState<AdvancedInvestmentResult | null>(null);
@@ -237,9 +238,7 @@ export function AdvancedInvestmentAnalyzer() {
           role="status"
           aria-live="polite"
         >
-          <p className="text-sm text-muted-foreground">
-            Enter property details below to generate multi-year projections and risk analysis.
-          </p>
+          <p className="text-sm text-muted-foreground">{t('advancedAnalyzer.emptyHint')}</p>
         </div>
       )}
 
@@ -248,9 +247,7 @@ export function AdvancedInvestmentAnalyzer() {
         <Card className={result || errorState || loading ? undefined : 'mx-auto w-full max-w-2xl'}>
           <CardHeader>
             <CardTitle>{t('advanced.propertyDetails')}</CardTitle>
-            <CardDescription>
-              Enter property and financing information for advanced analysis.
-            </CardDescription>
+            <CardDescription>{t('advancedAnalyzer.formIntro')}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleCalculate} className="space-y-4">
@@ -406,12 +403,12 @@ export function AdvancedInvestmentAnalyzer() {
                 {showAdvancedOptions ? (
                   <>
                     <ChevronUp className="mr-2 h-4 w-4" aria-hidden="true" />
-                    Hide Advanced Options
+                    {trv('form.hideAdvanced')}
                   </>
                 ) : (
                   <>
                     <ChevronDown className="mr-2 h-4 w-4" aria-hidden="true" />
-                    Show Advanced Options
+                    {trv('form.showAdvanced')}
                   </>
                 )}
               </Button>
@@ -502,7 +499,7 @@ export function AdvancedInvestmentAnalyzer() {
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
                 <TrendingUp className="mr-2 h-4 w-4" aria-hidden="true" />
-                Run Advanced Analysis
+                {t('advancedAnalyzer.runAnalysis')}
               </Button>
 
               {/* Error state */}
@@ -538,7 +535,7 @@ export function AdvancedInvestmentAnalyzer() {
                       className="gap-2 ml-auto"
                     >
                       <RefreshCw className="h-3 w-3" aria-hidden="true" />
-                      Retry
+                      {tCommon('retry')}
                     </Button>
                   </div>
                 </div>
@@ -568,7 +565,7 @@ export function AdvancedInvestmentAnalyzer() {
                   ) : (
                     <Download className="h-4 w-4" aria-hidden="true" />
                   )}
-                  Export Report
+                  {t('advancedAnalyzer.exportReport')}
                 </Button>
               </CardHeader>
               <CardContent>
@@ -693,9 +690,10 @@ export function AdvancedInvestmentAnalyzer() {
                     </div>
                     <div className="mt-4 pt-4 border-t">
                       <p className="text-xs text-muted-foreground">
-                        Based on {formData.marginal_tax_rate}% marginal tax rate and{' '}
-                        {formData.land_value_ratio}% land value ratio. Depreciation uses
-                        straight-line method over 27.5 years (US residential).
+                        {t('advancedAnalyzer.taxMethodNote', {
+                          taxRate: formData.marginal_tax_rate,
+                          landRatio: formData.land_value_ratio,
+                        })}
                       </p>
                     </div>
                   </CardContent>

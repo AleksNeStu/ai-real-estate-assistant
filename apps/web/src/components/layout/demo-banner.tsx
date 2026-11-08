@@ -47,7 +47,9 @@ export function DemoBanner() {
       <div className="container mx-auto flex items-center justify-between px-4 py-2">
         <div className="flex items-center gap-2 text-primary">
           <Info className="w-4 h-4 shrink-0" aria-hidden="true" />
-          <span>Demo Mode: {isDemoMode ? 'ON' : 'OFF'}</span>
+          <span>
+            {t('modeState.label')} {isDemoMode ? t('modeState.on') : t('modeState.off')}
+          </span>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">

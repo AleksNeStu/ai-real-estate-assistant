@@ -80,7 +80,7 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
               </div>
               {agent.is_verified && (
                 <Badge variant="secondary" className="bg-success/15 text-success">
-                  Verified
+                  {t('verified')}
                 </Badge>
               )}
             </div>
@@ -91,13 +91,15 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
                 <div className="flex items-center gap-1">
                   <Star className="h-4 w-4 fill-warning text-warning" aria-hidden="true" />
                   <span className="font-medium">{agent.average_rating.toFixed(1)}</span>
-                  <span className="text-muted-foreground">({agent.total_reviews} reviews)</span>
+                  <span className="text-muted-foreground">
+                    ({t('reviews', { count: agent.total_reviews })})
+                  </span>
                 </div>
               )}
               {agent.total_sales > 0 && (
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <Briefcase className="h-4 w-4" aria-hidden="true" />
-                  <span>{agent.total_sales} sales</span>
+                  <span>{t('sales', { count: agent.total_sales })}</span>
                 </div>
               )}
             </div>
@@ -124,7 +126,7 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
                 <MapPin className="h-4 w-4" aria-hidden="true" />
                 <span>{agent.service_areas.slice(0, 2).join(', ')}</span>
                 {agent.service_areas.length > 2 && (
-                  <span>+{agent.service_areas.length - 2} more</span>
+                  <span>{t('cardExtra.moreAreas', { count: agent.service_areas.length - 2 })}</span>
                 )}
               </div>
             )}
@@ -133,14 +135,14 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
             <div className="flex flex-wrap gap-2">
               <Link href={profileHref}>
                 <Button variant="outline" size="sm">
-                  View Profile
+                  {t('viewProfile')}
                 </Button>
               </Link>
               {agent.professional_phone && (
                 <a href={`tel:${agent.professional_phone}`} onClick={() => trackContact('phone')}>
                   <Button variant="ghost" size="sm">
                     <Phone className="mr-1 h-4 w-4" aria-hidden="true" />
-                    Call
+                    {t('cardExtra.call')}
                   </Button>
                 </a>
               )}
@@ -151,7 +153,7 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
                 >
                   <Button variant="ghost" size="sm">
                     <Mail className="mr-1 h-4 w-4" aria-hidden="true" />
-                    Email
+                    {t('profile.email')}
                   </Button>
                 </a>
               )}

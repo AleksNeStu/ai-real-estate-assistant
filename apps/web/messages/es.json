@@ -182,7 +182,11 @@
       "created": "Más recientes primero",
       "placeholder": "Ordenar por"
     },
-    "verifiedAria": "Agente verificado"
+    "verifiedAria": "Agente verificado",
+    "cardExtra": {
+      "call": "Llamar",
+      "moreAreas": "+{count} más"
+    }
   },
   "auth": {
     "signIn": "Iniciar sesión",
@@ -285,6 +289,9 @@
       "redirecting": "Redirigiendo a la página de inicio de sesión...",
       "signingIn": "Iniciando sesión...",
       "pleaseWait": "Espera un momento..."
+    },
+    "demo": {
+      "exploreDemoFirst": "Prueba primero la demo"
     }
   },
   "cma": {
@@ -413,6 +420,9 @@
       "expires": "Caduca:",
       "createNew": "Crear nuevo informe",
       "failedDownload": "No se pudo descargar el PDF"
+    },
+    "comparablesExtra": {
+      "notAvailable": "N/D"
     }
   },
   "chat": {
@@ -611,7 +621,12 @@
     "emptyHint": "Prueba una de las consultas de ejemplo de abajo para ver la demo en acción.",
     "modeDisabled": "Desactivado",
     "toggleFailed": "No se pudo cambiar el modo de demostración: {message}",
-    "modeEnabled": "Activado"
+    "modeEnabled": "Activado",
+    "modeState": {
+      "label": "Modo demo:",
+      "on": "SÍ",
+      "off": "NO"
+    }
   },
   "documents": {
     "title": "Documentos",
@@ -932,6 +947,58 @@
         "recency": "Antigüedad",
         "amenities": "Servicios"
       }
+    },
+    "advancedAnalyzer": {
+      "emptyHint": "Introduce los datos del inmueble a continuación para generar proyecciones plurianuales y un análisis de riesgo.",
+      "formIntro": "Introduce los datos del inmueble y de la financiación para realizar un análisis avanzado.",
+      "runAnalysis": "Ejecutar análisis avanzado",
+      "exportReport": "Exportar informe",
+      "taxMethodNote": "Basado en un tipo impositivo marginal del {taxRate}% y una relación del valor del suelo del {landRatio}%. La depreciación se calcula por el método lineal a lo largo de 27,5 años (vivienda en EE. UU.)."
+    },
+    "analyzer": {
+      "analyze": "Analizar inversión",
+      "showFinancing": "Mostrar opciones de financiación",
+      "hideFinancing": "Ocultar opciones de financiación",
+      "showExpenses": "Mostrar gastos operativos",
+      "hideExpenses": "Ocultar gastos operativos",
+      "scoreLabels": {
+        "yield": "puntuación de rentabilidad",
+        "capRate": "puntuación de capitalización",
+        "cashFlow": "puntuación de flujo de caja",
+        "netYield": "puntuación de rentabilidad neta",
+        "risk": "puntuación de riesgo"
+      }
+    },
+    "areaComparison": {
+      "title": "Comparación de zonas",
+      "amenities": {
+        "parking": "aparcamiento",
+        "garden": "jardín",
+        "pool": "piscina",
+        "furnished": "amueblado",
+        "balcony": "balcón",
+        "elevator": "ascensor"
+      }
+    },
+    "priceHistoryChart": {
+      "snapshotsRecorded": "capturas de precio registradas: {count}",
+      "anomaliesDetected": "{count, plural, one {# anomalía de precio detectada} other {# anomalías de precio detectadas}}",
+      "priceLabel": "Precio: {price}",
+      "pricePerSqmLabel": "Precio/m²: {price}"
+    },
+    "tcoComparison": {
+      "fields": {
+        "downPayment": "Entrada %",
+        "interestRate": "Tipo de interés %",
+        "loanYears": "Años del préstamo",
+        "annualTax": "Impuesto anual"
+      },
+      "description": "Compara el coste total de propiedad entre dos escenarios inmobiliarios con análisis de ventajas e inconvenientes y recomendaciones.",
+      "compareScenarios": "Comparar escenarios",
+      "recommendation": "Recomendación: {recommendation}",
+      "advantages": "Ventajas de {name}",
+      "breakEvenYears": "{years} años",
+      "versus": "{first} frente a {second}"
     }
   },
   "knowledge": {
@@ -1430,7 +1497,14 @@
     "summaryFailed": "Error en el resumen del barrio: {message}",
     "loadingSummary": "Cargando el resumen del barrio",
     "preparingSummary": "Preparando el resumen…",
-    "summaryUnavailable": "El resumen del barrio no está disponible en este momento."
+    "summaryUnavailable": "El resumen del barrio no está disponible en este momento.",
+    "cityComparisonCard": {
+      "scoresHigherThanNoCity": "Este barrio puntúa más alto que el {percentile}% de las zonas de la ciudad"
+    },
+    "whatsNearbyExtra": {
+      "categoryCount": "{count} {label}",
+      "coordinates": "Coordenadas: {latitude}, {longitude}"
+    }
   },
   "portfolio": {
     "title": "Analizador de cartera",
@@ -1498,6 +1572,18 @@
     "estimateTitle": "Cuota mensual estimada con {down} % de entrada, {years} años fijo al {rate} % TAE. No es una oferta de préstamo.",
     "map": {
       "propertiesInArea": "{count, plural, one {# inmueble} other {# inmuebles}} en esta zona"
+    },
+    "estimate": {
+      "abbr": "aprox."
+    },
+    "mapbox": {
+      "tokenMissing": "El token de Mapbox no está configurado. Añade NEXT_PUBLIC_MAPBOX_TOKEN a tu entorno.",
+      "drawPolygon": "Dibuja un polígono para filtrar inmuebles",
+      "swipeUp": "Desliza hacia arriba para ver la lista",
+      "dominant": "predominante",
+      "priceRange": "Rango de precios: {min} – {max}",
+      "average": "Promedio: {amount}",
+      "clickToZoom": "Haz clic para acercar"
     }
   },
   "rentVsBuy": {
@@ -1785,7 +1871,10 @@
       "resetAll": "Restablecer todo"
     },
     "mapZoomHint": "Acerca el mapa para ver inmuebles individuales.",
-    "mapAttribution": "OpenStreetMap"
+    "mapAttribution": "OpenStreetMap",
+    "page": {
+      "requestId": "ID de solicitud: {id}"
+    }
   },
   "settings": {
     "title": "Ajustes",
@@ -2037,6 +2126,9 @@
       "selectBoth": "Selecciona un proveedor y un modelo.",
       "systemDefault": "Predeterminado del sistema",
       "loadFailed": "No se pudieron cargar las preferencias"
+    },
+    "providers": {
+      "supported": "OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI, Fireworks AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode y Ollama (local)."
     }
   },
   "tools": {
@@ -2378,7 +2470,11 @@
     "agents": {
       "title": "Buscar agentes",
       "description": "Agentes que trabajan en el mercado que buscas.",
-      "searchByCity": "Buscar por ciudad..."
+      "searchByCity": "Buscar por ciudad...",
+      "pagination": {
+        "found": "{count, plural, one {# agente encontrado} other {# agentes encontrados}}",
+        "page": "Página {page} de {total}"
+      }
     },
     "settings": {
       "title": "Ajustes",
@@ -2522,7 +2618,10 @@
     },
     "analytics": {
       "title": "Analítica y herramientas",
-      "description": "Analítica de cartera y las calculadoras que la sostienen."
+      "description": "Analítica de cartera y las calculadoras que la sostienen.",
+      "sections": {
+        "advancedInvestment": "Analítica avanzada de inversiones"
+      }
     },
     "valuation": {
       "title": "Valoración y previsión con IA",
@@ -3128,6 +3227,9 @@
       "longitudeLabel": "Longitud",
       "via": "en",
       "arrival": "Llegada: {time}"
+    },
+    "commuteExtra": {
+      "emptyHint": "Añade tu lugar de trabajo u otros destinos habituales para comprobar los tiempos de trayecto."
     }
   },
   "states": {
@@ -3230,6 +3332,38 @@
         "q8": "¿Existe una versión alojada con datos reales?",
         "a8": "Sí — PropVector AI (propvectorai.com) ofrece niveles alojados con datos en vivo, cuentas gestionadas y capacidades empresariales. El repositorio de código abierto se centra en el motor principal y en una demo que puedes alojar por tu cuenta."
       }
+    }
+  },
+  "analytics": {
+    "anomalyList": {
+      "totalCount": "{count} en total",
+      "markReviewed": "Marcar como revisada",
+      "dismissedBy": "Descartada por {name}",
+      "dismissedBySystem": "Descartada por el sistema",
+      "scope": {
+        "property": "Propiedad: {id}",
+        "city": "Ciudad: {id}",
+        "district": "Distrito: {id}",
+        "market": "Mercado: {id}",
+        "region": "Región: {id}"
+      }
+    }
+  },
+  "shellComponents": {
+    "presets": {
+      "title": "Filtros guardados",
+      "empty": "Aún no hay filtros guardados",
+      "saveCurrentFilters": "Guardar filtros actuales",
+      "deleteConfirm": "¿Eliminar el filtro «{name}»?"
+    },
+    "weekdays": {
+      "sunday": "Domingo",
+      "monday": "Lunes",
+      "tuesday": "Martes",
+      "wednesday": "Miércoles",
+      "thursday": "Jueves",
+      "friday": "Viernes",
+      "saturday": "Sábado"
     }
   }
 }

@@ -35,6 +35,7 @@ export function NotificationSettings({ userEmail }: { userEmail: string | null }
   );
   const [sendingPreview, setSendingPreview] = useState(false);
   const t = useTranslations('settings');
+  const tWeekdays = useTranslations('shellComponents.weekdays');
 
   useEffect(() => {
     if (!userEmail) {
@@ -371,7 +372,7 @@ export function NotificationSettings({ userEmail }: { userEmail: string | null }
             >
               {DAYS_OF_WEEK.map((day) => (
                 <option key={day} value={day}>
-                  {day.charAt(0).toUpperCase() + day.slice(1)}
+                  {tWeekdays(day)}
                 </option>
               ))}
             </select>

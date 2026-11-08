@@ -106,7 +106,7 @@ export default function ForgotPasswordPage() {
               id="email"
               name="email"
               type="email"
-              placeholder="name@example.com"
+              placeholder={t('login.emailPlaceholder')}
               required
               disabled={isLoading}
               value={email}

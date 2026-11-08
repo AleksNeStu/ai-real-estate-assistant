@@ -120,6 +120,7 @@ export default function PropertyMapboxMap({
   mobileHeight = '60vh',
 }: MapboxPropertyMapProps) {
   const t = useTranslations('property');
+  const tMapbox = useTranslations('property.mapbox');
   const tSearch = useTranslations('search');
   const locale = useLocale();
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -354,13 +355,15 @@ export default function PropertyMapboxMap({
                 })
                 .join(' • ')
             : cluster.dominantType
-              ? `<span style="color:${clusterColor}">${cluster.dominantType}</span> dominant`
+              ? `<span style="color:${clusterColor}">${cluster.dominantType}</span> ${tMapbox(
+                  'dominant'
+                )}`
               : '';
 
         const clusterPopupHTML = `
           <div style="min-width:180px;font-family:inherit;">
             <div style="font-weight:600;font-size:14px;margin-bottom:8px;">
-              ${cluster.count} properties in this area
+              ${t('map.propertiesInArea', { count: cluster.count })}
             </div>
             ${
               typeSummary
@@ -375,7 +378,10 @@ export default function PropertyMapboxMap({
               minPrice !== null && maxPrice !== null
                 ? `
               <div style="font-size:12px;color:hsl(var(--muted-foreground));margin-bottom:4px;">
-                Price range: ${formatClusterPrice(minPrice)} - ${formatClusterPrice(maxPrice)}
+                ${tMapbox('priceRange', {
+                  min: formatClusterPrice(minPrice),
+                  max: formatClusterPrice(maxPrice),
+                })}
               </div>
             `
                 : ''
@@ -384,13 +390,13 @@ export default function PropertyMapboxMap({
               avgPrice !== null
                 ? `
               <div style="font-size:12px;color:hsl(var(--muted-foreground));margin-bottom:8px;">
-                Average: ${formatClusterPrice(avgPrice)}
+                ${tMapbox('average', { amount: formatClusterPrice(avgPrice) })}
               </div>
             `
                 : ''
             }
             <div style="font-size:11px;color:hsl(var(--muted-foreground));">
-              Click to zoom in
+              {tMapbox('clickToZoom')}
             </div>
           </div>
         `;
@@ -435,9 +441,7 @@ export default function PropertyMapboxMap({
       />
       {!mapboxToken && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
-          <p className="text-sm text-muted-foreground">
-            Mapbox token not configured. Add NEXT_PUBLIC_MAPBOX_TOKEN to your environment.
-          </p>
+          <p className="text-sm text-muted-foreground">{tMapbox('tokenMissing')}</p>
         </div>
       )}
       {/* Polygon drawing control */}
@@ -461,13 +465,13 @@ export default function PropertyMapboxMap({
       {/* Drawing mode indicator */}
       {enableDrawing && mapLoaded && (
         <div className="absolute top-4 left-4 z-10 bg-background/95 backdrop-blur-sm rounded-lg border shadow-sm px-3 py-2 text-xs text-muted-foreground">
-          Draw a polygon to filter properties
+          {tMapbox('drawPolygon')}
         </div>
       )}
       {/* Mobile swipe indicator */}
       {isMobile && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 bg-background/95 backdrop-blur-sm rounded-full border shadow-sm px-3 py-1 text-xs text-muted-foreground">
-          Swipe up for list
+          {tMapbox('swipeUp')}
         </div>
       )}
     </div>

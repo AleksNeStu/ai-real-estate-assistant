@@ -48,6 +48,13 @@ export function NeighborhoodDetails({
   const t = useTranslations('neighborhood');
   const [activeTab, setActiveTab] = useState('overview');
 
+  // Reader-visible labels for the API freshness keys
+  const freshnessLabels: Record<string, string> = {
+    air_quality: t('details.airQuality'),
+    noise_level: t('details.noiseLevel'),
+    public_transport: t('details.publicTransport'),
+  };
+
   if (!result) {
     return (
       <EmptyState icon={AlertCircle} title={t('details.noData')} className={className} />
@@ -264,10 +271,11 @@ export function NeighborhoodDetails({
         <div className="flex items-center gap-2 text-xs text-muted-foreground px-2">
           <Info className="h-3 w-3" aria-hidden="true" />
           <span>
-            Data freshness:{' '}
+            {t('details.dataFreshness')}{' '}
             {Object.entries(result.data_freshness).map(([key, date]) => (
               <span key={key} className="mr-3">
-                <span className="font-medium">{key}:</span> {new Date(date).toLocaleDateString()}
+                <span className="font-medium">{freshnessLabels[key] ?? key}:</span>{' '}
+                {new Date(date).toLocaleDateString()}
               </span>
             ))}
           </span>
@@ -327,7 +335,7 @@ export function NeighborhoodDetailsError({
           )}
           {onRetry && (
             <Button variant="outline" onClick={onRetry}>
-              Try Again
+              {t('details.tryAgain')}
             </Button>
           )}
         </div>

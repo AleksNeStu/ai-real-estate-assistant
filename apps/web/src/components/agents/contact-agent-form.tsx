@@ -39,6 +39,7 @@ export function ContactAgentForm({
   onCancel,
 }: ContactAgentFormProps) {
   const t = useTranslations('agents.contactForm');
+  const tAgents = useTranslations('agents');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +94,8 @@ export function ContactAgentForm({
     }
   };
 
-  const displayName = agent.name || agent.professional_email?.split('@')[0] || 'Agent';
+  const displayName =
+    agent.name || agent.professional_email?.split('@')[0] || tAgents('profile.defaultName');
 
   if (success) {
     return (
@@ -112,7 +114,7 @@ export function ContactAgentForm({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg">Contact {displayName}</CardTitle>
+        <CardTitle className="text-lg">{t('title', { name: displayName })}</CardTitle>
         {onCancel && (
           <Button variant="ghost" size="icon" onClick={onCancel} aria-label={t('closeAria')}>
             <X className="h-4 w-4" aria-hidden="true" />

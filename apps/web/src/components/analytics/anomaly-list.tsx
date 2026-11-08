@@ -29,8 +29,28 @@ const typeOptions: AnomalyType[] = [
   'unusual_pattern',
 ];
 
+/**
+ * Maps the API severity / type values to the catalogue keys that carry their
+ * reader-visible label.
+ */
+const SEVERITY_LABEL_KEYS: Record<string, string> = {
+  critical: 'critical',
+  high: 'high',
+  medium: 'medium',
+  low: 'low',
+};
+
+const TYPE_LABEL_KEYS: Record<string, string> = {
+  price_spike: 'priceSpike',
+  price_drop: 'priceDrop',
+  volume_spike: 'volumeSpike',
+  volume_drop: 'volumeDrop',
+  unusual_pattern: 'unusualPattern',
+};
+
 export function AnomalyList() {
   const t = useTranslations('marketTrends');
+  const tAnalytics = useTranslations('analytics');
   const [anomalies, setAnomalies] = useState<MarketAnomaly[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,15 +118,15 @@ export function AnomalyList() {
   const getScopeLabel = (scopeType: string, scopeId: string) => {
     switch (scopeType) {
       case 'property':
-        return `Property: ${scopeId}`;
+        return tAnalytics('anomalyList.scope.property', { id: scopeId });
       case 'city':
-        return `City: ${scopeId}`;
+        return tAnalytics('anomalyList.scope.city', { id: scopeId });
       case 'district':
-        return `District: ${scopeId}`;
+        return tAnalytics('anomalyList.scope.district', { id: scopeId });
       case 'market':
-        return `Market: ${scopeId}`;
+        return tAnalytics('anomalyList.scope.market', { id: scopeId });
       case 'region':
-        return `Region: ${scopeId}`;
+        return tAnalytics('anomalyList.scope.region', { id: scopeId });
       default:
         return scopeId;
     }
@@ -118,7 +138,9 @@ export function AnomalyList() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <h2 className="text-2xl font-bold tracking-tight">{t('anomalies.title')}</h2>
-          <Badge variant="secondary">{anomalies.length} total</Badge>
+          <Badge variant="secondary">
+            {tAnalytics('anomalyList.totalCount', { count: anomalies.length })}
+          </Badge>
         </div>
 
         <div className="flex gap-2">
@@ -150,7 +172,7 @@ export function AnomalyList() {
             <option value="">{t('anomalies.allSeverities')}</option>
             {severityOptions.map((s) => (
               <option key={s} value={s}>
-                {s.charAt(0).toUpperCase() + s.slice(1)}
+                {t(`anomalies.severities.${SEVERITY_LABEL_KEYS[s] ?? s}`)}
               </option>
             ))}
           </select>
@@ -168,12 +190,9 @@ export function AnomalyList() {
             aria-label={t('anomalies.filterType')}
           >
             <option value="">{t('anomalies.allTypes')}</option>
-            {typeOptions.map((t) => (
-              <option key={t} value={t}>
-                {t
-                  .split('_')
-                  .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                  .join(' ')}
+            {typeOptions.map((type) => (
+              <option key={type} value={type}>
+                {t(`anomalies.types.${TYPE_LABEL_KEYS[type] ?? type}`)}
               </option>
             ))}
           </select>
@@ -313,7 +332,7 @@ export function AnomalyList() {
                       className="text-xs"
                     >
                       <Eye className="h-3 w-3 mr-1" aria-hidden="true" />
-                      Mark as Reviewed
+                      {tAnalytics('anomalyList.markReviewed')}
                     </Button>
                   </div>
                 )}
@@ -322,7 +341,9 @@ export function AnomalyList() {
                 {anomaly.dismissed_at && (
                   <div className="mt-2">
                     <Badge variant="secondary" className="text-xs">
-                      Dismissed by {anomaly.dismissed_by || 'system'}
+                      {anomaly.dismissed_by
+                        ? tAnalytics('anomalyList.dismissedBy', { name: anomaly.dismissed_by })
+                        : tAnalytics('anomalyList.dismissedBySystem')}
                     </Badge>
                   </div>
                 )}

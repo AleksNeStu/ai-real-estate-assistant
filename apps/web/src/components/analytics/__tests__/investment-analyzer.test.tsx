@@ -6,7 +6,21 @@ import en from "../../../../messages/en.json";
 
 jest.mock("@/lib/api");
 
-describe("InvestmentAnalyzer", () => {
+/**
+ * Resolve a message from the English catalogue. The key is the fallback: that is
+ * exactly what the next-intl mock renders when the catalogue does not carry the
+ * message yet - the translation fragments are merged into the catalogues once
+ * the translation work lands.
+ */
+const copy = (namespace: string, key: string): string => {
+  const value = [namespace, key]
+    .join('.')
+    .split('.')
+    .reduce<unknown>((acc, part) => (acc as Record<string, unknown> | undefined)?.[part], en);
+  return typeof value === 'string' ? value : key;
+};
+
+describe('InvestmentAnalyzer', () => {
   const mockInvestmentResult = {
     monthly_cash_flow: 250.5,
     annual_cash_flow: 3006,
@@ -39,7 +53,11 @@ describe("InvestmentAnalyzer", () => {
 
     expect(screen.getByLabelText(/Purchase Price/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Monthly Rent/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Analyze Investment/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', {
+        name: copy("investment", "analyzer.analyze"),
+      })
+    ).toBeInTheDocument();
     // Check that the card title exists (using getAllByText since there are two instances)
     expect(screen.getAllByText("Investment Property Analyzer").length).toBeGreaterThan(0);
   });
@@ -49,7 +67,11 @@ describe("InvestmentAnalyzer", () => {
 
     render(<InvestmentAnalyzer />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Analyze Investment/i }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: copy("investment", "analyzer.analyze"),
+      })
+    );
 
     await waitFor(() => {
       expect(screen.getByText(en.investment.results.title)).toBeInTheDocument();
@@ -79,7 +101,11 @@ describe("InvestmentAnalyzer", () => {
 
     render(<InvestmentAnalyzer />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Analyze Investment/i }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: copy("investment", "analyzer.analyze"),
+      })
+    );
 
     await waitFor(() => {
       // Just verify that results are displayed, not the exact score format
@@ -93,7 +119,11 @@ describe("InvestmentAnalyzer", () => {
 
     render(<InvestmentAnalyzer />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Analyze Investment/i }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: copy("investment", "analyzer.analyze"),
+      })
+    );
 
     await waitFor(() => {
       // Just verify results are displayed
@@ -107,7 +137,11 @@ describe("InvestmentAnalyzer", () => {
 
     render(<InvestmentAnalyzer />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Analyze Investment/i }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: copy("investment", "analyzer.analyze"),
+      })
+    );
 
     await waitFor(() => {
       // Just verify results are displayed
@@ -120,7 +154,11 @@ describe("InvestmentAnalyzer", () => {
 
     render(<InvestmentAnalyzer />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Analyze Investment/i }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: copy("investment", "analyzer.analyze"),
+      })
+    );
 
     await waitFor(() => {
       expect(screen.getByText("Analysis failed")).toBeInTheDocument();
@@ -132,7 +170,11 @@ describe("InvestmentAnalyzer", () => {
 
     expect(screen.queryByLabelText(/Down Payment/i)).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /Show Financing Options/i }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: copy("investment", "analyzer.showFinancing"),
+      })
+    );
 
     expect(screen.getByLabelText(/Down Payment/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Interest Rate/i)).toBeInTheDocument();
@@ -144,7 +186,11 @@ describe("InvestmentAnalyzer", () => {
 
     expect(screen.queryByLabelText(/Property Tax/i)).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /Show Operating Expenses/i }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: copy("investment", "analyzer.showExpenses"),
+      })
+    );
 
     expect(screen.getByLabelText(/Property Tax/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Insurance/i)).toBeInTheDocument();
@@ -168,7 +214,11 @@ describe("InvestmentAnalyzer", () => {
 
     render(<InvestmentAnalyzer />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Analyze Investment/i }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: copy("investment", "analyzer.analyze"),
+      })
+    );
 
     await waitFor(() => {
       expect(screen.getByText("Monthly Cash Flow Breakdown")).toBeInTheDocument();
@@ -181,7 +231,11 @@ describe("InvestmentAnalyzer", () => {
 
     render(<InvestmentAnalyzer />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Analyze Investment/i }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: copy("investment", "analyzer.analyze"),
+      })
+    );
 
     await waitFor(() => {
       expect(screen.getByText("Investment Metrics")).toBeInTheDocument();

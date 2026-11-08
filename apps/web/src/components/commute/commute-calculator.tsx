@@ -78,6 +78,8 @@ export function CommuteCalculator({
   const [isAdding, setIsAdding] = useState(initialShowForm);
   const [selectedMode, setSelectedMode] = useState<CommuteMode>('transit');
   const t = useTranslations('pages.commute');
+  const tCommon = useTranslations('common');
+  const tExtra = useTranslations('pages.commuteExtra');
   const [error, setError] = useState<string | null>(null);
   const [calculatingId, setCalculatingId] = useState<string | null>(null);
 
@@ -333,9 +335,7 @@ export function CommuteCalculator({
         <div className="text-center py-6 text-sm text-muted-foreground">
           <MapPinned className="h-8 w-8 mx-auto mb-2 opacity-50" />
           <p>{t('empty')}</p>
-          <p className="text-xs">
-            Add your work location or other frequent destinations to check commute times.
-          </p>
+          <p className="text-xs">{tExtra('emptyHint')}</p>
         </div>
       )}
 
@@ -409,10 +409,10 @@ export function CommuteCalculator({
               disabled={!form.name || !form.lat || !form.lon}
             >
               <Save className="h-4 w-4 mr-1" />
-              Save
+              {tCommon('save')}
             </Button>
             <Button size="sm" variant="outline" onClick={() => setIsAdding(false)}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
           </div>
         </div>

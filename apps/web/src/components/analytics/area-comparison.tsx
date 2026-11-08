@@ -20,6 +20,19 @@ import { compareAreas, ApiError } from '@/lib/api';
 import { AreaComparison } from '@/lib/types';
 import { useTranslations } from 'next-intl';
 
+/**
+ * Maps the API amenity_availability keys to the catalogue keys that carry their
+ * reader-visible label. Unknown keys fall back to the raw key.
+ */
+const AMENITY_LABEL_KEYS: Record<string, string> = {
+  parking: 'parking',
+  garden: 'garden',
+  pool: 'pool',
+  furnished: 'furnished',
+  balcony: 'balcony',
+  elevator: 'elevator',
+};
+
 interface MetricRowProps {
   label: string;
   value1: number | string | undefined;
@@ -82,6 +95,8 @@ function MetricRow({
 
 export function AreaComparisonComponent() {
   const t = useTranslations('marketTrends');
+  const tInv = useTranslations('investment');
+  const tCompare = useTranslations('pages.tools.compare');
   const [city1, setCity1] = useState('Warsaw');
   const [city2, setCity2] = useState('Krakow');
   const [loading, setLoading] = useState(false);
@@ -125,7 +140,7 @@ export function AreaComparisonComponent() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5" aria-hidden="true" />
-          Area Comparison
+          {tInv('areaComparison.title')}
         </CardTitle>
         <CardDescription>{t('areaComparison.description')}</CardDescription>
       </CardHeader>
@@ -155,7 +170,7 @@ export function AreaComparisonComponent() {
           <div className="flex items-end">
             <Button onClick={handleCompare} disabled={loading} className="w-full">
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
-              Compare
+              {tCompare('compare')}
             </Button>
           </div>
         </div>
@@ -281,9 +296,13 @@ export function AreaComparisonComponent() {
                     {Object.entries(comparison.area1.amenity_availability).map(([key, val1]) => {
                       const val2 = comparison.area2.amenity_availability?.[key] ?? 0;
                       const diff = val1 - val2;
+                      const amenityKey = AMENITY_LABEL_KEYS[key];
+                      const amenityLabel = amenityKey
+                        ? tInv(`areaComparison.amenities.${amenityKey}`)
+                        : key.replace(/_/g, ' ');
                       return (
                         <div key={key} className="text-sm p-2 bg-muted/30 rounded">
-                          <div className="capitalize font-medium">{key.replace(/_/g, ' ')}</div>
+                          <div className="capitalize font-medium">{amenityLabel}</div>
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <span>{val1.toFixed(0)}%</span>
                             <ArrowRight className="h-3 w-3" aria-hidden="true" />

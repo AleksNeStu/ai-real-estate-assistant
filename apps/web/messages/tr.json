@@ -182,7 +182,11 @@
       "created": "Önce en yeniler",
       "placeholder": "Sıralama ölçütü"
     },
-    "verifiedAria": "Doğrulanmış danışman"
+    "verifiedAria": "Doğrulanmış danışman",
+    "cardExtra": {
+      "call": "Ara",
+      "moreAreas": "+{count} tane daha"
+    }
   },
   "auth": {
     "signIn": "Giriş yap",
@@ -285,6 +289,9 @@
       "redirecting": "Giriş sayfasına yönlendiriliyor...",
       "signingIn": "Giriş yapılıyor...",
       "pleaseWait": "Lütfen bekleyin..."
+    },
+    "demo": {
+      "exploreDemoFirst": "Önce demoyu dene"
     }
   },
   "cma": {
@@ -413,6 +420,9 @@
       "expires": "Sona erme:",
       "createNew": "Yeni rapor oluştur",
       "failedDownload": "PDF indirilemedi"
+    },
+    "comparablesExtra": {
+      "notAvailable": "Yok"
     }
   },
   "chat": {
@@ -611,7 +621,12 @@
     "emptyHint": "Demo'yu görmek için aşağıdaki örnek sorgulardan birini deneyin.",
     "modeDisabled": "Devre dışı",
     "toggleFailed": "Demo modu değiştirilemedi: {message}",
-    "modeEnabled": "Etkin"
+    "modeEnabled": "Etkin",
+    "modeState": {
+      "label": "Demo modu:",
+      "on": "AÇIK",
+      "off": "KAPALI"
+    }
   },
   "documents": {
     "title": "Belgeler",
@@ -932,6 +947,58 @@
         "recency": "Güncellik",
         "amenities": "Olanaklar"
       }
+    },
+    "advancedAnalyzer": {
+      "emptyHint": "Çok yıllı projeksiyonlar ve risk analizi oluşturmak için aşağıya gayrimenkul bilgilerini girin.",
+      "formIntro": "Gelişmiş analiz için gayrimenkul ve finansman bilgilerini girin.",
+      "runAnalysis": "Gelişmiş analizi çalıştır",
+      "exportReport": "Raporu dışa aktar",
+      "taxMethodNote": "{taxRate}% marjinal vergi oranı ve {landRatio}% arsa değeri oranına göre hesaplanmıştır. Amortisman 27,5 yıl boyunca doğrusal yöntemle hesaplanır (ABD konutları)."
+    },
+    "analyzer": {
+      "analyze": "Yatırımı analiz et",
+      "showFinancing": "Finansman seçeneklerini göster",
+      "hideFinancing": "Finansman seçeneklerini gizle",
+      "showExpenses": "İşletme giderlerini göster",
+      "hideExpenses": "İşletme giderlerini gizle",
+      "scoreLabels": {
+        "yield": "getiri puanı",
+        "capRate": "kapitalizasyon puanı",
+        "cashFlow": "nakit akışı puanı",
+        "netYield": "net getiri puanı",
+        "risk": "risk puanı"
+      }
+    },
+    "areaComparison": {
+      "title": "Bölge karşılaştırması",
+      "amenities": {
+        "parking": "otopark",
+        "garden": "bahçe",
+        "pool": "havuz",
+        "furnished": "mobilyalı",
+        "balcony": "balkon",
+        "elevator": "asansör"
+      }
+    },
+    "priceHistoryChart": {
+      "snapshotsRecorded": "kaydedilen fiyat kaydı: {count}",
+      "anomaliesDetected": "{count, plural, one {# fiyat anomalisi tespit edildi} other {# fiyat anomalisi tespit edildi}}",
+      "priceLabel": "Fiyat: {price}",
+      "pricePerSqmLabel": "m² başına fiyat: {price}"
+    },
+    "tcoComparison": {
+      "fields": {
+        "downPayment": "Peşinat %",
+        "interestRate": "Faiz oranı %",
+        "loanYears": "Kredi süresi (yıl)",
+        "annualTax": "Yıllık vergi"
+      },
+      "description": "İki gayrimenkul senaryosu arasında toplam mülkiyet maliyetini, ödünleşim analizi ve önerilerle birlikte karşılaştırın.",
+      "compareScenarios": "Senaryoları karşılaştır",
+      "recommendation": "Öneri: {recommendation}",
+      "advantages": "{name} avantajları",
+      "breakEvenYears": "{years} yıl",
+      "versus": "{first} - {second}"
     }
   },
   "knowledge": {
@@ -1430,7 +1497,14 @@
     "summaryFailed": "Mahalle özeti oluşturulamadı: {message}",
     "loadingSummary": "Mahalle özeti yükleniyor",
     "preparingSummary": "Özet hazırlanıyor…",
-    "summaryUnavailable": "Mahalle özeti şu anda kullanılamıyor."
+    "summaryUnavailable": "Mahalle özeti şu anda kullanılamıyor.",
+    "cityComparisonCard": {
+      "scoresHigherThanNoCity": "Bu mahalle, şehirdeki {percentile}% alanlardan daha yüksek puan alıyor"
+    },
+    "whatsNearbyExtra": {
+      "categoryCount": "{count} {label}",
+      "coordinates": "Koordinatlar: {latitude}, {longitude}"
+    }
   },
   "portfolio": {
     "title": "Portföy analizcisi",
@@ -1498,6 +1572,18 @@
     "estimateTitle": "Tahmini aylık taksit, {down} % peşinat ve {years} yıl boyunca % {rate} sabit faizle. Kredi teklifi değildir.",
     "map": {
       "propertiesInArea": "bu bölgede {count, plural, one {# mülk} other {# mülk}}"
+    },
+    "estimate": {
+      "abbr": "tah."
+    },
+    "mapbox": {
+      "tokenMissing": "Mapbox jetonu yapılandırılmamış. Ortamınıza NEXT_PUBLIC_MAPBOX_TOKEN ekleyin.",
+      "drawPolygon": "Gayrimenkulleri filtrelemek için bir çokgen çizin",
+      "swipeUp": "Liste için yukarı kaydırın",
+      "dominant": "baskın",
+      "priceRange": "Fiyat aralığı: {min} – {max}",
+      "average": "Ortalama: {amount}",
+      "clickToZoom": "Yakınlaştırmak için tıklayın"
     }
   },
   "rentVsBuy": {
@@ -1785,7 +1871,10 @@
       "resetAll": "Tümünü sıfırla"
     },
     "mapZoomHint": "Tek mülkleri görmek için yakınlaştırın.",
-    "mapAttribution": "OpenStreetMap"
+    "mapAttribution": "OpenStreetMap",
+    "page": {
+      "requestId": "İstek kimliği: {id}"
+    }
   },
   "settings": {
     "title": "Ayarlar",
@@ -2037,6 +2126,9 @@
       "systemDefault": "Sistem varsayılanı",
       "model": "Model",
       "loadFailed": "Tercihler yüklenemedi"
+    },
+    "providers": {
+      "supported": "OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI, Fireworks AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode ve Ollama (yerel)."
     }
   },
   "tools": {
@@ -2378,7 +2470,11 @@
     "agents": {
       "title": "Danışman bul",
       "description": "Aradığınız piyasada çalışan danışmanlar.",
-      "searchByCity": "Şehre göre ara..."
+      "searchByCity": "Şehre göre ara...",
+      "pagination": {
+        "found": "{count, plural, one {# ajan bulundu} other {# ajan bulundu}}",
+        "page": "Sayfa {page} / {total}"
+      }
     },
     "settings": {
       "title": "Ayarlar",
@@ -2522,7 +2618,10 @@
     },
     "analytics": {
       "title": "Analitik ve araçlar",
-      "description": "Portföy analitiği ve onu besleyen hesaplayıcılar."
+      "description": "Portföy analitiği ve onu besleyen hesaplayıcılar.",
+      "sections": {
+        "advancedInvestment": "Gelişmiş yatırım analitiği"
+      }
     },
     "valuation": {
       "title": "Yapay zekâ değerleme ve tahmin",
@@ -3128,6 +3227,9 @@
       "longitudeLabel": "Boylam",
       "via": "üzerinden",
       "arrival": "Varış: {time}"
+    },
+    "commuteExtra": {
+      "emptyHint": "Çalışma yerinizi veya sık gittiğiniz diğer yerleri ekleyerek ulaşım sürelerini kontrol edin."
     }
   },
   "states": {
@@ -3230,6 +3332,38 @@
         "q8": "Gerçek veriyle barındırılmış bir sürüm var mı?",
         "a8": "Evet — PropVector AI (propvectorai.com) canlı veri, yönetilen hesaplar ve kurumsal özelliklerle barındırılmış katmanlar sunuyor. Açık kaynak depo çekirdek motor ve kendiniz barındırabileceğiniz demo üzerine odaklanır."
       }
+    }
+  },
+  "analytics": {
+    "anomalyList": {
+      "totalCount": "toplam {count}",
+      "markReviewed": "İncelendi olarak işaretle",
+      "dismissedBy": "{name} tarafından reddedildi",
+      "dismissedBySystem": "Sistem tarafından reddedildi",
+      "scope": {
+        "property": "Mülk: {id}",
+        "city": "Şehir: {id}",
+        "district": "İlçe: {id}",
+        "market": "Pazar: {id}",
+        "region": "Bölge: {id}"
+      }
+    }
+  },
+  "shellComponents": {
+    "presets": {
+      "title": "Kayıtlı filtreler",
+      "empty": "Henüz kayıtlı filtre yok",
+      "saveCurrentFilters": "Mevcut filtreleri kaydet",
+      "deleteConfirm": "«{name}» filtresi silinsin mi?"
+    },
+    "weekdays": {
+      "sunday": "Pazar",
+      "monday": "Pazartesi",
+      "tuesday": "Salı",
+      "wednesday": "Çarşamba",
+      "thursday": "Perşembe",
+      "friday": "Cuma",
+      "saturday": "Cumartesi"
     }
   }
 }

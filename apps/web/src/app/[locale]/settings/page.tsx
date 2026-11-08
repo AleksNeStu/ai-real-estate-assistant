@@ -414,11 +414,7 @@ export default function SettingsPage() {
                 </p>
                 <div className="text-xs text-muted-foreground max-w-md">
                   <p className="font-medium mb-1">{tSettings('models.supportedProviders')}</p>
-                  <p>
-                    OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI, Fireworks
-                    AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, and Ollama
-                    (local).
-                  </p>
+                  <p>{tSettings('providers.supported')}</p>
                   <p className="mt-2">{tSettings('models.emptyCatalogHint')}</p>
                 </div>
               </div>

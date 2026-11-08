@@ -131,16 +131,18 @@ export function TCOProjectionChart({
         <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t">
           {highlightPoints.map((point) => (
             <div key={point.year} className="text-center p-2 bg-muted/50 rounded">
-              <p className="text-sm font-medium">Year {point.year}</p>
+              <p className="text-sm font-medium">
+                {t('charts.projection.year', { year: point.year })}
+              </p>
               <div className="mt-1 space-y-1">
                 <p className="text-xs text-muted-foreground">
-                  Cost: {formatCurrency(point.cumulative_cost)}
+                  {`${t('charts.projection.cost')} ${formatCurrency(point.cumulative_cost)}`}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Equity: {formatCurrency(point.cumulative_equity)}
+                  {`${t('charts.projection.equity')} ${formatCurrency(point.cumulative_equity)}`}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Value: {formatCurrency(point.property_value_estimate)}
+                  {`${t('charts.projection.value')} ${formatCurrency(point.property_value_estimate)}`}
                 </p>
               </div>
             </div>

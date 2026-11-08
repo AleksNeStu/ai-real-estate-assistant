@@ -30,6 +30,7 @@ export function PriceHistoryChart({
   showAnomalies = true,
 }: PriceHistoryChartProps) {
   const t = useTranslations('marketTrends');
+  const tInv = useTranslations('investment');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<PriceHistory | null>(null);
@@ -138,17 +139,26 @@ export function PriceHistoryChart({
     );
   }
 
+  const trendKey =
+    data?.trend === 'increasing'
+      ? 'increasing'
+      : data?.trend === 'decreasing'
+        ? 'decreasing'
+        : 'stable';
+
   return (
     <Card className={className}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>{t('priceHistory.title')}</CardTitle>
-            <CardDescription>{data.total} price snapshots recorded</CardDescription>
+            <CardDescription>
+              {tInv('priceHistoryChart.snapshotsRecorded', { count: data.total })}
+            </CardDescription>
           </div>
           <div className={`flex items-center gap-2 ${trendColor}`}>
             <TrendIcon className="h-5 w-5" aria-hidden="true" />
-            <span className="font-medium capitalize">{data.trend}</span>
+            <span className="font-medium capitalize">{t(`priceHistory.trend.${trendKey}`)}</span>
             {data.price_change_percent !== null && data.price_change_percent !== undefined && (
               <span className="text-sm">
                 ({data.price_change_percent > 0 ? '+' : ''}
@@ -165,7 +175,7 @@ export function PriceHistoryChart({
             <div className="flex items-center gap-2 text-caution dark:text-caution">
               <AlertTriangle className="h-4 w-4" aria-hidden="true" />
               <span className="text-sm font-medium">
-                {anomalies.length} price {anomalies.length === 1 ? 'anomaly' : 'anomalies'} detected
+                {tInv('priceHistoryChart.anomaliesDetected', { count: anomalies.length })}
               </span>
             </div>
           </div>
@@ -176,15 +186,7 @@ export function PriceHistoryChart({
           role="img"
           aria-label={t('priceHistory.chartLabel', {
             count: data.total,
-            trend: t(
-              `priceHistory.trend.${
-                data.trend === 'increasing'
-                  ? 'increasing'
-                  : data.trend === 'decreasing'
-                    ? 'decreasing'
-                    : 'stable'
-              }`
-            ),
+            trend: t(`priceHistory.trend.${trendKey}`),
           })}
         >
           <ResponsiveContainer width="100%" height="100%">
@@ -205,10 +207,16 @@ export function PriceHistoryChart({
                     return (
                       <div className="bg-card p-2 rounded shadow-lg border border-border">
                         <p className="font-medium text-sm">{data.date}</p>
-                        <p className="text-sm">Price: ${data.price?.toLocaleString()}</p>
+                        <p className="text-sm">
+                          {tInv('priceHistoryChart.priceLabel', {
+                            price: `$${data.price?.toLocaleString()}`,
+                          })}
+                        </p>
                         {data.pricePerSqm && (
                           <p className="text-xs text-muted">
-                            Price/sqm: ${data.pricePerSqm?.toLocaleString()}
+                            {tInv('priceHistoryChart.pricePerSqmLabel', {
+                              price: `$${data.pricePerSqm?.toLocaleString()}`,
+                            })}
                           </p>
                         )}
                         {hasAnomaly && anomalies.length > 0 && (

@@ -42,6 +42,11 @@ import { PageHeader } from '@/components/ui/page-header';
 
 export default function MarketTrendsPage() {
   const t = useTranslations('pages.marketTrends');
+  // "Apply Filters" and the listing counter are shared copy — they live in the
+  // `search` and `cma` namespaces of the catalogue, so they are read from
+  // there instead of being written out again here.
+  const tSearch = useTranslations('search');
+  const tCma = useTranslations('cma.preview');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [trends, setTrends] = useState<MarketTrends | null>(null);
@@ -157,7 +162,7 @@ export default function MarketTrendsPage() {
               <div className="flex items-end">
                 <Button onClick={fetchData} disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Apply Filters
+                  {tSearch('filters.applyFilters')}
                 </Button>
               </div>
             </div>
@@ -270,7 +275,7 @@ export default function MarketTrendsPage() {
                           <div>
                             <p className="font-medium">{district.name}</p>
                             <p className="text-sm text-muted-foreground">
-                              {district.count} listings
+                              {tCma('listings', { count: district.count })}
                             </p>
                           </div>
                           <p className="font-semibold">${district.avg_price.toLocaleString()}</p>
@@ -294,7 +299,7 @@ export default function MarketTrendsPage() {
                           <div>
                             <p className="font-medium">{district.name}</p>
                             <p className="text-sm text-muted-foreground">
-                              {district.count} listings
+                              {tCma('listings', { count: district.count })}
                             </p>
                           </div>
                           <p className="font-semibold">${district.avg_price.toLocaleString()}</p>

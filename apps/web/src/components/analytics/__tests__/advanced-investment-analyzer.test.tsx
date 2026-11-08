@@ -7,10 +7,25 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AdvancedInvestmentAnalyzer } from '../advanced-investment-analyzer';
 import { calculateAdvancedInvestment } from '@/lib/api';
 import { exportInvestmentToPDF } from '@/lib/investment-pdf-export';
+import en from '../../../../messages/en.json';
 
 // Mock API
 jest.mock('@/lib/api');
 jest.mock('@/lib/investment-pdf-export');
+
+/**
+ * Resolve a message from the English catalogue. The key is the fallback: that is
+ * exactly what the next-intl mock renders when the catalogue does not carry the
+ * message yet - the translation fragments are merged into the catalogues once
+ * the translation work lands.
+ */
+const copy = (namespace: string, key: string): string => {
+  const value = [namespace, key]
+    .join('.')
+    .split('.')
+    .reduce<unknown>((acc, part) => (acc as Record<string, unknown> | undefined)?.[part], en);
+  return typeof value === 'string' ? value : key;
+};
 
 const mockAdvancedResult = {
   // Basic metrics
@@ -107,7 +122,11 @@ describe('AdvancedInvestmentAnalyzer', () => {
 
     expect(screen.getByLabelText(/Purchase Price/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Monthly Rent/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Run Advanced Analysis/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', {
+        name: copy('investment', 'advancedAnalyzer.runAnalysis'),
+      })
+    ).toBeInTheDocument();
   });
 
   it('shows advanced options when toggled', () => {
@@ -115,7 +134,7 @@ describe('AdvancedInvestmentAnalyzer', () => {
 
     expect(screen.queryByLabelText(/Projection Years/i)).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /Show Advanced Options/i }));
+    fireEvent.click(screen.getByRole('button', { name: en.rentVsBuy.form.showAdvanced }));
 
     expect(screen.getByLabelText(/Projection Years/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Expected Appreciation/i)).toBeInTheDocument();
@@ -127,7 +146,11 @@ describe('AdvancedInvestmentAnalyzer', () => {
 
     render(<AdvancedInvestmentAnalyzer />);
 
-    fireEvent.click(screen.getByRole('button', { name: /Run Advanced Analysis/i }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: copy('investment', 'advancedAnalyzer.runAnalysis'),
+      })
+    );
 
     await waitFor(() => {
       expect(screen.getByText('Investment Summary')).toBeInTheDocument();
@@ -139,7 +162,11 @@ describe('AdvancedInvestmentAnalyzer', () => {
 
     render(<AdvancedInvestmentAnalyzer />);
 
-    fireEvent.click(screen.getByRole('button', { name: /Run Advanced Analysis/i }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: copy('investment', 'advancedAnalyzer.runAnalysis'),
+      })
+    );
 
     await waitFor(() => {
       expect(screen.getByText(/Analysis failed/i)).toBeInTheDocument();
@@ -151,7 +178,11 @@ describe('AdvancedInvestmentAnalyzer', () => {
 
     render(<AdvancedInvestmentAnalyzer />);
 
-    fireEvent.click(screen.getByRole('button', { name: /Run Advanced Analysis/i }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: copy('investment', 'advancedAnalyzer.runAnalysis'),
+      })
+    );
 
     await waitFor(() => {
       expect(screen.getByText('72')).toBeInTheDocument(); // Risk score
@@ -163,7 +194,11 @@ describe('AdvancedInvestmentAnalyzer', () => {
 
     render(<AdvancedInvestmentAnalyzer />);
 
-    fireEvent.click(screen.getByRole('button', { name: /Run Advanced Analysis/i }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: copy('investment', 'advancedAnalyzer.runAnalysis'),
+      })
+    );
 
     await waitFor(() => {
       expect(screen.getByText('12.5%')).toBeInTheDocument(); // IRR
@@ -178,7 +213,11 @@ describe('AdvancedInvestmentAnalyzer', () => {
 
     render(<AdvancedInvestmentAnalyzer />);
 
-    fireEvent.click(screen.getByRole('button', { name: /Run Advanced Analysis/i }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: copy('investment', 'advancedAnalyzer.runAnalysis'),
+      })
+    );
 
     await waitFor(() => {
       expect(screen.getByText('N/A')).toBeInTheDocument();
@@ -189,7 +228,11 @@ describe('AdvancedInvestmentAnalyzer', () => {
     it('does not render export button when no results', () => {
       render(<AdvancedInvestmentAnalyzer />);
 
-      expect(screen.queryByRole('button', { name: /Export Report/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', {
+          name: copy('investment', 'advancedAnalyzer.exportReport'),
+        })
+      ).not.toBeInTheDocument();
     });
 
     it('renders export button after successful calculation', async () => {
@@ -197,10 +240,18 @@ describe('AdvancedInvestmentAnalyzer', () => {
 
       render(<AdvancedInvestmentAnalyzer />);
 
-      fireEvent.click(screen.getByRole('button', { name: /Run Advanced Analysis/i }));
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: copy('investment', 'advancedAnalyzer.runAnalysis'),
+        })
+      );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Export Report/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', {
+            name: copy('investment', 'advancedAnalyzer.exportReport'),
+          })
+        ).toBeInTheDocument();
       });
     });
 
@@ -211,14 +262,26 @@ describe('AdvancedInvestmentAnalyzer', () => {
       render(<AdvancedInvestmentAnalyzer />);
 
       // Run calculation first
-      fireEvent.click(screen.getByRole('button', { name: /Run Advanced Analysis/i }));
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: copy('investment', 'advancedAnalyzer.runAnalysis'),
+        })
+      );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Export Report/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', {
+            name: copy('investment', 'advancedAnalyzer.exportReport'),
+          })
+        ).toBeInTheDocument();
       });
 
       // Click export button
-      fireEvent.click(screen.getByRole('button', { name: /Export Report/i }));
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: copy('investment', 'advancedAnalyzer.exportReport'),
+        })
+      );
 
       await waitFor(() => {
         expect(exportInvestmentToPDF).toHaveBeenCalledWith(
@@ -240,18 +303,32 @@ describe('AdvancedInvestmentAnalyzer', () => {
       render(<AdvancedInvestmentAnalyzer />);
 
       // Run calculation
-      fireEvent.click(screen.getByRole('button', { name: /Run Advanced Analysis/i }));
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: copy('investment', 'advancedAnalyzer.runAnalysis'),
+        })
+      );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Export Report/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', {
+            name: copy('investment', 'advancedAnalyzer.exportReport'),
+          })
+        ).toBeInTheDocument();
       });
 
       // Click export button
-      fireEvent.click(screen.getByRole('button', { name: /Export Report/i }));
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: copy('investment', 'advancedAnalyzer.exportReport'),
+        })
+      );
 
       // Button should be disabled during export
       await waitFor(() => {
-        const exportButton = screen.getByRole('button', { name: /Export Report/i });
+        const exportButton = screen.getByRole('button', {
+          name: copy('investment', 'advancedAnalyzer.exportReport'),
+        });
         expect(exportButton).toBeDisabled();
       });
     });
@@ -266,14 +343,26 @@ describe('AdvancedInvestmentAnalyzer', () => {
       render(<AdvancedInvestmentAnalyzer />);
 
       // Run calculation
-      fireEvent.click(screen.getByRole('button', { name: /Run Advanced Analysis/i }));
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: copy('investment', 'advancedAnalyzer.runAnalysis'),
+        })
+      );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Export Report/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', {
+            name: copy('investment', 'advancedAnalyzer.exportReport'),
+          })
+        ).toBeInTheDocument();
       });
 
       // Click export button
-      fireEvent.click(screen.getByRole('button', { name: /Export Report/i }));
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: copy('investment', 'advancedAnalyzer.exportReport'),
+        })
+      );
 
       await waitFor(() => {
         expect(console.error).toHaveBeenCalledWith('Export failed:', expect.any(Error));
@@ -289,7 +378,11 @@ describe('AdvancedInvestmentAnalyzer', () => {
 
       render(<AdvancedInvestmentAnalyzer />);
 
-      fireEvent.click(screen.getByRole('button', { name: /Run Advanced Analysis/i }));
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: copy('investment', 'advancedAnalyzer.runAnalysis'),
+        })
+      );
 
       await waitFor(() => {
         expect(screen.getByRole('tab', { name: /Cash Flow/i })).toBeInTheDocument();
@@ -304,7 +397,11 @@ describe('AdvancedInvestmentAnalyzer', () => {
 
       render(<AdvancedInvestmentAnalyzer />);
 
-      fireEvent.click(screen.getByRole('button', { name: /Run Advanced Analysis/i }));
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: copy('investment', 'advancedAnalyzer.runAnalysis'),
+        })
+      );
 
       await waitFor(() => {
         expect(screen.getByRole('tab', { name: /Tax/i })).toBeInTheDocument();

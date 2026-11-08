@@ -36,6 +36,7 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
   const t = useTranslations();
   const tPage = useTranslations('pages.agents');
   const tCommon = useTranslations('common');
+  const tPagination = useTranslations('pages.agents.pagination');
 
   const [agents, setAgents] = useState<AgentProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -276,7 +277,7 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
       ) : (
         <>
           <div className="mb-4 text-sm text-muted-foreground">
-            {total} {total === 1 ? 'agent' : 'agents'} found
+            {tPagination('found', { count: total })}
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {agents.map((agent) => (
@@ -290,17 +291,17 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
       {totalPages > 1 && (
         <div className="mt-8 flex justify-center gap-2">
           <Button variant="outline" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
-            Previous
+            {tCommon('previous')}
           </Button>
           <span className="flex items-center px-4 text-sm">
-            Page {page} of {totalPages}
+            {tPagination('page', { page, total: totalPages })}
           </span>
           <Button
             variant="outline"
             disabled={page >= totalPages}
             onClick={() => setPage((p) => p + 1)}
           >
-            Next
+            {tCommon('next')}
           </Button>
         </div>
       )}

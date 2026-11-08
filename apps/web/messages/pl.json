@@ -182,7 +182,11 @@
       "created": "Najnowsi",
       "placeholder": "Sortuj według"
     },
-    "verifiedAria": "Zweryfikowany agent"
+    "verifiedAria": "Zweryfikowany agent",
+    "cardExtra": {
+      "call": "Zadzwoń",
+      "moreAreas": "+{count} więcej"
+    }
   },
   "auth": {
     "signIn": "Zaloguj się",
@@ -285,6 +289,9 @@
       "redirecting": "Przekierowanie na stronę logowania...",
       "signingIn": "Logowanie...",
       "pleaseWait": "Proszę czekać..."
+    },
+    "demo": {
+      "exploreDemoFirst": "Najpierw wypróbuj demo"
     }
   },
   "cma": {
@@ -413,6 +420,9 @@
       "expires": "Wygasa:",
       "createNew": "Utwórz nowy raport",
       "failedDownload": "Nie udało się pobrać PDF"
+    },
+    "comparablesExtra": {
+      "notAvailable": "brak danych"
     }
   },
   "chat": {
@@ -611,7 +621,12 @@
     "emptyHint": "Wypróbuj jedno z poniższych przykładowych zapytań, aby zobaczyć demo w działaniu.",
     "modeDisabled": "Wyłączone",
     "toggleFailed": "Nie udało się przełączyć trybu demo: {message}",
-    "modeEnabled": "Włączony"
+    "modeEnabled": "Włączony",
+    "modeState": {
+      "label": "Tryb demo:",
+      "on": "WŁ.",
+      "off": "WYŁ."
+    }
   },
   "documents": {
     "title": "Dokumenty",
@@ -932,6 +947,58 @@
         "recency": "Aktualność",
         "amenities": "Udogodnienia"
       }
+    },
+    "advancedAnalyzer": {
+      "emptyHint": "Wprowadź poniżej dane nieruchomości, aby wygenerować prognozę na wielolecie i analizę ryzyka.",
+      "formIntro": "Wprowadź dane nieruchomości i finansowania, aby przeprowadzić zaawansowaną analizę.",
+      "runAnalysis": "Uruchom zaawansowaną analizę",
+      "exportReport": "Eksportuj raport",
+      "taxMethodNote": "Na podstawie {taxRate}% stawki podatku marginalnego i {landRatio}% udziału wartości działki. Amortyzacja jest naliczana metodą liniową w ciągu 27,5 roku (mieszkania w USA)."
+    },
+    "analyzer": {
+      "analyze": "Analizuj inwestycję",
+      "showFinancing": "Pokaż opcje finansowania",
+      "hideFinancing": "Ukryj opcje finansowania",
+      "showExpenses": "Pokaż koszty operacyjne",
+      "hideExpenses": "Ukryj koszty operacyjne",
+      "scoreLabels": {
+        "yield": "wynik rentowności",
+        "capRate": "wynik kapitalizacji",
+        "cashFlow": "wynik przepływu gotówki",
+        "netYield": "wynik rentowności netto",
+        "risk": "wynik ryzyka"
+      }
+    },
+    "areaComparison": {
+      "title": "Porównanie obszarów",
+      "amenities": {
+        "parking": "parking",
+        "garden": "ogród",
+        "pool": "basen",
+        "furnished": "umeblowany",
+        "balcony": "balkon",
+        "elevator": "winda"
+      }
+    },
+    "priceHistoryChart": {
+      "snapshotsRecorded": "zapisanych cen nieruchomości: {count}",
+      "anomaliesDetected": "{count, plural, one {# wykryta anomalia ceny} few {# wykryte anomalie ceny} many {# wykrytych anomalii ceny} other {# wykrytych anomalii ceny}}",
+      "priceLabel": "Cena: {price}",
+      "pricePerSqmLabel": "Cena za m²: {price}"
+    },
+    "tcoComparison": {
+      "fields": {
+        "downPayment": "Wkład własny %",
+        "interestRate": "Oprocentowanie %",
+        "loanYears": "Liczba lat kredytu",
+        "annualTax": "Podatek roczny"
+      },
+      "description": "Porównaj całkowity koszt posiadania dwóch scenariuszy nieruchomości wraz z analizą kompromisów i rekomendacją.",
+      "compareScenarios": "Porównaj scenariusze",
+      "recommendation": "Rekomendacja: {recommendation}",
+      "advantages": "Zalety: {name}",
+      "breakEvenYears": "{years} lat",
+      "versus": "{first} vs {second}"
     }
   },
   "knowledge": {
@@ -1430,7 +1497,14 @@
     "summaryFailed": "Nie udało się przygotować podsumowania dzielnicy: {message}",
     "loadingSummary": "Wczytywanie podsumowania dzielnicy",
     "preparingSummary": "Przygotowywanie podsumowania…",
-    "summaryUnavailable": "Podsumowanie dzielnicy jest chwilowo niedostępne."
+    "summaryUnavailable": "Podsumowanie dzielnicy jest chwilowo niedostępne.",
+    "cityComparisonCard": {
+      "scoresHigherThanNoCity": "Ta dzielnica ma wynik wyższy niż {percentile}% obszarów w mieście"
+    },
+    "whatsNearbyExtra": {
+      "categoryCount": "{count} {label}",
+      "coordinates": "Współrzędne: {latitude}, {longitude}"
+    }
   },
   "portfolio": {
     "title": "Analiza portfela",
@@ -1498,6 +1572,18 @@
     "estimateTitle": "Szacowana rata miesięczna przy wkładzie {down}%, {years} lat stałych pod {rate}% APR. To nie jest oferta kredytowa.",
     "map": {
       "propertiesInArea": "{count, plural, one {# nieruchomość} few {# nieruchomości} many {# nieruchomości} other {# nieruchomości}} w tym obszarze"
+    },
+    "estimate": {
+      "abbr": "ok."
+    },
+    "mapbox": {
+      "tokenMissing": "Token Mapbox nie jest skonfigurowany. Dodaj NEXT_PUBLIC_MAPBOX_TOKEN do swojego środowiska.",
+      "drawPolygon": "Narysuj wielokąt, aby filtrować nieruchomości",
+      "swipeUp": "Przesuń w górę, aby zobaczyć listę",
+      "dominant": "dominujący",
+      "priceRange": "Zakres cen: {min} – {max}",
+      "average": "Średnia: {amount}",
+      "clickToZoom": "Kliknij, aby powiększyć"
     }
   },
   "rentVsBuy": {
@@ -1785,7 +1871,10 @@
       "resetAll": "Zresetuj wszystko"
     },
     "mapZoomHint": "Przybliż, aby zobaczyć pojedyncze nieruchomości.",
-    "mapAttribution": "OpenStreetMap"
+    "mapAttribution": "OpenStreetMap",
+    "page": {
+      "requestId": "Identyfikator żądania: {id}"
+    }
   },
   "settings": {
     "title": "Ustawienia",
@@ -2037,6 +2126,9 @@
       "systemDefault": "Domyślne systemowe",
       "model": "Model",
       "loadFailed": "Nie udało się wczytać preferencji"
+    },
+    "providers": {
+      "supported": "OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI, Fireworks AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode oraz Ollama (lokalnie)."
     }
   },
   "tools": {
@@ -2378,7 +2470,11 @@
     "agents": {
       "title": "Znajdź agentów",
       "description": "Agenci działający na rynku, którego szukasz.",
-      "searchByCity": "Szukaj według miasta..."
+      "searchByCity": "Szukaj według miasta...",
+      "pagination": {
+        "found": "{count, plural, one {Znaleziono # agenta} few {Znaleziono # agentów} many {Znaleziono # agentów} other {Znaleziono # agenta}}",
+        "page": "Strona {page} z {total}"
+      }
     },
     "settings": {
       "title": "Ustawienia",
@@ -2522,7 +2618,10 @@
     },
     "analytics": {
       "title": "Analityka i narzędzia",
-      "description": "Analityka portfela i kalkulatory, które za nią stoją."
+      "description": "Analityka portfela i kalkulatory, które za nią stoją.",
+      "sections": {
+        "advancedInvestment": "Zaawansowana analityka inwestycji"
+      }
     },
     "valuation": {
       "title": "AI wycena i prognoza nieruchomości",
@@ -3128,6 +3227,9 @@
       "longitudeLabel": "Długość geograficzna",
       "via": "przez",
       "arrival": "Przyjazd: {time}"
+    },
+    "commuteExtra": {
+      "emptyHint": "Dodaj miejsce pracy lub inne częste cele, aby sprawdzić czas dojazdu."
     }
   },
   "states": {
@@ -3230,6 +3332,38 @@
         "q8": "Czy istnieje wersja hostowana z prawdziwymi danymi?",
         "a8": "Tak — PropVector AI (propvectorai.com) oferuje hostowane warianty z danymi na żywo, zarządzanymi kontami i funkcjami dla enterprise. Otwarte repozytorium skupia się na rdzeniu silnika i samodzielnie uruchamialnym demo."
       }
+    }
+  },
+  "analytics": {
+    "anomalyList": {
+      "totalCount": "łącznie {count}",
+      "markReviewed": "Oznacz jako sprawdzone",
+      "dismissedBy": "Odrzucone przez {name}",
+      "dismissedBySystem": "Odrzucone przez system",
+      "scope": {
+        "property": "Nieruchomość: {id}",
+        "city": "Miasto: {id}",
+        "district": "Dzielnica: {id}",
+        "market": "Rynek: {id}",
+        "region": "Region: {id}"
+      }
+    }
+  },
+  "shellComponents": {
+    "presets": {
+      "title": "Zapisane filtry",
+      "empty": "Nie zapisano jeszcze żadnych filtrów",
+      "saveCurrentFilters": "Zapisz bieżące filtry",
+      "deleteConfirm": "Usunąć filtr „{name}”?"
+    },
+    "weekdays": {
+      "sunday": "Niedziela",
+      "monday": "Poniedziałek",
+      "tuesday": "Wtorek",
+      "wednesday": "Środa",
+      "thursday": "Czwartek",
+      "friday": "Piątek",
+      "saturday": "Sobota"
     }
   }
 }

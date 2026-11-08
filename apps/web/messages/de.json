@@ -182,7 +182,11 @@
       "created": "Neueste zuerst",
       "placeholder": "Sortieren nach"
     },
-    "verifiedAria": "Verifizierter Makler"
+    "verifiedAria": "Verifizierter Makler",
+    "cardExtra": {
+      "call": "Anrufen",
+      "moreAreas": "+{count} weitere"
+    }
   },
   "auth": {
     "signIn": "Anmelden",
@@ -285,6 +289,9 @@
       "redirecting": "Weiterleitung zur Anmeldeseite...",
       "signingIn": "Anmeldung läuft...",
       "pleaseWait": "Bitte warten..."
+    },
+    "demo": {
+      "exploreDemoFirst": "Erst Demo testen"
     }
   },
   "cma": {
@@ -413,6 +420,9 @@
       "expires": "Läuft ab:",
       "createNew": "Neuen Bericht erstellen",
       "failedDownload": "PDF konnte nicht heruntergeladen werden"
+    },
+    "comparablesExtra": {
+      "notAvailable": "k. A."
     }
   },
   "chat": {
@@ -611,7 +621,12 @@
     "emptyHint": "Probiere eine der Beispielabfragen unten aus, um die Demo in Aktion zu sehen.",
     "modeDisabled": "Deaktiviert",
     "toggleFailed": "Demo-Modus konnte nicht umgeschaltet werden: {message}",
-    "modeEnabled": "Aktiviert"
+    "modeEnabled": "Aktiviert",
+    "modeState": {
+      "label": "Demo-Modus:",
+      "on": "AN",
+      "off": "AUS"
+    }
   },
   "documents": {
     "title": "Dokumente",
@@ -932,6 +947,58 @@
         "recency": "Aktualität",
         "amenities": "Ausstattung"
       }
+    },
+    "advancedAnalyzer": {
+      "emptyHint": "Geben Sie unten die Immobiliendaten ein, um Mehrjahresprognosen und eine Risikoanalyse zu erzeugen.",
+      "formIntro": "Geben Sie Immobilien- und Finanzierungsdaten für die erweiterte Analyse ein.",
+      "runAnalysis": "Erweiterte Analyse starten",
+      "exportReport": "Bericht exportieren",
+      "taxMethodNote": "Basierend auf einem Grenzsteuersatz von {taxRate}% und einem Landwertanteil von {landRatio}%. Die Abschreibung erfolgt linear über 27,5 Jahre (Wohnimmobilien in den USA)."
+    },
+    "analyzer": {
+      "analyze": "Investition analysieren",
+      "showFinancing": "Finanzierungsoptionen anzeigen",
+      "hideFinancing": "Finanzierungsoptionen ausblenden",
+      "showExpenses": "Betriebskosten anzeigen",
+      "hideExpenses": "Betriebskosten ausblenden",
+      "scoreLabels": {
+        "yield": "Rendite-Score",
+        "capRate": "Kapitalisierungs-Score",
+        "cashFlow": "Cashflow-Score",
+        "netYield": "Netto-Rendite-Score",
+        "risk": "Risiko-Score"
+      }
+    },
+    "areaComparison": {
+      "title": "Gebietsvergleich",
+      "amenities": {
+        "parking": "Parkplatz",
+        "garden": "Garten",
+        "pool": "Pool",
+        "furnished": "mit Möbeln",
+        "balcony": "Balkon",
+        "elevator": "Aufzug"
+      }
+    },
+    "priceHistoryChart": {
+      "snapshotsRecorded": "Preisaufzeichnungen: {count}",
+      "anomaliesDetected": "{count, plural, one {# Preisanomalie erkannt} other {# Preisanomalien erkannt}}",
+      "priceLabel": "Preis: {price}",
+      "pricePerSqmLabel": "Preis/m²: {price}"
+    },
+    "tcoComparison": {
+      "fields": {
+        "downPayment": "Anzahlung %",
+        "interestRate": "Zinssatz %",
+        "loanYears": "Laufzeit in Jahren",
+        "annualTax": "Jährliche Steuer"
+      },
+      "description": "Vergleichen Sie die Gesamtkosten des Eigentums für zwei Immobilienszenarien – mit Abwägungsanalyse und Empfehlungen.",
+      "compareScenarios": "Szenarien vergleichen",
+      "recommendation": "Empfehlung: {recommendation}",
+      "advantages": "Vorteile: {name}",
+      "breakEvenYears": "{years} Jahre",
+      "versus": "{first} vs. {second}"
     }
   },
   "knowledge": {
@@ -1430,7 +1497,14 @@
     "summaryFailed": "Viertelübersicht fehlgeschlagen: {message}",
     "loadingSummary": "Viertelübersicht wird geladen",
     "preparingSummary": "Übersicht wird vorbereitet…",
-    "summaryUnavailable": "Die Viertelübersicht ist derzeit nicht verfügbar."
+    "summaryUnavailable": "Die Viertelübersicht ist derzeit nicht verfügbar.",
+    "cityComparisonCard": {
+      "scoresHigherThanNoCity": "Dieses Viertel schneidet besser ab als {percentile}% der Gebiete in der Stadt"
+    },
+    "whatsNearbyExtra": {
+      "categoryCount": "{count} {label}",
+      "coordinates": "Koordinaten: {latitude}, {longitude}"
+    }
   },
   "portfolio": {
     "title": "Portfolio-Analyse",
@@ -1498,6 +1572,18 @@
     "estimateTitle": "Geschätzte monatliche Rate bei {down} % Eigenkapital, {years} Jahre fest zu {rate} % APR. Kein Kreditangebot.",
     "map": {
       "propertiesInArea": "{count, plural, one {# Immobilie} other {# Immobilien}} in diesem Gebiet"
+    },
+    "estimate": {
+      "abbr": "ca."
+    },
+    "mapbox": {
+      "tokenMissing": "Mapbox-Token ist nicht konfiguriert. Fügen Sie NEXT_PUBLIC_MAPBOX_TOKEN zu Ihrer Umgebung hinzu.",
+      "drawPolygon": "Zeichnen Sie ein Polygon, um Immobilien zu filtern",
+      "swipeUp": "Nach oben wischen für die Liste",
+      "dominant": "vorherrschend",
+      "priceRange": "Preisspanne: {min} – {max}",
+      "average": "Durchschnitt: {amount}",
+      "clickToZoom": "Zum Vergrößern klicken"
     }
   },
   "rentVsBuy": {
@@ -1785,7 +1871,10 @@
       "heatmap": "Heatmap"
     },
     "mapZoomHint": "Zoome hinein, um einzelne Immobilien zu sehen.",
-    "mapAttribution": "OpenStreetMap"
+    "mapAttribution": "OpenStreetMap",
+    "page": {
+      "requestId": "Anfrage-ID: {id}"
+    }
   },
   "settings": {
     "title": "Einstellungen",
@@ -2037,6 +2126,9 @@
       "selectBoth": "Bitte wählen Sie Anbieter und Modell aus.",
       "systemDefault": "Systemstandard",
       "loadFailed": "Einstellungen konnten nicht geladen werden"
+    },
+    "providers": {
+      "supported": "OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI, Fireworks AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode und Ollama (lokal)."
     }
   },
   "tools": {
@@ -2378,7 +2470,11 @@
     "agents": {
       "title": "Makler finden",
       "description": "Makler, die auf dem von Ihnen gesuchten Markt arbeiten.",
-      "searchByCity": "Nach Stadt suchen..."
+      "searchByCity": "Nach Stadt suchen...",
+      "pagination": {
+        "found": "{count, plural, one {# Agent gefunden} other {# Agents gefunden}}",
+        "page": "Seite {page} von {total}"
+      }
     },
     "settings": {
       "title": "Einstellungen",
@@ -2522,7 +2618,10 @@
     },
     "analytics": {
       "title": "Analytics und Werkzeuge",
-      "description": "Portfolio-Analysen und die Rechner dahinter."
+      "description": "Portfolio-Analysen und die Rechner dahinter.",
+      "sections": {
+        "advancedInvestment": "Erweiterte Investmentanalyse"
+      }
     },
     "valuation": {
       "title": "KI-Bewertung und Prognose",
@@ -3128,6 +3227,9 @@
       "via": "über",
       "arrival": "Ankunft: {time}",
       "nameLabel": "Name"
+    },
+    "commuteExtra": {
+      "emptyHint": "Fügen Sie Ihren Arbeitsplatz oder andere häufige Ziele hinzu, um die Fahrzeiten zu prüfen."
     }
   },
   "states": {
@@ -3230,6 +3332,38 @@
         "q8": "Gibt es eine gehostete Version mit echten Daten?",
         "a8": "Ja — PropVector AI (propvectorai.com) bietet gehostete Stufen mit Live-Daten, verwalteten Konten und Enterprise-Funktionen. Das Open-Source-Repository bleibt auf die Kern-Engine und ein selbst hostbares Demo fokussiert."
       }
+    }
+  },
+  "analytics": {
+    "anomalyList": {
+      "totalCount": "{count} insgesamt",
+      "markReviewed": "Als geprüft markieren",
+      "dismissedBy": "Verworfen von {name}",
+      "dismissedBySystem": "Verworfen vom System",
+      "scope": {
+        "property": "Immobilie: {id}",
+        "city": "Stadt: {id}",
+        "district": "Bezirk: {id}",
+        "market": "Markt: {id}",
+        "region": "Region: {id}"
+      }
+    }
+  },
+  "shellComponents": {
+    "presets": {
+      "title": "Gespeicherte Filter",
+      "empty": "Noch keine gespeicherten Filter",
+      "saveCurrentFilters": "Aktuelle Filter speichern",
+      "deleteConfirm": "Filter „{name}“ löschen?"
+    },
+    "weekdays": {
+      "sunday": "Sonntag",
+      "monday": "Montag",
+      "tuesday": "Dienstag",
+      "wednesday": "Mittwoch",
+      "thursday": "Donnerstag",
+      "friday": "Freitag",
+      "saturday": "Samstag"
     }
   }
 }

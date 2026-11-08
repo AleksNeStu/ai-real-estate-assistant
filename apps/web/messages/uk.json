@@ -182,7 +182,11 @@
       "created": "Спочатку нові",
       "placeholder": "Сортувати за"
     },
-    "verifiedAria": "Перевірений агент"
+    "verifiedAria": "Перевірений агент",
+    "cardExtra": {
+      "call": "Зателефонувати",
+      "moreAreas": "ще {count}"
+    }
   },
   "auth": {
     "signIn": "Увійти",
@@ -285,6 +289,9 @@
       "redirecting": "Перенаправлення на сторінку входу...",
       "signingIn": "Виконується вхід...",
       "pleaseWait": "Будь ласка, зачекайте..."
+    },
+    "demo": {
+      "exploreDemoFirst": "Спершу спробуйте демо"
     }
   },
   "cma": {
@@ -413,6 +420,9 @@
       "expires": "Діє до:",
       "createNew": "Створити новий звіт",
       "failedDownload": "Не вдалося завантажити PDF"
+    },
+    "comparablesExtra": {
+      "notAvailable": "немає даних"
     }
   },
   "chat": {
@@ -611,7 +621,12 @@
     "emptyHint": "Спробуйте один із прикладів запитів нижче, щоб побачити демо в дії.",
     "modeDisabled": "Вимкнено",
     "toggleFailed": "Не вдалося перемкнути демо-режим: {message}",
-    "modeEnabled": "Увімкнено"
+    "modeEnabled": "Увімкнено",
+    "modeState": {
+      "label": "Демо-режим:",
+      "on": "УВІМК",
+      "off": "ВИМК"
+    }
   },
   "documents": {
     "title": "Документи",
@@ -932,6 +947,58 @@
         "recency": "Актуальність",
         "amenities": "Зручності"
       }
+    },
+    "advancedAnalyzer": {
+      "emptyHint": "Введіть нижче дані про нерухомість, щоб сформувати багаторічний прогноз та аналіз ризиків.",
+      "formIntro": "Введіть дані про нерухомість і фінансування для розширеного аналізу.",
+      "runAnalysis": "Запустити розширений аналіз",
+      "exportReport": "Експортувати звіт",
+      "taxMethodNote": "Розрахунок виконано за граничною податковою ставкою {taxRate}% та часткою вартості земельної ділянки {landRatio}%. Амортизація нараховується лінійним методом протягом 27,5 років (житло в США)."
+    },
+    "analyzer": {
+      "analyze": "Проаналізувати інвестицію",
+      "showFinancing": "Показати параметри фінансування",
+      "hideFinancing": "Сховати параметри фінансування",
+      "showExpenses": "Показати експлуатаційні витрати",
+      "hideExpenses": "Сховати експлуатаційні витрати",
+      "scoreLabels": {
+        "yield": "бал дохідності",
+        "capRate": "бал капіталізації",
+        "cashFlow": "бал грошового потоку",
+        "netYield": "бал чистої дохідності",
+        "risk": "бал ризику"
+      }
+    },
+    "areaComparison": {
+      "title": "Порівняння районів",
+      "amenities": {
+        "parking": "парковка",
+        "garden": "сад",
+        "pool": "басейн",
+        "furnished": "з меблями",
+        "balcony": "балкон",
+        "elevator": "ліфт"
+      }
+    },
+    "priceHistoryChart": {
+      "snapshotsRecorded": "записів цін: {count}",
+      "anomaliesDetected": "{count, plural, one {# виявлена аномалія ціни} few {# виявлені аномалії ціни} many {# виявлених аномалій ціни} other {# виявлених аномалій ціни}}",
+      "priceLabel": "Ціна: {price}",
+      "pricePerSqmLabel": "Ціна за м²: {price}"
+    },
+    "tcoComparison": {
+      "fields": {
+        "downPayment": "Першочаковий внесок %",
+        "interestRate": "Відсоткова ставка %",
+        "loanYears": "Термін кредиту (років)",
+        "annualTax": "Річний податок"
+      },
+      "description": "Порівняйте сукупну вартість володіння за двома сценаріями нерухомості з аналізом компромісів і рекомендацією.",
+      "compareScenarios": "Порівняти сценарії",
+      "recommendation": "Рекомендація: {recommendation}",
+      "advantages": "Переваги: {name}",
+      "breakEvenYears": "{years} років",
+      "versus": "{first} проти {second}"
     }
   },
   "knowledge": {
@@ -1430,7 +1497,14 @@
     "summaryFailed": "Не вдалося підготувати зведення по району: {message}",
     "loadingSummary": "Завантаження зведення по району",
     "preparingSummary": "Підготовка зведення…",
-    "summaryUnavailable": "Зведення по району зараз недоступне."
+    "summaryUnavailable": "Зведення по району зараз недоступне.",
+    "cityComparisonCard": {
+      "scoresHigherThanNoCity": "Цей район набирає більше балів, ніж {percentile}% районів міста"
+    },
+    "whatsNearbyExtra": {
+      "categoryCount": "{count} {label}",
+      "coordinates": "Координати: {latitude}, {longitude}"
+    }
   },
   "portfolio": {
     "title": "Аналізатор портфеля",
@@ -1498,6 +1572,18 @@
     "estimateTitle": "Очікуваний щомісячний платіж за авансом {down} %, {years} років під фіксовані {rate} % APR. Це не кредитна пропозиція.",
     "map": {
       "propertiesInArea": "{count, plural, one {# об'єкт} few {# об'єкти} many {# об'єктів} other {# об'єктів}} у цій зоні"
+    },
+    "estimate": {
+      "abbr": "прибл."
+    },
+    "mapbox": {
+      "tokenMissing": "Токен Mapbox не налаштовано. Додайте NEXT_PUBLIC_MAPBOX_TOKEN до змінних середовища.",
+      "drawPolygon": "Намалюйте багатокутник, щоб відфільтрувати об’єкти",
+      "swipeUp": "Прокрутіть вгору, щоб побачити список",
+      "dominant": "переважний",
+      "priceRange": "Діапазон цін: {min} – {max}",
+      "average": "Середнє: {amount}",
+      "clickToZoom": "Натисніть, щоб збільшити"
     }
   },
   "rentVsBuy": {
@@ -1785,7 +1871,10 @@
       "resetAll": "Скинути все"
     },
     "mapZoomHint": "Наблизьте, щоб побачити окремі об'єкти.",
-    "mapAttribution": "OpenStreetMap"
+    "mapAttribution": "OpenStreetMap",
+    "page": {
+      "requestId": "Ідентифікатор запиту: {id}"
+    }
   },
   "settings": {
     "title": "Налаштування",
@@ -2037,6 +2126,9 @@
       "save": "Зберегти",
       "reset": "Скинути",
       "loadFailed": "Не вдалося завантажити налаштування"
+    },
+    "providers": {
+      "supported": "OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI, Fireworks AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode та Ollama (локально)."
     }
   },
   "tools": {
@@ -2378,7 +2470,11 @@
     "agents": {
       "title": "Знайти агентів",
       "description": "Агенти, які працюють на ринку, що вас цікавить.",
-      "searchByCity": "Пошук за містом..."
+      "searchByCity": "Пошук за містом...",
+      "pagination": {
+        "found": "{count, plural, one {Знайдено # агент} few {Знайдено # агенти} many {Знайдено # агентів} other {Знайдено # агента}}",
+        "page": "Сторінка {page} з {total}"
+      }
     },
     "settings": {
       "title": "Налаштування",
@@ -2522,7 +2618,10 @@
     },
     "analytics": {
       "title": "Аналітика та інструменти",
-      "description": "Аналітика портфеля та калькулятори за нею."
+      "description": "Аналітика портфеля та калькулятори за нею.",
+      "sections": {
+        "advancedInvestment": "Розширена аналітика інвестицій"
+      }
     },
     "valuation": {
       "title": "ШІ-оцінка та прогноз нерухомості",
@@ -3128,6 +3227,9 @@
       "longitudeLabel": "Довгота",
       "via": "через",
       "arrival": "Прибуття: {time}"
+    },
+    "commuteExtra": {
+      "emptyHint": "Додайте місце роботи або інші часті місця призначення, щоб перевірити час у дорозі."
     }
   },
   "states": {
@@ -3230,6 +3332,38 @@
         "q8": "Чи є розміщувана версія з реальними даними?",
         "a8": "Так — PropVector AI (propvectorai.com) пропонує розміщувані рівні з живими даними, керованими обліковими записами та корпоративними можливостями. Відкритий репозиторій залишається зосередженим на ядрі рушія та демо, яке можна розгорнути самостійно."
       }
+    }
+  },
+  "analytics": {
+    "anomalyList": {
+      "totalCount": "усього {count}",
+      "markReviewed": "Позначити як перевірене",
+      "dismissedBy": "Відхилено користувачем {name}",
+      "dismissedBySystem": "Відхилено системою",
+      "scope": {
+        "property": "Об'єкт: {id}",
+        "city": "Місто: {id}",
+        "district": "Район: {id}",
+        "market": "Ринок: {id}",
+        "region": "Регіон: {id}"
+      }
+    }
+  },
+  "shellComponents": {
+    "presets": {
+      "title": "Збережені фільтри",
+      "empty": "Збережених фільтрів ще немає",
+      "saveCurrentFilters": "Зберегти поточні фільтри",
+      "deleteConfirm": "Видалити фільтр «{name}»?"
+    },
+    "weekdays": {
+      "sunday": "Неділя",
+      "monday": "Понеділок",
+      "tuesday": "Вівторок",
+      "wednesday": "Середа",
+      "thursday": "Четвер",
+      "friday": "П’ятниця",
+      "saturday": "Субота"
     }
   }
 }

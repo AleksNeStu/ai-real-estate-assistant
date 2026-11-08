@@ -173,7 +173,8 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">{t('factorBreakdown.title')}</h3>
         <div className="text-sm text-muted-foreground">
-          Overall: <span className="font-semibold">{result.overall_score.toFixed(1)}/100</span>
+          {t('factorBreakdown.overall')}{' '}
+          <span className="font-semibold">{result.overall_score.toFixed(1)}/100</span>
         </div>
       </div>
 
@@ -205,7 +206,9 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
               <div className="mb-3">
                 <div className="flex items-end justify-between mb-2">
                   <span className={`text-3xl font-bold ${config.color}`}>{score.toFixed(1)}</span>
-                  <span className="text-xs text-muted-foreground">/ 100</span>
+                  <span className="text-xs text-muted-foreground">
+                    {t('factorBreakdown.per100')}
+                  </span>
                 </div>
 
                 {/* Progress bar */}
@@ -241,23 +244,23 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
         <span className="font-medium">{t('factorBreakdown.scoreRanges')}</span>
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-full bg-success" />
-          85+ Excellent
+          {t('factorBreakdown.excellent')}
         </span>
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-full bg-chart-7" />
-          70-84 Good
+          {t('factorBreakdown.good')}
         </span>
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-full bg-warning" />
-          55-69 Fair
+          {t('factorBreakdown.fair')}
         </span>
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-full bg-caution" />
-          40-54 Poor
+          {t('factorBreakdown.poor')}
         </span>
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-full bg-destructive" />
-          &lt;40 Very Poor
+          {t('factorBreakdown.veryPoor')}
         </span>
       </div>
     </div>

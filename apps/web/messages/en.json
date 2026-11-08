@@ -176,6 +176,9 @@
       "redirecting": "Redirecting to login page...",
       "signingIn": "Signing in...",
       "pleaseWait": "Please wait..."
+    },
+    "demo": {
+      "exploreDemoFirst": "Explore demo first"
     }
   },
   "property": {
@@ -219,6 +222,18 @@
     "estimateTitle": "Estimated monthly payment with {down}% down, {years}-year fixed at {rate}% APR. Not a lending offer.",
     "map": {
       "propertiesInArea": "{count, plural, one {# property} other {# properties}} in this area"
+    },
+    "estimate": {
+      "abbr": "est."
+    },
+    "mapbox": {
+      "tokenMissing": "Mapbox token not configured. Add NEXT_PUBLIC_MAPBOX_TOKEN to your environment.",
+      "drawPolygon": "Draw a polygon to filter properties",
+      "swipeUp": "Swipe up for list",
+      "dominant": "dominant",
+      "priceRange": "Price range: {min} - {max}",
+      "average": "Average: {amount}",
+      "clickToZoom": "Click to zoom in"
     }
   },
   "search": {
@@ -404,7 +419,10 @@
       "resetAll": "Reset All"
     },
     "mapZoomHint": "Zoom in to see individual properties.",
-    "mapAttribution": "OpenStreetMap"
+    "mapAttribution": "OpenStreetMap",
+    "page": {
+      "requestId": "Request ID: {id}"
+    }
   },
   "mortgage": {
     "title": "Mortgage Calculator",
@@ -738,6 +756,58 @@
         "recency": "Recency",
         "amenities": "Amenities"
       }
+    },
+    "advancedAnalyzer": {
+      "emptyHint": "Enter property details below to generate multi-year projections and risk analysis.",
+      "formIntro": "Enter property and financing information for advanced analysis.",
+      "runAnalysis": "Run Advanced Analysis",
+      "exportReport": "Export Report",
+      "taxMethodNote": "Based on {taxRate}% marginal tax rate and {landRatio}% land value ratio. Depreciation uses straight-line method over 27.5 years (US residential)."
+    },
+    "analyzer": {
+      "analyze": "Analyze Investment",
+      "showFinancing": "Show Financing Options",
+      "hideFinancing": "Hide Financing Options",
+      "showExpenses": "Show Operating Expenses",
+      "hideExpenses": "Hide Operating Expenses",
+      "scoreLabels": {
+        "yield": "yield score",
+        "capRate": "cap rate score",
+        "cashFlow": "cash flow score",
+        "netYield": "net yield score",
+        "risk": "risk score"
+      }
+    },
+    "areaComparison": {
+      "title": "Area Comparison",
+      "amenities": {
+        "parking": "parking",
+        "garden": "garden",
+        "pool": "pool",
+        "furnished": "furnished",
+        "balcony": "balcony",
+        "elevator": "elevator"
+      }
+    },
+    "priceHistoryChart": {
+      "snapshotsRecorded": "{count} price snapshots recorded",
+      "anomaliesDetected": "{count, plural, one {# price anomaly detected} other {# price anomalies detected}}",
+      "priceLabel": "Price: {price}",
+      "pricePerSqmLabel": "Price/sqm: {price}"
+    },
+    "tcoComparison": {
+      "fields": {
+        "downPayment": "Down Payment %",
+        "interestRate": "Interest Rate %",
+        "loanYears": "Loan Years",
+        "annualTax": "Annual Tax"
+      },
+      "description": "Compare Total Cost of Ownership between two property scenarios with trade-off analysis and recommendations.",
+      "compareScenarios": "Compare Scenarios",
+      "recommendation": "Recommendation: {recommendation}",
+      "advantages": "{name} Advantages",
+      "breakEvenYears": "{years} years",
+      "versus": "{first} vs {second}"
     }
   },
   "rentVsBuy": {
@@ -1053,7 +1123,14 @@
     "summaryFailed": "Neighborhood summary failed: {message}",
     "loadingSummary": "Loading neighborhood summary",
     "preparingSummary": "Preparing summary…",
-    "summaryUnavailable": "Neighborhood summary unavailable right now."
+    "summaryUnavailable": "Neighborhood summary unavailable right now.",
+    "cityComparisonCard": {
+      "scoresHigherThanNoCity": "This neighborhood scores higher than {percentile}% of areas in the city"
+    },
+    "whatsNearbyExtra": {
+      "categoryCount": "{count} {label}",
+      "coordinates": "Coordinates: {latitude}, {longitude}"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -1305,6 +1382,9 @@
       "description": "Configure different AI models for different types of tasks. Each task type can use the model that fits it best.",
       "loading": "Loading preferences...",
       "loadFailed": "Failed to load preferences"
+    },
+    "providers": {
+      "supported": "OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI, Fireworks AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, and Ollama (local)."
     }
   },
   "chat": {
@@ -1719,6 +1799,9 @@
       "expires": "Expires:",
       "createNew": "Create New Report",
       "failedDownload": "Failed to download PDF"
+    },
+    "comparablesExtra": {
+      "notAvailable": "N/A"
     }
   },
   "admin": {
@@ -1961,7 +2044,11 @@
       "created": "Newest First",
       "placeholder": "Sort by"
     },
-    "verifiedAria": "Verified agent"
+    "verifiedAria": "Verified agent",
+    "cardExtra": {
+      "call": "Call",
+      "moreAreas": "+{count} more"
+    }
   },
   "documents": {
     "title": "Documents",
@@ -2054,7 +2141,12 @@
     "emptyHint": "Try one of the example queries below to see the demo in action.",
     "modeDisabled": "Disabled",
     "toggleFailed": "Failed to toggle demo mode: {message}",
-    "modeEnabled": "Enabled"
+    "modeEnabled": "Enabled",
+    "modeState": {
+      "label": "Demo Mode:",
+      "on": "ON",
+      "off": "OFF"
+    }
   },
   "showcase": {
     "heroTitle": "Showcase",
@@ -2378,7 +2470,11 @@
     "agents": {
       "title": "Find an Agent",
       "description": "Connect with professional real estate agents",
-      "searchByCity": "Search by city..."
+      "searchByCity": "Search by city...",
+      "pagination": {
+        "found": "{count, plural, one {# agent found} other {# agents found}}",
+        "page": "Page {page} of {total}"
+      }
     },
     "settings": {
       "title": "Settings",
@@ -2522,7 +2618,10 @@
     },
     "analytics": {
       "title": "Analytics & Tools",
-      "description": "Market insights and financial tools to help you make informed decisions."
+      "description": "Market insights and financial tools to help you make informed decisions.",
+      "sections": {
+        "advancedInvestment": "Advanced Investment Analytics"
+      }
     },
     "valuation": {
       "title": "AI Property Valuation & Forecast",
@@ -3128,6 +3227,9 @@
       "longitudeLabel": "Longitude",
       "via": "via",
       "arrival": "Arrival: {time}"
+    },
+    "commuteExtra": {
+      "emptyHint": "Add your work location or other frequent destinations to check commute times."
     }
   },
   "states": {
@@ -3230,6 +3332,38 @@
         "q8": "Is there a hosted version with real data?",
         "a8": "Yes — PropVector AI (propvectorai.com) offers hosted tiers with live data, managed accounts, and enterprise capabilities. The open-source repo stays focused on the core engine and a self-hostable demo experience."
       }
+    }
+  },
+  "analytics": {
+    "anomalyList": {
+      "totalCount": "{count} total",
+      "markReviewed": "Mark as Reviewed",
+      "dismissedBy": "Dismissed by {name}",
+      "dismissedBySystem": "Dismissed by system",
+      "scope": {
+        "property": "Property: {id}",
+        "city": "City: {id}",
+        "district": "District: {id}",
+        "market": "Market: {id}",
+        "region": "Region: {id}"
+      }
+    }
+  },
+  "shellComponents": {
+    "presets": {
+      "title": "Presets",
+      "empty": "No saved presets yet",
+      "saveCurrentFilters": "Save Current Filters",
+      "deleteConfirm": "Delete preset \"{name}\"?"
+    },
+    "weekdays": {
+      "sunday": "Sunday",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday"
     }
   }
 }

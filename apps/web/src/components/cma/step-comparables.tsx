@@ -26,6 +26,7 @@ export function StepComparables({
   onPrev,
 }: StepComparablesProps) {
   const t = useTranslations('cma.comparables');
+  const tExtra = useTranslations('cma.comparablesExtra');
   const locale = useLocale();
   const [suggestedComparables, setSuggestedComparables] = useState<CMAComparable[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -74,7 +75,7 @@ export function StepComparables({
   };
 
   const formatPrice = (price?: number, currency?: string) => {
-    if (!price) return 'N/A';
+    if (!price) return tExtra('notAvailable');
     // The wizard used to force every price into euros with German separators,
     // whatever the listing said and whatever language the reader picked.
     return formatPriceInLocale(price, currency || 'EUR', locale);
@@ -205,10 +206,10 @@ export function StepComparables({
       {/* Navigation */}
       <div className="flex justify-between pt-4">
         <Button variant="outline" onClick={onPrev}>
-          Back
+          {t('back')}
         </Button>
         <Button onClick={onNext} disabled={!canProceed}>
-          Next: Review Adjustments
+          {t('nextAdjustments')}
         </Button>
       </div>
     </div>

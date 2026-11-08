@@ -45,10 +45,23 @@ const getScoreLabel = (score: number, t: (key: string) => string): string => {
   return t('scorePoor');
 };
 
+/**
+ * Maps the API score_breakdown keys to the catalogue keys that carry their
+ * reader-visible label. Unknown keys fall back to the raw key.
+ */
+const SCORE_LABEL_KEYS: Record<string, string> = {
+  yield: 'yield',
+  cap_rate: 'capRate',
+  cash_flow: 'cashFlow',
+  net_yield: 'netYield',
+  risk: 'risk',
+};
+
 export function InvestmentAnalyzer() {
   const tp = useTranslations('portfolio');
   const tm = useTranslations('mortgage');
   const t = useTranslations('investment');
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
   const [errorState, setErrorState] = useState<ErrorState | null>(null);
   const [result, setResult] = useState<InvestmentAnalysisResult | null>(null);
@@ -190,12 +203,12 @@ export function InvestmentAnalyzer() {
               {showFinancingOptions ? (
                 <>
                   <ChevronUp className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Hide Financing Options
+                  {t('analyzer.hideFinancing')}
                 </>
               ) : (
                 <>
                   <ChevronDown className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Show Financing Options
+                  {t('analyzer.showFinancing')}
                 </>
               )}
             </Button>
@@ -281,12 +294,12 @@ export function InvestmentAnalyzer() {
               {showExpenseOptions ? (
                 <>
                   <ChevronUp className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Hide Operating Expenses
+                  {t('analyzer.hideExpenses')}
                 </>
               ) : (
                 <>
                   <ChevronDown className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Show Operating Expenses
+                  {t('analyzer.showExpenses')}
                 </>
               )}
             </Button>
@@ -377,7 +390,7 @@ export function InvestmentAnalyzer() {
 
             <Button type="submit" className="w-full" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
-              Analyze Investment
+              {t('analyzer.analyze')}
             </Button>
 
             {/* Error state */}
@@ -412,7 +425,7 @@ export function InvestmentAnalyzer() {
                     className="gap-2 ml-auto"
                   >
                     <RefreshCw className="h-3 w-3" aria-hidden="true" />
-                    Retry
+                    {tCommon('retry')}
                   </Button>
                 </div>
               </div>
@@ -441,14 +454,18 @@ export function InvestmentAnalyzer() {
                 </p>
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                {Object.entries(result.score_breakdown).map(([key, value]) => (
-                  <div key={key} className="flex justify-between">
-                    <span className="text-muted-foreground">
-                      {key.replace(/_/g, ' ').replace('score', 'score').replace('yield', 'yield')}:
-                    </span>
-                    <span className="font-medium">{value.toFixed(1)}</span>
-                  </div>
-                ))}
+                {Object.entries(result.score_breakdown).map(([key, value]) => {
+                  const labelKey = SCORE_LABEL_KEYS[key.replace(/_score$/, '')];
+                  const label = labelKey
+                    ? t(`analyzer.scoreLabels.${labelKey}`)
+                    : key.replace(/_/g, ' ').replace('score', 'score').replace('yield', 'yield');
+                  return (
+                    <div key={key} className="flex justify-between">
+                      <span className="text-muted-foreground">{label}:</span>
+                      <span className="font-medium">{value.toFixed(1)}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

@@ -25,6 +25,9 @@ export default function RegisterPage() {
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations('auth');
+  // The example name and the example address are shared labels of the
+  // catalogue — they are read from there instead of being written out again.
+  const tContactForm = useTranslations('agents.contactForm');
   const { refreshUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +81,12 @@ export default function RegisterPage() {
           )}
           <div className="grid gap-2">
             <Label htmlFor="fullName">{t('register.fullNameLabel')}</Label>
-            <Input id="fullName" name="fullName" placeholder="John Doe" disabled={isLoading} />
+            <Input
+              id="fullName"
+              name="fullName"
+              placeholder={tContactForm('namePlaceholder')}
+              disabled={isLoading}
+            />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="email">{t('register.emailLabel')}</Label>
@@ -86,7 +94,7 @@ export default function RegisterPage() {
               id="email"
               name="email"
               type="email"
-              placeholder="name@example.com"
+              placeholder={t('login.emailPlaceholder')}
               required
               disabled={isLoading}
             />
@@ -135,7 +143,7 @@ export default function RegisterPage() {
             href={`/${locale}`}
             className="text-sm text-center text-muted-foreground hover:text-primary underline underline-offset-4"
           >
-            Explore demo first
+            {t('demo.exploreDemoFirst')}
           </Link>
         </CardFooter>
       </form>
