@@ -40,11 +40,13 @@ from api.routers import (
     admin,
     agent_analytics,  # Task #56: Agent Performance Analytics
     agents,  # Task #45: Agent/Broker Integration
+    analytics_outbound,  # Outbound click capture
     anomalies,  # Task #53: Market Anomaly Detection
     auth,
     auth_jwt,  # JWT authentication endpoints
     bulk_jobs,  # Task #80: Import/Export Data API
     capabilities,  # Task #34: what this deployment can actually do
+    catalogue,  # What the catalogue holds
     chat,
     cma,  # Task #85: Comparative Market Analysis
     collections,  # Task #37: Property collections
@@ -325,7 +327,7 @@ async def startup_event():
             logger.warning("Auto-seed failed (non-fatal): %s", e)
 
     # 1.2 Generate comprehensive demo data for maximum feature showcase (if demo mode enabled)
-    if os.getenv("DEMO_MODE", "false").lower() == "true":
+    if settings.demo_data_mode:
         if os.getenv("SKIP_DEMO_SEED", "false").lower() == "true":
             logger.info(
                 "SKIP_DEMO_SEED=true — skipping startup demo data generation. "
@@ -600,6 +602,10 @@ app.include_router(collections.router, prefix="/api/v1")
 app.include_router(saved_searches.router, prefix="/api/v1")
 # Task #75: Filter Presets
 app.include_router(filter_presets.router, prefix="/api/v1")
+# What the catalogue holds - the numbers the landing page shows
+app.include_router(catalogue.router, prefix="/api/v1")
+# Outbound clicks: the browser reports them before it leaves the site
+app.include_router(analytics_outbound.router, prefix="/api/v1")
 # Task #38: Market analytics (price history, trends, indicators)
 app.include_router(market.router, prefix="/api/v1")
 app.include_router(anomalies.router, prefix="/api/v1")

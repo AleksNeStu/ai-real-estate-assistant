@@ -46,7 +46,15 @@ def build_capabilities(*, email_enabled: bool) -> dict[str, Any]:
         },
         "llm": {
             "demo_mode": settings.demo_mode,
-            "default_provider": settings.default_provider,
+            # "local-model" means the canned answers; "provider" means a real
+            # model answers and the interface may say so.
+            "mode": "local-model" if settings.demo_llm_mode else "provider",
+            "provider": settings.default_provider,
+            "model": settings.default_model,
+        },
+        "lead_capture": {
+            # The waitlist may only promise an e-mail when one can be sent.
+            "waitlist_enabled": email_enabled,
         },
         "observability": {
             "error_tracking": bool(settings.sentry_dsn),

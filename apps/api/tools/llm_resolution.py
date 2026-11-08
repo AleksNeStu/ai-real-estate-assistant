@@ -48,7 +48,7 @@ def resolve_tool_llm(
 
     settings = get_settings()
 
-    if settings.demo_mode:
+    if settings.demo_llm_mode:
         from core.demo import get_demo_llm
 
         return get_demo_llm()

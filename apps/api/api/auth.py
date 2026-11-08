@@ -42,7 +42,7 @@ async def get_api_key(
     """
     settings = get_settings()
 
-    if settings.demo_mode:
+    if settings.demo_api_key_bypass:
         return "demo-mode-key"
 
     candidate = api_key_header.strip() if isinstance(api_key_header, str) else ""
@@ -148,7 +148,7 @@ async def get_optional_api_key(
     settings = get_settings()
 
     # Server-side demo mode always passes
-    if settings.demo_mode:
+    if settings.demo_api_key_bypass:
         return "demo-mode-key"
 
     # Check demo mode indicators from client

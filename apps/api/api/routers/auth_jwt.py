@@ -13,6 +13,7 @@ This module provides JWT-based authentication endpoints including:
 
 import logging
 import time
+from datetime import UTC, datetime
 from typing import Optional
 
 from fastapi import (
@@ -223,6 +224,9 @@ async def register(
         hashed_password=hashed_password,
         full_name=body.full_name,
         is_verified=is_verified,
+        # The visitor agreed to the processing of their data at sign-up; the
+        # moment is recorded, so the register form can prove it later.
+        gdpr_consent_at=datetime.now(UTC) if body.consent_given else None,
     )
 
     # Generate tokens

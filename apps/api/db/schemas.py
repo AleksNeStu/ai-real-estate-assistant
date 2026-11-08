@@ -14,6 +14,10 @@ class UserCreate(BaseModel):
     email: EmailStr = Field(..., description="User email address")
     password: str = Field(..., min_length=8, max_length=128, description="User password")
     full_name: Optional[str] = Field(None, max_length=255, description="User full name")
+    consent_given: bool = Field(
+        False,
+        description="Whether the visitor agreed to the processing of their data at sign-up",
+    )
 
     @field_validator("password")
     @classmethod
@@ -695,7 +699,9 @@ class AnomalyDismissRequest(BaseModel):
 # =============================================================================
 
 LeadStatusType = Literal["new", "contacted", "qualified", "converted", "lost"]
-LeadSourceType = Literal["organic", "referral", "ads", "direct", "email", "social"]
+LeadSourceType = Literal[
+    "organic", "referral", "ads", "direct", "email", "social", "propvector_waitlist"
+]
 InteractionType = Literal[
     "search",
     "view",
@@ -707,6 +713,7 @@ InteractionType = Literal[
     "share",
     "save_search",
     "download_report",
+    "navigation",
 ]
 
 
@@ -800,6 +807,34 @@ class LeadDetailResponse(LeadWithScoreResponse):
 
 
 # = Lead Interaction Schemas =
+
+
+class CityCount(BaseModel):
+    """How many properties a city holds."""
+
+    name: str = Field(..., description="City name")
+    count: int = Field(0, ge=0, description="Properties in the city")
+
+
+class CatalogueStatsResponse(BaseModel):
+    """What the catalogue holds - the numbers the landing page shows."""
+
+    total: int = Field(0, ge=0, description="Properties in the catalogue")
+    agents: int = Field(0, ge=0, description="Agents in the catalogue")
+    cities: list[CityCount] = Field(default_factory=list, description="Properties per city")
+    currencies: list[str] = Field(default_factory=list, description="Currencies in the catalogue")
+
+
+class OutboundClickRequest(BaseModel):
+    """A click that leaves the site."""
+
+    target: str = Field(..., min_length=1, max_length=200, description="Where the click went")
+    slot: Optional[str] = Field(None, max_length=200, description="The slot on the page")
+    campaign: Optional[str] = Field(None, max_length=100, description="The campaign it belongs to")
+    visitor_id: str = Field(
+        "anonymous", min_length=1, max_length=36, description="Visitor UUID from the cookie"
+    )
+    page_url: Optional[str] = Field(None, max_length=500, description="The page it happened on")
 
 
 class TrackInteractionRequest(BaseModel):

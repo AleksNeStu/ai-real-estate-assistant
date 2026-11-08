@@ -38,6 +38,7 @@ class UserRepository:
         full_name: Optional[str] = None,
         role: str = "user",
         is_verified: bool = False,
+        gdpr_consent_at: Optional[datetime] = None,
     ) -> User:
         """Create a new user."""
         user = User(
@@ -48,6 +49,7 @@ class UserRepository:
             role=role,
             is_verified=is_verified,
             is_active=True,
+            gdpr_consent_at=gdpr_consent_at,
         )
         self.session.add(user)
         await self.session.flush()

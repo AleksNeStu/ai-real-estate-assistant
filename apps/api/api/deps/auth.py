@@ -213,33 +213,36 @@ async def get_current_user(
     is_demo_session = _DEMO_MODE_SESSIONS.get(session_id, False)
 
     # Check environment-based demo mode
-    is_demo_env = settings.demo_mode
+    is_demo_env = settings.demo_user_bypass
 
-    # Use demo user if demo mode is active
+    # A real session always wins. The token is read first, so a visitor who
+    # signed in is that account even on a demo deployment: the synthetic demo
+    # user used to answer before the token was even looked at, which made the
+    # sign-in a decoration. Only a request without a token falls back.
+    token = await _extract_token(request, access_token, credentials)
+
+    if token:
+        user, _ = await _get_user_from_token(token, session)
+
+        # Set Sentry user context for error tracking
+        try:
+            from api.sentry_init import set_user_context
+
+            set_user_context(user_id=str(user.id), email=user.email)
+        except ImportError:
+            pass  # Sentry not available
+
+        return user
+
+    # No token: the demo user steps in when the deployment allows it.
     if is_demo_session or is_demo_env:
         return _get_demo_user()
 
-    # Normal authentication flow
-    token = await _extract_token(request, access_token, credentials)
-
-    if not token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    user, _ = await _get_user_from_token(token, session)
-
-    # Set Sentry user context for error tracking
-    try:
-        from api.sentry_init import set_user_context
-
-        set_user_context(user_id=str(user.id), email=user.email)
-    except ImportError:
-        pass  # Sentry not available
-
-    return user
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Not authenticated",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
 
 
 async def get_current_user_optional(

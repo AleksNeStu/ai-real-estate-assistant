@@ -31,6 +31,19 @@ def _dedupe_preserve_order(values: list[str]) -> list[str]:
     return deduped
 
 
+def _demo_env_flag(name: str) -> bool:
+    """Read a demo flag, falling back to DEMO_MODE.
+
+    A deployment that sets DEMO_DATA_MODE, DEMO_LLM_MODE,
+    DEMO_API_KEY_BYPASS or DEMO_USER_BYPASS says what it means; one that
+    says nothing keeps the old behaviour of DEMO_MODE.
+    """
+    raw = os.getenv(name)
+    if raw is None:
+        raw = os.getenv("DEMO_MODE", "false")
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
 class AppSettings(BaseModel):
     """Application settings."""
 
@@ -391,6 +404,29 @@ class AppSettings(BaseModel):
         description="Enable demo mode: bypasses auth, returns mock LLM responses",
     )
 
+    # The demo was one flag for four different things: the seeded catalogue,
+    # the canned LLM, the fake API key and the synthetic user. A deployment
+    # that wants a real catalogue and a real model - and a real sign-in -
+    # could not ask for one without the others. Each flag below follows
+    # DEMO_MODE unless it is set on its own, so an existing deployment keeps
+    # behaving exactly as it does today.
+    demo_data_mode: bool = Field(
+        default_factory=lambda: _demo_env_flag("DEMO_DATA_MODE"),
+        description="Seed the demo catalogue at start-up (follows DEMO_MODE)",
+    )
+    demo_llm_mode: bool = Field(
+        default_factory=lambda: _demo_env_flag("DEMO_LLM_MODE"),
+        description="Answer with the canned local model instead of a provider (follows DEMO_MODE)",
+    )
+    demo_api_key_bypass: bool = Field(
+        default_factory=lambda: _demo_env_flag("DEMO_API_KEY_BYPASS"),
+        description="Accept the demo API key on public endpoints (follows DEMO_MODE)",
+    )
+    demo_user_bypass: bool = Field(
+        default_factory=lambda: _demo_env_flag("DEMO_USER_BYPASS"),
+        description="Answer an anonymous request with the synthetic demo user (follows DEMO_MODE)",
+    )
+
     # LLM Request Timeouts
     llm_request_timeout_seconds: float = Field(
         default_factory=lambda: float(os.getenv("LLM_REQUEST_TIMEOUT_SECONDS", "120")),
@@ -519,8 +555,10 @@ class AppSettings(BaseModel):
     batch_size: int = 100
     autoload_default_datasets: bool = False
     vector_persist_enabled: bool = Field(
-        default_factory=lambda: os.getenv("VECTOR_PERSIST_ENABLED", "false").strip().lower()
-        in {"1", "true", "yes", "on"}
+        default_factory=lambda: (
+            os.getenv("VECTOR_PERSIST_ENABLED", "false").strip().lower()
+            in {"1", "true", "yes", "on"}
+        )
     )
     crm_webhook_url: Optional[str] = Field(default_factory=lambda: os.getenv("CRM_WEBHOOK_URL"))
     valuation_mode: str = Field(default_factory=lambda: os.getenv("VALUATION_MODE", "simple"))

@@ -293,7 +293,7 @@ async def get_llm(
     Supports multi-key and multi-provider fallback when enabled.
     Returns MockLLM when DEMO_MODE is enabled.
     """
-    if settings.demo_mode:
+    if settings.demo_llm_mode:
         from core.demo import get_demo_llm
 
         return get_demo_llm()
@@ -427,7 +427,7 @@ async def get_llm_for_task(
     Returns:
         Configured LLM instance
     """
-    if settings.demo_mode:
+    if settings.demo_llm_mode:
         from core.demo import get_demo_llm
 
         return get_demo_llm()
@@ -538,7 +538,7 @@ def get_optional_llm_with_details(
     provider_override: str | None,
     model_override: str | None,
 ) -> tuple[Optional[BaseChatModel], Optional[str], Optional[str]]:
-    if settings.demo_mode:
+    if settings.demo_llm_mode:
         from core.demo import get_demo_llm
 
         return get_demo_llm(), "demo", "mock"
