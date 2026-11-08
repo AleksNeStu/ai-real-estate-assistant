@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.1.15] - 2026-11-08
 
+### Changed
+- **The product speaks nine languages** — 243 keys of the catalogue existed
+  only in English (the settings of the notifications, the usage page, the
+  profile, the privacy, the data sources of the admin, the confirmation of
+  the address, the charts of the market trends, the models of the tasks, the
+  health of the system, the feedback of the search) and roughly 700 strings
+  of the rest of the catalogue were left in English in the six languages that
+  were behind. Every locale carries the whole catalogue now: the chrome of
+  the interface, the assistant and its citations, the search and the cards of
+  the listings, the documents, the agents, the wizard of the comparative
+  market analysis, the calculators, the neighbourhoods and the showcase. A
+  translation is never overwritten - only the English text is replaced - and
+  every ICU placeholder stays verbatim. Only technical terms remain in
+  English by design (PDF, JSON, IRR, request ids, weights, e-mail
+  placeholders).
+
 ### Fixed
 - **The search shows that it is searching** — the page set the flag
   "hasSearched" before the request left, so the condition of the loading
