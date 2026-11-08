@@ -1,15 +1,14 @@
 from typing import Annotated, List, Optional
 import statistics
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from langchain_core.language_models import BaseChatModel
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 from pydantic import BaseModel, Field
 
 from api.dependencies import (
     get_crm_connector,
     get_data_enrichment_service,
     get_legal_check_service,
-    get_llm,
+    get_optional_llm,
     get_valuation_provider,
     get_vector_store,
 )
@@ -76,6 +75,7 @@ from tools.listing_generator_tools import (
     HeadlineGeneratorTool,
     SocialMediaContentGeneratorTool,
 )
+from tools.llm_resolution import resolve_tool_llm
 from vector_store.chroma_store import ChromaPropertyStore
 
 router = APIRouter(tags=["Tools"])
@@ -1042,7 +1042,7 @@ class ListingGenerationResponse(BaseModel):
 async def generate_listing(
     request: ListingGenerationRequest,
     store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
-    llm: Annotated[BaseChatModel, Depends(get_llm)],
+    x_user_email: Annotated[Optional[str], Header(alias="X-User-Email")] = None,
 ):
     """
     Generate AI-powered listing content for a property.
@@ -1141,6 +1141,18 @@ async def generate_listing(
         property_parts.append(f"Description: {md.get('description')}")
 
     property_data = "\n".join(property_parts)
+
+    # The model is resolved here and not through a dependency: a request
+    # with a wrong tone has to be answered with 400 even on a deployment
+    # that holds no provider key at all. The dependency raised before the
+    # handler ever ran, so the endpoint answered 500 for a mistake in the
+    # request - and the tests of the endpoint needed a key to run.
+    llm = await get_optional_llm(x_user_email=x_user_email)
+    if llm is None:
+        # The tools resolve the model themselves when they get none: the
+        # mock model of a demo deployment, the configured provider
+        # otherwise.
+        llm = resolve_tool_llm(task_type="generate listing")
 
     # Initialize tools
     description_tool = PropertyDescriptionGeneratorTool(llm=llm)

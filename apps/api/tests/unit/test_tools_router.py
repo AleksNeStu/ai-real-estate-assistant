@@ -1888,6 +1888,64 @@ class TestGenerateListing:
         assert "Boom" in data["error"]
 
 
+class TestGenerateListingWithoutAProvider:
+    """The endpoint must answer on a deployment that holds no provider key.
+
+    The model used to come from a dependency, so the dependency was resolved
+    before the handler ran: a request with a wrong tone was answered with
+    500 instead of 400, and a deployment without a key could not serve the
+    endpoint at all.
+    """
+
+    @pytest.mark.asyncio
+    async def test_a_wrong_tone_is_answered_with_400(self):
+        doc = _make_property_doc()
+        store = _make_store_mock(docs_by_ids=[doc])
+        app = _build_app(store=store)
+
+        with (
+            patch(
+                "api.routers.tools.get_optional_llm",
+                AsyncMock(return_value=None),
+            ),
+            patch("api.routers.tools.resolve_tool_llm", return_value=None),
+        ):
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://test") as c:
+                response = await c.post(
+                    "/api/v1/tools/generate-listing",
+                    json={"property_id": "p1", "tone": "nonsense"},
+                )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @pytest.mark.asyncio
+    async def test_the_endpoint_answers_and_says_that_no_model_is_there(self):
+        doc = _make_property_doc()
+        store = _make_store_mock(docs_by_ids=[doc])
+        app = _build_app(store=store)
+
+        with (
+            patch(
+                "api.routers.tools.get_optional_llm",
+                AsyncMock(return_value=None),
+            ),
+            patch("api.routers.tools.resolve_tool_llm", return_value=None),
+            patch("tools.listing_generator_tools.resolve_tool_llm", return_value=None),
+        ):
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://test") as c:
+                response = await c.post(
+                    "/api/v1/tools/generate-listing",
+                    json={"property_id": "p1"},
+                )
+
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data["error"] is not None
+        assert "LLM not available" in data["error"]
+
+
 # ===========================================================================
 # Test: Helper functions _to_float / _to_int
 # ===========================================================================
