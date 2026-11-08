@@ -6,6 +6,7 @@ from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
+from pydantic import ValidationError
 
 from api.dependencies import get_vector_store
 from api.models import (
@@ -29,6 +30,25 @@ router = APIRouter(tags=["Search"])
 # Polygon validation constants
 POLYGON_MAX_VERTICES = 100
 POLYGON_MAX_AREA_SQKM = 10000  # ~100km radius max
+
+
+def _fields_that_failed(error: ValidationError) -> set[str]:
+    """
+    The metadata fields that made a Property invalid.
+
+    Only optional fields are reported: without a city there is nothing to
+    show, so such a row is skipped rather than patched.
+    """
+    fields: set[str] = set()
+    for detail in error.errors():
+        location = detail.get("loc") or ()
+        if not location:
+            continue
+        name = str(location[0])
+        if name == "city":
+            continue
+        fields.add(name)
+    return fields
 
 
 def _validate_polygon(polygon: list[list[list[float]]]) -> Optional[str]:
@@ -206,10 +226,26 @@ async def search_properties(
                 # Pydantic handles this conversion usually
 
                 # Construct Property model
-                # validation_error might occur if metadata is incomplete
                 # The vector store stores the coordinates as `lat`/`lon`; the
                 # schema names them `latitude`/`longitude`.
-                prop = Property.model_validate(normalize_property_metadata(metadata))
+                normalized = normalize_property_metadata(metadata)
+
+                try:
+                    prop = Property.model_validate(normalized)
+                except ValidationError as e:
+                    # A listing must not disappear because one optional field
+                    # is broken: drop the fields that failed and show the rest.
+                    broken = _fields_that_failed(e)
+                    if not broken:
+                        raise
+                    logger.warning(
+                        "Dropping invalid fields %s from a search result: %s",
+                        sorted(broken),
+                        sanitize_for_log(e),
+                    )
+                    prop = Property.model_validate(
+                        {k: v for k, v in normalized.items() if k not in broken}
+                    )
 
                 # Include explanation if available
                 explanation_model = None

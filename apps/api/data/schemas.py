@@ -73,7 +73,7 @@ class Property(BaseModel):
 
     # Core Identification
     id: Optional[str] = Field(None, description="Unique property identifier")
-    title: Optional[str] = Field(None, min_length=5, description="Property title")
+    title: Optional[str] = Field(None, description="Property title")
     description: Optional[str] = Field(None, description="Detailed property description")
 
     # Location Information
@@ -190,11 +190,18 @@ class Property(BaseModel):
     @field_validator("price")
     @classmethod
     def validate_price_reasonable(cls, v: float) -> float:
-        """Ensure price is within reasonable bounds."""
+        """Flag a price that looks like a data error, without dropping the listing.
+
+        This check used to raise. The search router caught the error and
+        skipped the row, so a shared room at 45 EUR or a studio rented for
+        30 disappeared from the results with nothing but a log line to show
+        for it. A price outside the usual range is suspicious, not invalid:
+        it is recorded and the listing stays.
+        """
         if v > 100000000:  # 100 Million
-            raise ValueError("Price suspiciously high (>100,000,000)")
+            logger.warning("Price suspiciously high (>100,000,000): %s", v)
         if v < 50:
-            raise ValueError("Price suspiciously low (<50)")
+            logger.warning("Price suspiciously low (<50): %s", v)
         return v
 
     def model_post_init(self, __context: Any) -> None:
