@@ -39,12 +39,35 @@ except Exception:
     pass
 
 _FastEmbedEmbeddings: Any = None
-try:
-    from langchain_community.embeddings.fastembed import (  # type: ignore[no-redef]
-        FastEmbedEmbeddings as _FastEmbedEmbeddings,
-    )
-except Exception:
-    pass
+_FastEmbedImportChecked = False
+
+
+def _load_fastembed_embeddings() -> Any:
+    """Import the fastembed embeddings on first use, not on import.
+
+    The import pulls in onnxruntime, and that costs a few hundred megabytes of
+    resident memory before the API has served a single request. A demo
+    deployment on a 512 Mi instance was killed for memory before it could
+    answer its health check, so the heavy import now happens when an
+    embedding is actually built.
+    """
+    global _FastEmbedEmbeddings, _FastEmbedImportChecked
+
+    # A test may have replaced the class on purpose - keep it.
+    if _FastEmbedEmbeddings is not None:
+        return _FastEmbedEmbeddings
+
+    if not _FastEmbedImportChecked:
+        _FastEmbedImportChecked = True
+        try:
+            from langchain_community.embeddings.fastembed import (  # type: ignore[no-redef]
+                FastEmbedEmbeddings as _FastEmbedEmbeddings,
+            )
+        except Exception:
+            pass
+
+    return _FastEmbedEmbeddings
+
 
 try:
     from rank_bm25 import BM25Okapi
@@ -133,11 +156,12 @@ class ChromaPropertyStore:
             force_fastembed = (
                 os.getenv("CHROMA_FORCE_FASTEMBED") == "1" or os.getenv("FORCE_FASTEMBED") == "1"
             )
-            if _FastEmbedEmbeddings is not None and not is_windows:
-                return cast(Embeddings, _FastEmbedEmbeddings(model_name=model_name))
-            if _FastEmbedEmbeddings is not None and is_windows and force_fastembed:
-                return cast(Embeddings, _FastEmbedEmbeddings(model_name=model_name))
-            if _FastEmbedEmbeddings is not None and is_windows:
+            fastembed_embeddings = _load_fastembed_embeddings()
+            if fastembed_embeddings is not None and not is_windows:
+                return cast(Embeddings, fastembed_embeddings(model_name=model_name))
+            if fastembed_embeddings is not None and is_windows and force_fastembed:
+                return cast(Embeddings, fastembed_embeddings(model_name=model_name))
+            if fastembed_embeddings is not None and is_windows:
                 logger.warning(
                     "FastEmbed is disabled on Windows for stability. "
                     "Set CHROMA_FORCE_FASTEMBED=1 to force enable."

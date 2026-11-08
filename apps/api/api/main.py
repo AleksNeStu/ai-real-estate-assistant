@@ -230,6 +230,20 @@ SHUTDOWN_DRAIN_SECONDS = int(os.getenv("SHUTDOWN_DRAIN_SECONDS", "30"))
 SHUTDOWN_MAX_WAIT_SECONDS = int(os.getenv("SHUTDOWN_MAX_WAIT_SECONDS", "60"))
 
 
+class _LazyVectorStore:
+    """Hands out the vector store when something first needs it.
+
+    The vector store loads the embedding model, and that costs a few hundred
+    megabytes of resident memory. A demo deployment on a 512 Mi instance was
+    killed for memory before it could answer its health check, so the store is
+    not built at startup: whoever needs it first pays for it.
+    """
+
+    def __getattr__(self, name: str) -> Any:
+        store = get_vector_store()
+        return getattr(store, name)
+
+
 async def _seed_demo_data_in_background() -> None:
     """Fill the demo catalogue without holding the event loop.
 
@@ -348,8 +362,9 @@ async def startup_event():
     # 3. Initialize and Start Scheduler
     logger.info("Starting Notification Scheduler...")
     try:
-        # Get vector store lazily for scheduler (may be None if not yet initialized)
-        vs = get_vector_store()
+        # The vector store is handed over lazily: the scheduler only needs it
+        # when a digest is built, and building it loads the embedding model.
+        vs = _LazyVectorStore()
         scheduler = NotificationScheduler(
             email_service=email_service,
             vector_store=vs,
