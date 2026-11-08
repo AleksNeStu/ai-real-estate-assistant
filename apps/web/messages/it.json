@@ -2354,7 +2354,76 @@
       "title": "Analytics degli agenti",
       "description": "Come rendono gli annunci con ogni agente.",
       "totalLeads": "Lead totali",
-      "totalRevenue": "Ricavi totali"
+      "totalRevenue": "Ricavi totali",
+      "loading": "Caricamento dei tuoi dati sulle prestazioni...",
+      "pageDescription": "Segui le tue prestazioni, ricevi consigli di coaching e fissa obiettivi.",
+      "errors": {
+        "fetch": "Impossibile ottenere l’analisi dell’agente",
+        "load": "Impossibile caricare i dati analitici. Riprova."
+      },
+      "metrics": {
+        "totalLeads": "Lead totali",
+        "newThisWeek": "nuovi questa settimana: {count}",
+        "activeDeals": "Operazioni attive",
+        "closed": "chiusi: {count}",
+        "conversionRate": "Tasso di conversione",
+        "overall": "complessivo",
+        "totalRevenue": "Ricavi totali",
+        "highValueLeads": "Lead ad alto valore",
+        "scoreAtLeast": "Punteggio ≥ 70",
+        "avgTimeToClose": "Tempo medio di chiusura",
+        "avgDealValue": "Valore medio della operazione",
+        "pendingCommission": "Commissione in sospeso"
+      },
+      "tabs": {
+        "overview": "Panoramica",
+        "insights": "Consigli",
+        "goals": "Obiettivi"
+      },
+      "strengths": {
+        "title": "I tuoi punti di forza",
+        "description": "Le aree in cui eccelli in base alle operazioni chiuse",
+        "propertyTypes": "Tipi di immobili",
+        "locations": "Località"
+      },
+      "team": {
+        "title": "Confronto con il team",
+        "loading": "Caricamento dei dati del team...",
+        "vsAverage": "Le tue prestazioni rispetto alla media del team ({count} agenti)",
+        "rankOf": "su {total} in {label}",
+        "teamAvg": "Media del team: {value}",
+        "labels": {
+          "deals": "Operazioni",
+          "revenue": "Ricavi",
+          "conversion": "Conversione"
+        }
+      },
+      "insights": {
+        "title": "Consigli di coaching",
+        "description": "Raccomandazioni supportate dall’IA per migliorare le tue prestazioni",
+        "empty": "Nessun consiglio disponibile al momento.",
+        "strength": "Punto di forza",
+        "improvement": "Da migliorare",
+        "opportunity": "Opportunità"
+      },
+      "goals": {
+        "title": "Obiettivi",
+        "emptyTitle": "Nessun obiettivo attivo",
+        "emptyDescription": "Fissa obiettivi per monitorare i tuoi progressi verso i target.",
+        "progressTitle": "Avanzamento obiettivi",
+        "progressDescription": "Monitora i tuoi obiettivi di performance",
+        "daysLeft": "{count} giorni rimasti",
+        "periodEnded": "Periodo terminato"
+      },
+      "trends": {
+        "title": "Andamento delle prestazioni",
+        "loading": "Caricamento dei dati di andamento...",
+        "lastMonths": "Ultimi {count} mesi",
+        "dealsClosed": "Operazioni chiuse",
+        "totalLeads": "Lead totali",
+        "totalRevenue": "Ricavi totali",
+        "chartTitle": "{period}: {count} operazioni"
+      }
     },
     "admin": {
       "monitoring": {

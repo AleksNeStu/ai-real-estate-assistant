@@ -2354,7 +2354,76 @@
       "title": "Agent Analytics",
       "description": "Loading your performance data...",
       "totalLeads": "Total Leads",
-      "totalRevenue": "Total Revenue"
+      "totalRevenue": "Total Revenue",
+      "loading": "Loading your performance data...",
+      "pageDescription": "Track your performance, get coaching insights and set goals.",
+      "errors": {
+        "fetch": "Failed to fetch agent analytics",
+        "load": "Failed to load analytics data. Please try again."
+      },
+      "metrics": {
+        "totalLeads": "Total Leads",
+        "newThisWeek": "{count} new this week",
+        "activeDeals": "Active Deals",
+        "closed": "{count} closed",
+        "conversionRate": "Conversion Rate",
+        "overall": "overall",
+        "totalRevenue": "Total Revenue",
+        "highValueLeads": "High Value Leads",
+        "scoreAtLeast": "Score ≥ 70",
+        "avgTimeToClose": "Avg Time to Close",
+        "avgDealValue": "Avg Deal Value",
+        "pendingCommission": "Pending Commission"
+      },
+      "tabs": {
+        "overview": "Overview",
+        "insights": "Insights",
+        "goals": "Goals"
+      },
+      "strengths": {
+        "title": "Your Strengths",
+        "description": "Areas where you excel based on closed deals",
+        "propertyTypes": "Property Types",
+        "locations": "Locations"
+      },
+      "team": {
+        "title": "Team Comparison",
+        "loading": "Loading team data...",
+        "vsAverage": "Your performance vs team averages ({count} agents)",
+        "rankOf": "of {total} in {label}",
+        "teamAvg": "Team avg: {value}",
+        "labels": {
+          "deals": "Deals",
+          "revenue": "Revenue",
+          "conversion": "Conversion"
+        }
+      },
+      "insights": {
+        "title": "Coaching Insights",
+        "description": "AI-powered recommendations to improve your performance",
+        "empty": "No insights available yet.",
+        "strength": "Strength",
+        "improvement": "Improvement",
+        "opportunity": "Opportunity"
+      },
+      "goals": {
+        "title": "Goals",
+        "emptyTitle": "No active goals set",
+        "emptyDescription": "Set goals to track your progress towards targets.",
+        "progressTitle": "Goals Progress",
+        "progressDescription": "Track your performance targets",
+        "daysLeft": "{count} days left",
+        "periodEnded": "Period ended"
+      },
+      "trends": {
+        "title": "Performance Trends",
+        "loading": "Loading trend data...",
+        "lastMonths": "Last {count} months",
+        "dealsClosed": "Deals Closed",
+        "totalLeads": "Total Leads",
+        "totalRevenue": "Total Revenue",
+        "chartTitle": "{period}: {count} deals"
+      }
     },
     "admin": {
       "monitoring": {

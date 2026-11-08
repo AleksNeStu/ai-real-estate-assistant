@@ -2354,7 +2354,76 @@
       "title": "Makler-Analytics",
       "description": "Wie die Angebote bei jedem Makler abschneiden.",
       "totalLeads": "Leads gesamt",
-      "totalRevenue": "Gesamtumsatz"
+      "totalRevenue": "Gesamtumsatz",
+      "loading": "Deine Leistungsdaten werden geladen...",
+      "pageDescription": "Verfolge deine Leistung, erhalte Coaching-Empfehlungen und setze Ziele.",
+      "errors": {
+        "fetch": "Agent-Analytiken konnten nicht geladen werden",
+        "load": "Analytische Daten konnten nicht geladen werden. Bitte erneut versuchen."
+      },
+      "metrics": {
+        "totalLeads": "Leads insgesamt",
+        "newThisWeek": "diese Woche neu: {count}",
+        "activeDeals": "Aktive Abschlüsse",
+        "closed": "geschlossen: {count}",
+        "conversionRate": "Conversion-Rate",
+        "overall": "insgesamt",
+        "totalRevenue": "Gesamtumsatz",
+        "highValueLeads": "Leads mit hohem Wert",
+        "scoreAtLeast": "Score ≥ 70",
+        "avgTimeToClose": "Ø Zeit bis Abschluss",
+        "avgDealValue": "Ø Abschlusswert",
+        "pendingCommission": "Offene Provision"
+      },
+      "tabs": {
+        "overview": "Überblick",
+        "insights": "Empfehlungen",
+        "goals": "Ziele"
+      },
+      "strengths": {
+        "title": "Deine Stärken",
+        "description": "Bereiche, in denen du bei abgeschlossenen Deals glänzt",
+        "propertyTypes": "Objektarten",
+        "locations": "Standorte"
+      },
+      "team": {
+        "title": "Teamvergleich",
+        "loading": "Teamdaten werden geladen...",
+        "vsAverage": "Deine Leistung im Vergleich zum Teamdurchschnitt ({count} Makler)",
+        "rankOf": "von {total} in {label}",
+        "teamAvg": "Teamdurchschnitt: {value}",
+        "labels": {
+          "deals": "Abschlüsse",
+          "revenue": "Umsatz",
+          "conversion": "Conversion"
+        }
+      },
+      "insights": {
+        "title": "Coaching-Empfehlungen",
+        "description": "KI-gestützte Empfehlungen, die deine Leistung verbessern",
+        "empty": "Noch keine Empfehlungen verfügbar.",
+        "strength": "Stärke",
+        "improvement": "Verbesserung",
+        "opportunity": "Chance"
+      },
+      "goals": {
+        "title": "Ziele",
+        "emptyTitle": "Keine aktiven Ziele",
+        "emptyDescription": "Setze Ziele, um deinen Fortschritt zu verfolgen.",
+        "progressTitle": "Zielfortschritt",
+        "progressDescription": "Verfolge deine Zielvorgaben",
+        "daysLeft": "noch {count} Tage",
+        "periodEnded": "Zeitraum beendet"
+      },
+      "trends": {
+        "title": "Leistungsverlauf",
+        "loading": "Verlaufsdaten werden geladen...",
+        "lastMonths": "Letzte {count} Monate",
+        "dealsClosed": "Abgeschlossene Deals",
+        "totalLeads": "Leads insgesamt",
+        "totalRevenue": "Gesamtumsatz",
+        "chartTitle": "{period}: {count} Deals"
+      }
     },
     "admin": {
       "monitoring": {

@@ -2354,7 +2354,76 @@
       "title": "Danışman analitiği",
       "description": "İlanlar her danışmanda nasıl performans gösteriyor.",
       "totalLeads": "Toplam aday",
-      "totalRevenue": "Toplam gelir"
+      "totalRevenue": "Toplam gelir",
+      "loading": "Performans verileriniz yükleniyor...",
+      "pageDescription": "Performansınızı takip edin, koçluk önerileri alın ve hedef belirleyin.",
+      "errors": {
+        "fetch": "Temsilci analitiği alınamadı",
+        "load": "Analitik veriler yüklenemedi. Lütfen tekrar deneyin."
+      },
+      "metrics": {
+        "totalLeads": "Toplam müşteri",
+        "newThisWeek": "bu hafta yeni: {count}",
+        "activeDeals": "Aktif işlemler",
+        "closed": "kapanan: {count}",
+        "conversionRate": "Dönüşüm oranı",
+        "overall": "genel",
+        "totalRevenue": "Toplam gelir",
+        "highValueLeads": "Yüksek değerli müşteriler",
+        "scoreAtLeast": "Puan ≥ 70",
+        "avgTimeToClose": "Ortalama kapanış süresi",
+        "avgDealValue": "Ortalama işlem değeri",
+        "pendingCommission": "Bekleyen komisyon"
+      },
+      "tabs": {
+        "overview": "Genel bakış",
+        "insights": "Öneriler",
+        "goals": "Hedefler"
+      },
+      "strengths": {
+        "title": "Güçlü yanlarınız",
+        "description": "Kapanan işlemlere göre öne çıktığınız alanlar",
+        "propertyTypes": "Emlak tipleri",
+        "locations": "Konumlar"
+      },
+      "team": {
+        "title": "Takım karşılaştırması",
+        "loading": "Takım verileri yükleniyor...",
+        "vsAverage": "Performansınız takım ortalamasıyla karşılaştırıldığında ({count} temsilci)",
+        "rankOf": "{label} kategorisinde {total} içinde",
+        "teamAvg": "Takım ortalaması: {value}",
+        "labels": {
+          "deals": "İşlemler",
+          "revenue": "Gelir",
+          "conversion": "Dönüşüm"
+        }
+      },
+      "insights": {
+        "title": "Koçluk önerileri",
+        "description": "Performansınızı iyileştirmek için yapay zekâ destekli öneriler",
+        "empty": "Henüz öneri yok.",
+        "strength": "Güçlü yan",
+        "improvement": "Geliştirilecek",
+        "opportunity": "Fırsat"
+      },
+      "goals": {
+        "title": "Hedefler",
+        "emptyTitle": "Aktif hedef yok",
+        "emptyDescription": "Hedeflere ilerlemenizi takip etmek için hedef belirleyin.",
+        "progressTitle": "Hedef ilerlemesi",
+        "progressDescription": "Performans hedeflerinizi takip edin",
+        "daysLeft": "{count} gün kaldı",
+        "periodEnded": "Dönem sona erdi"
+      },
+      "trends": {
+        "title": "Performans eğilimi",
+        "loading": "Eğilim verileri yükleniyor...",
+        "lastMonths": "Son {count} ay",
+        "dealsClosed": "Kapanan işlemler",
+        "totalLeads": "Toplam müşteri",
+        "totalRevenue": "Toplam gelir",
+        "chartTitle": "{period}: {count} işlem"
+      }
     },
     "admin": {
       "monitoring": {

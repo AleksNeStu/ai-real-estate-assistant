@@ -2354,7 +2354,76 @@
       "title": "Analityka agentów",
       "description": "Jak wypadają oferty u każdego agenta.",
       "totalLeads": "Łącznie leadów",
-      "totalRevenue": "Łączny przychód"
+      "totalRevenue": "Łączny przychód",
+      "loading": "Wczytywanie Twoich danych o wynikach...",
+      "pageDescription": "Śledź swoje wyniki, odbieraj wskazówki coachingowe i wyznaczaj cele.",
+      "errors": {
+        "fetch": "Nie udało się pobrać analityki agenta",
+        "load": "Nie udało się wczytać danych analitycznych. Spróbuj ponownie."
+      },
+      "metrics": {
+        "totalLeads": "Wszystkich leadów",
+        "newThisWeek": "nowych: {count} w tym tygodniu",
+        "activeDeals": "Aktywne transakcje",
+        "closed": "zamkniętych: {count}",
+        "conversionRate": "Współczynnik konwersji",
+        "overall": "ogółem",
+        "totalRevenue": "Łączny przychód",
+        "highValueLeads": "Leady o wysokiej wartości",
+        "scoreAtLeast": "Wynik ≥ 70",
+        "avgTimeToClose": "Średni czas zamknięcia",
+        "avgDealValue": "Średnia wartość transakcji",
+        "pendingCommission": "Oczekująca prowizja"
+      },
+      "tabs": {
+        "overview": "Przegląd",
+        "insights": "Wskazówki",
+        "goals": "Cele"
+      },
+      "strengths": {
+        "title": "Twoje mocne strony",
+        "description": "Obszary, w których radzisz sobie najlepiej na podstawie zamkniętych transakcji",
+        "propertyTypes": "Typy nieruchomości",
+        "locations": "Lokalizacje"
+      },
+      "team": {
+        "title": "Porównanie z zespołem",
+        "loading": "Wczytywanie danych zespołu...",
+        "vsAverage": "Twoje wyniki na tle średnich zespołu ({count} agentów)",
+        "rankOf": "z {total} w kategorii {label}",
+        "teamAvg": "Średnia zespołu: {value}",
+        "labels": {
+          "deals": "Transakcje",
+          "revenue": "Przychód",
+          "conversion": "Konwersja"
+        }
+      },
+      "insights": {
+        "title": "Wskazówki coachingowe",
+        "description": "Rekomendacje wspierane przez AI, które poprawią Twoje wyniki",
+        "empty": "Brak dostępnych wskazówek.",
+        "strength": "Mocna strona",
+        "improvement": "Do poprawy",
+        "opportunity": "Możliwość"
+      },
+      "goals": {
+        "title": "Cele",
+        "emptyTitle": "Brak aktywnych celów",
+        "emptyDescription": "Wyznacz cele, aby śledzić postęp w realizacji założeń.",
+        "progressTitle": "Postęp celów",
+        "progressDescription": "Śledź swoje cele wydajnościowe",
+        "daysLeft": "pozostało dni: {count}",
+        "periodEnded": "Okres zakończony"
+      },
+      "trends": {
+        "title": "Trendy wydajności",
+        "loading": "Wczytywanie danych trendów...",
+        "lastMonths": "Ostatnie {count} miesięcy",
+        "dealsClosed": "Zamknięte transakcje",
+        "totalLeads": "Wszystkich leadów",
+        "totalRevenue": "Łączny przychód",
+        "chartTitle": "{period}: transakcji {count}"
+      }
     },
     "admin": {
       "monitoring": {

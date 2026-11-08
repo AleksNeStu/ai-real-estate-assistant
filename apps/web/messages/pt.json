@@ -2354,7 +2354,76 @@
       "title": "Analytics de agentes",
       "description": "Como os anúncios performam com cada agente.",
       "totalLeads": "Total de leads",
-      "totalRevenue": "Receita total"
+      "totalRevenue": "Receita total",
+      "loading": "A carregar os seus dados de desempenho...",
+      "pageDescription": "Acompanhe o seu desempenho, receba recomendações de coaching e defina metas.",
+      "errors": {
+        "fetch": "Não foi possível obter a análise do agente",
+        "load": "Não foi possível carregar os dados analíticos. Tente novamente."
+      },
+      "metrics": {
+        "totalLeads": "Leads totais",
+        "newThisWeek": "novos esta semana: {count}",
+        "activeDeals": "Negociações ativas",
+        "closed": "fechados: {count}",
+        "conversionRate": "Taxa de conversão",
+        "overall": "geral",
+        "totalRevenue": "Receita total",
+        "highValueLeads": "Leads de alto valor",
+        "scoreAtLeast": "Pontuação ≥ 70",
+        "avgTimeToClose": "Tempo médio até o fecho",
+        "avgDealValue": "Valor médio da negociação",
+        "pendingCommission": "Comissão pendente"
+      },
+      "tabs": {
+        "overview": "Resumo",
+        "insights": "Recomendações",
+        "goals": "Metas"
+      },
+      "strengths": {
+        "title": "Os seus pontos fortes",
+        "description": "Áreas onde se destaca com base nos negócios fechados",
+        "propertyTypes": "Tipos de imóveis",
+        "locations": "Localizações"
+      },
+      "team": {
+        "title": "Comparação com a equipa",
+        "loading": "A carregar os dados da equipa...",
+        "vsAverage": "O seu desempenho face à média da equipa ({count} agentes)",
+        "rankOf": "em {total} em {label}",
+        "teamAvg": "Média da equipa: {value}",
+        "labels": {
+          "deals": "Negócios",
+          "revenue": "Receita",
+          "conversion": "Conversão"
+        }
+      },
+      "insights": {
+        "title": "Recomendações de coaching",
+        "description": "Recomendações apoiadas por IA para melhorar o seu desempenho",
+        "empty": "Ainda não há recomendações disponíveis.",
+        "strength": "Ponto forte",
+        "improvement": "A melhorar",
+        "opportunity": "Oportunidade"
+      },
+      "goals": {
+        "title": "Metas",
+        "emptyTitle": "Sem metas ativas",
+        "emptyDescription": "Defina metas para acompanhar o seu progresso rumo aos objetivos.",
+        "progressTitle": "Progresso das metas",
+        "progressDescription": "Acompanhe as suas metas de desempenho",
+        "daysLeft": "faltam {count} dias",
+        "periodEnded": "Período terminado"
+      },
+      "trends": {
+        "title": "Tendências de desempenho",
+        "loading": "A carregar os dados de tendências...",
+        "lastMonths": "Últimos {count} meses",
+        "dealsClosed": "Negócios fechados",
+        "totalLeads": "Leads totais",
+        "totalRevenue": "Receita total",
+        "chartTitle": "{period}: {count} negócios"
+      }
     },
     "admin": {
       "monitoring": {

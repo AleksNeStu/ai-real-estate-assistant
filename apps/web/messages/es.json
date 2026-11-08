@@ -2354,7 +2354,76 @@
       "title": "Analítica de agentes",
       "description": "Cómo rinden los anuncios con cada agente.",
       "totalLeads": "Total de contactos",
-      "totalRevenue": "Ingresos totales"
+      "totalRevenue": "Ingresos totales",
+      "loading": "Cargando tus datos de rendimiento...",
+      "pageDescription": "Sigue tu rendimiento, recibe recomendaciones de coaching y define objetivos.",
+      "errors": {
+        "fetch": "No se pudo obtener la analítica del agente",
+        "load": "No se pudieron cargar los datos analíticos. Inténtalo de nuevo."
+      },
+      "metrics": {
+        "totalLeads": "Leads totales",
+        "newThisWeek": "nuevos esta semana: {count}",
+        "activeDeals": "Operaciones activas",
+        "closed": "cerrados: {count}",
+        "conversionRate": "Tasa de conversión",
+        "overall": "general",
+        "totalRevenue": "Ingresos totales",
+        "highValueLeads": "Leads de alto valor",
+        "scoreAtLeast": "Puntuación ≥ 70",
+        "avgTimeToClose": "Tiempo medio de cierre",
+        "avgDealValue": "Valor medio de la operación",
+        "pendingCommission": "Comisión pendiente"
+      },
+      "tabs": {
+        "overview": "Resumen",
+        "insights": "Recomendaciones",
+        "goals": "Objetivos"
+      },
+      "strengths": {
+        "title": "Tus fortalezas",
+        "description": "Áreas donde destacas según las operaciones cerradas",
+        "propertyTypes": "Tipos de propiedades",
+        "locations": "Ubicaciones"
+      },
+      "team": {
+        "title": "Comparación con el equipo",
+        "loading": "Cargando datos del equipo...",
+        "vsAverage": "Tu rendimiento frente a la media del equipo ({count} agentes)",
+        "rankOf": "de {total} en {label}",
+        "teamAvg": "Media del equipo: {value}",
+        "labels": {
+          "deals": "Operaciones",
+          "revenue": "Ingresos",
+          "conversion": "Conversión"
+        }
+      },
+      "insights": {
+        "title": "Recomendaciones de coaching",
+        "description": "Recomendaciones asistidas por IA para mejorar tu rendimiento",
+        "empty": "Todavía no hay recomendaciones disponibles.",
+        "strength": "Fortaleza",
+        "improvement": "Mejora",
+        "opportunity": "Oportunidad"
+      },
+      "goals": {
+        "title": "Objetivos",
+        "emptyTitle": "No hay objetivos activos",
+        "emptyDescription": "Define objetivos para seguir tu progreso hacia tus metas.",
+        "progressTitle": "Progreso de objetivos",
+        "progressDescription": "Sigue tus metas de rendimiento",
+        "daysLeft": "quedan {count} días",
+        "periodEnded": "Periodo finalizado"
+      },
+      "trends": {
+        "title": "Tendencias de rendimiento",
+        "loading": "Cargando datos de tendencias...",
+        "lastMonths": "Últimos {count} meses",
+        "dealsClosed": "Operaciones cerradas",
+        "totalLeads": "Leads totales",
+        "totalRevenue": "Ingresos totales",
+        "chartTitle": "{period}: {count} operaciones"
+      }
     },
     "admin": {
       "monitoring": {
