@@ -66,6 +66,11 @@ export function formatCompactPrice(
       style: 'currency',
       currency,
       notation: 'compact',
+      // The currency style asks for two decimals by default. The compact
+      // notation has no room for them, so without this the same price reads
+      // "$300K" on one runtime and "$300.0K" on another - the filters of
+      // the map carried both spellings into the tests.
+      minimumFractionDigits: 0,
       maximumFractionDigits: 1,
     }).format(value);
   } catch {
