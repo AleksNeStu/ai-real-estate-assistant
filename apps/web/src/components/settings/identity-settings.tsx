@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ function isValidEmail(value: string): boolean {
 }
 
 export function IdentitySettings({ onChange }: { onChange?: (userEmail: string | null) => void }) {
+  const t = useTranslations("settings.identity");
   const [email, setEmail] = useState(() => {
     if (typeof window === "undefined") return "";
     return window.localStorage.getItem(USER_EMAIL_STORAGE_KEY) || "";
@@ -30,33 +32,31 @@ export function IdentitySettings({ onChange }: { onChange?: (userEmail: string |
     setSaved(null);
 
     if (normalized && !isValidEmail(normalized)) {
-      setError("Please enter a valid email address.");
+      setError(t("invalidEmail"));
       return;
     }
 
     if (!normalized) {
       window.localStorage.removeItem(USER_EMAIL_STORAGE_KEY);
-      setSaved("Email cleared.");
+      setSaved(t("cleared"));
       onChange?.(null);
       return;
     }
 
     window.localStorage.setItem(USER_EMAIL_STORAGE_KEY, normalized);
-    setSaved("Email saved.");
+    setSaved(t("saved"));
     onChange?.(normalized);
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Identity</CardTitle>
-        <CardDescription>
-          Set the email address used to scope settings (notifications and default model) for API requests.
-        </CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid gap-2">
-          <Label htmlFor="settings_user_email">Email</Label>
+          <Label htmlFor="settings_user_email">{t("emailLabel")}</Label>
           <Input
             id="settings_user_email"
             type="email"
@@ -66,14 +66,14 @@ export function IdentitySettings({ onChange }: { onChange?: (userEmail: string |
             aria-invalid={!valid}
           />
           <div className="text-xs text-muted-foreground">
-            Stored locally in your browser and sent as <span className="font-mono">X-User-Email</span>.
+            {t("hint", { header: "X-User-Email" })}
           </div>
         </div>
 
         <div className="flex items-center justify-end gap-4">
           {saved && <span className="text-success text-sm">{saved}</span>}
           {error && <span className="text-destructive text-sm">{error}</span>}
-          <Button onClick={handleSave}>Save</Button>
+          <Button onClick={handleSave}>{t("save")}</Button>
         </div>
       </CardContent>
     </Card>

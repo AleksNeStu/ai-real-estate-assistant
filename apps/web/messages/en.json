@@ -892,7 +892,8 @@
       "save": "Save",
       "saved": "Email saved.",
       "cleared": "Email cleared.",
-      "invalidEmail": "Please enter a valid email address."
+      "invalidEmail": "Please enter a valid email address.",
+      "hint": "Stored locally in your browser and sent as {header}."
     },
     "notifications": {
       "title": "Notifications",
@@ -1002,7 +1003,24 @@
       "ollamaStep3": "3. If the API runs in Docker, set OLLAMA_BASE_URL to http://host.docker.internal:11434.",
       "emptyCatalog": "No models are currently configured. Add your API keys in the Identity section above to get started.",
       "emptyCatalogHint": "The live catalog below lists every configured provider — pick a model there once your API key is set.",
-      "loadFailed": "Failed to load model catalog. Please try again."
+      "loadFailed": "Failed to load model catalog. Please try again.",
+      "defaultModelDescription": "Choose the provider and model used for Assistant responses. Preferences are saved per email address.",
+      "loading": "Loading model preferences...",
+      "needsEmail": "Set an email in Identity settings to enable per-user model preferences.",
+      "noCatalog": "Model catalog is not available. Refresh the page to retry.",
+      "selectProvider": "Select a provider",
+      "selectModel": "Select a model",
+      "runtimeAvailable": "Local runtime: available.",
+      "runtimeUnavailable": "Local runtime: unavailable.",
+      "detectedModels": "Detected local models: {models}",
+      "noLocalModels": "No local models detected yet.",
+      "saveDefault": "Save Default Model",
+      "saving": "Saving...",
+      "savedDefault": "Default model saved.",
+      "errorUnavailable": "Selected model is not available for this provider.",
+      "errorSave": "Failed to save default model. Please try again.",
+      "needsEmailSave": "Set an email in Identity settings to save model preferences.",
+      "providerLabel": "Provider"
     },
     "saved": "Settings saved successfully.",
     "error": "Failed to save settings.",
@@ -1101,7 +1119,11 @@
       "provider": "Provider",
       "model": "Model",
       "save": "Save",
-      "reset": "Reset"
+      "reset": "Reset",
+      "title": "Task Model Preferences",
+      "needsEmail": "Set an email in Identity settings to enable per-task model preferences.",
+      "description": "Configure different AI models for different types of tasks. Each task type can use the model that fits it best.",
+      "loading": "Loading preferences..."
     }
   },
   "chat": {

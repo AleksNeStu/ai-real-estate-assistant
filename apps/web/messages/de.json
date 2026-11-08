@@ -1488,7 +1488,8 @@
       "save": "Save",
       "saved": "Email saved.",
       "cleared": "Email cleared.",
-      "invalidEmail": "Please enter a valid email address."
+      "invalidEmail": "Please enter a valid email address.",
+      "hint": "Wird lokal im Browser gespeichert und als {header} gesendet."
     },
     "notifications": {
       "title": "Benachrichtigungen",
@@ -1544,13 +1545,30 @@
       "ollamaStep3": "3. Wenn die API in Docker läuft, setzen Sie OLLAMA_BASE_URL auf http://host.docker.internal:11434.",
       "emptyCatalog": "Derzeit sind keine Modelle konfiguriert. Fügen Sie oben im Abschnitt Identität Ihre API-Schlüssel hinzu, um zu beginnen.",
       "emptyCatalogHint": "Der Live-Katalog unten listet alle konfigurierten Anbieter auf — wählen Sie dort ein Modell, sobald Ihr API-Schlüssel gesetzt ist.",
-      "loadFailed": "Der Modellkatalog konnte nicht geladen werden. Bitte erneut versuchen."
+      "loadFailed": "Der Modellkatalog konnte nicht geladen werden. Bitte erneut versuchen.",
+      "defaultModelDescription": "Wähle Anbieter und Modell für die Antworten des Assistenten. Die Einstellungen werden je E-Mail-Adresse gespeichert.",
+      "loading": "Modelleinstellungen werden geladen...",
+      "needsEmail": "Lege eine E-Mail in den Identitätseinstellungen fest, um Modelleinstellungen pro Nutzer zu aktivieren.",
+      "noCatalog": "Der Modellkatalog ist nicht verfügbar. Lade die Seite neu, um es erneut zu versuchen.",
+      "selectProvider": "Anbieter auswählen",
+      "selectModel": "Modell auswählen",
+      "runtimeAvailable": "Lokale Laufzeit: verfügbar.",
+      "runtimeUnavailable": "Lokale Laufzeit: nicht verfügbar.",
+      "detectedModels": "Erkannte lokale Modelle: {models}",
+      "noLocalModels": "Noch keine lokalen Modelle erkannt.",
+      "saveDefault": "Standardmodell speichern",
+      "saving": "Wird gespeichert...",
+      "savedDefault": "Standardmodell gespeichert.",
+      "errorUnavailable": "Das gewählte Modell ist für diesen Anbieter nicht verfügbar.",
+      "errorSave": "Das Standardmodell konnte nicht gespeichert werden. Bitte erneut versuchen.",
+      "needsEmailSave": "Lege eine E-Mail in den Identitätseinstellungen fest, um die Modelleinstellungen zu speichern.",
+      "providerLabel": "Anbieter"
     },
     "saved": "Settings saved successfully.",
     "error": "Failed to save settings.",
-    "emailRequired": "Set an email in Identity settings above to access this section.",
+    "emailRequired": "Lege oben eine E-Mail in den Identitätseinstellungen fest, um auf diesen Abschnitt zuzugreifen.",
     "profile": {
-      "loadingProfile": "Loading profile...",
+      "loadingProfile": "Profil wird geladen...",
       "email": "E-Mail",
       "phone": "Telefon",
       "bio": "Über mich",
@@ -1562,7 +1580,11 @@
       "title": "Datenschutz und Daten"
     },
     "taskModel": {
-      "saved": "Modellpräferenz gespeichert."
+      "saved": "Modellpräferenz gespeichert.",
+      "title": "Modelle nach Aufgabe",
+      "needsEmail": "Lege eine E-Mail in den Identitätseinstellungen fest, um Modelle je Aufgabe zu aktivieren.",
+      "description": "Richte verschiedene KI-Modelle für verschiedene Aufgabentypen ein. Jeder Aufgabentyp kann das passende Modell nutzen.",
+      "loading": "Einstellungen werden geladen..."
     }
   },
   "tools": {

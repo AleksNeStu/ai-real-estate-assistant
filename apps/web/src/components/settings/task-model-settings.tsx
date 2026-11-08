@@ -284,10 +284,8 @@ export function TaskModelSettings({ catalog, userEmail }: TaskModelSettingsProps
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Task Model Preferences</CardTitle>
-          <CardDescription>
-            Set an email in Identity settings to enable per-task model preferences.
-          </CardDescription>
+          <CardTitle>{t("taskModel.title")}</CardTitle>
+          <CardDescription>{t("taskModel.needsEmail")}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -296,15 +294,12 @@ export function TaskModelSettings({ catalog, userEmail }: TaskModelSettingsProps
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Task Model Preferences</CardTitle>
-        <CardDescription>
-          Configure different AI models for different types of tasks. Each task type can use the
-          optimal model for its specific workload.
-        </CardDescription>
+        <CardTitle>{t("taskModel.title")}</CardTitle>
+        <CardDescription>{t("taskModel.description")}</CardDescription>
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="p-4 text-sm text-muted-foreground">Loading preferences...</div>
+          <div className="p-4 text-sm text-muted-foreground">{t("taskModel.loading")}</div>
         ) : error ? (
           <div className="p-4 text-sm text-destructive">{error}</div>
         ) : (

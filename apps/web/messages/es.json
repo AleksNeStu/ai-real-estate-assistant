@@ -1488,7 +1488,8 @@
       "save": "Save",
       "saved": "Email saved.",
       "cleared": "Email cleared.",
-      "invalidEmail": "Please enter a valid email address."
+      "invalidEmail": "Please enter a valid email address.",
+      "hint": "Se guarda localmente en tu navegador y se envía como {header}."
     },
     "notifications": {
       "title": "Notificaciones",
@@ -1544,13 +1545,30 @@
       "ollamaStep3": "3. Si la API se ejecuta en Docker, define OLLAMA_BASE_URL como http://host.docker.internal:11434.",
       "emptyCatalog": "Ahora mismo no hay modelos configurados. Añade tus claves de API en la sección Identidad de arriba para empezar.",
       "emptyCatalogHint": "El catálogo en vivo de abajo lista cada proveedor configurado: elige ahí un modelo cuando tengas la clave de API.",
-      "loadFailed": "No se pudo cargar el catálogo de modelos. Inténtalo de nuevo."
+      "loadFailed": "No se pudo cargar el catálogo de modelos. Inténtalo de nuevo.",
+      "defaultModelDescription": "Elige el proveedor y el modelo que usa el Asistente para responder. Las preferencias se guardan por dirección de correo.",
+      "loading": "Cargando las preferencias de modelo...",
+      "needsEmail": "Indica un correo en los ajustes de identidad para activar las preferencias de modelo por usuario.",
+      "noCatalog": "El catálogo de modelos no está disponible. Recarga la página para reintentar.",
+      "selectProvider": "Selecciona un proveedor",
+      "selectModel": "Selecciona un modelo",
+      "runtimeAvailable": "Entorno local: disponible.",
+      "runtimeUnavailable": "Entorno local: no disponible.",
+      "detectedModels": "Modelos locales detectados: {models}",
+      "noLocalModels": "Todavía no se han detectado modelos locales.",
+      "saveDefault": "Guardar el modelo por defecto",
+      "saving": "Guardando...",
+      "savedDefault": "Modelo por defecto guardado.",
+      "errorUnavailable": "El modelo seleccionado no está disponible para este proveedor.",
+      "errorSave": "No se ha podido guardar el modelo por defecto. Inténtalo de nuevo.",
+      "needsEmailSave": "Indica un correo en los ajustes de identidad para guardar las preferencias de modelo.",
+      "providerLabel": "Proveedor"
     },
     "saved": "Settings saved successfully.",
     "error": "Failed to save settings.",
-    "emailRequired": "Set an email in Identity settings above to access this section.",
+    "emailRequired": "Indica un correo en los ajustes de identidad de arriba para acceder a esta sección.",
     "profile": {
-      "loadingProfile": "Loading profile...",
+      "loadingProfile": "Cargando el perfil...",
       "email": "Correo electrónico",
       "phone": "Teléfono",
       "bio": "Biografía",
@@ -1562,7 +1580,11 @@
       "title": "Privacidad y datos"
     },
     "taskModel": {
-      "saved": "Preferencia de modelo guardada."
+      "saved": "Preferencia de modelo guardada.",
+      "title": "Preferencias de modelo por tarea",
+      "needsEmail": "Indica un correo en los ajustes de identidad para activar las preferencias de modelo por tarea.",
+      "description": "Configura distintos modelos de IA para distintos tipos de tarea. Cada tipo de tarea puede usar el modelo que mejor le encaje.",
+      "loading": "Cargando las preferencias..."
     }
   },
   "tools": {

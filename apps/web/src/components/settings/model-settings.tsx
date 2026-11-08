@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -32,6 +33,7 @@ function persistLocalPreferences(userEmail: string, prefs: ModelPreferences) {
 }
 
 export function ModelSettings({ catalog, userEmail }: { catalog: ModelProviderCatalog[] | null; userEmail: string | null }) {
+  const t = useTranslations("settings.models");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +108,7 @@ export function ModelSettings({ catalog, userEmail }: { catalog: ModelProviderCa
 
   const handleSave = async () => {
     if (!userEmail) {
-      setError("Set an email in Identity settings to save model preferences.");
+      setError(t("needsEmailSave"));
       return;
     }
 
@@ -127,7 +129,7 @@ export function ModelSettings({ catalog, userEmail }: { catalog: ModelProviderCa
     }
 
     if (!provider.models.some((m) => m.id === preferredModel)) {
-      setError("Selected model is not available for this provider.");
+      setError(t("errorUnavailable"));
       return;
     }
 
@@ -142,9 +144,9 @@ export function ModelSettings({ catalog, userEmail }: { catalog: ModelProviderCa
       setPreferredProvider(saved.preferred_provider);
       setPreferredModel(saved.preferred_model);
       persistLocalPreferences(userEmail, saved);
-      setSuccess("Default model saved.");
+      setSuccess(t("savedDefault"));
     } catch {
-      setError("Failed to save default model. Please try again.");
+      setError(t("errorSave"));
     } finally {
       setSaving(false);
     }
@@ -153,26 +155,20 @@ export function ModelSettings({ catalog, userEmail }: { catalog: ModelProviderCa
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Default Model</CardTitle>
-        <CardDescription>
-          Choose the provider and model used for Assistant responses. Preferences are saved per email address.
-        </CardDescription>
+        <CardTitle>{t("defaultModel")}</CardTitle>
+        <CardDescription>{t("defaultModelDescription")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {loading ? (
-          <div className="p-2 text-sm text-muted-foreground">Loading model preferences...</div>
+          <div className="p-2 text-sm text-muted-foreground">{t("loading")}</div>
         ) : !userEmail ? (
-          <div className="rounded-md border p-3 text-sm text-muted-foreground">
-            Set an email in Identity settings to enable per-user model preferences.
-          </div>
+          <div className="rounded-md border p-3 text-sm text-muted-foreground">{t("needsEmail")}</div>
         ) : !catalog ? (
-          <div className="rounded-md border p-3 text-sm text-muted-foreground">
-            Model catalog is not available. Refresh the page to retry.
-          </div>
+          <div className="rounded-md border p-3 text-sm text-muted-foreground">{t("noCatalog")}</div>
         ) : (
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="preferred_provider">Provider</Label>
+              <Label htmlFor="preferred_provider">{t("providerLabel")}</Label>
               <select
                 id="preferred_provider"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
@@ -188,7 +184,7 @@ export function ModelSettings({ catalog, userEmail }: { catalog: ModelProviderCa
                   setPreferredModel(provider?.models[0]?.id || null);
                 }}
               >
-                <option value="">Select a provider</option>
+                <option value="">{t("selectProvider")}</option>
                 {providers.map((name) => (
                   <option key={name} value={name}>
                     {name}
@@ -201,16 +197,16 @@ export function ModelSettings({ catalog, userEmail }: { catalog: ModelProviderCa
               <div className="rounded-md border p-3 text-sm text-muted-foreground">
                 {selectedProvider.runtime_available ? (
                   <div>
-                    <div>Local runtime: available.</div>
+                    <div>{t("runtimeAvailable")}</div>
                     {selectedProvider.available_models && selectedProvider.available_models.length ? (
-                      <div>Detected local models: {selectedProvider.available_models.join(", ")}</div>
+                      <div>{t("detectedModels", { models: selectedProvider.available_models.join(", ") })}</div>
                     ) : (
-                      <div>No local models detected yet.</div>
+                      <div>{t("noLocalModels")}</div>
                     )}
                   </div>
                 ) : (
                   <div>
-                    <div>Local runtime: unavailable.</div>
+                    <div>{t("runtimeUnavailable")}</div>
                     {selectedProvider.runtime_error ? <div>{selectedProvider.runtime_error}</div> : null}
                   </div>
                 )}
@@ -218,7 +214,7 @@ export function ModelSettings({ catalog, userEmail }: { catalog: ModelProviderCa
             ) : null}
 
             <div className="grid gap-2">
-              <Label htmlFor="preferred_model">Model</Label>
+              <Label htmlFor="preferred_model">{t("model")}</Label>
               <select
                 id="preferred_model"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
@@ -226,7 +222,7 @@ export function ModelSettings({ catalog, userEmail }: { catalog: ModelProviderCa
                 onChange={(e) => setPreferredModel(e.target.value || null)}
                 disabled={!preferredProvider}
               >
-                <option value="">Select a model</option>
+                <option value="">{t("selectModel")}</option>
                 {modelsForProvider.map((id) => (
                   <option key={id} value={id}>
                     {id}
@@ -239,7 +235,7 @@ export function ModelSettings({ catalog, userEmail }: { catalog: ModelProviderCa
               {success && <span className="text-success text-sm">{success}</span>}
               {error && <span className="text-destructive text-sm">{error}</span>}
               <Button onClick={handleSave} disabled={saving || !canSave}>
-                {saving ? "Saving..." : "Save Default Model"}
+                {saving ? t("saving") : t("saveDefault")}
               </Button>
             </div>
           </div>

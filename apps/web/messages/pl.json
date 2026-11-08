@@ -1492,7 +1492,8 @@
       "save": "Zapisz",
       "saved": "Email zapisany.",
       "cleared": "Email usunięty.",
-      "invalidEmail": "Wprowadź prawidłowy adres email."
+      "invalidEmail": "Wprowadź prawidłowy adres email.",
+      "hint": "Przechowywany lokalnie w przeglądarce i wysyłany jako {header}."
     },
     "notifications": {
       "title": "Powiadomienia",
@@ -1548,13 +1549,30 @@
       "ollamaStep3": "3. Jeśli API działa w Dockerze, ustaw OLLAMA_BASE_URL na http://host.docker.internal:11434.",
       "emptyCatalog": "Obecnie nie skonfigurowano żadnych modeli. Aby zacząć, dodaj klucze API w sekcji Tożsamość powyżej.",
       "emptyCatalogHint": "Katalog poniżej wymienia wszystkich skonfigurowanych dostawców — wybierz tam model, gdy ustawisz klucz API.",
-      "loadFailed": "Nie udało się wczytać katalogu modeli. Spróbuj ponownie."
+      "loadFailed": "Nie udało się wczytać katalogu modeli. Spróbuj ponownie.",
+      "defaultModelDescription": "Wybierz dostawcę i model używany do odpowiedzi Asystenta. Preferencje zapisywane są dla każdego adresu e-mail.",
+      "loading": "Wczytywanie preferencji modelu...",
+      "needsEmail": "Ustaw adres e-mail w ustawieniach tożsamości, aby włączyć preferencje modelu dla użytkownika.",
+      "noCatalog": "Katalog modeli jest niedostępny. Odśwież stronę, aby spróbować ponownie.",
+      "selectProvider": "Wybierz dostawcę",
+      "selectModel": "Wybierz model",
+      "runtimeAvailable": "Środowisko lokalne: dostępne.",
+      "runtimeUnavailable": "Środowisko lokalne: niedostępne.",
+      "detectedModels": "Wykryte modele lokalne: {models}",
+      "noLocalModels": "Nie wykryto jeszcze modeli lokalnych.",
+      "saveDefault": "Zapisz model domyślny",
+      "saving": "Zapisywanie...",
+      "savedDefault": "Model domyślny zapisany.",
+      "errorUnavailable": "Wybrany model nie jest dostępny dla tego dostawcy.",
+      "errorSave": "Nie udało się zapisać modelu domyślnego. Spróbuj ponownie.",
+      "needsEmailSave": "Ustaw adres e-mail w ustawieniach tożsamości, aby zapisać preferencje modelu.",
+      "providerLabel": "Dostawca"
     },
     "saved": "Ustawienia zapisane.",
     "error": "Nie udało się zapisać ustawień.",
-    "emailRequired": "Set an email in Identity settings above to access this section.",
+    "emailRequired": "Ustaw adres e-mail w ustawieniach tożsamości powyżej, aby uzyskać dostęp do tej sekcji.",
     "profile": {
-      "loadingProfile": "Loading profile...",
+      "loadingProfile": "Wczytywanie profilu...",
       "email": "E-mail",
       "phone": "Telefon",
       "bio": "O mnie",
@@ -1566,7 +1584,11 @@
       "title": "Prywatność i dane"
     },
     "taskModel": {
-      "saved": "Zapisano preferencję modelu."
+      "saved": "Zapisano preferencję modelu.",
+      "title": "Preferencje modeli zadań",
+      "needsEmail": "Ustaw adres e-mail w ustawieniach tożsamości, aby włączyć preferencje modeli dla poszczególnych zadań.",
+      "description": "Skonfiguruj różne modele AI dla różnych rodzajów zadań. Każdy rodzaj zadania może używać modelu, który najlepiej mu odpowiada.",
+      "loading": "Wczytywanie preferencji..."
     }
   },
   "tools": {

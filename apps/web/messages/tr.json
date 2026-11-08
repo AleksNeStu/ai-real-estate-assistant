@@ -1499,7 +1499,8 @@
       "save": "Save",
       "saved": "Email saved.",
       "cleared": "Email cleared.",
-      "invalidEmail": "Please enter a valid email address."
+      "invalidEmail": "Please enter a valid email address.",
+      "hint": "Tarayıcınızda yerel olarak saklanır ve {header} olarak gönderilir."
     },
     "notifications": {
       "title": "Bildirimler",
@@ -1555,13 +1556,30 @@
       "ollamaStep3": "3. API Docker'da çalışıyorsa OLLAMA_BASE_URL değerini http://host.docker.internal:11434 olarak ayarlayın.",
       "emptyCatalog": "Şu anda yapılandırılmış model yok. Başlamak için yukarıdaki Kimlik bölümüne API anahtarlarınızı ekleyin.",
       "emptyCatalogHint": "Aşağıdaki canlı katalog yapılandırılmış her sağlayıcıyı listeler — API anahtarınızı girdikten sonra modeli oradan seçin.",
-      "loadFailed": "Model kataloğu yüklenemedi. Lütfen tekrar deneyin."
+      "loadFailed": "Model kataloğu yüklenemedi. Lütfen tekrar deneyin.",
+      "defaultModelDescription": "Asistan yanıtları için kullanılacak sağlayıcıyı ve modeli seçin. Tercihler e-posta adresi başına kaydedilir.",
+      "loading": "Model tercihleri yükleniyor...",
+      "needsEmail": "Kullanıcı başına model tercihlerini etkinleştirmek için Kimlik ayarlarında bir e-posta girin.",
+      "noCatalog": "Model kataloğu kullanılamıyor. Yeniden denemek için sayfayı yenileyin.",
+      "selectProvider": "Bir sağlayıcı seçin",
+      "selectModel": "Bir model seçin",
+      "runtimeAvailable": "Yerel çalışma ortamı: kullanılabilir.",
+      "runtimeUnavailable": "Yerel çalışma ortamı: kullanılamıyor.",
+      "detectedModels": "Algılanan yerel modeller: {models}",
+      "noLocalModels": "Henüz yerel model algılanmadı.",
+      "saveDefault": "Varsayılan modeli kaydet",
+      "saving": "Kaydediliyor...",
+      "savedDefault": "Varsayılan model kaydedildi.",
+      "errorUnavailable": "Seçilen model bu sağlayıcı için kullanılamıyor.",
+      "errorSave": "Varsayılan model kaydedilemedi. Lütfen tekrar deneyin.",
+      "needsEmailSave": "Model tercihlerini kaydetmek için Kimlik ayarlarında bir e-posta girin.",
+      "providerLabel": "Sağlayıcı"
     },
     "saved": "Settings saved successfully.",
     "error": "Failed to save settings.",
-    "emailRequired": "Set an email in Identity settings above to access this section.",
+    "emailRequired": "Bu bölüme erişmek için yukarıdaki Kimlik ayarlarında bir e-posta girin.",
     "profile": {
-      "loadingProfile": "Loading profile...",
+      "loadingProfile": "Profil yükleniyor...",
       "email": "E-posta",
       "phone": "Telefon",
       "bio": "Hakkımda",
@@ -1573,7 +1591,11 @@
       "title": "Gizlilik ve veri"
     },
     "taskModel": {
-      "saved": "Model tercihi kaydedildi."
+      "saved": "Model tercihi kaydedildi.",
+      "title": "Görev bazlı model tercihleri",
+      "needsEmail": "Görev bazlı model tercihlerini etkinleştirmek için Kimlik ayarlarında bir e-posta girin.",
+      "description": "Farklı görev türleri için farklı yapay zekâ modelleri yapılandırın. Her görev türü kendisine en uygun modeli kullanabilir.",
+      "loading": "Tercihler yükleniyor..."
     }
   },
   "tools": {
