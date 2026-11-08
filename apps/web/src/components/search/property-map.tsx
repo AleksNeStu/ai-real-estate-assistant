@@ -8,7 +8,11 @@ import { useLocale, useTranslations } from 'next-intl';
 import { formatPrice } from '@/lib/format';
 
 import { computeBounds, computeCenter, type PropertyMapPoint } from './property-map-utils';
-import { clusterMapPoints, type ClusteredMapItem } from './property-map-clustering';
+import {
+  clusterMapPoints,
+  getClusterColor,
+  type ClusteredMapItem,
+} from './property-map-clustering';
 
 function FitBounds({ bounds }: { bounds: LatLngBoundsExpression | null }) {
   const map = useMap();
@@ -75,7 +79,7 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
     () =>
       divIcon({
         className: '',
-        html: `<div style="width:14px;height:14px;background:#2563eb;border-radius:9999px;border:2px solid white;box-shadow:0 1px 2px rgba(0,0,0,0.3)"></div>`,
+        html: `<div style="width:14px;height:14px;background:hsl(var(--chart-1));border-radius:9999px;border:2px solid hsl(var(--background));box-shadow:0 1px 2px hsl(var(--foreground) / 0.3)"></div>`,
         iconSize: [14, 14],
         iconAnchor: [7, 7],
       }),
@@ -83,10 +87,10 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
   );
 
   const getClusterIcon = useCallback(
-    (count: number) =>
+    (count: number, color: string) =>
       divIcon({
         className: '',
-        html: `<div style="min-width:30px;height:30px;padding:0 8px;background:#1d4ed8;color:white;border-radius:9999px;border:2px solid white;box-shadow:0 1px 2px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;line-height:1">${count}</div>`,
+        html: `<div style="min-width:30px;height:30px;padding:0 8px;background:${color};color:hsl(var(--background));border-radius:9999px;border:2px solid hsl(var(--background));box-shadow:0 1px 2px hsl(var(--foreground) / 0.35);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;line-height:1">${count}</div>`,
         iconSize: [30, 30],
         iconAnchor: [15, 15],
       }),
@@ -141,7 +145,10 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
                 key={item.id}
                 cluster={item}
                 zoom={zoom}
-                icon={getClusterIcon(item.count)}
+                icon={getClusterIcon(
+                  item.count,
+                  getClusterColor(item.dominantType, item.isMixed)
+                )}
               >
                 <Popup>
                   <div className="space-y-2">
