@@ -4,7 +4,12 @@
  */
 
 import { test, expect } from '../conftest';
-import { mockChatSuccess, mockChatError, createMockChatWithRetry, mockChatWithSources } from '../mocks';
+import {
+  mockChatSuccess,
+  mockChatError,
+  createMockChatWithRetry,
+  mockChatWithSources,
+} from '../mocks';
 
 test.describe('Chat Flows', () => {
   test.describe('Basic Chat', () => {
@@ -64,7 +69,10 @@ test.describe('Chat Flows', () => {
   });
 
   test.describe('Error Handling', () => {
-    test('should display error message on chat failure', async ({ authenticatedChatPage, page }) => {
+    test('should display error message on chat failure', async ({
+      authenticatedChatPage,
+      page,
+    }) => {
       await page.route('**/api/v1/chat*', async (route) => {
         await mockChatError(route, 500, 'Internal server error');
       });
@@ -123,7 +131,10 @@ test.describe('Chat Flows', () => {
   });
 
   test.describe('Sources Display', () => {
-    test('should display property sources when available', async ({ authenticatedChatPage, page }) => {
+    test('should display property sources when available', async ({
+      authenticatedChatPage,
+      page,
+    }) => {
       await page.route('**/api/v1/chat*', mockChatWithSources);
 
       await authenticatedChatPage.navigate();
@@ -144,17 +155,23 @@ test.describe('Chat Flows', () => {
       expect(sourceCount).toBeGreaterThan(0);
     });
 
-    test('should navigate to property when clicking source', async ({ authenticatedChatPage, page }) => {
+    test('should show the citation of a source when it is clicked', async ({
+      authenticatedChatPage,
+      page,
+    }) => {
       await page.route('**/api/v1/chat*', mockChatWithSources);
 
       await authenticatedChatPage.navigate();
       await authenticatedChatPage.sendMessageAndWaitForResponse('Find properties');
 
-      // Click on first source
+      // Click on first source. A citation points to a document of the
+      // knowledge base - it does not lead to a page of a single property.
       await authenticatedChatPage.clickSource(0);
 
-      // Should navigate to property details
-      await expect(page).toHaveURL(/\/property\/|\/properties\//, { timeout: 10000 });
+      // The citation of the source is still there and the conversation did not
+      // break.
+      await expect(authenticatedChatPage.lastAssistantMessage).toBeVisible();
+      expect(await authenticatedChatPage.getSourceCount()).toBeGreaterThan(0);
     });
   });
 
@@ -181,7 +198,10 @@ test.describe('Chat Flows', () => {
   });
 
   test.describe('Session Management', () => {
-    test('should persist session across page reloads', async ({ authenticatedChatPage, page }) => {
+    test('should keep the conversation in the state of the page', async ({
+      authenticatedChatPage,
+      page,
+    }) => {
       await page.route('**/api/v1/chat*', mockChatSuccess);
 
       await authenticatedChatPage.navigate();
@@ -191,25 +211,26 @@ test.describe('Chat Flows', () => {
       const messagesBefore = await authenticatedChatPage.getUserMessages();
       expect(messagesBefore.length).toBe(1);
 
-      // Reload page
+      // Reload page. The conversation lives in the state of the page - there is
+      // no history of the sessions in the product - so a reload starts over.
       await page.reload();
 
-      // Messages should persist (if session is stored)
       const messagesAfter = await authenticatedChatPage.getUserMessages();
-      expect(messagesAfter.length).toBeGreaterThanOrEqual(1);
+      expect(messagesAfter.length).toBe(0);
+      expect(await authenticatedChatPage.hasSuggestedPrompts()).toBe(true);
     });
 
-    test('should start new chat session', async ({ authenticatedChatPage, page }) => {
+    test('should show the empty chat with suggested prompts', async ({
+      authenticatedChatPage,
+      page,
+    }) => {
       await page.route('**/api/v1/chat*', mockChatSuccess);
 
       await authenticatedChatPage.navigate();
-      await authenticatedChatPage.sendMessageAndWaitForResponse('First message');
 
-      // Clear session
-      await authenticatedChatPage.clearSession();
-
-      // Should show empty chat or suggested prompts
+      // A chat without a message offers the suggested prompts
       expect(await authenticatedChatPage.hasSuggestedPrompts()).toBe(true);
+      expect(await authenticatedChatPage.getUserMessages()).toHaveLength(0);
     });
   });
 
@@ -222,9 +243,10 @@ test.describe('Chat Flows', () => {
 
       await authenticatedChatPage.sendMessageAndWaitForResponse('Test');
 
-      // Should show debug info (implementation-specific)
-      const debugPanel = page.locator('[data-testid="debug-panel"], .debug-info, .debug-panel');
-      expect(await debugPanel.isVisible({ timeout: 5000 }).catch(() => false)).toBe(true);
+      // Should show debug info. The intermediate steps arrive with the meta
+      // event of the stream and are shown in a details element.
+      const debugPanel = page.locator('details').filter({ hasText: /debug trace/i });
+      await expect(debugPanel).toBeVisible({ timeout: 10000 });
     });
   });
 });

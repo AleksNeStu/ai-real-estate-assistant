@@ -20,7 +20,10 @@ export class SavedSearchesPage {
     this.refreshButton = page.getByRole('button', { name: /refresh/i });
     this.searchCards = page.locator('.grid.gap-4 > .rounded-lg');
     this.emptyState = page.locator('text=/no saved searches yet/i');
-    this.errorMessage = page.locator('[class*="bg-destructive"], [role="alert"]');
+    // The error of the page is a single alert. The selector collects the
+    // destructive background as well - both match the same element, so the
+    // first one is enough.
+    this.errorMessage = page.locator('[role="alert"]').first();
     this.loadingSpinner = page.locator('.animate-spin');
   }
 
@@ -64,9 +67,9 @@ export class SavedSearchesPage {
    */
   getDeleteButton(cardName: string): Locator {
     const card = this.getSearchCardByName(cardName);
-    return card.getByRole('button', { name: /delete/i }).or(
-      card.locator('button[title="Delete search"]')
-    );
+    return card
+      .getByRole('button', { name: /delete/i })
+      .or(card.locator('button[title="Delete search"]'));
   }
 
   /**
@@ -124,8 +127,10 @@ export class SavedSearchesPage {
    * Wait for loading to complete.
    */
   async waitForLoad(): Promise<void> {
-    await expect(this.loadingSpinner).toBeHidden({ timeout: 10000 }).catch(() => {
-      // Spinner may have already disappeared
-    });
+    await expect(this.loadingSpinner)
+      .toBeHidden({ timeout: 10000 })
+      .catch(() => {
+        // Spinner may have already disappeared
+      });
   }
 }

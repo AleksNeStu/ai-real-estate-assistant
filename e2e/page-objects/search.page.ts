@@ -5,6 +5,14 @@
 
 import { Page, Locator, expect } from '@playwright/test';
 
+/**
+ * The property cards of the results grid. `PropertyCard` marks every card
+ * with `data-testid="property-card"`.
+ */
+function propertyCards(page: Page): Locator {
+  return page.locator('[data-testid="property-card"]');
+}
+
 export class SearchPage {
   readonly page: Page;
   readonly searchInput: Locator;
@@ -15,6 +23,7 @@ export class SearchPage {
   readonly resultCount: Locator;
   readonly noResultsMessage: Locator;
   readonly loadingSpinner: Locator;
+  readonly errorMessage: Locator;
   readonly filtersPanel: Locator;
   readonly mapViewButton: Locator;
   readonly listViewButton: Locator;
@@ -23,19 +32,36 @@ export class SearchPage {
   constructor(page: Page) {
     this.page = page;
     // Actual UI: input with aria-label="Search query" inside form with role="search"
-    this.searchInput = page.getByLabel('Search query').or(page.getByPlaceholder(/describe what you.re looking for/i));
-    this.searchButton = page.getByRole('button', { name: /^search$/i }).or(page.locator('form[role="search"] button[type="submit"]'));
-    // Results are displayed in a grid with property cards
-    this.resultsContainer = page.locator('.grid.grid-cols-1.md\\:grid-cols-2').or(page.locator('article, .rounded-lg.border.bg-card'));
+    this.searchInput = page
+      .getByLabel('Search query')
+      .or(page.getByPlaceholder(/describe what you.re looking for/i));
+    // The submit button of the search form carries a test id. A plain
+    // "button[type=submit]" would also collect the button of the newsletter
+    // form in the footer.
+    this.searchButton = page.getByTestId('search-submit');
+    // A rendered result card is the proof that the search returned something.
+    // The grid itself cannot be used: a locator that matches the grid and its
+    // cards at the same time resolves to several elements and the strict mode
+    // refuses to act on it.
+    this.resultsContainer = page.locator('[data-testid="property-card"]').first();
     this.mapContainer = page.locator('.h-\\[420px\\]').or(page.locator('[class*="map"]'));
-    this.listContainer = page.locator('.grid.grid-cols-1');
+    this.listContainer = page.locator('.grid.grid-cols-1').first();
     this.resultCount = page.locator('text=/\\d+.*shown/i');
     this.noResultsMessage = page.locator('text=/no results found/i');
-    this.loadingSpinner = page.locator('.animate-pulse');
-    this.filtersPanel = page.locator('.rounded-lg.border.bg-card.text-card-foreground.shadow-sm.p-6').first();
-    this.mapViewButton = page.getByRole('button', { name: /^map$/i });
-    this.listViewButton = page.getByRole('button', { name: /^list$/i });
-    this.exportButton = page.getByRole('button', { name: /export$/i });
+    this.loadingSpinner = page.locator('.animate-pulse').first();
+    // A failed search shows the error state of the page (role="alert"). The
+    // announcer of the router has the same role - it is not part of the page.
+    this.errorMessage = page.locator('[role="alert"]:not(#__next-route-announcer__)').first();
+    // The filter card is the one that owns the filter inputs.
+    this.filtersPanel = page
+      .locator('div.rounded-lg.border.bg-card')
+      .filter({ has: page.locator('#min-price') })
+      .first();
+    // The switch between the list and the map view is a group of its own.
+    const viewGroup = page.getByRole('group');
+    this.mapViewButton = viewGroup.getByRole('button', { name: /^map$/i });
+    this.listViewButton = viewGroup.getByRole('button', { name: /^list$/i });
+    this.exportButton = page.getByRole('button', { name: /^export$/i });
   }
 
   /**
@@ -61,22 +87,25 @@ export class SearchPage {
    * Wait for search results to load.
    */
   async waitForResults(): Promise<void> {
-    // Wait for either results or no-results message
+    // Wait for either results, the empty state or the error state - a failed
+    // request shows an error and neither of the other two.
     await Promise.race([
       expect(this.resultsContainer).toBeVisible({ timeout: 15000 }),
       expect(this.noResultsMessage).toBeVisible({ timeout: 15000 }),
+      expect(this.errorMessage).toBeVisible({ timeout: 15000 }),
     ]);
   }
 
   /**
    * Get the number of results displayed.
+   *
+   * The counter of the page ("{shown} of {total} shown on the map") starts
+   * with the number of mappable listings, so it is not a reliable source.
+   * The rendered cards are.
    */
   async getResultCount(): Promise<number> {
-    const text = await this.resultCount.textContent();
-    if (!text) return 0;
-    // Parse "X results" or "Found X properties"
-    const match = text.match(/(\d+)/);
-    return match ? parseInt(match[1], 10) : 0;
+    await this.waitForResults();
+    return await propertyCards(this.page).count();
   }
 
   /**
@@ -84,8 +113,7 @@ export class SearchPage {
    */
   async getPropertyCards(): Promise<Locator[]> {
     await this.waitForResults();
-    const cards = this.resultsContainer.locator('[data-testid="property-card"], .property-card, article');
-    return await cards.all();
+    return await propertyCards(this.page).all();
   }
 
   /**
@@ -120,8 +148,8 @@ export class SearchPage {
    * Set price range filter.
    */
   async setPriceRange(min: number, max: number): Promise<void> {
-    const minInput = this.filtersPanel.getByRole('spinbutton', { name: /min/i });
-    const maxInput = this.filtersPanel.getByRole('spinbutton', { name: /max/i });
+    const minInput = this.page.locator('#min-price');
+    const maxInput = this.page.locator('#max-price');
 
     if (await minInput.isVisible()) {
       await minInput.fill(min.toString());
@@ -135,7 +163,7 @@ export class SearchPage {
    * Set minimum rooms filter.
    */
   async setMinRooms(rooms: number): Promise<void> {
-    const roomsInput = this.filtersPanel.getByRole('spinbutton', { name: /rooms|bedrooms/i });
+    const roomsInput = this.page.locator('#rooms');
     if (await roomsInput.isVisible()) {
       await roomsInput.fill(rooms.toString());
     }
@@ -145,11 +173,19 @@ export class SearchPage {
    * Apply filters (click apply button if exists).
    */
   async applyFilters(): Promise<void> {
-    const applyButton = this.filtersPanel.getByRole('button', { name: /apply|filter/i });
-    if (await applyButton.isVisible()) {
+    const applyButton = this.filtersPanel.getByRole('button', { name: /apply filters/i });
+    if (await applyButton.isVisible().catch(() => false)) {
       await applyButton.click();
-      await this.waitForResults();
+    } else {
+      // There is no separate apply button - the filters travel with the next
+      // search. The submit button of the search form stays disabled while the
+      // query is empty, so a default query is entered first.
+      if (!(await this.searchInput.inputValue())) {
+        await this.searchInput.fill('Berlin');
+      }
+      await this.page.locator('form[role="search"] button[type="submit"]').click();
     }
+    await this.waitForResults();
   }
 
   /**

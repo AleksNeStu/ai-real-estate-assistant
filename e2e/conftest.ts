@@ -4,7 +4,16 @@
  */
 
 import { test as base, Page, BrowserContext } from '@playwright/test';
-import { LoginPage, RegisterPage, SearchPage, ChatPage, DocumentsPage, SavedSearchesPage, MarketTrendsPage, ToolsPage } from './page-objects';
+import {
+  LoginPage,
+  RegisterPage,
+  SearchPage,
+  ChatPage,
+  DocumentsPage,
+  SavedSearchesPage,
+  MarketTrendsPage,
+  ToolsPage,
+} from './page-objects';
 import { TEST_USERS, TestUser } from './fixtures/users';
 import { mockChatSuccess, mockSearchSuccess, setupAuthMocks } from './mocks';
 
@@ -51,14 +60,16 @@ async function setupPageAuth(page: Page): Promise<void> {
   });
 
   // Set auth cookie
-  await page.context().addCookies([{
-    name: 'access_token',
-    value: 'mock-access-token',
-    domain: 'localhost',
-    path: '/',
-    httpOnly: true,
-    sameSite: 'Lax' as const,
-  }]);
+  await page.context().addCookies([
+    {
+      name: 'access_token',
+      value: 'mock-access-token',
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true,
+      sameSite: 'Lax' as const,
+    },
+  ]);
 }
 
 // Extend base test with custom fixtures
@@ -125,17 +136,32 @@ export const test = base.extend<E2EFixtures>({
     // Navigate to login page
     await page.goto('/auth/login');
 
-    // Wait for the form to be visible
-    const emailInput = page.getByLabel('Email').or(page.getByRole('textbox', { name: /email/i }));
+    // Wait for the form to be visible. The names have to match exactly: the
+    // footer carries a newsletter field labelled "Email address", and a loose
+    // match collects that one as well - two elements, and the strict mode
+    // refuses to act on them.
+    const emailInput = page
+      .getByLabel('Email', { exact: true })
+      .or(page.getByRole('textbox', { name: /^email$/i }));
     await emailInput.waitFor({ state: 'visible', timeout: 10000 });
 
     // Fill login form with test credentials
     const testUser = TEST_USERS.basic;
     await emailInput.fill(testUser.email);
-    await page.getByLabel('Password').or(page.getByRole('textbox', { name: /password/i })).fill(testUser.password);
+    await page
+      .getByLabel('Password', { exact: true })
+      .or(page.getByRole('textbox', { name: /^password$/i }))
+      .fill(testUser.password);
 
-    // Submit login form - this will trigger the mocked login API
-    await page.getByRole('button', { name: /sign in|log in|zaloguj/i }).or(page.locator('button[type="submit"]')).click();
+    // Submit login form - this will trigger the mocked login API. The button
+    // of the form the email field belongs to, the footer newsletter has a
+    // submit button of its own.
+    await page
+      .locator('form')
+      .filter({ has: page.locator('#email') })
+      .locator('button[type="submit"]')
+      .or(page.getByRole('button', { name: /sign in|log in|zaloguj/i }))
+      .click();
 
     // Wait for redirect away from login page (indicates successful login)
     await page.waitForURL(/^(?!.*\/auth\/login).*$/, { timeout: 15000 }).catch(() => {
@@ -259,11 +285,7 @@ export async function createTestUserViaAPI(
 /**
  * Helper to authenticate a user via API and set cookies.
  */
-export async function authenticateUser(
-  page: Page,
-  email: string,
-  password: string
-): Promise<void> {
+export async function authenticateUser(page: Page, email: string, password: string): Promise<void> {
   const response = await page.request.post('/api/v1/auth/login', {
     data: {
       email,

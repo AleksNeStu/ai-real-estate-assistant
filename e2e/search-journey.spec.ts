@@ -9,7 +9,10 @@ import { mockSearchSuccess, mockSearchEmpty, mockSearchError } from './mocks';
 import { TEST_PROPERTIES } from './fixtures/properties';
 
 test.describe('Search - Text Query', () => {
-  test('should search and display property results @smoke', async ({ authenticatedSearchPage, page }) => {
+  test('should search and display property results @smoke', async ({
+    authenticatedSearchPage,
+    page,
+  }) => {
     await page.route('**/api/v1/search*', mockSearchSuccess);
     await page.route('**/api/v1/properties*', mockSearchSuccess);
 
@@ -25,7 +28,10 @@ test.describe('Search - Text Query', () => {
     await expect(page.getByText(firstProperty.title)).toBeVisible({ timeout: 10000 });
   });
 
-  test('should display property details in result cards', async ({ authenticatedSearchPage, page }) => {
+  test('should display property details in result cards', async ({
+    authenticatedSearchPage,
+    page,
+  }) => {
     await page.route('**/api/v1/search*', mockSearchSuccess);
     await page.route('**/api/v1/properties*', mockSearchSuccess);
 
@@ -33,21 +39,26 @@ test.describe('Search - Text Query', () => {
     await authenticatedSearchPage.search('Berlin');
 
     // Verify price is shown (format varies: €1,200 or 1200)
-    const priceVisible = await page.getByText(/1[,.]?200/).isVisible().catch(() => false);
+    const priceVisible = await page
+      .getByText(/1[,.]?200/)
+      .isVisible()
+      .catch(() => false);
     expect(priceVisible).toBe(true);
   });
 });
 
 test.describe('Search - Filters', () => {
   test('should apply price range filter', async ({ authenticatedSearchPage, page }) => {
-    let capturedUrl = '';
+    // The filters travel in the body of the POST request, not in the query
+    // string - the URL of a search request never changes.
+    let capturedBody: Record<string, unknown> | null = null;
 
     await page.route('**/api/v1/search*', async (route) => {
-      capturedUrl = route.request().url();
+      capturedBody = route.request().postDataJSON() as Record<string, unknown>;
       await mockSearchSuccess(route);
     });
     await page.route('**/api/v1/properties*', async (route) => {
-      capturedUrl = route.request().url();
+      capturedBody = route.request().postDataJSON() as Record<string, unknown>;
       await mockSearchSuccess(route);
     });
 
@@ -55,23 +66,21 @@ test.describe('Search - Filters', () => {
     await authenticatedSearchPage.setPriceRange(500, 2000);
     await authenticatedSearchPage.applyFilters();
 
-    // Verify filter params were included in the API call
-    if (capturedUrl) {
-      const hasMinPrice = capturedUrl.includes('min_price') || capturedUrl.includes('price_min');
-      const hasMaxPrice = capturedUrl.includes('max_price') || capturedUrl.includes('price_max');
-      expect(hasMinPrice || hasMaxPrice).toBe(true);
-    }
+    expect(capturedBody).not.toBeNull();
+    const filters = (capturedBody?.filters ?? {}) as Record<string, unknown>;
+    expect(filters['min_price']).toBe(500);
+    expect(filters['max_price']).toBe(2000);
   });
 
   test('should apply rooms filter', async ({ authenticatedSearchPage, page }) => {
-    let capturedUrl = '';
+    let capturedBody: Record<string, unknown> | null = null;
 
     await page.route('**/api/v1/search*', async (route) => {
-      capturedUrl = route.request().url();
+      capturedBody = route.request().postDataJSON() as Record<string, unknown>;
       await mockSearchSuccess(route);
     });
     await page.route('**/api/v1/properties*', async (route) => {
-      capturedUrl = route.request().url();
+      capturedBody = route.request().postDataJSON() as Record<string, unknown>;
       await mockSearchSuccess(route);
     });
 
@@ -79,16 +88,17 @@ test.describe('Search - Filters', () => {
     await authenticatedSearchPage.setMinRooms(2);
     await authenticatedSearchPage.applyFilters();
 
-    // Verify rooms param was included
-    if (capturedUrl) {
-      const hasRooms = capturedUrl.includes('rooms') || capturedUrl.includes('bedrooms');
-      expect(hasRooms).toBe(true);
-    }
+    expect(capturedBody).not.toBeNull();
+    const filters = (capturedBody?.filters ?? {}) as Record<string, unknown>;
+    expect(filters['rooms']).toBe(2);
   });
 });
 
 test.describe('Search - Empty and Error States', () => {
-  test('should display empty state when no results found', async ({ authenticatedSearchPage, page }) => {
+  test('should display empty state when no results found', async ({
+    authenticatedSearchPage,
+    page,
+  }) => {
     await page.route('**/api/v1/search*', mockSearchEmpty);
     await page.route('**/api/v1/properties*', mockSearchEmpty);
 
@@ -111,13 +121,16 @@ test.describe('Search - Empty and Error States', () => {
     await authenticatedSearchPage.search('Berlin');
 
     // Error state should be visible
-    const errorVisible = await page.locator('text=/error|failed|try again/i').isVisible({ timeout: 10000 }).catch(() => false);
+    const errorVisible = await authenticatedSearchPage.errorMessage.isVisible();
     expect(errorVisible).toBe(true);
   });
 });
 
 test.describe('Search - Property Navigation', () => {
-  test('should navigate to property detail when clicking a card', async ({ authenticatedSearchPage, page }) => {
+  test('should navigate to property detail when clicking a card', async ({
+    authenticatedSearchPage,
+    page,
+  }) => {
     await page.route('**/api/v1/search*', mockSearchSuccess);
     await page.route('**/api/v1/properties*', mockSearchSuccess);
 
@@ -158,7 +171,10 @@ test.describe('Search - Loading State', () => {
     // Start search and check for loading indicator
     const searchPromise = authenticatedSearchPage.search('Berlin');
 
-    const loadingVisible = await page.locator('.animate-pulse, .animate-spin, [data-testid="loading"]').isVisible({ timeout: 2000 }).catch(() => false);
+    const loadingVisible = await page
+      .locator('.animate-pulse, .animate-spin, [data-testid="loading"]')
+      .isVisible({ timeout: 2000 })
+      .catch(() => false);
     // Loading indicator may or may not appear depending on timing
     expect(typeof loadingVisible).toBe('boolean');
 

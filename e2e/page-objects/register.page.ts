@@ -17,19 +17,43 @@ export class RegisterPage {
 
   constructor(page: Page) {
     this.page = page;
-    // Actual UI: inputs with labels "Email", "Password", "Full Name"
-    this.emailInput = page.getByLabel('Email').or(page.getByRole('textbox', { name: /email/i }));
-    this.passwordInput = page.getByLabel('Password').or(page.getByRole('textbox', { name: /^password$/i }));
+    // Actual UI: inputs with labels "Email", "Password", "Full Name".
+    // The names have to match exactly: the footer carries a newsletter field
+    // labelled "Email address", and a loose match collects that one as well -
+    // two elements, and every action on them fails the strict mode.
+    this.emailInput = page
+      .getByLabel('Email', { exact: true })
+      .or(page.getByRole('textbox', { name: /^email$/i }));
+    this.passwordInput = page
+      .getByLabel('Password', { exact: true })
+      .or(page.getByRole('textbox', { name: /^password$/i }));
     // Note: No confirm password field in actual UI
-    this.fullNameInput = page.getByLabel('Full Name').or(page.getByRole('textbox', { name: /full name|name/i }));
-    // Submit button text is "Create Account" - must be inside form to avoid matching nav buttons
-    this.submitButton = page.locator('form button[type="submit"]').or(
-      page.locator('button[type="submit"]').filter({ hasText: /create account|sign up|register|zarejestruj/i })
-    );
+    this.fullNameInput = page
+      .getByLabel('Full Name', { exact: true })
+      .or(page.getByRole('textbox', { name: /^full name$/i }));
+    // Submit button text is "Create Account" - must be inside the form of the
+    // registration, the footer newsletter has a form with a submit button of
+    // its own.
+    const registerForm = page.locator('form').filter({ has: page.locator('#email') });
+    this.submitButton = registerForm
+      .locator('button[type="submit"]')
+      .or(
+        page
+          .locator('button[type="submit"]')
+          .filter({ hasText: /create account|sign up|register|zarejestruj/i })
+      );
     // Error message is in a div with bg-destructive/15 class - be specific to avoid matching Next.js route announcer
-    this.errorMessage = page.locator('.bg-destructive\\/15, .text-destructive').filter({ has: page.locator('svg, span, p') }).first();
+    this.errorMessage = page
+      .locator('.bg-destructive\\/15, .text-destructive')
+      .filter({ has: page.locator('svg, span, p') })
+      .first();
     this.successMessage = page.locator('[data-testid="success-message"], .success-message');
-    this.loginLink = page.getByRole('link', { name: /sign in/i });
+    // The link to the login - the navigation carries a link of its own, so the
+    // one of the card is picked by its underlined class.
+    this.loginLink = page
+      .locator('a.underline')
+      .filter({ hasText: /sign in|log in|zaloguj|зарегистрироваться/i })
+      .first();
   }
 
   /**

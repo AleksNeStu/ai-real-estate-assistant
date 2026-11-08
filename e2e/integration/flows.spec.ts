@@ -29,38 +29,40 @@ test.describe('Integration Flows', () => {
     });
 
     // Set auth cookie
-    await page.context().addCookies([{
-      name: 'access_token',
-      value: 'mock-access-token',
-      domain: 'localhost',
-      path: '/',
-      httpOnly: true,
-      sameSite: 'Lax' as const,
-    }]);
+    await page.context().addCookies([
+      {
+        name: 'access_token',
+        value: 'mock-access-token',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax' as const,
+      },
+    ]);
   });
 
   test.describe('Search to Favorite Flow', () => {
-    test('should search, view, and add property to favorites @integration', async ({
-        page,
-      }) => {
-        // Setup mocks
+    test('should search, view, and add property to favorites @integration', async ({ page }) => {
+      // Setup mocks
       await page.route('**/api/v1/search*', mockSearchSuccess);
 
       // 1. Search for properties
       await page.goto('/search');
-      const searchInput = page.getByRole('searchbox');
+      const searchInput = page.getByLabel('Search query');
       await searchInput.fill('apartment in Berlin');
-      await page.getByRole('button', { name: /search/i }).click();
+      await page.getByTestId('search-submit').click();
 
       // Wait for results
-      await expect(page.locator('[data-testid="property-card"], .property-card').first()).toBeVisible({ timeout: 10000 });
+      await expect(
+        page.locator('[data-testid="property-card"], .property-card').first()
+      ).toBeVisible({ timeout: 10000 });
 
       // 2. Click on a property to view details
       const propertyCard = page.locator('[data-testid="property-card"], .property-card').first();
       await propertyCard.click();
 
       // 3. Add to favorites
-      const favoriteButton = page.getByRole('button', { name: /favorite|heart|save/i });
+      const favoriteButton = page.getByTestId('favorite-toggle').first();
       if (await favoriteButton.isVisible()) {
         // Mock favorites API
         await page.route('**/api/v1/favorites*', async (route) => {
@@ -80,9 +82,7 @@ test.describe('Integration Flows', () => {
               status: 200,
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                favorites: [
-                  { id: 'fav-001', property_id: 'prop-001' },
-                ],
+                favorites: [{ id: 'fav-001', property_id: 'prop-001' }],
               }),
             });
           }
@@ -95,9 +95,7 @@ test.describe('Integration Flows', () => {
       }
     });
 
-    test('should verify favorite appears in favorites list @integration', async ({
-      page,
-    }) => {
+    test('should verify favorite appears in favorites list @integration', async ({ page }) => {
       // Setup mocks
       await page.route('**/api/v1/auth/me', async (route) => {
         await route.fulfill({
@@ -115,16 +113,31 @@ test.describe('Integration Flows', () => {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            favorites: [
+            items: [
               {
                 id: 'fav-001',
+                user_id: 'test-user-001',
+                property_id: 'prop-001',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
                 property: {
                   id: 'prop-001',
                   title: 'Modern 2-Bedroom Apartment in Mitte',
+                  city: 'Berlin',
+                  property_type: 'apartment',
+                  listing_type: 'rent',
                   price: 1200,
+                  currency: 'EUR',
+                  has_parking: false,
+                  has_garden: false,
+                  has_pool: false,
+                  has_garage: false,
+                  has_bike_room: false,
                 },
               },
             ],
+            total: 1,
+            unavailable_count: 0,
           }),
         });
       });
@@ -133,15 +146,15 @@ test.describe('Integration Flows', () => {
       await page.goto('/favorites');
 
       // Verify favorite is displayed
-      const favoriteCard = page.locator('[data-testid="property-card"], .favorite-card, .property-card').first();
+      const favoriteCard = page
+        .locator('[data-testid="property-card"], .favorite-card, .property-card')
+        .first();
       await expect(favoriteCard).toBeVisible({ timeout: 5000 });
     });
   });
 
   test.describe('Chat to Property Flow', () => {
-    test('should chat about properties and navigate to details @integration', async ({
-      page,
-    }) => {
+    test('should chat about properties and navigate to details @integration', async ({ page }) => {
       // Setup mocks
       await page.route('**/api/v1/chat*', mockChatSuccess);
       await page.route('**/api/v1/auth/me', async (route) => {
@@ -157,15 +170,16 @@ test.describe('Integration Flows', () => {
 
       // 1. Start a chat
       await page.goto('/chat');
-      await expect(page.getByPlaceholder(/ask about properties|type your message/i)).toBeVisible({ timeout: 10000 });
+      const chatInput = page.getByLabel(/chat message input/i);
+      await expect(chatInput).toBeVisible({ timeout: 10000 });
 
       // 2. Send a message
-      const messageInput = page.getByPlaceholder(/ask about properties|type your message/i);
-      await messageInput.fill('Find me a 2-bedroom apartment in Berlin');
-      await page.getByRole('button', { name: /send/i }).click();
+      await chatInput.fill('Find me a 2-bedroom apartment in Berlin');
+      await page.getByTestId('chat-send').click();
 
       // 3. Wait for response
-      await expect(page.locator('[data-testid="assistant-message"], .assistant-message, .ai-message').first()).toBeVisible({ timeout: 15000 });
+      const assistantMessage = page.locator('div.w-full.items-start.bg-background').first();
+      await expect(assistantMessage).toBeVisible({ timeout: 15000 });
     });
   });
 
@@ -225,10 +239,11 @@ test.describe('Integration Flows', () => {
         });
       });
 
-      // Fill and submit registration
-      const emailInput = page.getByRole('textbox', { name: /email/i });
-      const passwordInput = page.getByRole('textbox', { name: /password|password/i });
-      const submitButton = page.getByRole('button', { name: /sign up|register/i });
+      // Fill and submit registration. The name has to match exactly: the
+      // footer carries a newsletter field labelled "Email address" as well.
+      const emailInput = page.getByLabel('Email', { exact: true });
+      const passwordInput = page.getByLabel('Password', { exact: true });
+      const submitButton = page.getByRole('button', { name: /create account|sign up|register/i });
 
       await emailInput.fill(email);
       await passwordInput.fill('TestPassword123!');
@@ -297,9 +312,7 @@ test.describe('Integration Flows', () => {
   });
 
   test.describe('Lead Scoring Flow', () => {
-    test('should display leads with scores and allow assignment @integration', async ({
-      page,
-    }) => {
+    test('should display leads with scores and allow assignment @integration', async ({ page }) => {
       // Mock authenticated state
       await page.route('**/api/v1/auth/me', async (route) => {
         await route.fulfill({
@@ -355,7 +368,7 @@ test.describe('Integration Flows', () => {
       });
 
       // Mock scoring statistics
-      await page.route('**/api/v1/leads/statistics*', async (route) => {
+      await page.route('**/api/v1/leads/scores/statistics*', async (route) => {
         await route.fulfill({
           status: 200,
           headers: { 'Content-Type': 'application/json' },
@@ -409,14 +422,19 @@ test.describe('Integration Flows', () => {
       await page.goto('/leads');
 
       // 2. Verify dashboard loads with statistics
-      await expect(page.getByRole('heading', { name: /lead dashboard/i })).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('heading', { name: /lead dashboard/i })).toBeVisible({
+        timeout: 10000,
+      });
 
       // 3. Verify leads are displayed with scores
-      await expect(page.locator('text=High Value Lead')).toBeVisible({ timeout: 10000 });
-      await expect(page.locator('text=92')).toBeVisible(); // Score badge
+      await expect(page.getByText('High Value Lead', { exact: true })).toBeVisible({
+        timeout: 10000,
+      });
+      await expect(page.locator('text=92').first()).toBeVisible(); // Score badge
 
       // 4. Verify statistics cards
-      await expect(page.locator('text=/total leads|100/i')).toBeVisible();
+      await expect(page.getByRole('heading', { name: /total leads/i })).toBeVisible();
+      await expect(page.getByText('100', { exact: true }).first()).toBeVisible();
     });
 
     test('should filter leads by status @integration', async ({ page }) => {
@@ -439,17 +457,29 @@ test.describe('Integration Flows', () => {
 
         const allLeads = [
           { id: 'lead-1', name: 'New Lead', status: 'new', email: 'new@test.com', total_score: 50 },
-          { id: 'lead-2', name: 'Contacted Lead', status: 'contacted', email: 'contacted@test.com', total_score: 60 },
-          { id: 'lead-3', name: 'Qualified Lead', status: 'qualified', email: 'qualified@test.com', total_score: 80 },
+          {
+            id: 'lead-2',
+            name: 'Contacted Lead',
+            status: 'contacted',
+            email: 'contacted@test.com',
+            total_score: 60,
+          },
+          {
+            id: 'lead-3',
+            name: 'Qualified Lead',
+            status: 'qualified',
+            email: 'qualified@test.com',
+            total_score: 80,
+          },
         ];
 
-        const filteredLeads = status ? allLeads.filter(l => l.status === status) : allLeads;
+        const filteredLeads = status ? allLeads.filter((l) => l.status === status) : allLeads;
 
         await route.fulfill({
           status: 200,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            items: filteredLeads.map(l => ({
+            items: filteredLeads.map((l) => ({
               ...l,
               visitor_id: `visitor-${l.id}`,
               current_score: l.total_score,
@@ -464,7 +494,7 @@ test.describe('Integration Flows', () => {
         });
       });
 
-      await page.route('**/api/v1/leads/statistics*', async (route) => {
+      await page.route('**/api/v1/leads/scores/statistics*', async (route) => {
         await route.fulfill({
           status: 200,
           headers: { 'Content-Type': 'application/json' },
@@ -526,17 +556,19 @@ test.describe('Integration Flows', () => {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            items: [{
-              id: 'lead-001',
-              visitor_id: 'visitor-001',
-              email: 'test@example.com',
-              name: 'Test Lead',
-              status: 'new',
-              total_score: 75,
-              current_score: 75,
-              created_at: new Date().toISOString(),
-              last_activity_at: new Date().toISOString(),
-            }],
+            items: [
+              {
+                id: 'lead-001',
+                visitor_id: 'visitor-001',
+                email: 'test@example.com',
+                name: 'Test Lead',
+                status: 'new',
+                total_score: 75,
+                current_score: 75,
+                created_at: new Date().toISOString(),
+                last_activity_at: new Date().toISOString(),
+              },
+            ],
             total: 1,
             page: 1,
             page_size: 50,
@@ -546,7 +578,7 @@ test.describe('Integration Flows', () => {
       });
 
       // Mock statistics
-      await page.route('**/api/v1/leads/statistics*', async (route) => {
+      await page.route('**/api/v1/leads/scores/statistics*', async (route) => {
         await route.fulfill({
           status: 200,
           headers: { 'Content-Type': 'application/json' },
@@ -575,7 +607,7 @@ test.describe('Integration Flows', () => {
       });
 
       // Mock recalculate endpoint
-      await page.route('**/api/v1/leads/recalculate*', async (route) => {
+      await page.route('**/api/v1/leads/scores/recalculate*', async (route) => {
         if (route.request().method() === 'POST') {
           recalculateCalled = true;
           await route.fulfill({

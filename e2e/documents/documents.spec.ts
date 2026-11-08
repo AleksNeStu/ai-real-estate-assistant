@@ -140,14 +140,16 @@ test.describe('Document Management Flows', () => {
     });
 
     // Set auth cookie
-    await page.context().addCookies([{
-      name: 'access_token',
-      value: 'mock-access-token',
-      domain: 'localhost',
-      path: '/',
-      httpOnly: true,
-      sameSite: 'Lax' as const,
-    }]);
+    await page.context().addCookies([
+      {
+        name: 'access_token',
+        value: 'mock-access-token',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax' as const,
+      },
+    ]);
   });
 
   test.describe('Document List', () => {
@@ -156,7 +158,9 @@ test.describe('Document Management Flows', () => {
       await page.goto('/documents');
 
       // Verify header is visible
-      await expect(page.getByRole('heading', { name: 'Documents' })).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('heading', { name: 'Documents' })).toBeVisible({
+        timeout: 10000,
+      });
     });
 
     test('should display list of documents', async ({ page }) => {
@@ -164,9 +168,9 @@ test.describe('Document Management Flows', () => {
       await page.goto('/documents');
 
       // Wait for documents to load
-      await expect(page.locator('text=contract.pdf')).toBeVisible({ timeout: 10000 });
-      await expect(page.locator('text=id_card.jpg')).toBeVisible();
-      await expect(page.locator('text=property_report.docx')).toBeVisible();
+      await expect(page.locator('text=contract.pdf').first()).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('text=id_card.jpg').first()).toBeVisible();
+      await expect(page.locator('text=property_report.docx').first()).toBeVisible();
     });
 
     test('should display empty state when no documents', async ({ page }) => {
@@ -190,7 +194,7 @@ test.describe('Document Management Flows', () => {
       await page.goto('/documents');
 
       // Should show expiring documents alert
-      await expect(page.locator('.bg-yellow-50, [class*="expiring"]')).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('[class*="bg-warning"]')).toBeVisible({ timeout: 10000 });
     });
 
     test('should display error state on API failure', async ({ page }) => {
@@ -198,7 +202,9 @@ test.describe('Document Management Flows', () => {
       await page.goto('/documents');
 
       // Should show error message
-      await expect(page.locator('text=/failed to load documents/i')).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('heading', { name: /failed to load documents/i })).toBeVisible({
+        timeout: 10000,
+      });
       await expect(page.getByRole('button', { name: /try again/i })).toBeVisible();
     });
   });
@@ -211,7 +217,7 @@ test.describe('Document Management Flows', () => {
       await page.getByRole('button', { name: /upload document/i }).click();
 
       // Modal should appear
-      await expect(page.locator('.fixed.inset-0.z-50')).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('dialog')).toBeVisible({ timeout: 5000 });
       await expect(page.getByRole('heading', { name: /upload document/i })).toBeVisible();
     });
 
@@ -220,14 +226,14 @@ test.describe('Document Management Flows', () => {
       await page.goto('/documents');
 
       await page.getByRole('button', { name: /upload document/i }).click();
-      await expect(page.locator('.fixed.inset-0.z-50')).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('dialog')).toBeVisible({ timeout: 5000 });
 
       // Click close button
-      const closeButton = page.locator('.fixed.inset-0.z-50 button').filter({ hasText: '×' });
+      const closeButton = page.locator('dialog button[aria-label]').first();
       await closeButton.click();
 
       // Modal should close
-      await expect(page.locator('.fixed.inset-0.z-50')).not.toBeVisible({ timeout: 3000 });
+      await expect(page.locator('dialog')).not.toBeVisible({ timeout: 3000 });
     });
   });
 
@@ -236,7 +242,7 @@ test.describe('Document Management Flows', () => {
       await mockDocumentsAPI(page);
       await page.goto('/documents');
 
-      await expect(page.locator('text=contract.pdf')).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('text=contract.pdf').first()).toBeVisible({ timeout: 10000 });
 
       // Click refresh
       await page.getByRole('button', { name: /refresh/i }).click();
@@ -276,13 +282,15 @@ test.describe('Document Management Flows', () => {
       await page.goto('/documents');
 
       // Should show error
-      await expect(page.locator('text=/failed to load documents/i')).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('heading', { name: /failed to load documents/i })).toBeVisible({
+        timeout: 10000,
+      });
 
       // Click retry
       await page.getByRole('button', { name: /try again/i }).click();
 
       // Should show documents after retry
-      await expect(page.locator('text=contract.pdf')).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('text=contract.pdf').first()).toBeVisible({ timeout: 10000 });
     });
   });
 
@@ -291,15 +299,21 @@ test.describe('Document Management Flows', () => {
       await mockDocumentsAPI(page);
       await page.goto('/documents');
 
-      await expect(page.locator('text=contract.pdf')).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('text=contract.pdf').first()).toBeVisible({ timeout: 10000 });
     });
 
     test('should display document types', async ({ page }) => {
       await mockDocumentsAPI(page);
       await page.goto('/documents');
 
-      // Check for document type badges
-      await expect(page.locator('text=/contract|id_document|report/i')).toBeVisible({ timeout: 10000 });
+      // The types of the documents are offered by the filter of the list.
+      const categoryFilter = page.getByRole('combobox', { name: /filter by category/i });
+      await expect(categoryFilter).toBeVisible({ timeout: 10000 });
+
+      const options = categoryFilter.locator('option');
+      await expect(options).toHaveCount(6);
+      await expect(options.nth(1)).toHaveText(/contract/i);
+      await expect(options.nth(2)).toHaveText(/inspection report/i);
     });
   });
 
@@ -330,7 +344,9 @@ test.describe('Document Management Flows', () => {
       await page.goto('/documents');
 
       // Should show load more button
-      await expect(page.getByRole('button', { name: /load more/i })).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('button', { name: /load more/i })).toBeVisible({
+        timeout: 10000,
+      });
     });
 
     test('should not show load more when on last page', async ({ page }) => {
@@ -338,7 +354,9 @@ test.describe('Document Management Flows', () => {
       await page.goto('/documents');
 
       // Should NOT show load more button (only 1 page)
-      await expect(page.getByRole('button', { name: /load more/i })).not.toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('button', { name: /load more/i })).not.toBeVisible({
+        timeout: 10000,
+      });
     });
   });
 

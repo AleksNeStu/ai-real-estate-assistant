@@ -252,7 +252,9 @@ export function TaskModelSettings({ catalog, userEmail }: TaskModelSettingsProps
   const getSystemDefaultForTask = (
     taskType: TaskType
   ): { provider: string; model_name: string; description?: string } | null => {
-    return systemDefaults?.defaults.find((d) => d.task_type === taskType) || null;
+    // The defaults are optional and their shape comes from the backend: a
+    // response without a list must not take the whole settings page down.
+    return systemDefaults?.defaults?.find((d) => d.task_type === taskType) || null;
   };
 
   const handleSave = async (taskType: TaskType, provider: string, modelName: string) => {

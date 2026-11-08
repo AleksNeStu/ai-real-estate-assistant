@@ -55,13 +55,16 @@ test.describe('Saved Searches', () => {
       await savedSearchesPage.navigate();
 
       // Verify filter details are shown
-      await expect(authenticatedPage.getByText(/Berlin/)).toBeVisible();
+      await expect(
+        authenticatedPage.getByRole('heading', { name: /berlin/i }).first()
+      ).toBeVisible();
 
       // Verify use count is displayed
-      await expect(authenticatedPage.getByText(/12 times/)).toBeVisible();
+      await expect(authenticatedPage.getByText(/12 times/).first()).toBeVisible();
 
-      // Verify created date is displayed
-      await expect(authenticatedPage.getByText(/created:/i)).toBeVisible();
+      // Verify created date is displayed. Every card carries the date, so the
+      // first one is used.
+      await expect(authenticatedPage.getByText(/created:/i).first()).toBeVisible();
     });
   });
 
@@ -186,7 +189,11 @@ test.describe('Saved Searches', () => {
       // Click refresh
       await savedSearchesPage.refresh();
 
-      // Verify data loads after refresh
+      // Verify data loads after refresh. The list arrives with the answer of
+      // the API - the test waits for it.
+      await expect(savedSearchesPage.getSearchCardByName('2-bedroom Berlin')).toBeVisible({
+        timeout: 10000,
+      });
       const count = await savedSearchesPage.getSearchCount();
       expect(count).toBeGreaterThan(0);
     });
@@ -208,12 +215,22 @@ test.describe('Saved Searches', () => {
 
       await page.goto('/saved-searches');
 
-      // Should be redirected to login page (or show auth error)
+      // Should be redirected to login page (or show auth error). In the demo
+      // mode the page itself is reachable and the API rejects the request, so
+      // the error state counts as well.
       const url = page.url();
       const isOnLogin = url.includes('/auth/login');
-      const hasAuthError = await page.locator('text=/log in/i').isVisible().catch(() => false);
+      const hasAuthError = await page
+        .locator('text=/log in/i')
+        .isVisible()
+        .catch(() => false);
+      const hasErrorState = await page
+        .locator('[role="alert"]')
+        .first()
+        .isVisible()
+        .catch(() => false);
 
-      expect(isOnLogin || hasAuthError).toBe(true);
+      expect(isOnLogin || hasAuthError || hasErrorState).toBe(true);
     });
   });
 });

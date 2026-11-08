@@ -4,11 +4,16 @@
  */
 
 import { Route } from '@playwright/test';
-import { TEST_PROPERTIES } from '../fixtures/properties';
+import { TEST_SEARCH_RESULTS } from '../fixtures/properties';
 import { TEST_USERS } from '../fixtures/users';
 
 /**
  * Mock search API response with properties.
+ *
+ * The frontend expects the `SearchResponse` shape of
+ * `apps/web/src/lib/types.ts`: `{ results: [{ property, score }], count }`.
+ * The older `{ properties, total }` payload was silently ignored, so the
+ * results grid never appeared and every search test failed.
  */
 export async function mockSearchSuccess(route: Route): Promise<void> {
   await route.fulfill({
@@ -20,10 +25,8 @@ export async function mockSearchSuccess(route: Route): Promise<void> {
       'X-Request-ID': 'req-mock-search-success',
     },
     body: JSON.stringify({
-      properties: TEST_PROPERTIES,
-      total: TEST_PROPERTIES.length,
-      page: 1,
-      page_size: 20,
+      results: TEST_SEARCH_RESULTS,
+      count: TEST_SEARCH_RESULTS.length,
     }),
   });
 }
@@ -40,10 +43,8 @@ export async function mockSearchEmpty(route: Route): Promise<void> {
       'X-Request-ID': 'req-mock-search-empty',
     },
     body: JSON.stringify({
-      properties: [],
-      total: 0,
-      page: 1,
-      page_size: 20,
+      results: [],
+      count: 0,
     }),
   });
 }
@@ -53,17 +54,51 @@ export async function mockSearchEmpty(route: Route): Promise<void> {
  */
 export async function mockSearchError(
   route: Route,
-  statusCode: number = 500,
-  message: string = 'Search failed'
+  statusCode?: number,
+  message?: string
 ): Promise<void> {
+  // Playwright calls the handler with (route, request) - the second argument is
+  // the request object and not the status code.
+  const status = typeof statusCode === 'number' ? statusCode : 500;
+  const text = typeof message === 'string' ? message : 'Search failed';
   await route.fulfill({
-    status: statusCode,
+    status,
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
-      'X-Request-ID': `req-mock-search-error-${statusCode}`,
+      'X-Request-ID': `req-mock-search-error-${status}`,
     },
-    body: JSON.stringify({ detail: message }),
+    body: JSON.stringify({ detail: text }),
+  });
+}
+
+/**
+ * Mock the property export endpoint. The frontend turns the response into a
+ * blob and clicks an anchor with the `download` attribute, so the browser
+ * fires a download event only when the response carries a filename.
+ */
+export async function mockExportSuccess(route: Route): Promise<void> {
+  const request = route.request();
+  const body = request.postDataJSON() as { format?: string } | null;
+  const format = body?.format || 'csv';
+
+  const payload =
+    format === 'json'
+      ? JSON.stringify(
+          TEST_SEARCH_RESULTS.map((item) => item.property),
+          null,
+          2
+        )
+      : 'id,title,city,price\nprop-001,Modern 2-Bedroom Apartment in Mitte,Berlin,1200\n';
+
+  await route.fulfill({
+    status: 200,
+    headers: {
+      'Content-Type': format === 'json' ? 'application/json' : 'text/csv',
+      'Content-Disposition': `attachment; filename="properties.${format}"`,
+      'Access-Control-Allow-Origin': '*',
+    },
+    body: payload,
   });
 }
 
@@ -151,10 +186,9 @@ export async function mockLogoutSuccess(route: Route): Promise<void> {
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
-      'Set-Cookie': [
-        'access_token=; Path=/; Max-Age=0',
-        'refresh_token=; Path=/; Max-Age=0',
-      ].join(', '),
+      'Set-Cookie': ['access_token=; Path=/; Max-Age=0', 'refresh_token=; Path=/; Max-Age=0'].join(
+        ', '
+      ),
     },
     body: JSON.stringify({ message: 'Logged out successfully' }),
   });

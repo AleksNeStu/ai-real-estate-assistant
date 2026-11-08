@@ -4,7 +4,7 @@
  */
 
 import { test, expect } from '../conftest';
-import { mockSearchSuccess, mockSearchEmpty } from '../mocks';
+import { mockSearchSuccess, mockSearchEmpty, mockExportSuccess } from '../mocks';
 
 test.describe('Search Flows', () => {
   test.describe('Basic Search', () => {
@@ -28,7 +28,10 @@ test.describe('Search Flows', () => {
       expect(await authenticatedSearchPage.getResultCount()).toBeGreaterThan(0);
     });
 
-    test('should display no results message for empty search', async ({ authenticatedSearchPage, page }) => {
+    test('should display no results message for empty search', async ({
+      authenticatedSearchPage,
+      page,
+    }) => {
       // Mock empty search results
       await page.route('**/api/v1/search*', mockSearchEmpty);
 
@@ -39,7 +42,10 @@ test.describe('Search Flows', () => {
       await expect(authenticatedSearchPage.noResultsMessage).toBeVisible({ timeout: 10000 });
     });
 
-    test('should display loading state during search', async ({ authenticatedSearchPage, page }) => {
+    test('should display loading state during search', async ({
+      authenticatedSearchPage,
+      page,
+    }) => {
       // Mock delayed search response
       await page.route('**/api/v1/search*', async (route) => {
         await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -127,18 +133,21 @@ test.describe('Search Flows', () => {
       await authenticatedSearchPage.search('Berlin');
       await authenticatedSearchPage.switchToMapView();
 
-      // Check for map markers (implementation-specific)
-      const markers = page.locator('.map-marker, .property-marker, [data-testid="property-marker"]');
-      const markerCount = await markers.count();
+      // The map is loaded on demand (dynamic import), so it takes a moment
+      // until it is on the screen.
+      const map = page.locator('[role="application"][aria-label="Property map"]');
+      await expect(map).toBeVisible({ timeout: 15000 });
 
-      // Should have at least one marker
-      expect(markerCount).toBeGreaterThan(0);
+      // The map is drawn by Leaflet - every marker is an icon of the map.
+      const markers = page.locator('.leaflet-marker-icon');
+      await expect.poll(async () => await markers.count(), { timeout: 15000 }).toBeGreaterThan(0);
     });
   });
 
   test.describe('Export', () => {
     test('should export results to CSV', async ({ authenticatedSearchPage, page }) => {
       await page.route('**/api/v1/search*', mockSearchSuccess);
+      await page.route('**/api/v1/export/properties', mockExportSuccess);
 
       await authenticatedSearchPage.navigate();
       await authenticatedSearchPage.search('Berlin');
@@ -154,25 +163,32 @@ test.describe('Search Flows', () => {
   });
 
   test.describe('Property Details', () => {
-    test('should navigate to property details', async ({ authenticatedSearchPage, page }) => {
+    test('should display the property details in the result card', async ({
+      authenticatedSearchPage,
+      page,
+    }) => {
       await page.route('**/api/v1/search*', mockSearchSuccess);
 
       await authenticatedSearchPage.navigate();
       await authenticatedSearchPage.search('Berlin');
 
-      // Click on first property card
+      // The result card carries the details of the property. There is no
+      // separate page for a single property in the product - the card is the
+      // place where the details are shown.
       const propertyCards = await authenticatedSearchPage.getPropertyCards();
-      if (propertyCards.length > 0) {
-        await propertyCards[0].click();
+      expect(propertyCards.length).toBeGreaterThan(0);
 
-        // Should navigate to property details page
-        await expect(page).toHaveURL(/\/property\/|\/properties\//, { timeout: 10000 });
-      }
+      const firstCard = propertyCards[0];
+      await expect(firstCard).toContainText(/Berlin/i);
+      await expect(firstCard).toContainText(/\d/);
     });
   });
 
   test.describe('Error Handling', () => {
-    test('should display error message on API failure', async ({ authenticatedSearchPage, page }) => {
+    test('should display error message on API failure', async ({
+      authenticatedSearchPage,
+      page,
+    }) => {
       // Mock search API error
       await page.route('**/api/v1/search*', async (route) => {
         await route.fulfill({
@@ -186,7 +202,7 @@ test.describe('Search Flows', () => {
       await authenticatedSearchPage.search('test');
 
       // Should show error message
-      const errorMessage = page.locator('[data-testid="error-message"], .error-message, [role="alert"]');
+      const errorMessage = authenticatedSearchPage.errorMessage;
       await expect(errorMessage).toBeVisible({ timeout: 10000 });
     });
 

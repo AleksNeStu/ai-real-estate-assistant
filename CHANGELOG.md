@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.15] - 2026-11-08
+
+### Fixed
+- **The search shows that it is searching** — the page set the flag
+  "hasSearched" before the request left, so the condition of the loading
+  state was never true and the skeletons never appeared. The state belongs
+  to the results now: it shows while the first search runs and the results
+  of the last one stay on the screen while the next one runs.
+- **The settings survive an unexpected answer** — the defaults of the models
+  were read with `systemDefaults?.defaults.find(...)`. An answer without a
+  list of defaults threw a TypeError and took the whole page down with it
+  ("Something went wrong"). The lookup is optional now.
+
+### Tests
+- **The end-to-end suite passes again** — 121 of the 180 tests failed and the
+  pipeline stayed green over it, because the job carried
+  `continue-on-error` twice. The causes were systematic: the mocks answered
+  in a shape the frontend never reads, the helpers of the mocks took the
+  request object as the status code, the delayed mocks returned a promise
+  instead of a handler, the locators matched several elements at once and
+  the expectations described an older product. 164 tests pass, the 18 tests
+  of the Docker Compose stack wait for a stack (`E2E_STACK=true`) and the
+  job gates the pipeline again.
+
 ## [5.1.14] - 2026-11-08
 
 ### Fixed

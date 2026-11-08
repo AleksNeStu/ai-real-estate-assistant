@@ -656,8 +656,11 @@ function SearchPageContent() {
               />
             )}
 
-            {/* STATE 2: Loading state */}
-            {loading && !hasSearched && (
+            {/* STATE 2: Loading state. The state belongs to the search that is
+                running: `hasSearched` is set before the request starts, so
+                the old condition never showed the skeletons. The results of a
+                finished search stay on the screen while the next one runs. */}
+            {loading && results.length === 0 && (
               <div
                 className="space-y-4"
                 role="status"

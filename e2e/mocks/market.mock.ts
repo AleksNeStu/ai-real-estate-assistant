@@ -48,16 +48,20 @@ export async function mockMarketIndicatorsKrakow(route: Route): Promise<void> {
  */
 export async function mockMarketIndicatorsError(
   route: Route,
-  statusCode: number = 500,
-  message: string = 'Failed to load market indicators'
+  statusCode?: number,
+  message?: string
 ): Promise<void> {
+  // Playwright calls the handler with (route, request) - the second argument is
+  // the request object and not the status code.
+  const status = typeof statusCode === 'number' ? statusCode : 500;
+  const text = typeof message === 'string' ? message : 'Failed to load market indicators';
   await route.fulfill({
-    status: statusCode,
+    status,
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
     },
-    body: JSON.stringify({ detail: message }),
+    body: JSON.stringify({ detail: text }),
   });
 }
 
@@ -95,23 +99,27 @@ export async function mockMarketTrends(route: Route): Promise<void> {
  */
 export async function mockMarketTrendsError(
   route: Route,
-  statusCode: number = 500,
-  message: string = 'Failed to load market trends'
+  statusCode?: number,
+  message?: string
 ): Promise<void> {
+  // Playwright calls the handler with (route, request) - the second argument is
+  // the request object and not the status code.
+  const status = typeof statusCode === 'number' ? statusCode : 500;
+  const text = typeof message === 'string' ? message : 'Failed to load market trends';
   await route.fulfill({
-    status: statusCode,
+    status,
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
     },
-    body: JSON.stringify({ detail: message }),
+    body: JSON.stringify({ detail: text }),
   });
 }
 
 /**
  * Mock delayed market trends response to test loading states.
  */
-export async function mockMarketTrendsDelayed(delayMs: number = 2000) {
+export function mockMarketTrendsDelayed(delayMs: number = 2000) {
   return async (route: Route): Promise<void> => {
     await new Promise((resolve) => setTimeout(resolve, delayMs));
     await mockMarketTrends(route);
@@ -121,7 +129,7 @@ export async function mockMarketTrendsDelayed(delayMs: number = 2000) {
 /**
  * Mock delayed market indicators response to test loading states.
  */
-export async function mockMarketIndicatorsDelayed(delayMs: number = 2000) {
+export function mockMarketIndicatorsDelayed(delayMs: number = 2000) {
   return async (route: Route): Promise<void> => {
     await new Promise((resolve) => setTimeout(resolve, delayMs));
     await mockMarketIndicators(route);
@@ -161,16 +169,20 @@ export async function mockPriceHistoryEmpty(route: Route): Promise<void> {
  */
 export async function mockPriceHistoryError(
   route: Route,
-  statusCode: number = 500,
-  message: string = 'Failed to load price history'
+  statusCode?: number,
+  message?: string
 ): Promise<void> {
+  // Playwright calls the handler with (route, request) - the second argument is
+  // the request object and not the status code.
+  const status = typeof statusCode === 'number' ? statusCode : 500;
+  const text = typeof message === 'string' ? message : 'Failed to load price history';
   await route.fulfill({
-    status: statusCode,
+    status,
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
     },
-    body: JSON.stringify({ detail: message }),
+    body: JSON.stringify({ detail: text }),
   });
 }
 

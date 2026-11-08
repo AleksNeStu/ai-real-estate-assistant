@@ -7,24 +7,35 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('i18n Locale Routing', () => {
-  test('should redirect root to default locale /pl/ @smoke', async ({ page }) => {
+  test('should redirect root to the detected locale @smoke', async ({ page }) => {
     await page.goto('/');
 
-    // The app uses localePrefix: 'always' with defaultLocale 'pl'
-    // Navigating to / should redirect to /pl/
-    await expect(page).toHaveURL(/\/pl\//, { timeout: 10000 });
+    // The app detects the locale of the browser (next-intl). The context of
+    // Playwright asks for English, so the root leads to a locale prefix -
+    // which one depends on the language of the browser.
+    await expect(page).toHaveURL(/\/(pl|en|ru|de|es|it|pt|tr|uk)(\/|$)/, { timeout: 10000 });
+  });
+
+  test.describe('with a Polish browser', () => {
+    test.use({ locale: 'pl-PL' });
+
+    test('should redirect root to the default locale /pl/', async ({ page }) => {
+      await page.goto('/');
+
+      await expect(page).toHaveURL(/\/pl(\/|$)/, { timeout: 10000 });
+    });
   });
 
   test('should serve content at /en/ when English locale is requested', async ({ page }) => {
     await page.goto('/en/');
 
-    await expect(page).toHaveURL(/\/en\//, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/en(\/|$)/, { timeout: 10000 });
   });
 
   test('should serve content at /ru/ when Russian locale is requested', async ({ page }) => {
     await page.goto('/ru/');
 
-    await expect(page).toHaveURL(/\/ru\//, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/ru(\/|$)/, { timeout: 10000 });
   });
 });
 
@@ -61,7 +72,7 @@ test.describe('Language Switcher', () => {
     await englishOption.click();
 
     // URL should now contain /en/
-    await expect(page).toHaveURL(/\/en\//, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/en(\/|$)/, { timeout: 10000 });
   });
 
   test('should switch to Russian and update URL', async ({ page }) => {
@@ -74,7 +85,7 @@ test.describe('Language Switcher', () => {
     await russianOption.click();
 
     // URL should now contain /ru/
-    await expect(page).toHaveURL(/\/ru\//, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/ru(\/|$)/, { timeout: 10000 });
   });
 
   test('should display different content after locale switch', async ({ page }) => {
@@ -94,7 +105,7 @@ test.describe('Language Switcher', () => {
     await englishOption.click();
 
     // Wait for navigation to complete and content to update
-    await expect(page).toHaveURL(/\/en\//, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/en(\/|$)/, { timeout: 10000 });
 
     // The h1 heading text should have changed (translations differ)
     const englishHeading = page.locator('h1').first();

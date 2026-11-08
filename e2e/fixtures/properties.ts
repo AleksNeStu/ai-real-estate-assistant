@@ -77,6 +77,106 @@ export const TEST_PROPERTIES: TestProperty[] = [
 ];
 
 /**
+ * Shape of a property as the API returns it (snake_case, as in
+ * `apps/web/src/lib/types.ts` -> `Property`).
+ */
+export interface ApiProperty {
+  id: string;
+  title: string;
+  description: string;
+  country: string;
+  region: string;
+  city: string;
+  district: string;
+  neighborhood: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  property_type: 'apartment' | 'house' | 'studio' | 'loft' | 'townhouse' | 'other';
+  listing_type: 'rent' | 'sale' | 'room' | 'sublease';
+  rooms: number;
+  bathrooms: number;
+  area_sqm: number;
+  floor: number;
+  total_floors: number;
+  year_built: number;
+  energy_rating: string;
+  price: number;
+  currency: string;
+  has_parking: boolean;
+  has_garden: boolean;
+  has_pool: boolean;
+  has_garage: boolean;
+  has_bike_room: boolean;
+  amenities: string[];
+  images: string[];
+}
+
+/**
+ * One entry of `SearchResponse.results` - the property plus its score.
+ */
+export interface ApiSearchResult {
+  property: ApiProperty;
+  score: number;
+}
+
+const BERLIN_DISTRICTS: Record<string, { district: string; lat: number; lon: number }> = {
+  Mitte: { district: 'Mitte', lat: 52.52, lon: 13.405 },
+  'Prenzlauer Berg': { district: 'Prenzlauer Berg', lat: 52.54, lon: 13.424 },
+  Kreuzberg: { district: 'Kreuzberg', lat: 52.498, lon: 13.418 },
+  Charlottenburg: { district: 'Charlottenburg', lat: 52.516, lon: 13.304 },
+  Friedrichshain: { district: 'Friedrichshain', lat: 52.512, lon: 13.454 },
+};
+
+/**
+ * Convert the camelCase fixtures into the API shape. The coordinates are
+ * needed: the results header counts only the listings that can be placed on
+ * the map, so a fixture without lat/lon shows up as "0 of N".
+ */
+export function toApiProperty(property: TestProperty): ApiProperty {
+  const place = BERLIN_DISTRICTS[property.neighborhood] ?? BERLIN_DISTRICTS['Mitte'];
+  return {
+    id: property.id,
+    title: property.title,
+    description: property.description,
+    country: 'Germany',
+    region: 'Berlin',
+    city: property.city,
+    district: place.district,
+    neighborhood: property.neighborhood,
+    address: `${property.neighborhood} 1, ${property.city}`,
+    latitude: place.lat,
+    longitude: place.lon,
+    property_type: property.propertyType,
+    listing_type: 'rent',
+    rooms: property.rooms,
+    bathrooms: Math.max(1, Math.floor(property.rooms / 2)),
+    area_sqm: property.area,
+    floor: 2,
+    total_floors: 5,
+    year_built: 2015,
+    energy_rating: 'B',
+    price: property.price,
+    currency: 'EUR',
+    has_parking: false,
+    has_garden: property.propertyType === 'house',
+    has_pool: false,
+    has_garage: false,
+    has_bike_room: true,
+    amenities: ['balcony', 'elevator'],
+    images: [],
+  };
+}
+
+/**
+ * The search response payload the frontend expects.
+ */
+export const TEST_SEARCH_RESULTS: ApiSearchResult[] = TEST_PROPERTIES.map((property, index) => ({
+  property: toApiProperty(property),
+  score: 0.95 - index * 0.05,
+}));
+
+/**
  * Get all test properties.
  */
 export function getTestProperties(): TestProperty[] {

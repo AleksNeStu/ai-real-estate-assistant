@@ -47,26 +47,32 @@ export class ToolsPage {
     this.mortgageDownPaymentInput = this.mortgageSection.getByPlaceholder(/down payment/i);
     this.mortgageInterestRateInput = this.mortgageSection.getByPlaceholder(/interest rate/i);
     this.mortgageLoanYearsInput = this.mortgageSection.getByPlaceholder(/loan years/i);
-    this.mortgageCalculateButton = this.mortgageSection.getByRole('button', { name: /^calculate$/i });
+    this.mortgageCalculateButton = this.mortgageSection.getByRole('button', {
+      name: /^calculate$/i,
+    });
     this.mortgageResult = this.mortgageSection.locator('text=/monthly payment:/i');
-    this.mortgageError = this.mortgageSection.locator('p.text-red-600');
+    this.mortgageError = this.mortgageSection.locator('p.text-destructive');
 
     // Compare properties
     this.compareSection = page.locator('section').filter({ hasText: /compare properties/i });
     this.compareIdsInput = this.compareSection.getByPlaceholder(/ids comma-separated/i);
     this.compareButton = this.compareSection.getByRole('button', { name: /^compare$/i });
     this.compareResult = this.compareSection.locator('text=/count:/i');
-    this.compareError = this.compareSection.locator('p.text-red-600');
+    this.compareError = this.compareSection.locator('p.text-destructive');
 
     // Neighborhood quality
     this.neighborhoodSection = page.locator('section').filter({ hasText: /neighborhood quality/i });
-    this.neighborhoodPropertyIdInput = this.neighborhoodSection.getByPlaceholder(/property id/i).first();
+    this.neighborhoodPropertyIdInput = this.neighborhoodSection
+      .getByPlaceholder(/property id/i)
+      .first();
     this.neighborhoodLatInput = this.neighborhoodSection.getByPlaceholder(/latitude/i);
     this.neighborhoodLonInput = this.neighborhoodSection.getByPlaceholder(/longitude/i);
     this.neighborhoodCityInput = this.neighborhoodSection.getByPlaceholder(/^city/i);
-    this.neighborhoodAnalyzeButton = this.neighborhoodSection.getByRole('button', { name: /^analyze$/i });
+    this.neighborhoodAnalyzeButton = this.neighborhoodSection.getByRole('button', {
+      name: /^analyze$/i,
+    });
     this.neighborhoodResult = this.neighborhoodSection.locator('text=/overall score:/i');
-    this.neighborhoodError = this.neighborhoodSection.locator('p.text-red-600');
+    this.neighborhoodError = this.neighborhoodSection.locator('p.text-destructive');
   }
 
   /**

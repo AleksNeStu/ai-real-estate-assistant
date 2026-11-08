@@ -132,14 +132,16 @@ test.describe('Auth Persistence', () => {
       await mockGetCurrentUser(route);
     });
 
-    await page.context().addCookies([{
-      name: 'access_token',
-      value: 'mock-access-token',
-      domain: 'localhost',
-      path: '/',
-      httpOnly: true,
-      sameSite: 'Lax' as const,
-    }]);
+    await page.context().addCookies([
+      {
+        name: 'access_token',
+        value: 'mock-access-token',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax' as const,
+      },
+    ]);
 
     // Visit a protected route
     await page.goto('/favorites');
@@ -169,7 +171,13 @@ test.describe('Auth Persistence', () => {
     await page.waitForTimeout(3000);
     const url = page.url();
     const hasLoginRedirect = url.includes('/auth/login');
-    const hasAuthPrompt = await page.locator('text=/log in|sign in/i').isVisible().catch(() => false);
+    // The prompt is a text on the page - several of them can match, so the
+    // first one answers.
+    const hasAuthPrompt = await page
+      .locator('text=/log in|sign in/i')
+      .first()
+      .isVisible()
+      .catch(() => false);
     expect(hasLoginRedirect || hasAuthPrompt).toBe(true);
   });
 });
@@ -186,12 +194,23 @@ test.describe('Logout', () => {
       await mockLogoutSuccess(route);
     });
 
-    // Login first
+    // Login first. The names match exactly - the footer carries a newsletter
+    // field labelled "Email address", and a loose match collects it as well.
     await page.goto('/auth/login');
     const user = TEST_USERS.basic;
-    await page.getByLabel('Email').or(page.getByRole('textbox', { name: /email/i })).fill(user.email);
-    await page.getByLabel('Password').or(page.getByRole('textbox', { name: /password/i })).fill(user.password);
-    await page.locator('form button[type="submit"]').click();
+    await page
+      .getByLabel('Email', { exact: true })
+      .or(page.getByRole('textbox', { name: /^email$/i }))
+      .fill(user.email);
+    await page
+      .getByLabel('Password', { exact: true })
+      .or(page.getByRole('textbox', { name: /^password$/i }))
+      .fill(user.password);
+    await page
+      .locator('form')
+      .filter({ has: page.locator('#email') })
+      .locator('button[type="submit"]')
+      .click();
 
     await page.waitForURL(/^(?!.*\/auth\/login).*$/, { timeout: 15000 }).catch(() => {});
 
@@ -217,7 +236,9 @@ test.describe('Navigation', () => {
 
     // Should be on register page
     await expect(page).toHaveURL(/\/auth\/register/);
-    await expect(page.getByRole('textbox', { name: /email/i })).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.getByLabel('Email', { exact: true }).or(page.getByRole('textbox', { name: /^email$/i }))
+    ).toBeVisible({ timeout: 10000 });
   });
 
   test('should navigate from register to login', async ({ registerPage, page }) => {
@@ -228,7 +249,9 @@ test.describe('Navigation', () => {
 
     // Should be on login page
     await expect(page).toHaveURL(/\/auth\/login/);
-    await expect(page.getByRole('textbox', { name: /email/i })).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.getByLabel('Email', { exact: true }).or(page.getByRole('textbox', { name: /^email$/i }))
+    ).toBeVisible({ timeout: 10000 });
   });
 });
 

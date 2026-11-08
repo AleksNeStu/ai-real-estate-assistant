@@ -140,14 +140,16 @@ test.describe('Favorites Page', () => {
       });
     });
 
-    await page.context().addCookies([{
-      name: 'access_token',
-      value: 'mock-access-token',
-      domain: 'localhost',
-      path: '/',
-      httpOnly: true,
-      sameSite: 'Lax' as const,
-    }]);
+    await page.context().addCookies([
+      {
+        name: 'access_token',
+        value: 'mock-access-token',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax' as const,
+      },
+    ]);
 
     setupFavoritesMocks(page);
 
@@ -161,7 +163,9 @@ test.describe('Favorites Page', () => {
     await expect(page.getByText(/2 saved (?:property|properties)/i)).toBeVisible();
 
     // Should show property cards from mock data
-    await expect(page.getByText('Modern 2-Bedroom Apartment in Mitte')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Modern 2-Bedroom Apartment in Mitte')).toBeVisible({
+      timeout: 10000,
+    });
     await expect(page.getByText('Spacious 3-Bedroom Flat in Prenzlauer Berg')).toBeVisible();
   });
 
@@ -183,14 +187,16 @@ test.describe('Favorites Page', () => {
       });
     });
 
-    await page.context().addCookies([{
-      name: 'access_token',
-      value: 'mock-access-token',
-      domain: 'localhost',
-      path: '/',
-      httpOnly: true,
-      sameSite: 'Lax' as const,
-    }]);
+    await page.context().addCookies([
+      {
+        name: 'access_token',
+        value: 'mock-access-token',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax' as const,
+      },
+    ]);
 
     // Mock empty favorites
     await page.route('**/api/v1/favorites/ids', async (route) => {
@@ -245,14 +251,16 @@ test.describe('Favorites Page', () => {
       });
     });
 
-    await page.context().addCookies([{
-      name: 'access_token',
-      value: 'mock-access-token',
-      domain: 'localhost',
-      path: '/',
-      httpOnly: true,
-      sameSite: 'Lax' as const,
-    }]);
+    await page.context().addCookies([
+      {
+        name: 'access_token',
+        value: 'mock-access-token',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax' as const,
+      },
+    ]);
 
     let deleteCalled = false;
 
@@ -292,13 +300,18 @@ test.describe('Favorites Page', () => {
     await page.goto('/favorites');
 
     // Wait for page to load
-    await expect(page.getByRole('heading', { name: /my favorites/i })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('heading', { name: /my favorites/i })).toBeVisible({
+      timeout: 15000,
+    });
 
     // Find and click the heart/unfavorite button on the first property card
     // The PropertyCard component renders a heart toggle button
-    const unfavoriteButton = page.locator('[data-testid="property-card"], .property-card, article')
+    const unfavoriteButton = page
+      .locator('[data-testid="property-card"], .property-card, article')
       .first()
-      .locator('button').filter({ has: page.locator('svg') }).first();
+      .locator('button')
+      .filter({ has: page.locator('svg') })
+      .first();
 
     if (await unfavoriteButton.isVisible({ timeout: 5000 }).catch(() => false)) {
       await unfavoriteButton.click();
@@ -326,14 +339,16 @@ test.describe('Favorites Page', () => {
       });
     });
 
-    await page.context().addCookies([{
-      name: 'access_token',
-      value: 'mock-access-token',
-      domain: 'localhost',
-      path: '/',
-      httpOnly: true,
-      sameSite: 'Lax' as const,
-    }]);
+    await page.context().addCookies([
+      {
+        name: 'access_token',
+        value: 'mock-access-token',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax' as const,
+      },
+    ]);
 
     setupFavoritesMocks(page);
 
@@ -365,7 +380,9 @@ test.describe('Favorites Page', () => {
     await page.goto('/favorites');
 
     // Wait for page to load
-    await expect(page.getByRole('heading', { name: /my favorites/i })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('heading', { name: /my favorites/i })).toBeVisible({
+      timeout: 15000,
+    });
 
     // Click "New Collection" button
     const newCollectionButton = page.getByRole('button', { name: /new collection/i });
@@ -406,14 +423,16 @@ test.describe('Favorites Page', () => {
       });
     });
 
-    await page.context().addCookies([{
-      name: 'access_token',
-      value: 'mock-access-token',
-      domain: 'localhost',
-      path: '/',
-      httpOnly: true,
-      sameSite: 'Lax' as const,
-    }]);
+    await page.context().addCookies([
+      {
+        name: 'access_token',
+        value: 'mock-access-token',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax' as const,
+      },
+    ]);
 
     let requestedCollectionId: string | null = null;
 
@@ -441,10 +460,13 @@ test.describe('Favorites Page', () => {
     await page.goto('/favorites');
 
     // Wait for page to load
-    await expect(page.getByRole('heading', { name: /my favorites/i })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('heading', { name: /my favorites/i })).toBeVisible({
+      timeout: 15000,
+    });
 
-    // Click on a collection in the sidebar (Family Homes)
-    const collectionButton = page.getByRole('button', { name: /family homes/i });
+    // Click on a collection in the sidebar (Family Homes). The collections
+    // are buttons with the role "option" - they belong to a listbox.
+    const collectionButton = page.getByRole('option', { name: /family homes/i });
     await collectionButton.click();
 
     // Should have requested with collection_id
@@ -473,14 +495,16 @@ test.describe('Favorites Page', () => {
       });
     });
 
-    await page.context().addCookies([{
-      name: 'access_token',
-      value: 'mock-access-token',
-      domain: 'localhost',
-      path: '/',
-      httpOnly: true,
-      sameSite: 'Lax' as const,
-    }]);
+    await page.context().addCookies([
+      {
+        name: 'access_token',
+        value: 'mock-access-token',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax' as const,
+      },
+    ]);
 
     // Mock favorites API to return error
     await page.route('**/api/v1/favorites?**', async (route) => {
@@ -509,8 +533,9 @@ test.describe('Favorites Page', () => {
 
     await page.goto('/favorites');
 
-    // The favorites page shows error in a destructive-colored div
-    // The context stores the error message
-    await expect(page.getByText(/failed to load favorites/i)).toBeVisible({ timeout: 15000 });
+    // The favorites page shows the error of the context in a destructive
+    // colored div. The text is the message of the API, so the alert itself is
+    // checked.
+    await expect(page.locator('[role="alert"]')).toBeVisible({ timeout: 15000 });
   });
 });

@@ -4,15 +4,16 @@
  */
 
 import { test, expect } from '../conftest';
-import { mockChatWithSources } from '../mocks';
+import { mockChatWithSources, mockChatWithSourcesDelayed } from '../mocks';
 
 test.describe('End-to-End Chat Flow', () => {
   test('should complete full chat interaction: send → stream → sources visible', async ({
     authenticatedChatPage,
     page,
   }) => {
-    // Mock chat API to return streaming response with sources
-    await page.route('**/api/v1/chat*', mockChatWithSources);
+    // Mock chat API to return streaming response with sources. The answer is
+    // delayed, so the state "Thinking..." of the assistant is visible.
+    await page.route('**/api/v1/chat*', mockChatWithSourcesDelayed(1500));
 
     // Step 1: Navigate and verify chat interface loads
     await authenticatedChatPage.navigate();
@@ -23,11 +24,15 @@ test.describe('End-to-End Chat Flow', () => {
     await authenticatedChatPage.sendMessage('Find apartments in Berlin under €1500');
 
     // Step 3: Verify loading indicator appears (streaming started)
-    await expect(
-      page.locator('text=Thinking').or(page.locator('.animate-spin'))
-    ).toBeVisible({ timeout: 5000 });
+    await expect(authenticatedChatPage.loadingIndicator).toBeVisible({ timeout: 5000 });
 
     // Step 4: Wait for streaming response to complete and render
+    // Step 4: Wait for the answer. The citations of the answer appear when
+    // the stream is complete - before that the bubble shows the placeholder
+    // "Thinking...".
+    const citationsExpander = page.locator('details:has(summary:has-text("Citations"))');
+    await expect(citationsExpander).toBeVisible({ timeout: 30000 });
+
     await expect(authenticatedChatPage.lastAssistantMessage).toBeVisible({
       timeout: 30000,
     });
@@ -35,11 +40,9 @@ test.describe('End-to-End Chat Flow', () => {
     // Step 5: Verify response contains expected property content
     const responseText = await authenticatedChatPage.getLastAssistantMessageText();
     expect(responseText.length).toBeGreaterThan(0);
-    expect(responseText.toLowerCase()).toContain('property');
+    expect(responseText.toLowerCase()).toMatch(/propert/);
 
     // Step 6: Verify sources/citations expander is visible
-    // CitationDisplay uses <details> with <summary>Citations (N)</summary>
-    const citationsExpander = page.locator('details:has(summary:has-text("Citations"))');
     const sourcesExpander = page.locator('details:has(summary:has-text("Sources"))');
     const expander = citationsExpander.or(sourcesExpander);
 
@@ -82,7 +85,7 @@ test.describe('End-to-End Chat Flow', () => {
 
     // Verify the response text is rendered (contains expected content from mock)
     const responseText = await authenticatedChatPage.getLastAssistantMessageText();
-    expect(responseText).toContain('property');
+    expect(responseText).toMatch(/propert/i);
     expect(responseText).toContain('Mitte');
   });
 

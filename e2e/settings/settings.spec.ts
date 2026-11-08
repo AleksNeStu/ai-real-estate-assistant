@@ -73,6 +73,13 @@ const MOCK_MODEL_CATALOG = [
  * Setup auth and common settings mocks.
  */
 async function setupSettingsPage(page: import('@playwright/test').Page) {
+  // The settings of the notification section belong to a user and are read
+  // from the local storage - without the email the section only shows a hint
+  // that an email is required.
+  await page.addInitScript(() => {
+    window.localStorage.setItem('userEmail', 'test@example.com');
+  });
+
   // Auth mock
   await page.route('**/api/v1/auth/me', async (route) => {
     await route.fulfill({
@@ -90,14 +97,16 @@ async function setupSettingsPage(page: import('@playwright/test').Page) {
     });
   });
 
-  await page.context().addCookies([{
-    name: 'access_token',
-    value: 'mock-access-token',
-    domain: 'localhost',
-    path: '/',
-    httpOnly: true,
-    sameSite: 'Lax' as const,
-  }]);
+  await page.context().addCookies([
+    {
+      name: 'access_token',
+      value: 'mock-access-token',
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true,
+      sameSite: 'Lax' as const,
+    },
+  ]);
 
   // Notification settings mock
   await page.route('**/api/v1/settings/notifications', async (route) => {
@@ -153,6 +162,19 @@ async function setupSettingsPage(page: import('@playwright/test').Page) {
 
   // Per-task model preferences mock
   await page.route('**/api/v1/model-preferences**', async (route) => {
+    // The system defaults live under the same path and have their own shape.
+    if (route.request().url().includes('/system/defaults')) {
+      await route.fulfill({
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          defaults: [],
+          available_providers: ['openai', 'ollama'],
+          available_models: { openai: ['gpt-4o'], ollama: ['llama3.3:8b'] },
+        }),
+      });
+      return;
+    }
     await route.fulfill({
       status: 200,
       headers: { 'Content-Type': 'application/json' },
@@ -188,11 +210,11 @@ test.describe('Settings Page', () => {
     await expect(mainHeading).toBeVisible({ timeout: 15000 });
 
     // Verify all section headings are visible
-    await expect(page.getByRole('heading', { name: /^identity$/i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /^profile$/i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /privacy/i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /^notifications$/i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /^models$/i })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: /^identity$/i })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: /^profile$/i })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: /privacy/i })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: /^notifications$/i })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: /^models$/i })).toBeVisible();
   });
 
   test('should display current user identity settings', async ({ page }) => {
@@ -201,14 +223,18 @@ test.describe('Settings Page', () => {
     await page.goto('/settings');
 
     // Wait for page to load
-    await expect(page.getByRole('heading', { name: /^identity$/i })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('heading', { level: 2, name: /^identity$/i })).toBeVisible({
+      timeout: 15000,
+    });
 
-    // The IdentitySettings card should have the email input
-    const emailInput = page.getByLabel(/email/i).or(page.locator('#settings_user_email'));
+    // The IdentitySettings card should have the email input. Only the id is
+    // used: the footer of the site carries a newsletter field labelled
+    // "Email address" as well, and a loose label match collects both.
+    const emailInput = page.locator('#settings_user_email');
     await expect(emailInput).toBeVisible({ timeout: 10000 });
 
-    // Should show the Identity card title
-    await expect(page.getByText(/set the email address used to scope settings/i)).toBeVisible();
+    // Should show the hint of the Identity card
+    await expect(page.getByText(/stored locally in your browser/i)).toBeVisible();
   });
 
   test('should toggle notification setting and save', async ({ page }) => {
@@ -217,7 +243,9 @@ test.describe('Settings Page', () => {
     await page.goto('/settings');
 
     // Wait for notifications section to be visible
-    await expect(page.getByRole('heading', { name: /^notifications$/i })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('heading', { name: /^notifications$/i })).toBeVisible({
+      timeout: 15000,
+    });
 
     // Find the "Price Alerts" checkbox
     const priceAlertsCheckbox = page.locator('#price_alerts');
@@ -249,19 +277,35 @@ test.describe('Settings Page', () => {
     // Wait for models section
     await expect(page.getByRole('heading', { name: /^models$/i })).toBeVisible({ timeout: 15000 });
 
-    // Should show model providers from the catalog
-    await expect(page.getByText('OpenAI')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('Ollama (Local)')).toBeVisible();
+    // Should show model providers from the catalog. The names also appear in
+    // the provider selection of the model settings - there they are options
+    // of a closed list and therefore not visible. The catalog itself is
+    // rendered in the table of the models section.
+    const modelsSection = page.locator('section').filter({
+      has: page.getByRole('heading', { name: /^models$/i }),
+    });
+    await expect(
+      modelsSection.getByText('OpenAI', { exact: true }).locator('visible=true')
+    ).toBeVisible({ timeout: 10000 });
+    await expect(
+      modelsSection.getByText('Ollama (Local)', { exact: true }).locator('visible=true')
+    ).toBeVisible();
 
     // Should show model details
-    await expect(page.getByText('GPT-4o')).toBeVisible();
-    await expect(page.getByText('128,000')).toBeVisible(); // context window
+    await expect(modelsSection.getByText('GPT-4o').first()).toBeVisible();
+    await expect(modelsSection.getByText('128,000').first()).toBeVisible(); // context window
 
     // Should show the Refresh Catalog button
     await expect(page.getByRole('button', { name: /refresh catalog/i })).toBeVisible();
   });
 
   test('should handle error when notification settings save fails', async ({ page }) => {
+    // The notification settings belong to a user - the email is read from the
+    // local storage.
+    await page.addInitScript(() => {
+      window.localStorage.setItem('userEmail', 'test@example.com');
+    });
+
     // Setup auth
     await page.route('**/api/v1/auth/me', async (route) => {
       await route.fulfill({
@@ -279,14 +323,16 @@ test.describe('Settings Page', () => {
       });
     });
 
-    await page.context().addCookies([{
-      name: 'access_token',
-      value: 'mock-access-token',
-      domain: 'localhost',
-      path: '/',
-      httpOnly: true,
-      sameSite: 'Lax' as const,
-    }]);
+    await page.context().addCookies([
+      {
+        name: 'access_token',
+        value: 'mock-access-token',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax' as const,
+      },
+    ]);
 
     // GET returns settings normally
     await page.route('**/api/v1/settings/notifications', async (route) => {
@@ -324,6 +370,19 @@ test.describe('Settings Page', () => {
     });
 
     await page.route('**/api/v1/model-preferences**', async (route) => {
+      // The system defaults live under the same path and have their own shape.
+      if (route.request().url().includes('/system/defaults')) {
+        await route.fulfill({
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            defaults: [],
+            available_providers: ['openai', 'ollama'],
+            available_models: { openai: ['gpt-4o'], ollama: ['llama3.3:8b'] },
+          }),
+        });
+        return;
+      }
       await route.fulfill({
         status: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -334,7 +393,9 @@ test.describe('Settings Page', () => {
     await page.goto('/settings');
 
     // Wait for notifications section
-    await expect(page.getByRole('heading', { name: /^notifications$/i })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('heading', { name: /^notifications$/i })).toBeVisible({
+      timeout: 15000,
+    });
 
     // Wait for settings to load
     const priceAlertsCheckbox = page.locator('#price_alerts');

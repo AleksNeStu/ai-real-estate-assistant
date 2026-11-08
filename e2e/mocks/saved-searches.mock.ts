@@ -84,16 +84,20 @@ export async function mockDeleteSavedSearch(route: Route): Promise<void> {
  */
 export async function mockSavedSearchesError(
   route: Route,
-  statusCode: number = 500,
-  message: string = 'Failed to load saved searches'
+  statusCode?: number,
+  message?: string
 ): Promise<void> {
+  // Playwright calls the handler with (route, request) - the second argument is
+  // the request object and not the status code.
+  const status = typeof statusCode === 'number' ? statusCode : 500;
+  const text = typeof message === 'string' ? message : 'Failed to load saved searches';
   await route.fulfill({
-    status: statusCode,
+    status,
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
     },
-    body: JSON.stringify({ detail: message }),
+    body: JSON.stringify({ detail: text }),
   });
 }
 

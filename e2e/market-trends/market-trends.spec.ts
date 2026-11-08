@@ -65,7 +65,9 @@ test.describe('Market Trends', () => {
       await marketPage.waitForLoad();
 
       // Verify chart titles
-      await expect(authenticatedPage.getByText('Price Trends')).toBeVisible({ timeout: 10000 });
+      await expect(authenticatedPage.getByText('Average and Median Prices')).toBeVisible({
+        timeout: 10000,
+      });
       await expect(authenticatedPage.getByText('Listing Volume')).toBeVisible();
     });
 
@@ -117,7 +119,9 @@ test.describe('Market Trends', () => {
       await expect(authenticatedPage.getByText(/stable/i)).toBeVisible({ timeout: 10000 });
     });
 
-    test('should change interval filter and trigger data refresh', async ({ authenticatedPage }) => {
+    test('should change interval filter and trigger data refresh', async ({
+      authenticatedPage,
+    }) => {
       let trendsCalls = 0;
 
       await authenticatedPage.route('**/api/v1/market/indicators**', mockMarketIndicators);
@@ -158,7 +162,9 @@ test.describe('Market Trends', () => {
       await marketPage.waitForLoad();
 
       // Should still show data
-      await expect(authenticatedPage.getByText('Price Trends')).toBeVisible({ timeout: 10000 });
+      await expect(authenticatedPage.getByText('Average and Median Prices')).toBeVisible({
+        timeout: 10000,
+      });
     });
   });
 
@@ -177,9 +183,11 @@ test.describe('Market Trends', () => {
       await authenticatedPage.goto('/market-trends');
 
       // Loading spinner should appear
-      await expect(marketPage.loadingSpinner).toBeVisible({ timeout: 1000 }).catch(() => {
-        // Spinner may be very fast - the test still validates the page loads
-      });
+      await expect(marketPage.loadingSpinner)
+        .toBeVisible({ timeout: 1000 })
+        .catch(() => {
+          // Spinner may be very fast - the test still validates the page loads
+        });
 
       // Wait for data to load
       await marketPage.waitForLoad();

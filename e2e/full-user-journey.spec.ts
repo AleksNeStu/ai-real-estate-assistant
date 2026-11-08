@@ -78,11 +78,16 @@ test.describe('Full User Journey @integration @smoke', () => {
       await page.waitForLoadState('networkidle');
 
       // Find and fill search input
-      const searchInput = page.getByLabel('Search query').or(page.getByPlaceholder(/describe what you/i)).or(page.locator('input[type="text"], textarea').first());
+      const searchInput = page
+        .getByLabel('Search query')
+        .or(page.getByPlaceholder(/describe what you/i))
+        .or(page.locator('input[type="text"], textarea').first());
       await searchInput.fill('2-bedroom apartments in Berlin');
 
-      // Submit search
-      const searchButton = page.getByRole('button', { name: /^search$/i }).or(page.locator('form button[type="submit"]'));
+      // Submit search. The submit button of the search form carries a test
+      // id - a plain "button[type=submit]" would also collect the button of
+      // the newsletter form in the footer.
+      const searchButton = page.getByTestId('search-submit');
       if (await searchButton.isVisible()) {
         await searchButton.click();
       }
@@ -110,7 +115,9 @@ test.describe('Full User Journey @integration @smoke', () => {
       });
 
       // Try to click a property card
-      const propertyCard = page.locator('[data-testid="property-card"], .property-card, article').first();
+      const propertyCard = page
+        .locator('[data-testid="property-card"], .property-card, article')
+        .first();
       if (await propertyCard.isVisible({ timeout: 10000 }).catch(() => false)) {
         await propertyCard.click();
 
@@ -137,7 +144,11 @@ test.describe('Full User Journey @integration @smoke', () => {
           await route.fulfill({
             status: 201,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: 'fav-new', property_id: 'prop-001', created_at: new Date().toISOString() }),
+            body: JSON.stringify({
+              id: 'fav-new',
+              property_id: 'prop-001',
+              created_at: new Date().toISOString(),
+            }),
           });
         } else {
           await route.fulfill({
@@ -154,7 +165,10 @@ test.describe('Full User Journey @integration @smoke', () => {
       });
 
       // Find and click favorite button on first property card
-      const favoriteButton = page.locator('button').filter({ has: page.locator('svg.lucide-heart, svg') }).first();
+      const favoriteButton = page
+        .locator('button')
+        .filter({ has: page.locator('svg.lucide-heart, svg') })
+        .first();
       if (await favoriteButton.isVisible({ timeout: 5000 }).catch(() => false)) {
         await favoriteButton.click();
       }
@@ -167,16 +181,24 @@ test.describe('Full User Journey @integration @smoke', () => {
       await page.goto('/chat');
 
       // Wait for chat interface
-      const messageInput = page.getByLabel(/chat message input/i).or(page.getByPlaceholder(/type your question|ask about/i));
+      const messageInput = page
+        .getByLabel(/chat message input/i)
+        .or(page.getByPlaceholder(/type your question|ask about/i));
       await expect(messageInput).toBeVisible({ timeout: 10000 });
 
-      // Send a message
+      // Send a message. The chat marks the button with data-testid="chat-send";
+      // the newsletter of the footer has a submit button of its own, which the
+      // plain "form button[type=submit]" collected as well.
       await messageInput.fill('Find me a 2-bedroom apartment in Berlin');
-      const sendButton = page.getByLabel(/send(ing)? message/i).or(page.locator('form button[type="submit"]'));
+      const sendButton = page.getByTestId('chat-send').or(page.getByLabel(/^send(ing)? message$/i));
       await sendButton.click();
 
       // Wait for response or loading indicator
-      const responseAppeared = await page.locator('.bg-background, .assistant-message, [data-testid="assistant-message"]').first().isVisible({ timeout: 15000 }).catch(() => false);
+      const responseAppeared = await page
+        .locator('.bg-background, .assistant-message, [data-testid="assistant-message"]')
+        .first()
+        .isVisible({ timeout: 15000 })
+        .catch(() => false);
       // Chat response or loading indicator should appear within timeout
       expect(responseAppeared).toBeTruthy();
     });
@@ -230,12 +252,14 @@ async function setupPageAuth(page: import('@playwright/test').Page): Promise<voi
     await mockGetCurrentUser(route);
   });
 
-  await page.context().addCookies([{
-    name: 'access_token',
-    value: 'mock-access-token',
-    domain: 'localhost',
-    path: '/',
-    httpOnly: true,
-    sameSite: 'Lax' as const,
-  }]);
+  await page.context().addCookies([
+    {
+      name: 'access_token',
+      value: 'mock-access-token',
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true,
+      sameSite: 'Lax' as const,
+    },
+  ]);
 }

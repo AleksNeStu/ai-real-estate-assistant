@@ -16,20 +16,40 @@ export class LoginPage {
 
   constructor(page: Page) {
     this.page = page;
-    // Actual UI uses <Label htmlFor="email"> and <Input id="email">
-    this.emailInput = page.getByLabel('Email').or(page.getByRole('textbox', { name: /email/i }));
-    this.passwordInput = page.getByLabel('Password').or(page.getByRole('textbox', { name: /password/i }));
-    // Submit button - must be inside the form, and be type="submit" to avoid matching nav buttons
-    this.submitButton = page.locator('form button[type="submit"]').or(
-      page.locator('button[type="submit"]').filter({ hasText: /sign in|log in|zaloguj/i })
-    );
+    // Actual UI uses <Label htmlFor="email"> and <Input id="email">.
+    // The name has to match exactly: the footer carries a newsletter field
+    // labelled "Email address", and a loose match collects that one as well -
+    // two elements, and every action on them fails the strict mode.
+    this.emailInput = page
+      .getByLabel('Email', { exact: true })
+      .or(page.getByRole('textbox', { name: /^email$/i }));
+    this.passwordInput = page
+      .getByLabel('Password', { exact: true })
+      .or(page.getByRole('textbox', { name: /^password$/i }));
+    // Submit button - must be inside the form of the login, and be
+    // type="submit" to avoid matching nav buttons. The footer newsletter has a
+    // form with a submit button of its own, so the form is found through the
+    // email field it belongs to.
+    const loginForm = page.locator('form').filter({ has: page.locator('#email') });
+    this.submitButton = loginForm
+      .locator('button[type="submit"]')
+      .or(page.locator('button[type="submit"]').filter({ hasText: /sign in|log in|zaloguj/i }));
     // Error message is in div with bg-destructive/15 class - be specific to avoid matching Next.js route announcer
-    this.errorMessage = page.locator('.bg-destructive\\/15, .text-destructive').filter({ has: page.locator('svg, span, p') }).first();
+    this.errorMessage = page
+      .locator('.bg-destructive\\/15, .text-destructive')
+      .filter({ has: page.locator('svg, span, p') })
+      .first();
     // Forgot password link - handle multiple languages (EN/PL/RU) - it's a small link next to Password label
     // Use regex for case-insensitive matching
-    this.forgotPasswordLink = page.locator('a.text-xs').filter({ hasText: /forgot|zapomniał|забыл/i }).first();
+    this.forgotPasswordLink = page
+      .locator('a.text-xs')
+      .filter({ hasText: /forgot|zapomniał|забыл/i })
+      .first();
     // Register/sign up link - handle multiple languages - it's in the card footer with underline class
-    this.registerLink = page.locator('a.underline').filter({ hasText: /sign up|create account|zarejestruj|зарегистрироваться/i }).first();
+    this.registerLink = page
+      .locator('a.underline')
+      .filter({ hasText: /sign up|create account|zarejestruj|зарегистрироваться/i })
+      .first();
   }
 
   /**

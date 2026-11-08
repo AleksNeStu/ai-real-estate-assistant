@@ -26,8 +26,41 @@ export function createMockLLMStreamResponse(
 
 /**
  * Mock a successful chat API response.
+ *
+ * When the request asks for the intermediate steps (the debug mode of the
+ * chat), the stream starts with a meta event that carries them - the chat
+ * shows them in a details element.
  */
 export async function mockChatSuccess(route: Route): Promise<void> {
+  const request = route.request();
+  let wantsIntermediateSteps = false;
+  try {
+    const body = request.postDataJSON() as { include_intermediate_steps?: boolean } | null;
+    wantsIntermediateSteps = body?.include_intermediate_steps === true;
+  } catch {
+    // A request without a body is answered with the plain stream.
+  }
+
+  const metaEvent = wantsIntermediateSteps
+    ? `event: meta\ndata: ${JSON.stringify({
+        session_id: 'test-session-001',
+        intermediate_steps: [
+          {
+            type: 'tool_call',
+            name: 'search_properties',
+            args: { query: 'Berlin' },
+            result: '2 properties found',
+          },
+          {
+            type: 'tool_call',
+            name: 'get_market_data',
+            args: { city: 'Berlin' },
+            result: 'average price 1,350 EUR',
+          },
+        ],
+      })}\n\n`
+    : '';
+
   await route.fulfill({
     status: 200,
     headers: {
@@ -37,7 +70,7 @@ export async function mockChatSuccess(route: Route): Promise<void> {
       'Access-Control-Expose-Headers': 'X-Request-ID',
       'X-Request-ID': 'req-mock-chat-success',
     },
-    body: createMockLLMStreamResponse(),
+    body: metaEvent + createMockLLMStreamResponse(),
   });
 }
 
@@ -46,18 +79,22 @@ export async function mockChatSuccess(route: Route): Promise<void> {
  */
 export async function mockChatError(
   route: Route,
-  statusCode: number = 500,
-  message: string = 'Internal server error'
+  statusCode?: number,
+  message?: string
 ): Promise<void> {
+  // Playwright calls the handler with (route, request) - the second argument is
+  // the request object and not the status code.
+  const status = typeof statusCode === 'number' ? statusCode : 500;
+  const text = typeof message === 'string' ? message : 'Internal server error';
   await route.fulfill({
-    status: statusCode,
+    status,
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Expose-Headers': 'X-Request-ID',
-      'X-Request-ID': `req-mock-chat-error-${statusCode}`,
+      'X-Request-ID': `req-mock-chat-error-${status}`,
     },
-    body: JSON.stringify({ detail: message }),
+    body: JSON.stringify({ detail: text }),
   });
 }
 
@@ -100,6 +137,26 @@ export function createMockChatWithRetry(failAttempts: number = 1) {
 /**
  * Mock chat response with property sources.
  */
+export function mockChatSuccessDelayed(delayMs: number = 800) {
+  return async (route: Route): Promise<void> => {
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+    await mockChatSuccess(route);
+  };
+}
+
+/**
+ * The chat response with the sources, delayed.
+ */
+export function mockChatWithSourcesDelayed(delayMs: number = 800) {
+  return async (route: Route): Promise<void> => {
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+    await mockChatWithSources(route);
+  };
+}
+
+/**
+ * Mock chat response with property sources.
+ */
 export async function mockChatWithSources(route: Route): Promise<void> {
   const responseChunks = [
     'I found 2 properties matching your search:',
@@ -124,7 +181,11 @@ export async function mockChatWithSources(route: Route): Promise<void> {
       },
       {
         content: 'Spacious 3-Bedroom Flat in Prenzlauer Berg',
-        metadata: { id: 'prop-002', title: 'Spacious 3-Bedroom Flat in Prenzlauer Berg', score: 0.88 },
+        metadata: {
+          id: 'prop-002',
+          title: 'Spacious 3-Bedroom Flat in Prenzlauer Berg',
+          score: 0.88,
+        },
       },
     ],
     session_id: 'test-session-001',

@@ -10,6 +10,8 @@ export class ChatPage {
   readonly messageInput: Locator;
   readonly sendButton: Locator;
   readonly messagesContainer: Locator;
+  readonly userMessage: Locator;
+  readonly assistantMessage: Locator;
   readonly lastAssistantMessage: Locator;
   readonly retryButton: Locator;
   readonly errorMessage: Locator;
@@ -21,23 +23,40 @@ export class ChatPage {
   constructor(page: Page) {
     this.page = page;
     // Actual UI: input with aria-label="Chat message input"
-    this.messageInput = page.getByLabel(/chat message input/i).or(page.getByPlaceholder(/type your question|ask about properties/i));
-    // Send button has aria-label="Send message" or "Sending..."
-    this.sendButton = page.getByLabel(/send(ing)? message/i).or(page.locator('form button[type="submit"]'));
-    // Messages container - the scrollable div containing messages
-    this.messagesContainer = page.locator('.flex-1.overflow-y-auto, .overflow-y-auto').first();
-    // Assistant messages - divs with Bot icon, bg-background or error styling
-    this.lastAssistantMessage = this.messagesContainer.locator('div.bg-background, div.bg-destructive\\/10, div.border').filter({ has: page.locator('svg') }).last();
+    this.messageInput = page
+      .getByLabel(/chat message input/i)
+      .or(page.getByPlaceholder(/type your question|ask about properties/i));
+    // Send button: the chat marks it with data-testid="chat-send" and gives
+    // it the aria-label "Send message" (or "Sending..." while it waits). The
+    // newsletter of the footer has a form with a submit button of its own, so
+    // the plain "form button[type=submit]" collected that one as well.
+    this.sendButton = page.getByTestId('chat-send').or(page.getByLabel(/^send(ing)? message$/i));
+    // Messages container - the scrollable div containing the messages
+    this.messagesContainer = page.locator('div.flex-1.overflow-y-auto').first();
+    // A message bubble is a direct child of the messages container. The user
+    // bubble carries a muted background, the assistant one a plain background
+    // with a border. The loading indicator shares the classes of an assistant
+    // bubble, but it is marked with an aria-label and is therefore excluded.
+    this.userMessage = this.messagesContainer.locator(
+      ':scope > div.w-full.items-start.bg-muted\\/50'
+    );
+    this.assistantMessage = this.messagesContainer.locator(
+      ':scope > div.w-full.items-start.bg-background.border:not([aria-label])'
+    );
+    this.lastAssistantMessage = this.assistantMessage.last();
     // Retry button appears in error state - button with RefreshCw icon or "Retry" text
-    this.retryButton = page.getByRole('button', { name: /retry/i });
-    // Error messages appear in red/border-destructive styling
-    this.errorMessage = page.locator('.bg-destructive\\/10, .bg-destructive\\/15, [role="alert"]');
-    // Sources are in a details element with "Sources (N)" summary
-    this.sourcesContainer = page.locator('details:has(summary:has-text("Sources"))');
-    // Loading indicator - shows "Thinking..." text or spinner
-    this.loadingIndicator = page.locator('text=Thinking').or(page.locator('.animate-spin')).or(page.locator('.loader'));
+    this.retryButton = page.getByRole('button', { name: /^retry$/i });
+    // The error bubble is the only alert inside the conversation
+    this.errorMessage = this.messagesContainer.locator('[role="alert"]');
+    // Citations are in a details element with a "Citations (N)" summary
+    this.sourcesContainer = page.locator('details:has(summary:has-text("Citations"))');
+    // Loading indicator - the "Thinking..." status of the streaming answer.
+    // It is the only status with an aria-label (the empty state has none).
+    this.loadingIndicator = page.locator('[role="status"][aria-label]');
     // Suggested prompts are buttons in the empty state with text-left class
-    this.suggestedPrompts = page.locator('button.text-left.text-sm.text-primary, .space-y-2 button.text-left');
+    this.suggestedPrompts = page.locator(
+      'button.text-left.text-sm.text-primary, .space-y-2 button.text-left'
+    );
     // Session history not currently in UI
     this.sessionHistory = page.locator('aside, [data-testid="session-history"]');
   }
@@ -71,10 +90,14 @@ export class ChatPage {
    * Wait for the assistant response to appear.
    */
   async waitForResponse(): Promise<void> {
-    // Wait for loading to start and then complete
-    await expect(this.loadingIndicator.or(this.lastAssistantMessage)).toBeVisible({ timeout: 5000 });
-    // Wait for the response to complete (loading indicator disappears or response appears)
-    await expect(this.lastAssistantMessage).toBeVisible({ timeout: 30000 });
+    // The answer is streamed: the bubble of the assistant appears at once and
+    // is filled while the stream runs. It counts as answered when it carries
+    // a text.
+    await expect
+      .poll(async () => ((await this.lastAssistantMessage.textContent()) ?? '').trim().length, {
+        timeout: 30000,
+      })
+      .toBeGreaterThan(0);
   }
 
   /**
@@ -123,11 +146,11 @@ export class ChatPage {
   }
 
   /**
-   * Get the number of displayed sources.
+   * Get the number of displayed sources (citations).
    */
   async getSourceCount(): Promise<number> {
-    if (!await this.hasSources()) return 0;
-    const sources = this.sourcesContainer.locator('[data-testid="source-item"], .source-item, li');
+    if (!(await this.hasSources())) return 0;
+    const sources = this.sourcesContainer.locator('ol > li');
     return await sources.count();
   }
 
@@ -135,7 +158,7 @@ export class ChatPage {
    * Click on a source to view property details.
    */
   async clickSource(index: number = 0): Promise<void> {
-    const sources = this.sourcesContainer.locator('[data-testid="source-item"], .source-item, li');
+    const sources = this.sourcesContainer.locator('ol > li');
     const source = sources.nth(index);
     if (await source.isVisible()) {
       await source.click();
@@ -165,11 +188,10 @@ export class ChatPage {
    * Get all user messages in the conversation.
    */
   async getUserMessages(): Promise<string[]> {
-    const userMessages = this.messagesContainer.locator('[data-testid="user-message"], .user-message');
-    const count = await userMessages.count();
+    const count = await this.userMessage.count();
     const messages: string[] = [];
     for (let i = 0; i < count; i++) {
-      messages.push((await userMessages.nth(i).textContent()) || '');
+      messages.push((await this.userMessage.nth(i).textContent()) || '');
     }
     return messages;
   }
@@ -178,11 +200,10 @@ export class ChatPage {
    * Get all assistant messages in the conversation.
    */
   async getAssistantMessages(): Promise<string[]> {
-    const assistantMessages = this.messagesContainer.locator('[data-testid="assistant-message"], .assistant-message');
-    const count = await assistantMessages.count();
+    const count = await this.assistantMessage.count();
     const messages: string[] = [];
     for (let i = 0; i < count; i++) {
-      messages.push((await assistantMessages.nth(i).textContent()) || '');
+      messages.push((await this.assistantMessage.nth(i).textContent()) || '');
     }
     return messages;
   }

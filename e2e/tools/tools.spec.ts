@@ -33,7 +33,9 @@ test.describe('Tools', () => {
       await expect(authenticatedPage.getByText('Neighborhood Quality Index')).toBeVisible();
     });
 
-    test('should display mortgage calculator inputs with defaults', async ({ authenticatedPage }) => {
+    test('should display mortgage calculator inputs with defaults', async ({
+      authenticatedPage,
+    }) => {
       const toolsPage = new ToolsPage(authenticatedPage);
       await toolsPage.navigate();
 
@@ -53,7 +55,10 @@ test.describe('Tools', () => {
 
   test.describe('Mortgage Calculator', () => {
     test('should calculate mortgage with valid inputs @smoke', async ({ authenticatedPage }) => {
-      await authenticatedPage.route('**/api/v1/tools/mortgage-calculator**', mockMortgageCalculator);
+      await authenticatedPage.route(
+        '**/api/v1/tools/mortgage-calculator**',
+        mockMortgageCalculator
+      );
 
       const toolsPage = new ToolsPage(authenticatedPage);
       await toolsPage.navigate();
@@ -75,7 +80,10 @@ test.describe('Tools', () => {
     });
 
     test('should calculate with different loan parameters', async ({ authenticatedPage }) => {
-      await authenticatedPage.route('**/api/v1/tools/mortgage-calculator**', mockMortgageCalculator);
+      await authenticatedPage.route(
+        '**/api/v1/tools/mortgage-calculator**',
+        mockMortgageCalculator
+      );
 
       const toolsPage = new ToolsPage(authenticatedPage);
       await toolsPage.navigate();
@@ -106,9 +114,11 @@ test.describe('Tools', () => {
       await toolsPage.calculateMortgage();
 
       // Verify button shows loading text
-      await expect(authenticatedPage.getByText('Calculating...')).toBeVisible({ timeout: 1000 }).catch(() => {
-        // Button may have already resolved
-      });
+      await expect(authenticatedPage.getByText('Calculating...'))
+        .toBeVisible({ timeout: 1000 })
+        .catch(() => {
+          // Button may have already resolved
+        });
 
       // Wait for result
       await expect(toolsPage.mortgageResult).toBeVisible({ timeout: 10000 });
@@ -162,9 +172,11 @@ test.describe('Tools', () => {
       await toolsPage.fillAndCompare(['prop-001', 'prop-002']);
 
       // Verify button shows loading text
-      await expect(authenticatedPage.getByText('Comparing...')).toBeVisible({ timeout: 1000 }).catch(() => {
-        // Button may have already resolved
-      });
+      await expect(authenticatedPage.getByText('Comparing...'))
+        .toBeVisible({ timeout: 1000 })
+        .catch(() => {
+          // Button may have already resolved
+        });
 
       // Wait for result
       await expect(toolsPage.compareResult).toBeVisible({ timeout: 10000 });
@@ -186,7 +198,10 @@ test.describe('Tools', () => {
 
   test.describe('Neighborhood Quality', () => {
     test('should analyze neighborhood quality by property ID', async ({ authenticatedPage }) => {
-      await authenticatedPage.route('**/api/v1/tools/neighborhood-quality**', mockNeighborhoodQuality);
+      await authenticatedPage.route(
+        '**/api/v1/tools/neighborhood-quality**',
+        mockNeighborhoodQuality
+      );
 
       const toolsPage = new ToolsPage(authenticatedPage);
       await toolsPage.navigate();
@@ -204,7 +219,10 @@ test.describe('Tools', () => {
     });
 
     test('should analyze neighborhood quality with coordinates', async ({ authenticatedPage }) => {
-      await authenticatedPage.route('**/api/v1/tools/neighborhood-quality**', mockNeighborhoodQuality);
+      await authenticatedPage.route(
+        '**/api/v1/tools/neighborhood-quality**',
+        mockNeighborhoodQuality
+      );
 
       const toolsPage = new ToolsPage(authenticatedPage);
       await toolsPage.navigate();
@@ -220,7 +238,10 @@ test.describe('Tools', () => {
     });
 
     test('should display score breakdown bars', async ({ authenticatedPage }) => {
-      await authenticatedPage.route('**/api/v1/tools/neighborhood-quality**', mockNeighborhoodQuality);
+      await authenticatedPage.route(
+        '**/api/v1/tools/neighborhood-quality**',
+        mockNeighborhoodQuality
+      );
 
       const toolsPage = new ToolsPage(authenticatedPage);
       await toolsPage.navigate();
@@ -239,7 +260,10 @@ test.describe('Tools', () => {
 
   test.describe('Error Handling', () => {
     test('should display error on mortgage calculation failure', async ({ authenticatedPage }) => {
-      await authenticatedPage.route('**/api/v1/tools/mortgage-calculator**', mockMortgageCalculatorError);
+      await authenticatedPage.route(
+        '**/api/v1/tools/mortgage-calculator**',
+        mockMortgageCalculatorError
+      );
 
       const toolsPage = new ToolsPage(authenticatedPage);
       await toolsPage.navigate();
@@ -251,7 +275,10 @@ test.describe('Tools', () => {
     });
 
     test('should display error on comparison failure', async ({ authenticatedPage }) => {
-      await authenticatedPage.route('**/api/v1/tools/compare-properties**', mockComparePropertiesError);
+      await authenticatedPage.route(
+        '**/api/v1/tools/compare-properties**',
+        mockComparePropertiesError
+      );
 
       const toolsPage = new ToolsPage(authenticatedPage);
       await toolsPage.navigate();
@@ -263,7 +290,10 @@ test.describe('Tools', () => {
     });
 
     test('should display error on neighborhood quality failure', async ({ authenticatedPage }) => {
-      await authenticatedPage.route('**/api/v1/tools/neighborhood-quality**', mockNeighborhoodQualityError);
+      await authenticatedPage.route(
+        '**/api/v1/tools/neighborhood-quality**',
+        mockNeighborhoodQualityError
+      );
 
       const toolsPage = new ToolsPage(authenticatedPage);
       await toolsPage.navigate();
@@ -320,14 +350,23 @@ test.describe('Tools', () => {
       await expect(heading).toBeVisible({ timeout: 10000 });
 
       // Attempting to calculate should show error
-      const propertyPriceInput = page.locator('section').filter({ hasText: /mortgage calculator/i }).getByPlaceholder(/property price/i);
+      const propertyPriceInput = page
+        .locator('section')
+        .filter({ hasText: /mortgage calculator/i })
+        .getByPlaceholder(/property price/i);
       await propertyPriceInput.fill('450000');
 
-      const calculateButton = page.locator('section').filter({ hasText: /mortgage calculator/i }).getByRole('button', { name: /^calculate$/i });
+      const calculateButton = page
+        .locator('section')
+        .filter({ hasText: /mortgage calculator/i })
+        .getByRole('button', { name: /^calculate$/i });
       await calculateButton.click();
 
       // Should show error (API returns 500 due to no auth context)
-      const errorEl = page.locator('section').filter({ hasText: /mortgage calculator/i }).locator('p.text-red-600');
+      const errorEl = page
+        .locator('section')
+        .filter({ hasText: /mortgage calculator/i })
+        .locator('p.text-destructive');
       await expect(errorEl).toBeVisible({ timeout: 10000 });
     });
   });

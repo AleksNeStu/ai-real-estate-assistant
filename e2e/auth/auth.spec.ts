@@ -109,7 +109,7 @@ test.describe('Authentication Flows', () => {
 
       await registerPage.fillForm({
         email: generateUniqueEmail(),
-        password: 'weak',  // Too short - min 8 chars required
+        password: 'weak', // Too short - min 8 chars required
         fullName: 'Test User',
       });
 
@@ -140,7 +140,11 @@ test.describe('Authentication Flows', () => {
       await expect(loginPage.registerLink).toBeVisible();
     });
 
-    test('should login successfully with valid credentials', async ({ loginPage, testUser, page }) => {
+    test('should login successfully with valid credentials', async ({
+      loginPage,
+      testUser,
+      page,
+    }) => {
       await loginPage.navigate();
 
       // Mock login API with AuthResponse format
@@ -236,7 +240,10 @@ test.describe('Authentication Flows', () => {
 
       // Find and click the forgot password link directly
       // The link is inside the password field's label row with class "text-xs text-primary"
-      const forgotLink = page.locator('a.text-xs').filter({ hasText: /forgot|zapomniał|забыл/i }).first();
+      const forgotLink = page
+        .locator('a.text-xs')
+        .filter({ hasText: /forgot|zapomniał|забыл/i })
+        .first();
       await forgotLink.click();
 
       // URL should contain /auth/forgot-password (with or without locale prefix)
@@ -248,7 +255,10 @@ test.describe('Authentication Flows', () => {
 
       // Find and click the register link directly
       // The link has underline class and is in the card footer
-      const registerLink = page.locator('a.underline').filter({ hasText: /sign|create|zarejestruj|зарегистрироваться/i }).first();
+      const registerLink = page
+        .locator('a.underline')
+        .filter({ hasText: /sign|create|zarejestruj|зарегистрироваться/i })
+        .first();
       await registerLink.click();
 
       // URL should contain /auth/register (with or without locale prefix)
@@ -268,7 +278,10 @@ test.describe('Authentication Flows', () => {
 
       // The UserMenu shows a button with user initials (circular avatar)
       // Look for the initials button - it's a button containing a div with initials
-      const userMenuButton = page.locator('button').filter({ has: page.locator('.rounded-full.bg-primary') }).first();
+      const userMenuButton = page
+        .locator('button')
+        .filter({ has: page.locator('.rounded-full.bg-primary') })
+        .first();
 
       // If user menu exists (authenticated state), test logout
       if (await userMenuButton.isVisible({ timeout: 5000 }).catch(() => false)) {
@@ -279,7 +292,10 @@ test.describe('Authentication Flows', () => {
         await page.waitForTimeout(300);
 
         // Click the logout button - it's in a div with border-t class
-        const logoutButton = page.locator('button').filter({ hasText: /sign out|log out|wyloguj|выход/i }).first();
+        const logoutButton = page
+          .locator('button')
+          .filter({ hasText: /sign out|log out|wyloguj|выход/i })
+          .first();
         await logoutButton.click({ timeout: 5000 });
 
         // Should redirect to login or home page (locale root or login page)
@@ -296,7 +312,11 @@ test.describe('Authentication Flows', () => {
     test('should display forgot password form', async ({ page }) => {
       await page.goto('/auth/forgot-password');
 
-      const emailInput = page.getByRole('textbox', { name: /email/i });
+      // The name has to match exactly: the footer carries a newsletter field
+      // labelled "Email address", and a loose match collects that one as well.
+      const emailInput = page
+        .getByLabel('Email', { exact: true })
+        .or(page.getByRole('textbox', { name: /^email$/i }));
       const submitButton = page.getByRole('button', { name: /submit|send|reset/i });
 
       await expect(emailInput).toBeVisible();
@@ -315,7 +335,9 @@ test.describe('Authentication Flows', () => {
         });
       });
 
-      const emailInput = page.getByRole('textbox', { name: /email/i });
+      const emailInput = page
+        .getByLabel('Email', { exact: true })
+        .or(page.getByRole('textbox', { name: /^email$/i }));
       await emailInput.fill('test@example.com');
 
       const submitButton = page.getByRole('button', { name: /send|submit|reset/i });
@@ -328,12 +350,16 @@ test.describe('Authentication Flows', () => {
   });
 
   test.describe('Protected Routes', () => {
-    test('should redirect to login when accessing protected route', async ({ page }) => {
+    test('should ask to sign in when accessing protected route', async ({ page }) => {
       // Try to access a protected route without authentication
       await page.goto('/favorites');
 
-      // Should redirect to login
-      await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10000 });
+      // The page does not send the visitor away - it asks them to sign in and
+      // offers the way to it.
+      await expect(page.getByText(/sign in to view your favorites/i)).toBeVisible({
+        timeout: 10000,
+      });
+      await expect(page.getByRole('link', { name: /sign in|log in/i }).first()).toBeVisible();
     });
   });
 });
