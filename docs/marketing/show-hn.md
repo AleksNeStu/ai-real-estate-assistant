@@ -8,7 +8,7 @@
 
 ## Title (≤ 80 chars)
 
-**Show HN: AI Real Estate Assistant — conversational property search (FastAPI + Next.js 16, MIT)**
+**Show HN: AI Real Estate Assistant — property search in plain language (MIT)**
 
 Alternatives:
 - "Show HN: An open-source AI property search with multi-provider LLM fallback"
@@ -80,8 +80,7 @@ Quick answers to the inevitable ones:
 - **ChromaDB vs Pinecone vs pgvector?** ChromaDB is the right call for
   a single-developer project — embedded mode runs in-process for
   demo, scales to a small VPS for production, no external service to
-  bill. MMR reranking lifted relevance noticeably (30-40% in our
-  internal evals).
+  bill. MMR reranking is what makes the hybrid retrieval work.
 
 - **Why MIT if you're building a hosted business?** Open-core. The
   engine stays free; commercial features (live data, accounts, AI CRM)
@@ -92,13 +91,18 @@ Quick answers to the inevitable ones:
 
 ## Assets checklist before posting
 
-- [ ] Live demo URL responds 200: `https://realty.kittray.com/`
-- [ ] GitHub repo link works
-- [ ] og:image renders (Twitter Card Validator check)
+Checked on 2026-11-08:
+
+- [x] Live demo URL responds 200: `https://realty.kittray.com/`
+- [x] GitHub repo link works
+- [x] og:image renders: `https://realty.kittray.com/og-image.png` answers 200 with
+      a PNG of 1200×630 (the card a Twitter validator asks for)
 - [ ] One good demo GIF or screenshot linked in post
-- [ ] Title under 80 chars
-- [ ] Body under 400 words
-- [ ] First comment drafted and ready to paste immediately
+- [x] Title under 80 chars — the title above is 75; the one it replaced was 94
+- [x] Body under 400 words — 287
+- [x] First comment drafted and ready to paste immediately — 200 words
+
+Everything below needs the operator: the posting, the account, the voice.
 
 ## Posting day-of checklist
 

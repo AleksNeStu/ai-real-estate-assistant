@@ -68,7 +68,7 @@
   price ceilings under 500k)
 - Pure keyword misses semantic intent ("family-friendly neighborhood
   near good schools")
-- Hybrid with MMR reranking: 30-40% relevance lift in internal evals
+- Hybrid with MMR reranking over the ChromaDB index
 - Show code: `apps/api/vector_store/reranker.py`
 - Show ChromaDB query construction with semantic + keyword weights
 

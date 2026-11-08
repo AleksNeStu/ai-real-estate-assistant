@@ -14,7 +14,7 @@ because Zillow's API died years ago and I'm tired of filter-first portals
 **Body:**
 
 I shipped [AI Real Estate Assistant](https://github.com/AleksNeStu/ai-real-estate-assistant)
-last year and just hit v5.1 with multi-year property valuation and
+two years ago and just hit v5.1.17 with multi-year property valuation and
 neighborhood AI summaries.
 
 The stack is intentionally boring:
@@ -25,8 +25,7 @@ The stack is intentionally boring:
 - MIT license
 
 What makes it interesting technically:
-- Hybrid semantic + keyword retrieval with MMR reranking (30-40%
-  relevance lift in internal evals)
+- Hybrid semantic + keyword retrieval with MMR reranking
 - Per-task and per-user LLM provider selection with priority cascade
 - Environment-conditional lazy provider loading (stays under a
   512 MB cap without sacrificing full DX on a VPS)
@@ -47,12 +46,12 @@ provider routing logic.
 
 ## Post 2: r/sideproject (story-driven)
 
-**Title:** Built a conversational AI property search over 6 months —
+**Title:** Built a conversational AI property search over two years —
 here's what I learned shipping it as a solo developer
 
 **Body:**
 
-Six months ago I started [AI Real Estate Assistant](https://github.com/AleksNeStu/ai-real-estate-assistant)
+Two years ago I started [AI Real Estate Assistant](https://github.com/AleksNeStu/ai-real-estate-assistant)
 because every "AI for X" tool I tried for real estate either cost
 $200/month or hallucinated square footage.
 
@@ -76,7 +75,7 @@ Things I learned the hard way:
    per-language LLM prompts. Worth it — DACH and LatAm markets are
    materially different from the English-first default.
 
-4. **ChromaDB with MMR reranking was a 30-40% relevance lift.** Started
+4. **ChromaDB with MMR reranking changed the result set.** Started
    with pure vector search; reranker changed everything. See
    `apps/api/vector_store/reranker.py`.
 
@@ -104,7 +103,7 @@ and I want to share the architectural decisions that mattered.
 vector search misses exact-match queries ("2-bedroom", "Kraków",
 price ceilings under 500k). Pure keyword misses semantic intent
 ("family-friendly neighborhood near good schools"). ChromaDB with
-MMR reranking gave us a 30-40% relevance lift in internal evals.
+MMR reranking is what makes the hybrid work.
 
 **Multi-provider LLM routing isn't a luxury.** Per-task priority
 cascade in `apps/api/models/provider_factory.py`:
