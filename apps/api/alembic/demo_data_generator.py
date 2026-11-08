@@ -288,7 +288,11 @@ class ComprehensiveDemoDataGenerator:
         batch_size = 50
         for i in range(0, len(properties), batch_size):
             batch = properties[i : i + batch_size]
-            vector_store.add_properties(batch)
+            # The embedding of a batch is CPU bound. It runs in a worker thread so
+            # the event loop keeps answering while the catalogue fills up - on a
+            # small instance the seeding held the loop for minutes and the health
+            # check of the deployment never got an answer.
+            await asyncio.to_thread(vector_store.add_properties, batch)
             logger.info(
                 "Added batch %s: %s properties", sanitize_for_log(i // batch_size + 1), len(batch)
             )

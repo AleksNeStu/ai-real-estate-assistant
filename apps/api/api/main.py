@@ -230,6 +230,25 @@ SHUTDOWN_DRAIN_SECONDS = int(os.getenv("SHUTDOWN_DRAIN_SECONDS", "30"))
 SHUTDOWN_MAX_WAIT_SECONDS = int(os.getenv("SHUTDOWN_MAX_WAIT_SECONDS", "60"))
 
 
+async def _seed_demo_data_in_background() -> None:
+    """Fill the demo catalogue without holding the event loop.
+
+    The generator embeds every property, and that work is CPU bound. On a small
+    instance it kept the loop busy for minutes, so the health check never got an
+    answer and the deployment was rolled back. Here the seeding runs as a
+    background task and the API serves while the catalogue fills up.
+    """
+    try:
+        from alembic.demo_data_generator import generate_comprehensive_demo_data
+        from db.database import get_db_context
+
+        async with get_db_context() as session:
+            await generate_comprehensive_demo_data(session)
+        logger.info("Comprehensive demo data generated successfully.")
+    except Exception as demo_error:
+        logger.warning("Comprehensive demo data generation failed (non-fatal): %s", demo_error)
+
+
 @app.on_event("startup")
 async def startup_event():
     """Initialize application services on startup and setup signal handlers."""
@@ -299,18 +318,12 @@ async def startup_event():
             )
         else:
             logger.info("DEMO_MODE enabled — generating comprehensive demo data...")
-            try:
-                from alembic.demo_data_generator import generate_comprehensive_demo_data
-                from db.database import get_db_context
-
-                # Get a database session for the generator
-                async with get_db_context() as session:
-                    await generate_comprehensive_demo_data(session)
-                logger.info("Comprehensive demo data generated successfully.")
-            except Exception as demo_error:
-                logger.warning(
-                    "Comprehensive demo data generation failed (non-fatal): %s", demo_error
-                )
+            # The seeding embeds every property. That work is CPU bound, and on a
+            # small instance it held the event loop for minutes: the health check
+            # never got an answer and the deployment was rolled back. The seeding
+            # therefore runs as a background task, so the API serves right away and
+            # the catalogue fills up while the demo is already open.
+            asyncio.create_task(_seed_demo_data_in_background())
 
     # 2. Initialize Email Service
     logger.info("Initializing Email Service...")
