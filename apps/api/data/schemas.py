@@ -278,7 +278,7 @@ class Property(BaseModel):
         if address:
             text_parts.append(f" Address: {address}.")
 
-        text_parts.append(f"Property in {self.city}")
+        text_parts.append(f" Property in {self.city}")
 
         if self.neighborhood:
             text_parts.append(f", {self.neighborhood} neighborhood")
@@ -349,7 +349,7 @@ class Property(BaseModel):
         if self.description:
             text_parts.append(f". Description: {self.description}")
 
-        return "".join(text_parts)
+        return "".join(text_parts).strip()
 
 
 class PropertyCollection(BaseModel):
