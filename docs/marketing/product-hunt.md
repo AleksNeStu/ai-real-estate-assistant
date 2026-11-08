@@ -136,7 +136,7 @@ the multi-provider routing logic.
 
 > Yes — MIT license, Docker Compose, 5-minute quickstart.
 > https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/development/QUICKSTART_5MIN.md
-> Bring your own LLM API keys (any of the 6 supported providers or
+> Bring your own LLM API keys (any of the 16 supported providers or
 > local Ollama).
 
 **Comment: "Why not Pinecone / pgvector instead of ChromaDB?"**

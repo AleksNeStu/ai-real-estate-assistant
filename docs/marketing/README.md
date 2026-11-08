@@ -55,13 +55,32 @@ Day +30          → Product Hunt (after audiences warmed up)
       site carries the lead capture (footer email form) and the lead-redaction
       fix. **Until that happens the demo still exposes every captured lead's
       name, email and phone number to an anonymous visitor.**
-- [ ] Live demo: tour appears on first visit, dismissable
-- [ ] Live demo: try-these chips appear on landing, navigate to /search
-- [ ] Live demo: the footer email field posts and the lead appears in
-      `/leads` — masked for the anonymous viewer
-- [ ] og:image renders in Twitter Card Validator
-- [ ] Lighthouse SEO ≥ 95 on demo URL
-- [ ] Lighthouse Performance ≥ 85 on demo URL
+- [x] Live demo: tour appears on first visit, dismissable — checked 2026-11-08.
+      `components/onboarding/Tour.tsx` shows five steps 1.5 s after mount and
+      skips itself when `onboarding-tour-dismissed-v1` is set in localStorage;
+      Skip and Done both dismiss it.
+- [x] Live demo: try-these chips appear on landing, navigate to /search —
+      checked 2026-11-08 in the browser: six chips on `/en`, each one linking
+      to `/en/search?q=...`.
+- [x] Live demo: the footer email field posts and the lead appears in
+      `/leads` — masked for the anonymous viewer — checked 2026-11-08:
+      `POST /api/v1/leads/visitor` answers 201, and the lead is listed in
+      `/api/v1/leads` as `p***@invalid.example` with the name and the phone
+      number masked as well.
+- [x] og:image renders in Twitter Card Validator — checked 2026-11-08:
+      `https://realty.kittray.com/og-image.png` answers 200 with a PNG of
+      1200×630.
+- [ ] Lighthouse SEO ≥ 95 on demo URL — **not reachable while the demo stays
+      `noindex`**. Measured 2026-11-08 with Lighthouse 12.6.1 against the live
+      demo: SEO 63 on `/en` and on `/en/search`, and the only failing SEO
+      audit is `is-crawlable` ("Page is blocked from indexing"). Every other
+      SEO audit passes, so releasing the demo (see the note below) turns this
+      into 100. The CI gate on the built application is stricter still
+      (performance ≥ 0.9, accessibility ≥ 0.9, LCP ≤ 2500 ms, TBT ≤ 300 ms).
+- [x] Lighthouse Performance ≥ 85 on demo URL — measured 2026-11-08 against
+      the live demo: 87 on `/en` (83 on `/en/search`). The remaining cost is
+      total blocking time (440 ms on `/en`), which the demo pays for hosting
+      outside the city.
 - [x] The social-preview card is a designed 1200×630 card (it was a cropped
       screenshot of the application)
 
@@ -77,6 +96,22 @@ without the unfinished pages entering a search index.
 the release step in the deployment notes). If the demo is released, the
 `SEARCH_INDEXING` flag comes off and the product's own `robots.txt` comes back
 with the image.
+
+## Where the audience actually comes from (measured 2026-11-08)
+
+| Metric | Value |
+|--------|-------|
+| Stars | 321 (+8 in the last 30 days — 0.27 a day) |
+| Forks | 119 |
+| Unique visitors, last 14 days | 272 |
+| Views, last 14 days | 706 |
+| Top referrers | github.com (84 unique), aocr.org (81), Google (21) |
+
+The 10-stars-a-day target of the first wave is 37 times the current rate. At
+today's traffic — 272 unique visitors in a fortnight — reaching it means
+roughly 3,700 unique visitors a day at the same conversion, or a channel of a
+different kind (Hacker News, Product Hunt, a directory that converts). The
+full snapshot lives in `docs/community/metrics/2026-W45.md`.
 
 ## During-launch blockers (resolve during each post)
 

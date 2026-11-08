@@ -29,7 +29,7 @@
 
 **Tagline (50-70s):**
 
-> "Open-source, MIT-licensed, self-hostable. Six LLM providers with
+> "Open-source, MIT-licensed, self-hostable. 16 LLM providers with
 > automatic fallback. FastAPI + Next.js + ChromaDB. Live demo at
 > realty.kittray.com. Source on GitHub: AleksNeStu /
 > ai-real-estate-assistant. Hosted tier at propvectorai.com."
@@ -58,7 +58,7 @@
 - Backend: FastAPI + Python 3.12
 - Frontend: Next.js 16 + React 19
 - Vector store: ChromaDB (embedded mode for demo, scales to VPS)
-- 6 LLM providers with priority cascade
+- 16 LLM providers with priority cascade
 - 9 languages with EU AI Act compliance labels
 - Why this stack: boring tech, no-GPL, 1-year-old libs
 

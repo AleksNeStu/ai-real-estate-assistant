@@ -21,7 +21,7 @@ The stack is intentionally boring:
 - Backend: FastAPI + Python 3.12
 - Frontend: Next.js 16 + React 19
 - Vector store: ChromaDB (embedded mode for demo, scales to small VPS)
-- Six LLM providers with automatic fallback chain
+- 16 LLM providers with automatic fallback chain
 - MIT license
 
 What makes it interesting technically:
@@ -134,7 +134,7 @@ queries? Curious about other RAG stacks in production.
 
 ## Post 4: r/ChatGPT or r/LocalLLaMA (LLM-architecture angle)
 
-**Title:** How we route 6 LLM providers (OpenAI, Anthropic, Google,
+**Title:** How we route 16 LLM providers (OpenAI, Anthropic, Google,
 Grok, DeepSeek, Ollama) in a self-hostable property search demo
 
 **Body:**
