@@ -10,6 +10,8 @@ export type PropertyMapPoint = {
   city?: string;
   country?: string;
   price?: number;
+  /** The currency the listing is priced in - "PLN", "EUR", "USD". */
+  currency?: string;
   price_per_sqm?: number;
   area_sqm?: number;
   rooms?: number;
@@ -37,6 +39,7 @@ export function extractMapPoints(results: SearchResultItem[]): PropertyMapPoint[
       city: prop.city ?? undefined,
       country: prop.country ?? undefined,
       price: prop.price ?? undefined,
+      currency: prop.currency ?? undefined,
       price_per_sqm: pricePerSqm,
       area_sqm: prop.area_sqm ?? undefined,
       rooms: prop.rooms ?? undefined,

@@ -87,6 +87,15 @@ function SearchPageContent() {
   const [propertyType, setPropertyType] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('relevance');
   const [sortOrder, setSortOrder] = useState<string>('desc');
+
+  /**
+   * The currency the listings are priced in. The map and its price bands
+   * speak in it - a Polish market is filtered in zloty, not in dollars.
+   */
+  const resultCurrency = useMemo(
+    () => results.find((item) => item.property?.currency)?.property?.currency,
+    [results]
+  );
   const [exportFormat, setExportFormat] = useState<string>('csv');
   const [exportColumns, setExportColumns] = useState<string>('');
   const [exportIncludeHeader, setExportIncludeHeader] = useState<boolean>(true);
@@ -859,6 +868,7 @@ function SearchPageContent() {
                               <MapControls
                                 options={mapFilterOptions}
                                 onChange={setMapFilterOptions}
+                                currency={resultCurrency}
                                 onZoomIn={() => {
                                   /* Handled by Mapbox */
                                 }}

@@ -20,10 +20,11 @@ import {
   getClusterColor,
 } from './property-map-clustering';
 import { warn } from '@/lib/logger';
+import { formatCompactPrice } from '@/lib/format';
 import HeatmapLegend from './heatmap-legend';
 import GeoDrawControl, { type PolygonCoordinates } from './geo-draw-control';
 import { generatePopupHTML } from './property-map-popup';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 interface MapboxPropertyMapProps {
   points: PropertyMapPoint[];
@@ -120,6 +121,7 @@ export default function PropertyMapboxMap({
 }: MapboxPropertyMapProps) {
   const t = useTranslations('property');
   const tSearch = useTranslations('search');
+  const locale = useLocale();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapboxMap | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -279,6 +281,7 @@ export default function PropertyMapboxMap({
                 untitled: t('card.untitled'),
                 locationUnavailable: t('card.locationUnavailable'),
                 beds: t('card.bedsUnit'),
+                locale,
               })
             )
           )
@@ -334,10 +337,10 @@ export default function PropertyMapboxMap({
         const avgPrice =
           prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : null;
 
-        const formatClusterPrice = (price: number): string => {
-          if (price >= 1000000) return `$${(price / 1000000).toFixed(1)}M`;
-          return `$${(price / 1000).toFixed(0)}K`;
-        };
+        // The cluster is priced in the currency of its listings.
+        const clusterCurrency = cluster.points.find((p) => p.currency)?.currency;
+        const formatClusterPrice = (price: number): string =>
+          formatCompactPrice(price, clusterCurrency, locale);
 
         // Build type summary
         const typeSummary =

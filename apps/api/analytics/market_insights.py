@@ -53,6 +53,8 @@ class HistoricalPricePoint:
     median_price: float
     volume: int
     avg_price_per_sqm: Optional[float] = None
+    # The currency the listings of this period are priced in.
+    currency: Optional[str] = None
 
 
 class MarketStatistics(BaseModel):
@@ -462,6 +464,14 @@ class MarketInsights:
                 if not valid_area.empty:
                     avg_sqm_price = float((valid_area["price"] / valid_area["area_sqm"]).mean())
 
+            # The currency of this period - the interface quotes the prices
+            # in it, so the chart does not show dollars for zloty.
+            period_currency = None
+            if "currency" in group.columns:
+                currencies = group["currency"].dropna()
+                if not currencies.empty:
+                    period_currency = str(currencies.mode().iloc[0])
+
             # Calculate start/end dates for the period
             p_start = period.start_time
             p_end = period.end_time
@@ -475,6 +485,7 @@ class MarketInsights:
                     median_price=median_price,
                     volume=len(group),
                     avg_price_per_sqm=avg_sqm_price,
+                    currency=period_currency,
                 )
             )
 

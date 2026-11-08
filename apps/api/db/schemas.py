@@ -568,6 +568,9 @@ class MarketTrendPoint(BaseModel):
     median_price: float
     volume: int
     avg_price_per_sqm: Optional[float] = None
+    # The currency the prices of this period are in - the interface quotes
+    # them in it instead of assuming dollars.
+    currency: Optional[str] = None
 
 
 class MarketTrendsResponse(BaseModel):

@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   Card,
   CardContent,
@@ -21,11 +21,15 @@ import {
   Bar,
 } from 'recharts';
 
+import { formatCompactPrice, formatPrice } from '@/lib/format';
+
 export interface ChartDataPoint {
   period: string;
   avgPrice: number;
   medianPrice: number;
   volume: number;
+  /** The currency the prices of this period are in. */
+  currency?: string;
 }
 
 interface MarketTrendsChartsProps {
@@ -43,6 +47,12 @@ interface MarketTrendsChartsProps {
  */
 export function MarketTrendsCharts({ chartData }: MarketTrendsChartsProps) {
   const t = useTranslations('marketTrends.charts');
+  const locale = useLocale();
+
+  // The prices are in the currency of the listings they were computed from.
+  const currency = chartData.find((point) => point.currency)?.currency;
+  const axisPrice = (value: number): string => formatCompactPrice(value, currency, locale);
+  const fullPrice = (value: number): string => formatPrice(value, currency, locale);
 
   return (
     <>
@@ -59,9 +69,9 @@ export function MarketTrendsCharts({ chartData }: MarketTrendsChartsProps) {
                 <XAxis dataKey="period" tick={{ fontSize: 12 }} />
                 <YAxis
                   tick={{ fontSize: 12 }}
-                  tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+                  tickFormatter={(v) => axisPrice(v)}
                 />
-                <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`]} />
+                <Tooltip formatter={(value: number) => [fullPrice(value)]} />
                 <Legend />
                 <Line
                   type="monotone"

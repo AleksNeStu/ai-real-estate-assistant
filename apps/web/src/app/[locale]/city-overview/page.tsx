@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { MapPin, Building2, DollarSign, AlertCircle, Loader2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { MapPin, Building2, Coins, AlertCircle, Loader2 } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { searchProperties } from '@/lib/api';
+import { formatPrice } from '@/lib/format';
 import {
   computeCenter,
   extractMapPoints,
@@ -24,6 +25,8 @@ interface CityStats {
   avgPrice: number;
   minPrice: number;
   maxPrice: number;
+  /** The currency the listings of this city are priced in. */
+  currency?: string;
   points: PropertyMapPoint[];
   center: { lat: number; lon: number };
 }
@@ -42,6 +45,7 @@ const POPULAR_CITIES = [
 export default function CityOverviewPage() {
   const t = useTranslations('pages.cityOverview');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
   const [loading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [cityStats, setCityStats] = useState<CityStats[]>([]);
@@ -83,6 +87,7 @@ export default function CityOverviewPage() {
             prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0,
           minPrice: prices.length > 0 ? prices.reduce((a, b) => Math.min(a, b)) : 0,
           maxPrice: prices.length > 0 ? prices.reduce((a, b) => Math.max(a, b)) : 0,
+          currency: points.find((p) => p.currency)?.currency,
           points,
           center,
         });
@@ -223,18 +228,21 @@ export default function CityOverviewPage() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <DollarSign
+                          <Coins
                             className="h-4 w-4 text-muted-foreground"
                             aria-hidden="true"
                           />
                           <div className="text-sm">
-                            <span className="font-medium">${stat.avgPrice.toLocaleString()}</span>
+                            <span className="font-medium">
+                              {formatPrice(stat.avgPrice, stat.currency, locale)}
+                            </span>
                             <span className="text-muted-foreground"> {t('stats.avg')}</span>
                           </div>
                         </div>
 
                         <div className="text-xs text-muted-foreground">
-                          ${stat.minPrice.toLocaleString()} - ${stat.maxPrice.toLocaleString()}
+                          {formatPrice(stat.minPrice, stat.currency, locale)} -{' '}
+                          {formatPrice(stat.maxPrice, stat.currency, locale)}
                         </div>
                       </div>
                     </div>

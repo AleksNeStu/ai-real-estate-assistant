@@ -91,6 +91,7 @@ export default function MarketTrendsPage() {
       avgPrice: point.average_price,
       medianPrice: point.median_price,
       volume: point.volume,
+      currency: point.currency,
     })) || [];
 
   const TrendIcon =

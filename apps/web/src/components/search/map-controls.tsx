@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Layers, Thermometer, MapPin, ZoomIn, ZoomOut, Filter, X } from 'lucide-react';
+
+import { formatCompactPrice } from '@/lib/format';
+
 import type { HeatmapMode } from './property-map-utils';
 
 export interface ClusterOptions {
@@ -31,6 +34,8 @@ interface MapControlsProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onFitBounds: () => void;
+  /** The currency the listings are priced in - the bands speak in it. */
+  currency?: string;
   className?: string;
 }
 
@@ -40,6 +45,7 @@ export default function MapControls({
   onZoomIn,
   onZoomOut,
   onFitBounds,
+  currency,
   className = '',
 }: MapControlsProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -47,6 +53,13 @@ export default function MapControls({
   const tSearch = useTranslations('search');
   const tTypes = useTranslations('search.propertyTypes');
   const tFilters = useTranslations('search.filters');
+  const locale = useLocale();
+
+  /**
+   * The bands used to print a dollar sign, so a Polish market was filtered
+   * by dollars. The amounts are now the listing currency.
+   */
+  const amount = (value: number): string => formatCompactPrice(value, currency, locale);
 
   return (
     <div
@@ -261,25 +274,31 @@ export default function MapControls({
                 type="button"
                 onClick={() => onChange({ ...options, priceRange: [0, 300000] })}
                 className="text-xs px-2 py-1 rounded border hover:bg-muted transition-colors"
-                aria-label={t('filterUnder300k')}
+                aria-label={t('filterUnder300k', { amount: amount(300000) })}
               >
-                {t('under300k')}
+                {t('under300k', { amount: amount(300000) })}
               </button>
               <button
                 type="button"
                 onClick={() => onChange({ ...options, priceRange: [300000, 600000] })}
                 className="text-xs px-2 py-1 rounded border hover:bg-muted transition-colors"
-                aria-label={t('filter300k600k')}
+                aria-label={t('filter300k600k', {
+                  from: amount(300000),
+                  to: amount(600000),
+                })}
               >
-                {t('range300k600k')}
+                {t('range300k600k', { from: amount(300000), to: amount(600000) })}
               </button>
               <button
                 type="button"
                 onClick={() => onChange({ ...options, priceRange: [600000, 1000000] })}
                 className="text-xs px-2 py-1 rounded border hover:bg-muted transition-colors"
-                aria-label={t('filter600k1M')}
+                aria-label={t('filter600k1M', {
+                  from: amount(600000),
+                  to: amount(1000000),
+                })}
               >
-                {t('range600k1M')}
+                {t('range600k1M', { from: amount(600000), to: amount(1000000) })}
               </button>
               <button
                 type="button"

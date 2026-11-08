@@ -1,7 +1,10 @@
 'use client';
 
 import { Heart, ExternalLink, BedDouble, Maximize, MapPin } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+
+import { formatCompactPrice, formatPrice } from '@/lib/format';
+
 import type { PropertyMapPoint } from './property-map-utils';
 
 interface PropertyMapPopupProps {
@@ -11,12 +14,21 @@ interface PropertyMapPopupProps {
   isFavorited?: boolean;
 }
 
-function formatPrice(price: number | undefined, priceOnRequest: string): string {
+/**
+ * The price in the currency the listing is priced in.
+ *
+ * The popup used to print a dollar sign in front of every amount, so a
+ * listing in Polish zloty was shown in dollars.
+ */
+function renderPrice(
+  price: number | undefined,
+  currency: string | undefined,
+  locale: string,
+  priceOnRequest: string
+): string {
   if (price === undefined) return priceOnRequest;
-  if (price >= 1000000) {
-    return `$${(price / 1000000).toFixed(1)}M`;
-  }
-  return `$${price.toLocaleString()}`;
+  if (price >= 1000000) return formatCompactPrice(price, currency, locale);
+  return formatPrice(price, currency, locale);
 }
 
 export function PropertyMapPopup({
@@ -27,6 +39,7 @@ export function PropertyMapPopup({
 }: PropertyMapPopupProps) {
   const t = useTranslations('property');
   const tSearch = useTranslations('search');
+  const locale = useLocale();
   const handleViewDetails = () => {
     onViewDetails?.(point.id);
   };
@@ -66,7 +79,7 @@ export function PropertyMapPopup({
 
         {/* Price */}
         <div className="text-lg font-bold text-primary">
-          {formatPrice(point.price, t('card.priceOnRequest'))}
+          {renderPrice(point.price, point.currency, locale, t('card.priceOnRequest'))}
         </div>
 
         {/* Specs */}
@@ -89,7 +102,7 @@ export function PropertyMapPopup({
         {/* Price per sqm */}
         {point.price_per_sqm !== undefined && (
           <div className="text-xs text-muted-foreground">
-            {formatPrice(point.price_per_sqm, t('card.priceOnRequest'))}/m²
+            {formatPrice(point.price_per_sqm, point.currency, locale)}/m²
           </div>
         )}
 
@@ -129,15 +142,16 @@ export function PropertyMapPopup({
 // useTranslations itself.
 export function generatePopupHTML(
   point: PropertyMapPoint,
-  copy: { priceOnRequest: string; untitled: string; locationUnavailable: string; beds: string }
+  copy: {
+    priceOnRequest: string;
+    untitled: string;
+    locationUnavailable: string;
+    beds: string;
+    locale: string;
+  }
 ): string {
-  const formatPrice = (price: number | undefined): string => {
-    if (price === undefined) return copy.priceOnRequest;
-    if (price >= 1000000) {
-      return `$${(price / 1000000).toFixed(1)}M`;
-    }
-    return `$${price.toLocaleString()}`;
-  };
+  const price = (value: number | undefined): string =>
+    renderPrice(value, point.currency, copy.locale, copy.priceOnRequest);
 
   const specs = [
     point.rooms !== undefined ? `${point.rooms} ${copy.beds}` : null,
@@ -157,10 +171,10 @@ export function generatePopupHTML(
           ${[point.city, point.country].filter(Boolean).join(', ') || copy.locationUnavailable}
         </div>
         <div style="font-size:18px;font-weight:700;color:hsl(var(--chart-1));margin-bottom:4px;">
-          ${formatPrice(point.price)}
+          ${price(point.price)}
         </div>
         ${specs ? `<div style="font-size:12px;color:hsl(var(--muted-foreground));margin-bottom:4px;">${specs}</div>` : ''}
-        ${point.price_per_sqm !== undefined ? `<div style="font-size:11px;color:hsl(var(--muted-foreground));">${formatPrice(point.price_per_sqm)}/m²</div>` : ''}
+        ${point.price_per_sqm !== undefined ? `<div style="font-size:11px;color:hsl(var(--muted-foreground));">${formatPrice(point.price_per_sqm, point.currency, copy.locale)}/m²</div>` : ''}
       </div>
     </div>
   `;

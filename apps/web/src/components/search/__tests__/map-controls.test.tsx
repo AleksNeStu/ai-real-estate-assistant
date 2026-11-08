@@ -157,12 +157,31 @@ describe('MapControls', () => {
     );
 
     fireEvent.click(screen.getByLabelText('Toggle map filters'));
-    fireEvent.click(screen.getByLabelText('Filter under 300k'));
+    // The band speaks in the currency of the listings, not in dollars.
+    fireEvent.click(screen.getByLabelText('Filter under $300K'));
 
     expect(mockOnChange).toHaveBeenCalledWith({
       ...defaultOptions,
       priceRange: [0, 300000],
     });
+  });
+
+  it('should name the band in the currency of the listings', () => {
+    render(
+      <MapControls
+        options={defaultOptions}
+        onChange={mockOnChange}
+        onZoomIn={mockOnZoomIn}
+        onZoomOut={mockOnZoomOut}
+        onFitBounds={mockOnFitBounds}
+        currency="PLN"
+      />
+    );
+
+    fireEvent.click(screen.getByLabelText('Toggle map filters'));
+
+    expect(screen.getByLabelText('Filter under PLN 300K')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Filter under $300K')).not.toBeInTheDocument();
   });
 
   it('should filter by property type', () => {

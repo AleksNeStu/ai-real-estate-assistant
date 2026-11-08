@@ -50,6 +50,9 @@ export function formatPrice(
 
 /**
  * Short form for map popups and tight spaces: 1 250 000 -> 1.3M.
+ *
+ * The currency is the listing's own, and the placement of the symbol is the
+ * locale's: Polish reads "300 tys. zł", English "PLN 300K".
  */
 export function formatCompactPrice(
   value?: number | null,
@@ -58,10 +61,15 @@ export function formatCompactPrice(
 ): string {
   if (value === null || value === undefined || Number.isNaN(value)) return '';
   const resolved = resolveLocale(locale);
-  const compact = new Intl.NumberFormat(resolved, {
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  });
-  const symbol = formatPrice(0, currency, locale).replace(/[\d\s., ]/g, '');
-  return `${symbol}${compact.format(value)}`;
+  try {
+    return new Intl.NumberFormat(resolved, {
+      style: 'currency',
+      currency,
+      notation: 'compact',
+      maximumFractionDigits: 1,
+    }).format(value);
+  } catch {
+    // An unknown currency code must not take the price down with it.
+    return `${new Intl.NumberFormat(resolved).format(value)} ${currency}`;
+  }
 }

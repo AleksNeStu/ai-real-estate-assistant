@@ -818,6 +818,8 @@ export interface MarketTrendPoint {
   median_price: number;
   volume: number;
   avg_price_per_sqm?: number;
+  /** The currency the prices of this period are in. */
+  currency?: string;
 }
 
 export interface MarketTrends {

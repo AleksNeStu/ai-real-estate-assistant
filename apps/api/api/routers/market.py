@@ -148,6 +148,7 @@ async def get_market_trends(
             median_price=point.median_price,
             volume=point.volume,
             avg_price_per_sqm=point.avg_price_per_sqm,
+            currency=point.currency,
         )
         for point in historical
     ]

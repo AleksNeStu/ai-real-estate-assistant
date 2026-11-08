@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { divIcon, type LatLngBoundsExpression } from 'leaflet';
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+
+import { formatPrice } from '@/lib/format';
 
 import { computeBounds, computeCenter, type PropertyMapPoint } from './property-map-utils';
 import { clusterMapPoints, type ClusteredMapItem } from './property-map-clustering';
@@ -62,6 +64,7 @@ function ClusterMarker({
 export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) {
   const t = useTranslations('property');
   const tSearch = useTranslations('search');
+  const locale = useLocale();
   const center = useMemo(() => computeCenter(points) ?? { lat: 52.2297, lon: 21.0122 }, [points]);
   const bounds = useMemo(() => computeBounds(points), [points]);
   const [zoom, setZoom] = useState(12);
@@ -119,7 +122,7 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
                       </div>
                       <div className="text-sm font-medium">
                         {typeof p.price === 'number'
-                          ? `$${p.price.toLocaleString()}`
+                          ? formatPrice(p.price, p.currency, locale)
                           : t('card.priceOnRequest')}
                       </div>
                     </div>
