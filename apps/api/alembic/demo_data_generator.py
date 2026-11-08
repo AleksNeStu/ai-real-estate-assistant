@@ -237,6 +237,47 @@ CITY_STREETS = {
     "Poznań": ["Długa", "Święty Marcin", "Główny", "Mickiewicza", "Naramowicka"],
 }
 
+# The streets of every district. A listing that stands in Zwierzyniec has to
+# carry a street of Zwierzyniec - the street of another district is the
+# kind of detail a visitor notices at once.
+DISTRICT_STREETS: dict[str, dict[str, list[str]]] = {
+    "Kraków": {
+        "Old Town": ["Floriańska", "Grodzka", "Sienna", "Kanonicza", "Wielopole"],
+        "Kazimierz": ["Kanonicza", "Bocheńska", "Józefa", "Wąska", "Jezuitów"],
+        "Podgórze": ["Kalwaria", "Górka", "Kobierzyńska", "Rynkowa", "Lipowa"],
+        "Bronowice": ["Bronowicka", "Styczna", "Cieszyńska", "Głowackiego", "Topolowa"],
+        "Zwierzyniec": ["Zwierzyniecka", "Kościuszki", "Stradomska", "Gdańska", "Błonia"],
+    },
+    "Warsaw": {
+        "Śródmieście": ["Marszałkowska", "Nowy Świat", "Krucza", "Chmielna", "Żurawia"],
+        "Mokotów": ["Puławska", "Mokotowska", "Iwicka", "Kazimierzowska", "Racławicka"],
+        "Wola": ["Aleje Jerozolimskie", "Woronicza", "Towarowa", "Kasprzyka", "Sokoła"],
+        "Praga": ["Targowa", "Ząbkowska", "Brzeska", "Stalowa", "Kijowska"],
+        "Żoliborz": ["Słowackiego", "Żeliborska", "Modzelewskiego", "Krasińskiego", "Czartoryskiego"],
+    },
+    "Gdańsk": {
+        "Main Town": ["Długa", "Mariacka", "Świętego Ducha", "Ogarna", "Frauengasse"],
+        "Wrzeszcz": ["Wrzeszczyńska", "Słowackiego", "Skarżyńska", "Partyzantów", "Wojska Polskiego"],
+        "Oliwa": ["Aleja Grunwaldzka", "Pułaskiego", "Sobieskiego", "Abrahama", "Polna"],
+        "Jelitkowo": ["Jelitkowska", "Nisułka", "Słoneczna", "Kartuska", "Słowackiego"],
+        "Brzeźno": ["Brzeźnieńska", "Kliszewska", "Powstańców Warszawskich", "Kołobrzeska", "Rakoczego"],
+    },
+    "Wrocław": {
+        "Market Square": ["Rynek", "Szewska", "Włodkowica", "Kuźnicza", "Piotra Ściegiennego"],
+        "Krzyki": ["Białawska", "Armii Krajowej", "Drobnera", "Powstańców Śląskich", "Kamiennogórska"],
+        "Fabryczna": ["Zelazna", "Bukowska", "Wrocławska", "Grabiszyńska", "Legnicka"],
+        "Psie Pole": ["Dolnośląska", "Kwiatkowskiego", "Botaniczna", "Jaśminowa", "Słowiańska"],
+        "Stare Miasto": ["Odrzańska", "Podwale", "Ruska", "Krasińskiego", "Wyszyńskiego"],
+    },
+    "Poznań": {
+        "Old Town": ["Wielka", "Święty Marcin", "Żydowska", "Paderewskiego", "Wodna"],
+        "Wilda": ["Piątkowska", "Garbary", "Wyszyńskiego", "Świętokrzyska", "Głogowska"],
+        "Jeżyce": ["Słowackiego", "Dąbrowskiego", "Krasickiego", "Mickiewicza", "Bnieńska"],
+        "Grunwald": ["Grunwaldzka", "FGSA", "Bukowiańska", "Skórzeccka", "Seweryna"],
+        "Winogrady": ["Cieszkowskiego", "Pułaskiego", "Dołęgi", "Szypułkowska", "Lechicka"],
+    },
+}
+
 
 def district_centre(city: str, district: str) -> tuple[float, float]:
     """The centre of a district - the point its listings are scattered around."""
@@ -330,7 +371,9 @@ def build_demo_listing(index: int) -> dict:
     else:
         price = int(round(price / 50.0) * 50)
 
-    street = random.choice(CITY_STREETS[city])
+    street = random.choice(
+        DISTRICT_STREETS.get(city, {}).get(district) or CITY_STREETS[city]
+    )
     number = random.randint(1, 80)
     address = f"ul. {street} {number}, {district}, {city}, Poland"
 

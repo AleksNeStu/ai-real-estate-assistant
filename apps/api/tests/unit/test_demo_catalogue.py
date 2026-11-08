@@ -12,6 +12,7 @@ import pytest
 from alembic.demo_data_generator import (
     CITY_PRICE_PER_SQM,
     CITY_RENT_PER_SQM,
+    DISTRICT_STREETS,
     SQ_M_PER_ROOM,
     build_demo_listing,
 )
@@ -78,6 +79,16 @@ def test_the_description_names_the_listing():
     for listing in LISTINGS[:50]:
         assert listing["title"] in listing["description"]
         assert listing["city"] in listing["description"]
+
+
+def test_the_street_belongs_to_the_district():
+    """A listing in Zwierzyniec stands on a street of Zwierzyniec."""
+    for listing in LISTINGS:
+        streets = DISTRICT_STREETS[listing["city"]][listing["district"]]
+        assert any(f"ul. {street} " in listing["address"] for street in streets), (
+            f"{listing['address']} does not stand on a street of "
+            f"{listing['district']}"
+        )
 
 
 def test_the_search_text_leads_with_the_title_and_the_address():
