@@ -27,6 +27,7 @@ function LoginForm() {
   const { refreshUser } = useAuth();
   const locale = useLocale();
   const t = useTranslations('auth.login');
+  const tErrors = useTranslations('auth.errors');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,7 +49,7 @@ function LoginForm() {
       const redirectTo = searchParams.get('redirect') || `/${locale}`;
       router.push(redirectTo);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Login failed';
+      const message = err instanceof Error ? err.message : tErrors('loginFailed');
       setError(message);
     } finally {
       setIsLoading(false);

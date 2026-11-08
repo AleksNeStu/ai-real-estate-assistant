@@ -19,12 +19,58 @@ import {
 } from 'lucide-react';
 import { TCOBreakdownChart } from './charts/tco-breakdown-chart';
 import { TCOComparison } from './tco-comparison';
-import { exportTCOToPDF } from '@/lib/pdf-export';
+import { exportTCOToPDF, type TcoPdfCopy } from '@/lib/pdf-export';
 
 interface ErrorState {
   message: string;
   requestId?: string;
 }
+
+/**
+ * Reads the labels of the exported TCO document from the message catalogue.
+ */
+const buildTcoPdfCopy = (t: (key: string) => string): TcoPdfCopy => ({
+  title: t('title'),
+  comparisonTitle: t('comparisonTitle'),
+  generated: t('generated'),
+  summary: t('summary'),
+  monthlyTco: t('monthlyTco'),
+  annualTco: t('annualTco'),
+  downPayment: t('downPayment'),
+  loanAmount: t('loanAmount'),
+  monthlyBreakdown: t('monthlyBreakdown'),
+  mortgage: t('mortgage'),
+  propertyTax: t('propertyTax'),
+  insurance: t('insurance'),
+  hoa: t('hoa'),
+  utilities: t('utilities'),
+  internet: t('internet'),
+  parking: t('parking'),
+  maintenance: t('maintenance'),
+  totalCosts: t('totalCosts'),
+  totalOwnershipCost: t('totalOwnershipCost'),
+  allInCost: t('allInCost'),
+  multiYearProjections: t('multiYearProjections'),
+  year: t('year'),
+  cumulativeCost: t('cumulativeCost'),
+  equityBuilt: t('equityBuilt'),
+  propertyValue: t('propertyValue'),
+  costCategoryAnalysis: t('costCategoryAnalysis'),
+  fixedCosts: t('fixedCosts'),
+  variableCosts: t('variableCosts'),
+  discretionaryCosts: t('discretionaryCosts'),
+  pageOf: t('pageOf'),
+  comparisonSummary: t('comparisonSummary'),
+  keyDifferences: t('keyDifferences'),
+  totalCost: t('totalCost'),
+  monthlyCostDifference: t('monthlyCostDifference'),
+  equityDifference: t('equityDifference'),
+  breakEvenPoint: t('breakEvenPoint'),
+  breakEvenNotAvailable: t('breakEvenNotAvailable'),
+  recommendation: t('recommendation'),
+  recommended: t('recommended'),
+  advantages: t('advantages'),
+});
 
 const extractErrorState = (err: unknown, t: (key: string) => string): ErrorState => {
   let message = t('error.unknown');
@@ -44,6 +90,7 @@ const extractErrorState = (err: unknown, t: (key: string) => string): ErrorState
 
 export function MortgageCalculator() {
   const t = useTranslations('mortgage');
+  const tPdf = useTranslations('mortgage.pdf');
   const [loading, setLoading] = useState(false);
   const [errorState, setErrorState] = useState<ErrorState | null>(null);
   const [result, setResult] = useState<MortgageResult | null>(null);
@@ -531,7 +578,11 @@ export function MortgageCalculator() {
       {/* Export PDF Button */}
       {tcoResult && (
         <div className="col-span-full md:col-span-2 flex justify-center">
-          <Button variant="outline" onClick={() => exportTCOToPDF(tcoResult)} className="gap-2">
+          <Button
+            variant="outline"
+            onClick={() => exportTCOToPDF(tcoResult, { copy: buildTcoPdfCopy(tPdf) })}
+            className="gap-2"
+          >
             <Download className="h-4 w-4" />
             {t('exportToPdf')}
           </Button>

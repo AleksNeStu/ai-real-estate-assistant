@@ -50,12 +50,12 @@ export function StepComparables({
         onComparablesChange(initialSelection);
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to find comparables';
+      const message = err instanceof Error ? err.message : t('findFailed');
       setError(message);
     } finally {
       setIsLoading(false);
     }
-  }, [subjectPropertyId, selectedComparables.length, onComparablesChange]);
+  }, [subjectPropertyId, selectedComparables.length, onComparablesChange, t]);
 
   useEffect(() => {
     fetchComparables();

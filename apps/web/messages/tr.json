@@ -273,7 +273,8 @@
       "digitRequired": "Şifre en az bir rakam içermelidir",
       "resetFailed": "Şifre sıfırlanamadı",
       "registerFailed": "Kayıt başarısız oldu",
-      "resetEmailFailed": "Sıfırlama e-postası gönderilemedi"
+      "resetEmailFailed": "Sıfırlama e-postası gönderilemedi",
+      "loginFailed": "Giriş başarısız oldu"
     },
     "loading": "Yükleniyor...",
     "userMenu": "Kullanıcı menüsü",
@@ -323,7 +324,8 @@
       "property": "Emlak",
       "nextComparables": "Devam: karşılaştırılabilirler",
       "roomsCount": "{count} oda",
-      "searchResults": "Arama sonuçları ({count})"
+      "searchResults": "Arama sonuçları ({count})",
+      "searchFailed": "Arama başarısız oldu"
     },
     "comparables": {
       "refresh": "Yenile",
@@ -337,7 +339,8 @@
       "roomsCount": "{count} oda",
       "property": "Emlak {id}",
       "back": "Geri",
-      "nextAdjustments": "Sonraki: düzeltmeleri gözden geçir"
+      "nextAdjustments": "Sonraki: düzeltmeleri gözden geçir",
+      "findFailed": "Karşılaştırılabilir mülk bulunamadı"
     },
     "adjustments": {
       "description": "Her karşılaştırma için değerleme faktörlerini gözden geçir ve düzelt. Pozitif düzeltmeler karşılaştırmanın değerini artırır, negatif düzeltmeler azaltır.",
@@ -593,7 +596,8 @@
     "newVersionAvailable": "Yeni bir sürüm mevcut!",
     "dismissUpdate": "Kapat",
     "emptySearchTitle": "Henüz gösterilecek bir şey yok",
-    "emptySearchBody": "Demo'yu görmek için aşağıdaki örnek sorgulardan birini deneyin."
+    "emptySearchBody": "Demo'yu görmek için aşağıdaki örnek sorgulardan birini deneyin.",
+    "changeLanguage": "Dili değiştir"
   },
   "demo": {
     "banner": "Demo modu — arama ve şehir verileri mevcut",
@@ -606,7 +610,8 @@
     "emptyTitle": "Henüz gösterilecek bir şey yok",
     "emptyHint": "Demo'yu görmek için aşağıdaki örnek sorgulardan birini deneyin.",
     "modeDisabled": "Devre dışı",
-    "toggleFailed": "Demo modu değiştirilemedi: {message}"
+    "toggleFailed": "Demo modu değiştirilemedi: {message}",
+    "modeEnabled": "Etkin"
   },
   "documents": {
     "title": "Belgeler",
@@ -717,7 +722,8 @@
       "collectionName": "Koleksiyon adı",
       "create": "Oluştur",
       "delete": "Koleksiyonu sil"
-    }
+    },
+    "loginRequired": "Mülkleri favorilere eklemek için giriş yapın"
   },
   "home": {
     "title": "Yapay Zekâ Emlak Asistanı",
@@ -881,6 +887,51 @@
       "scenarios": "Senaryolar",
       "tax": "Vergi",
       "risk": "Risk"
+    },
+    "pdf": {
+      "title": "Yatırım Analizi Raporu",
+      "generated": "Oluşturuldu: {date}",
+      "keyMetrics": "Temel Metrikler",
+      "monthlyCashFlow": "Aylık Nakit Akışı",
+      "annualCashFlow": "Yıllık Nakit Akışı",
+      "cashOnCashRoi": "Nakit Bazlı ROI",
+      "capRate": "Kapitalizasyon Oranı",
+      "grossYield": "Brüt Getiri",
+      "netYield": "Net Getiri",
+      "totalInvestment": "Toplam Yatırım",
+      "investmentScore": "Yatırım Puanı",
+      "incomeExpenses": "Gelir ve Giderler",
+      "monthlyIncome": "Aylık Gelir",
+      "monthlyExpenses": "Aylık Gider",
+      "annualIncome": "Yıllık Gelir",
+      "annualExpenses": "Yıllık Gider",
+      "monthlyMortgage": "Aylık Kredi Taksiti",
+      "scoreBreakdown": "Puan Kırılımı",
+      "advancedMetrics": "Gelişmiş Metrikler",
+      "riskScore": "Risk Puanı",
+      "totalProjectedCashFlow": "Toplam Öngörülen Nakit Akışı",
+      "finalEquity": "Nihai Öz Sermaye",
+      "irr": "IRR",
+      "annualDepreciation": "Yıllık Amortisman",
+      "taxBenefit": "Vergi Avantajı",
+      "riskFactors": "Risk Faktörleri",
+      "recommendations": "Öneriler",
+      "cashFlowProjectionSummary": "Nakit Akışı Projeksiyon Özeti",
+      "year": "Yıl",
+      "cashFlow": "Nakit Akışı",
+      "cumulative": "Kümülatif",
+      "equity": "Öz Sermaye",
+      "pageOf": "Sayfa {page} / {total}",
+      "footerBrand": "AI Real Estate Assistant - Yatırım Analizi",
+      "notAvailable": "mevcut değil",
+      "scoreLabels": {
+        "location": "Konum",
+        "type": "Tür",
+        "size": "Boyut",
+        "rooms": "Oda",
+        "recency": "Güncellik",
+        "amenities": "Olanaklar"
+      }
     }
   },
   "knowledge": {
@@ -1100,6 +1151,48 @@
     },
     "error": {
       "unknown": "Bilinmeyen hata"
+    },
+    "pdf": {
+      "title": "Toplam Mülkiyet Maliyeti Analizi",
+      "comparisonTitle": "Toplam Maliyet Karşılaştırma Analizi",
+      "generated": "Oluşturuldu: {date}",
+      "summary": "Özet",
+      "monthlyTco": "Aylık Toplam Maliyet",
+      "annualTco": "Yıllık Toplam Maliyet",
+      "downPayment": "Peşinat",
+      "loanAmount": "Kredi Tutarı",
+      "monthlyBreakdown": "Aylık Maliyet Dökümü",
+      "mortgage": "Konut Kredisi",
+      "propertyTax": "Emlak Vergisi",
+      "insurance": "Sigorta",
+      "hoa": "Site Aidatı",
+      "utilities": "Aidat ve Giderler",
+      "internet": "İnternet",
+      "parking": "Otopark",
+      "maintenance": "Bakım",
+      "totalCosts": "Toplam Maliyetler",
+      "totalOwnershipCost": "Toplam Mülkiyet Maliyeti",
+      "allInCost": "Toplam Maliyet (peşinat dâhil)",
+      "multiYearProjections": "Yıllı Projeksiyonlar",
+      "year": "Yıl",
+      "cumulativeCost": "Kümülatif Maliyet",
+      "equityBuilt": "Biriken Öz Sermaye",
+      "propertyValue": "Mülk Değeri",
+      "costCategoryAnalysis": "Maliyet Kategorileri Analizi",
+      "fixedCosts": "Sabit Maliyetler (Aylık)",
+      "variableCosts": "Değişken Maliyetler (Aylık)",
+      "discretionaryCosts": "İsteğe Bağlı Maliyetler (Aylık)",
+      "pageOf": "Sayfa {page} / {total}",
+      "comparisonSummary": "Karşılaştırma Özeti",
+      "keyDifferences": "Temel Farklar",
+      "totalCost": "Toplam Maliyet",
+      "monthlyCostDifference": "Aylık Maliyet Farkı",
+      "equityDifference": "Öz Sermaye Farkı",
+      "breakEvenPoint": "Başabaş Noktası: {years} yıl",
+      "breakEvenNotAvailable": "Başabaş Noktası: mevcut değil",
+      "recommendation": "Öneri",
+      "recommended": "Önerilen",
+      "advantages": "{scenario} Avantajları"
     }
   },
   "nav": {
@@ -3102,5 +3195,40 @@
   },
   "pwa": {
     "installFailed": "Yükleme başarısız oldu: {message}"
+  },
+  "seo": {
+    "structuredData": {
+      "description": "Emlak arama ve pazar analitiği için açık kaynaklı sohbet tabanlı yapay zekâ platformu. FastAPI, Next.js ve ChromaDB ile geliştirildi.",
+      "keywords": "emlak,emlak arama,yapay zeka,chatbot,sohbet tabanlı yapay zeka",
+      "languages": {
+        "en": "İngilizce",
+        "pl": "Lehçe",
+        "ru": "Rusça",
+        "de": "Almanca",
+        "es": "İspanyolca",
+        "it": "İtalyanca",
+        "pt": "Portekizce",
+        "tr": "Türkçe",
+        "uk": "Ukraynaca"
+      },
+      "faq": {
+        "q1": "AI Real Estate Assistant nedir?",
+        "a1": "Emlak arama ve pazar analitiği için açık kaynaklı, sohbet tabanlı bir yapay zekâ platformu. Doğal dilde sorun — örneğin \"Krakow'da 500 bin altında 2+1 daire\" — ve size uygun ilanları gösterir. FastAPI, Next.js ve ChromaDB ile geliştirildi.",
+        "q2": "Zillow, Rightmove veya Idealista'dan farkı ne?",
+        "a2": "Filtre öncelikli değil, yapay zekâ ve sohbet öncelikli bir çözüm. Doğal dil arayüzü, anlamsal ve anahtar kelime aramasını birleştiren hibrit arama, birden fazla LLM sağlayıcısına yayılan yedek zinciri ve kendiniz barındırabileceğiniz MIT lisanslı yığın, özel emlak deneyimleri geliştirmek için geliştirici dostu bir alternatif sunar.",
+        "q3": "Kendi sunucumda çalıştırabilir miyim?",
+        "a3": "Evet. MIT lisansı, Docker Compose, 5 dakikada başlangıç ve GitHub'da eksiksiz kaynak kodu. Kendi LLM API anahtarlarınızı (OpenAI, Anthropic, Google, Grok, DeepSeek veya yerel Ollama) ve ChromaDB destekli verileri ekleyin.",
+        "q4": "Canlı demo gerçek mi?",
+        "a4": "Canlı demo, kayıt olmadan hemen inceleyebilmeniz için simüle edilmiş yapay zekâ yanıtları ve hazırlanmış test verileri kullanır. Gerçek ilanlarla üretim ortamı için API anahtarları ve kendi veri kaynağınız gerekir.",
+        "q5": "PropVector AI ile farkı ne?",
+        "a5": "PropVector AI (propvectorai.com), bu açık kaynak kodu üzerine kurulmuş, yönetilen hesaplar, canlı veri akışları, yapay zekâ CRM ve kurumsal özellikler sunan barındırılmış bir SaaS katmanıdır. Depo open-core olarak kalır: motor ücretsizdir, ticari özellikler barındırılan üründe yaşar.",
+        "q6": "Hangi diller destekleniyor?",
+        "a6": "Arayüz ve sohbet için 9 dil: İngilizce, Lehçe, Rusça, Almanca, İspanyolca, İtalyanca, Portekizce, Türkçe ve Ukraynaca. AB Yapay Zekâ Tüzüğü uyumluluk etiketleri de dahildir.",
+        "q7": "Hangi LLM sağlayıcıları destekleniyor?",
+        "a7": "OpenAI, Anthropic, Google, Grok, DeepSeek ve yerel Ollama. Otomatik yedek zinciri güvenilirliği sağlar. Sağlayıcı seçimi görev ve kullanıcı bazlıdır ve öncelik kaskadıyla yapılır.",
+        "q8": "Gerçek veriyle barındırılmış bir sürüm var mı?",
+        "a8": "Evet — PropVector AI (propvectorai.com) canlı veri, yönetilen hesaplar ve kurumsal özelliklerle barındırılmış katmanlar sunuyor. Açık kaynak depo çekirdek motor ve kendiniz barındırabileceğiniz demo üzerine odaklanır."
+      }
+    }
   }
 }

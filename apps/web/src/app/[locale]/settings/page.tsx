@@ -216,9 +216,7 @@ function ModelCatalogComparisonTable({
                 </div>
               </div>
             ) : provider.models.some((m) => !m.pricing) ? (
-              <p className="mt-4 text-xs text-muted-foreground">
-                {t('models.pricingUnavailable')}
-              </p>
+              <p className="mt-4 text-xs text-muted-foreground">{t('models.pricingUnavailable')}</p>
             ) : null}
           </CardContent>
         </Card>
@@ -417,9 +415,9 @@ export default function SettingsPage() {
                 <div className="text-xs text-muted-foreground max-w-md">
                   <p className="font-medium mb-1">{tSettings('models.supportedProviders')}</p>
                   <p>
-                    OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI,
-                    Fireworks AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot,
-                    OpenCode, and Ollama (local).
+                    OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI, Fireworks
+                    AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, and Ollama
+                    (local).
                   </p>
                   <p className="mt-2">{tSettings('models.emptyCatalogHint')}</p>
                 </div>
@@ -468,7 +466,7 @@ export default function SettingsPage() {
                   className="h-8 w-8 text-muted-foreground mx-auto mb-3"
                   aria-hidden="true"
                 />
-                <p className="text-sm text-muted-foreground">No models available.</p>
+                <p className="text-sm text-muted-foreground">{tSettings('models.noModels')}.</p>
               </div>
             )}
 

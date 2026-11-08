@@ -2,6 +2,7 @@
 
 import { MapPin, Star, Briefcase, Award, Phone, Mail } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,9 @@ interface AgentCardProps {
 }
 
 export function AgentCard({ agent, locale }: AgentCardProps) {
-  const displayName = agent.name || agent.professional_email?.split('@')[0] || 'Agent';
+  const t = useTranslations('agents');
+  const displayName =
+    agent.name || agent.professional_email?.split('@')[0] || t('profile.defaultName');
   const { trackContactRequest } = useLeadTracking();
   const profileHref = `/${locale}/agents/${agent.id}`;
 
@@ -53,7 +56,7 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
               {agent.is_verified && (
                 <div
                   className="absolute -bottom-1 -right-1 rounded-full bg-success p-1.5"
-                  aria-label="Verified agent"
+                  aria-label={t('verifiedAria')}
                 >
                   <Award className="h-4 w-4 text-info-foreground" aria-hidden="true" />
                 </div>

@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono, Cinzel } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, setRequestLocale } from 'next-intl/server';
+import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { MainNav } from '@/components/layout/main-nav';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SkipNav } from '@/components/layout/SkipNav';
@@ -18,11 +18,28 @@ import { SITE_URL, absoluteUrl } from '@/lib/site';
 import { languageAlternates } from '@/lib/metadata';
 import { buildStructuredData } from '@/lib/structured-data';
 
+/**
+ * Open Graph expects a `language_TERRITORY` tag. Every supported locale gets
+ * its own — the old ternary declared only Polish and Russian and told the
+ * crawlers that the German, Spanish, Italian, Portuguese, Turkish and
+ * Ukrainian pages were American English.
+ */
+const OPEN_GRAPH_LOCALE: Record<Locale, string> = {
+  en: 'en_US',
+  pl: 'pl_PL',
+  ru: 'ru_RU',
+  de: 'de_DE',
+  es: 'es_ES',
+  it: 'it_IT',
+  pt: 'pt_PT',
+  tr: 'tr_TR',
+  uk: 'uk_UA',
+};
+
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin', 'latin-ext'],
 });
-
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin', 'latin-ext'],
@@ -115,7 +132,7 @@ export async function generateMetadata({
       title: titles[locale as Locale] || titles.en,
       description: descriptions[locale as Locale] || descriptions.en,
       siteName: 'AI Real Estate Assistant',
-      locale: locale === 'pl' ? 'pl_PL' : locale === 'ru' ? 'ru_RU' : 'en_US',
+      locale: OPEN_GRAPH_LOCALE[locale as Locale] || 'en_US',
       type: 'website',
       images: [
         {
@@ -202,7 +219,28 @@ export default async function LocaleLayout({
   // Providing all messages to the client
   const messages = await getMessages();
 
-  const structuredData = buildStructuredData(locale as Locale);
+  // The JSON-LD document speaks the language of the reader too — the FAQ
+  // answers and the description come from the message catalogue.
+  const tSeo = await getTranslations('seo.structuredData');
+  const structuredData = buildStructuredData(locale as Locale, {
+    description: tSeo('description'),
+    keywords: tSeo('keywords'),
+    languages: [
+      tSeo('languages.en'),
+      tSeo('languages.pl'),
+      tSeo('languages.ru'),
+      tSeo('languages.de'),
+      tSeo('languages.es'),
+      tSeo('languages.it'),
+      tSeo('languages.pt'),
+      tSeo('languages.tr'),
+      tSeo('languages.uk'),
+    ],
+    faq: Array.from({ length: 8 }, (_, index) => ({
+      question: tSeo(`faq.q${index + 1}`),
+      answer: tSeo(`faq.a${index + 1}`),
+    })),
+  });
 
   return (
     <html lang={locale} suppressHydrationWarning>

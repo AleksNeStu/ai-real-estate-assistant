@@ -12,6 +12,120 @@ interface PDFOptions {
   title?: string;
   filename?: string;
   includeDate?: boolean;
+  /**
+   * Translated labels for the document. Every field falls back to the
+   * English default, so callers that do not care about localisation can keep
+   * passing an empty options object.
+   */
+  copy?: Partial<TcoPdfCopy>;
+}
+
+/**
+ * Every user-visible label of the TCO PDF documents.
+ *
+ * The lib stays free of any i18n dependency: the caller reads the labels
+ * from the message catalogue and hands them over as `copy`.
+ */
+export interface TcoPdfCopy {
+  title: string;
+  comparisonTitle: string;
+  generated: string;
+  summary: string;
+  monthlyTco: string;
+  annualTco: string;
+  downPayment: string;
+  loanAmount: string;
+  monthlyBreakdown: string;
+  mortgage: string;
+  propertyTax: string;
+  insurance: string;
+  hoa: string;
+  utilities: string;
+  internet: string;
+  parking: string;
+  maintenance: string;
+  totalCosts: string;
+  totalOwnershipCost: string;
+  allInCost: string;
+  multiYearProjections: string;
+  year: string;
+  cumulativeCost: string;
+  equityBuilt: string;
+  propertyValue: string;
+  costCategoryAnalysis: string;
+  fixedCosts: string;
+  variableCosts: string;
+  discretionaryCosts: string;
+  pageOf: string;
+  comparisonSummary: string;
+  keyDifferences: string;
+  totalCost: string;
+  monthlyCostDifference: string;
+  equityDifference: string;
+  breakEvenPoint: string;
+  breakEvenNotAvailable: string;
+  recommendation: string;
+  recommended: string;
+  advantages: string;
+}
+
+/**
+ * English defaults — the document reads exactly as it did before the copy
+ * parameter was introduced.
+ */
+export const DEFAULT_TCO_PDF_COPY: TcoPdfCopy = {
+  title: 'Total Cost of Ownership Analysis',
+  comparisonTitle: 'TCO Comparison Analysis',
+  generated: 'Generated: {date}',
+  summary: 'Summary',
+  monthlyTco: 'Monthly TCO',
+  annualTco: 'Annual TCO',
+  downPayment: 'Down Payment',
+  loanAmount: 'Loan Amount',
+  monthlyBreakdown: 'Monthly Cost Breakdown',
+  mortgage: 'Mortgage',
+  propertyTax: 'Property Tax',
+  insurance: 'Insurance',
+  hoa: 'HOA',
+  utilities: 'Utilities',
+  internet: 'Internet',
+  parking: 'Parking',
+  maintenance: 'Maintenance',
+  totalCosts: 'Total Costs',
+  totalOwnershipCost: 'Total Ownership Cost',
+  allInCost: 'All-In Cost (incl. Down Payment)',
+  multiYearProjections: 'Multi-Year Projections',
+  year: 'Year',
+  cumulativeCost: 'Cumulative Cost',
+  equityBuilt: 'Equity Built',
+  propertyValue: 'Property Value',
+  costCategoryAnalysis: 'Cost Category Analysis',
+  fixedCosts: 'Fixed Costs (Monthly)',
+  variableCosts: 'Variable Costs (Monthly)',
+  discretionaryCosts: 'Discretionary Costs (Monthly)',
+  pageOf: 'Page {page} of {total}',
+  comparisonSummary: 'Comparison Summary',
+  keyDifferences: 'Key Differences',
+  totalCost: 'Total Cost',
+  monthlyCostDifference: 'Monthly Cost Difference',
+  equityDifference: 'Equity Difference',
+  breakEvenPoint: 'Break-Even Point: {years} years',
+  breakEvenNotAvailable: 'Break-Even Point: N/A',
+  recommendation: 'Recommendation',
+  recommended: 'Recommended',
+  advantages: '{scenario} Advantages',
+};
+
+/**
+ * Fill `{name}` placeholders in a label. The PDF copy uses plain named
+ * placeholders only — no ICU plurals — so a plain replacement is enough and
+ * the lib stays independent of any i18n runtime.
+ */
+function fill(template: string, params: Record<string, string | number>): string {
+  return Object.entries(params).reduce(
+    (acc, [key, value]) => acc.replaceAll(`{${key}}`, String(value)),
+    template
+  );
 }
 
 /**
@@ -32,11 +146,8 @@ export async function exportTCOToPDF(
   tcoResult: TCOResult | EnhancedTCOResult,
   options: PDFOptions = {}
 ): Promise<void> {
-  const {
-    title = 'Total Cost of Ownership Analysis',
-    filename = 'tco-analysis',
-    includeDate = true,
-  } = options;
+  const c: TcoPdfCopy = { ...DEFAULT_TCO_PDF_COPY, ...options.copy };
+  const { title = c.title, filename = 'tco-analysis', includeDate = true } = options;
 
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -54,7 +165,7 @@ export async function exportTCOToPDF(
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100);
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`, margin, y);
+    doc.text(fill(c.generated, { date: new Date().toLocaleDateString() }), margin, y);
     y += 15;
   }
 
@@ -63,17 +174,17 @@ export async function exportTCOToPDF(
   // Summary Section
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('Summary', margin, y);
+  doc.text(c.summary, margin, y);
   y += 8;
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
 
   const summaryData = [
-    ['Monthly TCO', formatCurrency(tcoResult.monthly_tco)],
-    ['Annual TCO', formatCurrency(tcoResult.annual_tco)],
-    ['Down Payment', formatCurrency(tcoResult.down_payment)],
-    ['Loan Amount', formatCurrency(tcoResult.loan_amount)],
+    [c.monthlyTco, formatCurrency(tcoResult.monthly_tco)],
+    [c.annualTco, formatCurrency(tcoResult.annual_tco)],
+    [c.downPayment, formatCurrency(tcoResult.down_payment)],
+    [c.loanAmount, formatCurrency(tcoResult.loan_amount)],
   ];
 
   summaryData.forEach(([label, value]) => {
@@ -87,21 +198,21 @@ export async function exportTCOToPDF(
   // Monthly Breakdown Section
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('Monthly Cost Breakdown', margin, y);
+  doc.text(c.monthlyBreakdown, margin, y);
   y += 8;
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
 
   const breakdownData = [
-    ['Mortgage', formatCurrency(tcoResult.monthly_mortgage)],
-    ['Property Tax', formatCurrency(tcoResult.monthly_property_tax)],
-    ['Insurance', formatCurrency(tcoResult.monthly_insurance)],
-    ['HOA', formatCurrency(tcoResult.monthly_hoa)],
-    ['Utilities', formatCurrency(tcoResult.monthly_utilities)],
-    ['Internet', formatCurrency(tcoResult.monthly_internet)],
-    ['Parking', formatCurrency(tcoResult.monthly_parking)],
-    ['Maintenance', formatCurrency(tcoResult.monthly_maintenance)],
+    [c.mortgage, formatCurrency(tcoResult.monthly_mortgage)],
+    [c.propertyTax, formatCurrency(tcoResult.monthly_property_tax)],
+    [c.insurance, formatCurrency(tcoResult.monthly_insurance)],
+    [c.hoa, formatCurrency(tcoResult.monthly_hoa)],
+    [c.utilities, formatCurrency(tcoResult.monthly_utilities)],
+    [c.internet, formatCurrency(tcoResult.monthly_internet)],
+    [c.parking, formatCurrency(tcoResult.monthly_parking)],
+    [c.maintenance, formatCurrency(tcoResult.monthly_maintenance)],
   ];
 
   breakdownData.forEach(([label, value]) => {
@@ -115,17 +226,17 @@ export async function exportTCOToPDF(
   // Total Costs Section
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('Total Costs', margin, y);
+  doc.text(c.totalCosts, margin, y);
   y += 8;
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
 
-  doc.text('Total Ownership Cost:', margin, y);
+  doc.text(`${c.totalOwnershipCost}:`, margin, y);
   doc.text(formatCurrency(tcoResult.total_ownership_cost), margin + 80, y);
   y += 6;
 
-  doc.text('All-In Cost (incl. Down Payment):', margin, y);
+  doc.text(`${c.allInCost}:`, margin, y);
   doc.text(formatCurrency(tcoResult.total_all_costs), margin + 80, y);
   y += 15;
 
@@ -140,7 +251,7 @@ export async function exportTCOToPDF(
 
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('Multi-Year Projections', margin, y);
+    doc.text(c.multiYearProjections, margin, y);
     y += 8;
 
     doc.setFontSize(10);
@@ -148,10 +259,10 @@ export async function exportTCOToPDF(
 
     // Table header
     doc.setFont('helvetica', 'bold');
-    doc.text('Year', margin, y);
-    doc.text('Cumulative Cost', margin + 25, y);
-    doc.text('Equity Built', margin + 65, y);
-    doc.text('Property Value', margin + 105, y);
+    doc.text(c.year, margin, y);
+    doc.text(c.cumulativeCost, margin + 25, y);
+    doc.text(c.equityBuilt, margin + 65, y);
+    doc.text(c.propertyValue, margin + 105, y);
     y += 6;
 
     doc.setFont('helvetica', 'normal');
@@ -179,7 +290,7 @@ export async function exportTCOToPDF(
 
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('Cost Category Analysis', margin, y);
+    doc.text(c.costCategoryAnalysis, margin, y);
     y += 8;
 
     doc.setFontSize(10);
@@ -192,15 +303,15 @@ export async function exportTCOToPDF(
     });
 
     y += 5;
-    doc.text('Fixed Costs (Monthly):', margin, y);
+    doc.text(`${c.fixedCosts}:`, margin, y);
     doc.text(formatCurrency(enhancedResult.fixed_costs_monthly), margin + 70, y);
     y += 5;
 
-    doc.text('Variable Costs (Monthly):', margin, y);
+    doc.text(`${c.variableCosts}:`, margin, y);
     doc.text(formatCurrency(enhancedResult.variable_costs_monthly), margin + 70, y);
     y += 5;
 
-    doc.text('Discretionary Costs (Monthly):', margin, y);
+    doc.text(`${c.discretionaryCosts}:`, margin, y);
     doc.text(formatCurrency(enhancedResult.discretionary_costs_monthly), margin + 70, y);
   }
 
@@ -210,9 +321,14 @@ export async function exportTCOToPDF(
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150);
-    doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, {
-      align: 'center',
-    });
+    doc.text(
+      fill(c.pageOf, { page: i, total: pageCount }),
+      pageWidth / 2,
+      doc.internal.pageSize.getHeight() - 10,
+      {
+        align: 'center',
+      }
+    );
   }
 
   // Save the PDF
@@ -227,11 +343,8 @@ export async function exportTCOComparisonToPDF(
   comparisonResult: TCOComparisonResult,
   options: PDFOptions = {}
 ): Promise<void> {
-  const {
-    title = 'TCO Comparison Analysis',
-    filename = 'tco-comparison',
-    includeDate = true,
-  } = options;
+  const c: TcoPdfCopy = { ...DEFAULT_TCO_PDF_COPY, ...options.copy };
+  const { title = c.comparisonTitle, filename = 'tco-comparison', includeDate = true } = options;
 
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -249,7 +362,7 @@ export async function exportTCOComparisonToPDF(
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100);
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`, margin, y);
+    doc.text(fill(c.generated, { date: new Date().toLocaleDateString() }), margin, y);
     y += 15;
   }
 
@@ -258,7 +371,7 @@ export async function exportTCOComparisonToPDF(
   // Comparison Summary
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('Comparison Summary', margin, y);
+  doc.text(c.comparisonSummary, margin, y);
   y += 8;
 
   doc.setFontSize(10);
@@ -271,13 +384,13 @@ export async function exportTCOComparisonToPDF(
   y += 6;
 
   doc.text(
-    `Monthly TCO: ${formatCurrency(comparisonResult.scenario_a.monthly_tco)}`,
+    `${c.monthlyTco}: ${formatCurrency(comparisonResult.scenario_a.monthly_tco)}`,
     margin + 10,
     y
   );
   y += 5;
   doc.text(
-    `Total Cost: ${formatCurrency(comparisonResult.scenario_a.total_ownership_cost)}`,
+    `${c.totalCost}: ${formatCurrency(comparisonResult.scenario_a.total_ownership_cost)}`,
     margin + 10,
     y
   );
@@ -290,13 +403,13 @@ export async function exportTCOComparisonToPDF(
   y += 6;
 
   doc.text(
-    `Monthly TCO: ${formatCurrency(comparisonResult.scenario_b.monthly_tco)}`,
+    `${c.monthlyTco}: ${formatCurrency(comparisonResult.scenario_b.monthly_tco)}`,
     margin + 10,
     y
   );
   y += 5;
   doc.text(
-    `Total Cost: ${formatCurrency(comparisonResult.scenario_b.total_ownership_cost)}`,
+    `${c.totalCost}: ${formatCurrency(comparisonResult.scenario_b.total_ownership_cost)}`,
     margin + 10,
     y
   );
@@ -305,7 +418,7 @@ export async function exportTCOComparisonToPDF(
   // Differences
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('Key Differences', margin, y);
+  doc.text(c.keyDifferences, margin, y);
   y += 8;
 
   doc.setFontSize(10);
@@ -315,34 +428,42 @@ export async function exportTCOComparisonToPDF(
   const diffColor = comparisonResult.monthly_cost_difference > 0 ? [200, 0, 0] : [0, 150, 0];
   doc.setTextColor(diffColor[0], diffColor[1], diffColor[2]);
   doc.text(
-    `Monthly Cost Difference: ${diffSign}${formatCurrency(comparisonResult.monthly_cost_difference)}`,
+    `${c.monthlyCostDifference}: ${diffSign}${formatCurrency(comparisonResult.monthly_cost_difference)}`,
     margin,
     y
   );
   doc.setTextColor(0);
   y += 6;
 
-  doc.text(`Equity Difference: ${formatCurrency(comparisonResult.equity_difference)}`, margin, y);
+  doc.text(
+    `${c.equityDifference}: ${formatCurrency(comparisonResult.equity_difference)}`,
+    margin,
+    y
+  );
   y += 6;
 
   if (comparisonResult.break_even_years) {
-    doc.text(`Break-Even Point: ${comparisonResult.break_even_years.toFixed(1)} years`, margin, y);
+    doc.text(
+      fill(c.breakEvenPoint, { years: comparisonResult.break_even_years.toFixed(1) }),
+      margin,
+      y
+    );
   } else {
-    doc.text('Break-Even Point: N/A', margin, y);
+    doc.text(c.breakEvenNotAvailable, margin, y);
   }
   y += 10;
 
   // Recommendation
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('Recommendation', margin, y);
+  doc.text(c.recommendation, margin, y);
   y += 8;
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
 
   doc.setFont('helvetica', 'bold');
-  doc.text(`Recommended: ${comparisonResult.recommendation}`, margin, y);
+  doc.text(`${c.recommended}: ${comparisonResult.recommendation}`, margin, y);
   doc.setFont('helvetica', 'normal');
   y += 6;
 
@@ -367,7 +488,7 @@ export async function exportTCOComparisonToPDF(
   // Scenario A Advantages
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text(`${comparisonResult.scenario_a_name} Advantages`, margin, y);
+  doc.text(fill(c.advantages, { scenario: comparisonResult.scenario_a_name }), margin, y);
   y += 6;
 
   doc.setFontSize(10);
@@ -385,7 +506,7 @@ export async function exportTCOComparisonToPDF(
   // Scenario B Advantages
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text(`${comparisonResult.scenario_b_name} Advantages`, margin, y);
+  doc.text(fill(c.advantages, { scenario: comparisonResult.scenario_b_name }), margin, y);
   y += 6;
 
   doc.setFontSize(10);
@@ -404,9 +525,14 @@ export async function exportTCOComparisonToPDF(
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150);
-    doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, {
-      align: 'center',
-    });
+    doc.text(
+      fill(c.pageOf, { page: i, total: pageCount }),
+      pageWidth / 2,
+      doc.internal.pageSize.getHeight() - 10,
+      {
+        align: 'center',
+      }
+    );
   }
 
   // Save the PDF

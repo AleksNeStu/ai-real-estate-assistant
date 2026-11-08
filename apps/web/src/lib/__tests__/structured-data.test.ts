@@ -114,4 +114,47 @@ describe('buildStructuredData', () => {
     expect(site).toBeDefined();
     expect(site.inLanguage).toBe('pl');
   });
+
+  it('FAQPage.inLanguage reflects the locale, not a hard-coded English', () => {
+    // The FAQ used to declare `inLanguage: 'en'` on every locale, which told
+    // the crawlers that the Polish page carried an English FAQ.
+    const result = buildStructuredData('pl' as const);
+    const graph = result['@graph'] as Record<string, unknown>[];
+    const faq = graph.find((item) => item['@type'] === 'FAQPage') as Record<string, unknown>;
+    expect(faq).toBeDefined();
+    expect(faq.inLanguage).toBe('pl');
+  });
+
+  it('uses the translated description, keywords, language names and FAQ answers', () => {
+    const result = buildStructuredData('pl' as const, {
+      description: 'Opis testowy',
+      keywords: 'kluczowe,wartości',
+      languages: ['Jeden', 'Dwa', 'Trzy', 'Cztery', 'Pięć', 'Sześć', 'Siedem', 'Osiem', 'Dziewięć'],
+      faq: [{ question: 'Pytanie?', answer: 'Odpowiedź.' }],
+    });
+    const graph = result['@graph'] as Record<string, unknown>[];
+
+    const app = graph.find((item) => item['@type'] === 'SoftwareApplication') as Record<string, unknown>;
+    expect(app.description).toBe('Opis testowy');
+    expect(app.availableLanguage).toHaveLength(9);
+    expect((app.availableLanguage as string[])[0]).toBe('Jeden');
+
+    const site = graph.find((item) => item['@type'] === 'WebSite') as Record<string, unknown>;
+    expect(site.keywords).toBe('kluczowe,wartości');
+
+    const faq = graph.find((item) => item['@type'] === 'FAQPage') as Record<string, unknown>;
+    const entities = faq.mainEntity as Record<string, unknown>[];
+    expect(entities).toHaveLength(1);
+    expect(entities[0].name).toBe('Pytanie?');
+    expect((entities[0].acceptedAnswer as Record<string, unknown>).text).toBe('Odpowiedź.');
+  });
+
+  it('falls back to the English defaults when no copy is given', () => {
+    const result = buildStructuredData('de' as const);
+    const graph = result['@graph'] as Record<string, unknown>[];
+    const app = graph.find((item) => item['@type'] === 'SoftwareApplication') as Record<string, unknown>;
+    expect(app.description).toContain('Open-source');
+    const faq = graph.find((item) => item['@type'] === 'FAQPage') as Record<string, unknown>;
+    expect((faq.mainEntity as unknown[]).length).toBe(8);
+  });
 });

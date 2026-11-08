@@ -41,7 +41,7 @@ export function StepSubject({
       });
       setSearchResults(response.results.map((r) => r.property));
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Search failed';
+      const message = err instanceof Error ? err.message : t('searchFailed');
       setSearchError(message);
     } finally {
       setIsSearching(false);

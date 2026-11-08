@@ -15,6 +15,7 @@ import { PageHeader } from '@/components/ui/page-header';
 export default function DocumentsPage() {
   const t = useTranslations('pages.documents');
   const tCommon = useTranslations('common');
+  const tDocsErrors = useTranslations('documents.errors');
   const [documents, setDocuments] = useState<Document[]>([]);
   const [expiringDocuments, setExpiringDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,36 +34,39 @@ export default function DocumentsPage() {
     }
   }, []);
 
-  const fetchDocuments = useCallback(async (pageNum: number = 1, append: boolean = false) => {
-    try {
-      if (append) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-        setError(null);
-      }
+  const fetchDocuments = useCallback(
+    async (pageNum: number = 1, append: boolean = false) => {
+      try {
+        if (append) {
+          setLoadingMore(true);
+        } else {
+          setLoading(true);
+          setError(null);
+        }
 
-      const response: DocumentListResponse = await getDocuments({
-        page: pageNum,
-        page_size: 20,
-        sort_by: 'created_at',
-        sort_order: 'desc',
-      });
+        const response: DocumentListResponse = await getDocuments({
+          page: pageNum,
+          page_size: 20,
+          sort_by: 'created_at',
+          sort_order: 'desc',
+        });
 
-      if (append) {
-        setDocuments((prev) => [...prev, ...response.items]);
-      } else {
-        setDocuments(response.items);
+        if (append) {
+          setDocuments((prev) => [...prev, ...response.items]);
+        } else {
+          setDocuments(response.items);
+        }
+        setTotalPages(response.total_pages);
+        setPage(pageNum);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : tDocsErrors('loadFailed'));
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
       }
-      setTotalPages(response.total_pages);
-      setPage(pageNum);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load documents');
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, []);
+    },
+    [tDocsErrors]
+  );
 
   useEffect(() => {
     fetchDocuments(1);
@@ -129,12 +133,7 @@ export default function DocumentsPage() {
         description={t('description')}
         actions={
           <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleRefresh}
-              disabled={loading}
-            >
+            <Button type="button" variant="outline" onClick={handleRefresh} disabled={loading}>
               <RefreshCw
                 className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}
                 aria-hidden="true"
@@ -167,10 +166,7 @@ export default function DocumentsPage() {
                   </span>
                 ))}
                 {expiringDocuments.length > 3 && (
-                  <span>
-                    {' '}
-                    {t('andMore', { count: expiringDocuments.length - 3 })}
-                  </span>
+                  <span> {t('andMore', { count: expiringDocuments.length - 3 })}</span>
                 )}
               </p>
             </div>
@@ -218,7 +214,8 @@ export default function DocumentsPage() {
           {/* Load More */}
           {page < totalPages && (
             <div className="flex justify-center mt-6">
-              <button type="button"
+              <button
+                type="button"
                 onClick={handleLoadMore}
                 disabled={loadingMore}
                 className="inline-flex items-center gap-2 px-6 py-2 rounded-md border border-input hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"

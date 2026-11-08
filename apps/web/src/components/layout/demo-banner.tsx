@@ -52,7 +52,9 @@ export function DemoBanner() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Switch checked={isDemoMode} onCheckedChange={handleToggle} />
-            <span className="text-xs text-primary/80">{isDemoMode ? 'Enabled' : 'Disabled'}</span>
+            <span className="text-xs text-primary/80">
+              {isDemoMode ? t('modeEnabled') : t('modeDisabled')}
+            </span>
           </div>
           {!isDemoMode && (
             <Button

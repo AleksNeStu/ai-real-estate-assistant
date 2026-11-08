@@ -1,6 +1,6 @@
 'use client';
 
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,6 +14,7 @@ import { locales, localeNames, localeFlags, type Locale } from '@/i18n/config';
 
 export function LanguageSwitcher() {
   const locale = useLocale() as Locale;
+  const t = useTranslations('common');
   const pathname = usePathname();
   const router = useRouter();
 
@@ -33,7 +34,8 @@ export function LanguageSwitcher() {
         <Button
           variant="ghost"
           size="sm"
-          aria-label="Change language"
+          aria-label={t('changeLanguage')}
+          data-testid="language-switcher"
           className="gap-1 px-2 text-xs font-medium uppercase"
         >
           <Globe className="w-3.5 h-3.5" aria-hidden="true" />

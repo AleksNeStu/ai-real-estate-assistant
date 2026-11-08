@@ -22,6 +22,7 @@ import {
 } from '@/lib/api';
 import type { Collection, FavoriteWithProperty } from '@/lib/types';
 import { useAuth } from './AuthContext';
+import { useTranslations } from 'next-intl';
 
 export interface FavoritesContextType {
   // State
@@ -74,6 +75,7 @@ interface FavoritesProviderProps {
 
 export function FavoritesProvider({ children }: FavoritesProviderProps) {
   const { isAuthenticated, user } = useAuth();
+  const t = useTranslations('favorites');
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [favorites, setFavorites] = useState<FavoriteWithProperty[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -150,7 +152,7 @@ export function FavoritesProvider({ children }: FavoritesProviderProps) {
   const toggleFavorite = useCallback(
     async (propertyId: string): Promise<boolean> => {
       if (!isAuthenticated) {
-        throw new Error('Please log in to favorite properties');
+        throw new Error(t('loginRequired'));
       }
 
       const wasFavorited = favoriteIds.has(propertyId);
@@ -189,7 +191,7 @@ export function FavoritesProvider({ children }: FavoritesProviderProps) {
         throw err;
       }
     },
-    [isAuthenticated, favoriteIds]
+    [isAuthenticated, favoriteIds, t]
   );
 
   const isFavorited = useCallback(

@@ -44,14 +44,14 @@ test.describe('Language Switcher', () => {
     await page.goto('/pl/');
 
     // The LanguageSwitcher renders a ghost button with the current locale flag
-    const switcherButton = page.getByRole('button', { name: /change language/i });
+    const switcherButton = page.getByTestId('language-switcher');
     await expect(switcherButton).toBeVisible({ timeout: 10000 });
   });
 
   test('should show locale options when language switcher is opened', async ({ page }) => {
     await page.goto('/pl/');
 
-    const switcherButton = page.getByRole('button', { name: /change language/i });
+    const switcherButton = page.getByTestId('language-switcher');
     await switcherButton.click();
 
     // Dropdown should show locale names from localeNames config
@@ -65,7 +65,7 @@ test.describe('Language Switcher', () => {
   test('should switch to English and update URL', async ({ page }) => {
     await page.goto('/pl/');
 
-    const switcherButton = page.getByRole('button', { name: /change language/i });
+    const switcherButton = page.getByTestId('language-switcher');
     await switcherButton.click();
 
     const englishOption = page.getByRole('menuitem', { name: /English/i });
@@ -78,7 +78,7 @@ test.describe('Language Switcher', () => {
   test('should switch to Russian and update URL', async ({ page }) => {
     await page.goto('/en/');
 
-    const switcherButton = page.getByRole('button', { name: /change language/i });
+    const switcherButton = page.getByTestId('language-switcher');
     await switcherButton.click();
 
     const russianOption = page.getByRole('menuitem', { name: /Русский/i });
@@ -98,7 +98,7 @@ test.describe('Language Switcher', () => {
     const polishText = await pageHeading.textContent();
 
     // Switch to English
-    const switcherButton = page.getByRole('button', { name: /change language/i });
+    const switcherButton = page.getByTestId('language-switcher');
     await switcherButton.click();
 
     const englishOption = page.getByRole('menuitem', { name: /English/i });

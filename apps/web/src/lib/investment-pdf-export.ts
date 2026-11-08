@@ -11,6 +11,116 @@ interface InvestmentPDFOptions {
   title?: string;
   filename?: string;
   includeDate?: boolean;
+  /**
+   * Translated labels for the document. Every field falls back to the
+   * English default, so callers that do not care about localisation can keep
+   * passing an empty options object.
+   */
+  copy?: Partial<InvestmentPdfCopy>;
+}
+
+/**
+ * Every user-visible label of the investment analysis PDF.
+ *
+ * The lib stays free of any i18n dependency: the caller reads the labels
+ * from the message catalogue and hands them over as `copy`.
+ */
+export interface InvestmentPdfCopy {
+  title: string;
+  generated: string;
+  keyMetrics: string;
+  monthlyCashFlow: string;
+  annualCashFlow: string;
+  cashOnCashRoi: string;
+  capRate: string;
+  grossYield: string;
+  netYield: string;
+  totalInvestment: string;
+  investmentScore: string;
+  incomeExpenses: string;
+  monthlyIncome: string;
+  monthlyExpenses: string;
+  annualIncome: string;
+  annualExpenses: string;
+  monthlyMortgage: string;
+  scoreBreakdown: string;
+  advancedMetrics: string;
+  riskScore: string;
+  totalProjectedCashFlow: string;
+  finalEquity: string;
+  irr: string;
+  annualDepreciation: string;
+  taxBenefit: string;
+  riskFactors: string;
+  recommendations: string;
+  cashFlowProjectionSummary: string;
+  year: string;
+  cashFlow: string;
+  cumulative: string;
+  equity: string;
+  pageOf: string;
+  footerBrand: string;
+  notAvailable: string;
+  /**
+   * Optional map from the API score-breakdown keys (`location`, `type`, …) to
+   * translated labels. Unknown keys fall back to a title-cased version of the
+   * key itself.
+   */
+  scoreLabels?: Record<string, string>;
+}
+
+/**
+ * English defaults — the document reads exactly as it did before the copy
+ * parameter was introduced.
+ */
+export const DEFAULT_INVESTMENT_PDF_COPY: InvestmentPdfCopy = {
+  title: 'Investment Analysis Report',
+  generated: 'Generated: {date}',
+  keyMetrics: 'Key Metrics',
+  monthlyCashFlow: 'Monthly Cash Flow',
+  annualCashFlow: 'Annual Cash Flow',
+  cashOnCashRoi: 'Cash-on-Cash ROI',
+  capRate: 'Cap Rate',
+  grossYield: 'Gross Yield',
+  netYield: 'Net Yield',
+  totalInvestment: 'Total Investment',
+  investmentScore: 'Investment Score',
+  incomeExpenses: 'Income & Expenses',
+  monthlyIncome: 'Monthly Income',
+  monthlyExpenses: 'Monthly Expenses',
+  annualIncome: 'Annual Income',
+  annualExpenses: 'Annual Expenses',
+  monthlyMortgage: 'Monthly Mortgage',
+  scoreBreakdown: 'Score Breakdown',
+  advancedMetrics: 'Advanced Metrics',
+  riskScore: 'Risk Score',
+  totalProjectedCashFlow: 'Total Projected Cash Flow',
+  finalEquity: 'Final Equity',
+  irr: 'IRR',
+  annualDepreciation: 'Annual Depreciation',
+  taxBenefit: 'Tax Benefit',
+  riskFactors: 'Risk Factors',
+  recommendations: 'Recommendations',
+  cashFlowProjectionSummary: 'Cash Flow Projection Summary',
+  year: 'Year',
+  cashFlow: 'Cash Flow',
+  cumulative: 'Cumulative',
+  equity: 'Equity',
+  pageOf: 'Page {page} of {total}',
+  footerBrand: 'AI Real Estate Assistant - Investment Analysis',
+  notAvailable: 'N/A',
+};
+
+/**
+ * Fill `{name}` placeholders in a label. The PDF copy uses plain named
+ * placeholders only — no ICU plurals — so a plain replacement is enough and
+ * the lib stays independent of any i18n runtime.
+ */
+function fill(template: string, params: Record<string, string | number>): string {
+  return Object.entries(params).reduce(
+    (acc, [key, value]) => acc.replaceAll(`{${key}}`, String(value)),
+    template
+  );
 }
 
 /**
@@ -38,11 +148,8 @@ export async function exportInvestmentToPDF(
   result: AdvancedInvestmentResult,
   options: InvestmentPDFOptions = {}
 ): Promise<void> {
-  const {
-    title = 'Investment Analysis Report',
-    filename = 'investment-analysis',
-    includeDate = true,
-  } = options;
+  const c: InvestmentPdfCopy = { ...DEFAULT_INVESTMENT_PDF_COPY, ...options.copy };
+  const { title = c.title, filename = 'investment-analysis', includeDate = true } = options;
 
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -61,7 +168,7 @@ export async function exportInvestmentToPDF(
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100);
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`, margin, y);
+    doc.text(fill(c.generated, { date: new Date().toLocaleDateString() }), margin, y);
     y += 15;
   }
 
@@ -70,7 +177,7 @@ export async function exportInvestmentToPDF(
   // Key Metrics Section
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('Key Metrics', margin, y);
+  doc.text(c.keyMetrics, margin, y);
   y += 8;
 
   // Draw separator line
@@ -79,14 +186,14 @@ export async function exportInvestmentToPDF(
 
   // Metrics data in two columns
   const metrics = [
-    ['Monthly Cash Flow', formatCurrency(result.monthly_cash_flow)],
-    ['Annual Cash Flow', formatCurrency(result.annual_cash_flow)],
-    ['Cash-on-Cash ROI', formatPercent(result.cash_on_cash_roi)],
-    ['Cap Rate', formatPercent(result.cap_rate)],
-    ['Gross Yield', formatPercent(result.gross_yield)],
-    ['Net Yield', formatPercent(result.net_yield)],
-    ['Total Investment', formatCurrency(result.total_investment)],
-    ['Investment Score', `${result.investment_score.toFixed(0)}/100`],
+    [c.monthlyCashFlow, formatCurrency(result.monthly_cash_flow)],
+    [c.annualCashFlow, formatCurrency(result.annual_cash_flow)],
+    [c.cashOnCashRoi, formatPercent(result.cash_on_cash_roi)],
+    [c.capRate, formatPercent(result.cap_rate)],
+    [c.grossYield, formatPercent(result.gross_yield)],
+    [c.netYield, formatPercent(result.net_yield)],
+    [c.totalInvestment, formatCurrency(result.total_investment)],
+    [c.investmentScore, `${result.investment_score.toFixed(0)}/100`],
   ];
 
   doc.setFontSize(10);
@@ -124,7 +231,7 @@ export async function exportInvestmentToPDF(
 
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('Income & Expenses', margin, y);
+  doc.text(c.incomeExpenses, margin, y);
   y += 8;
 
   doc.line(margin, y - 2, pageWidth - margin, y - 2);
@@ -134,11 +241,11 @@ export async function exportInvestmentToPDF(
   doc.setFont('helvetica', 'normal');
 
   const incomeExpenses = [
-    ['Monthly Income', formatCurrency(result.monthly_income)],
-    ['Monthly Expenses', formatCurrency(result.monthly_expenses)],
-    ['Annual Income', formatCurrency(result.annual_income)],
-    ['Annual Expenses', formatCurrency(result.annual_expenses)],
-    ['Monthly Mortgage', formatCurrency(result.monthly_mortgage)],
+    [c.monthlyIncome, formatCurrency(result.monthly_income)],
+    [c.monthlyExpenses, formatCurrency(result.monthly_expenses)],
+    [c.annualIncome, formatCurrency(result.annual_income)],
+    [c.annualExpenses, formatCurrency(result.annual_expenses)],
+    [c.monthlyMortgage, formatCurrency(result.monthly_mortgage)],
   ];
 
   incomeExpenses.forEach(([label, value]) => {
@@ -160,17 +267,19 @@ export async function exportInvestmentToPDF(
 
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('Score Breakdown', margin, y);
+    doc.text(c.scoreBreakdown, margin, y);
     y += 8;
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
 
     Object.entries(result.score_breakdown).forEach(([key, value]) => {
-      const label = key
-        .split('_')
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
+      const label =
+        c.scoreLabels?.[key] ??
+        key
+          .split('_')
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
       doc.text(`${label}:`, margin + 5, y);
       doc.text(`${value.toFixed(1)}`, margin + 60, y);
       y += 5;
@@ -187,19 +296,19 @@ export async function exportInvestmentToPDF(
 
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text('Advanced Metrics', margin, y);
+  doc.text(c.advancedMetrics, margin, y);
   y += 8;
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
 
   const advancedMetrics = [
-    ['Risk Score', `${result.risk_score}/100`],
-    ['Total Projected Cash Flow', formatCurrency(result.total_projected_cash_flow)],
-    ['Final Equity', formatCurrency(result.final_equity)],
-    ['IRR', result.irr !== null ? formatPercent(result.irr) : 'N/A'],
-    ['Annual Depreciation', formatCurrency(result.annual_depreciation)],
-    ['Tax Benefit', formatCurrency(result.tax_benefit)],
+    [c.riskScore, `${result.risk_score}/100`],
+    [c.totalProjectedCashFlow, formatCurrency(result.total_projected_cash_flow)],
+    [c.finalEquity, formatCurrency(result.final_equity)],
+    [c.irr, result.irr !== null ? formatPercent(result.irr) : c.notAvailable],
+    [c.annualDepreciation, formatCurrency(result.annual_depreciation)],
+    [c.taxBenefit, formatCurrency(result.tax_benefit)],
   ];
 
   advancedMetrics.forEach(([label, value]) => {
@@ -221,7 +330,7 @@ export async function exportInvestmentToPDF(
 
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('Risk Factors', margin, y);
+    doc.text(c.riskFactors, margin, y);
     y += 8;
 
     doc.setFontSize(10);
@@ -247,7 +356,7 @@ export async function exportInvestmentToPDF(
 
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('Recommendations', margin, y);
+    doc.text(c.recommendations, margin, y);
     y += 8;
 
     doc.setFontSize(10);
@@ -273,16 +382,16 @@ export async function exportInvestmentToPDF(
 
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('Cash Flow Projection Summary', margin, y);
+    doc.text(c.cashFlowProjectionSummary, margin, y);
     y += 8;
 
     // Table header
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
-    doc.text('Year', margin, y);
-    doc.text('Cash Flow', margin + 25, y);
-    doc.text('Cumulative', margin + 60, y);
-    doc.text('Equity', margin + 95, y);
+    doc.text(c.year, margin, y);
+    doc.text(c.cashFlow, margin + 25, y);
+    doc.text(c.cumulative, margin + 60, y);
+    doc.text(c.equity, margin + 95, y);
     doc.line(margin, y + 2, pageWidth - margin, y + 2);
     y += 6;
 
@@ -298,10 +407,10 @@ export async function exportInvestmentToPDF(
         doc.addPage();
         y = 20;
         doc.setFont('helvetica', 'bold');
-        doc.text('Year', margin, y);
-        doc.text('Cash Flow', margin + 25, y);
-        doc.text('Cumulative', margin + 60, y);
-        doc.text('Equity', margin + 95, y);
+        doc.text(c.year, margin, y);
+        doc.text(c.cashFlow, margin + 25, y);
+        doc.text(c.cumulative, margin + 60, y);
+        doc.text(c.equity, margin + 95, y);
         doc.line(margin, y + 2, pageWidth - margin, y + 2);
         y += 6;
         doc.setFont('helvetica', 'normal');
@@ -320,18 +429,10 @@ export async function exportInvestmentToPDF(
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150);
-    doc.text(
-      `Page ${i} of ${pageCount}`,
-      pageWidth / 2,
-      pageHeight - 10,
-      { align: 'center' }
-    );
-    doc.text(
-      'AI Real Estate Assistant - Investment Analysis',
-      pageWidth / 2,
-      pageHeight - 6,
-      { align: 'center' }
-    );
+    doc.text(fill(c.pageOf, { page: i, total: pageCount }), pageWidth / 2, pageHeight - 10, {
+      align: 'center',
+    });
+    doc.text(c.footerBrand, pageWidth / 2, pageHeight - 6, { align: 'center' });
   }
 
   // Save the PDF

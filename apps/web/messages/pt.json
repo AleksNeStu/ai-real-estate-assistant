@@ -273,7 +273,8 @@
       "digitRequired": "A palavra-passe deve conter pelo menos um dígito",
       "resetFailed": "Não foi possível redefinir a palavra-passe",
       "registerFailed": "Falha no registo",
-      "resetEmailFailed": "Não foi possível enviar o e-mail de redefinição"
+      "resetEmailFailed": "Não foi possível enviar o e-mail de redefinição",
+      "loginFailed": "Falha no login"
     },
     "loading": "Carregando...",
     "userMenu": "Menu do usuário",
@@ -323,7 +324,8 @@
       "property": "Imóvel",
       "nextComparables": "Seguinte: comparáveis",
       "roomsCount": "{count} quartos",
-      "searchResults": "Resultados da pesquisa ({count})"
+      "searchResults": "Resultados da pesquisa ({count})",
+      "searchFailed": "A pesquisa falhou"
     },
     "comparables": {
       "refresh": "Atualizar",
@@ -337,7 +339,8 @@
       "roomsCount": "{count} quartos",
       "property": "Imóvel {id}",
       "back": "Voltar",
-      "nextAdjustments": "Seguinte: rever ajustes"
+      "nextAdjustments": "Seguinte: rever ajustes",
+      "findFailed": "Não foram encontrados imóveis comparáveis"
     },
     "adjustments": {
       "description": "Revê e ajusta os fatores de avaliação de cada imóvel comparável. Os ajustes positivos aumentam o valor do comparável; os negativos diminuem-no.",
@@ -593,7 +596,8 @@
     "newVersionAvailable": "Uma nova versão está disponível!",
     "dismissUpdate": "Dispensar",
     "emptySearchTitle": "Ainda não há nada para mostrar",
-    "emptySearchBody": "Experimente uma das consultas de exemplo abaixo para ver a demonstração em ação."
+    "emptySearchBody": "Experimente uma das consultas de exemplo abaixo para ver a demonstração em ação.",
+    "changeLanguage": "Mudar idioma"
   },
   "demo": {
     "banner": "Modo demo — pesquisa e dados de cidades disponíveis",
@@ -606,7 +610,8 @@
     "emptyTitle": "Ainda não há nada para mostrar",
     "emptyHint": "Experimente uma das consultas de exemplo abaixo para ver a demonstração em ação.",
     "modeDisabled": "Desativado",
-    "toggleFailed": "Não foi possível alternar o modo de demonstração: {message}"
+    "toggleFailed": "Não foi possível alternar o modo de demonstração: {message}",
+    "modeEnabled": "Ativado"
   },
   "documents": {
     "title": "Documentos",
@@ -717,7 +722,8 @@
       "collectionName": "Nome da coleção",
       "create": "Criar",
       "delete": "Eliminar coleção"
-    }
+    },
+    "loginRequired": "Inicie sessão para adicionar imóveis aos favoritos"
   },
   "home": {
     "title": "Assistente Imobiliário com IA",
@@ -881,6 +887,51 @@
       "scenarios": "Cenários",
       "tax": "Impostos",
       "risk": "Risco"
+    },
+    "pdf": {
+      "title": "Relatório de análise de investimento",
+      "generated": "Gerado: {date}",
+      "keyMetrics": "Métricas principais",
+      "monthlyCashFlow": "Fluxo de caixa mensal",
+      "annualCashFlow": "Fluxo de caixa anual",
+      "cashOnCashRoi": "ROI sobre caixa",
+      "capRate": "Taxa de capitalização",
+      "grossYield": "Rentabilidade bruta",
+      "netYield": "Rentabilidade líquida",
+      "totalInvestment": "Investimento total",
+      "investmentScore": "Pontuação do investimento",
+      "incomeExpenses": "Receitas e despesas",
+      "monthlyIncome": "Receita mensal",
+      "monthlyExpenses": "Despesas mensais",
+      "annualIncome": "Receita anual",
+      "annualExpenses": "Despesas anuais",
+      "monthlyMortgage": "Prestação mensal do empréstimo",
+      "scoreBreakdown": "Detalhamento da pontuação",
+      "advancedMetrics": "Métricas avançadas",
+      "riskScore": "Pontuação de risco",
+      "totalProjectedCashFlow": "Fluxo de caixa total projetado",
+      "finalEquity": "Capital final",
+      "irr": "IRR",
+      "annualDepreciation": "Depreciação anual",
+      "taxBenefit": "Benefício fiscal",
+      "riskFactors": "Fatores de risco",
+      "recommendations": "Recomendações",
+      "cashFlowProjectionSummary": "Resumo da projeção de fluxo de caixa",
+      "year": "Ano",
+      "cashFlow": "Fluxo de caixa",
+      "cumulative": "Acumulado",
+      "equity": "Capital",
+      "pageOf": "Página {page} de {total}",
+      "footerBrand": "AI Real Estate Assistant - Análise de investimento",
+      "notAvailable": "não disponível",
+      "scoreLabels": {
+        "location": "Localização",
+        "type": "Tipo",
+        "size": "Tamanho",
+        "rooms": "Quartos",
+        "recency": "Antiguidade",
+        "amenities": "Comodidades"
+      }
     }
   },
   "knowledge": {
@@ -1100,6 +1151,48 @@
     },
     "error": {
       "unknown": "Erro desconhecido"
+    },
+    "pdf": {
+      "title": "Análise do custo total de propriedade",
+      "comparisonTitle": "Análise comparativa do custo total de propriedade",
+      "generated": "Gerado: {date}",
+      "summary": "Resumo",
+      "monthlyTco": "Custo total mensal",
+      "annualTco": "Custo total anual",
+      "downPayment": "Entrada",
+      "loanAmount": "Valor do empréstimo",
+      "monthlyBreakdown": "Detalhamento mensal dos custos",
+      "mortgage": "Empréstimo hipotecário",
+      "propertyTax": "Imposto sobre a propriedade",
+      "insurance": "Seguro",
+      "hoa": "Taxa de condomínio",
+      "utilities": "Contas de serviços",
+      "internet": "Internet",
+      "parking": "Estacionamento",
+      "maintenance": "Manutenção",
+      "totalCosts": "Custos totais",
+      "totalOwnershipCost": "Custo total de propriedade",
+      "allInCost": "Custo total (incl. entrada)",
+      "multiYearProjections": "Projeções plurianuais",
+      "year": "Ano",
+      "cumulativeCost": "Custo acumulado",
+      "equityBuilt": "Capital acumulado",
+      "propertyValue": "Valor do imóvel",
+      "costCategoryAnalysis": "Análise das categorias de custo",
+      "fixedCosts": "Custos fixos (mensais)",
+      "variableCosts": "Custos variáveis (mensais)",
+      "discretionaryCosts": "Custos discricionários (mensais)",
+      "pageOf": "Página {page} de {total}",
+      "comparisonSummary": "Resumo comparativo",
+      "keyDifferences": "Principais diferenças",
+      "totalCost": "Custo total",
+      "monthlyCostDifference": "Diferença nos custos mensais",
+      "equityDifference": "Diferença de capital",
+      "breakEvenPoint": "Ponto de equilíbrio: {years} anos",
+      "breakEvenNotAvailable": "Ponto de equilíbrio: não disponível",
+      "recommendation": "Recomendação",
+      "recommended": "Recomendado",
+      "advantages": "Vantagens de {scenario}"
     }
   },
   "nav": {
@@ -3102,5 +3195,40 @@
   },
   "pwa": {
     "installFailed": "Falha na instalação: {message}"
+  },
+  "seo": {
+    "structuredData": {
+      "description": "Plataforma de IA conversacional de código aberto para busca de imóveis e análise de mercado. Construída com FastAPI, Next.js e ChromaDB.",
+      "keywords": "imóveis,busca de imóveis,IA,chatbot,IA conversacional",
+      "languages": {
+        "en": "Inglês",
+        "pl": "Polaco",
+        "ru": "Russo",
+        "de": "Alemão",
+        "es": "Espanhol",
+        "it": "Italiano",
+        "pt": "Português",
+        "tr": "Turco",
+        "uk": "Ucraniano"
+      },
+      "faq": {
+        "q1": "O que é o AI Real Estate Assistant?",
+        "a1": "Uma plataforma de IA conversacional de código aberto para busca de imóveis, análise e inteligência de mercado. Pergunte em linguagem natural — por exemplo, «apartamento de 2 quartos em Cracóvia por menos de 500 mil» — e receba anúncios compatíveis. Construída com FastAPI, Next.js e ChromaDB.",
+        "q2": "Como difere do Zillow, Rightmove ou Idealista?",
+        "a2": "É IA-first e conversacional em vez de focado em filtros. A interface em linguagem natural, a busca híbrida semântica e por palavras-chave, a cadeia de fallback com vários provedores de LLM e a stack com licença MIT que você mesmo hospeda tornam-no uma alternativa amigável para desenvolvedores ao criar experiências imobiliárias próprias.",
+        "q3": "Posso hospedar por conta própria?",
+        "a3": "Sim. Licença MIT, Docker Compose, início em 5 minutos e código-fonte completo no GitHub. Adicione suas próprias chaves de API de LLM (OpenAI, Anthropic, Google, Grok, DeepSeek ou Ollama local) e dados baseados em ChromaDB.",
+        "q4": "A demo ao vivo é real?",
+        "a4": "A demo ao vivo usa respostas de IA simuladas e dados de teste curados para você explorar imediatamente — sem cadastro. Uma implantação em produção com anúncios reais exige chaves de API e sua própria fonte de dados.",
+        "q5": "Qual a diferença para o PropVector AI?",
+        "a5": "O PropVector AI (propvectorai.com) é uma camada SaaS hospedada construída sobre este código aberto, com contas gerenciadas, feeds de dados ao vivo, CRM com IA e recursos corporativos. O repositório continua open-core: o motor permanece gratuito, enquanto os recursos comerciais vivem no produto hospedado.",
+        "q6": "Quais idiomas são suportados?",
+        "a6": "9 idiomas para interface e chat: inglês, polonês, russo, alemão, espanhol, italiano, português, turco e ucraniano. Inclui rótulos de conformidade com o AI Act da UE.",
+        "q7": "Quais provedores de LLM são suportados?",
+        "a7": "OpenAI, Anthropic, Google, Grok, DeepSeek e Ollama local. A cadeia de fallback automática garante confiabilidade. A escolha do provedor é por tarefa e por usuário, com cascata de prioridades.",
+        "q8": "Existe uma versão hospedada com dados reais?",
+        "a8": "Sim — o PropVector AI (propvectorai.com) oferece camadas hospedadas com dados ao vivo, contas gerenciadas e recursos corporativos. O repositório open source continua focado no motor principal e em uma demo hospedável por conta própria."
+      }
+    }
   }
 }

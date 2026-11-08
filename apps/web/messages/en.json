@@ -56,7 +56,8 @@
     },
     "logIn": "Log in",
     "emptySearchTitle": "Nothing to show yet",
-    "emptySearchBody": "Try one of the example queries below to see the demo in action."
+    "emptySearchBody": "Try one of the example queries below to see the demo in action.",
+    "changeLanguage": "Change language"
   },
   "nav": {
     "mainNavigation": "Main navigation",
@@ -165,7 +166,8 @@
       "digitRequired": "Password must contain at least one digit",
       "resetFailed": "Failed to reset password",
       "registerFailed": "Registration failed",
-      "resetEmailFailed": "Failed to send reset email"
+      "resetEmailFailed": "Failed to send reset email",
+      "loginFailed": "Login failed"
     },
     "oauth": {
       "failed": "Authentication failed",
@@ -510,6 +512,48 @@
     },
     "error": {
       "unknown": "Unknown error"
+    },
+    "pdf": {
+      "title": "Total Cost of Ownership Analysis",
+      "comparisonTitle": "TCO Comparison Analysis",
+      "generated": "Generated: {date}",
+      "summary": "Summary",
+      "monthlyTco": "Monthly TCO",
+      "annualTco": "Annual TCO",
+      "downPayment": "Down Payment",
+      "loanAmount": "Loan Amount",
+      "monthlyBreakdown": "Monthly Cost Breakdown",
+      "mortgage": "Mortgage",
+      "propertyTax": "Property Tax",
+      "insurance": "Insurance",
+      "hoa": "HOA",
+      "utilities": "Utilities",
+      "internet": "Internet",
+      "parking": "Parking",
+      "maintenance": "Maintenance",
+      "totalCosts": "Total Costs",
+      "totalOwnershipCost": "Total Ownership Cost",
+      "allInCost": "All-In Cost (incl. Down Payment)",
+      "multiYearProjections": "Multi-Year Projections",
+      "year": "Year",
+      "cumulativeCost": "Cumulative Cost",
+      "equityBuilt": "Equity Built",
+      "propertyValue": "Property Value",
+      "costCategoryAnalysis": "Cost Category Analysis",
+      "fixedCosts": "Fixed Costs (Monthly)",
+      "variableCosts": "Variable Costs (Monthly)",
+      "discretionaryCosts": "Discretionary Costs (Monthly)",
+      "pageOf": "Page {page} of {total}",
+      "comparisonSummary": "Comparison Summary",
+      "keyDifferences": "Key Differences",
+      "totalCost": "Total Cost",
+      "monthlyCostDifference": "Monthly Cost Difference",
+      "equityDifference": "Equity Difference",
+      "breakEvenPoint": "Break-Even Point: {years} years",
+      "breakEvenNotAvailable": "Break-Even Point: N/A",
+      "recommendation": "Recommendation",
+      "recommended": "Recommended",
+      "advantages": "{scenario} Advantages"
     }
   },
   "investment": {
@@ -649,6 +693,51 @@
       "scenarios": "Scenarios",
       "tax": "Tax",
       "risk": "Risk"
+    },
+    "pdf": {
+      "title": "Investment Analysis Report",
+      "generated": "Generated: {date}",
+      "keyMetrics": "Key Metrics",
+      "monthlyCashFlow": "Monthly Cash Flow",
+      "annualCashFlow": "Annual Cash Flow",
+      "cashOnCashRoi": "Cash-on-Cash ROI",
+      "capRate": "Cap Rate",
+      "grossYield": "Gross Yield",
+      "netYield": "Net Yield",
+      "totalInvestment": "Total Investment",
+      "investmentScore": "Investment Score",
+      "incomeExpenses": "Income & Expenses",
+      "monthlyIncome": "Monthly Income",
+      "monthlyExpenses": "Monthly Expenses",
+      "annualIncome": "Annual Income",
+      "annualExpenses": "Annual Expenses",
+      "monthlyMortgage": "Monthly Mortgage",
+      "scoreBreakdown": "Score Breakdown",
+      "advancedMetrics": "Advanced Metrics",
+      "riskScore": "Risk Score",
+      "totalProjectedCashFlow": "Total Projected Cash Flow",
+      "finalEquity": "Final Equity",
+      "irr": "IRR",
+      "annualDepreciation": "Annual Depreciation",
+      "taxBenefit": "Tax Benefit",
+      "riskFactors": "Risk Factors",
+      "recommendations": "Recommendations",
+      "cashFlowProjectionSummary": "Cash Flow Projection Summary",
+      "year": "Year",
+      "cashFlow": "Cash Flow",
+      "cumulative": "Cumulative",
+      "equity": "Equity",
+      "pageOf": "Page {page} of {total}",
+      "footerBrand": "AI Real Estate Assistant - Investment Analysis",
+      "notAvailable": "N/A",
+      "scoreLabels": {
+        "location": "Location",
+        "type": "Type",
+        "size": "Size",
+        "rooms": "Rooms",
+        "recency": "Recency",
+        "amenities": "Amenities"
+      }
     }
   },
   "rentVsBuy": {
@@ -1347,7 +1436,8 @@
       "collectionName": "Collection Name",
       "create": "Create",
       "delete": "Delete Collection"
-    }
+    },
+    "loginRequired": "Please log in to favorite properties"
   },
   "savedSearches": {
     "title": "Saved Searches",
@@ -1540,7 +1630,8 @@
       "property": "Property",
       "nextComparables": "Next: comparables",
       "roomsCount": "{count} rooms",
-      "searchResults": "Search Results ({count})"
+      "searchResults": "Search Results ({count})",
+      "searchFailed": "Search failed"
     },
     "comparables": {
       "refresh": "Refresh",
@@ -1554,7 +1645,8 @@
       "roomsCount": "{count} rooms",
       "property": "Property {id}",
       "back": "Back",
-      "nextAdjustments": "Next: Review Adjustments"
+      "nextAdjustments": "Next: Review Adjustments",
+      "findFailed": "Failed to find comparables"
     },
     "adjustments": {
       "description": "Review and adjust the valuation factors for each comparable property. Positive adjustments increase the comparable's value; negative adjustments decrease it.",
@@ -1961,7 +2053,8 @@
     "emptyTitle": "Nothing to show yet",
     "emptyHint": "Try one of the example queries below to see the demo in action.",
     "modeDisabled": "Disabled",
-    "toggleFailed": "Failed to toggle demo mode: {message}"
+    "toggleFailed": "Failed to toggle demo mode: {message}",
+    "modeEnabled": "Enabled"
   },
   "showcase": {
     "heroTitle": "Showcase",
@@ -3102,5 +3195,40 @@
   },
   "pwa": {
     "installFailed": "Install failed: {message}"
+  },
+  "seo": {
+    "structuredData": {
+      "description": "Open-source conversational AI platform for property search and market analytics. Built with FastAPI, Next.js, and ChromaDB.",
+      "keywords": "real estate,property search,AI,chatbot,conversational AI",
+      "languages": {
+        "en": "English",
+        "pl": "Polish",
+        "ru": "Russian",
+        "de": "German",
+        "es": "Spanish",
+        "it": "Italian",
+        "pt": "Portuguese",
+        "tr": "Turkish",
+        "uk": "Ukrainian"
+      },
+      "faq": {
+        "q1": "What is AI Real Estate Assistant?",
+        "a1": "An open-source conversational AI platform for property search, analytics, and market insights. Ask in natural language — for example \"2-bedroom apartment in Kraków under 500k\" — and get matched listings. Built with FastAPI, Next.js, and ChromaDB.",
+        "q2": "How is it different from Zillow, Rightmove, or Idealista?",
+        "a2": "It is AI-first and conversational rather than filter-first. The natural-language interface, hybrid semantic + keyword search, multi-provider LLM fallback chain, and self-hostable MIT-licensed stack make it a developer-friendly alternative for building custom property experiences.",
+        "q3": "Can I self-host it?",
+        "a3": "Yes. MIT-licensed with Docker Compose, a 5-minute quickstart, and full source on GitHub. Add your own LLM API keys (OpenAI, Anthropic, Google, Grok, DeepSeek, or local Ollama) and ChromaDB-backed data.",
+        "q4": "Is the live demo real?",
+        "a4": "The live demo uses simulated AI responses and curated mock data for instant exploration — no signup needed. A production deployment with real listings requires API keys and your own data source.",
+        "q5": "What is the difference from PropVector AI?",
+        "a5": "PropVector AI (propvectorai.com) is a hosted SaaS tier built on this open-source codebase, with managed accounts, live data feeds, AI CRM, and enterprise capabilities. The repository stays open-core: the engine remains free, while commercial features live in the hosted product.",
+        "q6": "Which languages are supported?",
+        "a6": "9 languages for the UI and chat: English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, and Ukrainian. EU AI Act compliance labels are included.",
+        "q7": "Which LLM providers are supported?",
+        "a7": "OpenAI, Anthropic, Google, Grok, DeepSeek, and local Ollama. Automatic fallback chain ensures reliability. Provider selection is per-task and per-user with priority cascade.",
+        "q8": "Is there a hosted version with real data?",
+        "a8": "Yes — PropVector AI (propvectorai.com) offers hosted tiers with live data, managed accounts, and enterprise capabilities. The open-source repo stays focused on the core engine and a self-hostable demo experience."
+      }
+    }
   }
 }

@@ -20,13 +20,63 @@ import {
 import { CashFlowChart } from './charts/cash-flow-chart';
 import { ScenarioChart } from './charts/scenario-chart';
 import { RiskGauge } from './charts/risk-gauge';
-import { exportInvestmentToPDF } from '@/lib/investment-pdf-export';
+import { exportInvestmentToPDF, type InvestmentPdfCopy } from '@/lib/investment-pdf-export';
 import { useTranslations } from 'next-intl';
 
 interface ErrorState {
   message: string;
   requestId?: string;
 }
+
+/**
+ * Reads the labels of the exported investment document from the message
+ * catalogue.
+ */
+const buildInvestmentPdfCopy = (t: (key: string) => string): InvestmentPdfCopy => ({
+  title: t('title'),
+  generated: t('generated'),
+  keyMetrics: t('keyMetrics'),
+  monthlyCashFlow: t('monthlyCashFlow'),
+  annualCashFlow: t('annualCashFlow'),
+  cashOnCashRoi: t('cashOnCashRoi'),
+  capRate: t('capRate'),
+  grossYield: t('grossYield'),
+  netYield: t('netYield'),
+  totalInvestment: t('totalInvestment'),
+  investmentScore: t('investmentScore'),
+  incomeExpenses: t('incomeExpenses'),
+  monthlyIncome: t('monthlyIncome'),
+  monthlyExpenses: t('monthlyExpenses'),
+  annualIncome: t('annualIncome'),
+  annualExpenses: t('annualExpenses'),
+  monthlyMortgage: t('monthlyMortgage'),
+  scoreBreakdown: t('scoreBreakdown'),
+  advancedMetrics: t('advancedMetrics'),
+  riskScore: t('riskScore'),
+  totalProjectedCashFlow: t('totalProjectedCashFlow'),
+  finalEquity: t('finalEquity'),
+  irr: t('irr'),
+  annualDepreciation: t('annualDepreciation'),
+  taxBenefit: t('taxBenefit'),
+  riskFactors: t('riskFactors'),
+  recommendations: t('recommendations'),
+  cashFlowProjectionSummary: t('cashFlowProjectionSummary'),
+  year: t('year'),
+  cashFlow: t('cashFlow'),
+  cumulative: t('cumulative'),
+  equity: t('equity'),
+  pageOf: t('pageOf'),
+  footerBrand: t('footerBrand'),
+  notAvailable: t('notAvailable'),
+  scoreLabels: {
+    location: t('scoreLabels.location'),
+    type: t('scoreLabels.type'),
+    size: t('scoreLabels.size'),
+    rooms: t('scoreLabels.rooms'),
+    recency: t('scoreLabels.recency'),
+    amenities: t('scoreLabels.amenities'),
+  },
+});
 
 const extractErrorState = (err: unknown, t: (key: string) => string): ErrorState => {
   let message = t('error.unknown');
@@ -46,6 +96,7 @@ const extractErrorState = (err: unknown, t: (key: string) => string): ErrorState
 
 export function AdvancedInvestmentAnalyzer() {
   const t = useTranslations('investment');
+  const tPdf = useTranslations('investment.pdf');
   const tp = useTranslations('portfolio');
   const tm = useTranslations('mortgage');
   const trv = useTranslations('rentVsBuy');
@@ -168,6 +219,7 @@ export function AdvancedInvestmentAnalyzer() {
     try {
       await exportInvestmentToPDF(result, {
         filename: `investment-analysis-${new Date().toISOString().split('T')[0]}`,
+        copy: buildInvestmentPdfCopy(tPdf),
       });
     } catch (error) {
       console.error('Export failed:', error);
@@ -465,7 +517,9 @@ export function AdvancedInvestmentAnalyzer() {
                       aria-hidden="true"
                     />
                     <div className="flex-1">
-                      <p className="text-sm text-destructive font-medium">{t('error.analysisFailed')}</p>
+                      <p className="text-sm text-destructive font-medium">
+                        {t('error.analysisFailed')}
+                      </p>
                       <p className="text-sm text-destructive/90 mt-1">{errorState.message}</p>
                     </div>
                   </div>
@@ -537,7 +591,9 @@ export function AdvancedInvestmentAnalyzer() {
                     <p className="text-xs text-muted-foreground">/100</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-sm text-muted-foreground">{t('charts.cashFlow.totalCashFlow')}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t('charts.cashFlow.totalCashFlow')}
+                    </p>
                     <p
                       className={`text-2xl font-bold ${result.total_projected_cash_flow >= 0 ? 'text-success' : 'text-destructive'}`}
                     >
@@ -548,7 +604,9 @@ export function AdvancedInvestmentAnalyzer() {
                     </p>
                   </div>
                   <div className="text-center">
-                    <p className="text-sm text-muted-foreground">{t('charts.cashFlow.finalEquity')}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t('charts.cashFlow.finalEquity')}
+                    </p>
                     <p className="text-2xl font-bold text-info">
                       ${result.final_equity.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </p>
@@ -600,7 +658,9 @@ export function AdvancedInvestmentAnalyzer() {
                   <CardContent>
                     <div className="grid grid-cols-2 gap-6">
                       <div>
-                        <p className="text-sm text-muted-foreground">{t('advanced.annualDepreciation')}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {t('advanced.annualDepreciation')}
+                        </p>
                         <p className="text-xl font-semibold">
                           $
                           {result.annual_depreciation.toLocaleString(undefined, {
@@ -609,7 +669,9 @@ export function AdvancedInvestmentAnalyzer() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">{t('advanced.totalTaxDeductions')}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {t('advanced.totalTaxDeductions')}
+                        </p>
                         <p className="text-xl font-semibold text-info">
                           $
                           {result.total_tax_deductions.toLocaleString(undefined, {
@@ -618,7 +680,9 @@ export function AdvancedInvestmentAnalyzer() {
                         </p>
                       </div>
                       <div className="col-span-2">
-                        <p className="text-sm text-muted-foreground">{t('advanced.annualTaxBenefit')}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {t('advanced.annualTaxBenefit')}
+                        </p>
                         <p className="text-2xl font-bold text-success">
                           $
                           {result.tax_benefit.toLocaleString(undefined, {

@@ -103,7 +103,7 @@ export function MetricsWidget() {
         </div>
         {health?.dependencies && (
           <div className="mt-4 space-y-2">
-            <p className="text-sm font-medium text-muted-foreground">Dependencies</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('dependencies')}</p>
             {Object.entries(health.dependencies).map(([name, dep]) => (
               <div key={name} className="flex justify-between items-center">
                 <span className="capitalize">{name.replace(/_/g, ' ')}</span>

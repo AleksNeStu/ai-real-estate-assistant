@@ -12,14 +12,15 @@ interface CitationDisplayProps {
   defaultExpanded?: boolean;
 }
 
-// Source type icons and colors
-const SOURCE_TYPE_CONFIG: Record<SourceType, { icon: string; color: string; label: string }> = {
-  pdf: { icon: '📄', color: 'text-destructive', label: 'PDF' },
-  docx: { icon: '📝', color: 'text-info', label: 'DOCX' },
-  web: { icon: '🌐', color: 'text-success', label: 'Web' },
-  database: { icon: '🗄️', color: 'text-critical', label: 'Database' },
-  api: { icon: '🔌', color: 'text-caution', label: 'API' },
-  unknown: { icon: '📎', color: 'text-muted-foreground', label: 'Source' },
+// Source type icons and colors. The label is not stored here — it comes from
+// the catalogue (`chat.sources.types.<type>`) and is passed to the icon.
+const SOURCE_TYPE_CONFIG: Record<SourceType, { icon: string; color: string }> = {
+  pdf: { icon: '📄', color: 'text-destructive' },
+  docx: { icon: '📝', color: 'text-info' },
+  web: { icon: '🌐', color: 'text-success' },
+  database: { icon: '🗄️', color: 'text-critical' },
+  api: { icon: '🔌', color: 'text-caution' },
+  unknown: { icon: '📎', color: 'text-muted-foreground' },
 };
 
 // Confidence colors
@@ -125,7 +126,8 @@ function SingleCitation({ citation, index }: { citation: EnhancedCitation; index
       {/* Content snippet */}
       {hasSnippet && (
         <div className="ml-6 mt-2">
-          <button type="button"
+          <button
+            type="button"
             onClick={() => setExpanded(!expanded)}
             className="text-xs text-muted-foreground hover:text-foreground/70 flex items-center gap-1"
             aria-expanded={expanded}

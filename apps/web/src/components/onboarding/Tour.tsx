@@ -112,7 +112,7 @@ export function OnboardingTour() {
         className="fixed bottom-4 right-4 z-40 w-80 max-w-[calc(100vw-2rem)] shadow-xl"
         role="dialog"
         aria-live="polite"
-        aria-label="Onboarding tour"
+        aria-label={t('ariaLabel')}
       >
         <Card className="p-4">
           <div className="flex items-start gap-3 mb-3">
@@ -129,7 +129,7 @@ export function OnboardingTour() {
               type="button"
               onClick={dismiss}
               className="flex-shrink-0 text-muted hover:text-foreground transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
-              aria-label="Close tour"
+              aria-label={t('closeAria')}
             >
               <X className="h-4 w-4" />
             </button>
@@ -151,9 +151,7 @@ export function OnboardingTour() {
               </Button>
               <Button size="sm" onClick={next}>
                 {isLast ? t('done') : t('next')}
-                {!isLast && (
-                  <ChevronRight className="h-3 w-3 ml-1" aria-hidden="true" />
-                )}
+                {!isLast && <ChevronRight className="h-3 w-3 ml-1" aria-hidden="true" />}
               </Button>
             </div>
           </div>
