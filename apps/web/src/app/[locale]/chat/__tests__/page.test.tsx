@@ -131,11 +131,11 @@ describe('ChatPage', () => {
     fireEvent.change(input, { target: { value: 'Hello' } });
     fireEvent.click(sendButton);
 
-    expect(screen.getByLabelText('Assistant is thinking')).toBeInTheDocument();
+    expect(screen.getByLabelText('Thinking...')).toBeInTheDocument();
     expect(sendButton).toBeDisabled();
 
     await waitFor(() => {
-      expect(screen.queryByLabelText('Assistant is thinking')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Thinking...')).not.toBeInTheDocument();
     });
   });
 

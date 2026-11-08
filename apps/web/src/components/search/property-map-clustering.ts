@@ -20,14 +20,19 @@ export type ClusterOptions = {
   maxZoomForClustering?: number;
 };
 
-// Property type color mapping
+/**
+ * The colour of every property type.
+ *
+ * The palette lives in the design tokens, so a marker follows the theme
+ * instead of pinning a hex value that only reads well in the light theme.
+ */
 export const PROPERTY_TYPE_COLORS: Record<string, string> = {
-  apartment: "#2563eb", // blue
-  house: "#16a34a", // green
-  studio: "#9333ea", // purple
-  loft: "#ea580c", // orange
-  townhouse: "#0d9488", // teal
-  other: "#6b7280", // gray
+  apartment: "hsl(var(--chart-1))",
+  house: "hsl(var(--chart-2))",
+  studio: "hsl(var(--chart-4))",
+  loft: "hsl(var(--caution))",
+  townhouse: "hsl(var(--chart-5))",
+  other: "hsl(var(--muted-foreground))",
 };
 
 /**
@@ -42,7 +47,7 @@ export function getClusterColor(
 ): string {
   // Mixed clusters get a neutral color
   if (isMixed) {
-    return "#6b7280"; // gray
+    return "hsl(var(--muted-foreground))";
   }
   // Use the color for the dominant type, fallback to gray
   return PROPERTY_TYPE_COLORS[dominantType ?? "other"] ?? PROPERTY_TYPE_COLORS.other;

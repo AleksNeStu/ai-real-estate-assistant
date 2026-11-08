@@ -1137,14 +1137,15 @@ class TestCMAFindComparables:
     async def test_find_comparables_success(self, app_with_cma):
         """Find comparable properties for a subject property.
 
-        Note: The find_comparables endpoint only passes property_id,
-        similarity_score, price, price_per_sqm, distance_km, and
-        score_breakdown to CMAComparableResponse, but the schema requires
-        city, property_type, and adjusted_price. This causes a 500 error
-        due to validation failure in the source code.
+        The response carries the fields the schema requires - city,
+        property_type and adjusted_price. Leaving them out made the endpoint
+        answer 500 instead of the list of comparables.
         """
         mock_session = AsyncMock(spec=AsyncSession)
         mock_doc = _make_mock_doc()
+        # The subject and the comparable it is compared against are two
+        # different listings in the store.
+        comp_doc = _make_mock_doc(prop_id="comp-1", city="Berlin", price=340000.0)
 
         mock_score = MagicMock()
         mock_score.property_id = "comp-1"
@@ -1161,7 +1162,7 @@ class TestCMAFindComparables:
             mock_store = MagicMock()
             mock_get_store.return_value = mock_store
             mock_store.get_properties_by_ids.return_value = [mock_doc]
-            mock_store.search_by_metadata.return_value = [mock_doc]
+            mock_store.search_by_metadata.return_value = [mock_doc, comp_doc]
 
             mock_selector_instance = MockSelector.return_value
             mock_selector_instance.find_comparables.return_value = [mock_score]
@@ -1172,10 +1173,16 @@ class TestCMAFindComparables:
             async with AsyncClient(transport=transport, base_url="http://test") as client:
                 resp = await client.post("/api/v1/cma/comparables/prop-1")
 
-            # Known source code bug: CMAComparableResponse requires city,
-            # property_type, adjusted_price but endpoint only provides
-            # property_id, similarity_score, price, etc.
-            assert resp.status_code == 500
+            assert resp.status_code == 200
+            body = resp.json()
+            assert len(body) == 1
+            comparable = body[0]
+            assert comparable["property_id"] == "comp-1"
+            assert comparable["similarity_score"] == 85.0
+            assert comparable["price"] == 340000.0
+            assert comparable["city"]
+            assert comparable["property_type"]
+            assert comparable["adjusted_price"] is not None
             app_with_cma.dependency_overrides.clear()
 
     @pytest.mark.asyncio
@@ -1268,10 +1275,8 @@ class TestCMAGetReport:
     async def test_get_cma_report_success(self, app_with_cma):
         """Retrieve a saved CMA report.
 
-        Note: The get_cma_report endpoint does not pass updated_at to
-        CMAReportResponse, which causes a ValidationError. This is a
-        known source code bug. The test verifies the endpoint is reached
-        and the repo is called correctly.
+        The response carries updated_at and the comparables in full - a
+        report that cannot be read is a report that cannot be acted on.
         """
         mock_session = AsyncMock(spec=AsyncSession)
         mock_report = _make_mock_cma_report()
@@ -1285,8 +1290,12 @@ class TestCMAGetReport:
             async with AsyncClient(transport=transport, base_url="http://test") as client:
                 resp = await client.get("/api/v1/cma/report-1")
 
-            # Known source code bug: missing updated_at causes 500
-            assert resp.status_code == 500
+            assert resp.status_code == 200
+            body = resp.json()
+            assert body["id"] == "report-1"
+            assert body["status"] == "completed"
+            assert body["updated_at"]
+            assert body["comparables"]
             app_with_cma.dependency_overrides.clear()
 
     @pytest.mark.asyncio
@@ -1396,7 +1405,7 @@ class TestCMAListReports:
     async def test_list_cma_reports_success(self, app_with_cma):
         """List CMA reports for authenticated user.
 
-        Note: Same updated_at bug as get_cma_report causes 500.
+        The list carries the same complete response as the single report.
         """
         mock_session = AsyncMock(spec=AsyncSession)
         mock_report = _make_mock_cma_report()
@@ -1411,8 +1420,12 @@ class TestCMAListReports:
             async with AsyncClient(transport=transport, base_url="http://test") as client:
                 resp = await client.get("/api/v1/cma")
 
-            # Same known bug: updated_at missing in CMAReportResponse construction
-            assert resp.status_code == 500
+            assert resp.status_code == 200
+            body = resp.json()
+            assert body["total"] == 1
+            assert len(body["items"]) == 1
+            assert body["items"][0]["id"] == "report-1"
+            assert body["items"][0]["updated_at"]
             app_with_cma.dependency_overrides.clear()
 
     @pytest.mark.asyncio
@@ -2193,9 +2206,8 @@ class TestCMAHelperFunctions:
     def test_document_to_property_empty_metadata(self):
         """Test _document_to_property with empty metadata raises validation error.
 
-        The _document_to_property function passes None for boolean fields
-        when metadata is empty, which causes Property validation to fail.
-        This is a known issue in the source code.
+        The amenity flags are coerced to False, but the city is required by
+        the schema, so a document without one is still not a property.
         """
         from api.routers.cma import _document_to_property
 
@@ -2203,16 +2215,16 @@ class TestCMAHelperFunctions:
         doc.metadata = {}
         doc.page_content = "Some content"
 
-        # Empty metadata leads to None boolean values which fail Property validation
+        # Empty metadata has no city, which the schema requires
         with pytest.raises((ValueError, TypeError, AttributeError)):
             _document_to_property(doc)
 
     def test_property_to_dict(self):
         """Test _property_to_dict conversion returns expected fields.
 
-        Note: _property_to_dict references prop.bedrooms which doesn't exist
-        on Property model - this causes AttributeError. We test that the
-        accessible fields are correctly included.
+        The function used to read prop.bedrooms and prop.street, which are not
+        fields on Property: it raised AttributeError, and every CMA report
+        ended in a 500.
         """
         from api.routers.cma import _property_to_dict
         from data.schemas import Property
@@ -2224,10 +2236,79 @@ class TestCMAHelperFunctions:
             area_sqm=75.0,
         )
 
-        # _property_to_dict references prop.bedrooms which doesn't exist
-        # This is a known issue in the source code - test that it raises
-        with pytest.raises(AttributeError):
-            _property_to_dict(prop)
+        result = _property_to_dict(prop)
+
+        assert result["id"] == "prop-1"
+        assert result["city"] == "Berlin"
+        assert result["price"] == 350000.0
+        assert result["area_sqm"] == 75.0
+        assert "address" in result
+        assert "bedrooms" not in result
+
+    def test_build_comparable_response_is_complete(self):
+        """The comparable response must carry the fields the schema requires.
+
+        The endpoint answered 422 because it left city, property_type and
+        adjusted_price out of the response.
+        """
+        from analytics.comparable_selector import ComparableScore
+        from api.routers.cma import _build_comparable_response
+        from data.schemas import Property
+
+        score = ComparableScore(
+            property_id="prop-2",
+            total_score=82.0,
+            location_score=20.0,
+            type_score=18.0,
+            size_score=14.0,
+            rooms_score=15.0,
+            recency_score=10.0,
+            amenities_score=5.0,
+            distance_km=1.2,
+            price_per_sqm=4500.0,
+            price=350000.0,
+        )
+        comparable = Property(
+            id="prop-2",
+            city="Krakow",
+            district="Old Town",
+            property_type="apartment",
+            price=350000.0,
+            area_sqm=78.0,
+            rooms=3.0,
+            year_built=2015,
+            currency="PLN",
+        )
+
+        response = _build_comparable_response(
+            score=score,
+            comparable=comparable,
+            adjustments=[],
+            adjusted_price=360000.0,
+            total_adjustment_percent=2.86,
+            total_adjustment_amount=10000.0,
+        )
+
+        assert response.city == "Krakow"
+        assert response.property_type == "apartment"
+        assert response.adjusted_price == 360000.0
+        assert response.currency == "PLN"
+        assert response.similarity_score == 82.0
+        assert response.distance_km == 1.2
+
+    def test_comparable_from_stored_fills_the_missing_fields(self):
+        """A report saved before the response grew its fields still opens."""
+        from api.routers.cma import _comparable_from_stored
+
+        response = _comparable_from_stored(
+            {"property_id": "prop-2", "similarity_score": 70.0, "price": 300000.0},
+            {"city": "Krakow", "property_type": "apartment"},
+        )
+
+        assert response.city == "Krakow"
+        assert response.property_type == "apartment"
+        assert response.adjusted_price == 300000.0
+        assert response.price_per_sqm == 0.0
 
     def test_calculate_valuation_empty_comparables(self):
         """Test _calculate_valuation with no comparables."""

@@ -188,7 +188,7 @@ export function NotificationSettings({ userEmail }: { userEmail: string | null }
             <input
               type="checkbox"
               id="price_alerts"
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-border"
               checked={settings.price_alerts_enabled}
               onChange={() => toggleSetting('price_alerts_enabled')}
             />
@@ -204,7 +204,7 @@ export function NotificationSettings({ userEmail }: { userEmail: string | null }
             <input
               type="checkbox"
               id="new_listings"
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-border"
               checked={settings.new_listings_enabled}
               onChange={() => toggleSetting('new_listings_enabled')}
             />
@@ -220,7 +220,7 @@ export function NotificationSettings({ userEmail }: { userEmail: string | null }
             <input
               type="checkbox"
               id="saved_search"
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-border"
               checked={settings.saved_search_enabled}
               onChange={() => toggleSetting('saved_search_enabled')}
             />
@@ -236,7 +236,7 @@ export function NotificationSettings({ userEmail }: { userEmail: string | null }
             <input
               type="checkbox"
               id="market_updates"
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-border"
               checked={settings.market_updates_enabled}
               onChange={() => toggleSetting('market_updates_enabled')}
             />
@@ -264,7 +264,7 @@ export function NotificationSettings({ userEmail }: { userEmail: string | null }
             <input
               type="checkbox"
               id="email_channel"
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-border"
               checked={settings.email_enabled}
               onChange={() => toggleSetting('email_enabled')}
             />
@@ -283,7 +283,7 @@ export function NotificationSettings({ userEmail }: { userEmail: string | null }
             <input
               type="checkbox"
               id="push_channel"
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-border"
               checked={settings.push_enabled}
               onChange={() => toggleSetting('push_enabled')}
               disabled={pushPermissionStatus === 'denied'}
@@ -319,7 +319,7 @@ export function NotificationSettings({ userEmail }: { userEmail: string | null }
             <input
               type="checkbox"
               id="in_app_channel"
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-border"
               checked={settings.in_app_enabled}
               onChange={() => toggleSetting('in_app_enabled')}
             />
@@ -439,7 +439,7 @@ export function NotificationSettings({ userEmail }: { userEmail: string | null }
             <input
               type="checkbox"
               id="expert_mode"
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-border"
               checked={settings.expert_mode}
               onChange={() => toggleSetting('expert_mode')}
             />
@@ -455,7 +455,7 @@ export function NotificationSettings({ userEmail }: { userEmail: string | null }
             <input
               type="checkbox"
               id="marketing_emails"
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-border"
               checked={settings.marketing_emails}
               onChange={() => toggleSetting('marketing_emails')}
             />
@@ -532,8 +532,8 @@ export function NotificationSettings({ userEmail }: { userEmail: string | null }
 
       {/* Save Button */}
       <div className="flex items-center justify-end gap-4">
-        {success && <span className="text-green-600 text-sm">{success}</span>}
-        {error && <span className="text-red-600 text-sm">{error}</span>}
+        {success && <span className="text-success text-sm">{success}</span>}
+        {error && <span className="text-destructive text-sm">{error}</span>}
         <Button onClick={handleSave} disabled={saving}>
           {saving ? t('notifications.saving') : t('notifications.savePreferences')}
         </Button>

@@ -5,7 +5,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
 # Help support
 show_help() {
@@ -28,10 +28,10 @@ Docker Profiles:
   internet          + SearXNG web search
 
 Examples:
-  ./scripts/docker.sh                      # Docker with auto GPU detection
-  ./scripts/docker.sh --docker-mode cpu    # CPU-only mode
-  ./scripts/docker.sh --docker-mode gpu    # GPU mode
-  ./scripts/docker.sh --internet           # With web search
+  ./scripts/docker/docker.sh                      # Docker with auto GPU detection
+  ./scripts/docker/docker.sh --docker-mode cpu    # CPU-only mode
+  ./scripts/docker/docker.sh --docker-mode gpu    # GPU mode
+  ./scripts/docker/docker.sh --internet           # With web search
 
 For full options, run: python3 scripts/start.py --help
 EOF

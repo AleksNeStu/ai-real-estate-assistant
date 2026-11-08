@@ -16,6 +16,20 @@ def repo(db_session):
     return PriceSnapshotRepository(db_session)
 
 
+@pytest.fixture
+def frozen_clock(monkeypatch):
+    """Freeze the clock the repository reads, so two snapshots share one tick."""
+    from db import analytics_repos
+
+    class _FrozenDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls(2026, 1, 1, 12, 0, 0, tzinfo=tz)
+
+    monkeypatch.setattr(analytics_repos, "datetime", _FrozenDatetime)
+    return _FrozenDatetime
+
+
 class TestPriceSnapshotRepository:
     """Tests for PriceSnapshotRepository."""
 
@@ -215,3 +229,27 @@ class TestPriceSnapshotRepository:
         # Should not detect the 2% drop when threshold is 5%
         small_drop = next((d for d in drops if d["property_id"] == "prop-small"), None)
         assert small_drop is None
+
+    @pytest.mark.asyncio
+    async def test_recorded_at_is_strictly_increasing(self, repo, frozen_clock):
+        """Two snapshots taken in the same clock tick still keep their order."""
+        first = await repo.create(property_id="prop-tick", price=500000.0)
+        second = await repo.create(property_id="prop-tick", price=450000.0)
+
+        assert second.recorded_at > first.recorded_at
+
+    @pytest.mark.asyncio
+    async def test_price_drop_detected_within_a_single_clock_tick(self, repo, frozen_clock):
+        """A price drop is still detected when both snapshots share a timestamp."""
+        await repo.create(property_id="prop-frozen", price=500000.0)
+        await repo.create(property_id="prop-frozen", price=450000.0)
+
+        drops = await repo.get_properties_with_price_drops(
+            threshold_percent=5.0,
+            days_back=7,
+        )
+
+        found_drop = next((d for d in drops if d["property_id"] == "prop-frozen"), None)
+        assert found_drop is not None
+        assert found_drop["old_price"] == 500000.0
+        assert found_drop["new_price"] == 450000.0

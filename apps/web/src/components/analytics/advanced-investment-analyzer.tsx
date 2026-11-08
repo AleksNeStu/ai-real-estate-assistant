@@ -21,14 +21,15 @@ import { CashFlowChart } from './charts/cash-flow-chart';
 import { ScenarioChart } from './charts/scenario-chart';
 import { RiskGauge } from './charts/risk-gauge';
 import { exportInvestmentToPDF } from '@/lib/investment-pdf-export';
+import { useTranslations } from 'next-intl';
 
 interface ErrorState {
   message: string;
   requestId?: string;
 }
 
-const extractErrorState = (err: unknown): ErrorState => {
-  let message = 'Unknown error';
+const extractErrorState = (err: unknown, t: (key: string) => string): ErrorState => {
+  let message = t('error.unknown');
   let requestId: string | undefined = undefined;
 
   if (err instanceof ApiError) {
@@ -44,6 +45,10 @@ const extractErrorState = (err: unknown): ErrorState => {
 };
 
 export function AdvancedInvestmentAnalyzer() {
+  const t = useTranslations('investment');
+  const tp = useTranslations('portfolio');
+  const tm = useTranslations('mortgage');
+  const trv = useTranslations('rentVsBuy');
   const [loading, setLoading] = useState(false);
   const [errorState, setErrorState] = useState<ErrorState | null>(null);
   const [result, setResult] = useState<AdvancedInvestmentResult | null>(null);
@@ -132,7 +137,7 @@ export function AdvancedInvestmentAnalyzer() {
       const data = await calculateAdvancedInvestment(input);
       setResult(data);
     } catch (err: unknown) {
-      setErrorState(extractErrorState(err));
+      setErrorState(extractErrorState(err, t));
     } finally {
       setLoading(false);
     }
@@ -150,7 +155,7 @@ export function AdvancedInvestmentAnalyzer() {
       const data = await calculateAdvancedInvestment(input);
       setResult(data);
     } catch (err: unknown) {
-      setErrorState(extractErrorState(err));
+      setErrorState(extractErrorState(err, t));
     } finally {
       setLoading(false);
     }
@@ -190,7 +195,7 @@ export function AdvancedInvestmentAnalyzer() {
         {/* Form - centered when no results, left column when results present */}
         <Card className={result || errorState || loading ? undefined : 'mx-auto w-full max-w-2xl'}>
           <CardHeader>
-            <CardTitle>Property Details</CardTitle>
+            <CardTitle>{t('advanced.propertyDetails')}</CardTitle>
             <CardDescription>
               Enter property and financing information for advanced analysis.
             </CardDescription>
@@ -199,10 +204,10 @@ export function AdvancedInvestmentAnalyzer() {
             <form onSubmit={handleCalculate} className="space-y-4">
               {/* Basic Property Information */}
               <div className="space-y-3">
-                <h4 className="text-sm font-semibold">Property Information</h4>
+                <h4 className="text-sm font-semibold">{t('form.propertyInformation')}</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="property_price">Purchase Price ($)</Label>
+                    <Label htmlFor="property_price">{tp('propertyPrice')}</Label>
                     <Input
                       id="property_price"
                       name="property_price"
@@ -215,7 +220,7 @@ export function AdvancedInvestmentAnalyzer() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="monthly_rent">Monthly Rent ($)</Label>
+                    <Label htmlFor="monthly_rent">{tp('monthlyRent')}</Label>
                     <Input
                       id="monthly_rent"
                       name="monthly_rent"
@@ -232,10 +237,10 @@ export function AdvancedInvestmentAnalyzer() {
 
               {/* Financing Details */}
               <div className="space-y-3 pt-3 border-t">
-                <h4 className="text-sm font-semibold">Financing</h4>
+                <h4 className="text-sm font-semibold">{t('form.financing')}</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="down_payment_percent">Down Payment (%)</Label>
+                    <Label htmlFor="down_payment_percent">{tm('downPaymentPercent')}</Label>
                     <Input
                       id="down_payment_percent"
                       name="down_payment_percent"
@@ -247,7 +252,7 @@ export function AdvancedInvestmentAnalyzer() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="interest_rate">Interest Rate (%)</Label>
+                    <Label htmlFor="interest_rate">{tm('interestRate')}</Label>
                     <Input
                       id="interest_rate"
                       name="interest_rate"
@@ -259,7 +264,7 @@ export function AdvancedInvestmentAnalyzer() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="loan_years">Loan Term (Years)</Label>
+                    <Label htmlFor="loan_years">{tm('loanTerm')}</Label>
                     <Input
                       id="loan_years"
                       name="loan_years"
@@ -271,7 +276,7 @@ export function AdvancedInvestmentAnalyzer() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="closing_costs">Closing Costs ($)</Label>
+                    <Label htmlFor="closing_costs">{t('form.closingCosts')}</Label>
                     <Input
                       id="closing_costs"
                       name="closing_costs"
@@ -286,10 +291,10 @@ export function AdvancedInvestmentAnalyzer() {
 
               {/* Operating Expenses */}
               <div className="space-y-3 pt-3 border-t">
-                <h4 className="text-sm font-semibold">Monthly Operating Expenses</h4>
+                <h4 className="text-sm font-semibold">{t('form.monthlyOperatingExpenses')}</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="property_tax_monthly">Property Tax ($)</Label>
+                    <Label htmlFor="property_tax_monthly">{t('form.propertyTax')}</Label>
                     <Input
                       id="property_tax_monthly"
                       name="property_tax_monthly"
@@ -300,7 +305,7 @@ export function AdvancedInvestmentAnalyzer() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="insurance_monthly">Insurance ($)</Label>
+                    <Label htmlFor="insurance_monthly">{t('form.insurance')}</Label>
                     <Input
                       id="insurance_monthly"
                       name="insurance_monthly"
@@ -311,7 +316,7 @@ export function AdvancedInvestmentAnalyzer() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="vacancy_rate">Vacancy Rate (%)</Label>
+                    <Label htmlFor="vacancy_rate">{t('vacancyRate')}</Label>
                     <Input
                       id="vacancy_rate"
                       name="vacancy_rate"
@@ -323,7 +328,7 @@ export function AdvancedInvestmentAnalyzer() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="maintenance_percent">Maintenance (% of value)</Label>
+                    <Label htmlFor="maintenance_percent">{tm('tco.maintenancePercent')}</Label>
                     <Input
                       id="maintenance_percent"
                       name="maintenance_percent"
@@ -362,10 +367,10 @@ export function AdvancedInvestmentAnalyzer() {
               {/* Advanced Options */}
               {showAdvancedOptions && (
                 <div className="space-y-4 pt-4 border-t">
-                  <h4 className="text-sm font-semibold">Projection Settings</h4>
+                  <h4 className="text-sm font-semibold">{t('form.projectionSettings')}</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="projection_years">Projection Years</Label>
+                      <Label htmlFor="projection_years">{t('form.projectionYears')}</Label>
                       <Input
                         id="projection_years"
                         name="projection_years"
@@ -377,7 +382,7 @@ export function AdvancedInvestmentAnalyzer() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="appreciation_rate">Expected Appreciation (%)</Label>
+                      <Label htmlFor="appreciation_rate">{t('form.expectedAppreciation')}</Label>
                       <Input
                         id="appreciation_rate"
                         name="appreciation_rate"
@@ -390,7 +395,7 @@ export function AdvancedInvestmentAnalyzer() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="rent_growth_rate">Rent Growth Rate (%)</Label>
+                      <Label htmlFor="rent_growth_rate">{t('form.rentGrowthRate')}</Label>
                       <Input
                         id="rent_growth_rate"
                         name="rent_growth_rate"
@@ -403,7 +408,7 @@ export function AdvancedInvestmentAnalyzer() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="marginal_tax_rate">Marginal Tax Rate (%)</Label>
+                      <Label htmlFor="marginal_tax_rate">{trv('form.marginalTaxRate')}</Label>
                       <Input
                         id="marginal_tax_rate"
                         name="marginal_tax_rate"
@@ -415,7 +420,7 @@ export function AdvancedInvestmentAnalyzer() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="land_value_ratio">Land Value Ratio (%)</Label>
+                      <Label htmlFor="land_value_ratio">{t('form.landValueRatio')}</Label>
                       <Input
                         id="land_value_ratio"
                         name="land_value_ratio"
@@ -427,7 +432,7 @@ export function AdvancedInvestmentAnalyzer() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="market_volatility">Market Volatility (0-100)</Label>
+                      <Label htmlFor="market_volatility">{t('form.marketVolatility')}</Label>
                       <Input
                         id="market_volatility"
                         name="market_volatility"
@@ -460,7 +465,7 @@ export function AdvancedInvestmentAnalyzer() {
                       aria-hidden="true"
                     />
                     <div className="flex-1">
-                      <p className="text-sm text-destructive font-medium">Analysis failed</p>
+                      <p className="text-sm text-destructive font-medium">{t('error.analysisFailed')}</p>
                       <p className="text-sm text-destructive/90 mt-1">{errorState.message}</p>
                     </div>
                   </div>
@@ -495,7 +500,7 @@ export function AdvancedInvestmentAnalyzer() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div>
-                  <CardTitle>Investment Summary</CardTitle>
+                  <CardTitle>{t('advanced.summary')}</CardTitle>
                 </div>
                 <Button
                   onClick={handleExportPDF}
@@ -515,16 +520,16 @@ export function AdvancedInvestmentAnalyzer() {
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center">
-                    <p className="text-sm text-muted-foreground">Risk Score</p>
+                    <p className="text-sm text-muted-foreground">{t('results.riskScore')}</p>
                     <p
                       className={`text-2xl font-bold ${
                         result.risk_score >= 80
-                          ? 'text-green-600'
+                          ? 'text-success'
                           : result.risk_score >= 60
-                            ? 'text-blue-600'
+                            ? 'text-info'
                             : result.risk_score >= 40
-                              ? 'text-yellow-600'
-                              : 'text-red-600'
+                              ? 'text-warning'
+                              : 'text-destructive'
                       }`}
                     >
                       {result.risk_score}
@@ -532,9 +537,9 @@ export function AdvancedInvestmentAnalyzer() {
                     <p className="text-xs text-muted-foreground">/100</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-sm text-muted-foreground">Total Cash Flow</p>
+                    <p className="text-sm text-muted-foreground">{t('charts.cashFlow.totalCashFlow')}</p>
                     <p
-                      className={`text-2xl font-bold ${result.total_projected_cash_flow >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                      className={`text-2xl font-bold ${result.total_projected_cash_flow >= 0 ? 'text-success' : 'text-destructive'}`}
                     >
                       $
                       {result.total_projected_cash_flow.toLocaleString(undefined, {
@@ -543,15 +548,15 @@ export function AdvancedInvestmentAnalyzer() {
                     </p>
                   </div>
                   <div className="text-center">
-                    <p className="text-sm text-muted-foreground">Final Equity</p>
-                    <p className="text-2xl font-bold text-blue-600">
+                    <p className="text-sm text-muted-foreground">{t('charts.cashFlow.finalEquity')}</p>
+                    <p className="text-2xl font-bold text-info">
                       ${result.final_equity.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </p>
                   </div>
                   <div className="text-center">
-                    <p className="text-sm text-muted-foreground">IRR</p>
+                    <p className="text-sm text-muted-foreground">{t('results.irr')}</p>
                     <p
-                      className={`text-2xl font-bold ${result.irr !== null && result.irr >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                      className={`text-2xl font-bold ${result.irr !== null && result.irr >= 0 ? 'text-success' : 'text-destructive'}`}
                     >
                       {result.irr !== null ? `${result.irr.toFixed(1)}%` : 'N/A'}
                     </p>
@@ -563,17 +568,19 @@ export function AdvancedInvestmentAnalyzer() {
             {/* Detailed Results Tabs */}
             <Tabs defaultValue="cashflow" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="cashflow">Cash Flow</TabsTrigger>
-                <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
-                <TabsTrigger value="tax">Tax</TabsTrigger>
-                <TabsTrigger value="risk">Risk</TabsTrigger>
+                <TabsTrigger value="cashflow">{t('tabs.cashFlow')}</TabsTrigger>
+                <TabsTrigger value="scenarios">{t('tabs.scenarios')}</TabsTrigger>
+                <TabsTrigger value="tax">{t('tabs.tax')}</TabsTrigger>
+                <TabsTrigger value="risk">{t('tabs.risk')}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="cashflow" className="mt-4">
                 <CashFlowChart
                   data={result.cash_flow_projection}
-                  title="Multi-Year Cash Flow Projection"
-                  description={`${result.cash_flow_projection.length}-year projection with rent growth and appreciation`}
+                  title={t('charts.multiYear.title')}
+                  description={t('charts.multiYear.description', {
+                    years: result.cash_flow_projection.length,
+                  })}
                 />
               </TabsContent>
 
@@ -587,15 +594,13 @@ export function AdvancedInvestmentAnalyzer() {
               <TabsContent value="tax" className="mt-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Tax Implications</CardTitle>
-                    <CardDescription>
-                      Annual depreciation, deductions, and tax benefits
-                    </CardDescription>
+                    <CardTitle>{t('advanced.taxImplications')}</CardTitle>
+                    <CardDescription>{t('advanced.taxDescription')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 gap-6">
                       <div>
-                        <p className="text-sm text-muted-foreground">Annual Depreciation</p>
+                        <p className="text-sm text-muted-foreground">{t('advanced.annualDepreciation')}</p>
                         <p className="text-xl font-semibold">
                           $
                           {result.annual_depreciation.toLocaleString(undefined, {
@@ -604,8 +609,8 @@ export function AdvancedInvestmentAnalyzer() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Total Tax Deductions</p>
-                        <p className="text-xl font-semibold text-blue-600">
+                        <p className="text-sm text-muted-foreground">{t('advanced.totalTaxDeductions')}</p>
+                        <p className="text-xl font-semibold text-info">
                           $
                           {result.total_tax_deductions.toLocaleString(undefined, {
                             maximumFractionDigits: 0,
@@ -613,8 +618,8 @@ export function AdvancedInvestmentAnalyzer() {
                         </p>
                       </div>
                       <div className="col-span-2">
-                        <p className="text-sm text-muted-foreground">Annual Tax Benefit</p>
-                        <p className="text-2xl font-bold text-green-600">
+                        <p className="text-sm text-muted-foreground">{t('advanced.annualTaxBenefit')}</p>
+                        <p className="text-2xl font-bold text-success">
                           $
                           {result.tax_benefit.toLocaleString(undefined, {
                             maximumFractionDigits: 0,

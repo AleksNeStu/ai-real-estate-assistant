@@ -47,13 +47,13 @@ export function CommuteBadge({
   // Get color based on duration (green = quick, red = long)
   const getColorClass = (seconds: number): string => {
     if (seconds < 900) { // < 15 min
-      return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
+      return 'bg-success/15 text-success dark:bg-success/20 text-success';
     } else if (seconds < 1800) { // < 30 min
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
+      return 'bg-warning/15 text-warning bg-warning/15/20 dark:text-warning';
     } else if (seconds < 3600) { // < 60 min
-      return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300';
+      return 'bg-warning/15 text-warning bg-warning/15/20 dark:text-caution';
     }
-    return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300';
+    return 'bg-destructive/15 text-destructive bg-destructive/15/20 text-destructive';
   };
 
   // Get icon based on transport mode

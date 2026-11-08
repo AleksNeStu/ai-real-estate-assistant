@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GraduationCap, ShoppingBag, Trees, MapPin, Shield, Bus, ExternalLink } from 'lucide-react';
 import type { NeighborhoodQualityResult, NearbyPOI } from '@/lib/types';
+import { useTranslations } from 'next-intl';
+import { EmptyState } from '@/components/ui/states';
 
 interface WhatsNearbySectionProps {
   result: NeighborhoodQualityResult;
@@ -36,6 +38,7 @@ export function WhatsNearbySection({
   className = '',
   showMap = false,
 }: WhatsNearbySectionProps) {
+  const t = useTranslations('neighborhood');
   const [activeTab, setActiveTab] = useState('schools');
 
   const nearbyPois = result.nearby_pois;
@@ -44,12 +47,12 @@ export function WhatsNearbySection({
     return (
       <Card className={className}>
         <CardHeader>
-          <CardTitle>What&apos;s Nearby</CardTitle>
-          <CardDescription>Points of interest in the neighborhood</CardDescription>
+          <CardTitle>{t('whatsNearby.title')}</CardTitle>
+          <CardDescription>{t('whatsNearby.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8 text-muted-foreground">
-            <p className="text-sm">Nearby places data not available for this location.</p>
+            <p className="text-sm">{t('whatsNearby.dataNotAvailable')}</p>
           </div>
         </CardContent>
       </Card>
@@ -59,43 +62,43 @@ export function WhatsNearbySection({
   const categories: POICategory[] = [
     {
       key: 'schools',
-      label: 'Schools',
+      label: t('whatsNearby.categories.schools.label'),
       icon: <GraduationCap className="h-4 w-4" aria-hidden="true" />,
-      description: 'Educational institutions nearby',
-      color: 'text-indigo-600',
-      bgColor: 'bg-indigo-50',
+      description: t('whatsNearby.categories.schools.description'),
+      color: 'text-chart-4',
+      bgColor: 'bg-chart-4/10',
     },
     {
       key: 'amenities',
-      label: 'Amenities',
+      label: t('whatsNearby.categories.amenities.label'),
       icon: <ShoppingBag className="h-4 w-4" aria-hidden="true" />,
-      description: 'Shops, restaurants, and services',
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
+      description: t('whatsNearby.categories.amenities.description'),
+      color: 'text-chart-6',
+      bgColor: 'bg-chart-6/10',
     },
     {
       key: 'green_spaces',
-      label: 'Green Spaces',
+      label: t('whatsNearby.categories.greenSpaces.label'),
       icon: <Trees className="h-4 w-4" aria-hidden="true" />,
-      description: 'Parks and recreational areas',
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
+      description: t('whatsNearby.categories.greenSpaces.description'),
+      color: 'text-chart-2',
+      bgColor: 'bg-chart-2/10',
     },
     {
       key: 'transport_stops',
-      label: 'Transport',
+      label: t('whatsNearby.categories.transport.label'),
       icon: <Bus className="h-4 w-4" aria-hidden="true" />,
-      description: 'Public transport access points',
-      color: 'text-rose-600',
-      bgColor: 'bg-rose-50',
+      description: t('whatsNearby.categories.transport.description'),
+      color: 'text-chart-8',
+      bgColor: 'bg-chart-8/10',
     },
     {
       key: 'police_stations',
-      label: 'Safety',
+      label: t('whatsNearby.categories.safety.label'),
       icon: <Shield className="h-4 w-4" aria-hidden="true" />,
-      description: 'Police and emergency services',
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
+      description: t('whatsNearby.categories.safety.description'),
+      color: 'text-chart-1',
+      bgColor: 'bg-chart-1/10',
     },
   ];
 
@@ -107,9 +110,9 @@ export function WhatsNearbySection({
   };
 
   const getDistanceColor = (meters: number): string => {
-    if (meters <= 500) return 'text-green-600';
-    if (meters <= 1000) return 'text-yellow-600';
-    return 'text-orange-600';
+    if (meters <= 500) return 'text-success';
+    if (meters <= 1000) return 'text-warning';
+    return 'text-caution';
   };
 
   const getTotalCount = (): number => {
@@ -144,12 +147,7 @@ export function WhatsNearbySection({
   const renderPOIList = (pois: NearbyPOI[], category: POICategory) => {
     if (!pois || pois.length === 0) {
       return (
-        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-          <div className={`p-3 rounded-full ${category.bgColor} ${category.color} opacity-50 mb-3`}>
-            {category.icon}
-          </div>
-          <p className="text-sm">No {category.label.toLowerCase()} found nearby</p>
-        </div>
+        <EmptyState title={`No ${category.label.toLowerCase()} found nearby`} />
       );
     }
 
@@ -182,7 +180,7 @@ export function WhatsNearbySection({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-1.5 rounded-md hover:bg-background transition-colors"
-                  title="Open in Google Maps"
+                  title={t('whatsNearby.openInMaps')}
                 >
                   <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 </a>
@@ -199,12 +197,12 @@ export function WhatsNearbySection({
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle>What&apos;s Nearby</CardTitle>
-            <CardDescription>Points of interest within walking distance</CardDescription>
+            <CardTitle>{t('whatsNearby.title')}</CardTitle>
+            <CardDescription>{t('whatsNearby.descriptionWalking')}</CardDescription>
           </div>
           {nearestPOI && (
             <div className="text-right">
-              <p className="text-xs text-muted-foreground">Nearest Place</p>
+              <p className="text-xs text-muted-foreground">{t('whatsNearby.nearestPlace')}</p>
               <p className="text-sm font-medium">{nearestPOI.name}</p>
               <p className={`text-xs font-semibold ${getDistanceColor(nearestPOI.distance)}`}>
                 {formatDistance(nearestPOI.distance)}
@@ -282,7 +280,7 @@ export function WhatsNearbySection({
             <div className="rounded-lg bg-muted h-48 flex items-center justify-center">
               <div className="text-center text-muted-foreground">
                 <MapPin className="h-8 w-8 mx-auto mb-2" aria-hidden="true" />
-                <p className="text-sm">Map preview is not available in this report</p>
+                <p className="text-sm">{t('whatsNearby.mapUnavailable')}</p>
                 <p className="text-xs">
                   Coordinates: {result.latitude.toFixed(4)}, {result.longitude.toFixed(4)}
                 </p>

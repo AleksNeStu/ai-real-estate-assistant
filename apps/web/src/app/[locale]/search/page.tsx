@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   Search as SearchIcon,
   MapPin,
@@ -21,8 +22,12 @@ import {
   serializePolygonToUrl,
   deserializePolygonFromUrl,
 } from '@/lib/geo-validation';
-import { HeartButton, ListingGenerator } from '@/components/property';
+import { ListingGenerator, PropertyCard } from '@/components/property';
 import { RelevanceRating } from '@/components/search/relevance-rating';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState, ErrorState, LoadingState } from '@/components/ui/states';
 import dynamic from 'next/dynamic';
 import MapControls, {
   type MapFilterOptions,
@@ -54,6 +59,9 @@ const EXAMPLE_QUERIES = [
 function SearchPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const t = useTranslations('search');
+  const tCommon = useTranslations('common');
+  const tPage = useTranslations('pages.search');
   const { trackSearchDebounced, flushSearch } = useTrackSearchDebounced(1000);
 
   // A pending search must not be lost when the visitor leaves the page.
@@ -204,14 +212,14 @@ function SearchPageContent() {
     const minRooms = rooms.trim() ? Number(rooms) : undefined;
 
     if (min !== undefined && Number.isNaN(min))
-      return { error: 'Min price must be a valid number.' };
+      return { error: t('errors.invalidMinPrice') };
     if (max !== undefined && Number.isNaN(max))
-      return { error: 'Max price must be a valid number.' };
+      return { error: t('errors.invalidMaxPrice') };
     if (minRooms !== undefined && Number.isNaN(minRooms)) {
-      return { error: 'Minimum rooms must be a valid number.' };
+      return { error: t('errors.invalidMinRooms') };
     }
     if (min !== undefined && max !== undefined && min > max) {
-      return { error: 'Min price cannot be greater than max price.' };
+      return { error: t('errors.minGreaterThanMax') };
     }
 
     const filters: Record<string, unknown> = {};
@@ -232,7 +240,7 @@ function SearchPageContent() {
     try {
       if (!query.trim()) {
         setResults([]);
-        setError('Please enter a search query.');
+        setError(t('errors.emptyQuery'));
         return;
       }
 
@@ -264,7 +272,7 @@ function SearchPageContent() {
         setError(err.message);
         setRequestId(err.request_id);
       } else {
-        setError('Failed to perform search. Please try again.');
+        setError(t('errors.genericSearch'));
       }
     } finally {
       setLoading(false);
@@ -319,7 +327,7 @@ function SearchPageContent() {
       if (err instanceof ApiError) {
         setExportError(`${err.message}${err.request_id ? ` (request_id=${err.request_id})` : ''}`);
       } else {
-        setExportError('Failed to export. Please try again.');
+        setExportError(t('errors.exportFailed'));
       }
     } finally {
       setExporting(false);
@@ -338,107 +346,97 @@ function SearchPageContent() {
     <div className="container mx-auto px-4 py-8" aria-live="polite">
       <div className="flex flex-col space-y-8">
         {/* Search Header */}
-        <div className="flex flex-col space-y-4">
-          <h1 className="text-3xl font-bold tracking-tight">Find Your Property</h1>
-          <p className="text-muted-foreground">
-            Search across thousands of listings using AI-powered semantic search.
-          </p>
-        </div>
+        <PageHeader title={tPage('title')} description={tPage('description')} />
 
         {/* Search Bar */}
         <form
           onSubmit={handleSearch}
           className="flex gap-4"
           role="search"
-          aria-label="Property search"
+          aria-label={t('searchLabel')}
         >
           <div className="relative flex-1">
             <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               data-testid="search-input"
-              placeholder="Describe what you're looking for (e.g., 2-bed apartment under $500k)..."
+              placeholder={t('placeholder')}
               className={[
                 'w-full rounded-md border border-input bg-background',
-                'pl-10 pr-4 py-2 text-sm ring-offset-background',
+                'pl-10 pr-4 py-2 text-sm',
                 'placeholder:text-muted-foreground focus-visible:outline-none',
-                'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                'focus-visible:outline-2 focus-visible:outline-ring/50',
                 'disabled:cursor-not-allowed disabled:opacity-50',
               ].join(' ')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              aria-label="Search query"
+              aria-label={t('queryLabel')}
               required
               disabled={loading}
             />
           </div>
-          <button
+          <Button
             type="submit"
             data-testid="search-submit"
             disabled={loading || !query.trim()}
-            className={[
-              'inline-flex items-center justify-center rounded-md bg-primary px-8',
-              'text-sm font-medium text-primary-foreground shadow transition-colors',
-              'hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-              'disabled:pointer-events-none disabled:opacity-50',
-            ].join(' ')}
             aria-busy={loading ? 'true' : 'false'}
-            aria-label={loading ? 'Searching' : 'Search'}
+            aria-label={loading ? tCommon('searching') : tCommon('search')}
           >
-            {loading ? 'Searching...' : 'Search'}
-          </button>
+            {loading ? tCommon('searching') : tCommon('search')}
+          </Button>
         </form>
 
         {/* Filters & Results Layout */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Sidebar Filters */}
           <div className="space-y-6">
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-              <div className="flex items-center gap-2 font-semibold mb-4">
-                <Filter className="h-4 w-4" /> Filters
-              </div>
+            <Card>
+              <CardContent className="p-6">
+                <div className="mb-4 flex items-center gap-2 font-semibold">
+                  <Filter className="h-4 w-4" aria-hidden="true" /> {t('filters.title')}
+                </div>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="sort-by" className="block text-sm font-medium mb-1">
-                        Sort By
+                      <label htmlFor="sort-by" className="mb-1 block text-sm font-medium">
+                        {t('filters.sortBy')}
                       </label>
                       <select
                         id="sort-by"
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value)}
-                        aria-label="Sort by"
+                        aria-label={t('filters.sortBy')}
                         disabled={loading}
                       >
-                        <option value="relevance">Relevance</option>
-                        <option value="price">Price</option>
-                        <option value="price_per_sqm">Price per m²</option>
-                        <option value="area_sqm">Area (m²)</option>
-                        <option value="year_built">Year Built</option>
+                        <option value="relevance">{t('sortOptions.relevance')}</option>
+                        <option value="price">{t('sortOptions.price')}</option>
+                        <option value="price_per_sqm">{t('sortOptions.pricePerSqm')}</option>
+                        <option value="area_sqm">{t('sortOptions.area')}</option>
+                        <option value="year_built">{t('sortOptions.yearBuilt')}</option>
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="sort-order" className="block text-sm font-medium mb-1">
-                        Order
+                      <label htmlFor="sort-order" className="mb-1 block text-sm font-medium">
+                        {t('filters.order')}
                       </label>
                       <select
                         id="sort-order"
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                         value={sortOrder}
                         onChange={(e) => setSortOrder(e.target.value)}
-                        aria-label="Sort order"
+                        aria-label={t('filters.order')}
                         disabled={loading}
                       >
-                        <option value="desc">Descending</option>
-                        <option value="asc">Ascending</option>
+                        <option value="desc">{t('orderOptions.descending')}</option>
+                        <option value="asc">{t('orderOptions.ascending')}</option>
                       </select>
                     </div>
                   </div>
                   <div>
-                    <label htmlFor="min-price" className="block text-sm font-medium mb-1">
-                      Min Price
+                    <label htmlFor="min-price" className="mb-1 block text-sm font-medium">
+                      {t('filters.minPrice')}
                     </label>
                     <input
                       id="min-price"
@@ -448,13 +446,13 @@ function SearchPageContent() {
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                       value={minPrice}
                       onChange={(e) => setMinPrice(e.target.value)}
-                      aria-label="Minimum price"
+                      aria-label={t('filters.minPrice')}
                       disabled={loading}
                     />
                   </div>
                   <div>
-                    <label htmlFor="max-price" className="block text-sm font-medium mb-1">
-                      Max Price
+                    <label htmlFor="max-price" className="mb-1 block text-sm font-medium">
+                      {t('filters.maxPrice')}
                     </label>
                     <input
                       id="max-price"
@@ -464,13 +462,13 @@ function SearchPageContent() {
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                       value={maxPrice}
                       onChange={(e) => setMaxPrice(e.target.value)}
-                      aria-label="Maximum price"
+                      aria-label={t('filters.maxPrice')}
                       disabled={loading}
                     />
                   </div>
                   <div>
-                    <label htmlFor="rooms" className="block text-sm font-medium mb-1">
-                      Minimum Rooms
+                    <label htmlFor="rooms" className="mb-1 block text-sm font-medium">
+                      {t('filters.minRooms')}
                     </label>
                     <input
                       id="rooms"
@@ -480,33 +478,35 @@ function SearchPageContent() {
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                       value={rooms}
                       onChange={(e) => setRooms(e.target.value)}
-                      aria-label="Minimum rooms"
+                      aria-label={t('filters.minRooms')}
                       disabled={loading}
                     />
                   </div>
                   <div>
-                    <label htmlFor="property-type" className="block text-sm font-medium mb-1">
-                      Property Type
+                    <label htmlFor="property-type" className="mb-1 block text-sm font-medium">
+                      {t('filters.propertyType')}
                     </label>
                     <select
                       id="property-type"
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                       value={propertyType}
                       onChange={(e) => setPropertyType(e.target.value)}
-                      aria-label="Property type"
+                      aria-label={t('filters.propertyType')}
                       disabled={loading}
                     >
-                      <option value="">Any</option>
-                      <option value="apartment">Apartment</option>
-                      <option value="house">House</option>
-                      <option value="studio">Studio</option>
-                      <option value="loft">Loft</option>
-                      <option value="townhouse">Townhouse</option>
-                      <option value="other">Other</option>
+                      <option value="">{t('propertyTypes.any')}</option>
+                      <option value="apartment">{t('propertyTypes.apartment')}</option>
+                      <option value="house">{t('propertyTypes.house')}</option>
+                      <option value="studio">{t('propertyTypes.studio')}</option>
+                      <option value="loft">{t('propertyTypes.loft')}</option>
+                      <option value="townhouse">{t('propertyTypes.townhouse')}</option>
+                      <option value="other">{t('propertyTypes.other')}</option>
                     </select>
                   </div>
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="sm"
                     onClick={() => {
                       setMinPrice('');
                       setMaxPrice('');
@@ -515,27 +515,22 @@ function SearchPageContent() {
                       setSortBy('relevance');
                       setSortOrder('desc');
                     }}
-                    className={[
-                      'inline-flex items-center justify-center rounded-md border',
-                      'px-3 py-2 text-sm hover:bg-muted',
-                      'disabled:opacity-50',
-                    ].join(' ')}
-                    aria-label="Clear filters"
+                    aria-label={t('filters.clearFilters')}
                     disabled={loading}
                   >
-                    Clear Filters
-                  </button>
-                  <div className="grid grid-cols-2 gap-4 mt-2">
+                    {t('filters.clearFilters')}
+                  </Button>
+                  <div className="mt-2 grid grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="export-format" className="block text-sm font-medium mb-1">
-                        Export Format
+                      <label htmlFor="export-format" className="mb-1 block text-sm font-medium">
+                        {t('export.format')}
                       </label>
                       <select
                         id="export-format"
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                         value={exportFormat}
                         onChange={(e) => setExportFormat(e.target.value)}
-                        aria-label="Export format"
+                        aria-label={t('export.format')}
                         disabled={loading || results.length === 0}
                       >
                         <option value="csv">CSV</option>
@@ -546,129 +541,119 @@ function SearchPageContent() {
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="export-columns" className="block text-sm font-medium mb-1">
-                        Columns (optional)
+                      <label htmlFor="export-columns" className="mb-1 block text-sm font-medium">
+                        {t('export.columns')}
                       </label>
                       <input
                         id="export-columns"
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                         value={exportColumns}
                         onChange={(e) => setExportColumns(e.target.value)}
-                        placeholder="e.g., id, city, price"
-                        aria-label="Export columns"
+                        placeholder={t('export.columnsPlaceholder')}
+                        aria-label={t('export.columns')}
                         disabled={loading}
                       />
                     </div>
                     {exportFormat === 'csv' ? (
-                      <div className="grid grid-cols-2 gap-4 col-span-2">
+                      <div className="col-span-2 grid grid-cols-2 gap-4">
                         <div>
-                          <label htmlFor="csv-delimiter" className="block text-sm font-medium mb-1">
-                            CSV Delimiter
+                          <label htmlFor="csv-delimiter" className="mb-1 block text-sm font-medium">
+                            {t('export.delimiter')}
                           </label>
                           <select
                             id="csv-delimiter"
                             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                             value={csvDelimiter}
                             onChange={(e) => setCsvDelimiter(e.target.value)}
-                            aria-label="CSV delimiter"
+                            aria-label={t('export.delimiter')}
                             disabled={loading}
                           >
-                            <option value=",">Comma (,)</option>
-                            <option value=";">Semicolon (;)</option>
+                            <option value=",">{t('export.delimiterComma')}</option>
+                            <option value=";">{t('export.delimiterSemicolon')}</option>
                           </select>
                         </div>
                         <div>
-                          <label htmlFor="csv-decimal" className="block text-sm font-medium mb-1">
-                            Decimal Separator
+                          <label htmlFor="csv-decimal" className="mb-1 block text-sm font-medium">
+                            {t('export.decimalSeparator')}
                           </label>
                           <select
                             id="csv-decimal"
                             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                             value={csvDecimal}
                             onChange={(e) => setCsvDecimal(e.target.value)}
-                            aria-label="CSV decimal separator"
+                            aria-label={t('export.decimalSeparator')}
                             disabled={loading}
                           >
-                            <option value=".">Dot (.)</option>
-                            <option value=",">Comma (,)</option>
+                            <option value=".">{t('export.decimalDot')}</option>
+                            <option value=",">{t('export.decimalComma')}</option>
                           </select>
                         </div>
-                        <label className="flex items-center gap-2 text-sm col-span-2">
+                        <label className="col-span-2 flex items-center gap-2 text-sm">
                           <input
                             type="checkbox"
                             checked={exportIncludeHeader}
                             onChange={(e) => setExportIncludeHeader(e.target.checked)}
-                            aria-label="Include CSV header"
+                            aria-label={t('export.includeHeader')}
                             disabled={loading}
                           />
-                          Include header row
+                          {t('export.includeHeader')}
                         </label>
                       </div>
                     ) : null}
                     <div className="flex items-end">
-                      <button
+                      <Button
                         type="button"
+                        size="sm"
                         onClick={handleExport}
                         disabled={exporting || !query.trim() || results.length === 0}
-                        className={[
-                          'inline-flex items-center justify-center rounded-md bg-primary px-3 py-2',
-                          'text-sm font-medium text-primary-foreground shadow transition-colors',
-                          'hover:bg-primary/90 disabled:opacity-50',
-                        ].join(' ')}
-                        aria-label={exporting ? 'Exporting' : 'Export'}
+                        aria-label={exporting ? tCommon('exporting') : tCommon('export')}
                       >
-                        <Download className="h-4 w-4 mr-2" />
-                        {exporting ? 'Exporting...' : 'Export'}
-                      </button>
+                        <Download className="mr-2 h-4 w-4" aria-hidden="true" />
+                        {exporting ? tCommon('exporting') : tCommon('export')}
+                      </Button>
                     </div>
                   </div>
                   {exportError ? (
-                    <div className="text-red-500 text-sm" role="alert">
+                    <div className="text-sm text-destructive" role="alert">
                       {exportError}
                     </div>
                   ) : null}
                 </div>
               </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Results Grid - 4 Mandated States */}
           <div className="md:col-span-3">
             {/* STATE 1: Empty state (zero-data) */}
             {!hasSearched && !loading && !error && (
-              <div
-                className="flex flex-col items-center justify-center h-full min-h-[400px] text-center border rounded-lg border-dashed bg-muted/30"
-                role="status"
-                aria-live="polite"
-              >
-                <div className="p-4 rounded-full bg-primary/10 mb-4">
-                  <SearchIcon className="h-12 w-12 text-primary" aria-hidden="true" />
-                </div>
-                <h2 className="text-2xl font-bold mb-2">Start Your Property Search</h2>
-                <p className="text-muted-foreground max-w-md mb-6">
-                  Enter a search query to explore thousands of property listings. Use natural
-                  language to describe what you&apos;re looking for.
-                </p>
-                <div className="space-y-2 mb-6">
-                  <p className="text-sm font-medium text-foreground">Try these examples:</p>
-                  <div className="flex flex-col gap-2">
-                    {EXAMPLE_QUERIES.map((example, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => handleExampleQuery(example)}
-                        className="text-left text-sm text-primary hover:underline disabled:opacity-50 text-left w-full text-left"
-                        disabled={loading}
-                      >
-                        &ldquo;{example}&rdquo;
-                      </button>
-                    ))}
+              <EmptyState
+                icon={SearchIcon}
+                title={t('emptyState.title')}
+                description={t('emptyState.description')}
+                action={
+                  <div className="flex flex-col items-center gap-2">
+                    <p className="text-sm font-medium text-foreground">
+                      {t('emptyState.tryExamples')}
+                    </p>
+                    <div className="flex flex-col items-center gap-1">
+                      {EXAMPLE_QUERIES.map((example, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleExampleQuery(example)}
+                          className="text-sm text-primary hover:underline disabled:opacity-50"
+                          disabled={loading}
+                        >
+                          &ldquo;{example}&rdquo;
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t('emptyState.exportHint')}</p>
                   </div>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Export will be available once you have search results.
-                </p>
-              </div>
+                }
+              />
             )}
 
             {/* STATE 2: Loading state */}
@@ -677,27 +662,10 @@ function SearchPageContent() {
                 className="space-y-4"
                 role="status"
                 aria-live="polite"
-                aria-label="Loading search results"
+                aria-label={tCommon('loading')}
               >
                 {/* Skeleton results */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className="rounded-lg border bg-card overflow-hidden">
-                      <div className="h-48 bg-muted animate-pulse" aria-hidden="true" />
-                      <div className="p-6 space-y-4">
-                        <div className="h-6 bg-muted animate-pulse rounded" aria-hidden="true" />
-                        <div
-                          className="h-4 bg-muted animate-pulse rounded w-3/4"
-                          aria-hidden="true"
-                        />
-                        <div
-                          className="h-4 bg-muted animate-pulse rounded w-1/2"
-                          aria-hidden="true"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <LoadingState variant="cards" rows={6} />
                 {/* Map placeholder */}
                 <div
                   className="h-[420px] w-full bg-muted animate-pulse rounded-lg border border-dashed"
@@ -708,35 +676,19 @@ function SearchPageContent() {
 
             {/* STATE 3: Error state */}
             {error && !loading && (
-              <div
-                className="flex flex-col items-center justify-center h-full min-h-[400px] text-center border rounded-lg bg-destructive/10"
-                role="alert"
-                aria-live="assertive"
-              >
-                <div className="p-4 rounded-full bg-destructive/20 mb-4">
-                  <AlertCircle className="h-12 w-12 text-destructive" aria-hidden="true" />
-                </div>
-                <h2 className="text-2xl font-bold mb-2 text-destructive">Search Failed</h2>
-                <p className="text-destructive/90 max-w-md mb-4">{error}</p>
-                {requestId && (
-                  <p className="text-xs text-muted-foreground mb-6 font-mono">
-                    Request ID: {requestId}
-                  </p>
-                )}
-                <button
-                  type="button"
-                  onClick={() => handleSearch()}
-                  className={[
-                    'inline-flex items-center gap-2 rounded-md bg-primary px-6 py-2',
-                    'text-sm font-medium text-primary-foreground shadow transition-colors',
-                    'hover:bg-primary/90',
-                  ].join(' ')}
-                  aria-label="Retry search"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  Retry
-                </button>
-              </div>
+              <ErrorState
+                title={t('errors.searchFailed')}
+                description={error}
+                onRetry={() => handleSearch()}
+                retryLabel={tCommon('retry')}
+                action={
+                  requestId ? (
+                    <p className="font-mono text-xs text-muted-foreground">
+                      Request ID: {requestId}
+                    </p>
+                  ) : null
+                }
+              />
             )}
 
             {/* STATE 4: Populated state */}
@@ -744,20 +696,11 @@ function SearchPageContent() {
               <div className="space-y-4">
                 {results.length === 0 ? (
                   /* No results sub-state of Populated */
-                  <div
-                    className="flex flex-col items-center justify-center h-64 text-center border rounded-lg border-dashed"
-                    role="status"
-                    aria-live="polite"
-                  >
-                    <div className="p-4 rounded-full bg-muted/50 mb-4">
-                      <MapPin className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
-                    </div>
-                    <h3 className="text-lg font-semibold">No Results Found</h3>
-                    <p className="text-sm text-muted-foreground max-w-sm mt-2">
-                      Try adjusting your search terms, filters, or sorting options to find more
-                      properties.
-                    </p>
-                  </div>
+                  <EmptyState
+                    icon={MapPin}
+                    title={t('results.noResults')}
+                    description={t('results.noResultsHint')}
+                  />
                 ) : (
                   <>
                     <div className="flex items-center justify-between gap-4">
@@ -765,33 +708,33 @@ function SearchPageContent() {
                         <div
                           className="inline-flex rounded-md border bg-background p-1"
                           role="group"
-                          aria-label="View mode"
+                          aria-label={t('view.label')}
                         >
                           <button
                             type="button"
                             onClick={() => setViewMode('list')}
                             className={[
-                              'px-3 py-1.5 text-sm rounded-md',
+                              'rounded-md px-3 py-1.5 text-sm',
                               viewMode === 'list' ? 'bg-muted font-medium' : 'hover:bg-muted/50',
                               'disabled:opacity-50',
                             ].join(' ')}
                             aria-pressed={viewMode === 'list'}
-                            aria-label="List view"
+                            aria-label={t('view.list')}
                           >
-                            List
+                            {t('view.list')}
                           </button>
                           <button
                             type="button"
                             onClick={() => setViewMode('map')}
                             className={[
-                              'px-3 py-1.5 text-sm rounded-md',
+                              'rounded-md px-3 py-1.5 text-sm',
                               viewMode === 'map' ? 'bg-muted font-medium' : 'hover:bg-muted/50',
                               'disabled:opacity-50',
                             ].join(' ')}
                             aria-pressed={viewMode === 'map'}
-                            aria-label="Map view"
+                            aria-label={t('view.map')}
                           >
-                            Map
+                            {t('view.map')}
                           </button>
                         </div>
                         <SaveSearchButton
@@ -843,49 +786,50 @@ function SearchPageContent() {
                               type="checkbox"
                               checked={useMapbox}
                               onChange={(e) => setUseMapbox(e.target.checked)}
-                              className="w-4 h-4 rounded border-gray-300"
-                              aria-label="Use Mapbox"
+                              className="h-4 w-4 rounded border-input"
+                              aria-label={t('map.useMapbox')}
                             />
-                            Enhanced Map
+                            {t('map.enhanced')}
                           </label>
                           {useMapbox && (
-                            <button
+                            <Button
                               type="button"
+                              size="sm"
+                              variant={enableDrawing ? 'default' : 'outline'}
                               onClick={() => {
                                 setEnableDrawing(!enableDrawing);
                                 if (enableDrawing) {
                                   setDrawnPolygon(null);
                                 }
                               }}
-                              className={[
-                                'inline-flex items-center gap-1 px-2 py-1 text-sm rounded-md border',
-                                enableDrawing
-                                  ? 'bg-primary text-primary-foreground'
-                                  : 'hover:bg-muted',
-                              ].join(' ')}
-                              aria-label={enableDrawing ? 'Disable drawing' : 'Enable drawing'}
+                              aria-label={
+                                enableDrawing ? t('map.disableDrawing') : t('map.enableDrawing')
+                              }
                             >
-                              <Pencil className="h-3 w-3" />
-                              {enableDrawing ? 'Drawing...' : 'Draw Area'}
-                            </button>
+                              <Pencil className="h-3 w-3" aria-hidden="true" />
+                              {enableDrawing ? t('map.drawing') : t('map.drawArea')}
+                            </Button>
                           )}
                           {drawnPolygon && (
-                            <button
+                            <Button
                               type="button"
+                              size="sm"
+                              variant="ghost"
                               onClick={handlePolygonClear}
-                              className="text-xs text-muted-foreground hover:text-foreground"
-                              aria-label="Clear drawn area"
+                              aria-label={t('map.clearArea')}
                             >
-                              Clear Area
-                            </button>
+                              {t('map.clearArea')}
+                            </Button>
                           )}
                         </div>
                       )}
                       <div className="text-sm text-muted-foreground">
-                        {drawnPolygon ? filteredByPolygon.length : filteredMapPoints.length} /{' '}
-                        {mapPoints.length} / {results.length} shown
+                        {t('map.shown', {
+                          shown: drawnPolygon ? filteredByPolygon.length : filteredMapPoints.length,
+                          total: results.length,
+                        })}
                         {drawnPolygon && (
-                          <span className="text-primary ml-1">(filtered by area)</span>
+                          <span className="ml-1 text-primary">{t('map.filteredByArea')}</span>
                         )}
                       </div>
                     </div>
@@ -926,71 +870,28 @@ function SearchPageContent() {
                             <PropertyMap points={filteredMapPoints} />
                           )
                         ) : (
-                          <div className="flex items-center justify-center h-64 text-center border rounded-lg border-dashed">
-                            <div>
-                              <div className="font-semibold">No mappable results</div>
-                              <div className="text-sm text-muted-foreground mt-1">
-                                These listings do not include latitude/longitude coordinates.
-                              </div>
-                            </div>
-                          </div>
+                          <EmptyState
+                            icon={MapPin}
+                            title={t('map.noMappableResults')}
+                            description={t('map.noMappableResultsHint')}
+                          />
                         )}
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {results.map((item, index) => {
                           const prop = item.property;
                           return (
-                            <div
+                            <PropertyCard
                               key={`${prop.id ?? 'unknown'}-${index}`}
-                              className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden"
-                            >
-                              <div className="aspect-video w-full bg-muted relative">
-                                <div
-                                  className="absolute inset-0 flex items-center justify-center text-muted-foreground"
-                                  aria-label="Property image placeholder"
-                                >
-                                  Property image
-                                </div>
-                                {prop.id && (
-                                  <div className="absolute top-2 right-2">
-                                    <HeartButton propertyId={prop.id} />
-                                  </div>
-                                )}
-                              </div>
-                              <div className="p-6 space-y-2">
-                                <h3 className="text-2xl font-semibold leading-none tracking-tight">
-                                  {prop.title || 'Untitled Property'}
-                                </h3>
-                                <p className="text-sm text-muted-foreground">
-                                  {prop.city}, {prop.country}
-                                </p>
-                                <div className="font-bold text-lg">
-                                  {prop.price
-                                    ? `$${prop.price.toLocaleString()}`
-                                    : 'Price on request'}
-                                </div>
-                                <p className="text-sm text-muted-foreground">
-                                  {[
-                                    prop.rooms ? `${prop.rooms} beds` : null,
-                                    prop.bathrooms ? `${prop.bathrooms} baths` : null,
-                                    prop.area_sqm ? `${prop.area_sqm} m²` : null,
-                                  ]
-                                    .filter(Boolean)
-                                    .join(' • ')}
-                                </p>
-                                {prop.id && (
-                                  <div className="pt-2">
-                                    <ListingGenerator propertyId={prop.id} compact />
-                                  </div>
-                                )}
-                                {prop.id && (
-                                  <div className="pt-1">
-                                    <RelevanceRating query={query} propertyId={prop.id} />
-                                  </div>
-                                )}
-                              </div>
-                            </div>
+                              property={prop}
+                              footer={
+                                <>
+                                  {prop.id && <ListingGenerator propertyId={prop.id} compact />}
+                                  {prop.id && <RelevanceRating query={query} propertyId={prop.id} />}
+                                </>
+                              }
+                            />
                           );
                         })}
                       </div>

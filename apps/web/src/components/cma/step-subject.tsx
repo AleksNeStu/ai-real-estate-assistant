@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { searchProperties } from '@/lib/api';
+import { formatPrice as formatPriceInLocale } from '@/lib/format';
 import type { Property } from '@/lib/types';
 
 interface StepSubjectProps {
@@ -21,6 +22,7 @@ export function StepSubject({
   canProceed,
 }: StepSubjectProps) {
   const t = useTranslations('cma.subject');
+  const locale = useLocale();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Property[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -46,13 +48,11 @@ export function StepSubject({
     }
   };
 
-  const formatPrice = (price?: number) => {
+  const formatPrice = (price?: number, currency?: string) => {
     if (!price) return 'N/A';
-    return new Intl.NumberFormat('de-DE', {
-      style: 'currency',
-      currency: 'EUR',
-      maximumFractionDigits: 0,
-    }).format(price);
+    // The wizard used to force every price into euros with German separators,
+    // whatever the listing said and whatever language the reader picked.
+    return formatPriceInLocale(price, currency || subjectProperty?.currency || 'EUR', locale);
   };
 
   return (

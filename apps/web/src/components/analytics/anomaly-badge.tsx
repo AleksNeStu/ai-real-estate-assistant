@@ -4,17 +4,17 @@ import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import type { AnomalySeverity, AnomalyType } from '@/lib/types';
+import { useTranslations } from 'next-intl';
 
 const anomalySeverityVariants = cva(
   'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors',
   {
     variants: {
       severity: {
-        low: 'border-transparent bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-        medium:
-          'border-transparent bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-        high: 'border-transparent bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-        critical: 'border-transparent bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+        low: 'border-transparent bg-muted text-muted-foreground',
+        medium: 'border-transparent bg-warning/20 text-warning',
+        high: 'border-transparent bg-caution/20 text-caution',
+        critical: 'border-transparent bg-destructive/20 text-destructive',
       },
     },
     defaultVariants: {
@@ -28,11 +28,11 @@ const anomalyTypeVariants = cva(
   {
     variants: {
       type: {
-        price_spike: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-        price_drop: 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-        volume_spike: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-        volume_drop: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-        unusual_pattern: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
+        price_spike: 'bg-chart-1/10 text-chart-1',
+        price_drop: 'bg-chart-2/10 text-chart-2',
+        volume_spike: 'bg-chart-4/10 text-chart-4',
+        volume_drop: 'bg-chart-3/10 text-chart-3',
+        unusual_pattern: 'bg-chart-5/10 text-chart-5',
       },
     },
     defaultVariants: {
@@ -47,11 +47,12 @@ export interface AnomalySeverityBadgeProps
 }
 
 export function AnomalySeverityBadge({ severity, className, ...props }: AnomalySeverityBadgeProps) {
+  const t = useTranslations('marketTrends');
   const labels: Record<AnomalySeverity, string> = {
-    low: 'Low',
-    medium: 'Medium',
-    high: 'High',
-    critical: 'Critical',
+    low: t('anomalies.severities.low'),
+    medium: t('anomalies.severities.medium'),
+    high: t('anomalies.severities.high'),
+    critical: t('anomalies.severities.critical'),
   };
 
   return (
@@ -67,12 +68,13 @@ export interface AnomalyTypeBadgeProps
 }
 
 export function AnomalyTypeBadge({ type, className, ...props }: AnomalyTypeBadgeProps) {
+  const t = useTranslations('marketTrends');
   const labels: Record<AnomalyType, string> = {
-    price_spike: 'Price Spike',
-    price_drop: 'Price Drop',
-    volume_spike: 'Volume Spike',
-    volume_drop: 'Volume Drop',
-    unusual_pattern: 'Unusual Pattern',
+    price_spike: t('anomalies.types.priceSpike'),
+    price_drop: t('anomalies.types.priceDrop'),
+    volume_spike: t('anomalies.types.volumeSpike'),
+    volume_drop: t('anomalies.types.volumeDrop'),
+    unusual_pattern: t('anomalies.types.unusualPattern'),
   };
 
   const icons: Record<AnomalyType, React.ReactNode> = {

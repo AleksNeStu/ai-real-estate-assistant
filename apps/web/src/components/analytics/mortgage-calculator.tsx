@@ -26,8 +26,8 @@ interface ErrorState {
   requestId?: string;
 }
 
-const extractErrorState = (err: unknown): ErrorState => {
-  let message = 'Unknown error';
+const extractErrorState = (err: unknown, t: (key: string) => string): ErrorState => {
+  let message = t('error.unknown');
   let requestId: string | undefined = undefined;
 
   if (err instanceof ApiError) {
@@ -89,7 +89,7 @@ export function MortgageCalculator() {
       setResult(mortgageData);
       setTcoResult(tcoData);
     } catch (err: unknown) {
-      setErrorState(extractErrorState(err));
+      setErrorState(extractErrorState(err, t));
     } finally {
       setLoading(false);
     }
@@ -108,7 +108,7 @@ export function MortgageCalculator() {
       setResult(mortgageData);
       setTcoResult(tcoData);
     } catch (err: unknown) {
-      setErrorState(extractErrorState(err));
+      setErrorState(extractErrorState(err, t));
     } finally {
       setLoading(false);
     }

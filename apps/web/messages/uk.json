@@ -98,13 +98,14 @@
         "cancelled": "Cancelled",
         "completed": "Completed"
       }
-    }
+    },
+    "selectType": "Виберіть тип"
   },
   "auth": {
     "signIn": "Sign In",
     "signUp": "Sign Up",
     "signOut": "Sign Out",
-    "profile": "Profile",
+    "profile": "Профіль",
     "settings": "Settings",
     "user": "User",
     "login": {
@@ -166,7 +167,9 @@
       "weakPassword": "Password must be at least 8 characters",
       "emailAlreadyExists": "An account with this email already exists",
       "invalidEmail": "Please enter a valid email address"
-    }
+    },
+    "loading": "Завантаження...",
+    "userMenu": "Меню користувача"
   },
   "cma": {
     "steps": {
@@ -192,30 +195,30 @@
       }
     },
     "subject": {
-      "searchPlaceholder": "Search by address, city, or property ID...",
-      "searchAriaLabel": "Search properties",
-      "searchButton": "Search",
-      "searching": "Searching...",
-      "selectedSubject": "Selected Subject Property",
-      "selected": "Selected",
-      "price": "Price:",
-      "area": "Area:",
-      "rooms": "Rooms:",
-      "type": "Type:",
-      "searchResults": "Search Results ({count})",
-      "property": "Property",
-      "roomsCount": "{count} rooms",
-      "nextComparables": "Next: Select Comparables"
+      "searchPlaceholder": "Пошук за адресою, містом або назвою...",
+      "searchAriaLabel": "Знайти об'єкт оцінки",
+      "searching": "Пошук...",
+      "searchButton": "Знайти",
+      "selectedSubject": "Вибраний об'єкт оцінки",
+      "selected": "Вибрано",
+      "price": "Ціна",
+      "area": "Площа",
+      "rooms": "Кімнати",
+      "type": "Тип",
+      "property": "Об'єкт",
+      "nextComparables": "Далі: аналоги",
+      "roomsCount": "{count} кімнат",
+      "searchResults": "Search Results ({count})"
     },
     "comparables": {
-      "selectRange": "Select {min}-{max} comparable properties. Drag to reorder by relevance.",
-      "refresh": "Refresh",
-      "finding": "Finding similar properties...",
+      "refresh": "Оновити",
+      "finding": "Пошук...",
+      "similarity": "Схожість",
+      "noComparables": "Ще не вибрано жодного аналогічного об'єкта.",
+      "selectedComparables": "Вибрані аналоги",
+      "selectRange": "Виберіть від {min} до {max} аналогів",
+      "selectMore": "Вибрати ще {count}",
       "selected": "Selected:",
-      "selectMore": "Select at least {count} more",
-      "similarity": "Similarity",
-      "noComparables": "No comparable properties found. Try adjusting your search criteria.",
-      "selectedComparables": "Selected Comparables",
       "roomsCount": "{count} rooms",
       "property": "Property {id}",
       "back": "Back",
@@ -430,7 +433,7 @@
     "searching": "Searching...",
     "exporting": "Exporting...",
     "saving": "Saving...",
-    "testing": "Testing...",
+    "testing": "Перевірка...",
     "error": "Error",
     "success": "Success",
     "toggleTheme": "Toggle theme",
@@ -450,7 +453,17 @@
     "skipToContent": "Skip to main content",
     "tryTheseChips": {
       "heading": "Спробуйте один із цих"
-    }
+    },
+    "logIn": "Увійти",
+    "installApp": "Встановити застосунок",
+    "installAppDescription": "Встановіть цей застосунок на своєму пристрої для швидкого доступу та кращого досвіду.",
+    "later": "Пізніше",
+    "installing": "Встановлення...",
+    "install": "Встановити",
+    "backOnline": "Ви знову в мережі",
+    "offlineMessage": "Ви не в мережі. Деякі функції можуть бути недоступні.",
+    "newVersionAvailable": "Доступна нова версія!",
+    "dismissUpdate": "Закрити"
   },
   "demo": {
     "banner": "Демо-режим — доступний пошук та дані міст",
@@ -525,7 +538,9 @@
       "singular": "{count} document expiring soon",
       "plural": "{count} documents expiring soon",
       "description": "The following documents will expire within 30 days:"
-    }
+    },
+    "searchPlaceholder": "Пошук документів...",
+    "searchLabel": "Пошук документів"
   },
   "error": {
     "generic": "Something went wrong",
@@ -534,7 +549,10 @@
     "forbidden": "Access forbidden",
     "serverError": "Server error",
     "tryAgain": "Please try again later",
-    "goHome": "Go to homepage"
+    "goHome": "Go to homepage",
+    "chatUnavailable": "Чат тимчасово недоступний",
+    "chatErrorFallback": "Сталася непередбачена помилка. Спробуйте ще раз.",
+    "retry": "Повторити"
   },
   "favorites": {
     "title": "My Favorites",
@@ -595,14 +613,125 @@
       "roi": "ROI (1 Year)",
       "onePercentRule": "1% Rule",
       "onePercentRulePass": "Pass - Rent is ≥ 1% of price",
-      "onePercentRuleFail": "Fail - Rent is < 1% of price"
+      "onePercentRuleFail": "Fail - Rent is < 1% of price",
+      "description": "Повні показники та оцінка якості інвестиції.",
+      "score": "Оцінка інвестиції",
+      "riskScore": "Оцінка ризику",
+      "cashOnCashRoi": "Cash-on-cash ROI",
+      "netYield": "Чиста дохідність",
+      "grossYield": "Валова дохідність",
+      "totalInvestment": "Загальні інвестиції",
+      "annualIncome": "Річний дохід",
+      "monthlyIncome": "Місячний дохід (оренда)",
+      "mortgagePayment": "Платіж за іпотекою",
+      "netMonthlyCashFlow": "Чистий місячний грошовий потік",
+      "cashFlowBreakdown": "Розподіл місячного грошового потоку",
+      "metrics": "Показники інвестиції",
+      "irr": "IRR"
     },
     "advanced": {
       "title": "Advanced Investment Analysis",
       "holdingPeriod": "Holding Period (Years)",
       "sellingCosts": "Selling Costs (%)",
       "incomeGrowth": "Income Growth (%)",
-      "expenseGrowth": "Expense Growth (%)"
+      "expenseGrowth": "Expense Growth (%)",
+      "propertyDetails": "Деталі нерухомості",
+      "summary": "Підсумок інвестиції",
+      "taxImplications": "Податкові наслідки",
+      "taxDescription": "Річна амортизація, податкові вирахування та податкові пільги",
+      "annualDepreciation": "Річна амортизація",
+      "totalTaxDeductions": "Загальні податкові вирахування",
+      "annualTaxBenefit": "Річна податкова пільга"
+    },
+    "emptyDescription": "Введіть дані про нерухомість, щоб проаналізувати інвестиційний потенціал.",
+    "emptyHint": "Результати з'являться тут після аналізу.",
+    "scoreExcellent": "Відмінна",
+    "scoreGood": "Добра",
+    "scoreFair": "Задовільна",
+    "scorePoor": "Погана",
+    "charts": {
+      "cashFlow": {
+        "title": "Прогноз грошового потоку",
+        "description": "Річний грошовий потік і накопичені доходи",
+        "ariaLabel": "Графік прогнозу грошового потоку: річний грошовий потік і накопичені доходи в часі",
+        "annualCashFlow": "Річний грошовий потік",
+        "cumulativeCashFlow": "Накопичений грошовий потік",
+        "equity": "Власний капітал",
+        "propertyValue": "Вартість нерухомості",
+        "totalCashFlow": "Загальний грошовий потік",
+        "finalEquity": "Підсумковий власний капітал",
+        "year": "Рік {year}"
+      },
+      "diversification": {
+        "title": "Диверсифікація портфеля",
+        "description": "Аналіз розподілу за географією та типом нерухомості",
+        "byCity": "За містами",
+        "geographicAria": "Кругова діаграма географічного розподілу портфеля за містами",
+        "geographicScore": "Географічна оцінка",
+        "byPropertyType": "За типами нерухомості",
+        "typeAria": "Кругова діаграма розподілу портфеля за типами нерухомості",
+        "typeScore": "Оцінка за типом",
+        "value": "Вартість",
+        "concentrationRisk": "Ризик концентрації",
+        "largestHolding": "Найбільша позиція"
+      },
+      "risk": {
+        "title": "Оцінка ризику",
+        "description": "Аналіз інвестиційного ризику та рекомендації",
+        "ariaLabel": "Оцінка ризику: {score} зі 100, {level}",
+        "outOf100": "зі 100",
+        "lowRisk": "Низький ризик",
+        "moderateRisk": "Помірний ризик",
+        "elevatedRisk": "Підвищений ризик",
+        "highRisk": "Високий ризик",
+        "riskFactors": "Фактори ризику",
+        "recommendations": "Рекомендації"
+      },
+      "scenario": {
+        "title": "Сценарії зростання вартості",
+        "description": "Прогнози вартості нерухомості за різних ринкових умов",
+        "ariaLabel": "Лінійна діаграма сценаріїв зростання вартості: прогнози вартості нерухомості за песимістичних, реалістичних та оптимістичних умов",
+        "value": "Вартість",
+        "perYear": "{rate}%/рік",
+        "total": "Усього:",
+        "year": "Рік {year}",
+        "pessimistic": "Песимістичний",
+        "realistic": "Реалістичний",
+        "optimistic": "Оптимістичний"
+      },
+      "multiYear": {
+        "title": "Багаторічний прогноз грошового потоку",
+        "description": "Прогноз на {years} років із ростом оренди та зростанням вартості"
+      }
+    },
+    "formIntro": "Обчисіть ROI, ставку капіталізації, грошовий потік і оцінку якості інвестиції.",
+    "form": {
+      "propertyInformation": "Відомості про нерухомість",
+      "financingDetails": "Деталі фінансування",
+      "financing": "Фінансування",
+      "closingCosts": "Витрати на оформлення ($)",
+      "renovationCosts": "Витрати на ремонт ($)",
+      "monthlyOperatingExpenses": "Щомісячні операційні витрати",
+      "propertyTax": "Податок на нерухомість ($)",
+      "insurance": "Страхування ($)",
+      "hoaFees": "Збори HOA ($)",
+      "managementFee": "Управлінська комісія (% від оренди)",
+      "projectionSettings": "Налаштування прогнозу",
+      "projectionYears": "Роки прогнозу",
+      "expectedAppreciation": "Очікуване зростання вартості (%)",
+      "rentGrowthRate": "Ставка зростання оренди (%)",
+      "landValueRatio": "Частка землі у вартості (%)",
+      "marketVolatility": "Волатильність ринку (0-100)"
+    },
+    "error": {
+      "analysisFailed": "Не вдалося виконати аналіз",
+      "unknown": "Невідома помилка"
+    },
+    "tabs": {
+      "cashFlow": "Грошовий потік",
+      "scenarios": "Сценарії",
+      "tax": "Податки",
+      "risk": "Ризик"
     }
   },
   "knowledge": {
@@ -637,6 +766,83 @@
       "quarter": "Last Quarter",
       "year": "Last Year",
       "all": "All Time"
+    },
+    "anomalies": {
+      "title": "Аномалії ринку",
+      "allSeverities": "Усі рівні серйозності",
+      "allTypes": "Усі типи",
+      "loading": "Завантаження аномалій...",
+      "noneDetected": "Аномалій не виявлено",
+      "emptyHint": "Аномалії з'являться тут, коли їх виявить система.",
+      "loadFailed": "Не вдалося завантажити аномалії",
+      "searchPlaceholder": "Пошук аномалій...",
+      "searchLabel": "Пошук аномалій",
+      "filterSeverity": "Фільтр за рівнем серйозності",
+      "filterType": "Фільтр за типом аномалії",
+      "metric": "Показник",
+      "expected": "Очікуване",
+      "actual": "Фактичне",
+      "deviation": "Відхилення",
+      "zScore": "Z-Score",
+      "types": {
+        "priceSpike": "Стрибок ціни",
+        "priceDrop": "Падіння ціни",
+        "volumeSpike": "Стрибок обсягу",
+        "volumeDrop": "Падіння обсягу",
+        "unusualPattern": "Нетиповий патерн"
+      },
+      "severities": {
+        "low": "Низький",
+        "medium": "Середній",
+        "high": "Високий",
+        "critical": "Критичний"
+      }
+    },
+    "areaComparison": {
+      "description": "Порівняйте ринкові показники двох міст поруч",
+      "firstCity": "Перше місто",
+      "secondCity": "Друге місто",
+      "priceDifference": "Різниця цін",
+      "cheaperArea": "Дешевша зона",
+      "moreListings": "Більше оголошень",
+      "amenityAvailability": "Доступність зручностей (%)",
+      "bothCitiesRequired": "Введіть назви обох міст",
+      "compareFailed": "Не вдалося порівняти зони",
+      "cityPlaceholder": "напр., Варшава",
+      "metric": "Показник",
+      "avgPrice": "Середня ціна",
+      "medianPrice": "Медіанна ціна",
+      "pricePerSqm": "Ціна/м²",
+      "listings": "Оголошення",
+      "avgRooms": "Середня кількість кімнат"
+    },
+    "priceHistory": {
+      "title": "Історія цін",
+      "noData": "Історія цін недоступна",
+      "currentPrice": "Поточна ціна",
+      "firstRecorded": "Перший запис",
+      "priceChange": "Зміна ціни",
+      "loadFailed": "Не вдалося завантажити історію цін",
+      "price": "Ціна",
+      "pricePerSqm": "Ціна/м²",
+      "anomalyCount": "{count, plural, one {# аномалія} few {# аномалії} many {# аномалій} other {# аномалії}}",
+      "chartLabel": "Графік історії цін: {count} записів, тренд: {trend}",
+      "trend": {
+        "increasing": "зростає",
+        "decreasing": "падає",
+        "stable": "стабільний"
+      }
+    },
+    "charts": {
+      "pricesTitle": "Середні та медіанні ціни",
+      "pricesDescription": "Динаміка цін за обраний період",
+      "averagePrice": "Середня ціна",
+      "medianPrice": "Медіанна ціна",
+      "volumeTitle": "Обсяг оголошень",
+      "volumeDescription": "Кількість оголошень за період",
+      "listings": "Оголошення",
+      "pricesAria": "Середні та медіанні ціни за обраний період",
+      "volumeAria": "Кількість оголошень за період"
     }
   },
   "mortgage": {
@@ -654,7 +860,9 @@
       "totalInterest": "Total Interest",
       "totalCost": "Total Cost",
       "loanAmount": "Loan Amount",
-      "downPaymentAmount": "Down Payment Amount"
+      "downPaymentAmount": "Down Payment Amount",
+      "description": "Орієнтовні платежі за іпотекою",
+      "monthlyBreakdown": "Розподіл місячного платежу"
     },
     "tco": {
       "title": "Total Cost of Ownership",
@@ -664,7 +872,85 @@
       "maintenanceHint": "Common rule: 1-2% of property value per year",
       "propertyTax": "Property Tax",
       "insurance": "Insurance",
-      "utilities": "Utilities"
+      "utilities": "Utilities",
+      "monthlyHoa": "Щомісячний HOA",
+      "annualPropertyTax": "Річний податок на нерухомість",
+      "annualInsurance": "Річне страхування",
+      "monthlyUtilities": "Щомісячні комунальні платежі",
+      "monthlyInternet": "Щомісячний інтернет",
+      "monthlyParking": "Щомісячна парковка",
+      "maintenancePercent": "Обслуговування (% від вартості)",
+      "description": "Загальна вартість з усіма витратами",
+      "totalOverYears": "Усього за {years} років",
+      "allInCost": "Загальні місячні витрати",
+      "monthlyCostBreakdown": "Розподіл місячних витрат",
+      "mortgage": "Іпотека",
+      "hoa": "HOA",
+      "totalOver30Years": "Загальна вартість (30 років)",
+      "downPayment": "Першений внесок",
+      "compareScenarios": "Порівняти сценарії нерухомості",
+      "comparisonSummary": "Підсумок порівняння",
+      "monthlyDifference": "Різниця на місяць",
+      "equityDifference": "Різниця у власному капіталі",
+      "breakEvenPoint": "Точка окупності",
+      "breakEvenHint": "Коли витрати зрівнюються",
+      "recommended": "Рекомендовано",
+      "comparisonFailed": "Не вдалося виконати порівняння",
+      "scenarios": {
+        "centralApartment": "Квартира в центрі",
+        "suburbanHouse": "Будинок у передмісті",
+        "scenarioA": "Сценарій A",
+        "scenarioB": "Сценарій B"
+      }
+    },
+    "emptyDescription": "Заповніть дані про нерухомість, щоб розрахувати платежі за іпотекою.",
+    "emptyHint": "Результати з'являться тут після розрахунку.",
+    "hideTcoOptions": "Приховати параметри TCO",
+    "showTcoOptions": "Показати параметри TCO",
+    "tcoOptionsTitle": "Параметри загальної вартості володіння",
+    "calculationFailed": "Не вдалося виконати розрахунок",
+    "retry": "Спробувати ще раз",
+    "exportToPdf": "Експортувати в PDF",
+    "hideComparison": "Приховати порівняння",
+    "compareScenarios": "Порівняти сценарії",
+    "charts": {
+      "breakdown": {
+        "title": "Розподіл місячних витрат",
+        "description": "Розподіл витрат на володіння",
+        "categories": {
+          "mortgage": "Іпотека",
+          "propertyTax": "Податок на нерухомість",
+          "insurance": "Страхування",
+          "hoa": "HOA",
+          "utilities": "Комунальні послуги",
+          "internet": "Інтернет",
+          "parking": "Парковка",
+          "maintenance": "Обслуговування"
+        },
+        "perMonth": "{value}/міс",
+        "percentOfTotal": "{percent}% від загального",
+        "fixedCosts": "Фіксовані витрати",
+        "variableCosts": "Змінні витрати",
+        "discretionary": "Необов'язкові",
+        "ariaLabel": "Кругова діаграма розподілу місячних витрат: {categories}"
+      },
+      "projection": {
+        "title": "Прогнози володіння",
+        "description": "Накопичені витрати, накопичений власний капітал і вартість нерухомості в часі",
+        "ariaLabel": "Лінійна діаграма прогнозу володіння: накопичені витрати, накопичений власний капітал, вартість нерухомості та залишок кредиту в часі",
+        "year": "Рік {year}",
+        "years": "Роки",
+        "totalCost": "Загальні витрати",
+        "equityBuilt": "Накопичений власний капітал",
+        "propertyValue": "Вартість нерухомості",
+        "loanBalance": "Залишок кредиту",
+        "cost": "Витрати:",
+        "equity": "Власний капітал:",
+        "value": "Вартість:"
+      }
+    },
+    "error": {
+      "unknown": "Невідома помилка"
     }
   },
   "nav": {
@@ -690,7 +976,14 @@
       "good": "Good",
       "fair": "Fair",
       "poor": "Poor",
-      "veryPoor": "Very Poor"
+      "veryPoor": "Very Poor",
+      "short": {
+        "exc": "Відм.",
+        "good": "Доб.",
+        "fair": "Задов.",
+        "poor": "Слаб.",
+        "vpoor": "Дуже слаб."
+      }
     },
     "components": {
       "safety": "Safety",
@@ -700,7 +993,197 @@
       "greenSpace": "Green Space",
       "publicTransport": "Public Transport",
       "restaurants": "Restaurants",
-      "shopping": "Shopping"
+      "shopping": "Shopping",
+      "airQuality": "Якість повітря",
+      "noiseLevel": "Рівень шуму"
+    },
+    "factorBreakdown": {
+      "title": "Розподіл факторів якості",
+      "overall": "Загалом:",
+      "per100": "/ 100",
+      "dataConfidence": "Достовірність даних:",
+      "confidenceHigh": "Висока",
+      "confidenceMedium": "Середня",
+      "confidenceLow": "Низька",
+      "scoreRanges": "Діапазони оцінок:",
+      "excellent": "85+ Відмінна",
+      "good": "70-84 Добра",
+      "fair": "55-69 Задовільна",
+      "poor": "40-54 Погана",
+      "veryPoor": "<40 Дуже погана",
+      "factors": {
+        "safety": {
+          "label": "Безпека",
+          "weight": "15%",
+          "description": "Рівень злочинності та близькість до поліції"
+        },
+        "schools": {
+          "label": "Школи",
+          "weight": "15%",
+          "description": "Якість шкіл і близькість до них"
+        },
+        "amenities": {
+          "label": "Зручності",
+          "weight": "15%",
+          "description": "Магазини, ресторани, послуги"
+        },
+        "walkability": {
+          "label": "Пішохідність",
+          "weight": "15%",
+          "description": "Інфраструктура, зручна для пішоходів"
+        },
+        "greenSpace": {
+          "label": "Зелена зона",
+          "weight": "10%",
+          "description": "Парки та природні території"
+        },
+        "airQuality": {
+          "label": "Якість повітря",
+          "weight": "10%",
+          "description": "Індекс якості повітря (AQI)"
+        },
+        "noiseLevel": {
+          "label": "Рівень шуму",
+          "weight": "10%",
+          "description": "Рівні фонового шуму"
+        },
+        "publicTransport": {
+          "label": "Громадський транспорт",
+          "weight": "10%",
+          "description": "Доступність громадського транспорту"
+        }
+      }
+    },
+    "whatsNearby": {
+      "title": "Що поруч",
+      "description": "Цікаві місця в районі",
+      "descriptionWalking": "Цікаві місця у пішій доступності",
+      "dataNotAvailable": "Немає даних про місця поруч для цієї локації.",
+      "nearestPlace": "Найближче місце",
+      "placesNearby": "{count} місць поруч",
+      "noFoundNearby": "Поруч не знайдено: {category}",
+      "openInMaps": "Відкрити в Google Maps",
+      "mapComingSoon": "Інтеграція з картами незабаром",
+      "location": "Розташування:",
+      "categories": {
+        "schools": {
+          "label": "Школи",
+          "description": "Навчальні заклади поруч"
+        },
+        "amenities": {
+          "label": "Зручності",
+          "description": "Магазини, ресторани та послуги"
+        },
+        "greenSpaces": {
+          "label": "Зелені зони",
+          "description": "Парки та зони відпочинку"
+        },
+        "transport": {
+          "label": "Транспорт",
+          "description": "Точки доступу до громадського транспорту"
+        },
+        "safety": {
+          "label": "Безпека",
+          "description": "Поліція та екстрені служби"
+        }
+      },
+      "mapUnavailable": "Попередній перегляд карти недоступний у цьому звіті"
+    },
+    "cityComparison": {
+      "title": "Порівняння з містом",
+      "description": "Як цей район порівнюється із середнім показником міста",
+      "descriptionCity": "Як цей район порівнюється із середнім показником міста {city}",
+      "dataNotAvailable": "Немає даних для порівняння з містом для цієї локації.",
+      "percentile": "перцентиль",
+      "outstanding": "Виняткова",
+      "excellent": "Відмінна",
+      "aboveAverage": "Вище середнього",
+      "average": "Середня",
+      "belowAverage": "Нижче середнього",
+      "poor": "Погана",
+      "scoresHigherThan": "Цей район набирає більше балів, ніж {percentile}% районів у місті {city}",
+      "cityAverage": "Середнє по місту:",
+      "scoreComparison": "Порівняння оцінок",
+      "thisArea": "Ця зона",
+      "cityAvg": "Середнє по місту",
+      "score": "Оцінка",
+      "betterThanAverage": "Краще за середнє",
+      "averageAcross": "Цей район за всіма факторами близький до середнього показника міста.",
+      "pointsAbove": "{count} балів вище середнього",
+      "pointsBelow": "{count} балів нижче середнього",
+      "equalToAverage": "Дорівнює середньому показнику міста",
+      "percentileLabel": "Процентильний ранг: {value}",
+      "scoreComparisonLabel": "Порівняння балів: цей район {area}, середнє по місту {average}"
+    },
+    "details": {
+      "quality": "Якість району",
+      "noData": "Немає даних про район",
+      "assessment": "Оцінка якості району",
+      "loading": "Завантаження даних про район...",
+      "failedToLoad": "Не вдалося завантажити дані про район",
+      "tryAgain": "Спробувати ще раз",
+      "overview": "Огляд",
+      "allFactors": "Усі фактори",
+      "extended": "Розширені",
+      "nearby": "Поруч",
+      "dataSources": "Джерела даних",
+      "detailedFactorInfo": "Детальна інформація про фактори",
+      "detailedFactorDescription": "Вихідні значення та джерела даних для кожного фактора",
+      "factor": "Фактор",
+      "score": "Оцінка",
+      "rawValue": "Вихідне значення",
+      "confidence": "Достовірність",
+      "source": "Джерело",
+      "dataFreshness": "Актуальність даних:",
+      "safety": "Безпека",
+      "schools": "Школи",
+      "walkability": "Пішохідність",
+      "greenSpace": "Зелена зона",
+      "amenities": "Зручності",
+      "airQuality": "Якість повітря",
+      "noiseLevel": "Рівень шуму",
+      "publicTransport": "Громадський транспорт"
+    },
+    "newFactors": {
+      "title": "Розширені фактори якості",
+      "description": "Додаткові екологічні показники та показники доступності для повної оцінки району",
+      "source": "Джерело:",
+      "confidence": "Достовірність:",
+      "airQuality": {
+        "label": "Якість повітря",
+        "description": "Вимірює рівень забруднення повітря за Індексом якості повітря (AQI). Нижчі значення означають чистіше повітря."
+      },
+      "noiseLevel": {
+        "label": "Рівень шуму",
+        "description": "Середній рівень фонового шуму в децибелах. Нижчі значення означають тихіше оточення."
+      },
+      "publicTransport": {
+        "label": "Громадський транспорт",
+        "description": "Кількість зупинок громадського транспорту в радіусі 1 км. Вищі значення означають кращу доступність."
+      },
+      "ratings": {
+        "good": "Добра",
+        "moderate": "Задовільна",
+        "unhealthySensitive": "Небезпечна для чутливих груп",
+        "unhealthy": "Небезпечна",
+        "veryUnhealthy": "Дуже небезпечна",
+        "quiet": "Тиха",
+        "noisy": "Гучна",
+        "veryNoisy": "Дуже гучна",
+        "excellent": "Відмінна",
+        "fair": "Задовільна",
+        "limited": "Обмежена",
+        "unknown": "Невідомо"
+      },
+      "dataFreshness": "Актуальність даних: якість повітря оновлено {airQuality}, рівень шуму оновлено {noiseLevel}, транспорт оновлено {transport}",
+      "stopsWithin1km": "{count} зупинок у радіусі 1 км",
+      "scoreLabel": "Бал «{label}»: {score} зі 100",
+      "confidenceLabel": "Упевненість: {value}%"
+    },
+    "overallScore": "Загальна оцінка",
+    "quality": {
+      "badge": "Якість району: {rating} ({score}/100)",
+      "score": "Якість району: {score}/100"
     }
   },
   "portfolio": {
@@ -715,7 +1198,18 @@
       "totalRent": "Total Monthly Rent",
       "averageCapRate": "Average Cap Rate",
       "totalCashFlow": "Total Monthly Cash Flow"
-    }
+    },
+    "emptyHint": "Додайте щонайменше одну нерухомість, щоб проаналізувати портфель.",
+    "propertyLabel": "Нерухомість",
+    "propertyPrice": "Ціна купівлі ($)",
+    "monthlyRent": "Щомісячна оренда ($)",
+    "monthlyCashFlow": "Місячний грошовий потік ($)",
+    "capRate": "Ставка капіталізації (%)",
+    "city": "Місто",
+    "cityPlaceholder": "e.g. Berlin",
+    "propertyType": "Тип нерухомості",
+    "selectType": "Оберіть тип",
+    "analyzeButton": "Аналізувати портфель"
   },
   "property": {
     "card": {
@@ -726,7 +1220,10 @@
       "baths": "{count, plural, one {# bath} other {# baths}}",
       "areaUnit": "m²",
       "noLongerAvailable": "Property no longer available",
-      "locationUnavailable": "Location unavailable"
+      "locationUnavailable": "Location unavailable",
+      "addToFavorites": "Додати до обраного",
+      "removeFromFavorites": "Видалити з обраного",
+      "loginRequired": "Увійдіть, щоб зберегти цей об’єкт"
     },
     "favorite": {
       "add": "Add to favorites",
@@ -748,7 +1245,9 @@
       "location": "Location",
       "features": "Features",
       "contact": "Contact agent"
-    }
+    },
+    "estimateLabel": "Очікуваний щомісячний платіж: {value}",
+    "estimateTitle": "Очікуваний щомісячний платіж за авансом {down} %, {years} років під фіксовані {rate} % APR. Це не кредитна пропозиція."
   },
   "rentVsBuy": {
     "title": "Калькулятор Оренда vs Купівля",
@@ -779,7 +1278,8 @@
       "rentIncreaseRate": "Зростання оренди (%)",
       "investmentReturnRate": "Дохідність інвестицій (%)",
       "marginalTaxRate": "Гранична ставка податку (%)",
-      "projectionYears": "Період прогнозу (років)"
+      "projectionYears": "Період прогнозу (років)",
+      "growthRates": "Ставки зростання"
     },
     "results": {
       "title": "Результати аналізу",
@@ -809,7 +1309,12 @@
         "equityGrowth": {
           "title": "Зростання власного капіталу та вартості нерухомості",
           "ariaLabel": "Графік зростання власного капіталу та вартості нерухомості у часі"
-        }
+        },
+        "cumulativeRent": "Накопичена оренда",
+        "cumulativeOwnership": "Накопичені витрати на володіння",
+        "propertyValue": "Вартість нерухомості",
+        "equity": "Власний капітал",
+        "year": "Рік {year}"
       }
     }
   },
@@ -828,6 +1333,22 @@
       "disabled": "Alerts disabled",
       "enable": "Enable alerts",
       "disable": "Disable alerts"
+    },
+    "dialog": {
+      "title": "Зберегти пошук",
+      "name": "Назва пошуку",
+      "namePlaceholder": "напр., Двокімнатні квартири в Мадриді",
+      "alertFrequency": "Частота сповіщень",
+      "frequencyInstant": "Миттєво - сповіщати одразу",
+      "frequencyDaily": "Щоденний дайджест - раз на день",
+      "frequencyWeekly": "Щотижневий дайджест - раз на тиждень",
+      "frequencyNone": "Без сповіщень - просто зберегти",
+      "hint": "Ви отримуватимете сповіщення про нові оголошення та зниження цін за цим пошуком.",
+      "saved": "Пошук збережено!",
+      "savedHint": "Ви отримуватимете сповіщення відповідно до ваших налаштувань.",
+      "nameRequired": "Введіть назву цього пошуку",
+      "loginRequired": "Увійдіть, щоб зберігати пошуки",
+      "saveFailed": "Не вдалося зберегти пошук"
     }
   },
   "search": {
@@ -869,7 +1390,8 @@
     "emptyState": {
       "title": "Start Your Property Search",
       "description": "Enter a search query to explore thousands of property listings.",
-      "tryExamples": "Try these examples:"
+      "tryExamples": "Try these examples:",
+      "exportHint": "Експорт буде доступний, коли з'являться результати пошуку."
     },
     "results": {
       "noResults": "No Results Found",
@@ -882,7 +1404,16 @@
       "format": "Export Format",
       "csv": "CSV",
       "json": "JSON",
-      "export": "Export"
+      "export": "Export",
+      "columns": "Стовпці (необовʼязково)",
+      "columnsPlaceholder": "напр., id, місто, ціна",
+      "delimiter": "Роздільник CSV",
+      "delimiterComma": "Кома (,)",
+      "delimiterSemicolon": "Крапка з комою (;)",
+      "decimalSeparator": "Роздільник десяткового дробу",
+      "decimalDot": "Крапка (.)",
+      "decimalComma": "Кома (,)",
+      "includeHeader": "Включити рядок заголовка"
     },
     "saveSearch": {
       "button": "Save Search",
@@ -895,7 +1426,14 @@
     "errors": {
       "searchFailed": "Search Failed",
       "connectionFailed": "Connection failed. Please try again.",
-      "timeout": "Search timed out. Please try again."
+      "timeout": "Search timed out. Please try again.",
+      "invalidMinPrice": "Мінімальна ціна має бути числом.",
+      "invalidMaxPrice": "Максимальна ціна має бути числом.",
+      "invalidMinRooms": "Мінімальна кількість кімнат має бути числом.",
+      "minGreaterThanMax": "Мінімальна ціна не може бути більшою за максимальну.",
+      "emptyQuery": "Введіть пошуковий запит.",
+      "genericSearch": "Не вдалося виконати пошук. Спробуйте ще раз.",
+      "exportFailed": "Не вдалося виконати експорт. Спробуйте ще раз."
     },
     "feedback": {
       "helpful": "Was this helpful?",
@@ -903,18 +1441,58 @@
       "thumbsDown": "Thumbs down — not relevant",
       "thanks": "Thanks for your feedback!",
       "error": "Failed to submit"
-    }
+    },
+    "map": {
+      "noMappableResults": "Немає результатів з координатами",
+      "noMappableResultsHint": "Ці оголошення не містять координат.",
+      "shown": "На карті: {shown} з {total}",
+      "filteredByArea": "(відфільтровано за ділянкою)",
+      "enhanced": "Розширена карта",
+      "useMapbox": "Використовувати Mapbox",
+      "drawArea": "Накреслити ділянку",
+      "drawing": "Малювання...",
+      "enableDrawing": "Увімкнути малювання",
+      "disableDrawing": "Вимкнути малювання",
+      "clearArea": "Очистити ділянку"
+    },
+    "queryLabel": "Пошуковий запит",
+    "searchLabel": "Пошук нерухомості",
+    "view": {
+      "label": "Режим перегляду",
+      "list": "Список",
+      "map": "Карта"
+    },
+    "preset": {
+      "title": "Зберегти фільтр",
+      "name": "Назва фільтра",
+      "namePlaceholder": "напр., Квартири за бюджетом у Берліні",
+      "description": "Опис (необовʼязково)",
+      "descriptionPlaceholder": "Короткий опис цього фільтра...",
+      "setDefault": "Зробити фільтром за замовчуванням",
+      "hint": "Зберігає поточні налаштування фільтра для швидкого доступу.",
+      "saved": "Фільтр збережено!",
+      "savedHint": "Ці фільтри можна швидко застосувати з меню фільтрів.",
+      "nameRequired": "Введіть назву цього фільтра",
+      "loginRequired": "Увійдіть, щоб зберігати фільтри",
+      "saveFailed": "Не вдалося зберегти фільтр",
+      "save": "Зберегти фільтр",
+      "saving": "Збереження..."
+    },
+    "clearPriceFilter": "Очистити фільтр ціни",
+    "filterByPropertyType": "Фільтр за типом об'єкта",
+    "propertyMap": "Карта об'єктів",
+    "propertyMapWithMapbox": "Карта об'єктів з Mapbox"
   },
   "settings": {
     "title": "Settings",
     "description": "Manage your account settings and preferences.",
     "tabs": {
-      "identity": "Identity",
-      "notifications": "Notifications",
-      "models": "Models"
+      "identity": "Ідентифікація",
+      "notifications": "Сповіщення",
+      "models": "Моделі"
     },
     "identity": {
-      "title": "Identity",
+      "title": "Ідентифікація",
       "description": "Set the email address used to scope settings to your account.",
       "emailLabel": "Email",
       "emailPlaceholder": "Enter your email",
@@ -924,36 +1502,78 @@
       "invalidEmail": "Please enter a valid email address."
     },
     "notifications": {
-      "title": "Notifications",
+      "title": "Сповіщення",
       "description": "Configure how you receive notifications.",
       "emailNotifications": "Email Notifications",
       "pushNotifications": "Push Notifications",
       "savedSearchAlerts": "Saved Search Alerts",
       "priceDropAlerts": "Price Drop Alerts",
-      "newListingAlerts": "New Listing Alerts"
+      "newListingAlerts": "New Listing Alerts",
+      "instant": "Миттєво"
     },
     "models": {
-      "title": "Models",
-      "description": "Select your default model and compare pricing.",
-      "defaultModel": "Default Model",
-      "refreshCatalog": "Refresh Catalog",
-      "runtimeCheck": "Runtime check",
-      "testConnection": "Test Connection",
-      "connectionSuccess": "Connection successful",
-      "connectionFailed": "Connection failed",
-      "noModels": "No models available",
+      "title": "Моделі",
+      "description": "Виберіть модель за замовчуванням і порівняйте ціни.",
+      "defaultModel": "Модель за замовчуванням",
+      "refreshCatalog": "Оновити каталог",
+      "runtimeCheck": "Перевірка середовища",
+      "testConnection": "Перевірити з’єднання",
+      "connectionSuccess": "З’єднання встановлено.",
+      "connectionFailed": "З’єднання не вдалося.",
+      "noModels": "Немає доступних моделей",
       "pricing": {
         "title": "Model Pricing",
         "input": "Input",
         "output": "Output",
         "per1kTokens": "per 1K tokens"
-      }
+      },
+      "modelCatalog": "Каталог моделей",
+      "supportedProviders": "Підтримувані провайдери:",
+      "model": "Модель",
+      "context": "Контекст",
+      "inputPer1m": "Введення / 1M",
+      "outputPer1m": "Виведення / 1M",
+      "capabilities": "Можливості",
+      "downloadedModels": "Завантажені моделі",
+      "localModelsOffline": "Локальні моделі та робота офлайн",
+      "runtimeCheckDesc": "Виконати точкову перевірку середовища для цього провайдера.",
+      "failedToLoadCatalog": "Не вдалося завантажити каталог",
+      "refreshing": "Оновлення...",
+      "pricingUnavailable": "Ціни можуть бути недоступними для деяких розміщених моделей.",
+      "provider": "Провайдер:",
+      "local": "Локальний",
+      "hosted": "Розміщений",
+      "apiKeyRequired": "Потрібен API-ключ",
+      "noApiKeyRequired": "API-ключ не потрібен",
+      "localModelsDesc": "Локальні моделі працюють на вашому комп’ютері. Ціна за токени не застосовується — вартість залежить від обладнання та налаштувань середовища.",
+      "runtimeDetectedModels": "Перевірка середовища виявила моделі:",
+      "runtimeNotDetected": "Локальне середовище не виявлено. Запустіть його і переконайтеся, що API має до нього доступ.",
+      "runtimeDetected": "Локальне середовище виявлено. Завантажені моделі: {count}.",
+      "runtimeUnknown": "Стан локального середовища невідомий.",
+      "ollamaStep1": "1. Встановіть Ollama:",
+      "ollamaStep2": "2. Запустіть Ollama, а потім завантажте модель:",
+      "ollamaStep3": "3. Якщо API працює в Docker, вкажіть OLLAMA_BASE_URL = http://host.docker.internal:11434.",
+      "emptyCatalog": "Наразі не налаштовано жодної моделі. Додайте ключі API в розділі «Ідентифікація» вище, щоб почати.",
+      "emptyCatalogHint": "Живий каталог нижче перелічує всіх налаштованих провайдерів — оберіть модель там, щойно задавши ключ API.",
+      "loadFailed": "Не вдалося завантажити каталог моделей. Спробуйте ще раз."
     },
     "saved": "Settings saved successfully.",
     "error": "Failed to save settings.",
     "emailRequired": "Set an email in Identity settings above to access this section.",
     "profile": {
-      "loadingProfile": "Loading profile..."
+      "loadingProfile": "Loading profile...",
+      "email": "Ел. пошта",
+      "phone": "Телефон",
+      "bio": "Про себе",
+      "timezone": "Часовий пояс",
+      "language": "Мова"
+    },
+    "privacy": {
+      "processing": "Обробка...",
+      "title": "Приватність і дані"
+    },
+    "taskModel": {
+      "saved": "Пріоритет моделі збережено."
     }
   },
   "tools": {
@@ -1028,5 +1648,189 @@
     "errorGeneric": "Something went wrong. Please try again.",
     "studioNote": "Це безкоштовна версія з відкритим кодом. Хостована версія готується в NestLab.",
     "studioLink": "Відвідайте nestlab.tech"
+  },
+  "pages": {
+    "search": {
+      "title": "Знайдіть нерухомість",
+      "description": "Шукайте серед тисяч оголошень за допомогою семантичного пошуку на базі ШІ."
+    },
+    "favorites": {
+      "title": "Обране",
+      "description": "Усі збережені оголошення в одному місці.",
+      "newCollection": "Нова колекція",
+      "collectionName": "Назва колекції"
+    },
+    "savedSearches": {
+      "title": "Збережені пошуки",
+      "description": "Керуйте збереженими пошуками та сповіщеннями.",
+      "pauseAlerts": "Призупинити сповіщення",
+      "resumeAlerts": "Відновити сповіщення",
+      "deleteSearch": "Видалити пошук"
+    },
+    "leads": {
+      "title": "Панель запитів",
+      "description": "Усі звернення, зібрані на сайті.",
+      "searchPlaceholder": "Пошук лідів..."
+    },
+    "knowledge": {
+      "title": "База знань",
+      "description": "Документи та ринковий контекст, на яких ґрунтує асистент."
+    },
+    "documents": {
+      "title": "Документи",
+      "description": "Завантажуйте й зберігайте документи, які читає асистент.",
+      "loading": "Завантаження документів...",
+      "errorTitle": "Не вдалося завантажити документи",
+      "refresh": "Оновити",
+      "upload": "Завантажити документ",
+      "expiringTitle": "{count, plural, one {# документ скоро завершиться} other {# документів скоро завершаться}}",
+      "expiringIntro": "Наведені нижче документи завершаться протягом 30 днів:",
+      "andMore": "і ще {count}",
+      "emptyTitle": "Документів ще немає",
+      "emptyDescription": "Завантажте перший документ, щоб почати впорядковувати файли щодо нерухомості. Підтримуються PDF, DOC, DOCX, JPG і PNG до 10 МБ.",
+      "uploadFirst": "Завантажити перший документ",
+      "loadMore": "Завантажити ще"
+    },
+    "marketTrends": {
+      "title": "Тенденції ринку",
+      "description": "Рух цін і обсягів на відстежуваних ринках."
+    },
+    "cityOverview": {
+      "title": "Огляд міста",
+      "description": "Показники районів для міст, за якими ви стежите."
+    },
+    "agents": {
+      "title": "Знайти агентів",
+      "description": "Агенти, які працюють на ринку, що вас цікавить.",
+      "searchByCity": "Пошук за містом..."
+    },
+    "settings": {
+      "title": "Налаштування",
+      "description": "Ваш обліковий запис, моделі та сповіщення.",
+      "loadingModelCatalog": "Завантаження каталогу моделей"
+    },
+    "tools": {
+      "title": "Інструменти",
+      "description": "Калькулятори й аналітика, які перетворюють оголошення на рішення.",
+      "propertyPrice": "Ціна об'єкта",
+      "columnsHint": "Стовпці (необов'язково), наприклад id, city, price",
+      "propertyId": "ID об'єкта"
+    },
+    "analytics": {
+      "title": "Аналітика та інструменти",
+      "description": "Аналітика портфеля та калькулятори за нею."
+    },
+    "valuation": {
+      "title": "ШІ-оцінка та прогноз нерухомості",
+      "description": "Модельний діапазон цін для конкретної адреси.",
+      "forecastChart": "Графік прогнозу"
+    },
+    "usage": {
+      "title": "Панель використання",
+      "description": "Про що питали асистента і скільки це коштувало.",
+      "totalSearches": "Усього пошуків",
+      "propertyViews": "Перегляди об’єктів",
+      "propertyClicks": "Кліки по об’єктах",
+      "interval": {
+        "day": "За днями",
+        "week": "За тижнями",
+        "month": "За місяцями"
+      },
+      "actions": {
+        "refresh": "Оновити",
+        "exportCsv": "Експорт CSV"
+      },
+      "sessions": "{count} унікальних сесій",
+      "toolsUsed": "Використано інструментів",
+      "avgResponseTime": "Середній час відповіді",
+      "exports": "Експорти",
+      "favorites": "Обране",
+      "propertiesViewed": "Переглянуті об’єкти",
+      "calculatorTools": "Калькулятори та аналітичні інструменти",
+      "processingTime": "Час обробки",
+      "clickThroughRate": "Частка переходів",
+      "dataExported": "Експортовано даних",
+      "propertiesSaved": "Збережені об’єкти",
+      "tabs": {
+        "activityTrends": "Динаміка активності",
+        "topTools": "Популярні інструменти",
+        "topCities": "Популярні міста",
+        "dailyActivity": "Активність за днями"
+      },
+      "charts": {
+        "activityOverTime": "Активність у часі",
+        "activityOverTimeDescription": "Динаміка вашої активності з групуванням за періодом: {interval}",
+        "mostUsedTools": "Найчастіше використовувані інструменти",
+        "mostUsedToolsDescription": "Ваші улюблені аналітичні та розрахункові інструменти",
+        "topSearchCities": "Найпопулярніші міста пошуку",
+        "topSearchCitiesDescription": "Локації, де шукають найчастіше",
+        "searchDistribution": "Розподіл пошуків",
+        "searchDistributionDescription": "Частка пошуків за містами",
+        "dailyActivity": "Активність за днями",
+        "dailyActivityDescription": "Події на день за обраний період"
+      },
+      "series": {
+        "searches": "Пошуки",
+        "propertyViews": "Перегляди об’єктів",
+        "toolUses": "Використання інструментів",
+        "exports": "Експорти"
+      },
+      "empty": {
+        "noTrendData": "Немає даних про динаміку",
+        "noToolUsage": "Ще немає даних про використання інструментів",
+        "noCityData": "Ще немає даних про міста",
+        "noDailyActivity": "Ще немає даних про денну активність"
+      },
+      "aria": {
+        "activityOverTime": "Активність у часі: пошуки, перегляди об’єктів, використання інструментів та експорти",
+        "mostUsedTools": "Найчастіше використовувані інструменти за кількістю запусків",
+        "topSearchCities": "Найпопулярніші міста пошуку за кількістю запитів",
+        "searchDistribution": "Частка пошуків у кожному місті",
+        "dailyActivity": "Події на день за обраний період"
+      },
+      "loadFailed": "Не вдалося завантажити дані про використання"
+    },
+    "cma": {
+      "title": "Порівняльний аналіз ринку",
+      "description": "Оцініть нерухомість за сумісними оголошеннями."
+    },
+    "showcase": {
+      "title": "Вітрина",
+      "description": "Що вміє асистент — від початку до кінця."
+    },
+    "agentAnalytics": {
+      "title": "Аналітика агентів",
+      "description": "Як оголошення працюють у кожного агента.",
+      "totalLeads": "Усього лідів",
+      "totalRevenue": "Загальний дохід"
+    },
+    "admin": {
+      "monitoring": {
+        "title": "Моніторинг продакшену",
+        "description": "Живий стан розгорнутого стеку."
+      },
+      "connectors": {
+        "title": "MCP-коннекторі",
+        "description": "Зовнішні інструменти, які може викликати асистент."
+      },
+      "dataSources": {
+        "title": "Джерела даних",
+        "description": "Звідки беруться оголошення."
+      },
+      "bulkJobs": {
+        "title": "Завдання масового імпорту та експорту",
+        "description": "Масове перенесення оголошень у систему та з неї."
+      }
+    }
+  },
+  "states": {
+    "empty": {
+      "title": "Тут поки що порожньо",
+      "description": "Додані елементи з'являться тут."
+    },
+    "error": {
+      "title": "Щось пішло не так",
+      "description": "Не вдалося завантажити дані. Спробуйте ще раз за мить."
+    }
   }
 }

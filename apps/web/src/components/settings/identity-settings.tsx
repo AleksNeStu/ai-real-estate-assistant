@@ -71,8 +71,8 @@ export function IdentitySettings({ onChange }: { onChange?: (userEmail: string |
         </div>
 
         <div className="flex items-center justify-end gap-4">
-          {saved && <span className="text-green-600 text-sm">{saved}</span>}
-          {error && <span className="text-red-600 text-sm">{error}</span>}
+          {saved && <span className="text-success text-sm">{saved}</span>}
+          {error && <span className="text-destructive text-sm">{error}</span>}
           <Button onClick={handleSave}>Save</Button>
         </div>
       </CardContent>

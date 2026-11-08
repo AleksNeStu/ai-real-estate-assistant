@@ -54,7 +54,7 @@ export default function MapControls({
         <button
           type="button"
           onClick={onZoomIn}
-          className="p-2 hover:bg-muted rounded-t-lg transition-colors"
+          className="p-2 hover:bg-muted rounded-t-lg transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
           aria-label="Zoom in"
           title="Zoom in"
         >
@@ -63,7 +63,7 @@ export default function MapControls({
         <button
           type="button"
           onClick={onZoomOut}
-          className="p-2 hover:bg-muted rounded-b-lg transition-colors"
+          className="p-2 hover:bg-muted rounded-b-lg transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
           aria-label="Zoom out"
           title="Zoom out"
         >
@@ -75,7 +75,7 @@ export default function MapControls({
       <button
         type="button"
         onClick={onFitBounds}
-        className="p-2 rounded-lg border bg-background shadow-sm hover:bg-muted transition-colors"
+        className="p-2 rounded-lg border bg-background shadow-sm hover:bg-muted transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
         aria-label="Fit bounds"
         title="Fit all properties"
       >
@@ -120,7 +120,7 @@ export default function MapControls({
               type="checkbox"
               checked={options.showHeatmap}
               onChange={(e) => onChange({ ...options, showHeatmap: e.target.checked })}
-              className="w-4 h-4 rounded border-gray-300"
+              className="w-4 h-4 rounded border-border"
               aria-label="Toggle heatmap"
             />
           </label>
@@ -164,7 +164,7 @@ export default function MapControls({
                 onChange={(e) =>
                   onChange({ ...options, heatmapIntensity: parseFloat(e.target.value) })
                 }
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
                 aria-label="Heatmap intensity"
               />
             </div>
@@ -177,7 +177,7 @@ export default function MapControls({
               type="checkbox"
               checked={options.showClusters}
               onChange={(e) => onChange({ ...options, showClusters: e.target.checked })}
-              className="w-4 h-4 rounded border-gray-300"
+              className="w-4 h-4 rounded border-border"
               aria-label="Toggle clusters"
             />
           </label>
@@ -207,7 +207,7 @@ export default function MapControls({
                       },
                     })
                   }
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
                   aria-label="Cluster size"
                 />
               </div>
@@ -238,7 +238,7 @@ export default function MapControls({
                       },
                     })
                   }
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
                   aria-label="Max zoom for clustering"
                 />
               </div>

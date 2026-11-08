@@ -68,7 +68,7 @@ export function TryTheseChips({
           <Link
             key={prompt}
             href={hrefFor(prompt)}
-            className="inline-flex items-center rounded-full border border-input bg-background/60 px-3 py-1.5 text-xs text-foreground hover:bg-accent hover:text-accent-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="inline-flex items-center rounded-full border border-input bg-background/60 px-3 py-1.5 text-xs text-foreground hover:bg-accent hover:text-accent-foreground transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
           >
             {prompt}
           </Link>

@@ -2,12 +2,14 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { MapPin, Building2, DollarSign, AlertCircle, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { searchProperties } from '@/lib/api';
 import {
   computeCenter,
   extractMapPoints,
   type PropertyMapPoint,
 } from '@/components/search/property-map-utils';
+import { PageHeader } from '@/components/ui/page-header';
 import dynamic from 'next/dynamic';
 
 const PropertyMapboxMap = dynamic(() => import('@/components/search/property-mapbox-map'), {
@@ -38,6 +40,7 @@ const POPULAR_CITIES = [
 ];
 
 export default function CityOverviewPage() {
+  const t = useTranslations('pages.cityOverview');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cityStats, setCityStats] = useState<CityStats[]>([]);
@@ -116,12 +119,7 @@ export default function CityOverviewPage() {
     <div className="container mx-auto px-4 py-8" aria-live="polite">
       <div className="flex flex-col space-y-8">
         {/* Header */}
-        <div className="flex flex-col space-y-4">
-          <h1 className="text-3xl font-bold tracking-tight">City Overview</h1>
-          <p className="text-muted-foreground">
-            Explore property markets across Poland. Click on a city card to see detailed listings.
-          </p>
-        </div>
+        <PageHeader title={t('title')} description={t('description')} />
 
         {/* Loading state */}
         {loading && (

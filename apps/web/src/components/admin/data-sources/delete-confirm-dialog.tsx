@@ -29,7 +29,8 @@ export function DeleteConfirmDialog({
       aria-labelledby="delete-dialog-title"
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      {/* The backdrop only closes the dialog for the mouse — the cancel button and Escape serve the keyboard. */}
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
 
       {/* Dialog */}
       <div className="relative bg-card rounded-lg shadow-lg p-6 w-full max-w-md mx-4">

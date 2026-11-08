@@ -49,7 +49,7 @@ For full options, run: python scripts/start.py --help
     exit 0
 }
 
-$root = Resolve-Path (Join-Path $PSScriptRoot "..")
+$root = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 Set-Location $root
 
 . (Join-Path $root "scripts\shared\resolve_python.ps1")

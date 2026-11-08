@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Activity,
   AlertTriangle,
@@ -22,6 +23,8 @@ import {
   type ReadinessStatus,
   type MonitoringOverview,
 } from '@/lib/api/admin';
+import { PageHeader } from '@/components/ui/page-header';
+import { ErrorState } from '@/components/ui/states';
 
 interface ChartDataPoint {
   timestamp: string;
@@ -35,6 +38,7 @@ interface Alert {
 }
 
 export default function MonitoringPage() {
+  const t = useTranslations('pages.admin.monitoring');
   // Data state
   const [healthStatus, setHealthStatus] = useState<HealthStatus | null>(null);
   const [readinessStatus, setReadinessStatus] = useState<ReadinessStatus | null>(null);
@@ -202,11 +206,11 @@ export default function MonitoringPage() {
     status: 'healthy' | 'unhealthy' | 'ready' | 'not_ready' | 'degraded';
   }) => {
     const colors = {
-      healthy: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
-      unhealthy: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100',
-      ready: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
-      not_ready: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100',
-      degraded: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100',
+      healthy: 'bg-success/20 text-success dark:bg-success/20 dark:text-success',
+      unhealthy: 'bg-destructive/20 text-destructive dark:bg-destructive/20 dark:text-destructive',
+      ready: 'bg-success/20 text-success dark:bg-success/20 dark:text-success',
+      not_ready: 'bg-destructive/20 text-destructive dark:bg-destructive/20 dark:text-destructive',
+      degraded: 'bg-warning/20 text-warning dark:bg-warning/20 dark:text-warning',
     };
 
     const icons = {
@@ -241,59 +245,58 @@ export default function MonitoringPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex flex-col space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Production Monitoring</h1>
-          <p className="text-muted-foreground">
-            Real-time system health, metrics, and operational insights
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">
-            Last refreshed: {lastRefresh.toLocaleTimeString()}
-          </span>
-          <button
-            type="button"
-            className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 disabled:opacity-50 flex items-center gap-2"
-            onClick={handleRefresh}
-            disabled={refreshing}
-          >
-            {refreshing ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Refreshing...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="w-4 h-4" />
-                Refresh
-              </>
-            )}
-          </button>
-          <button
-            type="button"
-            className="px-4 py-2 bg-destructive text-destructive-foreground rounded hover:bg-destructive/90 disabled:opacity-50 flex items-center gap-2"
-            onClick={handleTestAlert}
-            disabled={testAlertLoading}
-          >
-            {testAlertLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Sending...
-              </>
-            ) : (
-              <>
-                <Activity className="w-4 h-4" />
-                Test Alert
-              </>
-            )}
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        className="mb-8"
+        title={t('title')}
+        description={t('description')}
+        actions={
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground">
+              Last refreshed: {lastRefresh.toLocaleTimeString()}
+            </span>
+            <button
+              type="button"
+              className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 disabled:opacity-50 flex items-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
+              onClick={handleRefresh}
+              disabled={refreshing}
+            >
+              {refreshing ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Refreshing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-4 h-4" />
+                  Refresh
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              className="px-4 py-2 bg-destructive text-destructive-foreground rounded hover:bg-destructive/90 disabled:opacity-50 flex items-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
+              onClick={handleTestAlert}
+              disabled={testAlertLoading}
+            >
+              {testAlertLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Activity className="w-4 h-4" />
+                  Test Alert
+                </>
+              )}
+            </button>
+          </div>
+        }
+      />
 
       {/* Test Alert Result */}
       {testAlertResult && (
-        <div className="flex items-start gap-3 p-4 bg-blue-50 text-blue-900 dark:bg-blue-950 dark:text-blue-100 rounded mb-6">
+        <div className="flex items-start gap-3 p-4 bg-info/10 text-info dark:bg-info/30 dark:text-info rounded mb-6">
           <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="text-sm">{testAlertResult}</p>
@@ -301,7 +304,7 @@ export default function MonitoringPage() {
           <button
             type="button"
             onClick={() => setTestAlertResult(null)}
-            className="text-blue-900/50 hover:text-blue-900 dark:text-blue-100/50 dark:hover:text-blue-100"
+            className="text-info/50 hover:text-info dark:text-info/50 dark:hover:text-info"
           >
             <X className="w-4 h-4" />
           </button>
@@ -317,7 +320,7 @@ export default function MonitoringPage() {
               className={`flex items-start gap-3 p-4 rounded ${
                 alert.type === 'error'
                   ? 'bg-destructive/10 text-destructive'
-                  : 'bg-yellow-50 text-yellow-900 dark:bg-yellow-950 dark:text-yellow-100'
+                  : 'bg-warning/10 text-warning dark:bg-warning/30 dark:text-warning'
               }`}
             >
               <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
@@ -331,15 +334,7 @@ export default function MonitoringPage() {
       )}
 
       {/* Error Display */}
-      {error && (
-        <div className="flex items-start gap-3 p-4 bg-destructive/10 text-destructive rounded mb-6">
-          <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="font-medium">Error Loading Data</p>
-            <p className="text-sm">{error}</p>
-          </div>
-        </div>
-      )}
+      {error && <ErrorState title="Error Loading Data" description={error} className="mb-6" />}
 
       {/* Health & Readiness Status */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -400,9 +395,9 @@ export default function MonitoringPage() {
                 <dt className="text-muted-foreground">Database:</dt>
                 <dd>
                   {readinessStatus.database.includes('healthy') ? (
-                    <CheckCircle2 className="w-4 h-4 inline text-green-600" />
+                    <CheckCircle2 className="w-4 h-4 inline text-success" />
                   ) : (
-                    <AlertTriangle className="w-4 h-4 inline text-red-600" />
+                    <AlertTriangle className="w-4 h-4 inline text-destructive" />
                   )}
                   <span className="ml-2">{readinessStatus.database}</span>
                 </dd>
@@ -417,11 +412,11 @@ export default function MonitoringPage() {
                 <dt className="text-muted-foreground">Redis:</dt>
                 <dd>
                   {readinessStatus.redis === 'healthy' ? (
-                    <CheckCircle2 className="w-4 h-4 inline text-green-600" />
+                    <CheckCircle2 className="w-4 h-4 inline text-success" />
                   ) : readinessStatus.redis === 'disabled' ? (
                     <span className="text-muted-foreground">Disabled</span>
                   ) : (
-                    <AlertTriangle className="w-4 h-4 inline text-red-600" />
+                    <AlertTriangle className="w-4 h-4 inline text-destructive" />
                   )}
                   <span className="ml-2">{readinessStatus.redis}</span>
                 </dd>
@@ -430,9 +425,9 @@ export default function MonitoringPage() {
                 <dt className="text-muted-foreground">LLM Provider:</dt>
                 <dd>
                   {readinessStatus.llm.includes('healthy') ? (
-                    <CheckCircle2 className="w-4 h-4 inline text-green-600" />
+                    <CheckCircle2 className="w-4 h-4 inline text-success" />
                   ) : (
-                    <AlertTriangle className="w-4 h-4 inline text-red-600" />
+                    <AlertTriangle className="w-4 h-4 inline text-destructive" />
                   )}
                   <span className="ml-2">{readinessStatus.llm}</span>
                 </dd>
@@ -565,8 +560,8 @@ export default function MonitoringPage() {
                   point.value > 5
                     ? 'bg-destructive'
                     : point.value > 2
-                      ? 'bg-yellow-500'
-                      : 'bg-green-500'
+                      ? 'bg-warning'
+                      : 'bg-success'
                 }`}
                 style={{ height: `${Math.min(point.value * 10, 100)}%` }}
                 title={`${new Date(point.timestamp).toLocaleTimeString()}: ${point.value}%`}
@@ -592,8 +587,8 @@ export default function MonitoringPage() {
                   point.value > 3000
                     ? 'bg-destructive'
                     : point.value > 1000
-                      ? 'bg-yellow-500'
-                      : 'bg-blue-500'
+                      ? 'bg-warning'
+                      : 'bg-info'
                 }`}
                 style={{ height: `${Math.min(point.value / 10, 100)}%` }}
                 title={`${new Date(point.timestamp).toLocaleTimeString()}: ${point.value}ms`}
@@ -616,11 +611,11 @@ export default function MonitoringPage() {
         <h4 className="text-sm font-semibold mb-2">Chart Legend</h4>
         <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-500 rounded" />
+            <div className="w-3 h-3 bg-success rounded" />
             <span>Healthy / Normal</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-yellow-500 rounded" />
+            <div className="w-3 h-3 bg-warning rounded" />
             <span>Warning / Degraded</span>
           </div>
           <div className="flex items-center gap-2">

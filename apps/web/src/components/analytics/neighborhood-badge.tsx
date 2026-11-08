@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from 'next-intl';
 
 interface NeighborhoodBadgeProps {
   overallScore: number;
@@ -28,44 +29,45 @@ export function NeighborhoodBadge({
   size = "md",
   className = "",
 }: NeighborhoodBadgeProps) {
+  const t = useTranslations('neighborhood');
   const getScoreColor = (): string => {
-    if (overallScore >= 85) return "text-green-600";
-    if (overallScore >= 70) return "text-lime-600";
-    if (overallScore >= 55) return "text-yellow-600";
-    if (overallScore >= 40) return "text-orange-600";
-    return "text-red-600";
+    if (overallScore >= 85) return "text-success";
+    if (overallScore >= 70) return "text-chart-7";
+    if (overallScore >= 55) return "text-warning";
+    if (overallScore >= 40) return "text-caution";
+    return "text-destructive";
   };
 
   const getBgColor = (): string => {
-    if (overallScore >= 85) return "bg-green-50";
-    if (overallScore >= 70) return "bg-lime-50";
-    if (overallScore >= 55) return "bg-yellow-50";
-    if (overallScore >= 40) return "bg-orange-50";
-    return "bg-red-50";
+    if (overallScore >= 85) return "bg-success/10";
+    if (overallScore >= 70) return "bg-chart-7/10";
+    if (overallScore >= 55) return "bg-warning/10";
+    if (overallScore >= 40) return "bg-caution/10";
+    return "bg-destructive/10";
   };
 
   const getBorderColor = (): string => {
-    if (overallScore >= 85) return "border-green-200";
-    if (overallScore >= 70) return "border-lime-200";
-    if (overallScore >= 55) return "border-yellow-200";
-    if (overallScore >= 40) return "border-orange-200";
-    return "border-red-200";
+    if (overallScore >= 85) return "border-success/30";
+    if (overallScore >= 70) return "border-chart-7/30";
+    if (overallScore >= 55) return "border-warning/30";
+    if (overallScore >= 40) return "border-caution/30";
+    return "border-destructive/30";
   };
 
   const getRatingLabel = (): string => {
-    if (overallScore >= 85) return "Excellent";
-    if (overallScore >= 70) return "Good";
-    if (overallScore >= 55) return "Fair";
-    if (overallScore >= 40) return "Poor";
-    return "Very Poor";
+    if (overallScore >= 85) return t('score.excellent');
+    if (overallScore >= 70) return t('score.good');
+    if (overallScore >= 55) return t('score.fair');
+    if (overallScore >= 40) return t('score.poor');
+    return t('score.veryPoor');
   };
 
   const getRatingLabelShort = (): string => {
-    if (overallScore >= 85) return "Exc";
-    if (overallScore >= 70) return "Good";
-    if (overallScore >= 55) return "Fair";
-    if (overallScore >= 40) return "Poor";
-    return "VPoor";
+    if (overallScore >= 85) return t('score.short.exc');
+    if (overallScore >= 70) return t('score.short.good');
+    if (overallScore >= 55) return t('score.short.fair');
+    if (overallScore >= 40) return t('score.short.poor');
+    return t('score.short.vpoor');
   };
 
   const sizeClasses = {
@@ -94,7 +96,7 @@ export function NeighborhoodBadge({
   return (
     <div
       className={`inline-flex items-center gap-1.5 rounded-full border ${bgColor} ${borderColor} ${classes.container} ${className}`}
-      title={`Neighborhood Quality: ${getRatingLabel()} (${overallScore}/100)`}
+      title={t('quality.badge', { rating: getRatingLabel(), score: overallScore })}
     >
       {/* Score */}
       <span className={`${scoreColor} ${classes.score}`}>
@@ -128,12 +130,14 @@ export function NeighborhoodBadgeCircle({
   size = "md",
   className = "",
 }: NeighborhoodBadgeCircleProps) {
-  const getBgColor = (): string => {
-    if (overallScore >= 85) return "bg-green-500";
-    if (overallScore >= 70) return "bg-lime-500";
-    if (overallScore >= 55) return "bg-yellow-500";
-    if (overallScore >= 40) return "bg-orange-500";
-    return "bg-red-500";
+  const t = useTranslations('neighborhood');
+
+  const getBadgeColors = (): { bg: string; text: string } => {
+    if (overallScore >= 85) return { bg: "bg-success", text: "text-success-foreground" };
+    if (overallScore >= 70) return { bg: "bg-chart-7", text: "text-chart-7-foreground" };
+    if (overallScore >= 55) return { bg: "bg-warning", text: "text-warning-foreground" };
+    if (overallScore >= 40) return { bg: "bg-caution", text: "text-caution-foreground" };
+    return { bg: "bg-destructive", text: "text-destructive-foreground" };
   };
 
   const sizeClasses = {
@@ -142,10 +146,12 @@ export function NeighborhoodBadgeCircle({
     lg: "w-8 h-8 text-sm",
   };
 
+  const { bg, text } = getBadgeColors();
+
   return (
     <div
-      className={`inline-flex items-center justify-center rounded-full ${getBgColor()} text-white ${sizeClasses[size]} ${className}`}
-      title={`Neighborhood Quality: ${overallScore.toFixed(1)}/100`}
+      className={`inline-flex items-center justify-center rounded-full ${bg} ${text} ${sizeClasses[size]} ${className}`}
+      title={t('quality.score', { score: overallScore.toFixed(1) })}
     >
       {overallScore.toFixed(0)}
     </div>
@@ -176,27 +182,28 @@ export function NeighborhoodScoreDisplay({
   compact = false,
   className = "",
 }: NeighborhoodScoreDisplayProps) {
+  const t = useTranslations('neighborhood');
   const getScoreColor = (score: number): string => {
-    if (score >= 85) return "bg-green-500";
-    if (score >= 70) return "bg-lime-500";
-    if (score >= 55) return "bg-yellow-500";
-    if (score >= 40) return "bg-orange-500";
-    return "bg-red-500";
+    if (score >= 85) return "bg-success";
+    if (score >= 70) return "bg-chart-7";
+    if (score >= 55) return "bg-warning";
+    if (score >= 40) return "bg-caution";
+    return "bg-destructive";
   };
 
   const components = [
-    { label: "Safety", score: result.safety_score, weight: "25%" },
-    { label: "Schools", score: result.schools_score, weight: "20%" },
-    { label: "Amenities", score: result.amenities_score, weight: "20%" },
-    { label: "Walkability", score: result.walkability_score, weight: "20%" },
-    { label: "Green Space", score: result.green_space_score, weight: "15%" },
+    { label: t('components.safety'), score: result.safety_score, weight: "25%" },
+    { label: t('components.schools'), score: result.schools_score, weight: "20%" },
+    { label: t('components.amenities'), score: result.amenities_score, weight: "20%" },
+    { label: t('components.walkability'), score: result.walkability_score, weight: "20%" },
+    { label: t('components.greenSpace'), score: result.green_space_score, weight: "15%" },
   ];
 
   return (
     <div className={`space-y-3 ${className}`}>
       {/* Overall Score */}
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">Overall Score</span>
+        <span className="text-sm font-medium">{t('overallScore')}</span>
         <NeighborhoodBadge
           overallScore={result.overall_score}
           size={compact ? "sm" : "md"}
@@ -211,17 +218,17 @@ export function NeighborhoodScoreDisplay({
               key={component.label}
               className="flex items-center justify-between text-sm"
             >
-              <span className="text-gray-600">
-                {component.label} <span className="text-gray-400">({component.weight})</span>
+              <span className="text-muted-foreground">
+                {component.label} <span className="text-muted-foreground">({component.weight})</span>
               </span>
               <div className="flex items-center gap-2">
-                <div className="w-32 bg-gray-200 rounded-full h-2">
+                <div className="w-32 bg-muted rounded-full h-2">
                   <div
                     className={`h-2 rounded-full ${getScoreColor(component.score)}`}
                     style={{ width: `${component.score}%` }}
                   />
                 </div>
-                <span className="text-gray-600 w-12 text-right">
+                <span className="text-muted-foreground w-12 text-right">
                   {component.score.toFixed(1)}
                 </span>
               </div>

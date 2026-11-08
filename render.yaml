@@ -49,6 +49,10 @@ services:
         sync: false
       - key: DEMO_MODE
         value: "true"
+      # Nobody may spend the operator's keys from a public demo: the free
+      # tier would otherwise build a real OpenRouter/Google/Ollama client.
+      - key: FREE_TIER_ENABLED
+        value: "false"
       # ---- Free-tier (512 MB) memory budget knobs ----
       # Render's free plan hard-caps each service at 512 MB. The default
       # uvicorn worker count is `2 * $CPU + 1`, which on a shared 0.25 CPU

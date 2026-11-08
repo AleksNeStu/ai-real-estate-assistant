@@ -22,6 +22,40 @@
   --accent-foreground: 240 5.9% 10%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
+  /* Semantic status colours. The zinc palette carries the chrome; these
+     carry meaning (positive, caution, informational) and replace the raw
+     tailwind palette classes that were scattered across the app.
+
+     The values sit at the 600 shade, not 500: a 500-shade green or amber on
+     a white card is ~2.1-2.5:1, which is below AA for body text. The 600
+     shade keeps the same hue and lifts it to ~3.2-3.4:1. */
+  --success: 142 76% 36%;
+  --success-foreground: 0 0% 100%;
+  --warning: 32 95% 44%;
+  --warning-foreground: 0 0% 100%;
+  --info: 221 83% 53%;
+  --info-foreground: 0 0% 100%;
+  /* Orange sits between warning (amber) and destructive (red): the middle
+     band of the neighbourhood rating scale, and anomaly severity "high". */
+  --caution: 20 90% 48%;
+  --caution-foreground: 0 0% 100%;
+  /* The band past destructive. The AQI scale ends in purple ("very
+     unhealthy"), which is where the official EPA colour scale puts it too. */
+  --critical: 322 55% 34%;
+  --critical-foreground: 0 0% 100%;
+
+  /* Categorical series ramp. One slot per series, so a chart and a category
+     list draw from the same set and never invent a hue of their own. The
+     order matches the series order the charts already used. */
+  --chart-1: 221 83% 53%;
+  --chart-2: 142 76% 36%;
+  --chart-3: 32 95% 44%;
+  --chart-4: 262 83% 58%;
+  --chart-5: 192 91% 39%;
+  --chart-6: 330 81% 60%;
+  --chart-7: 80 72% 38%;
+  --chart-8: 0 72% 51%;
+  --chart-7-foreground: 0 0% 100%;
   --border: 240 5.9% 90%;
   --input: 240 5.9% 90%;
   --ring: 240 10% 3.9%;
@@ -45,6 +79,25 @@
   --accent-foreground: 0 0% 98%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
+  --success: 142 71% 50%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 92% 58%;
+  --warning-foreground: 0 0% 100%;
+  --info: 217 91% 70%;
+  --info-foreground: 0 0% 100%;
+  --caution: 25 95% 60%;
+  --caution-foreground: 0 0% 100%;
+  --critical: 322 60% 62%;
+  --critical-foreground: 0 0% 100%;
+  --chart-1: 217 91% 70%;
+  --chart-2: 142 71% 50%;
+  --chart-3: 38 92% 58%;
+  --chart-4: 258 90% 72%;
+  --chart-5: 189 94% 55%;
+  --chart-6: 330 81% 70%;
+  --chart-7: 82 85% 55%;
+  --chart-8: 0 84% 65%;
+  --chart-7-foreground: 240 10% 3.9%;
   --border: 240 3.7% 15.9%;
   --input: 240 3.7% 15.9%;
   --ring: 240 4.9% 83.9%;
@@ -67,6 +120,25 @@
   --color-accent-foreground: hsl(var(--accent-foreground));
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+  --color-caution: hsl(var(--caution));
+  --color-caution-foreground: hsl(var(--caution-foreground));
+  --color-critical: hsl(var(--critical));
+  --color-critical-foreground: hsl(var(--critical-foreground));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --color-chart-6: hsl(var(--chart-6));
+  --color-chart-7: hsl(var(--chart-7));
+  --color-chart-8: hsl(var(--chart-8));
+  --color-chart-7-foreground: hsl(var(--chart-7-foreground));
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
@@ -75,7 +147,14 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
 
-  --font-templar: var(--font-templar), serif;
+  /* Typography roles. The runtime variables are set by next/font on <body>;
+     `inline` makes the utilities reference them directly instead of copying
+     the values at build time. Without these three bindings the fonts were
+     downloaded but never applied, and the whole UI rendered in the browser
+     default sans. */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-display: var(--font-templar), Georgia, 'Times New Roman', serif;
 }
 
 @layer base {

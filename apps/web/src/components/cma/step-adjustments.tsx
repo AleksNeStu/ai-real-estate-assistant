@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
+import { useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
+import { formatPrice as formatPriceInLocale } from '@/lib/format';
 import type { CMAComparable } from '@/lib/types';
 
 interface StepAdjustmentsProps {
@@ -17,6 +19,7 @@ export function StepAdjustments({
   onNext,
   onPrev,
 }: StepAdjustmentsProps) {
+  const locale = useLocale();
   const handleAdjustmentChange = (compIndex: number, adjIndex: number, newPercent: number) => {
     const updatedComparables = [...comparables];
     const adjustments = [...updatedComparables[compIndex].adjustments];
@@ -59,25 +62,23 @@ export function StepAdjustments({
     return currentAdjusted - oldAmount + newAmount;
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('de-DE', {
-      style: 'currency',
-      currency: 'EUR',
-      maximumFractionDigits: 0,
-    }).format(value);
+  const formatCurrency = (value: number, currency?: string) => {
+    // The wizard used to force every price into euros with German separators,
+    // whatever the listing said and whatever language the reader picked.
+    return formatPriceInLocale(value, currency || 'EUR', locale);
   };
 
   const getCategoryColor = (category: string): string => {
     const colors: Record<string, string> = {
-      location: 'text-blue-600',
-      size: 'text-green-600',
-      age: 'text-orange-600',
-      condition: 'text-purple-600',
-      amenities: 'text-pink-600',
-      floor: 'text-cyan-600',
-      market: 'text-yellow-600',
+      location: 'text-info',
+      size: 'text-success',
+      age: 'text-warning',
+      condition: 'text-critical',
+      amenities: 'text-chart-6',
+      floor: 'text-chart-5',
+      market: 'text-warning',
     };
-    return colors[category] || 'text-gray-600';
+    return colors[category] || 'text-muted-foreground';
   };
 
   const getTotalAdjustments = (comp: CMAComparable): number => {
@@ -168,9 +169,9 @@ export function StepAdjustments({
                     <td
                       className={`py-2 px-2 text-right text-xs font-medium ${
                         adj.adjustment_amount >= 1
-                          ? 'text-green-600'
+                          ? 'text-success'
                           : adj.adjustment_amount < 1
-                            ? 'text-red-600'
+                            ? 'text-destructive'
                             : ''
                       }`}
                     >
@@ -189,7 +190,7 @@ export function StepAdjustments({
             <div className="text-right">
               <span
                 className={`text-lg font-semibold ${
-                  getTotalAdjustments(comp) >= 1 ? 'text-green-600' : 'text-red-600'
+                  getTotalAdjustments(comp) >= 1 ? 'text-success' : 'text-destructive'
                 }`}
               >
                 {getTotalAdjustments(comp) >= 1 ? '+' : '-'}

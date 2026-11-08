@@ -12,15 +12,16 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from analytics.comparable_selector import ComparableSelector
+from analytics.comparable_selector import ComparableScore, ComparableSelector
 from api.dependencies import get_vector_store
 from api.deps.auth import get_current_active_user
 from core.security_utils import sanitize_for_log
-from data.schemas import Property, PropertyCollection, normalize_property_metadata
+from data.schemas import Property, PropertyCollection, PropertyType, normalize_property_metadata
 from db.database import get_db
 from db.models import User
 from db.repositories import CMAReportRepository
 from db.schemas import (
+    CMAAdjustmentModel,
     CMAComparableResponse,
     CMAReportCreate,
     CMAReportListResponse,
@@ -51,6 +52,7 @@ def _document_to_property(doc: Any) -> Property:
         property_type=metadata.get("property_type"),
         listing_type=metadata.get("listing_type"),
         price=metadata.get("price"),
+        currency=metadata.get("currency"),
         area_sqm=metadata.get("area_sqm"),
         rooms=metadata.get("rooms"),
         bathrooms=metadata.get("bathrooms"),
@@ -89,12 +91,14 @@ def _property_to_dict(prop: Property) -> dict[str, Any]:
         "price": prop.price,
         "area_sqm": prop.area_sqm,
         "rooms": prop.rooms,
-        "bedrooms": prop.bedrooms,
         "bathrooms": prop.bathrooms,
         "city": prop.city,
         "district": prop.district,
         "neighborhood": prop.neighborhood,
-        "street": prop.street,
+        # `bedrooms` and `street` were never fields on Property - reading them
+        # raised AttributeError and took the whole report down with it.
+        "address": prop.address,
+        "currency": prop.currency,
         "latitude": prop.latitude,
         "longitude": prop.longitude,
         "year_built": prop.year_built,
@@ -110,6 +114,84 @@ def _property_to_dict(prop: Property) -> dict[str, Any]:
         "has_garage": prop.has_garage,
         "pets_allowed": prop.pets_allowed,
     }
+
+
+def _property_type_value(prop: Property) -> str:
+    """The property type as the plain string the response schema asks for."""
+    value = prop.property_type
+    if isinstance(value, PropertyType):
+        return value.value
+    return str(value)
+
+
+def _build_comparable_response(
+    score: ComparableScore,
+    comparable: Property,
+    adjustments: list[dict[str, Any]],
+    adjusted_price: float,
+    total_adjustment_percent: float = 0.0,
+    total_adjustment_amount: float = 0.0,
+) -> CMAComparableResponse:
+    """Build a complete comparable response.
+
+    The schema requires city, property_type and adjusted_price. A response
+    that leaves them out does not answer with a list of comparables - it
+    fails validation, and the endpoint replies 422.
+    """
+    return CMAComparableResponse(
+        property_id=score.property_id,
+        address=comparable.address or comparable.title,
+        city=comparable.city,
+        district=comparable.district,
+        price=score.price,
+        price_per_sqm=score.price_per_sqm,
+        area_sqm=comparable.area_sqm,
+        rooms=comparable.rooms,
+        year_built=comparable.year_built,
+        property_type=_property_type_value(comparable),
+        currency=comparable.currency,
+        similarity_score=score.total_score,
+        score_breakdown=score.score_breakdown,
+        distance_km=score.distance_km,
+        adjustments=[CMAAdjustmentModel(**a) for a in adjustments],
+        total_adjustment_percent=total_adjustment_percent,
+        total_adjustment_amount=total_adjustment_amount,
+        adjusted_price=adjusted_price,
+    )
+
+
+def _comparable_from_stored(
+    raw: dict[str, Any],
+    subject_data: dict[str, Any],
+) -> CMAComparableResponse:
+    """Rebuild a comparable that was stored earlier.
+
+    Reports saved before the response grew its required fields are still in
+    the database. They fall back to the subject's city and type instead of
+    failing validation on a report the operator can still open.
+    """
+    data = dict(raw)
+    fallback_price = float(raw.get("price") or 0.0)
+    subject_type = subject_data.get("property_type") or "apartment"
+    if isinstance(subject_type, PropertyType):
+        subject_type = subject_type.value
+
+    if not data.get("property_id"):
+        data["property_id"] = ""
+    if not data.get("city"):
+        data["city"] = subject_data.get("city") or ""
+    if not data.get("property_type"):
+        data["property_type"] = subject_type
+    if data.get("price") is None:
+        data["price"] = fallback_price
+    if data.get("price_per_sqm") is None:
+        data["price_per_sqm"] = 0.0
+    if data.get("similarity_score") is None:
+        data["similarity_score"] = 0.0
+    if data.get("adjusted_price") is None:
+        data["adjusted_price"] = fallback_price
+
+    return CMAComparableResponse(**data)
 
 
 def _calculate_valuation(
@@ -248,17 +330,34 @@ async def find_comparables(
         max_results=max_results,
     )
 
-    return [
-        CMAComparableResponse(
-            property_id=s.property_id,
-            similarity_score=s.total_score,
-            price=s.price,
-            price_per_sqm=s.price_per_sqm,
-            distance_km=s.distance_km,
-            score_breakdown=s.score_breakdown,
+    # The response carries an adjusted price, so the adjustments are computed
+    # here too - the same ones the report will use.
+    from analytics.cma_adjustments import CMAAdjustmentCalculator
+
+    calculator = CMAAdjustmentCalculator()
+    by_id = {p.id: p for p in all_properties}
+
+    comparables = []
+    for s in scores:
+        comparable = by_id.get(s.property_id)
+        if comparable is None:
+            continue
+
+        adjustments = calculator.calculate_adjustments(subject, comparable, s.price)
+        adjusted = calculator.apply_adjustments(s.price, adjustments)
+
+        comparables.append(
+            _build_comparable_response(
+                score=s,
+                comparable=comparable,
+                adjustments=[a.to_dict() for a in adjustments],
+                adjusted_price=adjusted.adjusted_price,
+                total_adjustment_percent=adjusted.total_adjustment_percent,
+                total_adjustment_amount=adjusted.total_adjustment_amount,
+            )
         )
-        for s in scores
-    ]
+
+    return comparables
 
 
 @router.post(
@@ -303,16 +402,25 @@ async def generate_cma_report(
 
         # Find comparables
         selector = ComparableSelector(collection)
-        scores = selector.find_comparables(
-            subject=subject,
-            max_distance_km=request.max_distance_km,
-            min_score=50.0,
-            max_results=request.max_comparables,
-        )
-
-        # Filter by specific IDs if provided
         if request.comparable_ids:
-            scores = [s for s in scores if s.property_id in request.comparable_ids]
+            # The operator picked these in the wizard, where they were scored
+            # with a lower threshold. Re-filtering that choice by the stricter
+            # threshold here would silently drop what they picked.
+            wanted = set(request.comparable_ids)
+            scores = selector.find_comparables(
+                subject=subject,
+                max_distance_km=request.max_distance_km,
+                min_score=0.0,
+                max_results=len(all_properties),
+            )
+            scores = [s for s in scores if s.property_id in wanted]
+        else:
+            scores = selector.find_comparables(
+                subject=subject,
+                max_distance_km=request.max_distance_km,
+                min_score=50.0,
+                max_results=request.max_comparables,
+            )
 
         # Ensure minimum comparables
         if len(scores) < request.min_comparables:
@@ -325,7 +433,7 @@ async def generate_cma_report(
         from analytics.cma_adjustments import CMAAdjustmentCalculator
 
         calculator = CMAAdjustmentCalculator()
-        adjusted_comparables = []
+        comparable_responses: list[CMAComparableResponse] = []
 
         for score in scores:
             comp = next((p for p in all_properties if p.id == score.property_id), None)
@@ -336,14 +444,20 @@ async def generate_cma_report(
             adjusted = calculator.apply_adjustments(score.price, adjustments)
             adjusted.property_id = score.property_id
 
-            adjusted_comparables.append(
-                {
-                    "property_id": score.property_id,
-                    "similarity_score": score.total_score,
-                    "adjustments": [a.to_dict() for a in adjustments],
-                    "adjusted_price": adjusted.adjusted_price,
-                }
+            comparable_responses.append(
+                _build_comparable_response(
+                    score=score,
+                    comparable=comp,
+                    adjustments=[a.to_dict() for a in adjustments],
+                    adjusted_price=adjusted.adjusted_price,
+                    total_adjustment_percent=adjusted.total_adjustment_percent,
+                    total_adjustment_amount=adjusted.total_adjustment_amount,
+                )
             )
+
+        # What is stored is what is returned, so a saved report and the live
+        # response can never drift apart.
+        adjusted_comparables = [c.model_dump(mode="json") for c in comparable_responses]
 
         # Calculate final valuation
         valuation = _calculate_valuation(subject, adjusted_comparables)
@@ -375,9 +489,10 @@ async def generate_cma_report(
             subject_property_type=subject_dict.get("property_type", "apartment"),  # type: ignore[call-arg]
             subject_energy_rating=subject_dict.get("energy_rating"),  # type: ignore[call-arg]
             subject_amenities=subject_dict.get("amenities", {}),  # type: ignore[call-arg]
-            comparables=[CMAComparableResponse(**c) for c in adjusted_comparables],
+            comparables=comparable_responses,
             valuation=valuation,
             created_at=report.created_at,
+            updated_at=report.updated_at,
             expires_at=report.expires_at,
         )
 
@@ -431,7 +546,11 @@ async def get_cma_report(
         subject_property_type=subject_data.get("property_type", "apartment"),  # type: ignore[call-arg]
         subject_energy_rating=subject_data.get("energy_rating"),  # type: ignore[call-arg]
         subject_amenities=subject_data.get("amenities", {}),  # type: ignore[call-arg]
-        comparables=[CMAComparableResponse(**c) for c in report.comparables],
+        comparables=[
+            _comparable_from_stored(c, subject_data)
+            for c in (report.comparables or [])
+            if isinstance(c, dict)
+        ],
         valuation=CMAValuationResponse(**report.valuation),
         market_trend=subject_data.get("market_context", {}).get("trend")
         if isinstance(subject_data.get("market_context"), dict)
@@ -443,6 +562,7 @@ async def get_cma_report(
         if isinstance(subject_data.get("market_context"), dict)
         else None,  # type: ignore[call-arg]
         created_at=report.created_at,
+        updated_at=report.updated_at,
         expires_at=report.expires_at,
     )
 
@@ -488,7 +608,9 @@ async def download_cma_pdf(
         )
 
         # Generate filename
-        address = report.subject_data.get("street", "property")
+        address = (
+            report.subject_data.get("address") or report.subject_data.get("title") or "property"
+        )
         safe_address = "".join(c if c.isalnum() or c in " -_" else "_" for c in address)
         filename = f"CMA_Report_{safe_address}_{report_id[:8]}.pdf"
 
@@ -584,7 +706,13 @@ async def list_cma_reports(
                 subject_amenities=r.subject_data.get("amenities", {})
                 if isinstance(r.subject_data, dict)
                 else {},  # type: ignore[call-arg]
-                comparables=[CMAComparableResponse(**c) for c in r.comparables],
+                comparables=[
+                    _comparable_from_stored(
+                        c, r.subject_data if isinstance(r.subject_data, dict) else {}
+                    )
+                    for c in (r.comparables or [])
+                    if isinstance(c, dict)
+                ],
                 valuation=CMAValuationResponse(**r.valuation),
                 market_trend=r.subject_data.get("market_context", {}).get("trend")
                 if isinstance(r.subject_data, dict)
@@ -601,6 +729,7 @@ async def list_cma_reports(
                 and isinstance(r.subject_data.get("market_context"), dict)
                 else None,  # type: ignore[call-arg]
                 created_at=r.created_at,
+                updated_at=r.updated_at,
                 expires_at=r.expires_at,
             )
             for r in reports

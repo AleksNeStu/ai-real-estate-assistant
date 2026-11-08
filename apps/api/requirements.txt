@@ -7,19 +7,23 @@ numpy>=2.1.0,<2.6.0
 pyarrow>=23.0.1
 
 # Vector store / embeddings
-# chromadb is deliberately NOT capped to the <0.6.0 range that
-# apps/api/pyproject.toml names. Measured 2026-11-07 on the Linux CI image:
-# with chromadb 0.5.x the resolver also has to drop langchain-chroma to
-# 0.2.3, and THAT pairing fails to initialise the vector store ("Could not
-# connect to tenant default_tenant"), which takes the admin reindex endpoint
-# down with it - the unit job failed with `assert 503 == 200`
-# (CI runs 42318236498 and 42318899267). The resolution that CI proved green,
-# and that the container image installs, is chromadb 1.5.x with
-# langchain-chroma 1.1.x. The accepted-risk disposition for the chromadb CVEs
-# rests on REACHABILITY - the ChromaDB HTTP API is not exposed by this
-# application and trust_remote_code is never set - not on the version; see
+# chromadb and langchain-chroma have to move together: langchain-chroma 1.1.x
+# requires chromadb>=1.3.5, and langchain_chroma cannot import against
+# chromadb 0.5.x at all ("cannot import name 'Search'"). While
+# apps/api/pyproject.toml still capped chromadb at <0.6.0, the CI step
+# `pip install -e .` downgraded chromadb to 0.5.23 AFTER this file had
+# installed 1.5.x, and the vector store switched itself off ("Chroma is
+# unavailable; vector store features are disabled") - the admin reindex
+# endpoint answered 503 and the unit job failed with `assert 503 == 200`
+# (CI runs 42318236498 and 42318899267, both of which installed chromadb
+# 0.5.23 with langchain-chroma 0.2.3 - not the 1.5.x pair this file asks
+# for). The cap in pyproject.toml is lifted now, so both files resolve to the
+# 1.5.x / 1.1.x pair the container image already installs.
+# The accepted-risk disposition for the chromadb CVEs rests on REACHABILITY -
+# the ChromaDB HTTP API is not exposed by this application and
+# trust_remote_code is never set - not on the version; see
 # docs/operations/security/accepted-risks.md.
-chromadb>=0.5.0
+chromadb>=1.3.5,<2.0.0
 fastembed>=0.9.1,<1.0.0  # 0.9.1 is the first release that allows pillow<14 (0.5-0.9.0 cap pillow<13, blocking the Pillow 13 security floor)
 langchain-chroma>=1.1.0,<2.0.0
 

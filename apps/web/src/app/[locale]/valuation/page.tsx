@@ -2,7 +2,9 @@
 
 import React, { useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Sparkles, AlertTriangle, Loader2, TrendingUp, MapPin } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 import { priceForecastApi } from '@/lib/api';
 import type { PriceForecastResponse, ForecastPoint } from '@/lib/api/tools';
 
@@ -48,6 +50,7 @@ function fmtCurrency(value: number, currency: string, locale = 'en-US'): string 
 }
 
 export default function ValuationPage() {
+  const t = useTranslations('pages.valuation');
   const params = useSearchParams();
   const initialPropertyId = params?.get('property_id') ?? '';
   const [propertyId, setPropertyId] = useState<string>(initialPropertyId);
@@ -118,18 +121,16 @@ export default function ValuationPage() {
   }
 
   return (
-    <main className="container mx-auto px-4 py-8 space-y-6">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Sparkles className="h-6 w-6 text-violet-500" aria-hidden />
-          AI Property Valuation & Forecast
-        </h1>
-        <p className="text-muted-foreground max-w-2xl">
-          Estimate the current market value of a property and project its value at
-          1, 3, 5, or 10 years. Powered by an LLM that weighs property features and
-          local comparables. Not a formal appraisal.
-        </p>
-      </header>
+    <div className="container mx-auto px-4 py-8 space-y-6">
+      <PageHeader
+        title={
+          <span className="inline-flex items-center gap-2">
+            <Sparkles className="h-6 w-6 text-chart-4" aria-hidden="true" />
+            {t('title')}
+          </span>
+        }
+        description={t('description')}
+      />
 
       <form
         onSubmit={handleSubmit}
@@ -175,7 +176,7 @@ export default function ValuationPage() {
                     className={[
                       'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
                       active
-                        ? 'bg-violet-600 text-white border-violet-600'
+                        ? 'bg-chart-4 text-white border-chart-4'
                         : 'bg-background text-foreground hover:bg-muted',
                     ].join(' ')}
                   >
@@ -251,7 +252,7 @@ export default function ValuationPage() {
             type="submit"
             disabled={loading || !canSubmit}
             data-testid="valuation-submit"
-            className="inline-flex items-center gap-2 rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-violet-700 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-md bg-chart-4 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-chart-4 disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
           >
             {loading ? (
               <>
@@ -285,7 +286,7 @@ export default function ValuationPage() {
       ) : null}
 
       {result ? <ForecastResultView result={result} /> : null}
-    </main>
+    </div>
   );
 }
 
@@ -435,15 +436,15 @@ function ForecastChart({ result }: { result: PriceForecastResponse }) {
     <div className="w-full overflow-x-auto">
       <svg
         viewBox={`0 0 ${w} ${h}`}
-        className="w-full max-w-3xl mx-auto"
+        className="w-full mx-auto"
         role="img"
         aria-label="Forecast chart"
       >
-        <path d={bandPath} fill="rgb(139 92 246 / 0.15)" />
+        <path d={bandPath} style={{ fill: 'hsl(var(--chart-4) / 0.15)' }} />
         <path
           d={linePath}
           fill="none"
-          stroke="rgb(139 92 246)"
+          style={{ stroke: 'hsl(var(--chart-4))' }}
           strokeWidth={3}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -454,7 +455,7 @@ function ForecastChart({ result }: { result: PriceForecastResponse }) {
             cx={x(p.years_ahead)}
             cy={y(p.estimated_value)}
             r={5}
-            fill="rgb(139 92 246)"
+            style={{ fill: 'hsl(var(--chart-4))' }}
           >
             <title>
               {p.years_ahead === 0 ? 'Today' : `+${p.years_ahead}y`}:{' '}

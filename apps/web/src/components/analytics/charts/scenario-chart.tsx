@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { AppreciationScenario } from '@/lib/types';
+import { useTranslations } from 'next-intl';
 
 interface ScenarioChartProps {
   scenarios: AppreciationScenario[];
@@ -20,11 +21,19 @@ interface ScenarioChartProps {
 }
 
 export function ScenarioChart({ scenarios, initialPrice, className }: ScenarioChartProps) {
+  const t = useTranslations('investment');
+  const SCENARIO_LABELS: Record<string, string> = {
+    Pessimistic: t('charts.scenario.pessimistic'),
+    Realistic: t('charts.scenario.realistic'),
+    Optimistic: t('charts.scenario.optimistic'),
+  };
   // Get all years from the first scenario
   const years = scenarios.length > 0 ? Object.keys(scenarios[0].projected_values).map(Number) : [];
 
   const chartData = years.map((year) => {
-    const dataPoint: Record<string, number | string> = { year: `Year ${year}` };
+    const dataPoint: Record<string, number | string> = {
+      year: t('charts.scenario.year', { year }),
+    };
     scenarios.forEach((scenario) => {
       dataPoint[scenario.name] = scenario.projected_values[year] || initialPrice;
     });
@@ -32,9 +41,9 @@ export function ScenarioChart({ scenarios, initialPrice, className }: ScenarioCh
   });
 
   const scenarioColors: Record<string, string> = {
-    Pessimistic: '#ef4444',
-    Realistic: '#3b82f6',
-    Optimistic: '#22c55e',
+    Pessimistic: 'hsl(var(--chart-8))',
+    Realistic: 'hsl(var(--chart-1))',
+    Optimistic: 'hsl(var(--chart-2))',
   };
 
   const formatCurrency = (value: number) => {
@@ -47,16 +56,14 @@ export function ScenarioChart({ scenarios, initialPrice, className }: ScenarioCh
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle>Appreciation Scenarios</CardTitle>
-        <CardDescription>
-          Property value projections under different market conditions
-        </CardDescription>
+        <CardTitle>{t('charts.scenario.title')}</CardTitle>
+        <CardDescription>{t('charts.scenario.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <div
           className="h-64"
           role="img"
-          aria-label="Appreciation scenarios line chart showing property value projections under pessimistic, realistic, and optimistic conditions"
+          aria-label={t('charts.scenario.ariaLabel')}
         >
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
@@ -71,7 +78,7 @@ export function ScenarioChart({ scenarios, initialPrice, className }: ScenarioCh
               <Tooltip
                 formatter={(value: number) => [
                   `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
-                  'Value',
+                  t('charts.scenario.value'),
                 ]}
               />
               <Legend />
@@ -80,10 +87,10 @@ export function ScenarioChart({ scenarios, initialPrice, className }: ScenarioCh
                   key={scenario.name}
                   type="monotone"
                   dataKey={scenario.name}
-                  stroke={scenarioColors[scenario.name] || '#8884d8'}
+                  stroke={scenarioColors[scenario.name] || 'hsl(var(--chart-4))'}
                   strokeWidth={2}
                   dot={false}
-                  name={`${scenario.name} (${scenario.annual_rate > 0 ? '+' : ''}${scenario.annual_rate}%)`}
+                  name={`${SCENARIO_LABELS[scenario.name] ?? scenario.name} (${scenario.annual_rate > 0 ? '+' : ''}${scenario.annual_rate}%)`}
                 />
               ))}
             </LineChart>
@@ -94,15 +101,19 @@ export function ScenarioChart({ scenarios, initialPrice, className }: ScenarioCh
         <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t">
           {scenarios.map((scenario) => (
             <div key={scenario.name} className="text-center">
-              <p className="text-sm text-muted-foreground">{scenario.name}</p>
+              <p className="text-sm text-muted-foreground">
+                {SCENARIO_LABELS[scenario.name] ?? scenario.name}
+              </p>
               <p
-                className={`text-sm font-medium ${scenario.annual_rate >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                className={`text-sm font-medium ${scenario.annual_rate >= 0 ? 'text-success' : 'text-destructive'}`}
               >
-                {scenario.annual_rate > 0 ? '+' : ''}
-                {scenario.annual_rate}%/year
+                {t('charts.scenario.perYear', {
+                  rate: `${scenario.annual_rate > 0 ? '+' : ''}${scenario.annual_rate}`,
+                })}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Total: {scenario.total_appreciation_percent > 0 ? '+' : ''}
+                {t('charts.scenario.total')}{' '}
+                {scenario.total_appreciation_percent > 0 ? '+' : ''}
                 {scenario.total_appreciation_percent.toFixed(1)}%
               </p>
             </div>

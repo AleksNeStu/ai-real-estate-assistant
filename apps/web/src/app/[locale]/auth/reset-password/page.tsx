@@ -86,12 +86,12 @@ function ResetPasswordForm() {
 
   if (isSuccess) {
     return (
-      <Card className="w-full max-w-sm">
+      <Card className="w-full">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
-            <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-3">
+            <div className="rounded-full bg-success/15 dark:bg-success/20 p-3">
               <CheckCircle2
-                className="h-6 w-6 text-green-600 dark:text-green-400"
+                className="h-6 w-6 text-success dark:text-success"
                 aria-hidden="true"
               />
             </div>
@@ -114,7 +114,7 @@ function ResetPasswordForm() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full">
       <CardHeader className="space-y-1 text-center">
         <div className="flex justify-center mb-2">
           <div className="rounded-full bg-primary/10 p-3">
@@ -184,7 +184,7 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <Card className="w-full max-w-sm">
+        <Card className="w-full">
           <CardContent className="flex justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </CardContent>

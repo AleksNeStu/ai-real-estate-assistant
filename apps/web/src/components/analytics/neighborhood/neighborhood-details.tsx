@@ -11,6 +11,8 @@ import { NewFactorsSection } from './new-factors-section';
 import { CityComparisonCard } from './city-comparison-card';
 import { WhatsNearbySection } from './whats-nearby-section';
 import type { NeighborhoodQualityResult } from '@/lib/types';
+import { useTranslations } from 'next-intl';
+import { EmptyState } from '@/components/ui/states';
 
 interface NeighborhoodDetailsProps {
   result: NeighborhoodQualityResult;
@@ -43,18 +45,12 @@ export function NeighborhoodDetails({
   showMap = false,
   className = '',
 }: NeighborhoodDetailsProps) {
+  const t = useTranslations('neighborhood');
   const [activeTab, setActiveTab] = useState('overview');
 
   if (!result) {
     return (
-      <Card className={className}>
-        <CardContent className="flex items-center justify-center py-12">
-          <div className="text-center text-muted-foreground">
-            <AlertCircle className="h-8 w-8 mx-auto mb-2" aria-hidden="true" />
-            <p>No neighborhood data available</p>
-          </div>
-        </CardContent>
-      </Card>
+      <EmptyState icon={AlertCircle} title={t('details.noData')} className={className} />
     );
   }
 
@@ -66,7 +62,7 @@ export function NeighborhoodDetails({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              <CardTitle className="text-lg">Neighborhood Quality</CardTitle>
+              <CardTitle className="text-lg">{t('details.quality')}</CardTitle>
             </div>
             <NeighborhoodBadge overallScore={result.overall_score} size="sm" />
           </div>
@@ -93,7 +89,7 @@ export function NeighborhoodDetails({
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <MapPin className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-                <CardTitle>Neighborhood Quality Assessment</CardTitle>
+                <CardTitle>{t('details.assessment')}</CardTitle>
               </div>
               <CardDescription>
                 {result.neighborhood && <span className="font-medium">{result.neighborhood}</span>}
@@ -112,26 +108,26 @@ export function NeighborhoodDetails({
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-3 rounded-lg bg-muted/30">
-              <p className="text-2xl font-bold text-blue-600">{result.safety_score.toFixed(1)}</p>
-              <p className="text-xs text-muted-foreground">Safety</p>
+              <p className="text-2xl font-bold text-info">{result.safety_score.toFixed(1)}</p>
+              <p className="text-xs text-muted-foreground">{t('details.safety')}</p>
             </div>
             <div className="text-center p-3 rounded-lg bg-muted/30">
-              <p className="text-2xl font-bold text-indigo-600">
+              <p className="text-2xl font-bold text-chart-4">
                 {result.schools_score.toFixed(1)}
               </p>
-              <p className="text-xs text-muted-foreground">Schools</p>
+              <p className="text-xs text-muted-foreground">{t('details.schools')}</p>
             </div>
             <div className="text-center p-3 rounded-lg bg-muted/30">
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-2xl font-bold text-success">
                 {result.walkability_score.toFixed(1)}
               </p>
-              <p className="text-xs text-muted-foreground">Walkability</p>
+              <p className="text-xs text-muted-foreground">{t('details.walkability')}</p>
             </div>
             <div className="text-center p-3 rounded-lg bg-muted/30">
-              <p className="text-2xl font-bold text-emerald-600">
+              <p className="text-2xl font-bold text-chart-7">
                 {result.green_space_score.toFixed(1)}
               </p>
-              <p className="text-xs text-muted-foreground">Green Space</p>
+              <p className="text-xs text-muted-foreground">{t('details.greenSpace')}</p>
             </div>
           </div>
         </CardContent>
@@ -140,10 +136,10 @@ export function NeighborhoodDetails({
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="factors">All Factors</TabsTrigger>
-          <TabsTrigger value="extended">Extended</TabsTrigger>
-          <TabsTrigger value="nearby">Nearby</TabsTrigger>
+          <TabsTrigger value="overview">{t('details.overview')}</TabsTrigger>
+          <TabsTrigger value="factors">{t('details.allFactors')}</TabsTrigger>
+          <TabsTrigger value="extended">{t('details.extended')}</TabsTrigger>
+          <TabsTrigger value="nearby">{t('details.nearby')}</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -158,7 +154,7 @@ export function NeighborhoodDetails({
           {result.data_sources && result.data_sources.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Data Sources</CardTitle>
+                <CardTitle className="text-base">{t('details.dataSources')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
@@ -185,19 +181,19 @@ export function NeighborhoodDetails({
           {result.factor_details && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Detailed Factor Information</CardTitle>
-                <CardDescription>Raw values and data sources for each factor</CardDescription>
+                <CardTitle className="text-base">{t('details.detailedFactorInfo')}</CardTitle>
+                <CardDescription>{t('details.detailedFactorDescription')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left py-2 px-3 font-medium">Factor</th>
-                        <th className="text-right py-2 px-3 font-medium">Score</th>
-                        <th className="text-right py-2 px-3 font-medium">Raw Value</th>
-                        <th className="text-center py-2 px-3 font-medium">Confidence</th>
-                        <th className="text-left py-2 px-3 font-medium">Source</th>
+                        <th className="text-left py-2 px-3 font-medium">{t('details.factor')}</th>
+                        <th className="text-right py-2 px-3 font-medium">{t('details.score')}</th>
+                        <th className="text-right py-2 px-3 font-medium">{t('details.rawValue')}</th>
+                        <th className="text-center py-2 px-3 font-medium">{t('details.confidence')}</th>
+                        <th className="text-left py-2 px-3 font-medium">{t('details.source')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -205,14 +201,14 @@ export function NeighborhoodDetails({
                         if (!detail) return null;
                         const factorLabel =
                           {
-                            safety: 'Safety',
-                            schools: 'Schools',
-                            amenities: 'Amenities',
-                            walkability: 'Walkability',
-                            green_space: 'Green Space',
-                            air_quality: 'Air Quality',
-                            noise_level: 'Noise Level',
-                            public_transport: 'Public Transport',
+                            safety: t('details.safety'),
+                            schools: t('details.schools'),
+                            amenities: t('details.amenities'),
+                            walkability: t('details.walkability'),
+                            green_space: t('details.greenSpace'),
+                            air_quality: t('details.airQuality'),
+                            noise_level: t('details.noiseLevel'),
+                            public_transport: t('details.publicTransport'),
                           }[key] || key;
 
                         const scoreKey = `${key}_score` as keyof NeighborhoodQualityResult;
@@ -229,10 +225,10 @@ export function NeighborhoodDetails({
                               <span
                                 className={`inline-block px-2 py-0.5 rounded text-xs ${
                                   detail.confidence >= 0.8
-                                    ? 'bg-green-100 text-green-800'
+                                    ? 'bg-success/20 text-success'
                                     : detail.confidence >= 0.6
-                                      ? 'bg-yellow-100 text-yellow-800'
-                                      : 'bg-red-100 text-red-800'
+                                      ? 'bg-warning/20 text-warning'
+                                      : 'bg-destructive/20 text-destructive'
                                 }`}
                               >
                                 {(detail.confidence * 100).toFixed(0)}%
@@ -285,10 +281,12 @@ export function NeighborhoodDetails({
  * Loading state for neighborhood details
  */
 export function NeighborhoodDetailsLoading({
-  message = 'Loading neighborhood data...',
+  message,
 }: {
   message?: string;
 }) {
+  const t = useTranslations('neighborhood');
+  const loadingMessage = message ?? t('details.loading');
   return (
     <Card>
       <CardContent className="flex items-center justify-center py-12">
@@ -297,7 +295,7 @@ export function NeighborhoodDetailsLoading({
             className="h-8 w-8 animate-spin mx-auto mb-3 text-muted-foreground"
             aria-hidden="true"
           />
-          <p className="text-sm text-muted-foreground">{message}</p>
+          <p className="text-sm text-muted-foreground">{loadingMessage}</p>
         </div>
       </CardContent>
     </Card>
@@ -314,12 +312,13 @@ export function NeighborhoodDetailsError({
   error: ErrorState;
   onRetry?: () => void;
 }) {
+  const t = useTranslations('neighborhood');
   return (
     <Card>
       <CardContent className="flex items-center justify-center py-12">
         <div className="text-center max-w-md">
           <AlertCircle className="h-8 w-8 mx-auto mb-3 text-destructive" aria-hidden="true" />
-          <h3 className="text-lg font-semibold mb-2">Failed to load neighborhood data</h3>
+          <h3 className="text-lg font-semibold mb-2">{t('details.failedToLoad')}</h3>
           <p className="text-sm text-muted-foreground mb-4">{error.message}</p>
           {error.requestId && (
             <p className="text-xs font-mono text-muted-foreground mb-4">

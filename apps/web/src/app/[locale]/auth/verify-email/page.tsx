@@ -80,7 +80,7 @@ function VerifyEmailContent() {
 
   if (state.status === 'loading') {
     return (
-      <Card className="w-full max-w-sm">
+      <Card className="w-full">
         <CardContent className="flex flex-col items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="mt-4 text-sm text-muted-foreground">{t('verifyEmail.verifying')}</p>
@@ -91,11 +91,11 @@ function VerifyEmailContent() {
 
   if (state.status === 'success') {
     return (
-      <Card className="w-full max-w-sm">
+      <Card className="w-full">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
-            <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-3">
-              <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+            <div className="rounded-full bg-success/15 dark:bg-success/20 p-3">
+              <CheckCircle2 className="h-6 w-6 text-success dark:text-success" />
             </div>
           </div>
           <CardTitle className="text-2xl">{t('verifyEmail.verified')}</CardTitle>
@@ -114,7 +114,7 @@ function VerifyEmailContent() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full">
       <CardHeader className="space-y-1 text-center">
         <div className="flex justify-center mb-2">
           <div className="rounded-full bg-destructive/15 p-3">
@@ -151,7 +151,7 @@ export default function VerifyEmailPage() {
   return (
     <Suspense
       fallback={
-        <Card className="w-full max-w-sm">
+        <Card className="w-full">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="mt-4 text-sm text-muted-foreground">{t('verifyEmail.loading')}</p>

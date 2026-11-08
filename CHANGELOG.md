@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.12] - 2026-11-08
+
+### Added
+- **The settings and the usage page speak all nine languages** — the switcher
+  changed the menu while the body of the page stayed English. The vocabulary
+  comes from the locale files now, the analytics charts carry translated labels
+  for a screen reader, and a key that is missing falls back to English instead
+  of breaking the page.
+- **A demo deployment can never reach a paid provider** — with `DEMO_MODE` the
+  free tier answers from the mock model, so a visitor of the public demo spends
+  no token of ours. The guard is code, not a setting: it holds for every
+  deployment that runs in demo mode, whatever the environment says.
+
+### Fixed
+- **The vector store works again** — the pin in `pyproject.toml` pulled
+  chromadb 0.5.x under CI, which `langchain-chroma` cannot import, and the
+  store was silently disabled: the search returned nothing and the map stayed
+  empty. Both packages move together now.
+- **The price history keeps its order** — a price drop could read as a price
+  rise, because two rows written in the same millisecond were ordered by a
+  random identifier. The timestamp of a row is now strictly later than the one
+  before it.
+- **The launcher comes back** — the wrappers under `scripts/` called a
+  `start.py` that never existed, so the documented way to start the project
+  did nothing.
+- **The CMA answers with a comparable** — the wizard asked the reader for
+  fields the request does not take, and the API answered 422.
+
+### Changed
+- **The interface wears the tokens of the design contract** — the raw black and
+  white buttons, the hex and rgb literals, the `dark:` variants that restated a
+  token the theme already adapts, the focus ring drawn as a ring instead of an
+  outline, the buttons without a type, the ad-hoc width caps on top of the
+  container and the empty and error boxes every page drew for itself.
+- **The map follows the theme** — the colours of the markers and of the
+  property types come from the tokens. Mapbox parses the colours of a heatmap
+  layer itself, so those ramps stay literals — but they are the values of the
+  tokens, and the legend renders the same constants.
+
 ## [5.1.11] - 2026-11-07
 
 ### Fixed

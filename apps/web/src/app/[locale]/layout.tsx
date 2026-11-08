@@ -20,18 +20,18 @@ import { buildStructuredData } from '@/lib/structured-data';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
-  subsets: ['latin'],
+  subsets: ['latin', 'latin-ext'],
 });
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
-  subsets: ['latin'],
+  subsets: ['latin', 'latin-ext'],
 });
 
 // Using Cinzel as a stand-in for "Phantom Templar" style
 const fontTemplar = Cinzel({
   variable: '--font-templar',
-  subsets: ['latin'],
+  subsets: ['latin', 'latin-ext'],
 });
 
 export const viewport: Viewport = {
@@ -220,7 +220,7 @@ export default async function LocaleLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${fontTemplar.variable} antialiased min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} ${fontTemplar.variable} font-sans antialiased min-h-screen flex flex-col`}
       >
         <NextIntlClientProvider messages={messages}>
           <Providers>

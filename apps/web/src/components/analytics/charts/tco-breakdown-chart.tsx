@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recha
 import type { TooltipProps } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { TCOResult } from '@/lib/types';
+import { useTranslations } from 'next-intl';
 
 interface TCOBreakdownChartProps {
   tcoResult: TCOResult;
@@ -13,26 +14,15 @@ interface TCOBreakdownChartProps {
 }
 
 const COLORS = [
-  '#3b82f6', // blue - mortgage
-  '#22c55e', // green - property tax
-  '#f59e0b', // amber - insurance
-  '#8b5cf6', // violet - HOA
-  '#06b6d4', // cyan - utilities
-  '#ec4899', // pink - internet
-  '#84cc16', // lime - parking
-  '#ef4444', // red - maintenance
+  'hsl(var(--chart-1))', // blue - mortgage
+  'hsl(var(--chart-2))', // green - property tax
+  'hsl(var(--chart-3))', // amber - insurance
+  'hsl(var(--chart-4))', // violet - HOA
+  'hsl(var(--chart-5))', // cyan - utilities
+  'hsl(var(--chart-6))', // pink - internet
+  'hsl(var(--chart-7))', // lime - parking
+  'hsl(var(--chart-8))', // red - maintenance
 ];
-
-const CATEGORY_LABELS: Record<string, string> = {
-  mortgage: 'Mortgage',
-  property_tax: 'Property Tax',
-  insurance: 'Insurance',
-  hoa: 'HOA',
-  utilities: 'Utilities',
-  internet: 'Internet',
-  parking: 'Parking',
-  maintenance: 'Maintenance',
-};
 
 function formatCurrency(value: number) {
   return `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
@@ -41,9 +31,22 @@ function formatCurrency(value: number) {
 export function TCOBreakdownChart({
   tcoResult,
   className,
-  title = 'Monthly Cost Breakdown',
-  description = 'Distribution of ownership costs',
+  title,
+  description,
 }: TCOBreakdownChartProps) {
+  const t = useTranslations('mortgage');
+  const chartTitle = title ?? t('charts.breakdown.title');
+  const chartDescription = description ?? t('charts.breakdown.description');
+  const CATEGORY_LABELS: Record<string, string> = {
+    mortgage: t('charts.breakdown.categories.mortgage'),
+    property_tax: t('charts.breakdown.categories.propertyTax'),
+    insurance: t('charts.breakdown.categories.insurance'),
+    hoa: t('charts.breakdown.categories.hoa'),
+    utilities: t('charts.breakdown.categories.utilities'),
+    internet: t('charts.breakdown.categories.internet'),
+    parking: t('charts.breakdown.categories.parking'),
+    maintenance: t('charts.breakdown.categories.maintenance'),
+  };
   // Build chart data from TCO result
   const chartData = [
     { name: CATEGORY_LABELS.mortgage, value: tcoResult.monthly_mortgage, key: 'mortgage' },
@@ -73,8 +76,12 @@ export function TCOBreakdownChart({
       return (
         <div className="bg-background border rounded-lg p-3 shadow-lg">
           <p className="font-medium">{data.name}</p>
-          <p className="text-sm text-muted-foreground">{formatCurrency(data.value)}/month</p>
-          <p className="text-xs text-muted-foreground">{percent.toFixed(1)}% of total</p>
+          <p className="text-sm text-muted-foreground">
+            {t('charts.breakdown.perMonth', { value: formatCurrency(data.value) })}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {t('charts.breakdown.percentOfTotal', { percent: percent.toFixed(1) })}
+          </p>
         </div>
       );
     }
@@ -84,14 +91,16 @@ export function TCOBreakdownChart({
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <CardTitle>{chartTitle}</CardTitle>
+        <CardDescription>{chartDescription}</CardDescription>
       </CardHeader>
       <CardContent>
         <div
           className="h-64"
           role="img"
-          aria-label={`Pie chart showing monthly cost breakdown: ${chartData.map((d) => `${d.name} ${formatCurrency(d.value)}`).join(', ')}`}
+          aria-label={t('charts.breakdown.ariaLabel', {
+            categories: chartData.map((d) => `${d.name} ${formatCurrency(d.value)}`).join(', '),
+          })}
         >
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -117,7 +126,7 @@ export function TCOBreakdownChart({
         {/* Cost Category Summary */}
         <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t">
           <div className="text-center">
-            <p className="text-xs text-muted-foreground">Fixed Costs</p>
+            <p className="text-xs text-muted-foreground">{t('charts.breakdown.fixedCosts')}</p>
             <p className="text-sm font-semibold">
               {formatCurrency(
                 tcoResult.monthly_mortgage +
@@ -128,13 +137,13 @@ export function TCOBreakdownChart({
             </p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-muted-foreground">Variable Costs</p>
+            <p className="text-xs text-muted-foreground">{t('charts.breakdown.variableCosts')}</p>
             <p className="text-sm font-semibold">
               {formatCurrency(tcoResult.monthly_utilities + tcoResult.monthly_maintenance)}
             </p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-muted-foreground">Discretionary</p>
+            <p className="text-xs text-muted-foreground">{t('charts.breakdown.discretionary')}</p>
             <p className="text-sm font-semibold">
               {formatCurrency(tcoResult.monthly_internet + tcoResult.monthly_parking)}
             </p>

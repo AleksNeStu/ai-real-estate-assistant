@@ -25,7 +25,7 @@ export function DemoDataBadge({
   const label = 'Demo data — not real listings';
 
   const base =
-    'inline-flex items-center gap-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20';
+    'inline-flex items-center gap-1 rounded-full bg-warning/10 text-warning dark:text-caution border border-caution/20';
 
   const sizes =
     variant === 'card' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-1 text-xs';

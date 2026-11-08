@@ -135,7 +135,7 @@ export function UserMenu() {
         ref={triggerRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-accent transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-label={t('userMenu', { defaultValue: 'User menu' })}
@@ -163,9 +163,9 @@ export function UserMenu() {
           <div className="p-1" role="group">
             <Link
               ref={setMenuItemRef(0)}
-              href={`/${locale}/profile`}
+              href={`/${locale}/settings`}
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-sm hover:bg-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+              className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-sm hover:bg-accent transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               role="menuitem"
             >
               <User className="h-4 w-4" aria-hidden="true" />
@@ -175,7 +175,7 @@ export function UserMenu() {
               ref={setMenuItemRef(1)}
               href={`/${locale}/settings`}
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-sm hover:bg-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+              className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-sm hover:bg-accent transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               role="menuitem"
             >
               <Settings className="h-4 w-4" aria-hidden="true" />
@@ -187,7 +187,7 @@ export function UserMenu() {
               ref={setMenuItemRef(2)}
               type="button"
               onClick={handleLogout}
-              className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-sm hover:bg-accent transition-colors text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+              className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-sm hover:bg-accent transition-colors text-destructive focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               role="menuitem"
             >
               <LogOut className="h-4 w-4" aria-hidden="true" />

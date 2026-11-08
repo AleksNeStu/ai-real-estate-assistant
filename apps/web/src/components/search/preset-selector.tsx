@@ -146,7 +146,7 @@ export function PresetSelector({ onPresetSelect, currentFilters, className }: Pr
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   {preset.is_default && (
                     <Star
-                      className="h-3 w-3 text-yellow-500 fill-yellow-500 flex-shrink-0"
+                      className="h-3 w-3 text-warning fill-warning flex-shrink-0"
                       aria-hidden="true"
                     />
                   )}
@@ -154,22 +154,24 @@ export function PresetSelector({ onPresetSelect, currentFilters, className }: Pr
                 </div>
                 <div className="flex items-center gap-1 ml-2">
                   {!preset.is_default && (
-                    <button
+                    <button type="button"
                       onClick={(e) => handleSetDefault(preset, e)}
                       className="p-1 hover:bg-muted rounded"
                       title="Set as default"
+                      aria-label={`Set ${preset.name} as default`}
                     >
                       <Star
-                        className="h-3 w-3 text-muted-foreground hover:text-yellow-500"
+                        className="h-3 w-3 text-muted-foreground hover:text-warning"
                         aria-hidden="true"
                       />
                     </button>
                   )}
-                  <button
+                  <button type="button"
                     onClick={(e) => handleDeletePreset(preset, e)}
                     className="p-1 hover:bg-muted rounded"
                     disabled={deletingId === preset.id}
                     title="Delete preset"
+                    aria-label={`Delete preset ${preset.name}`}
                   >
                     <Trash2
                       className="h-3 w-3 text-muted-foreground hover:text-destructive"

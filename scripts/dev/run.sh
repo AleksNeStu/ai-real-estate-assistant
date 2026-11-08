@@ -5,7 +5,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
 # Help support
 show_help() {
@@ -25,10 +25,10 @@ Options:
   --frontend-port   Frontend port (default: 3000)
 
 Examples:
-  ./scripts/run.sh                        # Auto-detect mode
-  ./scripts/run.sh --mode local           # Force local mode
-  ./scripts/run.sh --service backend      # Backend only
-  ./scripts/run.sh --dry-run              # Show commands
+  ./scripts/dev/run.sh                        # Auto-detect mode
+  ./scripts/dev/run.sh --mode local           # Force local mode
+  ./scripts/dev/run.sh --service backend      # Backend only
+  ./scripts/dev/run.sh --dry-run              # Show commands
 
 For full options, run: python3 scripts/start.py --help
 EOF

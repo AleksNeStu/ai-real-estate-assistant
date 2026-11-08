@@ -32,7 +32,7 @@ def main() -> int:
         return 2
 
     venv_dir = root / ".venv"
-    if not venv_dir.exists():
+    if not (venv_dir / "pyvenv.cfg").exists():
         _run(["uv", "venv", str(venv_dir)], cwd=root)
 
     extras = ".[dev]" if args.dev else "."

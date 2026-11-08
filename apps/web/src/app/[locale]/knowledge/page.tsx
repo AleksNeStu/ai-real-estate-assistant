@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { FileUp, Loader2, MessageSquareText, Trash2, Upload, AlertCircle, FileText, Sparkles, Database } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { ragQa, resetRagKnowledge, uploadRagDocuments, ApiError } from "@/lib/api";
 import type { RagQaResponse, RagResetResponse, RagUploadResponse } from "@/lib/types";
+import { PageHeader } from "@/components/ui/page-header";
 
 interface ErrorState {
   message: string;
@@ -11,6 +13,7 @@ interface ErrorState {
 }
 
 export default function KnowledgePage() {
+  const t = useTranslations("pages.knowledge");
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<ErrorState | null>(null);
@@ -120,12 +123,11 @@ export default function KnowledgePage() {
 
   return (
     <div className="container mx-auto max-w-5xl px-4 py-8">
-      <div className="flex flex-col space-y-2 mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Knowledge</h1>
-        <p className="text-muted-foreground">
-          Upload documents to your local knowledge base and ask questions with citations.
-        </p>
-      </div>
+      <PageHeader
+        className="mb-8"
+        title={t('title')}
+        description={t('description')}
+      />
 
       <div className="grid gap-8">
         {/* Upload Section - 4 Mandated States */}
@@ -158,8 +160,8 @@ export default function KnowledgePage() {
           ) : null}
 
           <div className="mt-4 flex items-center gap-3">
-            <button
-              className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
+            <button type="button"
+              className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               disabled={uploading || !files.length}
               onClick={onUpload}
             >
@@ -175,8 +177,8 @@ export default function KnowledgePage() {
                 </>
               )}
             </button>
-            <button
-              className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+            <button type="button"
+              className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               disabled={uploading || !files.length}
               onClick={() => {
                 setFiles([]);
@@ -224,11 +226,11 @@ export default function KnowledgePage() {
 
           {/* Upload Populated State */}
           {uploadResult ? (
-            <div className="mt-4 p-4 rounded-lg bg-emerald-10 border border-emerald-20">
-              <p className="font-medium text-emerald-800">{uploadResult.message}</p>
-              <p className="text-sm text-emerald-700">Chunks indexed: {uploadResult.chunks_indexed}</p>
+            <div className="mt-4 p-4 rounded-lg bg-success/15 border border-chart-7/30">
+              <p className="font-medium text-success">{uploadResult.message}</p>
+              <p className="text-sm text-success">Chunks indexed: {uploadResult.chunks_indexed}</p>
               {uploadResult.errors.length ? (
-                <ul className="mt-2 text-sm text-amber-700 list-disc pl-5">
+                <ul className="mt-2 text-sm text-warning list-disc pl-5">
                   {uploadResult.errors.map((err, idx) => (
                     <li key={idx}>{err}</li>
                   ))}
@@ -243,8 +245,8 @@ export default function KnowledgePage() {
               <Database className="w-4 h-4" />
               <p className="font-medium">Manage Knowledge Base</p>
             </div>
-            <button
-              className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+            <button type="button"
+              className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               disabled={resetting}
               onClick={onResetKnowledge}
             >
@@ -269,7 +271,7 @@ export default function KnowledgePage() {
                   aria-live="assertive"
               >
                 <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0" />
-                <span className="text-sm text-red-600">{resetError.message}</span>
+                <span className="text-sm text-destructive">{resetError.message}</span>
                 {resetError.requestId && (
                   <span className="text-xs text-muted-foreground font-mono">
                     (request_id={resetError.requestId})
@@ -351,8 +353,8 @@ export default function KnowledgePage() {
           </div>
 
           <div className="mt-4 flex items-center gap-3">
-            <button
-              className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
+            <button type="button"
+              className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               disabled={asking || !question.trim()}
               onClick={onAsk}
             >
@@ -368,8 +370,8 @@ export default function KnowledgePage() {
                 </>
               )}
             </button>
-            <button
-              className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+            <button type="button"
+              className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               disabled={asking || (!question.trim() && !qaResult && !qaError)}
               onClick={() => {
                 setQuestion("");

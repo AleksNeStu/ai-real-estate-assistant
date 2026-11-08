@@ -42,23 +42,22 @@ describe('RegisterPage', () => {
 
   it('renders registration form correctly', () => {
     render(<RegisterPage />);
-    // With mocked useTranslations, t('register.title') returns 'register.title'
-    expect(screen.getByText('register.title')).toBeInTheDocument();
-    // Labels render the i18n key directly via the mock
-    expect(screen.getByLabelText('register.fullNameLabel')).toBeInTheDocument();
-    expect(screen.getByLabelText('register.emailLabel')).toBeInTheDocument();
-    expect(screen.getByLabelText('register.passwordLabel')).toBeInTheDocument();
-    // Submit button text is t('register.submit') which returns 'register.submit'
-    expect(screen.getByRole('button', { name: /register\.submit/i })).toBeInTheDocument();
+    // The mock resolves the real `en` catalogue, so the form shows the copy a reader sees
+    expect(screen.getByText('Create an account')).toBeInTheDocument();
+    expect(screen.getByLabelText('Full Name')).toBeInTheDocument();
+    expect(screen.getByLabelText('Email')).toBeInTheDocument();
+    expect(screen.getByLabelText('Password')).toBeInTheDocument();
+    // Submit button text is t('register.submit')
+    expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
   });
 
   it('submits form with correct values', async () => {
     render(<RegisterPage />);
 
-    const nameInput = screen.getByLabelText('register.fullNameLabel');
-    const emailInput = screen.getByLabelText('register.emailLabel');
-    const passwordInput = screen.getByLabelText('register.passwordLabel');
-    const submitButton = screen.getByRole('button', { name: /register\.submit/i });
+    const nameInput = screen.getByLabelText('Full Name');
+    const emailInput = screen.getByLabelText('Email');
+    const passwordInput = screen.getByLabelText('Password');
+    const submitButton = screen.getByRole('button', { name: /create account/i });
 
     fireEvent.change(nameInput, { target: { value: 'John Doe' } });
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });

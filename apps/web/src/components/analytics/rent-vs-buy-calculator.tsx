@@ -18,19 +18,19 @@ import { Button } from '@/components/ui/button';
 import { calculateRentVsBuy } from '@/lib/api';
 import { RentVsBuyResult } from '@/lib/types';
 import { Loader2, AlertCircle, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { extractErrorState, type ErrorState } from '@/lib/error-utils';
 
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
+const formatCurrency = (value: number, locale = 'en-US'): string => {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: 'USD',
     maximumFractionDigits: 0,
   }).format(value);
 };
 
-const formatCurrencyDetailed = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
+const formatCurrencyDetailed = (value: number, locale = 'en-US'): string => {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: 'USD',
     maximumFractionDigits: 2,
@@ -38,9 +38,9 @@ const formatCurrencyDetailed = (value: number): string => {
 };
 
 const getRecommendationColor = (rec: string): string => {
-  if (rec === 'buy') return 'text-green-600';
-  if (rec === 'rent') return 'text-blue-600';
-  return 'text-yellow-600';
+  if (rec === 'buy') return 'text-success';
+  if (rec === 'rent') return 'text-info';
+  return 'text-warning';
 };
 
 const getRecommendationLabel = (rec: string, t: (key: string) => string): string => {
@@ -51,6 +51,7 @@ const getRecommendationLabel = (rec: string, t: (key: string) => string): string
 
 export function RentVsBuyCalculator() {
   const t = useTranslations('rentVsBuy');
+  const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const [errorState, setErrorState] = useState<ErrorState | null>(null);
   const [result, setResult] = useState<RentVsBuyResult | null>(null);
@@ -131,11 +132,11 @@ export function RentVsBuyCalculator() {
   // Prepare chart data
   const chartData = result?.yearly_breakdown.map((item) => ({
     year: item.year,
-    'Cumulative Rent': item.cumulative_rent,
-    'Cumulative Ownership': item.cumulative_ownership_cost,
-    'Property Value': item.property_value,
-    Equity: item.equity,
-    'Net Benefit': item.net_benefit,
+    cumulativeRent: item.cumulative_rent,
+    cumulativeOwnership: item.cumulative_ownership_cost,
+    propertyValue: item.property_value,
+    equity: item.equity,
+    netBenefit: item.net_benefit,
   }));
 
   return (
@@ -310,7 +311,7 @@ export function RentVsBuyCalculator() {
                   </div>
                 </div>
 
-                <h4 className="text-sm font-semibold">Growth Rates</h4>
+                <h4 className="text-sm font-semibold">{t('form.growthRates')}</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="appreciation_rate">{t('form.appreciationRate')}</Label>
@@ -455,25 +456,25 @@ export function RentVsBuyCalculator() {
               <div>
                 <p className="text-sm text-muted-foreground">{t('results.monthlyMortgage')}</p>
                 <p className="text-xl font-bold">
-                  {formatCurrencyDetailed(result.monthly_mortgage)}
+                  {formatCurrencyDetailed(result.monthly_mortgage, locale)}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">{t('results.monthlyRentInitial')}</p>
                 <p className="text-xl font-bold">
-                  {formatCurrencyDetailed(result.monthly_rent_initial)}
+                  {formatCurrencyDetailed(result.monthly_rent_initial, locale)}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">{t('results.totalRentPaid')}</p>
-                <p className="text-xl font-bold text-blue-600">
-                  {formatCurrency(result.total_rent_paid)}
+                <p className="text-xl font-bold text-info">
+                  {formatCurrency(result.total_rent_paid, locale)}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">{t('results.totalOwnershipCost')}</p>
-                <p className="text-xl font-bold text-green-600">
-                  {formatCurrency(result.total_ownership_cost)}
+                <p className="text-xl font-bold text-success">
+                  {formatCurrency(result.total_ownership_cost, locale)}
                 </p>
               </div>
             </div>
@@ -484,14 +485,14 @@ export function RentVsBuyCalculator() {
                 <div>
                   <p className="text-sm text-muted-foreground">{t('results.netBuyingAdvantage')}</p>
                   <p
-                    className={`text-xl font-bold ${result.net_buying_advantage >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                    className={`text-xl font-bold ${result.net_buying_advantage >= 0 ? 'text-success' : 'text-destructive'}`}
                   >
-                    {formatCurrency(result.net_buying_advantage)}
+                    {formatCurrency(result.net_buying_advantage, locale)}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-muted-foreground">{t('results.equityBuilt')}</p>
-                  <p className="text-xl font-bold">{formatCurrency(result.total_equity_built)}</p>
+                  <p className="text-xl font-bold">{formatCurrency(result.total_equity_built, locale)}</p>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
@@ -519,21 +520,23 @@ export function RentVsBuyCalculator() {
                       tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
                     />
                     <Tooltip
-                      formatter={(value: number) => formatCurrency(value)}
-                      labelFormatter={(label) => `Year ${label}`}
+                      formatter={(value: number) => formatCurrency(value, locale)}
+                      labelFormatter={(label) => t('results.charts.year', { year: label })}
                     />
                     <Legend />
                     <Line
                       type="monotone"
-                      dataKey="Cumulative Rent"
-                      stroke="#3b82f6"
+                      dataKey="cumulativeRent"
+                      name={t('results.charts.cumulativeRent')}
+                      stroke="hsl(var(--chart-1))"
                       strokeWidth={2}
                       dot={false}
                     />
                     <Line
                       type="monotone"
-                      dataKey="Cumulative Ownership"
-                      stroke="#22c55e"
+                      dataKey="cumulativeOwnership"
+                      name={t('results.charts.cumulativeOwnership')}
+                      stroke="hsl(var(--chart-2))"
                       strokeWidth={2}
                       dot={false}
                     />
@@ -560,21 +563,23 @@ export function RentVsBuyCalculator() {
                       tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
                     />
                     <Tooltip
-                      formatter={(value: number) => formatCurrency(value)}
-                      labelFormatter={(label) => `Year ${label}`}
+                      formatter={(value: number) => formatCurrency(value, locale)}
+                      labelFormatter={(label) => t('results.charts.year', { year: label })}
                     />
                     <Legend />
                     <Line
                       type="monotone"
-                      dataKey="Property Value"
-                      stroke="#8b5cf6"
+                      dataKey="propertyValue"
+                      name={t('results.charts.propertyValue')}
+                      stroke="hsl(var(--chart-4))"
                       strokeWidth={2}
                       dot={false}
                     />
                     <Line
                       type="monotone"
-                      dataKey="Equity"
-                      stroke="#06b6d4"
+                      dataKey="equity"
+                      name={t('results.charts.equity')}
+                      stroke="hsl(var(--chart-5))"
                       strokeWidth={2}
                       dot={false}
                     />
@@ -589,22 +594,22 @@ export function RentVsBuyCalculator() {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="p-2 bg-muted/50 rounded">
                   <p className="text-muted-foreground">{t('results.finalPropertyValue')}</p>
-                  <p className="font-medium">{formatCurrency(result.final_property_value)}</p>
+                  <p className="font-medium">{formatCurrency(result.final_property_value, locale)}</p>
                 </div>
                 <div className="p-2 bg-muted/50 rounded">
                   <p className="text-muted-foreground">{t('results.totalEquityBuilt')}</p>
-                  <p className="font-medium">{formatCurrency(result.total_equity_built)}</p>
+                  <p className="font-medium">{formatCurrency(result.total_equity_built, locale)}</p>
                 </div>
                 <div className="p-2 bg-muted/50 rounded">
                   <p className="text-muted-foreground">{t('results.opportunityCost')}</p>
-                  <p className="font-medium">{formatCurrency(result.opportunity_cost_of_buying)}</p>
+                  <p className="font-medium">{formatCurrency(result.opportunity_cost_of_buying, locale)}</p>
                 </div>
                 <div className="p-2 bg-muted/50 rounded">
                   <p className="text-muted-foreground">{t('results.netAdvantage')}</p>
                   <p
-                    className={`font-medium ${result.net_buying_advantage >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                    className={`font-medium ${result.net_buying_advantage >= 0 ? 'text-success' : 'text-destructive'}`}
                   >
-                    {formatCurrency(result.net_buying_advantage)}
+                    {formatCurrency(result.net_buying_advantage, locale)}
                   </p>
                 </div>
               </div>

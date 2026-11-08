@@ -91,20 +91,20 @@ export function PropertyMapPopup({
         {/* Actions */}
         <div className="flex items-center gap-2 pt-2 border-t">
           {onViewDetails && (
-            <button
+            <button type="button"
               onClick={handleViewDetails}
-              className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
             >
               <ExternalLink className="h-3 w-3" />
               View Details
             </button>
           )}
           {onToggleFavorite && (
-            <button
+            <button type="button"
               onClick={handleToggleFavorite}
               className={[
                 'p-1.5 rounded-md border transition-colors',
-                isFavorited ? 'bg-red-50 border-red-200 text-red-500' : 'hover:bg-muted',
+                isFavorited ? 'bg-destructive/10 border-destructive/30 text-destructive' : 'hover:bg-muted',
               ].join(' ')}
               aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
             >
@@ -136,19 +136,19 @@ export function generatePopupHTML(point: PropertyMapPoint): string {
     .join(' • ');
 
   return `
-    <div style="min-width:180px;max-width:240px;font-family:system-ui,-apple-system,sans-serif;">
+    <div style="min-width:180px;max-width:240px;font-family:inherit;">
       <div style="padding:8px;">
         <div style="font-weight:600;font-size:14px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
           ${point.title || 'Untitled Property'}
         </div>
-        <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">
+        <div style="font-size:12px;color:hsl(var(--muted-foreground));margin-bottom:4px;">
           ${[point.city, point.country].filter(Boolean).join(', ') || 'Location unavailable'}
         </div>
-        <div style="font-size:18px;font-weight:700;color:#2563eb;margin-bottom:4px;">
+        <div style="font-size:18px;font-weight:700;color:hsl(var(--chart-1));margin-bottom:4px;">
           ${formatPrice(point.price)}
         </div>
-        ${specs ? `<div style="font-size:12px;color:#6b7280;margin-bottom:4px;">${specs}</div>` : ''}
-        ${point.price_per_sqm !== undefined ? `<div style="font-size:11px;color:#6b7280;">${formatPrice(point.price_per_sqm)}/m²</div>` : ''}
+        ${specs ? `<div style="font-size:12px;color:hsl(var(--muted-foreground));margin-bottom:4px;">${specs}</div>` : ''}
+        ${point.price_per_sqm !== undefined ? `<div style="font-size:11px;color:hsl(var(--muted-foreground));">${formatPrice(point.price_per_sqm)}/m²</div>` : ''}
       </div>
     </div>
   `;

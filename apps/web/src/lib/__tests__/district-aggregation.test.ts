@@ -37,27 +37,27 @@ describe('district-aggregation', () => {
 
   describe('getDistrictColor', () => {
     it('should return gray for null avgPrice', () => {
-      expect(getDistrictColor(null, 1000000)).toBe('rgba(156, 163, 175, 0.3)');
+      expect(getDistrictColor(null, 1000000)).toBe('hsla(240, 4%, 46%, 0.3)');
     });
 
     it('should return green for low ratio', () => {
       // ratio = 0.2 (< 0.25)
-      expect(getDistrictColor(20000, 100000)).toBe('rgba(34, 197, 94, 0.4)');
+      expect(getDistrictColor(20000, 100000)).toBe('hsla(142, 76%, 36%, 0.4)');
     });
 
     it('should return yellow for medium-low ratio', () => {
       // ratio = 0.4 (< 0.5, >= 0.25)
-      expect(getDistrictColor(40000, 100000)).toBe('rgba(234, 179, 8, 0.4)');
+      expect(getDistrictColor(40000, 100000)).toBe('hsla(32, 95%, 44%, 0.4)');
     });
 
     it('should return orange for medium-high ratio', () => {
       // ratio = 0.6 (< 0.75, >= 0.5)
-      expect(getDistrictColor(60000, 100000)).toBe('rgba(249, 115, 22, 0.4)');
+      expect(getDistrictColor(60000, 100000)).toBe('hsla(20, 90%, 48%, 0.4)');
     });
 
     it('should return red for high ratio', () => {
       // ratio = 0.8 (>= 0.75)
-      expect(getDistrictColor(80000, 100000)).toBe('rgba(239, 68, 68, 0.4)');
+      expect(getDistrictColor(80000, 100000)).toBe('hsla(0, 84%, 60%, 0.4)');
     });
   });
 

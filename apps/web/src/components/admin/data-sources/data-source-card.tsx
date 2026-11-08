@@ -85,10 +85,10 @@ export function DataSourceCard({
       return <AlertCircle className="w-4 h-4 text-destructive" />;
     }
     if (source.status === 'syncing' || isSyncing) {
-      return <RefreshCw className="w-4 h-4 text-yellow-500 animate-spin" />;
+      return <RefreshCw className="w-4 h-4 text-warning animate-spin" />;
     }
     if (source.status === 'active' && source.last_sync_status === 'success') {
-      return <CheckCircle2 className="w-4 h-4 text-green-500" />;
+      return <CheckCircle2 className="w-4 h-4 text-success" />;
     }
     return <Clock className="w-4 h-4 text-muted-foreground" />;
   };
@@ -120,11 +120,12 @@ export function DataSourceCard({
 
           {showMenu && (
             <>
-              <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+              {/* The overlay only closes the menu for the mouse. */}
+      <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} aria-hidden="true" />
               <div className="absolute right-0 top-8 z-20 w-36 bg-card border rounded-md shadow-lg py-1">
                 <button
                   type="button"
-                  className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2"
+                  className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
                   onClick={() => {
                     setShowMenu(false);
                     onEdit(source);
@@ -136,7 +137,7 @@ export function DataSourceCard({
                 </button>
                 <button
                   type="button"
-                  className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2"
+                  className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
                   onClick={() => {
                     setShowMenu(false);
                     onSync(source.id);
@@ -148,7 +149,7 @@ export function DataSourceCard({
                 </button>
                 <button
                   type="button"
-                  className="w-full px-3 py-2 text-left text-sm hover:bg-muted text-destructive flex items-center gap-2"
+                  className="w-full px-3 py-2 text-left text-sm hover:bg-muted text-destructive flex items-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
                   onClick={() => {
                     setShowMenu(false);
                     onDelete(source);

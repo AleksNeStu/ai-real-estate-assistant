@@ -1,16 +1,16 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { CMAWizard } from '@/components/cma/cma-wizard';
+import { PageHeader } from '@/components/ui/page-header';
 
 export default function CMAPage() {
+  const t = useTranslations('pages.cma');
+
   return (
     <div className="container mx-auto max-w-5xl px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Comparative Market Analysis</h1>
-        <p className="text-muted-foreground mt-1">
-          Generate professional CMA reports by selecting a subject property and comparable listings.
-        </p>
-      </div>
+      <PageHeader className="mb-6" title={t('title')} description={t('description')} />
       <CMAWizard />
     </div>
   );

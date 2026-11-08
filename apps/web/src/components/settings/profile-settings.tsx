@@ -285,7 +285,7 @@ export function ProfileSettings({ userEmail }: { userEmail: string | null }) {
             <Label htmlFor="bio">{t('profile.bio')}</Label>
             <textarea
               id="bio"
-              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder={t('profile.bioPlaceholder')}
@@ -310,7 +310,7 @@ export function ProfileSettings({ userEmail }: { userEmail: string | null }) {
             <Label htmlFor="timezone">{t('profile.timezone')}</Label>
             <select
               id="timezone"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
             >
@@ -326,7 +326,7 @@ export function ProfileSettings({ userEmail }: { userEmail: string | null }) {
             <Label htmlFor="language">{t('profile.language')}</Label>
             <select
               id="language"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
             >
@@ -354,14 +354,14 @@ export function ProfileSettings({ userEmail }: { userEmail: string | null }) {
             </div>
             <div>
               <span className="text-muted-foreground">{t('profile.status')}:</span>
-              <span className={`ml-2 ${profile.is_active ? 'text-green-600' : 'text-red-600'}`}>
+              <span className={`ml-2 ${profile.is_active ? 'text-success' : 'text-destructive'}`}>
                 {profile.is_active ? t('profile.active') : t('profile.inactive')}
               </span>
             </div>
             <div>
               <span className="text-muted-foreground">{t('profile.verified')}:</span>
               <span
-                className={`ml-2 ${profile.is_verified ? 'text-green-600' : 'text-yellow-600'}`}
+                className={`ml-2 ${profile.is_verified ? 'text-success' : 'text-warning'}`}
               >
                 {profile.is_verified ? t('profile.yes') : t('profile.pending')}
               </span>
@@ -386,8 +386,8 @@ export function ProfileSettings({ userEmail }: { userEmail: string | null }) {
 
       {/* Save Button */}
       <div className="flex items-center justify-end gap-4">
-        {success && <span className="text-green-600 text-sm">{success}</span>}
-        {error && <span className="text-red-600 text-sm">{error}</span>}
+        {success && <span className="text-success text-sm">{success}</span>}
+        {error && <span className="text-destructive text-sm">{error}</span>}
         <Button onClick={handleSave} disabled={saving}>
           {saving ? t('profile.saving') : t('profile.saveProfile')}
         </Button>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 
 // Recharts is a 5+ MB bundle; dynamic-import with ssr: false so it
 // only ships to the browser after the page has rendered. Both charts
@@ -42,8 +43,10 @@ import {
 import { getMarketTrends, getMarketIndicators, ApiError } from '@/lib/api';
 import { MarketTrends, MarketIndicators, MarketTrendPoint } from '@/lib/types';
 import { AreaComparisonComponent } from '@/components/analytics/area-comparison';
+import { PageHeader } from '@/components/ui/page-header';
 
 export default function MarketTrendsPage() {
+  const t = useTranslations('pages.marketTrends');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [trends, setTrends] = useState<MarketTrends | null>(null);
@@ -104,21 +107,16 @@ export default function MarketTrendsPage() {
 
   const trendColor =
     indicators?.overall_trend === 'rising'
-      ? 'text-green-600'
+      ? 'text-success'
       : indicators?.overall_trend === 'falling'
-        ? 'text-red-600'
-        : 'text-gray-600';
+        ? 'text-destructive'
+        : 'text-muted-foreground';
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col space-y-8">
         {/* Header */}
-        <div className="flex flex-col space-y-4">
-          <h1 className="text-3xl font-bold tracking-tight">Market Trends</h1>
-          <p className="text-muted-foreground">
-            Analyze price trends and market indicators across different areas.
-          </p>
-        </div>
+        <PageHeader title={t('title')} description={t('description')} />
 
         {/* Filters */}
         <Card>
@@ -223,8 +221,8 @@ export default function MarketTrendsPage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-2 rounded-full bg-green-100">
-                    <Activity className="h-6 w-6 text-green-600" />
+                  <div className="p-2 rounded-full bg-success/15">
+                    <Activity className="h-6 w-6 text-success" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">New (7 days)</p>
@@ -239,8 +237,8 @@ export default function MarketTrendsPage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-2 rounded-full bg-red-100">
-                    <DollarSign className="h-6 w-6 text-red-600" />
+                  <div className="p-2 rounded-full bg-destructive/15">
+                    <DollarSign className="h-6 w-6 text-destructive" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Price Drops (7d)</p>
@@ -266,7 +264,7 @@ export default function MarketTrendsPage() {
               {indicators.hottest_districts.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-green-600">Hottest Areas</CardTitle>
+                    <CardTitle className="text-success">Hottest Areas</CardTitle>
                     <CardDescription>Highest average prices</CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -290,7 +288,7 @@ export default function MarketTrendsPage() {
               {indicators.coldest_districts.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-blue-600">Most Affordable</CardTitle>
+                    <CardTitle className="text-info">Most Affordable</CardTitle>
                     <CardDescription>Lowest average prices</CardDescription>
                   </CardHeader>
                   <CardContent>

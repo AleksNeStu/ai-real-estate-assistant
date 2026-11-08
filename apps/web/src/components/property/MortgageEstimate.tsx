@@ -50,9 +50,9 @@ export function MortgageEstimate({
       data-testid="mortgage-estimate"
       className={[
         'inline-flex items-center gap-1.5 rounded-full',
-        'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200',
-        'px-2.5 py-1 text-xs font-medium border border-emerald-200/60',
-        'dark:border-emerald-800/40',
+        'bg-success/10 text-success dark:bg-chart-7/40 dark:text-chart-7',
+        'px-2.5 py-1 text-xs font-medium border border-chart-7/60',
+        'dark:border-chart-7/40',
         className ?? '',
       ]
         .filter(Boolean)
@@ -62,7 +62,7 @@ export function MortgageEstimate({
     >
       <TrendingUp className="h-3 w-3" aria-hidden />
       <span>{estimate.display}</span>
-      <span className="text-emerald-700/70 dark:text-emerald-300/60 font-normal">est.</span>
+      <span className="text-success/70 dark:text-chart-7/60 font-normal">est.</span>
     </div>
   );
 }

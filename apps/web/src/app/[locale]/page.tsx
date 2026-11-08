@@ -13,7 +13,7 @@ export default async function Home({
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-background">
       <div className="container mx-auto px-4 md:px-6 flex flex-col items-center text-center space-y-6">
-        <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
+        <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
           {t('title')}
         </h1>
         <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">{t('subtitle')}</p>

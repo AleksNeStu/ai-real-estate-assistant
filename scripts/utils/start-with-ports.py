@@ -22,18 +22,54 @@ Features:
 
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
-# Add scripts directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent))
+# Add the scripts directories to path for imports:
+# `service_discovery` lives next to this file, `port.port_manager` one level up.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from service_discovery import ServiceDiscovery
 
 
 def _project_root() -> Path:
-    return Path(__file__).resolve().parents[1]
+    return Path(__file__).resolve().parents[2]
+
+
+def _venv_python(root: Path) -> Path | None:
+    """Return the backend virtualenv interpreter, if it is provisioned."""
+    candidates = (
+        root / "apps" / "api" / ".venv" / "Scripts" / "python.exe",
+        root / "apps" / "api" / ".venv" / "bin" / "python",
+    )
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def _backend_cmd(root: Path, port: int) -> list[str]:
+    """Build the uvicorn command, preferring the provisioned virtualenv."""
+    uvicorn_args = [
+        "uvicorn",
+        "api.main:app",
+        "--reload",
+        "--reload-dir",
+        str(root / "apps" / "api"),
+        "--host",
+        "0.0.0.0",
+        "--port",
+        str(port),
+    ]
+    venv_python = _venv_python(root)
+    if venv_python is not None:
+        return [str(venv_python), "-m", *uvicorn_args]
+    if shutil.which("uv") is not None:
+        return ["uv", "run", "--project", str(root / "apps" / "api"), *uvicorn_args]
+    return [sys.executable, "-m", *uvicorn_args]
 
 
 def _build_backend_env(*, port: int, root: Path) -> dict[str, str]:
@@ -68,8 +104,9 @@ def _build_frontend_env(
     env.setdefault("NEXT_PUBLIC_API_URL", "/api/v1")
     env.setdefault("BACKEND_API_URL", f"http://localhost:{backend_port}/api/v1")
     env.setdefault("BACKEND_PORT", str(backend_port))
-    env.setdefault("PORT", str(frontend_port))
-    env.setdefault("FRONTEND_PORT", str(frontend_port))
+    # The launcher owns the bind port: an ambient PORT must not win.
+    env["PORT"] = str(frontend_port)
+    env["FRONTEND_PORT"] = str(frontend_port)
     if (
         not env.get("API_ACCESS_KEY", "").strip()
         and not env.get("API_ACCESS_KEYS", "").strip()
@@ -220,19 +257,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Using existing ports: backend={backend_port}, frontend={frontend_port}")
 
     # Build commands
-    backend_cmd = [
-        "uv",
-        "run",
-        "uvicorn",
-        "api.main:app",
-        "--reload",
-        "--reload-dir",
-        str(root / "apps" / "api"),
-        "--host",
-        "0.0.0.0",
-        "--port",
-        str(backend_port),
-    ]
+    backend_cmd = _backend_cmd(root, backend_port)
     frontend_cmd = ["npm", "run", "dev"]
     if os.name == "nt":
         frontend_cmd[0] = "npm.cmd"

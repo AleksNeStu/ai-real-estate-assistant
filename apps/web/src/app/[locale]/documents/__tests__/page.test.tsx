@@ -242,7 +242,7 @@ describe('DocumentsPage', () => {
 
     // Modal should show - look for the close button (×) that appears in the modal
     await waitFor(() => {
-      expect(screen.getByText('×')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
     });
   });
 
@@ -258,14 +258,14 @@ describe('DocumentsPage', () => {
 
     // Wait for modal to open (close button appears)
     await waitFor(() => {
-      expect(screen.getByText('×')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
     });
 
     // Click the close button to close modal
-    fireEvent.click(screen.getByText('×'));
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
 
     await waitFor(() => {
-      expect(screen.queryByText('×')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument();
     });
   });
 
@@ -280,15 +280,15 @@ describe('DocumentsPage', () => {
     fireEvent.click(uploadButtons[0]);
 
     await waitFor(() => {
-      expect(screen.getByText('×')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
     });
 
     // The real DocumentUpload component renders; find a way to trigger success
     // Since we can't mock the component, test by closing the modal directly
-    fireEvent.click(screen.getByText('×'));
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
 
     await waitFor(() => {
-      expect(screen.queryByText('×')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument();
     });
   });
 

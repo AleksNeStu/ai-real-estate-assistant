@@ -4,6 +4,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Wind, Volume2, Bus, CheckCircle, AlertTriangle, Info } from 'lucide-react';
 import type { NeighborhoodQualityResult } from '@/lib/types';
+import { useTranslations } from 'next-intl';
 
 interface NewFactorsSectionProps {
   result: NeighborhoodQualityResult;
@@ -35,54 +36,55 @@ interface NewFactorConfig {
  * - Interpretation of what the score means
  */
 export function NewFactorsSection({ result, className = '' }: NewFactorsSectionProps) {
+  const t = useTranslations('neighborhood');
   const getAirQualityRating = (aqi: number) => {
     if (aqi <= 50) {
-      return { label: 'Good', color: 'text-green-600', bg: 'bg-green-50 border-green-200' };
+      return { label: t('newFactors.ratings.good'), color: 'text-success', bg: 'bg-success/10 border-success/30' };
     }
     if (aqi <= 100) {
-      return { label: 'Moderate', color: 'text-yellow-600', bg: 'bg-yellow-50 border-yellow-200' };
+      return { label: t('newFactors.ratings.moderate'), color: 'text-warning', bg: 'bg-warning/10 border-warning/30' };
     }
     if (aqi <= 150) {
       return {
-        label: 'Unhealthy for Sensitive',
-        color: 'text-orange-600',
-        bg: 'bg-orange-50 border-orange-200',
+        label: t('newFactors.ratings.unhealthySensitive'),
+        color: 'text-caution',
+        bg: 'bg-caution/10 border-caution/30',
       };
     }
     if (aqi <= 200) {
-      return { label: 'Unhealthy', color: 'text-red-600', bg: 'bg-red-50 border-red-200' };
+      return { label: t('newFactors.ratings.unhealthy'), color: 'text-destructive', bg: 'bg-destructive/10 border-destructive/30' };
     }
     return {
-      label: 'Very Unhealthy',
-      color: 'text-purple-600',
-      bg: 'bg-purple-50 border-purple-200',
+      label: t('newFactors.ratings.veryUnhealthy'),
+      color: 'text-critical',
+      bg: 'bg-critical/10 border-critical/30',
     };
   };
 
   const getNoiseRating = (dB: number) => {
     if (dB <= 45) {
-      return { label: 'Quiet', color: 'text-green-600', bg: 'bg-green-50 border-green-200' };
+      return { label: t('newFactors.ratings.quiet'), color: 'text-success', bg: 'bg-success/10 border-success/30' };
     }
     if (dB <= 55) {
-      return { label: 'Moderate', color: 'text-yellow-600', bg: 'bg-yellow-50 border-yellow-200' };
+      return { label: t('newFactors.ratings.moderate'), color: 'text-warning', bg: 'bg-warning/10 border-warning/30' };
     }
     if (dB <= 65) {
-      return { label: 'Noisy', color: 'text-orange-600', bg: 'bg-orange-50 border-orange-200' };
+      return { label: t('newFactors.ratings.noisy'), color: 'text-caution', bg: 'bg-caution/10 border-caution/30' };
     }
-    return { label: 'Very Noisy', color: 'text-red-600', bg: 'bg-red-50 border-red-200' };
+    return { label: t('newFactors.ratings.veryNoisy'), color: 'text-destructive', bg: 'bg-destructive/10 border-destructive/30' };
   };
 
   const getTransportRating = (stopCount: number) => {
     if (stopCount >= 10) {
-      return { label: 'Excellent', color: 'text-green-600', bg: 'bg-green-50 border-green-200' };
+      return { label: t('newFactors.ratings.excellent'), color: 'text-success', bg: 'bg-success/10 border-success/30' };
     }
     if (stopCount >= 5) {
-      return { label: 'Good', color: 'text-lime-600', bg: 'bg-lime-50 border-lime-200' };
+      return { label: t('newFactors.ratings.good'), color: 'text-chart-7', bg: 'bg-chart-7/10 border-chart-7/30' };
     }
     if (stopCount >= 3) {
-      return { label: 'Fair', color: 'text-yellow-600', bg: 'bg-yellow-50 border-yellow-200' };
+      return { label: t('newFactors.ratings.fair'), color: 'text-warning', bg: 'bg-warning/10 border-warning/30' };
     }
-    return { label: 'Limited', color: 'text-red-600', bg: 'bg-red-50 border-red-200' };
+    return { label: t('newFactors.ratings.limited'), color: 'text-destructive', bg: 'bg-destructive/10 border-destructive/30' };
   };
 
   const formatAirQuality = (detail: { raw_value: number; unit: string } | undefined) => {
@@ -97,55 +99,55 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
 
   const formatTransport = (detail: { raw_value: number; unit: string } | undefined) => {
     if (!detail) return 'N/A';
-    return `${detail.raw_value} stops within 1km`;
+    return t('newFactors.stopsWithin1km', { count: detail.raw_value });
   };
 
   const factorConfigs: NewFactorConfig[] = [
     {
       key: 'air_quality_score',
-      label: 'Air Quality',
+      label: t('newFactors.airQuality.label'),
       icon: <Wind className="h-5 w-5" aria-hidden="true" />,
       detailKey: 'air_quality',
       description:
-        'Measures air pollution levels using the Air Quality Index (AQI). Lower values indicate cleaner air.',
+        t('newFactors.airQuality.description'),
       getRating: (_value: number) => {
         void _value;
         const detail = result.factor_details?.air_quality;
         return detail
           ? getAirQualityRating(detail.raw_value)
-          : { label: 'Unknown', color: 'text-gray-600', bg: 'bg-gray-50 border-gray-200' };
+          : { label: t('newFactors.ratings.unknown'), color: 'text-muted-foreground', bg: 'bg-muted border-border' };
       },
       formatValue: formatAirQuality,
     },
     {
       key: 'noise_level_score',
-      label: 'Noise Level',
+      label: t('newFactors.noiseLevel.label'),
       icon: <Volume2 className="h-5 w-5" aria-hidden="true" />,
       detailKey: 'noise_level',
       description:
-        'Average ambient noise level in decibels. Lower values indicate a quieter environment.',
+        t('newFactors.noiseLevel.description'),
       getRating: (_value: number) => {
         void _value;
         const detail = result.factor_details?.noise_level;
         return detail
           ? getNoiseRating(detail.raw_value)
-          : { label: 'Unknown', color: 'text-gray-600', bg: 'bg-gray-50 border-gray-200' };
+          : { label: t('newFactors.ratings.unknown'), color: 'text-muted-foreground', bg: 'bg-muted border-border' };
       },
       formatValue: formatNoise,
     },
     {
       key: 'public_transport_score',
-      label: 'Public Transport',
+      label: t('newFactors.publicTransport.label'),
       icon: <Bus className="h-5 w-5" aria-hidden="true" />,
       detailKey: 'public_transport',
       description:
-        'Number of public transport stops within 1km. Higher values indicate better accessibility.',
+        t('newFactors.publicTransport.description'),
       getRating: (_value: number) => {
         void _value;
         const detail = result.factor_details?.public_transport;
         return detail
           ? getTransportRating(detail.raw_value)
-          : { label: 'Unknown', color: 'text-gray-600', bg: 'bg-gray-50 border-gray-200' };
+          : { label: t('newFactors.ratings.unknown'), color: 'text-muted-foreground', bg: 'bg-muted border-border' };
       },
       formatValue: formatTransport,
     },
@@ -153,30 +155,30 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
 
   const getConfidenceIcon = (confidence: number | undefined) => {
     if (confidence === undefined) {
-      return <Info className="h-3 w-3 text-gray-400" aria-hidden="true" />;
+      return <Info className="h-3 w-3 text-muted-foreground" aria-hidden="true" />;
     }
     if (confidence >= 0.8) {
-      return <CheckCircle className="h-3 w-3 text-green-600" aria-hidden="true" />;
+      return <CheckCircle className="h-3 w-3 text-success" aria-hidden="true" />;
     }
     if (confidence >= 0.6) {
-      return <Info className="h-3 w-3 text-yellow-600" aria-hidden="true" />;
+      return <Info className="h-3 w-3 text-warning" aria-hidden="true" />;
     }
-    return <AlertTriangle className="h-3 w-3 text-red-600" aria-hidden="true" />;
+    return <AlertTriangle className="h-3 w-3 text-destructive" aria-hidden="true" />;
   };
 
   const getScoreColor = (score: number): string => {
-    if (score >= 85) return 'text-green-600';
-    if (score >= 70) return 'text-lime-600';
-    if (score >= 55) return 'text-yellow-600';
-    if (score >= 40) return 'text-orange-600';
-    return 'text-red-600';
+    if (score >= 85) return 'text-success';
+    if (score >= 70) return 'text-chart-7';
+    if (score >= 55) return 'text-warning';
+    if (score >= 40) return 'text-caution';
+    return 'text-destructive';
   };
 
   return (
     <div className={className}>
       <Card>
         <CardHeader>
-          <CardTitle>Extended Quality Factors</CardTitle>
+          <CardTitle>{t('newFactors.title')}</CardTitle>
           <CardDescription>
             Additional environmental and accessibility metrics for a complete neighborhood
             assessment
@@ -198,7 +200,7 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
                   {/* Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <div className={`p-2 rounded-lg bg-white ${rating.color} shadow-sm`}>
+                      <div className={`p-2 rounded-lg bg-card ${rating.color} shadow-sm`}>
                         {config.icon}
                       </div>
                       <div>
@@ -217,7 +219,10 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
                       <svg
                         className="w-full h-full transform -rotate-90"
                         role="img"
-                        aria-label={`${config.label} score: ${score.toFixed(0)} out of 100`}
+                        aria-label={t('newFactors.scoreLabel', {
+                          label: config.label,
+                          score: score.toFixed(0),
+                        })}
                       >
                         <circle
                           cx="48"
@@ -226,7 +231,7 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
                           stroke="currentColor"
                           strokeWidth="8"
                           fill="none"
-                          className="text-gray-200"
+                          className="text-muted-foreground"
                         />
                         {/* Score arc */}
                         <circle
@@ -252,27 +257,29 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
 
                   {/* Raw value */}
                   <div className="text-center mb-3">
-                    <p className="text-lg font-semibold text-gray-800">
+                    <p className="text-lg font-semibold text-foreground">
                       {config.formatValue(detail)}
                     </p>
                   </div>
 
                   {/* Data source info */}
                   {detail && (
-                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-3 pb-3 border-b border-gray-200">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-3 pb-3 border-b border-border">
                       <span>Source: {detail.data_source}</span>
                       <div
                         className="flex items-center gap-1"
-                        title={`Confidence: ${((confidence ?? 0) * 100).toFixed(0)}%`}
+                        title={t('newFactors.confidenceLabel', {
+                          value: ((confidence ?? 0) * 100).toFixed(0),
+                        })}
                       >
                         {getConfidenceIcon(confidence)}
                         <span
                           className={
                             (confidence ?? 0) >= 0.8
-                              ? 'text-green-600'
+                              ? 'text-success'
                               : (confidence ?? 0) >= 0.6
-                                ? 'text-yellow-600'
-                                : 'text-red-600'
+                                ? 'text-warning'
+                                : 'text-destructive'
                           }
                         >
                           {((confidence ?? 0) * 100).toFixed(0)}%

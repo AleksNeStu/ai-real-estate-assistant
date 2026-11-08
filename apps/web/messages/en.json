@@ -26,7 +26,7 @@
     "later": "Later",
     "installing": "Installing...",
     "install": "Install",
-    "backOnline": "You're back online",
+    "backOnline": "You’re back online",
     "offlineMessage": "You are offline. Some features may be unavailable.",
     "newVersionAvailable": "A new version is available!",
     "dismissUpdate": "Dismiss",
@@ -47,7 +47,8 @@
     "skipToContent": "Skip to main content",
     "tryTheseChips": {
       "heading": "Try one of these"
-    }
+    },
+    "logIn": "Log in"
   },
   "nav": {
     "mainNavigation": "Main navigation",
@@ -155,7 +156,10 @@
       "baths": "{count, plural, one {# bath} other {# baths}}",
       "areaUnit": "m²",
       "noLongerAvailable": "Property no longer available",
-      "locationUnavailable": "Location unavailable"
+      "locationUnavailable": "Location unavailable",
+      "addToFavorites": "Add to favorites",
+      "removeFromFavorites": "Remove from favorites",
+      "loginRequired": "Log in to save this property"
     },
     "favorite": {
       "add": "Add to favorites",
@@ -177,7 +181,9 @@
       "location": "Location",
       "features": "Features",
       "contact": "Contact agent"
-    }
+    },
+    "estimateLabel": "Estimated monthly payment {value}",
+    "estimateTitle": "Estimated monthly payment with {down}% down, {years}-year fixed at {rate}% APR. Not a lending offer."
   },
   "search": {
     "title": "Find Your Property",
@@ -218,7 +224,8 @@
     "emptyState": {
       "title": "Start Your Property Search",
       "description": "Enter a search query to explore thousands of property listings.",
-      "tryExamples": "Try these examples:"
+      "tryExamples": "Try these examples:",
+      "exportHint": "Export will be available once you have search results."
     },
     "results": {
       "noResults": "No Results Found",
@@ -231,7 +238,16 @@
       "format": "Export Format",
       "csv": "CSV",
       "json": "JSON",
-      "export": "Export"
+      "export": "Export",
+      "columns": "Columns (optional)",
+      "columnsPlaceholder": "e.g., id, city, price",
+      "delimiter": "CSV Delimiter",
+      "delimiterComma": "Comma (,)",
+      "delimiterSemicolon": "Semicolon (;)",
+      "decimalSeparator": "Decimal Separator",
+      "decimalDot": "Dot (.)",
+      "decimalComma": "Comma (,)",
+      "includeHeader": "Include header row"
     },
     "saveSearch": {
       "button": "Save Search",
@@ -244,7 +260,14 @@
     "errors": {
       "searchFailed": "Search Failed",
       "connectionFailed": "Connection failed. Please try again.",
-      "timeout": "Search timed out. Please try again."
+      "timeout": "Search timed out. Please try again.",
+      "invalidMinPrice": "Min price must be a valid number.",
+      "invalidMaxPrice": "Max price must be a valid number.",
+      "invalidMinRooms": "Minimum rooms must be a valid number.",
+      "minGreaterThanMax": "Min price cannot be greater than max price.",
+      "emptyQuery": "Please enter a search query.",
+      "genericSearch": "Failed to perform search. Please try again.",
+      "exportFailed": "Failed to export. Please try again."
     },
     "feedback": {
       "helpful": "Was this helpful?",
@@ -252,7 +275,47 @@
       "thumbsDown": "Thumbs down — not relevant",
       "thanks": "Thanks for your feedback!",
       "error": "Failed to submit"
-    }
+    },
+    "map": {
+      "noMappableResults": "No mappable results",
+      "noMappableResultsHint": "These listings do not include latitude/longitude coordinates.",
+      "shown": "{shown} of {total} shown on the map",
+      "filteredByArea": "(filtered by area)",
+      "enhanced": "Enhanced Map",
+      "useMapbox": "Use Mapbox",
+      "drawArea": "Draw Area",
+      "drawing": "Drawing...",
+      "enableDrawing": "Enable drawing",
+      "disableDrawing": "Disable drawing",
+      "clearArea": "Clear area"
+    },
+    "queryLabel": "Search query",
+    "searchLabel": "Property search",
+    "view": {
+      "label": "View mode",
+      "list": "List",
+      "map": "Map"
+    },
+    "preset": {
+      "title": "Save Filter Preset",
+      "name": "Preset Name",
+      "namePlaceholder": "e.g., Budget Apartments in Berlin",
+      "description": "Description (optional)",
+      "descriptionPlaceholder": "Brief description of this preset...",
+      "setDefault": "Set as default preset",
+      "hint": "Saves your current filter settings for quick access later.",
+      "saved": "Preset saved successfully!",
+      "savedHint": "You can quickly apply these filters from the presets menu.",
+      "nameRequired": "Please enter a name for this preset",
+      "loginRequired": "Please log in to save filter presets",
+      "saveFailed": "Failed to save preset",
+      "save": "Save Preset",
+      "saving": "Saving..."
+    },
+    "clearPriceFilter": "Clear price filter",
+    "filterByPropertyType": "Filter by property type",
+    "propertyMap": "Property map",
+    "propertyMapWithMapbox": "Property map with Mapbox"
   },
   "mortgage": {
     "title": "Mortgage Calculator",
@@ -304,7 +367,23 @@
       "allInCost": "All-in Monthly Cost",
       "monthlyCostBreakdown": "Monthly Cost Breakdown",
       "mortgage": "Mortgage",
-      "hoa": "HOA"
+      "hoa": "HOA",
+      "totalOver30Years": "Total Cost (30yr)",
+      "downPayment": "Down Payment",
+      "compareScenarios": "Compare Property Scenarios",
+      "comparisonSummary": "Comparison Summary",
+      "monthlyDifference": "Monthly Difference",
+      "equityDifference": "Equity Difference",
+      "breakEvenPoint": "Break-Even Point",
+      "breakEvenHint": "When costs equalize",
+      "recommended": "Recommended",
+      "comparisonFailed": "Comparison failed",
+      "scenarios": {
+        "centralApartment": "Central Apartment",
+        "suburbanHouse": "Suburban House",
+        "scenarioA": "Scenario A",
+        "scenarioB": "Scenario B"
+      }
     },
     "charts": {
       "breakdown": {
@@ -324,7 +403,8 @@
         "percentOfTotal": "{percent}% of total",
         "fixedCosts": "Fixed Costs",
         "variableCosts": "Variable Costs",
-        "discretionary": "Discretionary"
+        "discretionary": "Discretionary",
+        "ariaLabel": "Pie chart showing monthly cost breakdown: {categories}"
       },
       "projection": {
         "title": "Ownership Projections",
@@ -340,6 +420,9 @@
         "equity": "Equity:",
         "value": "Value:"
       }
+    },
+    "error": {
+      "unknown": "Unknown error"
     }
   },
   "investment": {
@@ -366,14 +449,35 @@
       "roi": "ROI (1 Year)",
       "onePercentRule": "1% Rule",
       "onePercentRulePass": "Pass - Rent is ≥ 1% of price",
-      "onePercentRuleFail": "Fail - Rent is < 1% of price"
+      "onePercentRuleFail": "Fail - Rent is < 1% of price",
+      "description": "Comprehensive metrics and investment quality score.",
+      "score": "Investment Score",
+      "riskScore": "Risk Score",
+      "cashOnCashRoi": "Cash on Cash ROI",
+      "netYield": "Net Yield",
+      "grossYield": "Gross Yield",
+      "totalInvestment": "Total Investment",
+      "annualIncome": "Annual Income",
+      "monthlyIncome": "Monthly Income (Rent)",
+      "mortgagePayment": "Mortgage Payment",
+      "netMonthlyCashFlow": "Net Monthly Cash Flow",
+      "cashFlowBreakdown": "Monthly Cash Flow Breakdown",
+      "metrics": "Investment Metrics",
+      "irr": "IRR"
     },
     "advanced": {
       "title": "Advanced Investment Analysis",
       "holdingPeriod": "Holding Period (Years)",
       "sellingCosts": "Selling Costs (%)",
       "incomeGrowth": "Income Growth (%)",
-      "expenseGrowth": "Expense Growth (%)"
+      "expenseGrowth": "Expense Growth (%)",
+      "propertyDetails": "Property Details",
+      "summary": "Investment Summary",
+      "taxImplications": "Tax Implications",
+      "taxDescription": "Annual depreciation, deductions, and tax benefits",
+      "annualDepreciation": "Annual Depreciation",
+      "totalTaxDeductions": "Total Tax Deductions",
+      "annualTaxBenefit": "Annual Tax Benefit"
     },
     "charts": {
       "cashFlow": {
@@ -385,7 +489,8 @@
         "equity": "Equity",
         "propertyValue": "Property Value",
         "totalCashFlow": "Total Cash Flow",
-        "finalEquity": "Final Equity"
+        "finalEquity": "Final Equity",
+        "year": "Year {year}"
       },
       "diversification": {
         "title": "Portfolio Diversification",
@@ -418,8 +523,45 @@
         "ariaLabel": "Appreciation scenarios line chart showing property value projections under pessimistic, realistic, and optimistic conditions",
         "value": "Value",
         "perYear": "{rate}%/year",
-        "total": "Total:"
+        "total": "Total:",
+        "year": "Year {year}",
+        "pessimistic": "Pessimistic",
+        "realistic": "Realistic",
+        "optimistic": "Optimistic"
+      },
+      "multiYear": {
+        "title": "Multi-Year Cash Flow Projection",
+        "description": "{years}-year projection with rent growth and appreciation"
       }
+    },
+    "formIntro": "Calculate ROI, cap rate, cash flow, and investment quality score.",
+    "form": {
+      "propertyInformation": "Property Information",
+      "financingDetails": "Financing Details",
+      "financing": "Financing",
+      "closingCosts": "Closing Costs ($)",
+      "renovationCosts": "Renovation Costs ($)",
+      "monthlyOperatingExpenses": "Monthly Operating Expenses",
+      "propertyTax": "Property Tax ($)",
+      "insurance": "Insurance ($)",
+      "hoaFees": "HOA Fees ($)",
+      "managementFee": "Management Fee (% of rent)",
+      "projectionSettings": "Projection Settings",
+      "projectionYears": "Projection Years",
+      "expectedAppreciation": "Expected Appreciation (%)",
+      "rentGrowthRate": "Rent Growth Rate (%)",
+      "landValueRatio": "Land Value Ratio (%)",
+      "marketVolatility": "Market Volatility (0-100)"
+    },
+    "error": {
+      "analysisFailed": "Analysis failed",
+      "unknown": "Unknown error"
+    },
+    "tabs": {
+      "cashFlow": "Cash Flow",
+      "scenarios": "Scenarios",
+      "tax": "Tax",
+      "risk": "Risk"
     }
   },
   "rentVsBuy": {
@@ -451,7 +593,8 @@
       "rentIncreaseRate": "Rent Increase Rate (%)",
       "investmentReturnRate": "Investment Return Rate (%)",
       "marginalTaxRate": "Marginal Tax Rate (%)",
-      "projectionYears": "Projection Years (Years)"
+      "projectionYears": "Projection Years (Years)",
+      "growthRates": "Growth Rates"
     },
     "results": {
       "title": "Analysis Results",
@@ -481,7 +624,12 @@
         "equityGrowth": {
           "title": "Equity & Property Value Growth",
           "ariaLabel": "Equity and property value growth chart over time"
-        }
+        },
+        "cumulativeRent": "Cumulative Rent",
+        "cumulativeOwnership": "Cumulative Ownership",
+        "propertyValue": "Property Value",
+        "equity": "Equity",
+        "year": "Year {year}"
       }
     }
   },
@@ -517,7 +665,14 @@
       "good": "Good",
       "fair": "Fair",
       "poor": "Poor",
-      "veryPoor": "Very Poor"
+      "veryPoor": "Very Poor",
+      "short": {
+        "exc": "Exc",
+        "good": "Good",
+        "fair": "Fair",
+        "poor": "Poor",
+        "vpoor": "VPoor"
+      }
     },
     "components": {
       "safety": "Safety",
@@ -527,7 +682,9 @@
       "greenSpace": "Green Space",
       "publicTransport": "Public Transport",
       "restaurants": "Restaurants",
-      "shopping": "Shopping"
+      "shopping": "Shopping",
+      "airQuality": "Air Quality",
+      "noiseLevel": "Noise Level"
     },
     "factorBreakdown": {
       "title": "Quality Factors Breakdown",
@@ -618,7 +775,8 @@
           "label": "Safety",
           "description": "Police and emergency services"
         }
-      }
+      },
+      "mapUnavailable": "Map preview is not available in this report"
     },
     "cityComparison": {
       "title": "City Comparison",
@@ -642,7 +800,9 @@
       "averageAcross": "This neighborhood scores close to the city average across all factors.",
       "pointsAbove": "{count} points above average",
       "pointsBelow": "{count} points below average",
-      "equalToAverage": "Equal to city average"
+      "equalToAverage": "Equal to city average",
+      "percentileLabel": "Percentile rank: {value}",
+      "scoreComparisonLabel": "Score comparison: This area {area}, City average {average}"
     },
     "details": {
       "quality": "Neighborhood Quality",
@@ -705,7 +865,14 @@
         "unknown": "Unknown"
       },
       "dataFreshness": "Data freshness: Air Quality updated {airQuality}, Noise Level updated {noiseLevel}, Transport updated {transport}",
-      "stopsWithin1km": "{count} stops within 1km"
+      "stopsWithin1km": "{count} stops within 1km",
+      "scoreLabel": "{label} score: {score} out of 100",
+      "confidenceLabel": "Confidence: {value}%"
+    },
+    "overallScore": "Overall Score",
+    "quality": {
+      "badge": "Neighborhood Quality: {rating} ({score}/100)",
+      "score": "Neighborhood Quality: {score}/100"
     }
   },
   "settings": {
@@ -806,7 +973,36 @@
         "input": "Input",
         "output": "Output",
         "per1kTokens": "per 1K tokens"
-      }
+      },
+      "modelCatalog": "Model Catalog",
+      "supportedProviders": "Supported providers:",
+      "model": "Model",
+      "context": "Context",
+      "inputPer1m": "Input / 1M",
+      "outputPer1m": "Output / 1M",
+      "capabilities": "Capabilities",
+      "downloadedModels": "Downloaded models",
+      "localModelsOffline": "Local models & offline usage",
+      "runtimeCheckDesc": "Run a targeted runtime check for this provider.",
+      "failedToLoadCatalog": "Failed to Load Catalog",
+      "refreshing": "Refreshing...",
+      "pricingUnavailable": "Pricing may be unavailable for some hosted models.",
+      "provider": "Provider:",
+      "local": "Local",
+      "hosted": "Hosted",
+      "apiKeyRequired": "API key required",
+      "noApiKeyRequired": "No API key required",
+      "localModelsDesc": "Local models run on your machine. Token pricing is not applicable; costs depend on your hardware and runtime settings.",
+      "runtimeDetectedModels": "Runtime check detected models:",
+      "runtimeNotDetected": "Local runtime not detected. Start your local runtime and ensure the API can reach it.",
+      "runtimeDetected": "Local runtime detected. Downloaded models: {count}.",
+      "runtimeUnknown": "Local runtime status is unknown.",
+      "ollamaStep1": "1. Install Ollama:",
+      "ollamaStep2": "2. Start Ollama, then download a model:",
+      "ollamaStep3": "3. If the API runs in Docker, set OLLAMA_BASE_URL to http://host.docker.internal:11434.",
+      "emptyCatalog": "No models are currently configured. Add your API keys in the Identity section above to get started.",
+      "emptyCatalogHint": "The live catalog below lists every configured provider — pick a model there once your API key is set.",
+      "loadFailed": "Failed to load model catalog. Please try again."
     },
     "saved": "Settings saved successfully.",
     "error": "Failed to save settings.",
@@ -846,7 +1042,8 @@
       "saving": "Saving...",
       "savePrivacySettings": "Save Privacy Settings",
       "exportStarted": "Data export started. You'll receive a download link shortly.",
-      "exportStartFailed": "Failed to start data export. Please try again."
+      "exportStartFailed": "Failed to start data export. Please try again.",
+      "title": "Privacy & Data"
     },
     "profile": {
       "loadFailed": "Failed to load profile. Please try again.",
@@ -1046,6 +1243,22 @@
       "disabled": "Alerts disabled",
       "enable": "Enable alerts",
       "disable": "Disable alerts"
+    },
+    "dialog": {
+      "title": "Save Search",
+      "name": "Search Name",
+      "namePlaceholder": "e.g., 2-bed apartments in Madrid",
+      "alertFrequency": "Alert Frequency",
+      "frequencyInstant": "Instant - Get notified immediately",
+      "frequencyDaily": "Daily Digest - Summary once per day",
+      "frequencyWeekly": "Weekly Digest - Summary once per week",
+      "frequencyNone": "No Alerts - Just save for later",
+      "hint": "You'll be notified about new properties and price drops matching this search.",
+      "saved": "Search saved successfully!",
+      "savedHint": "You will receive alerts based on your preferences.",
+      "nameRequired": "Please enter a name for this search",
+      "loginRequired": "Please log in to save searches",
+      "saveFailed": "Failed to save search"
     }
   },
   "marketTrends": {
@@ -1060,6 +1273,83 @@
       "quarter": "Last Quarter",
       "year": "Last Year",
       "all": "All Time"
+    },
+    "anomalies": {
+      "title": "Market Anomalies",
+      "allSeverities": "All Severities",
+      "allTypes": "All Types",
+      "loading": "Loading anomalies...",
+      "noneDetected": "No anomalies detected",
+      "emptyHint": "Anomalies will appear here when detected by the system.",
+      "loadFailed": "Failed to load anomalies",
+      "searchPlaceholder": "Search anomalies...",
+      "searchLabel": "Search anomalies",
+      "filterSeverity": "Filter by severity",
+      "filterType": "Filter by anomaly type",
+      "metric": "Metric",
+      "expected": "Expected",
+      "actual": "Actual",
+      "deviation": "Deviation",
+      "zScore": "Z-Score",
+      "types": {
+        "priceSpike": "Price Spike",
+        "priceDrop": "Price Drop",
+        "volumeSpike": "Volume Spike",
+        "volumeDrop": "Volume Drop",
+        "unusualPattern": "Unusual Pattern"
+      },
+      "severities": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "critical": "Critical"
+      }
+    },
+    "areaComparison": {
+      "description": "Compare market metrics between two cities side by side",
+      "firstCity": "First City",
+      "secondCity": "Second City",
+      "priceDifference": "Price Difference",
+      "cheaperArea": "Cheaper Area",
+      "moreListings": "More Listings",
+      "amenityAvailability": "Amenity Availability (%)",
+      "bothCitiesRequired": "Please enter both city names",
+      "compareFailed": "Failed to compare areas",
+      "cityPlaceholder": "e.g., Warsaw",
+      "metric": "Metric",
+      "avgPrice": "Avg Price",
+      "medianPrice": "Median Price",
+      "pricePerSqm": "Price/m²",
+      "listings": "Listings",
+      "avgRooms": "Avg Rooms"
+    },
+    "priceHistory": {
+      "title": "Price History",
+      "noData": "No price history available",
+      "currentPrice": "Current Price",
+      "firstRecorded": "First Recorded",
+      "priceChange": "Price Change",
+      "loadFailed": "Failed to load price history",
+      "price": "Price",
+      "pricePerSqm": "Price/sqm",
+      "anomalyCount": "{count, plural, one {# anomaly} other {# anomalies}}",
+      "chartLabel": "Price history chart showing {count} snapshots, trend: {trend}",
+      "trend": {
+        "increasing": "increasing",
+        "decreasing": "decreasing",
+        "stable": "stable"
+      }
+    },
+    "charts": {
+      "pricesTitle": "Average and Median Prices",
+      "pricesDescription": "Price trends over the selected period",
+      "averagePrice": "Average Price",
+      "medianPrice": "Median Price",
+      "volumeTitle": "Listing Volume",
+      "volumeDescription": "Number of listings per period",
+      "listings": "Listings",
+      "pricesAria": "Average and median prices over the selected period",
+      "volumeAria": "Number of listings per period"
     }
   },
   "cityOverview": {
@@ -1116,30 +1406,30 @@
       }
     },
     "subject": {
-      "searchPlaceholder": "Search by address, city, or property ID...",
-      "searchAriaLabel": "Search properties",
-      "searchButton": "Search",
+      "searchPlaceholder": "Search by address, city or title...",
+      "searchAriaLabel": "Search for the subject property",
       "searching": "Searching...",
-      "selectedSubject": "Selected Subject Property",
+      "searchButton": "Search",
+      "selectedSubject": "Selected subject property",
       "selected": "Selected",
-      "price": "Price:",
-      "area": "Area:",
-      "rooms": "Rooms:",
-      "type": "Type:",
-      "searchResults": "Search Results ({count})",
+      "price": "Price",
+      "area": "Area",
+      "rooms": "Rooms",
+      "type": "Type",
       "property": "Property",
+      "nextComparables": "Next: comparables",
       "roomsCount": "{count} rooms",
-      "nextComparables": "Next: Select Comparables"
+      "searchResults": "Search Results ({count})"
     },
     "comparables": {
-      "selectRange": "Select {min}-{max} comparable properties. Drag to reorder by relevance.",
       "refresh": "Refresh",
-      "finding": "Finding similar properties...",
-      "selected": "Selected:",
-      "selectMore": "Select at least {count} more",
+      "finding": "Finding...",
       "similarity": "Similarity",
-      "noComparables": "No comparable properties found. Try adjusting your search criteria.",
-      "selectedComparables": "Selected Comparables",
+      "noComparables": "No comparable properties selected yet.",
+      "selectedComparables": "Selected comparables",
+      "selectRange": "Select between {min} and {max} comparables",
+      "selectMore": "Select {count} more",
+      "selected": "Selected:",
       "roomsCount": "{count} rooms",
       "property": "Property {id}",
       "back": "Back",
@@ -1414,7 +1704,8 @@
         "cancelled": "Cancelled",
         "completed": "Completed"
       }
-    }
+    },
+    "selectType": "Select type"
   },
   "documents": {
     "title": "Documents",
@@ -1482,7 +1773,9 @@
       "singular": "{count} document expiring soon",
       "plural": "{count} documents expiring soon",
       "description": "The following documents will expire within 30 days:"
-    }
+    },
+    "searchPlaceholder": "Search documents...",
+    "searchLabel": "Search documents"
   },
   "demo": {
     "banner": "Browsing in demo mode — search and city data are available",
@@ -1546,5 +1839,188 @@
     "errorGeneric": "Something went wrong. Please try again.",
     "studioNote": "This is the free, open-source version. The hosted version is in development by NestLab.",
     "studioLink": "Visit nestlab.tech"
+  },
+  "pages": {
+    "search": {
+      "title": "Find Your Property",
+      "description": "Search across thousands of listings using AI-powered semantic search."
+    },
+    "favorites": {
+      "title": "My Favorites",
+      "description": "Properties you've saved for later.",
+      "newCollection": "New Collection",
+      "collectionName": "Collection name"
+    },
+    "savedSearches": {
+      "title": "Saved Searches",
+      "description": "Manage your saved searches and alert preferences",
+      "pauseAlerts": "Pause alerts",
+      "resumeAlerts": "Resume alerts",
+      "deleteSearch": "Delete search"
+    },
+    "leads": {
+      "title": "Lead Dashboard",
+      "description": "Track and manage your leads with AI-powered scoring",
+      "searchPlaceholder": "Search leads..."
+    },
+    "knowledge": {
+      "title": "Knowledge",
+      "description": "Upload documents to your local knowledge base and ask questions with citations."
+    },
+    "documents": {
+      "title": "Documents",
+      "description": "Manage your property documents, contracts, and reports",
+      "loading": "Loading documents...",
+      "errorTitle": "Failed to Load Documents",
+      "refresh": "Refresh",
+      "upload": "Upload Document",
+      "expiringTitle": "{count, plural, one {# document expiring soon} other {# documents expiring soon}}",
+      "expiringIntro": "The following documents will expire within 30 days:",
+      "andMore": "and {count} more",
+      "emptyTitle": "No documents yet",
+      "emptyDescription": "Upload your first document to start organizing your property-related files. Support for PDF, DOC, DOCX, JPG, and PNG files up to 10MB.",
+      "uploadFirst": "Upload Your First Document",
+      "loadMore": "Load More"
+    },
+    "marketTrends": {
+      "title": "Market Trends",
+      "description": "Analyze price trends and market indicators across different areas."
+    },
+    "cityOverview": {
+      "title": "City Overview",
+      "description": "Explore property markets across Poland. Click on a city card to see detailed listings."
+    },
+    "agents": {
+      "title": "Find an Agent",
+      "description": "Connect with professional real estate agents",
+      "searchByCity": "Search by city..."
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Manage your account settings and notification preferences.",
+      "loadingModelCatalog": "Loading model catalog"
+    },
+    "tools": {
+      "title": "Tools",
+      "description": "Useful calculators and utilities for real estate.",
+      "propertyPrice": "Property price",
+      "columnsHint": "Columns (optional), e.g., id, city, price",
+      "propertyId": "Property ID"
+    },
+    "analytics": {
+      "title": "Analytics & Tools",
+      "description": "Market insights and financial tools to help you make informed decisions."
+    },
+    "valuation": {
+      "title": "AI Property Valuation & Forecast",
+      "forecastChart": "Forecast chart"
+    },
+    "usage": {
+      "title": "Usage Dashboard",
+      "description": "Track your activity and analytics",
+      "totalSearches": "Total Searches",
+      "propertyViews": "Property Views",
+      "propertyClicks": "Property Clicks",
+      "interval": {
+        "day": "Daily",
+        "week": "Weekly",
+        "month": "Monthly"
+      },
+      "actions": {
+        "refresh": "Refresh",
+        "exportCsv": "Export CSV"
+      },
+      "sessions": "{count} unique sessions",
+      "toolsUsed": "Tools Used",
+      "avgResponseTime": "Avg Response Time",
+      "exports": "Exports",
+      "favorites": "Favorites",
+      "propertiesViewed": "Properties viewed",
+      "calculatorTools": "Calculator & analysis tools",
+      "processingTime": "Processing time",
+      "clickThroughRate": "Click-through rate",
+      "dataExported": "Data exported",
+      "propertiesSaved": "Properties saved",
+      "tabs": {
+        "activityTrends": "Activity Trends",
+        "topTools": "Top Tools",
+        "topCities": "Top Cities",
+        "dailyActivity": "Daily Activity"
+      },
+      "charts": {
+        "activityOverTime": "Activity Over Time",
+        "activityOverTimeDescription": "Your usage trends grouped by {interval}",
+        "mostUsedTools": "Most Used Tools",
+        "mostUsedToolsDescription": "Your favorite analysis and calculation tools",
+        "topSearchCities": "Top Search Cities",
+        "topSearchCitiesDescription": "Most searched locations",
+        "searchDistribution": "Search Distribution",
+        "searchDistributionDescription": "Percentage of searches by city",
+        "dailyActivity": "Daily Activity",
+        "dailyActivityDescription": "Events per day over the selected period"
+      },
+      "series": {
+        "searches": "Searches",
+        "propertyViews": "Property Views",
+        "toolUses": "Tool Uses",
+        "exports": "Exports"
+      },
+      "empty": {
+        "noTrendData": "No trend data available",
+        "noToolUsage": "No tool usage data yet",
+        "noCityData": "No city data yet",
+        "noDailyActivity": "No daily activity data yet"
+      },
+      "aria": {
+        "activityOverTime": "Activity over time: searches, property views, tool uses and exports",
+        "mostUsedTools": "Most used tools by number of uses",
+        "topSearchCities": "Top search cities by number of searches",
+        "searchDistribution": "Share of searches per city",
+        "dailyActivity": "Events per day over the selected period"
+      },
+      "loadFailed": "Failed to load usage data"
+    },
+    "cma": {
+      "title": "Comparative Market Analysis",
+      "description": "Generate professional CMA reports by selecting a subject property and comparable listings."
+    },
+    "showcase": {
+      "title": "Showcase",
+      "description": "What the assistant can do, end to end."
+    },
+    "agentAnalytics": {
+      "title": "Agent Analytics",
+      "description": "Loading your performance data...",
+      "totalLeads": "Total Leads",
+      "totalRevenue": "Total Revenue"
+    },
+    "admin": {
+      "monitoring": {
+        "title": "Production Monitoring",
+        "description": "Real-time system health, metrics, and operational insights"
+      },
+      "connectors": {
+        "title": "MCP Connectors",
+        "description": "Manage and monitor MCP connector registry"
+      },
+      "dataSources": {
+        "title": "Data Sources",
+        "description": "Manage data sources for property imports and sync status."
+      },
+      "bulkJobs": {
+        "title": "Bulk Import/Export Jobs",
+        "description": "Manage bulk data import and export operations"
+      }
+    }
+  },
+  "states": {
+    "empty": {
+      "title": "Nothing here yet",
+      "description": "The items you add will appear here."
+    },
+    "error": {
+      "title": "Something went wrong",
+      "description": "The data could not be loaded. Try again in a moment."
+    }
   }
 }

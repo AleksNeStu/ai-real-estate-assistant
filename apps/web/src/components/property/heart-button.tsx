@@ -2,7 +2,10 @@
 
 import React, { useState } from 'react';
 import { Heart, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
+import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,6 +29,9 @@ export function HeartButton({
   const { isFavorited, toggleFavorite } = useFavorites();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations('property.card');
+  const tCommon = useTranslations('common');
+  const router = useRouter();
 
   const favorited = isFavorited(propertyId);
 
@@ -40,7 +46,17 @@ export function HeartButton({
     e.stopPropagation();
 
     if (!isAuthenticated) {
-      setError('Please log in to favorite properties');
+      // The old behaviour only wrote the message into a screen-reader-only
+      // element, so a signed-out visitor clicked the heart and nothing
+      // happened. The message is now visible, and it offers the way out.
+      const message = t('loginRequired');
+      setError(message);
+      toast.error(message, {
+        action: {
+          label: tCommon('logIn'),
+          onClick: () => router.push('/auth/login'),
+        },
+      });
       return;
     }
 
@@ -51,11 +67,16 @@ export function HeartButton({
       const newState = await toggleFavorite(propertyId);
       onToggle?.(newState);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update favorite');
+      const message =
+        err instanceof Error ? err.message : tCommon('error');
+      setError(message);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
   };
+
+  const label = favorited ? t('removeFromFavorites') : t('addToFavorites');
 
   return (
     <button
@@ -64,24 +85,27 @@ export function HeartButton({
       disabled={isLoading}
       className={cn(
         'relative rounded-full p-2 transition-all duration-200',
-        'hover:bg-gray-100 dark:hover:bg-gray-800',
-        'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+        'bg-background/80 text-muted-foreground backdrop-blur-sm',
+        'hover:bg-accent hover:text-foreground',
+        'focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         className
       )}
       data-testid="favorite-toggle"
-      title={showTooltip ? (favorited ? 'Remove from favorites' : 'Add to favorites') : undefined}
-      aria-label={favorited ? 'Remove from favorites' : 'Add to favorites'}
+      title={showTooltip ? label : undefined}
+      aria-label={label}
       aria-pressed={favorited}
     >
       {isLoading ? (
-        <Loader2 className={cn(sizeClasses[size], 'animate-spin text-gray-400')} />
+        <Loader2 className={cn(sizeClasses[size], 'animate-spin text-muted-foreground')} />
       ) : (
         <Heart
           className={cn(
             sizeClasses[size],
             'transition-colors duration-200',
-            favorited ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-400'
+            favorited
+              ? 'fill-destructive text-destructive'
+              : 'text-muted-foreground hover:text-destructive'
           )}
         />
       )}

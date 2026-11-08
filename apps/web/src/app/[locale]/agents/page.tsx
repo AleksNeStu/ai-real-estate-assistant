@@ -16,10 +16,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageHeader } from '@/components/ui/page-header';
 
 import { getAgents } from '@/lib/api';
 import type { AgentProfile, AgentFilters } from '@/lib/types';
 import { AgentCard } from '@/components/agents/agent-card';
+import { EmptyState } from '@/components/ui/states';
 
 const SORT_OPTIONS = [
   { value: 'rating', label: 'Rating (High to Low)' },
@@ -32,6 +34,7 @@ type SortOption = (typeof SORT_OPTIONS)[number]['value'];
 
 export default function AgentsPage({ params }: { params: Promise<{ locale: string }> }) {
   const t = useTranslations();
+  const tPage = useTranslations('pages.agents');
 
   const [agents, setAgents] = useState<AgentProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -112,10 +115,11 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">{t('agents.title')}</h1>
-        <p className="text-muted-foreground mt-2">{t('agents.subtitle')}</p>
-      </div>
+      <PageHeader
+        className="mb-8"
+        title={tPage('title')}
+        description={tPage('description')}
+      />
 
       {/* Search and Filter Bar */}
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -260,18 +264,18 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
           ))}
         </div>
       ) : agents.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Users className="mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="text-lg font-medium">{t('agents.noAgents')}</h3>
-            <p className="text-muted-foreground">{t('agents.noAgentsDescription')}</p>
-            {hasActiveFilters && (
-              <Button variant="outline" className="mt-4" onClick={clearFilters}>
+        <EmptyState
+          icon={Users}
+          title={t('agents.noAgents')}
+          description={t('agents.noAgentsDescription')}
+          action={
+            hasActiveFilters ? (
+              <Button variant="outline" onClick={clearFilters}>
                 {t('agents.filters.clear')}
               </Button>
-            )}
-          </CardContent>
-        </Card>
+            ) : undefined
+          }
+        />
       ) : (
         <>
           <div className="mb-4 text-sm text-muted-foreground">

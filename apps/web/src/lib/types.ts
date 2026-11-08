@@ -2340,6 +2340,7 @@ export interface CMAComparable {
   similarity_score: number;
   adjustments: CMAAdjustment[];
   adjusted_price: number;
+  currency?: string;
 }
 
 export interface CMAValuation {

@@ -87,7 +87,7 @@ export function OfflineBanner({ className }: OfflineBannerProps) {
         role="status"
         aria-live="polite"
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 bg-green-600 px-4 py-2 text-center text-sm text-white transition-all',
+          'fixed top-0 left-0 right-0 z-50 bg-success px-4 py-2 text-center text-sm text-success-foreground transition-all',
           className
         )}
       >
@@ -106,7 +106,7 @@ export function OfflineBanner({ className }: OfflineBannerProps) {
         role="status"
         aria-live="polite"
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 bg-amber-600 px-4 py-2 text-center text-sm text-white transition-all',
+          'fixed top-0 left-0 right-0 z-50 bg-caution px-4 py-2 text-center text-sm text-caution-foreground transition-all',
           className
         )}
       >

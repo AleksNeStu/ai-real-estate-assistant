@@ -15,7 +15,7 @@
 
 ### Linux/Mac (Bash)
 ```bash
-./scripts/run.sh --mode local
+./scripts/dev/run.sh --mode local
 ```
 
 **Access:**
@@ -42,16 +42,16 @@
 ### Linux/Mac (Bash)
 ```bash
 # Auto-detect GPU
-./scripts/run.sh --mode docker
+./scripts/dev/run.sh --mode docker
 
 # Force CPU mode
-./scripts/docker.sh cpu
+./scripts/docker/docker.sh cpu
 
 # Force GPU mode
-./scripts/docker.sh gpu
+./scripts/docker/docker.sh gpu
 
 # Enable internet access
-./scripts/run.sh --mode docker --internet
+./scripts/dev/run.sh --mode docker --internet
 ```
 
 ---

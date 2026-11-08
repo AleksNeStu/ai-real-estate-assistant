@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { compareAreas, ApiError } from '@/lib/api';
 import { AreaComparison } from '@/lib/types';
+import { useTranslations } from 'next-intl';
 
 interface MetricRowProps {
   label: string;
@@ -61,7 +62,7 @@ function MetricRow({
         <div className="text-xs text-muted-foreground">{label}</div>
         {diff !== 0 && (
           <div
-            className={`flex items-center justify-center gap-1 text-xs ${isBetter ? 'text-green-600' : 'text-red-600'}`}
+            className={`flex items-center justify-center gap-1 text-xs ${isBetter ? 'text-success' : 'text-destructive'}`}
           >
             {isPositive ? (
               <TrendingUp className="h-3 w-3" aria-hidden="true" />
@@ -80,6 +81,7 @@ function MetricRow({
 }
 
 export function AreaComparisonComponent() {
+  const t = useTranslations('marketTrends');
   const [city1, setCity1] = useState('Warsaw');
   const [city2, setCity2] = useState('Krakow');
   const [loading, setLoading] = useState(false);
@@ -88,7 +90,7 @@ export function AreaComparisonComponent() {
 
   const handleCompare = async () => {
     if (!city1.trim() || !city2.trim()) {
-      setError('Please enter both city names');
+      setError(t('areaComparison.bothCitiesRequired'));
       return;
     }
 
@@ -104,7 +106,7 @@ export function AreaComparisonComponent() {
       } else if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Failed to compare areas');
+        setError(t('areaComparison.compareFailed'));
       }
     } finally {
       setLoading(false);
@@ -125,26 +127,26 @@ export function AreaComparisonComponent() {
           <BarChart3 className="h-5 w-5" aria-hidden="true" />
           Area Comparison
         </CardTitle>
-        <CardDescription>Compare market metrics between two cities side by side</CardDescription>
+        <CardDescription>{t('areaComparison.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Input Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="city1">First City</Label>
+            <Label htmlFor="city1">{t('areaComparison.firstCity')}</Label>
             <Input
               id="city1"
-              placeholder="e.g., Warsaw"
+              placeholder={t('areaComparison.cityPlaceholder')}
               value={city1}
               onChange={(e) => setCity1(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleCompare()}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="city2">Second City</Label>
+            <Label htmlFor="city2">{t('areaComparison.secondCity')}</Label>
             <Input
               id="city2"
-              placeholder="e.g., Krakow"
+              placeholder={t('areaComparison.cityPlaceholder')}
               value={city2}
               onChange={(e) => setCity2(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleCompare()}
@@ -186,7 +188,7 @@ export function AreaComparisonComponent() {
                   <div className="flex items-center gap-2">
                     <TrendIcon className="h-5 w-5 text-primary" aria-hidden="true" />
                     <div>
-                      <p className="text-sm text-muted-foreground">Price Difference</p>
+                      <p className="text-sm text-muted-foreground">{t('areaComparison.priceDifference')}</p>
                       <p className="text-lg font-semibold">
                         {comparison.price_difference > 0 ? '+' : ''}
                         {comparison.price_difference_percent.toFixed(1)}%
@@ -199,9 +201,9 @@ export function AreaComparisonComponent() {
               <Card className="bg-muted/50">
                 <CardContent className="pt-4">
                   <div className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-green-600" aria-hidden="true" />
+                    <DollarSign className="h-5 w-5 text-success" aria-hidden="true" />
                     <div>
-                      <p className="text-sm text-muted-foreground">Cheaper Area</p>
+                      <p className="text-sm text-muted-foreground">{t('areaComparison.cheaperArea')}</p>
                       <p className="text-lg font-semibold">{comparison.cheaper_area}</p>
                     </div>
                   </div>
@@ -211,9 +213,9 @@ export function AreaComparisonComponent() {
               <Card className="bg-muted/50">
                 <CardContent className="pt-4">
                   <div className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5 text-blue-600" aria-hidden="true" />
+                    <Building2 className="h-5 w-5 text-info" aria-hidden="true" />
                     <div>
-                      <p className="text-sm text-muted-foreground">More Listings</p>
+                      <p className="text-sm text-muted-foreground">{t('areaComparison.moreListings')}</p>
                       <p className="text-lg font-semibold">{comparison.more_properties_area}</p>
                     </div>
                   </div>
@@ -226,42 +228,42 @@ export function AreaComparisonComponent() {
               {/* Header */}
               <div className="grid grid-cols-5 bg-muted/50 p-3 font-semibold text-sm">
                 <div className="col-span-2 text-center">{comparison.area1.city}</div>
-                <div className="col-span-1 text-center">Metric</div>
+                <div className="col-span-1 text-center">{t('areaComparison.metric')}</div>
                 <div className="col-span-2 text-center">{comparison.area2.city}</div>
               </div>
 
               {/* Metrics */}
               <div className="p-3">
                 <MetricRow
-                  label="Avg Price"
+                  label={t('areaComparison.avgPrice')}
                   value1={comparison.area1.avg_price}
                   value2={comparison.area2.avg_price}
                   format="currency"
                   higherIsBetter={false}
                 />
                 <MetricRow
-                  label="Median Price"
+                  label={t('areaComparison.medianPrice')}
                   value1={comparison.area1.median_price}
                   value2={comparison.area2.median_price}
                   format="currency"
                   higherIsBetter={false}
                 />
                 <MetricRow
-                  label="Price/m²"
+                  label={t('areaComparison.pricePerSqm')}
                   value1={comparison.area1.avg_price_per_sqm}
                   value2={comparison.area2.avg_price_per_sqm}
                   format="currency"
                   higherIsBetter={false}
                 />
                 <MetricRow
-                  label="Listings"
+                  label={t('areaComparison.listings')}
                   value1={comparison.area1.property_count}
                   value2={comparison.area2.property_count}
                   format="number"
                   higherIsBetter={true}
                 />
                 <MetricRow
-                  label="Avg Rooms"
+                  label={t('areaComparison.avgRooms')}
                   value1={comparison.area1.most_common_room_count}
                   value2={comparison.area2.most_common_room_count}
                   format="number"
@@ -274,7 +276,7 @@ export function AreaComparisonComponent() {
             {comparison.area1.amenity_availability &&
               Object.keys(comparison.area1.amenity_availability).length > 0 && (
                 <div>
-                  <h4 className="text-sm font-semibold mb-3">Amenity Availability (%)</h4>
+                  <h4 className="text-sm font-semibold mb-3">{t('areaComparison.amenityAvailability')}</h4>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {Object.entries(comparison.area1.amenity_availability).map(([key, val1]) => {
                       const val2 = comparison.area2.amenity_availability?.[key] ?? 0;
@@ -287,7 +289,7 @@ export function AreaComparisonComponent() {
                             <ArrowRight className="h-3 w-3" aria-hidden="true" />
                             <span>{val2.toFixed(0)}%</span>
                             {diff !== 0 && (
-                              <span className={diff > 0 ? 'text-green-600' : 'text-red-600'}>
+                              <span className={diff > 0 ? 'text-success' : 'text-destructive'}>
                                 ({diff > 0 ? '+' : ''}
                                 {diff.toFixed(0)}%)
                               </span>

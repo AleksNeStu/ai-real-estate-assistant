@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { Code2, Star, Building2, Quote } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/ui/page-header';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
@@ -50,18 +51,18 @@ export default async function ShowcasePage({
 }) {
   const { locale } = await params;
   const t = await getTranslations('showcase');
+  const tPage = await getTranslations('pages.showcase');
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col space-y-12 max-w-4xl mx-auto">
         {/* Hero */}
         <header className="flex flex-col items-center text-center space-y-3">
-          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-            {t('heroTitle')}
-          </h1>
-          <p className="text-muted-foreground md:text-lg max-w-2xl">
-            {t('heroSubtitle')}
-          </p>
+          <PageHeader
+            className="sm:flex-col sm:items-center text-center"
+            title={tPage('title')}
+            description={tPage('description')}
+          />
         </header>
 
         {/* Forks / Built With This */}

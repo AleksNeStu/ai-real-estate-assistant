@@ -3,6 +3,7 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { PortfolioDiversification } from '@/lib/types';
+import { useTranslations } from 'next-intl';
 
 interface DiversificationChartProps {
   diversification: PortfolioDiversification;
@@ -10,17 +11,18 @@ interface DiversificationChartProps {
 }
 
 const COLORS = [
-  '#3b82f6',
-  '#22c55e',
-  '#f59e0b',
-  '#ef4444',
-  '#8b5cf6',
-  '#ec4899',
-  '#06b6d4',
-  '#84cc16',
+  'hsl(var(--chart-1))',
+  'hsl(var(--chart-2))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-8))',
+  'hsl(var(--chart-4))',
+  'hsl(var(--chart-6))',
+  'hsl(var(--chart-5))',
+  'hsl(var(--chart-7))',
 ];
 
 export function DiversificationChart({ diversification, className }: DiversificationChartProps) {
+  const t = useTranslations('investment');
   // Convert distributions to chart data
   const cityData = Object.entries(diversification.city_distribution).map(
     ([name, value], index) => ({
@@ -46,18 +48,18 @@ export function DiversificationChart({ diversification, className }: Diversifica
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle>Portfolio Diversification</CardTitle>
-        <CardDescription>Geographic and property type distribution analysis</CardDescription>
+        <CardTitle>{t('charts.diversification.title')}</CardTitle>
+        <CardDescription>{t('charts.diversification.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid md:grid-cols-2 gap-6">
           {/* Geographic Distribution */}
           <div>
-            <h4 className="text-sm font-medium mb-2 text-center">By City</h4>
+            <h4 className="text-sm font-medium mb-2 text-center">{t('charts.diversification.byCity')}</h4>
             <div
               className="h-48"
               role="img"
-              aria-label="Geographic distribution pie chart showing portfolio allocation by city"
+              aria-label={t('charts.diversification.geographicAria')}
             >
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -74,23 +76,23 @@ export function DiversificationChart({ diversification, className }: Diversifica
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Value']} />
+                  <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, t('charts.diversification.value')]} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
             <div className="text-center mt-2">
-              <p className="text-sm text-muted-foreground">Geographic Score</p>
+              <p className="text-sm text-muted-foreground">{t('charts.diversification.geographicScore')}</p>
               <p className="text-lg font-semibold">{diversification.geographic_score}/100</p>
             </div>
           </div>
 
           {/* Property Type Distribution */}
           <div>
-            <h4 className="text-sm font-medium mb-2 text-center">By Property Type</h4>
+            <h4 className="text-sm font-medium mb-2 text-center">{t('charts.diversification.byPropertyType')}</h4>
             <div
               className="h-48"
               role="img"
-              aria-label="Property type distribution pie chart showing portfolio allocation by property type"
+              aria-label={t('charts.diversification.typeAria')}
             >
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -107,12 +109,12 @@ export function DiversificationChart({ diversification, className }: Diversifica
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Value']} />
+                  <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, t('charts.diversification.value')]} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
             <div className="text-center mt-2">
-              <p className="text-sm text-muted-foreground">Type Score</p>
+              <p className="text-sm text-muted-foreground">{t('charts.diversification.typeScore')}</p>
               <p className="text-lg font-semibold">{diversification.property_type_score}/100</p>
             </div>
           </div>
@@ -121,21 +123,21 @@ export function DiversificationChart({ diversification, className }: Diversifica
         {/* Risk Summary */}
         <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t">
           <div className="text-center">
-            <p className="text-sm text-muted-foreground">Concentration Risk</p>
+            <p className="text-sm text-muted-foreground">{t('charts.diversification.concentrationRisk')}</p>
             <p
               className={`text-lg font-semibold ${
                 diversification.concentration_risk > 70
-                  ? 'text-red-600'
+                  ? 'text-destructive'
                   : diversification.concentration_risk > 40
-                    ? 'text-yellow-600'
-                    : 'text-green-600'
+                    ? 'text-warning'
+                    : 'text-success'
               }`}
             >
               {diversification.concentration_risk.toFixed(0)}%
             </p>
           </div>
           <div className="text-center">
-            <p className="text-sm text-muted-foreground">Largest Holding</p>
+            <p className="text-sm text-muted-foreground">{t('charts.diversification.largestHolding')}</p>
             <p className="text-lg font-semibold">
               {diversification.largest_holding_percent.toFixed(1)}%
             </p>

@@ -14,7 +14,7 @@ interface ClusterMarkerProps {
  */
 export function getClusterColor(dominantType: string | null, isMixed: boolean): string {
   if (isMixed) {
-    return '#6b7280'; // gray for mixed clusters
+    return 'hsl(var(--muted-foreground))';
   }
   return PROPERTY_TYPE_COLORS[dominantType || 'other'] || PROPERTY_TYPE_COLORS.other;
 }
@@ -47,7 +47,7 @@ export function computeBarSegments(distribution: Map<string, number>): BarSegmen
   }
 
   if (accumulatedWidth < 100) {
-    segments.push({ width: 100 - accumulatedWidth, color: '#6b7280' });
+    segments.push({ width: 100 - accumulatedWidth, color: 'hsl(var(--muted-foreground))' });
   }
 
   return segments;
@@ -77,10 +77,10 @@ export default function ClusterMarker({
         height: count >= 100 ? '40px' : count >= 50 ? '35px' : '30px',
         padding: '0 8px',
         background: backgroundColor,
-        color: 'white',
+        color: 'hsl(var(--background))',
         borderRadius: '9999px',
-        border: '2px solid white',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+        border: '2px solid hsl(var(--background))',
+        boxShadow: '0 2px 4px hsl(var(--foreground) / 0.3)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',

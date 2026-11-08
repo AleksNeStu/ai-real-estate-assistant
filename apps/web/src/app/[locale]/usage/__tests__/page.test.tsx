@@ -194,7 +194,7 @@ describe('UsagePage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Failed to load usage data')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
     });
   });
 
@@ -214,7 +214,7 @@ describe('UsagePage', () => {
     mockFetchResponse('user-activity/summary', mockSummary);
     mockFetchResponse('user-activity/trends', { trends: mockTrends });
 
-    fireEvent.click(screen.getByRole('button', { name: /try again/i }));
+    fireEvent.click(screen.getByRole('button', { name: /retry/i }));
 
     await waitFor(() => {
       expect(screen.getByText('Total Searches')).toBeInTheDocument();

@@ -1,8 +1,15 @@
 # Scripts Directory
 
 This directory contains utility scripts for development, testing, and CI/CD operations.
-All scripts live under a category subfolder; the root holds only this README and `__init__.py` (per
-the meta-repo Rule 94: no loose scripts at `scripts/` or `docs/` root).
+All scripts live under a category subfolder; the root holds only this README, `__init__.py`
+and the shared launcher `start.py` (per the meta-repo Rule 94: no loose scripts at `scripts/`
+or `docs/` root).
+
+`start.py` is the one deliberate exception: it is the shared entry point that every wrapper
+under `scripts/local/`, `scripts/dev/`, `scripts/docker/` and `scripts/setup/` delegates to,
+and the one the docs point at (`docs/development/SCRIPTS.md`,
+`docs/development/CONTRIBUTING.md`). It is not a category script, so it stays where the
+wrappers, the backend tests and the documentation already expect it.
 
 ## 📁 Directory Structure
 

@@ -128,7 +128,7 @@ export function OnboardingTour() {
             <button
               type="button"
               onClick={dismiss}
-              className="flex-shrink-0 text-muted hover:text-foreground transition-colors"
+              className="flex-shrink-0 text-muted hover:text-foreground transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               aria-label="Close tour"
             >
               <X className="h-4 w-4" />

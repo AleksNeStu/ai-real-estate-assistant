@@ -1,9 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Bookmark, Loader2, X } from 'lucide-react';
+import { Bookmark, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Modal } from '@/components/ui/modal';
 import { createSavedSearch, ApiError } from '@/lib/api';
 import type { AlertFrequency } from '@/lib/types';
 
@@ -20,6 +24,8 @@ export function SaveSearchButton({
   onSaveSuccess,
   className,
 }: SaveSearchButtonProps) {
+  const t = useTranslations('savedSearches.dialog');
+  const tCommon = useTranslations('common');
   const [isOpen, setIsOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState('');
@@ -46,7 +52,7 @@ export function SaveSearchButton({
 
   const handleSave = async () => {
     if (!name.trim()) {
-      setError('Please enter a name for this search');
+      setError(t('nameRequired'));
       return;
     }
 
@@ -69,12 +75,12 @@ export function SaveSearchButton({
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.category === 'auth') {
-          setError('Please log in to save searches');
+          setError(t('loginRequired'));
         } else {
           setError(err.message);
         }
       } else {
-        setError(err instanceof Error ? err.message : 'Failed to save search');
+        setError(err instanceof Error ? err.message : t('saveFailed'));
       }
     } finally {
       setSaving(false);
@@ -83,101 +89,85 @@ export function SaveSearchButton({
 
   return (
     <>
-      <Button variant="outline" onClick={handleOpen} className={className}>
-        <Bookmark className="h-4 w-4 mr-2" />
-        Save Search
+      <Button type="button" variant="outline" onClick={handleOpen} className={className}>
+        <Bookmark className="mr-2 h-4 w-4" aria-hidden="true" />
+        {t('title')}
       </Button>
 
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Save Search"
-        >
-          <div className="bg-background rounded-lg p-6 max-w-md w-full mx-4 shadow-lg">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Save Search</h2>
-              <button
+      <Modal
+        open={isOpen}
+        onClose={handleClose}
+        title={t('title')}
+        closeLabel={tCommon('close')}
+        footer={
+          success ? null : (
+            <>
+              <Button
+                type="button"
+                variant="outline"
                 onClick={handleClose}
-                className="text-muted-foreground hover:text-foreground"
-                aria-label="Close dialog"
+                disabled={saving}
               >
-                <X className="h-5 w-5" aria-hidden="true" />
-              </button>
+                {tCommon('cancel')}
+              </Button>
+              <Button type="button" onClick={handleSave} disabled={saving}>
+                {saving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                    {tCommon('saving')}
+                  </>
+                ) : (
+                  tCommon('save')
+                )}
+              </Button>
+            </>
+          )
+        }
+      >
+        {success ? (
+          <div className="space-y-2 py-2 text-center">
+            <p className="text-success font-medium">{t('saved')}</p>
+            <p className="text-sm text-muted-foreground">{t('savedHint')}</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="search-name">{t('name')}</Label>
+              <Input
+                id="search-name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={t('namePlaceholder')}
+                maxLength={255}
+              />
             </div>
 
-            {success ? (
-              <div className="text-center py-4">
-                <div className="text-green-600 mb-2">Search saved successfully!</div>
-                <p className="text-sm text-muted-foreground">
-                  You will receive alerts based on your preferences.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="search-name" className="block text-sm font-medium mb-1">
-                    Search Name
-                  </label>
-                  <input
-                    id="search-name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g., 2-bed apartments in Madrid"
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    maxLength={255}
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="alert-frequency">{t('alertFrequency')}</Label>
+              <select
+                id="alert-frequency"
+                value={alertFrequency}
+                onChange={(e) => setAlertFrequency(e.target.value as AlertFrequency)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
+              >
+                <option value="instant">{t('frequencyInstant')}</option>
+                <option value="daily">{t('frequencyDaily')}</option>
+                <option value="weekly">{t('frequencyWeekly')}</option>
+                <option value="none">{t('frequencyNone')}</option>
+              </select>
+            </div>
 
-                <div>
-                  <label htmlFor="alert-frequency" className="block text-sm font-medium mb-1">
-                    Alert Frequency
-                  </label>
-                  <select
-                    id="alert-frequency"
-                    value={alertFrequency}
-                    onChange={(e) => setAlertFrequency(e.target.value as AlertFrequency)}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
-                    <option value="instant">Instant - Get notified immediately</option>
-                    <option value="daily">Daily Digest - Summary once per day</option>
-                    <option value="weekly">Weekly Digest - Summary once per week</option>
-                    <option value="none">No Alerts - Just save for later</option>
-                  </select>
-                </div>
+            <p className="text-sm text-muted-foreground">{t('hint')}</p>
 
-                <div className="text-sm text-muted-foreground">
-                  You&apos;ll be notified about new properties and price drops matching this search.
-                </div>
-
-                {error && (
-                  <p className="text-sm text-destructive" role="alert">
-                    {error}
-                  </p>
-                )}
-
-                <div className="flex justify-end gap-2 pt-2">
-                  <Button variant="outline" onClick={handleClose} disabled={saving}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSave} disabled={saving}>
-                    {saving ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
-                        Saving...
-                      </>
-                    ) : (
-                      'Save'
-                    )}
-                  </Button>
-                </div>
-              </div>
-            )}
+            {error ? (
+              <p className="text-sm text-destructive" role="alert">
+                {error}
+              </p>
+            ) : null}
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </>
   );
 }

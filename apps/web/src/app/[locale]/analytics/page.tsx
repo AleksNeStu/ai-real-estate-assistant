@@ -2,6 +2,9 @@
 
 import { BarChart3, TrendingUp, Calculator, PieChart, Scale } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
+
+import { PageHeader } from '@/components/ui/page-header';
 
 const MortgageCalculator = dynamic(
   () =>
@@ -40,14 +43,11 @@ const RentVsBuyCalculator = dynamic(
 );
 
 export default function AnalyticsPage() {
+  const t = useTranslations('pages.analytics');
+
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Analytics & Tools</h1>
-        <p className="text-muted-foreground text-lg">
-          Market insights and financial tools to help you make informed decisions.
-        </p>
-      </div>
+      <PageHeader title={t('title')} description={t('description')} />
 
       <div className="space-y-12">
         <section className="rounded-lg border bg-card p-6">

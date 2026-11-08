@@ -15,11 +15,11 @@ export function DataSourceHealthBadge({
 }: DataSourceHealthBadgeProps) {
   const getColorClass = () => {
     if (status === 'error') return 'bg-destructive';
-    if (status === 'syncing') return 'bg-yellow-500';
-    if (status === 'pending') return 'bg-gray-400';
-    if (healthScore >= 80) return 'bg-green-500';
-    if (healthScore >= 50) return 'bg-yellow-500';
-    return 'bg-red-500';
+    if (status === 'syncing') return 'bg-warning';
+    if (status === 'pending') return 'bg-muted-foreground';
+    if (healthScore >= 80) return 'bg-success';
+    if (healthScore >= 50) return 'bg-warning';
+    return 'bg-destructive';
   };
 
   const getLabel = () => {

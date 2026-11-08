@@ -98,7 +98,8 @@
         "cancelled": "Cancelled",
         "completed": "Completed"
       }
-    }
+    },
+    "selectType": "Выберите тип"
   },
   "auth": {
     "signIn": "Войти",
@@ -166,7 +167,9 @@
       "weakPassword": "Пароль должен содержать минимум 8 символов",
       "emailAlreadyExists": "Аккаунт с таким email уже существует",
       "invalidEmail": "Введите корректный email"
-    }
+    },
+    "loading": "Загрузка...",
+    "userMenu": "Меню пользователя"
   },
   "cma": {
     "steps": {
@@ -192,30 +195,30 @@
       }
     },
     "subject": {
-      "searchPlaceholder": "Search by address, city, or property ID...",
-      "searchAriaLabel": "Search properties",
-      "searchButton": "Search",
-      "searching": "Searching...",
-      "selectedSubject": "Selected Subject Property",
-      "selected": "Selected",
-      "price": "Price:",
-      "area": "Area:",
-      "rooms": "Rooms:",
-      "type": "Type:",
-      "searchResults": "Search Results ({count})",
-      "property": "Property",
-      "roomsCount": "{count} rooms",
-      "nextComparables": "Next: Select Comparables"
+      "searchPlaceholder": "Поиск по адресу, городу или названию...",
+      "searchAriaLabel": "Поиск объекта оценки",
+      "searching": "Поиск...",
+      "searchButton": "Найти",
+      "selectedSubject": "Выбранный объект",
+      "selected": "Выбрано",
+      "price": "Цена",
+      "area": "Площадь",
+      "rooms": "Комнаты",
+      "type": "Тип",
+      "property": "Объект",
+      "nextComparables": "Далее: аналоги",
+      "roomsCount": "{count} комнат",
+      "searchResults": "Search Results ({count})"
     },
     "comparables": {
-      "selectRange": "Select {min}-{max} comparable properties. Drag to reorder by relevance.",
-      "refresh": "Refresh",
-      "finding": "Finding similar properties...",
+      "refresh": "Обновить",
+      "finding": "Поиск...",
+      "similarity": "Сходство",
+      "noComparables": "Аналоги пока не выбраны.",
+      "selectedComparables": "Выбранные аналоги",
+      "selectRange": "Выберите от {min} до {max} аналогов",
+      "selectMore": "Выбрать ещё {count}",
       "selected": "Selected:",
-      "selectMore": "Select at least {count} more",
-      "similarity": "Similarity",
-      "noComparables": "No comparable properties found. Try adjusting your search criteria.",
-      "selectedComparables": "Selected Comparables",
       "roomsCount": "{count} rooms",
       "property": "Property {id}",
       "back": "Back",
@@ -450,7 +453,17 @@
     "skipToContent": "Перейти к основному содержимому",
     "tryTheseChips": {
       "heading": "Попробуйте один из этих"
-    }
+    },
+    "logIn": "Войти",
+    "installApp": "Установить приложение",
+    "installAppDescription": "Установите это приложение на своё устройство для быстрого доступа и удобной работы.",
+    "later": "Позже",
+    "installing": "Установка...",
+    "install": "Установить",
+    "backOnline": "Вы снова в сети",
+    "offlineMessage": "Вы не в сети. Некоторые функции могут быть недоступны.",
+    "newVersionAvailable": "Доступна новая версия!",
+    "dismissUpdate": "Закрыть"
   },
   "demo": {
     "banner": "Демо-режим — доступен поиск и данные по городам",
@@ -525,7 +538,9 @@
       "singular": "{count} document expiring soon",
       "plural": "{count} documents expiring soon",
       "description": "The following documents will expire within 30 days:"
-    }
+    },
+    "searchPlaceholder": "Поиск документов...",
+    "searchLabel": "Поиск документов"
   },
   "error": {
     "generic": "Что-то пошло не так",
@@ -534,7 +549,10 @@
     "forbidden": "Доступ запрещён",
     "serverError": "Ошибка сервера",
     "tryAgain": "Попробуйте позже",
-    "goHome": "На главную"
+    "goHome": "На главную",
+    "chatUnavailable": "Чат временно недоступен",
+    "chatErrorFallback": "Произошла непредвиденная ошибка. Попробуйте ещё раз.",
+    "retry": "Повторить"
   },
   "favorites": {
     "title": "Моё избранное",
@@ -595,15 +613,126 @@
       "roi": "ROI (1 год)",
       "onePercentRule": "Правило 1%",
       "onePercentRulePass": "Пройдено - Аренда ≥ 1% цены",
-      "onePercentRuleFail": "Не пройдено - Аренда < 1% цены"
+      "onePercentRuleFail": "Не пройдено - Аренда < 1% цены",
+      "description": "Полный набор показателей и оценка качества инвестиции.",
+      "score": "Инвестиционный рейтинг",
+      "riskScore": "Оценка риска",
+      "cashOnCashRoi": "Прибыль на вложенные средства",
+      "netYield": "Чистая доходность",
+      "grossYield": "Валовая доходность",
+      "totalInvestment": "Общий объём инвестиций",
+      "annualIncome": "Годовой доход",
+      "monthlyIncome": "Месячный доход (аренда)",
+      "mortgagePayment": "Ежемесячный платёж по ипотеке",
+      "netMonthlyCashFlow": "Чистый месячный денежный поток",
+      "cashFlowBreakdown": "Разбивка месячного денежного потока",
+      "metrics": "Инвестиционные показатели",
+      "irr": "IRR"
     },
     "advanced": {
       "title": "Расширенный анализ инвестиций",
       "holdingPeriod": "Период владения (лет)",
       "sellingCosts": "Расходы на продажу (%)",
       "incomeGrowth": "Рост дохода (%)",
-      "expenseGrowth": "Рост расходов (%)"
-    }
+      "expenseGrowth": "Рост расходов (%)",
+      "propertyDetails": "Сведения об объекте",
+      "summary": "Сводка по инвестиции",
+      "taxImplications": "Налоговые последствия",
+      "taxDescription": "Годовая амортизация, вычеты и налоговые льготы",
+      "annualDepreciation": "Годовая амортизация",
+      "totalTaxDeductions": "Суммарные налоговые вычеты",
+      "annualTaxBenefit": "Годовая налоговая выгода"
+    },
+    "formIntro": "Рассчитайте ROI, капитализацию, денежный поток и качество инвестиции.",
+    "form": {
+      "propertyInformation": "Информация об объекте",
+      "financingDetails": "Детали финансирования",
+      "financing": "Финансирование",
+      "closingCosts": "Расходы на закрытие сделки ($)",
+      "renovationCosts": "Расходы на ремонт ($)",
+      "monthlyOperatingExpenses": "Ежемесячные операционные расходы",
+      "propertyTax": "Налог на имущество ($)",
+      "insurance": "Страхование ($)",
+      "hoaFees": "Взносы в товарищество ($)",
+      "managementFee": "Управленческий сбор (% от аренды)",
+      "projectionSettings": "Параметры прогноза",
+      "projectionYears": "Годы прогноза",
+      "expectedAppreciation": "Ожидаемый рост цены (%)",
+      "rentGrowthRate": "Рост арендной ставки (%)",
+      "landValueRatio": "Доля земли в стоимости (%)",
+      "marketVolatility": "Волатильность рынка (0-100)"
+    },
+    "error": {
+      "analysisFailed": "Не удалось выполнить анализ",
+      "unknown": "Неизвестная ошибка"
+    },
+    "tabs": {
+      "cashFlow": "Денежный поток",
+      "scenarios": "Сценарии",
+      "tax": "Налоги",
+      "risk": "Риск"
+    },
+    "charts": {
+      "cashFlow": {
+        "year": "{year} год",
+        "title": "Прогноз денежного потока",
+        "description": "Годовой денежный поток и накопленная доходность",
+        "ariaLabel": "График прогноза денежного потока: годовой денежный поток и накопленная доходность по годам",
+        "annualCashFlow": "Годовой денежный поток",
+        "cumulativeCashFlow": "Накопленный денежный поток",
+        "equity": "Собственный капитал",
+        "propertyValue": "Стоимость объекта",
+        "totalCashFlow": "Суммарный денежный поток",
+        "finalEquity": "Итоговый собственный капитал"
+      },
+      "scenario": {
+        "year": "{year} год",
+        "pessimistic": "Пессимистичный",
+        "realistic": "Реалистичный",
+        "optimistic": "Оптимистичный",
+        "title": "Сценарии роста цены",
+        "description": "Прогноз стоимости объекта при разных условиях рынка",
+        "ariaLabel": "Линейный график сценариев роста цены: прогноз стоимости при пессимистичном, реалистичном и оптимистичном сценариях",
+        "value": "Стоимость",
+        "perYear": "{rate}% в год",
+        "total": "Итого:"
+      },
+      "multiYear": {
+        "title": "Многолетний прогноз денежного потока",
+        "description": "Прогноз на {years} лет с ростом аренды и инвестицией в цену"
+      },
+      "diversification": {
+        "title": "Диверсификация портфеля",
+        "description": "Анализ распределения по городам и типам объектов",
+        "byCity": "По городам",
+        "geographicAria": "Круговая диаграмма географического распределения портфеля по городам",
+        "geographicScore": "Географический балл",
+        "byPropertyType": "По типам объектов",
+        "typeAria": "Круговая диаграмма распределения портфеля по типам объектов",
+        "typeScore": "Балл по типам",
+        "value": "Стоимость",
+        "concentrationRisk": "Риск концентрации",
+        "largestHolding": "Крупнейшая позиция"
+      },
+      "risk": {
+        "title": "Оценка риска",
+        "description": "Анализ инвестиционного риска и рекомендации",
+        "ariaLabel": "Балл риска: {score} из 100, {level}",
+        "outOf100": "из 100",
+        "lowRisk": "Низкий риск",
+        "moderateRisk": "Умеренный риск",
+        "elevatedRisk": "Повышенный риск",
+        "highRisk": "Высокий риск",
+        "riskFactors": "Факторы риска",
+        "recommendations": "Рекомендации"
+      }
+    },
+    "emptyDescription": "Введите параметры объекта, чтобы оценить инвестиционный потенциал.",
+    "emptyHint": "Результаты появятся здесь после расчёта.",
+    "scoreExcellent": "Отлично",
+    "scoreGood": "Хорошо",
+    "scoreFair": "Удовлетворительно",
+    "scorePoor": "Плохо"
   },
   "knowledge": {
     "title": "База знаний",
@@ -637,6 +766,83 @@
       "quarter": "Последний квартал",
       "year": "Последний год",
       "all": "Всё время"
+    },
+    "anomalies": {
+      "title": "Аномалии рынка",
+      "allSeverities": "Все уровни серьёзности",
+      "allTypes": "Все типы",
+      "loading": "Загрузка аномалий...",
+      "noneDetected": "Аномалий не обнаружено",
+      "emptyHint": "Здесь появятся аномалии, когда система их обнаружит.",
+      "loadFailed": "Не удалось загрузить аномалии",
+      "searchPlaceholder": "Поиск аномалий...",
+      "searchLabel": "Поиск аномалий",
+      "filterSeverity": "Фильтр по серьёзности",
+      "filterType": "Фильтр по типу аномалии",
+      "metric": "Показатель",
+      "expected": "Ожидаемое",
+      "actual": "Фактическое",
+      "deviation": "Отклонение",
+      "zScore": "Z-оценка",
+      "types": {
+        "priceSpike": "Резкий рост цены",
+        "priceDrop": "Резкое падение цены",
+        "volumeSpike": "Резкий рост объёма",
+        "volumeDrop": "Резкое падение объёма",
+        "unusualPattern": "Необычная закономерность"
+      },
+      "severities": {
+        "low": "Низкий",
+        "medium": "Средний",
+        "high": "Высокий",
+        "critical": "Критический"
+      }
+    },
+    "areaComparison": {
+      "description": "Сравнение рыночных показателей двух городов",
+      "firstCity": "Первый город",
+      "secondCity": "Второй город",
+      "priceDifference": "Разница в цене",
+      "cheaperArea": "Более дешёвый район",
+      "moreListings": "Больше объявлений",
+      "amenityAvailability": "Доступность инфраструктуры (%)",
+      "bothCitiesRequired": "Введите названия обоих городов",
+      "compareFailed": "Не удалось выполнить сравнение",
+      "cityPlaceholder": "например, Варшава",
+      "metric": "Показатель",
+      "avgPrice": "Средняя цена",
+      "medianPrice": "Медианная цена",
+      "pricePerSqm": "Цена за м²",
+      "listings": "Объявления",
+      "avgRooms": "Среднее число комнат"
+    },
+    "priceHistory": {
+      "title": "История цен",
+      "noData": "История цен недоступна",
+      "currentPrice": "Текущая цена",
+      "firstRecorded": "Первая запись",
+      "priceChange": "Изменение цены",
+      "loadFailed": "Не удалось загрузить историю цен",
+      "price": "Цена",
+      "pricePerSqm": "Цена за м²",
+      "anomalyCount": "{count, plural, one {# аномалия} few {# аномалии} many {# аномалий} other {# аномалии}}",
+      "chartLabel": "График истории цен: {count} записей, тренд: {trend}",
+      "trend": {
+        "increasing": "растущий",
+        "decreasing": "падающий",
+        "stable": "стабильный"
+      }
+    },
+    "charts": {
+      "pricesTitle": "Средние и медианные цены",
+      "pricesDescription": "Динамика цен за выбранный период",
+      "averagePrice": "Средняя цена",
+      "medianPrice": "Медианная цена",
+      "volumeTitle": "Объём предложений",
+      "volumeDescription": "Количество объявлений за период",
+      "listings": "Объявления",
+      "pricesAria": "Средние и медианные цены за выбранный период",
+      "volumeAria": "Количество объявлений за период"
     }
   },
   "mortgage": {
@@ -654,7 +860,9 @@
       "totalInterest": "Общие проценты",
       "totalCost": "Общая стоимость",
       "loanAmount": "Сумма кредита",
-      "downPaymentAmount": "Первоначальный взнос"
+      "downPaymentAmount": "Первоначальный взнос",
+      "description": "Расчётные платежи по ипотеке",
+      "monthlyBreakdown": "Разбивка ежемесячного платежа"
     },
     "tco": {
       "title": "Полная стоимость владения",
@@ -664,8 +872,86 @@
       "maintenanceHint": "Правило: 1-2% стоимости недвижимости в год",
       "propertyTax": "Налог на недвижимость",
       "insurance": "Страхование",
-      "utilities": "Коммунальные услуги"
-    }
+      "utilities": "Коммунальные услуги",
+      "totalOver30Years": "Общая стоимость за 30 лет",
+      "downPayment": "Первоначальный взнос",
+      "compareScenarios": "Сравнение сценариев объекта",
+      "comparisonSummary": "Сводка сравнения",
+      "monthlyDifference": "Разница в месячных платежах",
+      "equityDifference": "Разница в собственном капитале",
+      "breakEvenPoint": "Точка безубыточности",
+      "breakEvenHint": "Момент, когда расходы сравняются",
+      "recommended": "Рекомендуется",
+      "comparisonFailed": "Не удалось выполнить сравнение",
+      "scenarios": {
+        "centralApartment": "Квартира в центре",
+        "suburbanHouse": "Дом в пригороде",
+        "scenarioA": "Сценарий A",
+        "scenarioB": "Сценарий B"
+      },
+      "monthlyHoa": "Ежемесячный взнос в товарищество",
+      "annualPropertyTax": "Годовой налог на имущество",
+      "annualInsurance": "Годовое страхование",
+      "monthlyUtilities": "Ежемесячные коммунальные услуги",
+      "monthlyInternet": "Ежемесячный интернет",
+      "monthlyParking": "Ежемесячная парковка",
+      "maintenancePercent": "Обслуживание (% от стоимости)",
+      "description": "Совокупные расходы со всеми статьями",
+      "totalOverYears": "Итого за {years} лет",
+      "allInCost": "Полные ежемесячные расходы",
+      "monthlyCostBreakdown": "Разбивка ежемесячных расходов",
+      "mortgage": "Ипотека",
+      "hoa": "Товарищество"
+    },
+    "error": {
+      "unknown": "Неизвестная ошибка"
+    },
+    "charts": {
+      "breakdown": {
+        "ariaLabel": "Круговая диаграмма разбивки ежемесячных расходов: {categories}",
+        "title": "Разбивка ежемесячных расходов",
+        "description": "Распределение расходов на владение",
+        "categories": {
+          "mortgage": "Ипотека",
+          "propertyTax": "Налог на имущество",
+          "insurance": "Страхование",
+          "hoa": "Товарищество",
+          "utilities": "Коммунальные услуги",
+          "internet": "Интернет",
+          "parking": "Парковка",
+          "maintenance": "Обслуживание"
+        },
+        "perMonth": "{value} в месяц",
+        "percentOfTotal": "{percent}% от итога",
+        "fixedCosts": "Фиксированные расходы",
+        "variableCosts": "Переменные расходы",
+        "discretionary": "На усмотрение"
+      },
+      "projection": {
+        "title": "Прогноз владения",
+        "description": "Накопленные расходы, собственный капитал и стоимость объекта с течением времени",
+        "ariaLabel": "Линейный график прогноза владения: накопленные расходы, собственный капитал, стоимость объекта и остаток кредита по годам",
+        "year": "{year} год",
+        "years": "Годы",
+        "totalCost": "Общие расходы",
+        "equityBuilt": "Накопленный капитал",
+        "propertyValue": "Стоимость объекта",
+        "loanBalance": "Остаток кредита",
+        "cost": "Расходы:",
+        "equity": "Капитал:",
+        "value": "Стоимость:"
+      }
+    },
+    "emptyDescription": "Заполните параметры объекта, чтобы рассчитать платежи по ипотеке.",
+    "emptyHint": "Результаты появятся здесь после расчёта.",
+    "hideTcoOptions": "Скрыть параметры TCO",
+    "showTcoOptions": "Показать параметры TCO",
+    "tcoOptionsTitle": "Параметры совокупных расходов на владение",
+    "calculationFailed": "Расчёт не удался",
+    "retry": "Повторить",
+    "exportToPdf": "Экспорт в PDF",
+    "hideComparison": "Скрыть сравнение",
+    "compareScenarios": "Сравнить сценарии"
   },
   "nav": {
     "mainNavigation": "Основная навигация",
@@ -690,7 +976,14 @@
       "good": "Хорошо",
       "fair": "Удовлетворительно",
       "poor": "Плохо",
-      "veryPoor": "Очень плохо"
+      "veryPoor": "Очень плохо",
+      "short": {
+        "exc": "Отл.",
+        "good": "Хор.",
+        "fair": "Удовл.",
+        "poor": "Слаб.",
+        "vpoor": "Очень слаб."
+      }
     },
     "components": {
       "safety": "Безопасность",
@@ -700,7 +993,197 @@
       "greenSpace": "Зелёные зоны",
       "publicTransport": "Общественный транспорт",
       "restaurants": "Рестораны",
-      "shopping": "Магазины"
+      "shopping": "Магазины",
+      "airQuality": "Качество воздуха",
+      "noiseLevel": "Уровень шума"
+    },
+    "overallScore": "Общая оценка",
+    "whatsNearby": {
+      "mapUnavailable": "Предпросмотр карты недоступен в этом отчёте",
+      "title": "Что рядом",
+      "description": "Значимые места в районе",
+      "descriptionWalking": "Значимые места в пешей доступности",
+      "dataNotAvailable": "Данные о местах поблизости недоступны для этого объекта.",
+      "nearestPlace": "Ближайшее место",
+      "placesNearby": "мест поблизости: {count}",
+      "noFoundNearby": "Поблизости не найдено: {category}",
+      "openInMaps": "Открыть в Google Maps",
+      "mapComingSoon": "Интеграция с картами скоро появится",
+      "location": "Расположение:",
+      "categories": {
+        "schools": {
+          "label": "Школы",
+          "description": "Образовательные учреждения поблизости"
+        },
+        "amenities": {
+          "label": "Инфраструктура",
+          "description": "Магазины, рестораны и сервисы"
+        },
+        "greenSpaces": {
+          "label": "Зелёные зоны",
+          "description": "Парки и зоны отдыха"
+        },
+        "transport": {
+          "label": "Транспорт",
+          "description": "Точки доступа к общественному транспорту"
+        },
+        "safety": {
+          "label": "Безопасность",
+          "description": "Полиция и экстренные службы"
+        }
+      }
+    },
+    "factorBreakdown": {
+      "title": "Разбивка факторов качества",
+      "overall": "Итого:",
+      "per100": "из 100",
+      "dataConfidence": "Достоверность данных:",
+      "confidenceHigh": "Высокая",
+      "confidenceMedium": "Средняя",
+      "confidenceLow": "Низкая",
+      "scoreRanges": "Диапазоны оценок:",
+      "excellent": "85+ Отлично",
+      "good": "70-84 Хорошо",
+      "fair": "55-69 Удовлетворительно",
+      "poor": "40-54 Плохо",
+      "veryPoor": "<40 Очень плохо",
+      "factors": {
+        "safety": {
+          "label": "Безопасность",
+          "weight": "15%",
+          "description": "Уровень преступности и близость полиции"
+        },
+        "schools": {
+          "label": "Школы",
+          "weight": "15%",
+          "description": "Качество школ и расстояние до них"
+        },
+        "amenities": {
+          "label": "Инфраструктура",
+          "weight": "15%",
+          "description": "Магазины, рестораны, сервисы"
+        },
+        "walkability": {
+          "label": "Пешеходная доступность",
+          "weight": "15%",
+          "description": "Инфраструктура для пешеходов"
+        },
+        "greenSpace": {
+          "label": "Зелёные зоны",
+          "weight": "10%",
+          "description": "Парки и природные зоны"
+        },
+        "airQuality": {
+          "label": "Качество воздуха",
+          "weight": "10%",
+          "description": "Индекс качества воздуха (AQI)"
+        },
+        "noiseLevel": {
+          "label": "Уровень шума",
+          "weight": "10%",
+          "description": "Уровень фонового шума"
+        },
+        "publicTransport": {
+          "label": "Общественный транспорт",
+          "weight": "10%",
+          "description": "Доступность транспорта"
+        }
+      }
+    },
+    "cityComparison": {
+      "title": "Сравнение с городом",
+      "description": "Как этот район соотносится со средним по городу",
+      "descriptionCity": "Как этот район соотносится со средним по городу {city}",
+      "dataNotAvailable": "Данные для сравнения с городом недоступны для этого объекта.",
+      "percentile": "перцентиль",
+      "outstanding": "Выдающийся",
+      "excellent": "Отличный",
+      "aboveAverage": "Выше среднего",
+      "average": "Средний",
+      "belowAverage": "Ниже среднего",
+      "poor": "Слабый",
+      "scoresHigherThan": "Этот район набирает больше баллов, чем {percentile}% районов в городе {city}",
+      "cityAverage": "Среднее по городу:",
+      "scoreComparison": "Сравнение оценок",
+      "thisArea": "Этот район",
+      "cityAvg": "Среднее по городу",
+      "score": "Оценка",
+      "betterThanAverage": "Лучше среднего",
+      "averageAcross": "Этот район близок к среднему по городу по всем факторам.",
+      "pointsAbove": "на {count} баллов выше среднего",
+      "pointsBelow": "на {count} баллов ниже среднего",
+      "equalToAverage": "На уровне среднего по городу",
+      "percentileLabel": "Процентильный ранг: {value}",
+      "scoreComparisonLabel": "Сравнение баллов: этот район {area}, среднее по городу {average}"
+    },
+    "details": {
+      "quality": "Качество района",
+      "noData": "Данные о районе недоступны",
+      "assessment": "Оценка качества района",
+      "loading": "Загрузка данных о районе...",
+      "failedToLoad": "Не удалось загрузить данные о районе",
+      "tryAgain": "Попробовать снова",
+      "overview": "Обзор",
+      "allFactors": "Все факторы",
+      "extended": "Расширенные",
+      "nearby": "Рядом",
+      "dataSources": "Источники данных",
+      "detailedFactorInfo": "Подробная информация по факторам",
+      "detailedFactorDescription": "Исходные значения и источники данных по каждому фактору",
+      "factor": "Фактор",
+      "score": "Оценка",
+      "rawValue": "Исходное значение",
+      "confidence": "Достоверность",
+      "source": "Источник",
+      "dataFreshness": "Актуальность данных:",
+      "safety": "Безопасность",
+      "schools": "Школы",
+      "walkability": "Пешеходная доступность",
+      "greenSpace": "Зелёные зоны",
+      "amenities": "Инфраструктура",
+      "airQuality": "Качество воздуха",
+      "noiseLevel": "Уровень шума",
+      "publicTransport": "Общественный транспорт"
+    },
+    "newFactors": {
+      "title": "Расширенные факторы качества",
+      "description": "Дополнительные экологические показатели и показатели доступности для полной оценки района",
+      "source": "Источник:",
+      "confidence": "Достоверность:",
+      "airQuality": {
+        "label": "Качество воздуха",
+        "description": "Измеряет уровень загрязнения воздуха по индексу качества воздуха (AQI). Чем ниже значение, тем чище воздух."
+      },
+      "noiseLevel": {
+        "label": "Уровень шума",
+        "description": "Средний уровень фонового шума в децибелах. Чем ниже значение, тем тише."
+      },
+      "publicTransport": {
+        "label": "Общественный транспорт",
+        "description": "Количество остановок общественного транспорта в радиусе 1 км. Чем больше значение, тем лучше доступность."
+      },
+      "ratings": {
+        "good": "Хорошо",
+        "moderate": "Умеренно",
+        "unhealthySensitive": "Неблагоприятно для чувствительных",
+        "unhealthy": "Неблагоприятно",
+        "veryUnhealthy": "Очень неблагоприятно",
+        "quiet": "Тихо",
+        "noisy": "Шумно",
+        "veryNoisy": "Очень шумно",
+        "excellent": "Отлично",
+        "fair": "Удовлетворительно",
+        "limited": "Ограниченно",
+        "unknown": "Неизвестно"
+      },
+      "dataFreshness": "Актуальность данных: качество воздуха обновлено {airQuality}, уровень шума обновлён {noiseLevel}, транспорт обновлён {transport}",
+      "stopsWithin1km": "остановок в радиусе 1 км: {count}",
+      "scoreLabel": "Балл «{label}»: {score} из 100",
+      "confidenceLabel": "Уверенность: {value}%"
+    },
+    "quality": {
+      "badge": "Качество района: {rating} ({score}/100)",
+      "score": "Качество района: {score}/100"
     }
   },
   "portfolio": {
@@ -715,7 +1198,18 @@
       "totalRent": "Общая аренда/мес",
       "averageCapRate": "Средняя капитализация",
       "totalCashFlow": "Общий денежный поток/мес"
-    }
+    },
+    "emptyHint": "Добавьте хотя бы один объект, чтобы проанализировать портфель.",
+    "propertyLabel": "Объект",
+    "propertyPrice": "Цена покупки ($)",
+    "monthlyRent": "Ежемесячная аренда ($)",
+    "monthlyCashFlow": "Ежемесячный денежный поток ($)",
+    "capRate": "Капитализация (%)",
+    "city": "Город",
+    "cityPlaceholder": "например, Берлин",
+    "propertyType": "Тип объекта",
+    "selectType": "Выберите тип",
+    "analyzeButton": "Проанализировать портфель"
   },
   "property": {
     "card": {
@@ -726,7 +1220,10 @@
       "baths": "{count, plural, one {# ванная} few {# ванные} other {# ванных}}",
       "areaUnit": "м²",
       "noLongerAvailable": "Объект больше недоступен",
-      "locationUnavailable": "Местоположение недоступно"
+      "locationUnavailable": "Местоположение недоступно",
+      "addToFavorites": "Добавить в избранное",
+      "removeFromFavorites": "Убрать из избранного",
+      "loginRequired": "Войдите, чтобы сохранить этот объект"
     },
     "favorite": {
       "add": "Добавить в избранное",
@@ -748,7 +1245,9 @@
       "location": "Местоположение",
       "features": "Характеристики",
       "contact": "Связаться с агентом"
-    }
+    },
+    "estimateLabel": "Расчётный ежемесячный платёж: {value}",
+    "estimateTitle": "Расчётный ежемесячный платёж при первоначальном взносе {down}%, {years} лет под фиксированные {rate}% APR. Это не кредитное предложение."
   },
   "rentVsBuy": {
     "title": "Калькулятор Аренда vs Покупка",
@@ -779,7 +1278,8 @@
       "rentIncreaseRate": "Рост аренды (%)",
       "investmentReturnRate": "Доходность инвестиций (%)",
       "marginalTaxRate": "Предельная налоговая ставка (%)",
-      "projectionYears": "Период прогноза (лет)"
+      "projectionYears": "Период прогноза (лет)",
+      "growthRates": "Ставки роста"
     },
     "results": {
       "title": "Результаты анализа",
@@ -809,7 +1309,12 @@
         "equityGrowth": {
           "title": "Рост собственного капитала и стоимости объекта",
           "ariaLabel": "График роста собственного капитала и стоимости объекта во времени"
-        }
+        },
+        "cumulativeRent": "Накопленная аренда",
+        "cumulativeOwnership": "Накопленные расходы на владение",
+        "propertyValue": "Стоимость объекта",
+        "equity": "Собственный капитал",
+        "year": "{year} год"
       }
     }
   },
@@ -828,6 +1333,22 @@
       "disabled": "Уведомления выключены",
       "enable": "Включить уведомления",
       "disable": "Выключить уведомления"
+    },
+    "dialog": {
+      "title": "Сохранить поиск",
+      "name": "Название поиска",
+      "namePlaceholder": "например, Двухкомнатные квартиры в Мадриде",
+      "alertFrequency": "Частота уведомлений",
+      "frequencyInstant": "Мгновенно - уведомлять сразу",
+      "frequencyDaily": "Ежедневный дайджест - сводка раз в день",
+      "frequencyWeekly": "Еженедельный дайджест - сводка раз в неделю",
+      "frequencyNone": "Без уведомлений - просто сохранить",
+      "hint": "Вы получите уведомления о новых объявлениях и снижении цен по этому поиску.",
+      "saved": "Поиск сохранён!",
+      "savedHint": "Вы будете получать уведомления согласно своим настройкам.",
+      "nameRequired": "Введите название поиска",
+      "loginRequired": "Войдите, чтобы сохранять поиски",
+      "saveFailed": "Не удалось сохранить поиск"
     }
   },
   "search": {
@@ -869,7 +1390,8 @@
     "emptyState": {
       "title": "Начните поиск недвижимости",
       "description": "Введите запрос для поиска тысяч объявлений.",
-      "tryExamples": "Попробуйте примеры:"
+      "tryExamples": "Попробуйте примеры:",
+      "exportHint": "Экспорт станет доступен после получения результатов поиска."
     },
     "results": {
       "noResults": "Результаты не найдены",
@@ -882,7 +1404,16 @@
       "format": "Формат экспорта",
       "csv": "CSV",
       "json": "JSON",
-      "export": "Экспорт"
+      "export": "Экспорт",
+      "columns": "Столбцы (необязательно)",
+      "columnsPlaceholder": "например, id, город, цена",
+      "delimiter": "Разделитель CSV",
+      "delimiterComma": "Запятая (,)",
+      "delimiterSemicolon": "Точка с запятой (;)",
+      "decimalSeparator": "Разделитель дробной части",
+      "decimalDot": "Точка (.)",
+      "decimalComma": "Запятая (,)",
+      "includeHeader": "Включить строку заголовка"
     },
     "saveSearch": {
       "button": "Сохранить поиск",
@@ -895,19 +1426,66 @@
     "errors": {
       "searchFailed": "Поиск не удался",
       "connectionFailed": "Ошибка соединения. Попробуйте снова.",
-      "timeout": "Время поиска истекло. Попробуйте снова."
-    }
+      "timeout": "Время поиска истекло. Попробуйте снова.",
+      "invalidMinPrice": "Минимальная цена должна быть числом.",
+      "invalidMaxPrice": "Максимальная цена должна быть числом.",
+      "invalidMinRooms": "Минимальное число комнат должно быть числом.",
+      "minGreaterThanMax": "Минимальная цена не может быть больше максимальной.",
+      "emptyQuery": "Введите поисковый запрос.",
+      "genericSearch": "Не удалось выполнить поиск. Попробуйте ещё раз.",
+      "exportFailed": "Не удалось выполнить экспорт. Попробуйте ещё раз."
+    },
+    "map": {
+      "noMappableResults": "Нет результатов с координатами",
+      "noMappableResultsHint": "В этих объявлениях нет координат.",
+      "shown": "На карте: {shown} из {total}",
+      "filteredByArea": "(отфильтровано по области)",
+      "enhanced": "Расширенная карта",
+      "useMapbox": "Использовать Mapbox",
+      "drawArea": "Выделить область",
+      "drawing": "Выделение...",
+      "enableDrawing": "Включить выделение",
+      "disableDrawing": "Отключить выделение",
+      "clearArea": "Очистить область"
+    },
+    "queryLabel": "Поисковый запрос",
+    "searchLabel": "Поиск недвижимости",
+    "view": {
+      "label": "Режим просмотра",
+      "list": "Список",
+      "map": "Карта"
+    },
+    "preset": {
+      "title": "Сохранить фильтр",
+      "name": "Название фильтра",
+      "namePlaceholder": "например, Квартиры в бюджете в Берлине",
+      "description": "Описание (необязательно)",
+      "descriptionPlaceholder": "Краткое описание фильтра...",
+      "setDefault": "Сделать фильтром по умолчанию",
+      "hint": "Сохраняет текущие настройки фильтра для быстрого доступа.",
+      "saved": "Фильтр сохранён!",
+      "savedHint": "Эти фильтры можно быстро применить из меню фильтров.",
+      "nameRequired": "Введите название фильтра",
+      "loginRequired": "Войдите, чтобы сохранять фильтры",
+      "saveFailed": "Не удалось сохранить фильтр",
+      "save": "Сохранить фильтр",
+      "saving": "Сохранение..."
+    },
+    "clearPriceFilter": "Сбросить фильтр цены",
+    "filterByPropertyType": "Фильтр по типу объекта",
+    "propertyMap": "Карта объектов",
+    "propertyMapWithMapbox": "Карта объектов с Mapbox"
   },
   "settings": {
     "title": "Настройки",
     "description": "Управление настройками аккаунта и предпочтениями.",
     "tabs": {
-      "identity": "Профиль",
+      "identity": "Идентификация",
       "notifications": "Уведомления",
       "models": "Модели"
     },
     "identity": {
-      "title": "Профиль",
+      "title": "Идентификация",
       "description": "Установите email для привязки настроек к аккаунту.",
       "emailLabel": "Email",
       "emailPlaceholder": "Введите email",
@@ -923,7 +1501,8 @@
       "pushNotifications": "Push-уведомления",
       "savedSearchAlerts": "Уведомления о поиске",
       "priceDropAlerts": "Уведомления о снижении цен",
-      "newListingAlerts": "Уведомления о новых объявлениях"
+      "newListingAlerts": "Уведомления о новых объявлениях",
+      "instant": "Мгновенно"
     },
     "models": {
       "title": "Модели",
@@ -940,13 +1519,54 @@
         "input": "Ввод",
         "output": "Вывод",
         "per1kTokens": "за 1K токенов"
-      }
+      },
+      "modelCatalog": "Каталог моделей",
+      "supportedProviders": "Поддерживаемые провайдеры:",
+      "model": "Модель",
+      "context": "Контекст",
+      "inputPer1m": "Ввод / 1M",
+      "outputPer1m": "Вывод / 1M",
+      "capabilities": "Возможности",
+      "downloadedModels": "Загруженные модели",
+      "localModelsOffline": "Локальные модели и работа офлайн",
+      "runtimeCheckDesc": "Выполнить точечную проверку среды для этого провайдера.",
+      "failedToLoadCatalog": "Не удалось загрузить каталог",
+      "refreshing": "Обновление...",
+      "pricingUnavailable": "Цены могут быть недоступны для некоторых размещённых моделей.",
+      "provider": "Провайдер:",
+      "local": "Локальный",
+      "hosted": "Размещённый",
+      "apiKeyRequired": "Требуется API-ключ",
+      "noApiKeyRequired": "API-ключ не требуется",
+      "localModelsDesc": "Локальные модели работают на вашем устройстве. Цены за токены не применяются — стоимость зависит от оборудования и настроек среды.",
+      "runtimeDetectedModels": "Проверка среды обнаружила модели:",
+      "runtimeNotDetected": "Локальная среда не обнаружена. Запустите её и убедитесь, что API имеет к ней доступ.",
+      "runtimeDetected": "Локальная среда обнаружена. Загруженные модели: {count}.",
+      "runtimeUnknown": "Состояние локальной среды неизвестно.",
+      "ollamaStep1": "1. Установите Ollama:",
+      "ollamaStep2": "2. Запустите Ollama, затем скачайте модель:",
+      "ollamaStep3": "3. Если API работает в Docker, укажите OLLAMA_BASE_URL = http://host.docker.internal:11434.",
+      "emptyCatalog": "Модели пока не настроены. Добавьте ключи API в разделе «Идентификация» выше, чтобы начать.",
+      "emptyCatalogHint": "Каталог ниже перечисляет всех настроенных провайдеров — выберите модель там, когда зададите ключ API.",
+      "loadFailed": "Не удалось загрузить каталог моделей. Попробуйте ещё раз."
     },
     "saved": "Настройки сохранены.",
     "error": "Не удалось сохранить настройки.",
     "emailRequired": "Set an email in Identity settings above to access this section.",
     "profile": {
-      "loadingProfile": "Loading profile..."
+      "loadingProfile": "Loading profile...",
+      "email": "Эл. почта",
+      "phone": "Телефон",
+      "bio": "О себе",
+      "timezone": "Часовой пояс",
+      "language": "Язык"
+    },
+    "privacy": {
+      "processing": "Обработка...",
+      "title": "Приватность и данные"
+    },
+    "taskModel": {
+      "saved": "Предпочтение модели сохранено."
     }
   },
   "tools": {
@@ -1021,5 +1641,189 @@
     "errorGeneric": "Что-то пошло не так. Попробуйте ещё раз.",
     "studioNote": "Это бесплатная версия с открытым исходным кодом. Хостинговая версия готовится в NestLab.",
     "studioLink": "Перейти на nestlab.tech"
+  },
+  "pages": {
+    "search": {
+      "title": "Найдите недвижимость",
+      "description": "Ищите по тысячам объявлений с помощью семантического поиска на базе ИИ."
+    },
+    "favorites": {
+      "title": "Избранное",
+      "description": "Все сохранённые объявления в одном месте.",
+      "newCollection": "Новая коллекция",
+      "collectionName": "Название коллекции"
+    },
+    "savedSearches": {
+      "title": "Сохранённые поиски",
+      "description": "Управляйте сохранёнными поисками и оповещениями.",
+      "pauseAlerts": "Приостановить оповещения",
+      "resumeAlerts": "Возобновить оповещения",
+      "deleteSearch": "Удалить поиск"
+    },
+    "leads": {
+      "title": "Панель лидов",
+      "description": "Все обращения, собранные на сайте.",
+      "searchPlaceholder": "Поиск лидов..."
+    },
+    "knowledge": {
+      "title": "База знаний",
+      "description": "Документы и рыночный контекст, на которых рассуждает ассистент."
+    },
+    "documents": {
+      "title": "Документы",
+      "description": "Загружайте и храните документы, которые читает ассистент.",
+      "loading": "Загрузка документов...",
+      "errorTitle": "Не удалось загрузить документы",
+      "refresh": "Обновить",
+      "upload": "Загрузить документ",
+      "expiringTitle": "{count, plural, one {# документ скоро истекает} other {# документов скоро истекает}}",
+      "expiringIntro": "Следующие документы истекают в течение 30 дней:",
+      "andMore": "и ещё {count}",
+      "emptyTitle": "Документов пока нет",
+      "emptyDescription": "Загрузите первый документ, чтобы начать упорядочивать файлы по недвижимости. Поддерживаются PDF, DOC, DOCX, JPG и PNG до 10 МБ.",
+      "uploadFirst": "Загрузить первый документ",
+      "loadMore": "Показать ещё"
+    },
+    "marketTrends": {
+      "title": "Тренды рынка",
+      "description": "Движение цен и объёмов на отслеживаемых рынках."
+    },
+    "cityOverview": {
+      "title": "Обзор города",
+      "description": "Показатели районов для городов, за которыми вы следите."
+    },
+    "agents": {
+      "title": "Найти агентов",
+      "description": "Агенты, работающие на рынке, который вас интересует.",
+      "searchByCity": "Поиск по городу..."
+    },
+    "settings": {
+      "title": "Настройки",
+      "description": "Ваш аккаунт, модели и уведомления.",
+      "loadingModelCatalog": "Загрузка каталога моделей"
+    },
+    "tools": {
+      "title": "Инструменты",
+      "description": "Калькуляторы и аналитика, превращающие объявление в решение.",
+      "propertyPrice": "Цена объекта",
+      "columnsHint": "Колонки (необязательно), например id, city, price",
+      "propertyId": "ID объекта"
+    },
+    "analytics": {
+      "title": "Аналитика и инструменты",
+      "description": "Аналитика портфеля и калькуляторы за ней."
+    },
+    "valuation": {
+      "title": "ИИ-оценка и прогноз недвижимости",
+      "description": "Модельный диапазон цен для конкретного адреса.",
+      "forecastChart": "График прогноза"
+    },
+    "usage": {
+      "title": "Панель использования",
+      "description": "Что спрашивали у ассистента и во сколько это обошлось.",
+      "totalSearches": "Всего поисков",
+      "propertyViews": "Просмотры объектов",
+      "propertyClicks": "Клики по объектам",
+      "interval": {
+        "day": "По дням",
+        "week": "По неделям",
+        "month": "По месяцам"
+      },
+      "actions": {
+        "refresh": "Обновить",
+        "exportCsv": "Экспорт CSV"
+      },
+      "sessions": "{count} уникальных сессий",
+      "toolsUsed": "Использовано инструментов",
+      "avgResponseTime": "Среднее время ответа",
+      "exports": "Экспорты",
+      "favorites": "Избранное",
+      "propertiesViewed": "Просмотренные объекты",
+      "calculatorTools": "Калькуляторы и аналитические инструменты",
+      "processingTime": "Время обработки",
+      "clickThroughRate": "Доля переходов",
+      "dataExported": "Экспортировано данных",
+      "propertiesSaved": "Сохранённые объекты",
+      "tabs": {
+        "activityTrends": "Динамика активности",
+        "topTools": "Популярные инструменты",
+        "topCities": "Популярные города",
+        "dailyActivity": "Активность по дням"
+      },
+      "charts": {
+        "activityOverTime": "Активность во времени",
+        "activityOverTimeDescription": "Динамика вашей активности с группировкой по периоду: {interval}",
+        "mostUsedTools": "Самые используемые инструменты",
+        "mostUsedToolsDescription": "Ваши любимые аналитические и расчётные инструменты",
+        "topSearchCities": "Самые популярные города поиска",
+        "topSearchCitiesDescription": "Локации, где ищут чаще всего",
+        "searchDistribution": "Распределение поисков",
+        "searchDistributionDescription": "Доля поисков по городам",
+        "dailyActivity": "Активность по дням",
+        "dailyActivityDescription": "События в день за выбранный период"
+      },
+      "series": {
+        "searches": "Поиски",
+        "propertyViews": "Просмотры объектов",
+        "toolUses": "Использования инструментов",
+        "exports": "Экспорты"
+      },
+      "empty": {
+        "noTrendData": "Нет данных о динамике",
+        "noToolUsage": "Пока нет данных об использовании инструментов",
+        "noCityData": "Пока нет данных о городах",
+        "noDailyActivity": "Пока нет данных о дневной активности"
+      },
+      "aria": {
+        "activityOverTime": "Активность во времени: поиски, просмотры объектов, использования инструментов и экспорты",
+        "mostUsedTools": "Самые используемые инструменты по числу запусков",
+        "topSearchCities": "Самые популярные города поиска по числу запросов",
+        "searchDistribution": "Доля поисков по каждому городу",
+        "dailyActivity": "События в день за выбранный период"
+      },
+      "loadFailed": "Не удалось загрузить данные об использовании"
+    },
+    "cma": {
+      "title": "Сравнительный анализ рынка",
+      "description": "Оцените недвижимость по сопоставимым объявлениям."
+    },
+    "showcase": {
+      "title": "Витрина",
+      "description": "Что умеет ассистент — от начала до конца."
+    },
+    "agentAnalytics": {
+      "title": "Аналитика агентов",
+      "description": "Как объявления работают у каждого агента.",
+      "totalLeads": "Всего лидов",
+      "totalRevenue": "Общая выручка"
+    },
+    "admin": {
+      "monitoring": {
+        "title": "Мониторинг продакшена",
+        "description": "Живое состояние развёрнутого стека."
+      },
+      "connectors": {
+        "title": "MCP-коннекторы",
+        "description": "Внешние инструменты, которые может вызвать ассистент."
+      },
+      "dataSources": {
+        "title": "Источники данных",
+        "description": "Откуда берутся объявления."
+      },
+      "bulkJobs": {
+        "title": "Задания массового импорта и экспорта",
+        "description": "Масовое перенос объявлений в систему и из неё."
+      }
+    }
+  },
+  "states": {
+    "empty": {
+      "title": "Здесь пока пусто",
+      "description": "Добавленные элементы появятся здесь."
+    },
+    "error": {
+      "title": "Что-то пошло не так",
+      "description": "Не удалось загрузить данные. Попробуйте ещё раз через мгновение."
+    }
   }
 }

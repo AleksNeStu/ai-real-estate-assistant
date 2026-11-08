@@ -26,6 +26,7 @@ import { getAgent, getAgentListings } from '@/lib/api';
 import type { AgentProfile, AgentListing } from '@/lib/types';
 import { ContactAgentForm } from '@/components/agents/contact-agent-form';
 import { ScheduleViewingDialog } from '@/components/agents/schedule-viewing-dialog';
+import { ErrorState } from '@/components/ui/states';
 
 interface AgentProfilePageProps {
   params: Promise<{ locale: string; id: string }>;
@@ -106,14 +107,14 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
             Back to Agents
           </Button>
         </Link>
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-destructive mb-4">{error || 'Agent not found'}</p>
+        <ErrorState
+          title={error || 'Agent not found'}
+          action={
             <Link href={`/${locale}/agents`}>
               <Button>Browse Agents</Button>
             </Link>
-          </CardContent>
-        </Card>
+          }
+        />
       </div>
     );
   }
@@ -149,7 +150,7 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
                   className="h-24 w-24 rounded-full object-cover"
                 />
               ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-2xl font-bold text-white">
+                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-info to-critical text-2xl font-bold text-info-foreground">
                   {initials}
                 </div>
               )}
@@ -158,9 +159,9 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
             {/* Info */}
             <div className="flex-1">
               <div className="flex flex-wrap items-start gap-2 mb-2">
-                <h1 className="text-2xl font-bold">{displayName}</h1>
+                <h1 className="text-3xl font-semibold tracking-tight">{displayName}</h1>
                 {agent.is_verified && (
-                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  <Badge variant="secondary" className="bg-success/15 text-success">
                     <BadgeCheck className="mr-1 h-3 w-3" />
                     Verified
                   </Badge>
@@ -178,7 +179,7 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
               <div className="flex flex-wrap gap-4 text-sm mb-4">
                 {agent.average_rating > 0 && (
                   <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <Star className="h-4 w-4 fill-warning text-warning" />
                     <span className="font-medium">{agent.average_rating.toFixed(1)}</span>
                     <span className="text-muted-foreground">({agent.total_reviews} reviews)</span>
                   </div>

@@ -34,18 +34,18 @@ const CATEGORY_LABELS: Record<DocumentCategory, string> = {
 };
 
 const FILE_TYPE_ICONS: Record<string, React.ReactNode> = {
-  'application/pdf': <FileText className="h-8 w-8 text-red-500" aria-hidden="true" />,
-  'application/msword': <File className="h-8 w-8 text-blue-500" aria-hidden="true" />,
+  'application/pdf': <FileText className="h-8 w-8 text-destructive" aria-hidden="true" />,
+  'application/msword': <File className="h-8 w-8 text-info" aria-hidden="true" />,
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': (
-    <File className="h-8 w-8 text-blue-500" aria-hidden="true" />
+    <File className="h-8 w-8 text-info" aria-hidden="true" />
   ),
-  'image/jpeg': <FileImage className="h-8 w-8 text-green-500" aria-hidden="true" />,
-  'image/jpg': <FileImage className="h-8 w-8 text-green-500" aria-hidden="true" />,
-  'image/png': <FileImage className="h-8 w-8 text-green-500" aria-hidden="true" />,
+  'image/jpeg': <FileImage className="h-8 w-8 text-success" aria-hidden="true" />,
+  'image/jpg': <FileImage className="h-8 w-8 text-success" aria-hidden="true" />,
+  'image/png': <FileImage className="h-8 w-8 text-success" aria-hidden="true" />,
 };
 
 function getFileIcon(fileType: string): React.ReactNode {
-  return FILE_TYPE_ICONS[fileType] || <File className="h-8 w-8 text-gray-500" aria-hidden="true" />;
+  return FILE_TYPE_ICONS[fileType] || <File className="h-8 w-8 text-muted-foreground" aria-hidden="true" />;
 }
 
 function formatFileSize(bytes: number): string {
@@ -197,7 +197,7 @@ export function DocumentList({
           <option value="size">Sort by Size</option>
         </select>
 
-        <button
+        <button type="button"
           onClick={() => setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
           className="px-3 py-2 rounded-md border border-input bg-background text-sm hover:bg-muted"
           aria-label={`Sort order: ${sortOrder === 'asc' ? 'ascending' : 'descending'}. Click to toggle.`}
@@ -221,14 +221,14 @@ export function DocumentList({
               <div
                 key={doc.id}
                 className={`relative rounded-lg border bg-card p-4 transition-shadow hover:shadow-md ${
-                  expired ? 'border-red-300 bg-red-50/50' : ''
+                  expired ? 'border-destructive/40 bg-destructive/10/50' : ''
                 }`}
               >
                 {/* Expiry Badge */}
                 {(expired || expiringSoon) && (
                   <div
                     className={`absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                      expired ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                      expired ? 'bg-destructive/15 text-destructive' : 'bg-warning/15 text-warning'
                     }`}
                   >
                     <AlertTriangle className="h-3 w-3" aria-hidden="true" />
@@ -301,7 +301,7 @@ export function DocumentList({
 
                 {/* Actions */}
                 <div className="flex items-center justify-between pt-2 border-t">
-                  <button
+                  <button type="button"
                     onClick={() => handleDownload(doc)}
                     className="inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-md hover:bg-muted transition-colors"
                   >
@@ -310,7 +310,7 @@ export function DocumentList({
                   </button>
 
                   <div className="relative">
-                    <button
+                    <button type="button"
                       onClick={() => setShowMenu(showMenu === doc.id ? null : doc.id)}
                       className="p-1.5 rounded-md hover:bg-muted"
                       aria-label={`Actions for ${doc.original_filename}`}
@@ -321,12 +321,13 @@ export function DocumentList({
 
                     {showMenu === doc.id && (
                       <>
-                        <div className="fixed inset-0 z-10" onClick={() => setShowMenu(null)} />
+                        {/* The overlay only closes the menu for the mouse. */}
+      <div className="fixed inset-0 z-10" onClick={() => setShowMenu(null)} aria-hidden="true" />
                         <div className="absolute right-0 bottom-full mb-1 z-20 w-40 rounded-md border bg-popover shadow-lg">
-                          <button
+                          <button type="button"
                             onClick={() => handleDelete(doc)}
                             disabled={deleting === doc.id}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md disabled:opacity-50"
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-md disabled:opacity-50"
                           >
                             <Trash2 className="h-4 w-4" aria-hidden="true" />
                             {deleting === doc.id ? 'Deleting...' : 'Delete'}

@@ -2,6 +2,7 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { InvestmentAnalyzer } from "../investment-analyzer";
 import { calculateInvestment } from "@/lib/api";
+import en from "../../../../messages/en.json";
 
 jest.mock("@/lib/api");
 
@@ -51,7 +52,7 @@ describe("InvestmentAnalyzer", () => {
     fireEvent.click(screen.getByRole("button", { name: /Analyze Investment/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("Investment Analysis Results")).toBeInTheDocument();
+      expect(screen.getByText(en.investment.results.title)).toBeInTheDocument();
       // Check for rounded monthly cash flow (could be $250 or $251 depending on rounding)
       expect(screen.getAllByText(/\$25[01]/).length).toBeGreaterThan(0);
     });
@@ -82,7 +83,7 @@ describe("InvestmentAnalyzer", () => {
 
     await waitFor(() => {
       // Just verify that results are displayed, not the exact score format
-      expect(screen.getByText("Investment Analysis Results")).toBeInTheDocument();
+      expect(screen.getByText(en.investment.results.title)).toBeInTheDocument();
     });
   });
 
@@ -96,7 +97,7 @@ describe("InvestmentAnalyzer", () => {
 
     await waitFor(() => {
       // Just verify results are displayed
-      expect(screen.getByText("Investment Analysis Results")).toBeInTheDocument();
+      expect(screen.getByText(en.investment.results.title)).toBeInTheDocument();
     });
   });
 
@@ -110,7 +111,7 @@ describe("InvestmentAnalyzer", () => {
 
     await waitFor(() => {
       // Just verify results are displayed
-      expect(screen.getByText("Investment Analysis Results")).toBeInTheDocument();
+      expect(screen.getByText(en.investment.results.title)).toBeInTheDocument();
     });
   });
 

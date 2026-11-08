@@ -63,17 +63,28 @@ one remaining accepted LOW (`deepmerge`) was dismissed via the API with reason
 
 ## Historical chromadb CVE disposition (still relevant — see § Reachability analysis below)
 
-The chromadb CVE analysis below remains accurate. As of 2026-11-06:
-- The project pins `chromadb>=0.5,<0.6` (locked to 0.5.23 per `uv.lock`).
-- 3 of 4 known chromadb CVEs affect 0.5.x (CVE-2026-45830, -45833, -45831); reachability
-  analysis in the section below still holds (single-tenant + ephemeral + no exposed
-  HTTP API + `trust_remote_code` never set). All 3 have `first_patched_version: null`
-  per OSV (no upstream fix in chroma-core/chroma #7602 yet).
-- **1 new CVE (CVE-2026-45829 / GHSA-f4j7-r4q5-qw2c) — pre-authentication code injection
-  (CVSSv3 9.0, AV:N/AC:L/PR:N/UI:N)** — **NOT APPLICABLE** to this deployment:
-  OSV shows affected range introduced at chromadb **1.0.0**, last affected 1.5.9. The
-  project pins to chromadb **0.5.x** which is below the vulnerable range. Dependabot
-  correctly does not surface this as an active alert.
+The chromadb CVE analysis below remains accurate, but the pin it was written against
+changed on 2026-11-08. As of 2026-11-08:
+- The project pins `chromadb>=1.3.5,<2.0.0` (locked to 1.5.9 per `uv.lock`) together with
+  `langchain-chroma>=1.1.0,<2.0.0`. The old `chromadb>=0.5,<0.6` pin is gone: it made
+  `pip install -e .` downgrade chromadb underneath `langchain-chroma`, whose import then
+  fails (`cannot import name 'Search'`), and `chroma_store.py` swallows that ImportError —
+  the vector store switched itself off. `langchain-chroma 1.1.0` declares
+  `chromadb>=1.3.5,<2.0.0`, so the two have to move together.
+- All 4 known chromadb CVEs are now inside the affected range of the pinned version
+  (CVE-2026-45830, -45833, -45831, -45829). None has an upstream fix
+  (`first_patched_version: null` per OSV; the auth-layer fix is pending in
+  chroma-core/chroma #7602).
+- **CVE-2026-45829 (GHSA-f4j7-r4q5-qw2c) — pre-authentication code injection
+  (CVSSv3 9.0, AV:N/AC:L/PR:N/UI:N)** — was **NOT APPLICABLE** while the project pinned
+  chromadb 0.5.x, because OSV shows the affected range starting at chromadb **1.0.0** and
+  running through 1.5.9 (the latest release to date). The new pin sits inside that range,
+  so the version argument no longer holds and the disposition is now **reachability-based**,
+  exactly like the other three: see § CVE-2026-45829 below.
+- The reachability arguments do not depend on the version: they rest on the ChromaDB HTTP
+  API not being exposed, `trust_remote_code` never being set, single-tenant operation and
+  ephemeral storage. All four still hold after the pin change (re-verified 2026-11-08 in
+  `apps/api/vector_store/chroma_store.py` and `deploy/compose/*.yml`).
 
 | GHSA | CVE | CVSSv4 | EPSS | First patched | Affected manifest paths | Alerts |
 |---|---|---|---|---|---|---|
@@ -95,7 +106,7 @@ active exploitation.
 
 ### ChromaDB — CVE-2026-45833 (GHSA-36p7-vc44-83pf) · 2 alerts (#320, #323)
 
-- **Vulnerable range:** `>= 0.4.17, <= 1.5.9` (project pins `chromadb>=0.5.0,<0.6.0` per
+- **Vulnerable range:** `>= 0.4.17, <= 1.5.9` (project pins `chromadb>=1.3.5,<2.0.0` per
   `apps/api/pyproject.toml`)
 - **Manifest paths surfaced:** `apps/api/pyproject.toml`, `apps/api/uv.lock`
 - **Upstream fix:** `first_patched_version: null`. HiddenLayer advisory
@@ -144,7 +155,7 @@ active exploitation.
 
 ### ChromaDB — CVE-2026-45831 (GHSA-xph7-9rjv-w5fr) · 2 alerts (#316, #322)
 
-- **Vulnerable range:** `>= 0.5.0, <= 1.5.9` (project pin `>=0.5.0,<0.6.0` IS in range)
+- **Vulnerable range:** `>= 0.5.0, <= 1.5.9` (project pin `>=1.3.5,<2.0.0` IS in range)
 - **Manifest paths surfaced:** `apps/api/pyproject.toml`, `apps/api/uv.lock`
 - **Upstream fix:** `first_patched_version: null`. Fix tracked in chroma-core/chroma
   PR #7602 (same PR as CVE-2026-45833).
@@ -197,13 +208,66 @@ active exploitation.
 
 ---
 
+## CRITICAL (1 additional alert — CVE-2026-45829, pre-authentication code injection)
+
+### ChromaDB — CVE-2026-45829 (GHSA-f4j7-r4q5-qw2c)
+
+- **Vulnerable range:** `>= 1.0.0, <= 1.5.9` (project pins `chromadb>=1.3.5,<2.0.0`, locked
+  to 1.5.9 — **inside the range**). Before 2026-11-08 the project pinned chromadb 0.5.x,
+  which is below the range, and the disposition was therefore version-based; that argument
+  no longer applies.
+- **Manifest paths surfaced:** `apps/api/pyproject.toml`, `apps/api/requirements.txt`,
+  `apps/api/uv.lock`
+- **Upstream fix:** `first_patched_version: null`. chromadb 1.5.9 is the latest release to
+  date, so there is no version to move to yet.
+- **Severity justification:** CVSSv3 = 9.0 (`AV:N/AC:L/PR:N/UI:N`). CWE-94 (Improper
+  Control of Generation of Code — Code Injection).
+- **Attack vector (per GHSA):** the ChromaDB embedding-function loader executes remote
+  model code when a collection is updated with a model repository URL and
+  `trust_remote_code=true`. The pre-authentication rating means the ChromaDB HTTP endpoint
+  that accepts such a collection update does not require a ChromaDB-issued token.
+- **Reachability analysis in this deployment** (re-verified 2026-11-08):
+  - ChromaDB is an **in-process embedded client** inside the FastAPI worker
+    (`langchain_chroma.Chroma(persist_directory=...)` in
+    `apps/api/vector_store/chroma_store.py:176-215`). There is **no ChromaDB server** in
+    any compose file — `deploy/compose/docker-compose.yml` and
+    `docker-compose.selfhosted.yml` mount `./chroma_db` as a **volume for the embedded
+    persist directory**, they do not start a ChromaDB service. No ChromaDB HTTP listener
+    exists, so the vulnerable endpoint is not reachable from the network at all.
+  - The FastAPI app registers no `/api/v2/...` route; the only ingress is the FastAPI app
+    itself.
+  - **`trust_remote_code` is never set.** The embedding function is built in-process from
+    configuration: FastEmbed (`_FastEmbedEmbeddings`, an ONNX-based sandboxed embedder) or
+    OpenAI embeddings. ChromaDB's `SentenceTransformerEmbeddingFunction` — the affected
+    loader — is never instantiated. Verified by grep over `apps/api`: no occurrence of
+    `trust_remote_code`.
+  - **No user-controlled path into the loader.** The embedding model name comes from
+    application configuration, not from a request body, and no API route lets a caller
+    supply a model repository URL or flip a loader flag.
+  - The vulnerable path additionally requires pre-existing collection state to be
+    meaningful; `SEED_ON_STARTUP=false` and an ephemeral index bound that blast radius.
+- **Mitigation in place:** the attack chain (a reachable ChromaDB HTTP API + a caller who
+  can choose a model repository URL + `trust_remote_code=true`) requires preconditions that
+  are structurally absent: there is no HTTP API, and no caller controls the loader.
+- **Decision:** **ACCEPTED — the vulnerable HTTP surface does not exist in this
+  deployment.** This is a deliberate, documented consequence of pinning chromadb to a
+  version that `langchain-chroma` can actually import: without it the vector store is
+  silently disabled, which removes the product's search and CMA features entirely.
+  Next review: weekly Monday. When `first_patched_version` becomes non-null, transition to
+  `pr-triage` for a CVE-fix PR (the `pyproject.toml` upper bound may need widening —
+  allowed under frozen-policy "Security patches" row).
+
+---
+
 ## Cross-reference: combined chromadb CVE mitigation
 
-All three CVEs trace to the same root cause (insufficient tenant/database/collection
-isolation in ChromaDB's auth layer) and are addressed by the same upstream PR
-(chroma-core/chroma #7602). When `first_patched_version` becomes non-null for any of the
-three, the other two will likely follow — the fix is a single auth-layer change, not
-three independent patches.
+CVE-2026-45833, -45831 and -45830 trace to the same root cause (insufficient
+tenant/database/collection isolation in ChromaDB's auth layer) and are addressed by the same
+upstream PR (chroma-core/chroma #7602). When `first_patched_version` becomes non-null for
+any of the three, the other two will likely follow — the fix is a single auth-layer change,
+not three independent patches. CVE-2026-45829 is a separate code-injection issue in the
+embedding-function loader; it has no upstream fix either, and its reachability rests on the
+same structural facts (no exposed ChromaDB HTTP API, `trust_remote_code` never set).
 
 Per `.github/dependabot.yml` `security-updates-only: true`, dependabot will open a
 `security(deps-api): bump chromadb` PR as soon as a fix is published. The
@@ -211,8 +275,8 @@ Per `.github/dependabot.yml` `security-updates-only: true`, dependabot will open
 start of this triage batch; that limit is now cleared (10 routine PRs closed in the
 2026-08-25 session) so the next Monday cycle can author the CVE-fix PR.
 
-If the fix lands in `chromadb` 0.6.x and the project's `<0.6.0` upper bound in
-`pyproject.toml` needs widening, the bound-widening commit is **part of** the CVE-fix
+If the fix lands in a chromadb version above the project's `<2.0.0` upper bound in
+`pyproject.toml`, the bound-widening commit is **part of** the CVE-fix
 commit and therefore allowed under frozen-policy "Security patches" row. No standalone
 "widening" PR would be permitted.
 
@@ -259,6 +323,22 @@ the underlying vulnerable ranges).
 
 ## History
 
+- **2026-11-08** — The chromadb pin moved from `>=0.5,<0.6` to `>=1.3.5,<2.0.0` (locked
+  1.5.9) and `langchain-chroma>=1.1.0,<2.0.0` was added to `pyproject.toml` next to it.
+  Reason: the old cap made `pip install -e .` downgrade chromadb underneath
+  `langchain-chroma`; `langchain_chroma` cannot import against 0.5.x and
+  `chroma_store.py` swallows that ImportError, so the vector store silently switched
+  itself off. Consequences recorded here:
+  - CVE-2026-45829 (GHSA-f4j7-r4q5-qw2c, CVSS 9.0, pre-auth code injection) is now
+    **version-applicable** — the old "NOT APPLICABLE" disposition rested on the 0.5.x pin
+    sitting below the affected range (1.0.0 … 1.5.9). It now carries a reachability-based
+    disposition in its own section: the ChromaDB HTTP API does not exist in this
+    deployment (embedded client, no server in any compose file), `trust_remote_code` is
+    never set, and no caller controls the embedding loader.
+  - The three already-accepted chromadb CVEs stay ACCEPTED — their reachability analysis
+    never depended on the version, only on the deployment shape.
+  - No upstream fix exists for any of the four (`first_patched_version: null`; chromadb
+    1.5.9 is the latest release), so there is no version to move to yet.
 - **2026-11-06** — Re-review after the critical/high security batch. Open Dependabot
   alerts on `dev` went 335 → 11 → **1 accepted LOW** (`deepmerge`, GHSA-gcqx-w48m-w2h4,
   no upstream fix, build-time-only reachability — see the MEDIUM/LOW section above).

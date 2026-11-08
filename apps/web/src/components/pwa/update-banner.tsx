@@ -45,7 +45,7 @@ export function UpdateBanner({ className }: UpdateBannerProps) {
   return (
     <div
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 bg-blue-600 px-4 py-2 text-center text-sm text-white transition-all',
+        'fixed top-0 left-0 right-0 z-50 bg-info px-4 py-2 text-center text-sm text-info-foreground transition-all',
         className
       )}
       role="status"
@@ -61,7 +61,7 @@ export function UpdateBanner({ className }: UpdateBannerProps) {
           variant="ghost"
           size="sm"
           onClick={handleDismiss}
-          className="text-white hover:text-white"
+          className="text-info-foreground hover:text-info-foreground"
           aria-label={t('dismissUpdate')}
         >
           <X className="h-4 w-4" aria-hidden="true" />

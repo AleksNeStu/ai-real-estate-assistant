@@ -8,7 +8,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$root = Resolve-Path (Join-Path $PSScriptRoot "..")
+$root = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 Set-Location $root
 
 # Setup logging
@@ -42,18 +42,24 @@ Log "=== BE.PS1 STARTED (backend only) ==="
 Log "Log file: $logFile"
 Log "Project root: $root"
 
-# Check uv
-Log "Checking uv..."
-if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
-    Log "ERROR: uv is not installed. Install with: pip install uv"
+# Backend environment: a provisioned virtualenv is enough.
+# uv is only needed to create one.
+$apiVenvPython = Join-Path $root "apps\api\.venv\Scripts\python.exe"
+$hasApiVenv = Test-Path $apiVenvPython
+$hasUv = [bool](Get-Command uv -ErrorAction SilentlyContinue)
+if ($hasApiVenv) {
+    Log "Backend virtualenv found: $apiVenvPython"
+} elseif ($hasUv) {
+    Log "uv found: $(uv --version)"
+} else {
+    Log "ERROR: no backend environment. Install uv (pip install uv) or provision apps\api\.venv"
     Log "See: https://docs.astral.sh/uv/"
     exit 1
 }
-Log "uv found: $(uv --version)"
 
 # Check .venv
 $venvPath = Join-Path $root ".venv"
-if (-not (Test-Path $venvPath)) {
+if (-not $hasApiVenv -and -not (Test-Path $venvPath)) {
     Log ".venv not found. Running bootstrap..."
     python scripts/setup/bootstrap.py --dev 2>&1 | ForEach-Object { Log $_ }
     if ($LASTEXITCODE -ne 0) {

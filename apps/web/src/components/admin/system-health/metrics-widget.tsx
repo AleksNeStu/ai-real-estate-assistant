@@ -71,12 +71,12 @@ export function MetricsWidget() {
   }
 
   const statusColorMap: Record<string, string> = {
-    healthy: 'bg-green-500',
-    degraded: 'bg-yellow-500',
-    unhealthy: 'bg-red-500',
+    healthy: 'bg-success',
+    degraded: 'bg-warning',
+    unhealthy: 'bg-destructive',
   };
 
-  const statusColor = statusColorMap[health?.status || 'unhealthy'] || 'bg-gray-500';
+  const statusColor = statusColorMap[health?.status || 'unhealthy'] || 'bg-muted-foreground';
 
   return (
     <Card>

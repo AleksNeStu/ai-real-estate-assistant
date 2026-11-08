@@ -186,8 +186,8 @@ describe('AgentsPage', () => {
     render(<AgentsPage params={Promise.resolve({ locale: 'en' })} />);
 
     await waitFor(() => {
-      // next-intl mock returns the key itself, so we check for the key
-      expect(screen.getByText('agents.title')).toBeInTheDocument();
+      // The mock resolves the real `en` catalogue, so we check the copy a reader sees
+      expect(screen.getByText('Find an Agent')).toBeInTheDocument();
     });
   });
 
@@ -195,7 +195,7 @@ describe('AgentsPage', () => {
     render(<AgentsPage params={Promise.resolve({ locale: 'en' })} />);
 
     await waitFor(() => {
-      expect(screen.getByText('agents.subtitle')).toBeInTheDocument();
+      expect(screen.getByText('Connect with professional real estate agents')).toBeInTheDocument();
     });
   });
 
@@ -278,10 +278,10 @@ describe('AgentsPage', () => {
     render(<AgentsPage params={Promise.resolve({ locale: 'en' })} />);
 
     await waitFor(() => {
-      expect(screen.getByText('agents.noAgents')).toBeInTheDocument();
+      expect(screen.getByText('No agents found')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('agents.noAgentsDescription')).toBeInTheDocument();
+    expect(screen.getByText('Try adjusting your filters or search criteria')).toBeInTheDocument();
   });
 
   it('shows error state when API fails', async () => {

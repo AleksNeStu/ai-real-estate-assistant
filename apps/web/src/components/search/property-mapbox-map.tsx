@@ -1,5 +1,6 @@
 'use client';
 
+import { heatmapColorExpression } from "./heatmap-colors";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import mapboxgl, { type LngLatBoundsLike, type Map as MapboxMap } from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -42,71 +43,6 @@ interface MapboxPropertyMapProps {
 
 const DEFAULT_CENTER: [number, number] = [21.0122, 52.2297]; // [lon, lat] for Warsaw
 
-// Heatmap color schemes by mode
-const HEATMAP_COLORS: Record<HeatmapMode, unknown[]> = {
-  density: [
-    'interpolate',
-    ['linear'],
-    ['heatmap-density'],
-    0,
-    'rgba(33, 102, 172, 0)',
-    0.2,
-    'rgb(103, 169, 207)',
-    0.4,
-    'rgb(209, 229, 240)',
-    0.6,
-    'rgb(253, 219, 199)',
-    0.8,
-    'rgb(239, 138, 98)',
-    1,
-    'rgb(178, 24, 43)',
-  ],
-  price: [
-    'interpolate',
-    ['linear'],
-    ['heatmap-density'],
-    0,
-    'rgba(34, 197, 94, 0)',
-    0.25,
-    'rgb(34, 197, 94)',
-    0.5,
-    'rgb(234, 179, 8)',
-    0.75,
-    'rgb(249, 115, 22)',
-    1,
-    'rgb(239, 68, 68)',
-  ],
-  price_per_sqm: [
-    'interpolate',
-    ['linear'],
-    ['heatmap-density'],
-    0,
-    'rgba(34, 197, 94, 0)',
-    0.25,
-    'rgb(34, 197, 94)',
-    0.5,
-    'rgb(234, 179, 8)',
-    0.75,
-    'rgb(249, 115, 22)',
-    1,
-    'rgb(239, 68, 68)',
-  ],
-  yield: [
-    'interpolate',
-    ['linear'],
-    ['heatmap-density'],
-    0,
-    'rgba(239, 68, 68, 0)',
-    0.25,
-    'rgb(239, 68, 68)',
-    0.5,
-    'rgb(234, 179, 8)',
-    0.75,
-    'rgb(132, 204, 22)',
-    1,
-    'rgb(34, 197, 94)',
-  ],
-};
 
 // Calculate weight based on heatmap mode
 function calculateWeight(point: PropertyMapPoint, mode: HeatmapMode): number {
@@ -313,7 +249,7 @@ export default function PropertyMapboxMap({
           'heatmap-radius': Math.max(10, 30 - zoom),
           'heatmap-opacity': 0.7,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any -- mapbox-gl heatmap-color requires expression type not covered by types
-          'heatmap-color': HEATMAP_COLORS[heatmapMode] as any,
+          'heatmap-color': heatmapColorExpression(heatmapMode) as any,
         },
       });
     }
@@ -328,7 +264,7 @@ export default function PropertyMapboxMap({
         const p = item.point;
         const el = document.createElement('div');
         el.className = 'cursor-pointer';
-        el.innerHTML = `<div style="width:14px;height:14px;background:#2563eb;border-radius:9999px;border:2px solid white;box-shadow:0 1px 2px rgba(0,0,0,0.3)"></div>`;
+        el.innerHTML = `<div style="width:14px;height:14px;background:hsl(var(--chart-1));border-radius:9999px;border:2px solid hsl(var(--background));box-shadow:0 1px 2px hsl(var(--foreground) / 0.3)"></div>`;
         el.addEventListener('click', () => onMarkerClick?.(p));
 
         new mapboxgl.Marker({ element: el })
@@ -349,20 +285,20 @@ export default function PropertyMapboxMap({
 
         const el = document.createElement('div');
         el.className = 'cursor-pointer mapbox-marker-cluster';
-        el.innerHTML = `<div style="min-width:${clusterSize}px;height:${clusterSize}px;padding:0 8px;background:${clusterColor};color:white;border-radius:9999px;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;line-height:1;transition:transform 0.2s ease, box-shadow 0.2s ease">${displayCount}</div>`;
+        el.innerHTML = `<div style="min-width:${clusterSize}px;height:${clusterSize}px;padding:0 8px;background:${clusterColor};color:hsl(var(--background));border-radius:9999px;border:2px solid hsl(var(--background));box-shadow:0 2px 4px hsl(var(--foreground) / 0.3);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;line-height:1;transition:transform 0.2s ease, box-shadow 0.2s ease">${displayCount}</div>`;
 
         el.addEventListener('mouseenter', () => {
           const marker = el.querySelector('div');
           if (marker) {
             marker.style.transform = 'scale(1.1)';
-            marker.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+            marker.style.boxShadow = '0 4px 12px hsl(var(--foreground) / 0.3)';
           }
         });
         el.addEventListener('mouseleave', () => {
           const marker = el.querySelector('div');
           if (marker) {
             marker.style.transform = 'scale(1)';
-            marker.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+            marker.style.boxShadow = '0 2px 4px hsl(var(--foreground) / 0.3)';
           }
         });
 
@@ -409,14 +345,14 @@ export default function PropertyMapboxMap({
               : '';
 
         const clusterPopupHTML = `
-          <div style="min-width:180px;font-family:system-ui,-apple-system,sans-serif;">
+          <div style="min-width:180px;font-family:inherit;">
             <div style="font-weight:600;font-size:14px;margin-bottom:8px;">
               ${cluster.count} properties in this area
             </div>
             ${
               typeSummary
                 ? `
-              <div style="font-size:11px;color:#6b7280;margin-bottom:6px;">
+              <div style="font-size:11px;color:hsl(var(--muted-foreground));margin-bottom:6px;">
                 ${typeSummary}
               </div>
             `
@@ -425,7 +361,7 @@ export default function PropertyMapboxMap({
             ${
               minPrice !== null && maxPrice !== null
                 ? `
-              <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">
+              <div style="font-size:12px;color:hsl(var(--muted-foreground));margin-bottom:4px;">
                 Price range: ${formatClusterPrice(minPrice)} - ${formatClusterPrice(maxPrice)}
               </div>
             `
@@ -434,13 +370,13 @@ export default function PropertyMapboxMap({
             ${
               avgPrice !== null
                 ? `
-              <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">
+              <div style="font-size:12px;color:hsl(var(--muted-foreground));margin-bottom:8px;">
                 Average: ${formatClusterPrice(avgPrice)}
               </div>
             `
                 : ''
             }
-            <div style="font-size:11px;color:#9ca3af;">
+            <div style="font-size:11px;color:hsl(var(--muted-foreground));">
               Click to zoom in
             </div>
           </div>

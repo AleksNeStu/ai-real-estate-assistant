@@ -98,13 +98,14 @@
         "cancelled": "Cancelled",
         "completed": "Completed"
       }
-    }
+    },
+    "selectType": "Tür seçin"
   },
   "auth": {
     "signIn": "Sign In",
     "signUp": "Sign Up",
     "signOut": "Sign Out",
-    "profile": "Profile",
+    "profile": "Profil",
     "settings": "Settings",
     "user": "User",
     "login": {
@@ -166,7 +167,9 @@
       "weakPassword": "Password must be at least 8 characters",
       "emailAlreadyExists": "An account with this email already exists",
       "invalidEmail": "Please enter a valid email address"
-    }
+    },
+    "loading": "Yükleniyor...",
+    "userMenu": "Kullanıcı menüsü"
   },
   "cma": {
     "steps": {
@@ -192,30 +195,30 @@
       }
     },
     "subject": {
-      "searchPlaceholder": "Search by address, city, or property ID...",
-      "searchAriaLabel": "Search properties",
-      "searchButton": "Search",
-      "searching": "Searching...",
-      "selectedSubject": "Selected Subject Property",
-      "selected": "Selected",
-      "price": "Price:",
-      "area": "Area:",
-      "rooms": "Rooms:",
-      "type": "Type:",
-      "searchResults": "Search Results ({count})",
-      "property": "Property",
-      "roomsCount": "{count} rooms",
-      "nextComparables": "Next: Select Comparables"
+      "searchPlaceholder": "Adres, şehir veya başlığa göre ara...",
+      "searchAriaLabel": "Referans emlağı ara",
+      "searching": "Aranıyor...",
+      "searchButton": "Ara",
+      "selectedSubject": "Seçilen referans emlak",
+      "selected": "Seçildi",
+      "price": "Fiyat",
+      "area": "Alan",
+      "rooms": "Oda",
+      "type": "Tür",
+      "property": "Emlak",
+      "nextComparables": "Devam: karşılaştırılabilirler",
+      "roomsCount": "{count} oda",
+      "searchResults": "Search Results ({count})"
     },
     "comparables": {
-      "selectRange": "Select {min}-{max} comparable properties. Drag to reorder by relevance.",
-      "refresh": "Refresh",
-      "finding": "Finding similar properties...",
+      "refresh": "Yenile",
+      "finding": "Aranıyor...",
+      "similarity": "Benzerlik",
+      "noComparables": "Henüz karşılaştırılabilir emlak seçilmedi.",
+      "selectedComparables": "Seçilen karşılaştırılabilirler",
+      "selectRange": "{min} ile {max} arasında karşılaştırılabilir seç",
+      "selectMore": "{count} tane daha seç",
       "selected": "Selected:",
-      "selectMore": "Select at least {count} more",
-      "similarity": "Similarity",
-      "noComparables": "No comparable properties found. Try adjusting your search criteria.",
-      "selectedComparables": "Selected Comparables",
       "roomsCount": "{count} rooms",
       "property": "Property {id}",
       "back": "Back",
@@ -430,7 +433,7 @@
     "searching": "Searching...",
     "exporting": "Exporting...",
     "saving": "Saving...",
-    "testing": "Testing...",
+    "testing": "Test ediliyor...",
     "error": "Error",
     "success": "Success",
     "toggleTheme": "Toggle theme",
@@ -450,7 +453,17 @@
     "skipToContent": "Skip to main content",
     "tryTheseChips": {
       "heading": "Try one of these"
-    }
+    },
+    "logIn": "Giriş yap",
+    "installApp": "Uygulamayı yükle",
+    "installAppDescription": "Hızlı erişim ve daha iyi bir deneyim için bu uygulamayı cihazınıza yükleyin.",
+    "later": "Daha sonra",
+    "installing": "Yükleniyor...",
+    "install": "Yükle",
+    "backOnline": "Tekrar çevrimiçisiniz",
+    "offlineMessage": "Çevrimdışısınız. Bazı özellikler kullanılamayabilir.",
+    "newVersionAvailable": "Yeni bir sürüm mevcut!",
+    "dismissUpdate": "Kapat"
   },
   "demo": {
     "banner": "Demo modu — arama ve şehir verileri mevcut",
@@ -525,7 +538,9 @@
       "singular": "{count} document expiring soon",
       "plural": "{count} documents expiring soon",
       "description": "The following documents will expire within 30 days:"
-    }
+    },
+    "searchPlaceholder": "Belge ara...",
+    "searchLabel": "Belge ara"
   },
   "error": {
     "generic": "Something went wrong",
@@ -534,7 +549,10 @@
     "forbidden": "Access forbidden",
     "serverError": "Server error",
     "tryAgain": "Please try again later",
-    "goHome": "Go to homepage"
+    "goHome": "Go to homepage",
+    "chatUnavailable": "Sohbet geçici olarak kullanılamıyor",
+    "chatErrorFallback": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.",
+    "retry": "Tekrar dene"
   },
   "favorites": {
     "title": "My Favorites",
@@ -595,14 +613,125 @@
       "roi": "ROI (1 Year)",
       "onePercentRule": "1% Rule",
       "onePercentRulePass": "Pass - Rent is ≥ 1% of price",
-      "onePercentRuleFail": "Fail - Rent is < 1% of price"
+      "onePercentRuleFail": "Fail - Rent is < 1% of price",
+      "description": "Kapsamlı metrikler ve yatırım kalite puanı.",
+      "score": "Yatırım puanı",
+      "riskScore": "Risk puanı",
+      "cashOnCashRoi": "Nakit bazlı ROI",
+      "netYield": "Net getiri",
+      "grossYield": "Brüt getiri",
+      "totalInvestment": "Toplam yatırım",
+      "annualIncome": "Yıllık gelir",
+      "monthlyIncome": "Aylık gelir (kira)",
+      "mortgagePayment": "İpotek taksiti",
+      "netMonthlyCashFlow": "Net aylık nakit akışı",
+      "cashFlowBreakdown": "Aylık nakit akışı dağılımı",
+      "metrics": "Yatırım metrikleri",
+      "irr": "IRR"
     },
     "advanced": {
       "title": "Advanced Investment Analysis",
       "holdingPeriod": "Holding Period (Years)",
       "sellingCosts": "Selling Costs (%)",
       "incomeGrowth": "Income Growth (%)",
-      "expenseGrowth": "Expense Growth (%)"
+      "expenseGrowth": "Expense Growth (%)",
+      "propertyDetails": "Emlak detayları",
+      "summary": "Yatırım özeti",
+      "taxImplications": "Vergi sonuçları",
+      "taxDescription": "Yıllık amortisman, indirimler ve vergi avantajları",
+      "annualDepreciation": "Yıllık amortisman",
+      "totalTaxDeductions": "Toplam vergi indirimleri",
+      "annualTaxBenefit": "Yıllık vergi avantajı"
+    },
+    "emptyDescription": "Yatırım potansiyelini analiz etmek için emlak bilgilerini girin.",
+    "emptyHint": "Sonuçlar analizden sonra burada görünecek.",
+    "scoreExcellent": "Mükemmel",
+    "scoreGood": "İyi",
+    "scoreFair": "Orta",
+    "scorePoor": "Zayıf",
+    "charts": {
+      "cashFlow": {
+        "title": "Nakit akışı projeksiyonu",
+        "description": "Yıllık nakit akışı ve kümülatif getiriler",
+        "ariaLabel": "Nakit akışı projeksiyon grafiği: zaman içinde yıllık nakit akışı ve kümülatif getiriler",
+        "annualCashFlow": "Yıllık nakit akışı",
+        "cumulativeCashFlow": "Kümülatif nakit akışı",
+        "equity": "Öz sermaye",
+        "propertyValue": "Mülk değeri",
+        "totalCashFlow": "Toplam nakit akışı",
+        "finalEquity": "Nihai öz sermaye",
+        "year": "Yıl {year}"
+      },
+      "diversification": {
+        "title": "Portföy çeşitlendirme",
+        "description": "Coğrafi ve mülk türü dağılım analizi",
+        "byCity": "Şehre göre",
+        "geographicAria": "Portföyün şehirlere göre dağılımını gösteren coğrafi pasta grafiği",
+        "geographicScore": "Coğrafi puan",
+        "byPropertyType": "Mülk türüne göre",
+        "typeAria": "Portföyün mülk türlerine göre dağılımını gösteren pasta grafiği",
+        "typeScore": "Tür puanı",
+        "value": "Değer",
+        "concentrationRisk": "Yoğunlaşma riski",
+        "largestHolding": "En büyük pozisyon"
+      },
+      "risk": {
+        "title": "Risk değerlendirmesi",
+        "description": "Yatırım riski analizi ve öneriler",
+        "ariaLabel": "Risk puanı: 100 üzerinden {score}, {level}",
+        "outOf100": "100 üzerinden",
+        "lowRisk": "Düşük risk",
+        "moderateRisk": "Orta risk",
+        "elevatedRisk": "Yüksek risk",
+        "highRisk": "Çok yüksek risk",
+        "riskFactors": "Risk faktörleri",
+        "recommendations": "Öneriler"
+      },
+      "scenario": {
+        "title": "Değer artışı senaryoları",
+        "description": "Farklı piyasa koşullarında mülk değeri projeksiyonları",
+        "ariaLabel": "Değer artışı senaryoları çizgi grafiği: kötümser, gerçekçi ve iyimser koşullarda mülk değeri projeksiyonları",
+        "value": "Değer",
+        "perYear": "{rate}%/yıl",
+        "total": "Toplam:",
+        "year": "Yıl {year}",
+        "pessimistic": "Kötümser",
+        "realistic": "Gerçekçi",
+        "optimistic": "İyimser"
+      },
+      "multiYear": {
+        "title": "Çok yıllı nakit akışı projeksiyonu",
+        "description": "Kira artışı ve değer artışıyla birlikte {years} yıllık projeksiyon"
+      }
+    },
+    "formIntro": "ROI, kapitalizasyon oranı, nakit akışı ve yatırım kalite puanını hesaplayın.",
+    "form": {
+      "propertyInformation": "Emlak bilgileri",
+      "financingDetails": "Finansman detayları",
+      "financing": "Finansman",
+      "closingCosts": "Kapanış maliyetleri ($)",
+      "renovationCosts": "Yenileme maliyetleri ($)",
+      "monthlyOperatingExpenses": "Aylık işletme giderleri",
+      "propertyTax": "Emlak vergisi ($)",
+      "insurance": "Sigorta ($)",
+      "hoaFees": "HOA ücretleri ($)",
+      "managementFee": "Yönetim ücreti (kiranın %'si)",
+      "projectionSettings": "Projeksiyon ayarları",
+      "projectionYears": "Projeksiyon yılları",
+      "expectedAppreciation": "Beklenen değer artışı (%)",
+      "rentGrowthRate": "Kira artış oranı (%)",
+      "landValueRatio": "Arsa değer oranı (%)",
+      "marketVolatility": "Piyasa volatilitesi (0-100)"
+    },
+    "error": {
+      "analysisFailed": "Analiz başarısız oldu",
+      "unknown": "Bilinmeyen hata"
+    },
+    "tabs": {
+      "cashFlow": "Nakit akışı",
+      "scenarios": "Senaryolar",
+      "tax": "Vergi",
+      "risk": "Risk"
     }
   },
   "knowledge": {
@@ -637,6 +766,83 @@
       "quarter": "Last Quarter",
       "year": "Last Year",
       "all": "All Time"
+    },
+    "anomalies": {
+      "title": "Piyasa anomalileri",
+      "allSeverities": "Tüm şiddet seviyeleri",
+      "allTypes": "Tüm türler",
+      "loading": "Anomaliler yükleniyor...",
+      "noneDetected": "Anomali tespit edilmedi",
+      "emptyHint": "Anomaliler sistem tarafından tespit edildiğinde burada görünecek.",
+      "loadFailed": "Anomaliler yüklenemedi",
+      "searchPlaceholder": "Anomali ara...",
+      "searchLabel": "Anomali ara",
+      "filterSeverity": "Şiddete göre filtrele",
+      "filterType": "Anomali türüne göre filtrele",
+      "metric": "Metrik",
+      "expected": "Beklenen",
+      "actual": "Gerçekleşen",
+      "deviation": "Sapma",
+      "zScore": "Z-Score",
+      "types": {
+        "priceSpike": "Fiyatta ani artış",
+        "priceDrop": "Fiyatta düşüş",
+        "volumeSpike": "Hacimde ani artış",
+        "volumeDrop": "Hacimde düşüş",
+        "unusualPattern": "Olağandışı desen"
+      },
+      "severities": {
+        "low": "Düşük",
+        "medium": "Orta",
+        "high": "Yüksek",
+        "critical": "Kritik"
+      }
+    },
+    "areaComparison": {
+      "description": "İki şehrin piyasa metriklerini yan yana karşılaştırın",
+      "firstCity": "İlk şehir",
+      "secondCity": "İkinci şehir",
+      "priceDifference": "Fiyat farkı",
+      "cheaperArea": "Daha ucuz bölge",
+      "moreListings": "Daha fazla ilan",
+      "amenityAvailability": "Olanak bulunabilirliği (%)",
+      "bothCitiesRequired": "Lütfen her iki şehrin adını girin",
+      "compareFailed": "Bölgeler karşılaştırılamadı",
+      "cityPlaceholder": "örn. Varşova",
+      "metric": "Metrik",
+      "avgPrice": "Ort. fiyat",
+      "medianPrice": "Medyan fiyat",
+      "pricePerSqm": "Fiyat/m²",
+      "listings": "İlanlar",
+      "avgRooms": "Ort. oda sayısı"
+    },
+    "priceHistory": {
+      "title": "Fiyat geçmişi",
+      "noData": "Fiyat geçmişi mevcut değil",
+      "currentPrice": "Güncel fiyat",
+      "firstRecorded": "İlk kayıt",
+      "priceChange": "Fiyat değişimi",
+      "loadFailed": "Fiyat geçmişi yüklenemedi",
+      "price": "Fiyat",
+      "pricePerSqm": "Fiyat/m²",
+      "anomalyCount": "{count, plural, one {# anomali} other {# anomali}}",
+      "chartLabel": "{count} kayıtlı fiyat geçmişi grafiği, eğilim: {trend}",
+      "trend": {
+        "increasing": "yükselişte",
+        "decreasing": "düşüşte",
+        "stable": "kararlı"
+      }
+    },
+    "charts": {
+      "pricesTitle": "Ortalama ve medyan fiyatlar",
+      "pricesDescription": "Seçilen dönem boyunca fiyat eğilimi",
+      "averagePrice": "Ortalama fiyat",
+      "medianPrice": "Medyan fiyat",
+      "volumeTitle": "İlan hacmi",
+      "volumeDescription": "Dönem başına ilan sayısı",
+      "listings": "İlanlar",
+      "pricesAria": "Seçilen dönem boyunca ortalama ve medyan fiyatlar",
+      "volumeAria": "Dönem başına ilan sayısı"
     }
   },
   "mortgage": {
@@ -654,7 +860,9 @@
       "totalInterest": "Total Interest",
       "totalCost": "Total Cost",
       "loanAmount": "Loan Amount",
-      "downPaymentAmount": "Down Payment Amount"
+      "downPaymentAmount": "Down Payment Amount",
+      "description": "Tahmini ipotek taksitleri",
+      "monthlyBreakdown": "Aylık taksit dağılımı"
     },
     "tco": {
       "title": "Total Cost of Ownership",
@@ -664,7 +872,85 @@
       "maintenanceHint": "Common rule: 1-2% of property value per year",
       "propertyTax": "Property Tax",
       "insurance": "Insurance",
-      "utilities": "Utilities"
+      "utilities": "Utilities",
+      "monthlyHoa": "Aylık HOA",
+      "annualPropertyTax": "Yıllık Emlak Vergisi",
+      "annualInsurance": "Yıllık Sigorta",
+      "monthlyUtilities": "Aylık Faturalar",
+      "monthlyInternet": "Aylık İnternet",
+      "monthlyParking": "Aylık Otopark",
+      "maintenancePercent": "Bakım (değerin %'si)",
+      "description": "Tüm giderleri içeren toplam maliyet",
+      "totalOverYears": "{years} yıl toplam",
+      "allInCost": "Toplam aylık maliyet",
+      "monthlyCostBreakdown": "Aylık maliyet dağılımı",
+      "mortgage": "İpoteka",
+      "hoa": "HOA",
+      "totalOver30Years": "Toplam maliyet (30 yıl)",
+      "downPayment": "Peşinat",
+      "compareScenarios": "Mülk senaryolarını karşılaştır",
+      "comparisonSummary": "Karşılaştırma özeti",
+      "monthlyDifference": "Aylık fark",
+      "equityDifference": "Öz sermaye farkı",
+      "breakEvenPoint": "Başabaş noktası",
+      "breakEvenHint": "Maliyetler eşitlendiğinde",
+      "recommended": "Önerilen",
+      "comparisonFailed": "Karşılaştırma başarısız oldu",
+      "scenarios": {
+        "centralApartment": "Merkezî daire",
+        "suburbanHouse": "Suburban ev",
+        "scenarioA": "Senaryo A",
+        "scenarioB": "Senaryo B"
+      }
+    },
+    "emptyDescription": "İpotek taksitlerini hesaplamak için emlak bilgilerini doldurun.",
+    "emptyHint": "Sonuçlar hesaplamadan sonra burada görünecek.",
+    "hideTcoOptions": "TCO seçeneklerini gizle",
+    "showTcoOptions": "TCO seçeneklerini göster",
+    "tcoOptionsTitle": "Toplam Mülkiyet Maliyeti Seçenekleri",
+    "calculationFailed": "Hesaplama başarısız oldu",
+    "retry": "Yeniden Dene",
+    "exportToPdf": "PDF olarak dışa aktar",
+    "hideComparison": "Karşılaştırmayı gizle",
+    "compareScenarios": "Senaryoları karşılaştır",
+    "charts": {
+      "breakdown": {
+        "title": "Aylık maliyet dağılımı",
+        "description": "Mülkiyet maliyetlerinin dağılımı",
+        "categories": {
+          "mortgage": "İpoteka",
+          "propertyTax": "Emlak vergisi",
+          "insurance": "Sigorta",
+          "hoa": "HOA",
+          "utilities": "Faturalar",
+          "internet": "İnternet",
+          "parking": "Otopark",
+          "maintenance": "Bakım"
+        },
+        "perMonth": "{value}/ay",
+        "percentOfTotal": "{percent}% toplamı",
+        "fixedCosts": "Sabit maliyetler",
+        "variableCosts": "Değişken maliyetler",
+        "discretionary": "İsteğe bağlı",
+        "ariaLabel": "Aylık maliyet dağılımını gösteren pasta grafiği: {categories}"
+      },
+      "projection": {
+        "title": "Mülkiyet projeksiyonları",
+        "description": "Zaman içinde kümülatif maliyetler, oluşan öz sermaye ve mülk değeri",
+        "ariaLabel": "Mülkiyet projeksiyonu çizgi grafiği: zaman içinde kümülatif maliyetler, oluşan öz sermaye, mülk değeri ve kredi bakiyesi",
+        "year": "Yıl {year}",
+        "years": "Yıllar",
+        "totalCost": "Toplam maliyet",
+        "equityBuilt": "Oluşan öz sermaye",
+        "propertyValue": "Mülk değeri",
+        "loanBalance": "Kredi bakiyesi",
+        "cost": "Maliyet:",
+        "equity": "Öz sermaye:",
+        "value": "Değer:"
+      }
+    },
+    "error": {
+      "unknown": "Bilinmeyen hata"
     }
   },
   "nav": {
@@ -690,7 +976,14 @@
       "good": "Good",
       "fair": "Fair",
       "poor": "Poor",
-      "veryPoor": "Very Poor"
+      "veryPoor": "Very Poor",
+      "short": {
+        "exc": "Mük.",
+        "good": "İyi",
+        "fair": "Orta",
+        "poor": "Zayıf",
+        "vpoor": "Çok zayıf"
+      }
     },
     "components": {
       "safety": "Safety",
@@ -700,7 +993,197 @@
       "greenSpace": "Green Space",
       "publicTransport": "Public Transport",
       "restaurants": "Restaurants",
-      "shopping": "Shopping"
+      "shopping": "Shopping",
+      "airQuality": "Hava kalitesi",
+      "noiseLevel": "Gürültü seviyesi"
+    },
+    "factorBreakdown": {
+      "title": "Kalite faktörlerinin dağılımı",
+      "overall": "Genel:",
+      "per100": "/ 100",
+      "dataConfidence": "Veri güvenilirliği:",
+      "confidenceHigh": "Yüksek",
+      "confidenceMedium": "Orta",
+      "confidenceLow": "Düşük",
+      "scoreRanges": "Puan aralıkları:",
+      "excellent": "85+ Mükemmel",
+      "good": "70-84 İyi",
+      "fair": "55-69 Orta",
+      "poor": "40-54 Zayıf",
+      "veryPoor": "<40 Çok zayıf",
+      "factors": {
+        "safety": {
+          "label": "Güvenlik",
+          "weight": "15%",
+          "description": "Suç oranı ve polis yakınlığı"
+        },
+        "schools": {
+          "label": "Okullar",
+          "weight": "15%",
+          "description": "Okul kalitesi ve yakınlık"
+        },
+        "amenities": {
+          "label": "Olanaklar",
+          "weight": "15%",
+          "description": "Mağazalar, restoranlar, hizmetler"
+        },
+        "walkability": {
+          "label": "Yürünebilirlik",
+          "weight": "15%",
+          "description": "Yaya dostu altyapı"
+        },
+        "greenSpace": {
+          "label": "Yeşil alan",
+          "weight": "10%",
+          "description": "Parklar ve doğal alanlar"
+        },
+        "airQuality": {
+          "label": "Hava kalitesi",
+          "weight": "10%",
+          "description": "Hava kalitesi indeksi (AQI)"
+        },
+        "noiseLevel": {
+          "label": "Gürültü seviyesi",
+          "weight": "10%",
+          "description": "Ortam gürültü seviyeleri"
+        },
+        "publicTransport": {
+          "label": "Toplu taşıma",
+          "weight": "10%",
+          "description": "Toplu taşımaya erişilebilirlik"
+        }
+      }
+    },
+    "whatsNearby": {
+      "title": "Yakınlarda neler var",
+      "description": "Mahalledeki ilgi noktaları",
+      "descriptionWalking": "Yürüme mesafesindeki ilgi noktaları",
+      "dataNotAvailable": "Bu konum için yakındaki yer verileri mevcut değil.",
+      "nearestPlace": "En yakın yer",
+      "placesNearby": "Yakınlarda {count} yer",
+      "noFoundNearby": "Yakınlarda {category} bulunamadı",
+      "openInMaps": "Google Maps'te aç",
+      "mapComingSoon": "Harita entegrasyonu yakında",
+      "location": "Konum:",
+      "categories": {
+        "schools": {
+          "label": "Okullar",
+          "description": "Yakındaki eğitim kurumları"
+        },
+        "amenities": {
+          "label": "Olanaklar",
+          "description": "Mağazalar, restoranlar ve hizmetler"
+        },
+        "greenSpaces": {
+          "label": "Yeşil alanlar",
+          "description": "Parklar ve rekreasyon alanları"
+        },
+        "transport": {
+          "label": "Ulaşım",
+          "description": "Toplu taşıma erişim noktaları"
+        },
+        "safety": {
+          "label": "Güvenlik",
+          "description": "Polis ve acil servisler"
+        }
+      },
+      "mapUnavailable": "Harita önizlemesi bu raporda mevcut değil"
+    },
+    "cityComparison": {
+      "title": "Şehir karşılaştırması",
+      "description": "Bu mahallenin şehir ortalamasına göre durumu",
+      "descriptionCity": "Bu mahallenin {city} ortalamasına göre durumu",
+      "dataNotAvailable": "Bu konum için şehir karşılaştırma verileri mevcut değil.",
+      "percentile": "persentil",
+      "outstanding": "Olağanüstü",
+      "excellent": "Mükemmel",
+      "aboveAverage": "Ortalamanın üzerinde",
+      "average": "Ortalama",
+      "belowAverage": "Ortalamanın altında",
+      "poor": "Zayıf",
+      "scoresHigherThan": "Şehirdeki alanların {percentile}%'inden daha yüksek puan alan bu mahalle, {city} ortalamasının üzerindedir.",
+      "cityAverage": "Şehir ortalaması:",
+      "scoreComparison": "Puan karşılaştırması",
+      "thisArea": "Bu bölge",
+      "cityAvg": "Şehir ortalaması",
+      "score": "Puan",
+      "betterThanAverage": "Ortalamadan iyi",
+      "averageAcross": "Bu mahalle, tüm faktörlerde şehir ortalamasına yakındır.",
+      "pointsAbove": "ortalamanın {count} puan üzerinde",
+      "pointsBelow": "ortalamanın {count} puan altında",
+      "equalToAverage": "Şehir ortalamasına eşit",
+      "percentileLabel": "Yüzdelik sıra: {value}",
+      "scoreComparisonLabel": "Puan karşılaştırması: bu bölge {area}, şehir ortalaması {average}"
+    },
+    "details": {
+      "quality": "Mahalle kalitesi",
+      "noData": "Mahalle verisi mevcut değil",
+      "assessment": "Mahalle kalitesi değerlendirmesi",
+      "loading": "Mahalle verileri yükleniyor...",
+      "failedToLoad": "Mahalle verileri yüklenemedi",
+      "tryAgain": "Tekrar dene",
+      "overview": "Genel bakış",
+      "allFactors": "Tüm faktörler",
+      "extended": "Genişletilmiş",
+      "nearby": "Yakın çevre",
+      "dataSources": "Veri kaynakları",
+      "detailedFactorInfo": "Faktörlerin detaylı bilgileri",
+      "detailedFactorDescription": "Her faktör için ham değerler ve veri kaynakları",
+      "factor": "Faktör",
+      "score": "Puan",
+      "rawValue": "Ham değer",
+      "confidence": "Güvenilirlik",
+      "source": "Kaynak",
+      "dataFreshness": "Veri güncelliği:",
+      "safety": "Güvenlik",
+      "schools": "Okullar",
+      "walkability": "Yürünebilirlik",
+      "greenSpace": "Yeşil alan",
+      "amenities": "Olanaklar",
+      "airQuality": "Hava kalitesi",
+      "noiseLevel": "Gürültü seviyesi",
+      "publicTransport": "Toplu taşıma"
+    },
+    "newFactors": {
+      "title": "Genişletilmiş kalite faktörleri",
+      "description": "Kapsamlı bir mahalle değerlendirmesi için ek çevresel ve erişilebilirlik metrikleri",
+      "source": "Kaynak:",
+      "confidence": "Güvenilirlik:",
+      "airQuality": {
+        "label": "Hava kalitesi",
+        "description": "Hava kirliliği düzeylerini Hava Kalitesi İndeksi (AQI) ile ölçer. Düşük değerler daha temiz havayı gösterir."
+      },
+      "noiseLevel": {
+        "label": "Gürültü seviyesi",
+        "description": "Desibel cinsinden ortalama ortam gürültü seviyesi. Düşük değerler daha sessiz bir ortam gösterir."
+      },
+      "publicTransport": {
+        "label": "Toplu taşıma",
+        "description": "1 km yarıçapındaki toplu taşıma durak sayısı. Daha yüksek değerler daha iyi erişilebilirlik gösterir."
+      },
+      "ratings": {
+        "good": "İyi",
+        "moderate": "Orta",
+        "unhealthySensitive": "Hassas gruplar için sağlıksız",
+        "unhealthy": "Sağlıksız",
+        "veryUnhealthy": "Çok sağlıksız",
+        "quiet": "Sessiz",
+        "noisy": "Gürültülü",
+        "veryNoisy": "Çok gürültülü",
+        "excellent": "Mükemmel",
+        "fair": "Orta",
+        "limited": "Sınırlı",
+        "unknown": "Bilinmiyor"
+      },
+      "dataFreshness": "Veri güncelliği: hava kalitesi {airQuality}, gürültü seviyesi {noiseLevel}, ulaşım {transport} güncellendi",
+      "stopsWithin1km": "1 km içinde {count} durak",
+      "scoreLabel": "{label} puanı: 100 üzerinden {score}",
+      "confidenceLabel": "Güven: {value}%"
+    },
+    "overallScore": "Genel puan",
+    "quality": {
+      "badge": "Mahalle kalitesi: {rating} ({score}/100)",
+      "score": "Mahalle kalitesi: {score}/100"
     }
   },
   "portfolio": {
@@ -715,7 +1198,18 @@
       "totalRent": "Total Monthly Rent",
       "averageCapRate": "Average Cap Rate",
       "totalCashFlow": "Total Monthly Cash Flow"
-    }
+    },
+    "emptyHint": "Portföyü analiz etmek için en az bir emlak ekleyin.",
+    "propertyLabel": "Emlak",
+    "propertyPrice": "Satın alma fiyatı ($)",
+    "monthlyRent": "Aylık kira ($)",
+    "monthlyCashFlow": "Aylık nakit akışı ($)",
+    "capRate": "Kapitalizasyon oranı (%)",
+    "city": "Şehir",
+    "cityPlaceholder": "e.g. Berlin",
+    "propertyType": "Emlak türü",
+    "selectType": "Tür seçin",
+    "analyzeButton": "Portföyü analiz et"
   },
   "property": {
     "card": {
@@ -726,7 +1220,10 @@
       "baths": "{count, plural, one {# bath} other {# baths}}",
       "areaUnit": "m²",
       "noLongerAvailable": "Property no longer available",
-      "locationUnavailable": "Location unavailable"
+      "locationUnavailable": "Location unavailable",
+      "addToFavorites": "Favorilere ekle",
+      "removeFromFavorites": "Favorilerden çıkar",
+      "loginRequired": "Bu ilanı kaydetmek için giriş yapın"
     },
     "favorite": {
       "add": "Add to favorites",
@@ -748,7 +1245,9 @@
       "location": "Location",
       "features": "Features",
       "contact": "Contact agent"
-    }
+    },
+    "estimateLabel": "Tahmini aylık taksit: {value}",
+    "estimateTitle": "Tahmini aylık taksit, {down} % peşinat ve {years} yıl boyunca % {rate} sabit faizle. Kredi teklifi değildir."
   },
   "rentVsBuy": {
     "title": "Kiralama vs Satın Alma Hesaplayıcı",
@@ -779,7 +1278,8 @@
       "rentIncreaseRate": "Kira Artışı (%)",
       "investmentReturnRate": "Yatırım Getirisi (%)",
       "marginalTaxRate": "Marjinal Vergi Oranı (%)",
-      "projectionYears": "Projeksiyon Dönemi (yıl)"
+      "projectionYears": "Projeksiyon Dönemi (yıl)",
+      "growthRates": "Büyüme oranları"
     },
     "results": {
       "title": "Analiz Sonuçları",
@@ -809,7 +1309,12 @@
         "equityGrowth": {
           "title": "Öz Sermaye ve Gayrimenkul Değer Artışı",
           "ariaLabel": "Zaman içinde öz sermaye ve gayrimenkul değer artışı grafiği"
-        }
+        },
+        "cumulativeRent": "Kümülatif kira",
+        "cumulativeOwnership": "Kümülatif mülkiyet maliyeti",
+        "propertyValue": "Mülk değeri",
+        "equity": "Öz sermaye",
+        "year": "Yıl {year}"
       }
     }
   },
@@ -828,6 +1333,22 @@
       "disabled": "Alerts disabled",
       "enable": "Enable alerts",
       "disable": "Disable alerts"
+    },
+    "dialog": {
+      "title": "Aramayı kaydet",
+      "name": "Arama adı",
+      "namePlaceholder": "örn. Madrid'da 2 yataklı daireler",
+      "alertFrequency": "Uyarı sıklığı",
+      "frequencyInstant": "Anlık - hemen bildir",
+      "frequencyDaily": "Günlük özet - günde bir kez",
+      "frequencyWeekly": "Haftalık özet - haftada bir kez",
+      "frequencyNone": "Uyarı yok - sadece kaydet",
+      "hint": "Bu aramayla eşleşen yeni ilanlar ve fiyat düşüşleri hakkında bilgilendirileceksiniz.",
+      "saved": "Arama başarıyla kaydedildi!",
+      "savedHint": "Tercihlerinize göre bildirim alacaksınız.",
+      "nameRequired": "Bu arama için bir ad girin",
+      "loginRequired": "Aramaları kaydetmek için giriş yapın",
+      "saveFailed": "Arama kaydedilemedi"
     }
   },
   "search": {
@@ -869,7 +1390,8 @@
     "emptyState": {
       "title": "Start Your Property Search",
       "description": "Enter a search query to explore thousands of property listings.",
-      "tryExamples": "Try these examples:"
+      "tryExamples": "Try these examples:",
+      "exportHint": "Arama sonuçlarınız olduğunda dışa aktarma kullanılabilir olacak."
     },
     "results": {
       "noResults": "No Results Found",
@@ -882,7 +1404,16 @@
       "format": "Export Format",
       "csv": "CSV",
       "json": "JSON",
-      "export": "Export"
+      "export": "Export",
+      "columns": "Sütunlar (isteğe bağlı)",
+      "columnsPlaceholder": "örn. id, şehir, fiyat",
+      "delimiter": "CSV ayırıcı",
+      "delimiterComma": "Virgül (,)",
+      "delimiterSemicolon": "Noktalı virgül (;)",
+      "decimalSeparator": "Ondalık ayırıcı",
+      "decimalDot": "Nokta (.)",
+      "decimalComma": "Virgül (,)",
+      "includeHeader": "Başlık satırını dahil et"
     },
     "saveSearch": {
       "button": "Save Search",
@@ -895,7 +1426,14 @@
     "errors": {
       "searchFailed": "Search Failed",
       "connectionFailed": "Connection failed. Please try again.",
-      "timeout": "Search timed out. Please try again."
+      "timeout": "Search timed out. Please try again.",
+      "invalidMinPrice": "En düşük fiyat geçerli bir sayı olmalıdır.",
+      "invalidMaxPrice": "En yüksek fiyat geçerli bir sayı olmalıdır.",
+      "invalidMinRooms": "En düşük oda sayısı geçerli bir sayı olmalıdır.",
+      "minGreaterThanMax": "En düşük fiyat en yüksek fiyattan büyük olamaz.",
+      "emptyQuery": "Lütfen bir arama sorgusu girin.",
+      "genericSearch": "Arama gerçekleştirilemedi. Tekrar deneyin.",
+      "exportFailed": "Dışa aktarma gerçekleştirilemedi. Tekrar deneyin."
     },
     "feedback": {
       "helpful": "Was this helpful?",
@@ -903,18 +1441,58 @@
       "thumbsDown": "Thumbs down — not relevant",
       "thanks": "Thanks for your feedback!",
       "error": "Failed to submit"
-    }
+    },
+    "map": {
+      "noMappableResults": "Haritalanabilir sonuç yok",
+      "noMappableResultsHint": "Bu ilanlarda koordinat yok.",
+      "shown": "Haritada {total} kaydın {shown} tanesi",
+      "filteredByArea": "(alan bazında filtrelendi)",
+      "enhanced": "Gelişmiş harita",
+      "useMapbox": "Mapbox kullan",
+      "drawArea": "Bölge çiz",
+      "drawing": "Çiziliyor...",
+      "enableDrawing": "Çizimi etkinleştir",
+      "disableDrawing": "Çizimi kapat",
+      "clearArea": "Alanı temizle"
+    },
+    "queryLabel": "Arama sorgusu",
+    "searchLabel": "Emlak araması",
+    "view": {
+      "label": "Görünüm modu",
+      "list": "Liste",
+      "map": "Harita"
+    },
+    "preset": {
+      "title": "Filtreyi kaydet",
+      "name": "Filtre adı",
+      "namePlaceholder": "örn. Bütçe daireler Berlin",
+      "description": "Açıklama (isteğe bağlı)",
+      "descriptionPlaceholder": "Bu filtrenin kısa açıklaması...",
+      "setDefault": "Varsayılan filtre olarak ayarla",
+      "hint": "Mevcut filtre ayarlarınızı hızlı erişim için kaydeder.",
+      "saved": "Filtre başarıyla kaydedildi!",
+      "savedHint": "Bu filtreleri filtre menüsünden hızlıca uygulayabilirsiniz.",
+      "nameRequired": "Bu filtre için bir ad girin",
+      "loginRequired": "Filtreleri kaydetmek için giriş yapın",
+      "saveFailed": "Filtre kaydedilemedi",
+      "save": "Filtreyi kaydet",
+      "saving": "Kaydediliyor..."
+    },
+    "clearPriceFilter": "Fiyat filtresini temizle",
+    "filterByPropertyType": "Mülk türüne göre filtrele",
+    "propertyMap": "Mülk haritası",
+    "propertyMapWithMapbox": "Mapboxlu mülk haritası"
   },
   "settings": {
     "title": "Settings",
     "description": "Manage your account settings and preferences.",
     "tabs": {
-      "identity": "Identity",
-      "notifications": "Notifications",
-      "models": "Models"
+      "identity": "Kimlik",
+      "notifications": "Bildirimler",
+      "models": "Modeller"
     },
     "identity": {
-      "title": "Identity",
+      "title": "Kimlik",
       "description": "Set the email address used to scope settings to your account.",
       "emailLabel": "Email",
       "emailPlaceholder": "Enter your email",
@@ -924,36 +1502,78 @@
       "invalidEmail": "Please enter a valid email address."
     },
     "notifications": {
-      "title": "Notifications",
+      "title": "Bildirimler",
       "description": "Configure how you receive notifications.",
       "emailNotifications": "Email Notifications",
       "pushNotifications": "Push Notifications",
       "savedSearchAlerts": "Saved Search Alerts",
       "priceDropAlerts": "Price Drop Alerts",
-      "newListingAlerts": "New Listing Alerts"
+      "newListingAlerts": "New Listing Alerts",
+      "instant": "Anında"
     },
     "models": {
-      "title": "Models",
-      "description": "Select your default model and compare pricing.",
-      "defaultModel": "Default Model",
-      "refreshCatalog": "Refresh Catalog",
-      "runtimeCheck": "Runtime check",
-      "testConnection": "Test Connection",
-      "connectionSuccess": "Connection successful",
-      "connectionFailed": "Connection failed",
-      "noModels": "No models available",
+      "title": "Modeller",
+      "description": "Varsayılan modelinizi seçin ve fiyatları karşılaştırın.",
+      "defaultModel": "Varsayılan model",
+      "refreshCatalog": "Kataloğu yenile",
+      "runtimeCheck": "Çalışma zamanı kontrolü",
+      "testConnection": "Bağlantıyı test et",
+      "connectionSuccess": "Bağlantı başarılı.",
+      "connectionFailed": "Bağlantı başarısız.",
+      "noModels": "Kullanılabilir model yok",
       "pricing": {
         "title": "Model Pricing",
         "input": "Input",
         "output": "Output",
         "per1kTokens": "per 1K tokens"
-      }
+      },
+      "modelCatalog": "Model kataloğu",
+      "supportedProviders": "Desteklenen sağlayıcılar:",
+      "model": "Model",
+      "context": "Bağlam",
+      "inputPer1m": "Girdi / 1M",
+      "outputPer1m": "Çıktı / 1M",
+      "capabilities": "Yetenekler",
+      "downloadedModels": "İndirilen modeller",
+      "localModelsOffline": "Yerel modeller ve çevrimdışı kullanım",
+      "runtimeCheckDesc": "Bu sağlayıcı için hedefli bir çalışma zamanı kontrolü çalıştırın.",
+      "failedToLoadCatalog": "Katalog yüklenemedi",
+      "refreshing": "Yenileniyor...",
+      "pricingUnavailable": "Bazı barındırılan modeller için fiyatlar kullanılamayabilir.",
+      "provider": "Sağlayıcı:",
+      "local": "Yerel",
+      "hosted": "Barındırılan",
+      "apiKeyRequired": "API anahtarı gerekir",
+      "noApiKeyRequired": "API anahtarı gerekmez",
+      "localModelsDesc": "Yerel modeller kendi makinenizde çalışır. Token fiyatlandırması geçerli değildir — maliyet donanımınıza ve çalışma zamanı ayarlarınıza bağlıdır.",
+      "runtimeDetectedModels": "Çalışma zamanı kontrolü modelleri algıladı:",
+      "runtimeNotDetected": "Yerel çalışma zamanı algılanmadı. Başlatın ve API'nin erişebildiğinden emin olun.",
+      "runtimeDetected": "Yerel çalışma zamanı algılandı. İndirilen modeller: {count}.",
+      "runtimeUnknown": "Yerel çalışma zamanının durumu bilinmiyor.",
+      "ollamaStep1": "1. Ollama'yı yükleyin:",
+      "ollamaStep2": "2. Ollama'yı başlatın, sonra bir model indirin:",
+      "ollamaStep3": "3. API Docker'da çalışıyorsa OLLAMA_BASE_URL değerini http://host.docker.internal:11434 olarak ayarlayın.",
+      "emptyCatalog": "Şu anda yapılandırılmış model yok. Başlamak için yukarıdaki Kimlik bölümüne API anahtarlarınızı ekleyin.",
+      "emptyCatalogHint": "Aşağıdaki canlı katalog yapılandırılmış her sağlayıcıyı listeler — API anahtarınızı girdikten sonra modeli oradan seçin.",
+      "loadFailed": "Model kataloğu yüklenemedi. Lütfen tekrar deneyin."
     },
     "saved": "Settings saved successfully.",
     "error": "Failed to save settings.",
     "emailRequired": "Set an email in Identity settings above to access this section.",
     "profile": {
-      "loadingProfile": "Loading profile..."
+      "loadingProfile": "Loading profile...",
+      "email": "E-posta",
+      "phone": "Telefon",
+      "bio": "Hakkımda",
+      "timezone": "Saat dilimi",
+      "language": "Dil"
+    },
+    "privacy": {
+      "processing": "İşleniyor...",
+      "title": "Gizlilik ve veri"
+    },
+    "taskModel": {
+      "saved": "Model tercihi kaydedildi."
     }
   },
   "tools": {
@@ -1028,5 +1648,189 @@
     "errorGeneric": "Something went wrong. Please try again.",
     "studioNote": "Bu, ücretsiz ve açık kaynaklı sürümdür. Barındırılan sürüm NestLab tarafından geliştiriliyor.",
     "studioLink": "nestlab.tech adresini ziyaret edin"
+  },
+  "pages": {
+    "search": {
+      "title": "Evinizi bulun",
+      "description": "Yapay zekâ destekli anlamsal aramayla binlerce ilan arasında arama yapın."
+    },
+    "favorites": {
+      "title": "Favorilerim",
+      "description": "Kaydettiğiniz tüm ilanlar tek bir yerde.",
+      "newCollection": "Yeni koleksiyon",
+      "collectionName": "Koleksiyon adı"
+    },
+    "savedSearches": {
+      "title": "Kayıtlı aramalar",
+      "description": "Kayıtlı aramalarınızı ve uyarı tercihlerinizi yönetin.",
+      "pauseAlerts": "Uyarıları duraklat",
+      "resumeAlerts": "Uyarıları sürdür",
+      "deleteSearch": "Aramayı sil"
+    },
+    "leads": {
+      "title": "Talepler panosu",
+      "description": "Sitede toplanan tüm talepler.",
+      "searchPlaceholder": "Aday ara..."
+    },
+    "knowledge": {
+      "title": "Bilgi",
+      "description": "Asistanın dayandığı belgeler ve piyasa bağlamı."
+    },
+    "documents": {
+      "title": "Belgeler",
+      "description": "Asistanın okuduğu belgeleri yükleyin ve yönetin.",
+      "loading": "Belgeler yükleniyor...",
+      "errorTitle": "Belgeler yüklenemedi",
+      "refresh": "Yenile",
+      "upload": "Belge yükle",
+      "expiringTitle": "{count, plural, one {# belge yakında sona eriyor} other {# belge yakında sona eriyor}}",
+      "expiringIntro": "Aşağıdaki belgeler 30 gün içinde sona erecek:",
+      "andMore": "ve {count} tane daha",
+      "emptyTitle": "Henüz belge yok",
+      "emptyDescription": "Emlak dosyalarınızı düzenlemeye başlamak için ilk belgenizi yükleyin. PDF, DOC, DOCX, JPG ve PNG desteklenir (10 MB'a kadar).",
+      "uploadFirst": "İlk belgenizi yükleyin",
+      "loadMore": "Daha fazla yükle"
+    },
+    "marketTrends": {
+      "title": "Piyasa eğilimleri",
+      "description": "İzlenen piyasalarda fiyat ve hacim hareketleri."
+    },
+    "cityOverview": {
+      "title": "Şehir genel bakış",
+      "description": "Takip ettiğiniz şehirler için mahalle göstergeleri."
+    },
+    "agents": {
+      "title": "Danışman bul",
+      "description": "Aradığınız piyasada çalışan danışmanlar.",
+      "searchByCity": "Şehre göre ara..."
+    },
+    "settings": {
+      "title": "Ayarlar",
+      "description": "Hesabınız, modelleriniz ve bildirimleriniz.",
+      "loadingModelCatalog": "Model kataloğu yükleniyor"
+    },
+    "tools": {
+      "title": "Araçlar",
+      "description": "Bir ilanı bir karara dönüştüren hesaplayıcılar ve analizler.",
+      "propertyPrice": "Mülk fiyatı",
+      "columnsHint": "Sütunlar (isteğe bağlı), örn. id, city, price",
+      "propertyId": "Mülk ID"
+    },
+    "analytics": {
+      "title": "Analitik ve araçlar",
+      "description": "Portföy analitiği ve onu besleyen hesaplayıcılar."
+    },
+    "valuation": {
+      "title": "Yapay zekâ değerleme ve tahmin",
+      "description": "Belirli bir adres için modellenmiş fiyat aralığı.",
+      "forecastChart": "Tahmin grafiği"
+    },
+    "usage": {
+      "title": "Kullanım panosu",
+      "description": "Asistana ne soruldu ve bunun maliyeti ne oldu.",
+      "totalSearches": "Toplam arama",
+      "propertyViews": "Mülk görüntülemeleri",
+      "propertyClicks": "Mülk tıklamaları",
+      "interval": {
+        "day": "Günlük",
+        "week": "Haftalık",
+        "month": "Aylık"
+      },
+      "actions": {
+        "refresh": "Yenile",
+        "exportCsv": "CSV dışa aktar"
+      },
+      "sessions": "{count} benzersiz oturum",
+      "toolsUsed": "Kullanılan araçlar",
+      "avgResponseTime": "Ortalama yanıt süresi",
+      "exports": "Dışa aktarmalar",
+      "favorites": "Favoriler",
+      "propertiesViewed": "Görüntülenen mülkler",
+      "calculatorTools": "Hesaplayıcılar ve analiz araçları",
+      "processingTime": "İşlem süresi",
+      "clickThroughRate": "Tıklama oranı",
+      "dataExported": "Dışa aktarılan veri",
+      "propertiesSaved": "Kaydedilen mülkler",
+      "tabs": {
+        "activityTrends": "Etkinlik trendleri",
+        "topTools": "En çok kullanılan araçlar",
+        "topCities": "En popüler şehirler",
+        "dailyActivity": "Günlük etkinlik"
+      },
+      "charts": {
+        "activityOverTime": "Zaman içindeki etkinlik",
+        "activityOverTimeDescription": "Kullanım trendleriniz {interval} bazında gruplandı",
+        "mostUsedTools": "En çok kullanılan araçlar",
+        "mostUsedToolsDescription": "En sevdiğiniz analiz ve hesaplama araçları",
+        "topSearchCities": "En çok aranan şehirler",
+        "topSearchCitiesDescription": "En çok aranan konumlar",
+        "searchDistribution": "Arama dağılımı",
+        "searchDistributionDescription": "Şehre göre arama yüzdesi",
+        "dailyActivity": "Günlük etkinlik",
+        "dailyActivityDescription": "Seçilen dönem boyunca gün başına olay"
+      },
+      "series": {
+        "searches": "Aramalar",
+        "propertyViews": "Mülk görüntülemeleri",
+        "toolUses": "Araç kullanımları",
+        "exports": "Dışa aktarmalar"
+      },
+      "empty": {
+        "noTrendData": "Trend verisi yok",
+        "noToolUsage": "Henüz araç kullanım verisi yok",
+        "noCityData": "Henüz şehir verisi yok",
+        "noDailyActivity": "Henüz günlük etkinlik verisi yok"
+      },
+      "aria": {
+        "activityOverTime": "Zaman içindeki etkinlik: aramalar, mülk görüntülemeleri, araç kullanımları ve dışa aktarmalar",
+        "mostUsedTools": "Kullanım sayısına göre en çok kullanılan araçlar",
+        "topSearchCities": "Arama sayısına göre en çok aranan şehirler",
+        "searchDistribution": "Şehir başına arama payı",
+        "dailyActivity": "Seçilen dönem boyunca gün başına olay"
+      },
+      "loadFailed": "Kullanım verileri yüklenemedi"
+    },
+    "cma": {
+      "title": "Karşılaştırmalı piyasa analizi",
+      "description": "Bir emlağı benzer ilanlara göre değerleyin."
+    },
+    "showcase": {
+      "title": "Vitrin",
+      "description": "Asistanın baştan sona yapabildikleri."
+    },
+    "agentAnalytics": {
+      "title": "Danışman analitiği",
+      "description": "İlanlar her danışmanda nasıl performans gösteriyor.",
+      "totalLeads": "Toplam aday",
+      "totalRevenue": "Toplam gelir"
+    },
+    "admin": {
+      "monitoring": {
+        "title": "Üretim izleme",
+        "description": "Yayındaki yığının canlı durumu."
+      },
+      "connectors": {
+        "title": "MCP bağlantıları",
+        "description": "Asistanın çağırabileceği dış araçlar."
+      },
+      "dataSources": {
+        "title": "Veri kaynakları",
+        "description": "İlanlar nereden geliyor."
+      },
+      "bulkJobs": {
+        "title": "Toplu içe/dışa aktarma işleri",
+        "description": "İlanları toplu olarak içeri ve dışarı taşıyın."
+      }
+    }
+  },
+  "states": {
+    "empty": {
+      "title": "Burada henüz bir şey yok",
+      "description": "Eklediğiniz öğeler burada görünecek."
+    },
+    "error": {
+      "title": "Bir şeyler ters gitti",
+      "description": "Veriler yüklenemedi. Birazdan tekrar deneyin."
+    }
   }
 }

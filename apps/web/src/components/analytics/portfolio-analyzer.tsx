@@ -322,7 +322,7 @@ export function PortfolioAnalyzer() {
                   <div className="text-center p-3 bg-muted/50 rounded-lg">
                     <p className="text-sm text-muted-foreground">{t('results.annualCashFlow')}</p>
                     <p
-                      className={`text-2xl font-bold ${result.metrics.total_annual_cash_flow >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                      className={`text-2xl font-bold ${result.metrics.total_annual_cash_flow >= 0 ? 'text-success' : 'text-destructive'}`}
                     >
                       $
                       {result.metrics.total_annual_cash_flow.toLocaleString(undefined, {

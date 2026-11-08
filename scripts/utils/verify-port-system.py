@@ -9,9 +9,17 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Add scripts directory to path
-PROJECT_ROOT = Path(__file__).parent
-sys.path.insert(0, str(PROJECT_ROOT))
+# Repository root: scripts/utils/verify-port-system.py -> scripts/utils -> scripts -> root
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+# `port.port_manager` lives in scripts/, `service_discovery` next to this file.
+sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+sys.path.insert(0, str(PROJECT_ROOT / "scripts" / "utils"))
+
+# The report uses check/cross marks; a Windows console defaults to cp1250 and
+# would abort the run on a UnicodeEncodeError.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
 
 print("=" * 60)
 print("Dynamic Port Allocation System Verification")
@@ -113,12 +121,12 @@ try:
     release_result = pm.release_port(port)
     print(f"   ✓ Port released: {release_result}")
 
-    # Verify status
-    alloc = pm.get_allocation("test-service")
-    if alloc:
-        print(f"   ✓ Allocation status: {alloc['status']}")
+    # Verify status: a released allocation must no longer be active.
+    active = pm.get_allocation("test-service")
+    if active is None:
+        print("   ✓ Allocation is no longer active")
     else:
-        print("   ✗ Allocation not found after release")
+        print(f"   ✗ Allocation still active: {active['status']}")
         sys.exit(1)
 except Exception as e:
     print(f"   ✗ Port release failed: {e}")
@@ -126,7 +134,7 @@ except Exception as e:
 
 # Test 10: Port Manager CLI
 print("\n[10] Testing port-manager.py CLI...")
-cli_script = str(PROJECT_ROOT / "scripts" / "port" / "port-manager.py")
+cli_script = str(PROJECT_ROOT / "scripts" / "port" / "port_manager.py")
 result = subprocess.run(
     [
         sys.executable,
@@ -150,7 +158,7 @@ print(f"   Ranges: {output.get('ranges')}")
 
 # Test 11: Service Discovery CLI
 print("\n[11] Testing service-discovery.py CLI...")
-cli_script = str(PROJECT_ROOT / "scripts" / "service-discovery.py")
+cli_script = str(PROJECT_ROOT / "scripts" / "utils" / "service_discovery.py")
 result = subprocess.run(
     [sys.executable, cli_script, "--allocate", "--json"],
     capture_output=True,
@@ -164,7 +172,7 @@ print(f"   Frontend port: {output.get('frontend_port')}")
 
 # Test 12: start-with-ports.py Dry Run
 print("\n[12] Testing start-with-ports.py dry run...")
-cli_script = str(PROJECT_ROOT / "scripts" / "start-with-ports.py")
+cli_script = str(PROJECT_ROOT / "scripts" / "utils" / "start-with-ports.py")
 result = subprocess.run(
     [sys.executable, cli_script, "--dry-run", "--service", "backend"],
     capture_output=True,
@@ -182,15 +190,15 @@ print("ALL TESTS PASSED!")
 print("=" * 60)
 print("\nDynamic Port Allocation System is working correctly!")
 print("\nTo use the system:")
-print("  1. Start services: python scripts/start-with-ports.py")
+print("  1. Start services: python scripts/utils/start-with-ports.py")
 print(
-    "  2. Allocate ports: python scripts/port/port-manager.py"
+    "  2. Allocate ports: python scripts/port/port_manager.py"
     " --action allocate --category backend --service-name my-service"
 )
-print("  3. Dry run mode: python scripts/start-with-ports.py --dry-run")
-print("  4. Kill services: python scripts/kill-port.ps1 -Ports 8000,3800 (Windows)")
-print("     OR: python scripts/kill-port.sh 8000 3800 (Unix)")
+print("  3. Dry run mode: python scripts/utils/start-with-ports.py --dry-run")
+print("  4. Kill services: pwsh scripts/utils/kill-port.ps1 -Ports 8000,3800 (Windows)")
+print("     OR: bash scripts/utils/kill-port.sh 8000 3800 (Unix)")
 print("\nFor more information, see:")
-print("  - docs/PORT_REGISTRY.md - Documentation")
-print("  - scripts/port/README.md - Scripts README")
+print("  - docs/configuration/PORT-CONFIGURATION.md - Documentation")
+print("  - scripts/README.md - Scripts README")
 print("=" * 60)

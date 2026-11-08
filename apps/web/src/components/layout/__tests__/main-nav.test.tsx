@@ -61,22 +61,22 @@ describe('MainNav', () => {
   it('renders the main navigation landmark with an accessible name', () => {
     render(<MainNav />);
 
-    expect(screen.getByRole('navigation', { name: 'mainNavigation' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBeInTheDocument();
   });
 
   it('renders a link for every primary route', () => {
     render(<MainNav />);
 
     for (const label of [
-      'search',
-      'favorites',
-      'documents',
-      'cities',
-      'assistant',
-      'analytics',
-      'agents',
-      'knowledge',
-      'settings',
+      'Search',
+      'Favorites',
+      'Documents',
+      'Cities',
+      'Assistant',
+      'Analytics',
+      'Find Agents',
+      'Knowledge',
+      'Settings',
     ]) {
       expect(screen.getByRole('link', { name: label })).toBeInTheDocument();
     }
@@ -85,17 +85,17 @@ describe('MainNav', () => {
   it('points each route link at the matching path', () => {
     render(<MainNav />);
 
-    expect(screen.getByRole('link', { name: 'search' })).toHaveAttribute('href', '/search');
-    expect(screen.getByRole('link', { name: 'agents' })).toHaveAttribute('href', '/agents');
-    expect(screen.getByRole('link', { name: 'knowledge' })).toHaveAttribute('href', '/knowledge');
+    expect(screen.getByRole('link', { name: 'Search' })).toHaveAttribute('href', '/search');
+    expect(screen.getByRole('link', { name: 'Find Agents' })).toHaveAttribute('href', '/agents');
+    expect(screen.getByRole('link', { name: 'Knowledge' })).toHaveAttribute('href', '/knowledge');
   });
 
   it('marks the current route with aria-current', () => {
     mockUsePathname.mockReturnValue('/agents');
     render(<MainNav />);
 
-    expect(screen.getByRole('link', { name: 'agents' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: 'search' })).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('link', { name: 'Find Agents' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Search' })).not.toHaveAttribute('aria-current');
   });
 
   describe('demo mode', () => {
@@ -104,11 +104,11 @@ describe('MainNav', () => {
       render(<MainNav />);
 
       for (const label of [
-        'search',
-        'cities',
-        'analytics',
-        'knowledge',
-        'agents',
+        'Search',
+        'Cities',
+        'Analytics',
+        'Knowledge',
+        'Find Agents',
       ]) {
         expect(screen.getByRole('link', { name: label })).toBeInTheDocument();
       }
@@ -118,18 +118,18 @@ describe('MainNav', () => {
       setAuth({ isDemoMode: true });
       render(<MainNav />);
 
-      expect(screen.queryByRole('link', { name: 'favorites' })).not.toBeInTheDocument();
-      expect(screen.queryByRole('link', { name: 'documents' })).not.toBeInTheDocument();
-      expect(screen.queryByRole('link', { name: 'settings' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Favorites' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Documents' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Settings' })).not.toBeInTheDocument();
     });
 
     it('shows the account-only routes outside demo mode', () => {
       setAuth({ isDemoMode: false });
       render(<MainNav />);
 
-      expect(screen.getByRole('link', { name: 'favorites' })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'documents' })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'settings' })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Favorites' })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Documents' })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Settings' })).toBeInTheDocument();
     });
   });
 });

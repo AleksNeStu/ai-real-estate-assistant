@@ -96,8 +96,8 @@ export function ScheduleViewingDialog({
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-8 text-center">
-          <div className="mb-4 rounded-full bg-green-100 p-3">
-            <Calendar className="h-6 w-6 text-green-600" />
+          <div className="mb-4 rounded-full bg-success/15 p-3">
+            <Calendar className="h-6 w-6 text-success" />
           </div>
           <h3 className="mb-2 text-lg font-semibold">Viewing Requested!</h3>
           <p className="text-muted-foreground">The agent will confirm your appointment soon.</p>
@@ -175,7 +175,7 @@ export function ScheduleViewingDialog({
                 id="time"
                 value={formData.time}
                 onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
                 required
               >
                 {TIME_SLOTS.map((slot) => (
@@ -213,7 +213,7 @@ export function ScheduleViewingDialog({
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Any special requests or questions?"
               rows={3}
-              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
 

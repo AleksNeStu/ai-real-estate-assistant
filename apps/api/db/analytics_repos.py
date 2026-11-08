@@ -18,6 +18,10 @@ from db.models import (
     PriceSnapshot,
 )
 
+# Stable reference to the real datetime class. The module attribute ``datetime``
+# can be swapped out (tests freeze the clock), this one always stays put.
+_DATETIME = datetime
+
 
 class PriceSnapshotRepository:
     """Repository for PriceSnapshot model operations."""
@@ -33,7 +37,13 @@ class PriceSnapshotRepository:
         currency: Optional[str] = None,
         source: Optional[str] = None,
     ) -> PriceSnapshot:
-        """Create a new price snapshot."""
+        """Create a new price snapshot.
+
+        ``recorded_at`` is kept strictly increasing per property. The clock can
+        hand out the same tick twice (Windows ticks in milliseconds) and the
+        snapshot id is a random UUID, so without this the price history order
+        would be a coin flip - and a real price drop could go unnoticed.
+        """
         from uuid import uuid4
 
         snapshot = PriceSnapshot(
@@ -43,10 +53,29 @@ class PriceSnapshotRepository:
             price_per_sqm=price_per_sqm,
             currency=currency,
             source=source,
+            recorded_at=await self._next_recorded_at(property_id),
         )
         self.session.add(snapshot)
         await self.session.flush()
         return snapshot
+
+    async def _next_recorded_at(self, property_id: str) -> datetime:
+        """Return the timestamp to store for the next snapshot of a property."""
+        now = datetime.now(UTC)
+        latest = await self.get_latest_for_property(property_id)
+        if latest is None:
+            return now
+
+        previous = getattr(latest, "recorded_at", None)
+        if not isinstance(previous, _DATETIME):
+            return now
+        if previous.tzinfo is None:
+            # SQLite drops the timezone on the way in and hands it back naive.
+            previous = previous.replace(tzinfo=UTC)
+
+        if now <= previous:
+            return previous + timedelta(microseconds=1)
+        return now
 
     async def get_by_property(
         self,
@@ -107,7 +136,9 @@ class PriceSnapshotRepository:
         """Find properties with price drops exceeding threshold."""
         cutoff_date = datetime.now(UTC) - timedelta(days=days_back)
 
-        # Get recent snapshots ordered by property and date (id as tiebreaker)
+        # Get recent snapshots ordered by property and date. recorded_at is
+        # strictly increasing per property, so the id tiebreaker only settles
+        # rows written before that invariant existed.
         result = await self.session.execute(
             select(PriceSnapshot)
             .where(PriceSnapshot.recorded_at >= cutoff_date)

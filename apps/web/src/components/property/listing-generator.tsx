@@ -90,9 +90,9 @@ export function ListingGenerator({
 
   const getCharCountColor = (count: number, max: number) => {
     const ratio = count / max;
-    if (ratio > 1) return 'text-red-500';
-    if (ratio > 0.9) return 'text-yellow-500';
-    return 'text-green-500';
+    if (ratio > 1) return 'text-destructive';
+    if (ratio > 0.9) return 'text-warning';
+    return 'text-success';
   };
 
   return (
@@ -141,7 +141,7 @@ export function ListingGenerator({
       {/* Error Display */}
       {error && (
         <div
-          className="mt-2 rounded-md bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400"
+          className="mt-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive bg-destructive/15/20 dark:text-destructive"
           role="alert"
         >
           {error}

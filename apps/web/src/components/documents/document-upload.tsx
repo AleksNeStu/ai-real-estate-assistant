@@ -114,7 +114,7 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
   if (success) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center">
-        <CheckCircle className="h-12 w-12 text-green-600 mb-4" />
+        <CheckCircle className="h-12 w-12 text-success mb-4" />
         <h3 className="text-lg font-semibold">Upload Successful!</h3>
         <p className="text-sm text-muted-foreground mt-1">{file?.name}</p>
       </div>
@@ -129,7 +129,7 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
           isDragging
             ? 'border-primary bg-primary/5'
             : file
-              ? 'border-green-500 bg-green-50'
+              ? 'border-success bg-success/10'
               : 'border-muted-foreground/25 hover:border-primary/50'
         }`}
         onDrop={handleDrop}
@@ -147,7 +147,7 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
 
         {file ? (
           <div className="flex items-center justify-center gap-3">
-            <FileText className="h-8 w-8 text-green-600" />
+            <FileText className="h-8 w-8 text-success" />
             <div className="text-left">
               <p className="font-medium">{file.name}</p>
               <p className="text-sm text-muted-foreground">
@@ -261,7 +261,7 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
             type="button"
             onClick={onCancel}
             disabled={uploading}
-            className="px-4 py-2 text-sm font-medium rounded-md border border-input hover:bg-muted disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium rounded-md border border-input hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
           >
             Cancel
           </button>
@@ -270,7 +270,7 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
           type="button"
           onClick={handleUpload}
           disabled={!file || uploading}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
         >
           {uploading ? (
             <>

@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { findComparables } from '@/lib/api';
+import { formatPrice as formatPriceInLocale } from '@/lib/format';
 import type { CMAComparable, Property } from '@/lib/types';
 
 interface StepComparablesProps {
@@ -25,6 +26,7 @@ export function StepComparables({
   onPrev,
 }: StepComparablesProps) {
   const t = useTranslations('cma.comparables');
+  const locale = useLocale();
   const [suggestedComparables, setSuggestedComparables] = useState<CMAComparable[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,19 +73,17 @@ export function StepComparables({
     }
   };
 
-  const formatPrice = (price?: number) => {
+  const formatPrice = (price?: number, currency?: string) => {
     if (!price) return 'N/A';
-    return new Intl.NumberFormat('de-DE', {
-      style: 'currency',
-      currency: 'EUR',
-      maximumFractionDigits: 0,
-    }).format(price);
+    // The wizard used to force every price into euros with German separators,
+    // whatever the listing said and whatever language the reader picked.
+    return formatPriceInLocale(price, currency || 'EUR', locale);
   };
 
   const getScoreColor = (score: number): string => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-orange-600';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    return 'text-warning';
   };
 
   const canProceed = selectedComparables.length >= MIN_COMPARABLES;
@@ -124,7 +124,7 @@ export function StepComparables({
           {t('selected')} <strong>{selectedComparables.length}</strong> / {MAX_COMPARABLES}
         </span>
         {selectedComparables.length < MIN_COMPARABLES && (
-          <span className="text-xs text-yellow-600">
+          <span className="text-xs text-warning">
             {t('selectMore', { count: MIN_COMPARABLES - selectedComparables.length })}
           </span>
         )}
@@ -159,7 +159,7 @@ export function StepComparables({
                         {property.address || t('property', { id: comp.property_id.slice(0, 8) })}
                       </p>
                       <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
-                        <span>{formatPrice(comp.adjusted_price)}</span>
+                        <span>{formatPrice(comp.adjusted_price, comp.currency)}</span>
                         <span>{property.area_sqm ? `${property.area_sqm} m²` : '-'}</span>
                         <span>
                           {property.rooms ? t('roomsCount', { count: property.rooms }) : '-'}

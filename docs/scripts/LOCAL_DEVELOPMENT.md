@@ -66,14 +66,14 @@ Convenience commands:
 
 ```sh
 chmod +x ./scripts/*.sh ./scripts/local/*.sh ./scripts/docker/*.sh
-./scripts/run.sh --mode local
+./scripts/dev/run.sh --mode local
 ```
 
 Force a specific mode:
 
 ```sh
-./scripts/run.sh --mode docker
-./scripts/docker.sh gpu
+./scripts/dev/run.sh --mode docker
+./scripts/docker/docker.sh gpu
 ```
 
 ## Python environment setup (uv)

@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
+import { formatPrice as formatPriceInLocale } from '@/lib/format';
 import { generateCMAReport } from '@/lib/api';
 import type { Property, CMAComparable, CMAReport } from '@/lib/types';
 
@@ -22,6 +24,8 @@ export function StepPreview({
   onNext,
   onPrev,
 }: StepPreviewProps) {
+
+  const locale = useLocale();
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,18 +61,16 @@ export function StepPreview({
     }
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('de-DE', {
-      style: 'currency',
-      currency: 'EUR',
-      maximumFractionDigits: 0,
-    }).format(value);
+  const formatCurrency = (value: number, currency?: string) => {
+    // The wizard used to force every price into euros with German separators,
+    // whatever the listing said and whatever language the reader picked.
+    return formatPriceInLocale(value, currency || 'EUR', locale);
   };
 
   const getConfidenceColor = (score: number): string => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-orange-600';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    return 'text-warning';
   };
 
   const getConfidenceLabel = (score: number): string => {
@@ -164,10 +166,10 @@ export function StepPreview({
               <div
                 className={`h-2 rounded-full ${
                   report.valuation.confidence_score >= 80
-                    ? 'bg-green-500'
+                    ? 'bg-success'
                     : report.valuation.confidence_score >= 60
-                      ? 'bg-yellow-500'
-                      : 'bg-orange-500'
+                      ? 'bg-warning'
+                      : 'bg-warning'
                 }`}
                 style={{ width: `${report.valuation.confidence_score}%` }}
               ></div>

@@ -13,6 +13,7 @@ import {
 import type { TooltipProps } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { TCOProjection } from '@/lib/types';
+import { useTranslations } from 'next-intl';
 
 interface TCOProjectionChartProps {
   projections: TCOProjection[];
@@ -32,6 +33,7 @@ export function TCOProjectionChart({
   className,
   highlightYears = [5, 10, 20],
 }: TCOProjectionChartProps) {
+  const t = useTranslations('mortgage');
   const chartData = projections.map((proj) => ({
     year: proj.year,
     cumulative_cost: proj.cumulative_cost,
@@ -48,7 +50,7 @@ export function TCOProjectionChart({
     if (active && payload && payload.length) {
       return (
         <div className="bg-background border rounded-lg p-3 shadow-lg">
-          <p className="font-medium mb-2">Year {label}</p>
+          <p className="font-medium mb-2">{t('charts.projection.year', { year: label })}</p>
           {payload.map((entry, index) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
               {entry.name}: {entry.value !== undefined ? formatCurrency(entry.value) : 'N/A'}
@@ -63,16 +65,14 @@ export function TCOProjectionChart({
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle>Ownership Projections</CardTitle>
-        <CardDescription>
-          Cumulative costs, equity built, and property value over time
-        </CardDescription>
+        <CardTitle>{t('charts.projection.title')}</CardTitle>
+        <CardDescription>{t('charts.projection.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <div
           className="h-72"
           role="img"
-          aria-label="Ownership projection line chart showing cumulative costs, equity built, property value, and loan balance over time"
+          aria-label={t('charts.projection.ariaLabel')}
         >
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
@@ -81,7 +81,7 @@ export function TCOProjectionChart({
                 dataKey="year"
                 tick={{ fontSize: 11 }}
                 tickLine={false}
-                label={{ value: 'Years', position: 'bottom', fontSize: 12 }}
+                label={{ value: t('charts.projection.years'), position: 'bottom', fontSize: 12 }}
               />
               <YAxis
                 tick={{ fontSize: 11 }}
@@ -94,34 +94,34 @@ export function TCOProjectionChart({
               <Line
                 type="monotone"
                 dataKey="cumulative_cost"
-                stroke="#ef4444"
+                stroke="hsl(var(--chart-8))"
                 strokeWidth={2}
                 dot={false}
-                name="Total Cost"
+                name={t('charts.projection.totalCost')}
               />
               <Line
                 type="monotone"
                 dataKey="cumulative_equity"
-                stroke="#22c55e"
+                stroke="hsl(var(--chart-2))"
                 strokeWidth={2}
                 dot={false}
-                name="Equity Built"
+                name={t('charts.projection.equityBuilt')}
               />
               <Line
                 type="monotone"
                 dataKey="property_value"
-                stroke="#3b82f6"
+                stroke="hsl(var(--chart-1))"
                 strokeWidth={2}
                 dot={false}
-                name="Property Value"
+                name={t('charts.projection.propertyValue')}
               />
               <Line
                 type="monotone"
                 dataKey="loan_balance"
-                stroke="#f59e0b"
+                stroke="hsl(var(--chart-3))"
                 strokeWidth={2}
                 dot={false}
-                name="Loan Balance"
+                name={t('charts.projection.loanBalance')}
               />
             </LineChart>
           </ResponsiveContainer>

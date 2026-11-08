@@ -32,37 +32,37 @@ describe("NeighborhoodBadge", () => {
     it("applies correct color for excellent score (85+)", () => {
       const { container } = render(<NeighborhoodBadge overallScore={90} />);
       // Color class is on the inner span, not container
-      const scoreSpan = container.querySelector("span.text-green-600");
+      const scoreSpan = container.querySelector("span.text-success");
       expect(scoreSpan).toBeInTheDocument();
-      expect(container.firstChild).toHaveClass("bg-green-50");
+      expect(container.firstChild).toHaveClass("bg-success/10");
     });
 
     it("applies correct color for good score (70-84)", () => {
       const { container } = render(<NeighborhoodBadge overallScore={75} />);
-      const scoreSpan = container.querySelector("span.text-lime-600");
+      const scoreSpan = container.querySelector("span.text-chart-7");
       expect(scoreSpan).toBeInTheDocument();
-      expect(container.firstChild).toHaveClass("bg-lime-50");
+      expect(container.firstChild).toHaveClass("bg-chart-7/10");
     });
 
     it("applies correct color for fair score (55-69)", () => {
       const { container } = render(<NeighborhoodBadge overallScore={60} />);
-      const scoreSpan = container.querySelector("span.text-yellow-600");
+      const scoreSpan = container.querySelector("span.text-warning");
       expect(scoreSpan).toBeInTheDocument();
-      expect(container.firstChild).toHaveClass("bg-yellow-50");
+      expect(container.firstChild).toHaveClass("bg-warning/10");
     });
 
     it("applies correct color for poor score (40-54)", () => {
       const { container } = render(<NeighborhoodBadge overallScore={45} />);
-      const scoreSpan = container.querySelector("span.text-orange-600");
+      const scoreSpan = container.querySelector("span.text-caution");
       expect(scoreSpan).toBeInTheDocument();
-      expect(container.firstChild).toHaveClass("bg-orange-50");
+      expect(container.firstChild).toHaveClass("bg-caution/10");
     });
 
     it("applies correct color for very poor score (<40)", () => {
       const { container } = render(<NeighborhoodBadge overallScore={30} />);
-      const scoreSpan = container.querySelector("span.text-red-600");
+      const scoreSpan = container.querySelector("span.text-destructive");
       expect(scoreSpan).toBeInTheDocument();
-      expect(container.firstChild).toHaveClass("bg-red-50");
+      expect(container.firstChild).toHaveClass("bg-destructive/10");
     });
 
     it("applies custom className", () => {
@@ -112,27 +112,27 @@ describe("NeighborhoodBadge", () => {
 
     it("applies correct background color for excellent score", () => {
       const { container } = render(<NeighborhoodBadgeCircle overallScore={90} />);
-      expect(container.firstChild).toHaveClass("bg-green-500");
+      expect(container.firstChild).toHaveClass("bg-success");
     });
 
     it("applies correct background color for good score", () => {
       const { container } = render(<NeighborhoodBadgeCircle overallScore={75} />);
-      expect(container.firstChild).toHaveClass("bg-lime-500");
+      expect(container.firstChild).toHaveClass("bg-chart-7");
     });
 
     it("applies correct background color for fair score", () => {
       const { container } = render(<NeighborhoodBadgeCircle overallScore={60} />);
-      expect(container.firstChild).toHaveClass("bg-yellow-500");
+      expect(container.firstChild).toHaveClass("bg-warning");
     });
 
     it("applies correct background color for poor score", () => {
       const { container } = render(<NeighborhoodBadgeCircle overallScore={45} />);
-      expect(container.firstChild).toHaveClass("bg-orange-500");
+      expect(container.firstChild).toHaveClass("bg-caution");
     });
 
     it("applies correct background color for very poor score", () => {
       const { container } = render(<NeighborhoodBadgeCircle overallScore={30} />);
-      expect(container.firstChild).toHaveClass("bg-red-500");
+      expect(container.firstChild).toHaveClass("bg-destructive");
     });
 
     it("has proper title attribute", () => {

@@ -16,6 +16,7 @@ import { Loader2, AlertCircle, TrendingUp, TrendingDown, Minus, AlertTriangle } 
 import { getPriceHistory, getAnomalies, ApiError } from '@/lib/api';
 import { PriceHistory, PriceSnapshot, MarketAnomaly } from '@/lib/types';
 import { AnomalyBadge } from './anomaly-badge';
+import { useTranslations } from 'next-intl';
 
 interface PriceHistoryChartProps {
   propertyId: string;
@@ -28,6 +29,7 @@ export function PriceHistoryChart({
   className,
   showAnomalies = true,
 }: PriceHistoryChartProps) {
+  const t = useTranslations('marketTrends');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<PriceHistory | null>(null);
@@ -53,7 +55,7 @@ export function PriceHistoryChart({
         } else if (err instanceof Error) {
           setError(err.message);
         } else {
-          setError('Failed to load price history');
+          setError(t('priceHistory.loadFailed'));
         }
       } finally {
         setLoading(false);
@@ -63,7 +65,7 @@ export function PriceHistoryChart({
     if (propertyId) {
       fetchData();
     }
-  }, [propertyId, showAnomalies]);
+  }, [propertyId, showAnomalies, t]);
 
   // Create a lookup for anomalies by date
   const anomaliesByDate = useMemo(() => {
@@ -99,10 +101,10 @@ export function PriceHistoryChart({
 
   const trendColor =
     data?.trend === 'increasing'
-      ? 'text-green-600'
+      ? 'text-success'
       : data?.trend === 'decreasing'
-        ? 'text-red-600'
-        : 'text-gray-600';
+        ? 'text-destructive'
+        : 'text-muted-foreground';
 
   if (loading) {
     return (
@@ -129,8 +131,8 @@ export function PriceHistoryChart({
     return (
       <Card className={className}>
         <CardHeader>
-          <CardTitle>Price History</CardTitle>
-          <CardDescription>No price history available</CardDescription>
+          <CardTitle>{t('priceHistory.title')}</CardTitle>
+          <CardDescription>{t('priceHistory.noData')}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -141,7 +143,7 @@ export function PriceHistoryChart({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Price History</CardTitle>
+            <CardTitle>{t('priceHistory.title')}</CardTitle>
             <CardDescription>{data.total} price snapshots recorded</CardDescription>
           </div>
           <div className={`flex items-center gap-2 ${trendColor}`}>
@@ -159,8 +161,8 @@ export function PriceHistoryChart({
       <CardContent>
         {/* Anomaly Alert Banner */}
         {showAnomalies && anomalies.length > 0 && (
-          <div className="mb-4 p-3 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-            <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+          <div className="mb-4 p-3 rounded-md bg-caution/10 dark:bg-caution/20 border border-caution/30 dark:border-caution">
+            <div className="flex items-center gap-2 text-caution dark:text-caution">
               <AlertTriangle className="h-4 w-4" aria-hidden="true" />
               <span className="text-sm font-medium">
                 {anomalies.length} price {anomalies.length === 1 ? 'anomaly' : 'anomalies'} detected
@@ -172,7 +174,18 @@ export function PriceHistoryChart({
         <div
           className="h-64"
           role="img"
-          aria-label={`Price history chart showing ${data.total} snapshots, trend: ${data.trend}`}
+          aria-label={t('priceHistory.chartLabel', {
+            count: data.total,
+            trend: t(
+              `priceHistory.trend.${
+                data.trend === 'increasing'
+                  ? 'increasing'
+                  : data.trend === 'decreasing'
+                    ? 'decreasing'
+                    : 'stable'
+              }`
+            ),
+          })}
         >
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
@@ -190,7 +203,7 @@ export function PriceHistoryChart({
                     const hasAnomaly = data?.hasAnomaly;
                     const anomalies = data?.anomalies || [];
                     return (
-                      <div className="bg-white dark:bg-gray-800 p-2 rounded shadow-lg border dark:border-gray-700">
+                      <div className="bg-card p-2 rounded shadow-lg border border-border">
                         <p className="font-medium text-sm">{data.date}</p>
                         <p className="text-sm">Price: ${data.price?.toLocaleString()}</p>
                         {data.pricePerSqm && (
@@ -199,9 +212,9 @@ export function PriceHistoryChart({
                           </p>
                         )}
                         {hasAnomaly && anomalies.length > 0 && (
-                          <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                            <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
-                              {anomalies.length} {anomalies.length === 1 ? 'Anomaly' : 'Anomalies'}
+                          <div className="mt-2 pt-2 border-t border-border">
+                            <p className="text-xs font-medium text-caution dark:text-caution">
+                              {t('priceHistory.anomalyCount', { count: anomalies.length })}
                             </p>
                             {anomalies.slice(0, 2).map((a: MarketAnomaly, i: number) => (
                               <div key={i} className="mt-1">
@@ -224,14 +237,14 @@ export function PriceHistoryChart({
               <Line
                 type="monotone"
                 dataKey="price"
-                stroke="#1f77b4"
+                stroke="hsl(var(--chart-1))"
                 strokeWidth={2}
                 dot={(props: { cx?: number; cy?: number; payload?: { hasAnomaly?: boolean } }) => {
                   const { cx = 0, cy = 0, payload } = props;
                   if (payload?.hasAnomaly) {
                     return (
                       <svg x={cx - 6} y={cy - 6} width={12} height={12} viewBox="0 0 12 12">
-                        <circle cx={6} cy={6} r={5} fill="#f59e0b" stroke="#fff" strokeWidth={2} />
+                        <circle cx={6} cy={6} r={5} fill="hsl(var(--chart-3))" stroke="hsl(var(--background))" strokeWidth={2} />
                       </svg>
                     );
                   }
@@ -242,16 +255,16 @@ export function PriceHistoryChart({
                     </svg>
                   );
                 }}
-                name="Price"
+                name={t('priceHistory.price')}
               />
               {chartData[0]?.pricePerSqm && (
                 <Line
                   type="monotone"
                   dataKey="pricePerSqm"
-                  stroke="#2ca02c"
+                  stroke="hsl(var(--chart-2))"
                   strokeWidth={2}
                   dot={false}
-                  name="Price/sqm"
+                  name={t('priceHistory.pricePerSqm')}
                 />
               )}
             </LineChart>
@@ -261,19 +274,19 @@ export function PriceHistoryChart({
         {/* Summary stats */}
         <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t">
           <div>
-            <p className="text-sm text-muted-foreground">Current Price</p>
+            <p className="text-sm text-muted-foreground">{t('priceHistory.currentPrice')}</p>
             <p className="text-lg font-semibold">
               {data.current_price ? `$${data.current_price.toLocaleString()}` : 'N/A'}
             </p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">First Recorded</p>
+            <p className="text-sm text-muted-foreground">{t('priceHistory.firstRecorded')}</p>
             <p className="text-lg">
               {data.first_recorded ? new Date(data.first_recorded).toLocaleDateString() : 'N/A'}
             </p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Price Change</p>
+            <p className="text-sm text-muted-foreground">{t('priceHistory.priceChange')}</p>
             <p className={`text-lg font-semibold ${trendColor}`}>
               {data.price_change_percent !== null && data.price_change_percent !== undefined
                 ? `${data.price_change_percent > 0 ? '+' : ''}${data.price_change_percent.toFixed(1)}%`

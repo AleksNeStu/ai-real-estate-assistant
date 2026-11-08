@@ -237,7 +237,7 @@ export function CommuteCalculator({
       {/* Error display */}
       {error && (
         <div
-          className="p-3 rounded-md bg-red-50 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400 mb-4"
+          className="p-3 rounded-md bg-destructive/10 text-sm text-destructive bg-destructive/15/20 dark:text-destructive mb-4"
           role="alert"
         >
           {error}
@@ -296,7 +296,7 @@ export function CommuteCalculator({
                       className={cn(
                         'h-4 w-4',
                         dest.is_default
-                          ? 'fill-yellow-500 text-yellow-500'
+                          ? 'fill-warning text-warning'
                           : 'text-muted-foreground'
                       )}
                     />

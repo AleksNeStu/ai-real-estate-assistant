@@ -187,8 +187,8 @@ function TaskRow({
         )}
       </div>
 
-      {error && <span className="text-xs text-red-600">{error}</span>}
-      {success && <span className="text-xs text-green-600">{success}</span>}
+      {error && <span className="text-xs text-destructive">{error}</span>}
+      {success && <span className="text-xs text-success">{success}</span>}
     </div>
   );
 }
@@ -306,7 +306,7 @@ export function TaskModelSettings({ catalog, userEmail }: TaskModelSettingsProps
         {loading ? (
           <div className="p-4 text-sm text-muted-foreground">Loading preferences...</div>
         ) : error ? (
-          <div className="p-4 text-sm text-red-600">{error}</div>
+          <div className="p-4 text-sm text-destructive">{error}</div>
         ) : (
           <div>
             {TASK_TYPES.map((taskType) => (

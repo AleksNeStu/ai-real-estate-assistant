@@ -4,6 +4,7 @@ import FavoritesPage from '../page';
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
+  ...jest.requireActual('lucide-react'),
   Loader2: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="loader-icon" {...props} />,
   Heart: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="heart-icon" {...props} />,
   FolderPlus: (props: React.SVGProps<SVGSVGElement>) => (

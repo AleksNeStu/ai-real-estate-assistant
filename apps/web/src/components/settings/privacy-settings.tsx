@@ -207,7 +207,7 @@ export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
             <input
               type="checkbox"
               id="profile_visible"
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-border"
               checked={settings.profile_visible}
               onChange={() => toggleSetting('profile_visible')}
             />
@@ -230,7 +230,7 @@ export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
             <input
               type="checkbox"
               id="activity_visible"
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-border"
               checked={settings.activity_visible}
               onChange={() => toggleSetting('activity_visible')}
             />
@@ -249,7 +249,7 @@ export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
             <input
               type="checkbox"
               id="show_email"
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-border"
               checked={settings.show_email}
               onChange={() => toggleSetting('show_email')}
             />
@@ -268,7 +268,7 @@ export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
             <input
               type="checkbox"
               id="show_phone"
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-border"
               checked={settings.show_phone}
               onChange={() => toggleSetting('show_phone')}
             />
@@ -287,7 +287,7 @@ export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
             <input
               type="checkbox"
               id="allow_contact"
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-border"
               checked={settings.allow_contact}
               onChange={() => toggleSetting('allow_contact')}
             />
@@ -324,10 +324,10 @@ export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
                 <span
                   className={`text-sm ${
                     exportJob.status === 'completed'
-                      ? 'text-green-600'
+                      ? 'text-success'
                       : exportJob.status === 'failed'
-                        ? 'text-red-600'
-                        : 'text-yellow-600'
+                        ? 'text-destructive'
+                        : 'text-warning'
                   }`}
                 >
                   {exportJob.status.charAt(0).toUpperCase() + exportJob.status.slice(1)}
@@ -366,7 +366,7 @@ export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
               )}
 
               {exportJob.status === 'failed' && exportJob.error_message && (
-                <p className="text-sm text-red-600">{exportJob.error_message}</p>
+                <p className="text-sm text-destructive">{exportJob.error_message}</p>
               )}
 
               {exportJob.expires_at && (
@@ -412,8 +412,8 @@ export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
 
       {/* Save Button */}
       <div className="flex items-center justify-end gap-4">
-        {success && <span className="text-green-600 text-sm">{success}</span>}
-        {error && <span className="text-red-600 text-sm">{error}</span>}
+        {success && <span className="text-success text-sm">{success}</span>}
+        {error && <span className="text-destructive text-sm">{error}</span>}
         <Button onClick={handleSave} disabled={saving}>
           {saving ? t('privacy.saving') : t('privacy.savePrivacySettings')}
         </Button>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   Card,
   CardContent,
@@ -41,15 +42,17 @@ interface MarketTrendsChartsProps {
  * the initial page payload.
  */
 export function MarketTrendsCharts({ chartData }: MarketTrendsChartsProps) {
+  const t = useTranslations('marketTrends.charts');
+
   return (
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Average and Median Prices</CardTitle>
-          <CardDescription>Price trends over the selected period</CardDescription>
+          <CardTitle>{t('pricesTitle')}</CardTitle>
+          <CardDescription>{t('pricesDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-80">
+          <div className="h-80" role="img" aria-label={t('pricesAria')}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -63,16 +66,16 @@ export function MarketTrendsCharts({ chartData }: MarketTrendsChartsProps) {
                 <Line
                   type="monotone"
                   dataKey="avgPrice"
-                  stroke="#1f77b4"
+                  stroke="hsl(var(--chart-1))"
                   strokeWidth={2}
-                  name="Average Price"
+                  name={t('averagePrice')}
                 />
                 <Line
                   type="monotone"
                   dataKey="medianPrice"
-                  stroke="#2ca02c"
+                  stroke="hsl(var(--chart-2))"
                   strokeWidth={2}
-                  name="Median Price"
+                  name={t('medianPrice')}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -82,11 +85,11 @@ export function MarketTrendsCharts({ chartData }: MarketTrendsChartsProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Listing Volume</CardTitle>
-          <CardDescription>Number of listings per period</CardDescription>
+          <CardTitle>{t('volumeTitle')}</CardTitle>
+          <CardDescription>{t('volumeDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-80">
+          <div className="h-80" role="img" aria-label={t('volumeAria')}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -94,7 +97,7 @@ export function MarketTrendsCharts({ chartData }: MarketTrendsChartsProps) {
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="volume" fill="#8884d8" name="Listings" />
+                <Bar dataKey="volume" fill="hsl(var(--chart-4))" name={t('listings')} />
               </BarChart>
             </ResponsiveContainer>
           </div>

@@ -22,8 +22,8 @@ const drawStyles = [
     type: 'fill',
     filter: ['all', ['==', '$type', 'Polygon']],
     paint: {
-      'fill-color': '#3b82f6',
-      'fill-outline-color': '#3b82f6',
+      'fill-color': 'hsl(var(--chart-1))',
+      'fill-outline-color': 'hsl(var(--chart-1))',
       'fill-opacity': 0.15,
     },
   },
@@ -37,7 +37,7 @@ const drawStyles = [
       'line-join': 'round',
     },
     paint: {
-      'line-color': '#3b82f6',
+      'line-color': 'hsl(var(--chart-1))',
       'line-width': 2,
     },
   },
@@ -48,7 +48,7 @@ const drawStyles = [
     filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point']],
     paint: {
       'circle-radius': 6,
-      'circle-color': '#fff',
+      'circle-color': 'hsl(var(--background))',
     },
   },
   {
@@ -57,7 +57,7 @@ const drawStyles = [
     filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point']],
     paint: {
       'circle-radius': 4,
-      'circle-color': '#3b82f6',
+      'circle-color': 'hsl(var(--chart-1))',
     },
   },
 ];

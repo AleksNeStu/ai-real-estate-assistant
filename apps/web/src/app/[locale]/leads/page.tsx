@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { useTranslations } from 'next-intl';
 import {
   Users,
   Download,
@@ -41,6 +42,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PageHeader } from '@/components/ui/page-header';
 
 import {
   getLeads,
@@ -51,14 +53,15 @@ import {
   exportLeads,
 } from '@/lib/api';
 import type { LeadWithScore, LeadFilters, LeadStatus, ScoringStatistics } from '@/lib/types';
+import { EmptyState, ErrorState } from '@/components/ui/states';
 
 // Score badge color mapping
 function getScoreColor(score: number): string {
-  if (score >= 80) return 'bg-green-500';
-  if (score >= 60) return 'bg-blue-500';
-  if (score >= 40) return 'bg-yellow-500';
-  if (score >= 20) return 'bg-orange-500';
-  return 'bg-gray-500';
+  if (score >= 80) return 'bg-success';
+  if (score >= 60) return 'bg-info';
+  if (score >= 40) return 'bg-warning';
+  if (score >= 20) return 'bg-warning';
+  return 'bg-muted-foreground';
 }
 
 function getScoreBadgeVariant(score: number): 'default' | 'secondary' | 'destructive' | 'outline' {
@@ -69,14 +72,15 @@ function getScoreBadgeVariant(score: number): 'default' | 'secondary' | 'destruc
 
 // Status badge mapping
 const statusConfig: Record<LeadStatus, { label: string; color: string; icon: typeof Star }> = {
-  new: { label: 'New', color: 'bg-blue-100 text-blue-800', icon: AlertCircle },
-  contacted: { label: 'Contacted', color: 'bg-yellow-100 text-yellow-800', icon: Mail },
-  qualified: { label: 'Qualified', color: 'bg-green-100 text-green-800', icon: CheckCircle },
-  converted: { label: 'Converted', color: 'bg-purple-100 text-purple-800', icon: Target },
-  lost: { label: 'Lost', color: 'bg-gray-100 text-gray-800', icon: TrendingDown },
+  new: { label: 'New', color: 'bg-info/15 text-info', icon: AlertCircle },
+  contacted: { label: 'Contacted', color: 'bg-warning/15 text-warning', icon: Mail },
+  qualified: { label: 'Qualified', color: 'bg-success/15 text-success', icon: CheckCircle },
+  converted: { label: 'Converted', color: 'bg-critical/20 text-critical', icon: Target },
+  lost: { label: 'Lost', color: 'bg-muted text-foreground', icon: TrendingDown },
 };
 
 export default function LeadsPage() {
+  const t = useTranslations('pages.leads');
   const [leads, setLeads] = useState<LeadWithScore[]>([]);
   const [highValueLeads, setHighValueLeads] = useState<LeadWithScore[]>([]);
   const [statistics, setStatistics] = useState<ScoringStatistics | null>(null);
@@ -166,12 +170,8 @@ export default function LeadsPage() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-        <p className="text-lg font-medium">{error}</p>
-        <Button onClick={loadLeads} className="mt-4">
-          Try Again
-        </Button>
+      <div className="container mx-auto px-4 py-8">
+        <ErrorState title={error} onRetry={loadLeads} retryLabel="Try Again" />
       </div>
     );
   }
@@ -179,24 +179,22 @@ export default function LeadsPage() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Lead Dashboard</h1>
-          <p className="text-muted-foreground">
-            Track and manage your leads with AI-powered scoring
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExport}>
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-          <Button variant="outline" onClick={handleRecalculateScores} disabled={recalculating}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${recalculating ? 'animate-spin' : ''}`} />
-            Recalculate Scores
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={t('title')}
+        description={t('description')}
+        actions={
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleExport}>
+              <Download className="mr-2 h-4 w-4" />
+              Export
+            </Button>
+            <Button variant="outline" onClick={handleRecalculateScores} disabled={recalculating}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${recalculating ? 'animate-spin' : ''}`} />
+              Recalculate Scores
+            </Button>
+          </div>
+        }
+      />
 
       {/* Statistics Cards */}
       {statistics && (
@@ -326,15 +324,11 @@ export default function LeadsPage() {
               ))}
             </div>
           ) : leads.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Users className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-lg font-medium">No leads found</p>
-                <p className="text-sm text-muted-foreground">
-                  Try adjusting your filters or wait for new leads to come in
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={Users}
+              title="No leads found"
+              description="Try adjusting your filters or wait for new leads to come in"
+            />
           ) : (
             <div className="space-y-4">
               {leads.map((lead) => {
@@ -347,7 +341,7 @@ export default function LeadsPage() {
                       <div className="flex items-center gap-4">
                         {/* Avatar */}
                         <div className="flex-shrink-0">
-                          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-info to-critical flex items-center justify-center text-info-foreground font-semibold">
                             {lead.name?.charAt(0) || lead.email?.charAt(0) || '?'}
                           </div>
                         </div>
@@ -442,7 +436,7 @@ export default function LeadsPage() {
                           <span>Lead Score</span>
                           <span>{lead.total_score}/100</span>
                         </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
                           <div
                             className={`h-full ${getScoreColor(lead.total_score)} transition-all`}
                             style={{ width: `${lead.total_score}%` }}
@@ -472,11 +466,11 @@ export default function LeadsPage() {
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {highValueLeads.map((lead) => (
-                <Card key={lead.id} className="border-green-200 bg-green-50/50">
+                <Card key={lead.id} className="border-success/30 bg-success/10/50">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-semibold">
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-success to-chart-7 flex items-center justify-center text-success-foreground font-semibold">
                           {lead.name?.charAt(0) || lead.email?.charAt(0) || '?'}
                         </div>
                         <div>
@@ -485,7 +479,7 @@ export default function LeadsPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <Badge className="bg-green-500">
+                        <Badge className="bg-success">
                           <Star className="mr-1 h-3 w-3" />
                           {lead.total_score}
                         </Badge>
@@ -512,12 +506,12 @@ export default function LeadsPage() {
               {leads
                 .filter((lead) => lead.status === 'new')
                 .map((lead) => (
-                  <Card key={lead.id} className="border-blue-200">
+                  <Card key={lead.id} className="border-info/30">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <AlertCircle className="h-5 w-5 text-blue-600" />
+                          <div className="h-10 w-10 rounded-full bg-info/15 flex items-center justify-center">
+                            <AlertCircle className="h-5 w-5 text-info" />
                           </div>
                           <div>
                             <p className="font-medium">{lead.name || 'New Lead'}</p>

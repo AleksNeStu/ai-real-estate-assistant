@@ -228,6 +228,11 @@ export default function ChatPage() {
 
   return (
     <div className="container mx-auto max-w-4xl p-4 h-[calc(100vh-4rem)] flex flex-col">
+      {/* The chat shows its title in the welcome panel only, so the route
+          would lose its H1 as soon as the first message arrives. One heading
+          stays in the document either way: visible in the welcome panel,
+          hidden once the conversation starts. */}
+      <h1 className="sr-only">{t('title')}</h1>
       {/* Messages Area - 4 Mandated States */}
       <div className="flex-1 overflow-y-auto space-y-4 p-4 rounded-lg border bg-card shadow-sm mb-4">
         {/* STATE 1: Empty state (zero-data) - before user starts */}
@@ -241,7 +246,7 @@ export default function ChatPage() {
               <Sparkles className="h-12 w-12 text-primary" aria-hidden="true" />
             </div>
             <div className="flex items-center gap-2 mb-2">
-              <h1 className="text-2xl font-bold">{t('title')}</h1>
+              <p className="text-2xl font-bold">{t('title')}</p>
               <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-medium border border-primary/20">
                 {t('aiLabel')}
               </span>
@@ -279,7 +284,7 @@ export default function ChatPage() {
             className="flex w-full items-start gap-4 p-4 rounded-lg bg-background border"
             role="status"
             aria-live="polite"
-            aria-label="Assistant is thinking"
+            aria-label={t('loading.thinking')}
           >
             <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md border shadow bg-primary text-primary-foreground">
               <Bot className="h-4 w-4" />
@@ -407,7 +412,7 @@ export default function ChatPage() {
                     type="button"
                     onClick={handleRetry}
                     disabled={isLoading}
-                    className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
+                    className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow hover:bg-primary/90 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:opacity-50"
                   >
                     <RefreshCw className="h-3 w-3" />
                     {t('retry.button')}
@@ -425,7 +430,7 @@ export default function ChatPage() {
       <form ref={formRef} onSubmit={handleSubmit} className="flex gap-4">
         <input
           data-testid="chat-input"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
           placeholder={hasStarted ? t('input.placeholderStarted') : t('input.placeholderEmpty')}
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -437,7 +442,7 @@ export default function ChatPage() {
           data-testid="chat-send"
           aria-label={isLoading ? t('input.ariaLabelSending') : t('input.ariaLabelSend')}
           disabled={isLoading || !input.trim()}
-          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 w-12"
+          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:pointer-events-none disabled:opacity-50 w-12"
         >
           {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </button>

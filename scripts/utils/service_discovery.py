@@ -12,8 +12,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-# Add scripts directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent))
+# Add the scripts directories to path for imports:
+# `port.port_manager` lives one level up from this file.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from port.port_manager import PortManager
 
@@ -100,7 +102,8 @@ NEXT_PUBLIC_API_URL=/api/v1
             backend_port = backend_alloc["port"]
             frontend_port = frontend_alloc["port"]
             print(
-                f"Using existing allocations: backend={backend_port}, frontend={frontend_port}"
+                f"Using existing allocations: backend={backend_port}, frontend={frontend_port}",
+                file=sys.stderr,
             )
         else:
             # Allocate new ports
@@ -111,7 +114,8 @@ NEXT_PUBLIC_API_URL=/api/v1
                 "frontend", self.FRONTEND_SERVICE_NAME, preferred=preferred_frontend
             )
             print(
-                f"Allocated new ports: backend={backend_port}, frontend={frontend_port}"
+                f"Allocated new ports: backend={backend_port}, frontend={frontend_port}",
+                file=sys.stderr,
             )
 
         # Generate .env.ports
@@ -181,7 +185,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.project_root:
         project_root = args.project_root
     else:
-        project_root = Path(__file__).resolve().parents[1]
+        project_root = Path(__file__).resolve().parents[2]
 
     sd = ServiceDiscovery(project_root)
 

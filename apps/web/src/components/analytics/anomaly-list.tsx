@@ -11,6 +11,8 @@ import { AnomalyBadge, AnomalyTypeBadge, getSeverityIcon } from './anomaly-badge
 import type { MarketAnomaly, AnomalyFilterParams, AnomalySeverity, AnomalyType } from '@/lib/types';
 import { getAnomalies, dismissAnomaly } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
+import { EmptyState } from '@/components/ui/states';
 
 // Extended filter params with state
 interface AnomalyFilters extends AnomalyFilterParams {
@@ -28,6 +30,7 @@ const typeOptions: AnomalyType[] = [
 ];
 
 export function AnomalyList() {
+  const t = useTranslations('marketTrends');
   const [anomalies, setAnomalies] = useState<MarketAnomaly[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +52,7 @@ export function AnomalyList() {
         const response = await getAnomalies(filters);
         setAnomalies(response.anomalies);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load anomalies');
+        setError(err instanceof Error ? err.message : t('anomalies.loadFailed'));
       } finally {
         setLoading(false);
       }
@@ -114,7 +117,7 @@ export function AnomalyList() {
       {/* Header with filters */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-bold tracking-tight">Market Anomalies</h2>
+          <h2 className="text-2xl font-bold tracking-tight">{t('anomalies.title')}</h2>
           <Badge variant="secondary">{anomalies.length} total</Badge>
         </div>
 
@@ -123,11 +126,11 @@ export function AnomalyList() {
           <div className="relative">
             <input
               type="text"
-              placeholder="Search anomalies..."
+              placeholder={t('anomalies.searchPlaceholder')}
               value={filters.search}
               onChange={(e) => handleFilterChange('search', e.target.value)}
               className="pl-10 pr-4 text-sm text-muted"
-              aria-label="Search anomalies"
+              aria-label={t('anomalies.searchLabel')}
             />
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted" aria-hidden="true" />
           </div>
@@ -142,9 +145,9 @@ export function AnomalyList() {
               )
             }
             className="rounded-md border bg-background px-3 py-2 text-sm"
-            aria-label="Filter by severity"
+            aria-label={t('anomalies.filterSeverity')}
           >
-            <option value="">All Severities</option>
+            <option value="">{t('anomalies.allSeverities')}</option>
             {severityOptions.map((s) => (
               <option key={s} value={s}>
                 {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -162,9 +165,9 @@ export function AnomalyList() {
               )
             }
             className="rounded-md border bg-background px-3 py-2 text-sm"
-            aria-label="Filter by anomaly type"
+            aria-label={t('anomalies.filterType')}
           >
-            <option value="">All Types</option>
+            <option value="">{t('anomalies.allTypes')}</option>
             {typeOptions.map((t) => (
               <option key={t} value={t}>
                 {t
@@ -182,7 +185,7 @@ export function AnomalyList() {
         <div className="flex justify-center py-8" role="status" aria-live="polite">
           <div className="animate-pulse flex flex-col items-center gap-2">
             <div className="h-4 w-4 bg-muted rounded-full"></div>
-            <p className="text-sm text-muted">Loading anomalies...</p>
+            <p className="text-sm text-muted">{t('anomalies.loading')}</p>
           </div>
         </div>
       )}
@@ -199,11 +202,11 @@ export function AnomalyList() {
 
       {/* Empty State */}
       {!loading && !error && filteredAnomalies.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-muted">
-          <CheckCircle className="h-8 w-8 text-muted" aria-hidden="true" />
-          <p className="text-sm">No anomalies detected</p>
-          <p className="text-xs mt-1">Anomalies will appear here when detected by the system.</p>
-        </div>
+        <EmptyState
+          icon={CheckCircle}
+          title={t('anomalies.noneDetected')}
+          description={t('anomalies.emptyHint')}
+        />
       )}
 
       {/* Anomaly Cards */}
@@ -237,11 +240,11 @@ export function AnomalyList() {
                 {/* Metric Details */}
                 <div className="mt-3 space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted">Metric</span>
+                    <span className="text-muted">{t('anomalies.metric')}</span>
                     <span className="font-medium">{anomaly.metric_name}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted">Expected</span>
+                    <span className="text-muted">{t('anomalies.expected')}</span>
                     <span className="font-medium">
                       {typeof anomaly.expected_value === 'number'
                         ? anomaly.expected_value.toLocaleString()
@@ -249,13 +252,13 @@ export function AnomalyList() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted">Actual</span>
+                    <span className="text-muted">{t('anomalies.actual')}</span>
                     <span
                       className={cn(
                         'font-medium',
                         anomaly.actual_value > anomaly.expected_value
-                          ? 'text-red-600'
-                          : 'text-green-600'
+                          ? 'text-destructive'
+                          : 'text-success'
                       )}
                     >
                       {typeof anomaly.actual_value === 'number'
@@ -267,17 +270,17 @@ export function AnomalyList() {
 
                 {/* Deviation */}
                 <div className="flex items-center justify-between rounded-md bg-muted/50 p-2">
-                  <span className="text-sm font-medium">Deviation</span>
+                  <span className="text-sm font-medium">{t('anomalies.deviation')}</span>
                   <span
                     className={cn(
                       'font-bold',
                       anomaly.deviation_percent > 0
                         ? anomaly.deviation_percent > 50
-                          ? 'text-red-600'
+                          ? 'text-destructive'
                           : anomaly.deviation_percent > 20
-                            ? 'text-orange-600'
-                            : 'text-yellow-600'
-                        : 'text-green-600'
+                            ? 'text-caution'
+                            : 'text-warning'
+                        : 'text-success'
                     )}
                   >
                     {anomaly.deviation_percent > 0 ? '+' : '-'}
@@ -288,11 +291,11 @@ export function AnomalyList() {
                 {/* Z-Score (if available) */}
                 {anomaly.z_score !== undefined && anomaly.z_score !== null && (
                   <div className="mt-2 flex items-center justify-between text-xs">
-                    <span className="text-muted">Z-Score</span>
+                    <span className="text-muted">{t('anomalies.zScore')}</span>
                     <span
                       className={cn(
                         'font-medium',
-                        Math.abs(anomaly.z_score) > 3 ? 'text-red-600' : ''
+                        Math.abs(anomaly.z_score) > 3 ? 'text-destructive' : ''
                       )}
                     >
                       {anomaly.z_score.toFixed(2)}

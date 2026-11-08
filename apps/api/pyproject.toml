@@ -1,6 +1,6 @@
 [project]
 name = "ai-real-estate-assistant"
-version = "5.1.8"
+version = "5.1.12"
 description = "AI-powered real estate assistant with FastAPI backend and Next.js frontend"
 authors = [
     {name = "Alex Nesterovich", email = "alex@example.com"}
@@ -12,7 +12,18 @@ dependencies = [
     "fastapi>=0.119.0",
     "uvicorn>=0.27.0,<1.0.0",
     "langchain>=1.3.9,<2.0.0",
-    "chromadb>=0.5.0,<0.6.0",
+    # chromadb must stay in step with langchain-chroma, which the lockfile
+    # pins to 1.1.x and which itself requires chromadb>=1.3.5. The old
+    # <0.6.0 cap made `pip install -e .` downgrade chromadb after
+    # requirements.txt had installed 1.5.x, and langchain_chroma cannot
+    # import against 0.5.x - the vector store silently switched itself off
+    # ("Chroma is unavailable; vector store features are disabled").
+    "chromadb>=1.3.5,<2.0.0",
+    # langchain-chroma belongs here next to chromadb: without it `uv sync`
+    # and `uv run` install chromadb alone, the import of langchain_chroma
+    # fails, and chroma_store.py swallows that ImportError - the vector
+    # store switches itself off again, exactly like the pin above did.
+    "langchain-chroma>=1.1.0,<2.0.0",
     "pydantic>=2.0.0,<3.0.0",
     "openai>=1.0.0,<3.0.0",
     "anthropic>=0.87.0",

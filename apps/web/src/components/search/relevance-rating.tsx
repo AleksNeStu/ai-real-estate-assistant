@@ -43,23 +43,23 @@ export function RelevanceRating({ query, propertyId }: RelevanceRatingProps) {
         type="button"
         onClick={() => handleRate(5)}
         disabled={loading}
-        className="p-1 rounded hover:bg-green-100 dark:hover:bg-green-900/30 disabled:opacity-50 transition-colors"
+        className="p-1 rounded hover:bg-success/15 dark:hover:bg-success/30 disabled:opacity-50 transition-colors"
         aria-label={t('thumbsUp')}
         title={t('thumbsUp')}
       >
-        <ThumbsUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+        <ThumbsUp className="h-4 w-4 text-success dark:text-success" />
       </button>
       <button
         type="button"
         onClick={() => handleRate(1)}
         disabled={loading}
-        className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 transition-colors"
+        className="p-1 rounded hover:bg-destructive/15 dark:hover:bg-destructive/30 disabled:opacity-50 transition-colors"
         aria-label={t('thumbsDown')}
         title={t('thumbsDown')}
       >
-        <ThumbsDown className="h-4 w-4 text-red-500 dark:text-red-400" />
+        <ThumbsDown className="h-4 w-4 text-destructive dark:text-destructive" />
       </button>
-      {error && <span className="text-xs text-red-500 ml-1">{t('error')}</span>}
+      {error && <span className="text-xs text-destructive ml-1">{t('error')}</span>}
     </div>
   );
 }

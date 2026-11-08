@@ -46,6 +46,35 @@ jest.mock('@/components/property', () => ({
   ListingGenerator: ({ propertyId }: { propertyId: string; compact?: boolean }) => (
     <div data-testid={`listing-${propertyId}`}>Listing</div>
   ),
+  // The search surface renders the shared property card; the mock mirrors
+  // the parts of it the page tests assert on.
+  PropertyCard: ({
+    property,
+    footer,
+  }: {
+    property: {
+      id: string;
+      title?: string;
+      price?: number;
+      city?: string;
+      country?: string;
+      rooms?: number;
+      bathrooms?: number;
+      area_sqm?: number;
+    };
+    footer?: React.ReactNode;
+  }) => (
+    <article data-testid={`property-card-${property.id}`}>
+      <h3>{property.title || 'Untitled Property'}</h3>
+      <div>{property.price ? `$${property.price.toLocaleString()}` : 'Price on request'}</div>
+      <div>{[property.city, property.country].filter(Boolean).join(', ')}</div>
+      {property.area_sqm ? <div>{`${property.area_sqm} m²`}</div> : null}
+      {property.id ? (
+        <button data-testid={`heart-${property.id}`}>Heart</button>
+      ) : null}
+      {footer}
+    </article>
+  ),
 }));
 
 jest.mock('@/components/search/relevance-rating', () => ({
@@ -192,9 +221,9 @@ describe('SearchPage', () => {
     });
 
     expect(screen.queryByTestId('property-map')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Map view' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Map' }));
     expect(await screen.findByTestId('property-map')).toHaveTextContent('1');
-    fireEvent.click(screen.getByRole('button', { name: 'List view' }));
+    fireEvent.click(screen.getByRole('button', { name: 'List' }));
     expect(screen.queryByTestId('property-map')).not.toBeInTheDocument();
   });
 
@@ -205,12 +234,12 @@ describe('SearchPage', () => {
 
     fireEvent.change(screen.getByLabelText('Search query'), { target: { value: 'Test' } });
     // Use the actual aria-label values from the source
-    fireEvent.change(screen.getByLabelText('Minimum price'), { target: { value: '100' } });
-    fireEvent.change(screen.getByLabelText('Maximum price'), { target: { value: '200' } });
-    fireEvent.change(screen.getByLabelText('Minimum rooms'), { target: { value: '2' } });
-    fireEvent.change(screen.getByLabelText('Property type'), { target: { value: 'apartment' } });
-    fireEvent.change(screen.getByLabelText('Sort by'), { target: { value: 'price' } });
-    fireEvent.change(screen.getByLabelText('Sort order'), { target: { value: 'asc' } });
+    fireEvent.change(screen.getByLabelText('Min Price'), { target: { value: '100' } });
+    fireEvent.change(screen.getByLabelText('Max Price'), { target: { value: '200' } });
+    fireEvent.change(screen.getByLabelText('Minimum Rooms'), { target: { value: '2' } });
+    fireEvent.change(screen.getByLabelText('Property Type'), { target: { value: 'apartment' } });
+    fireEvent.change(screen.getByLabelText('Sort By'), { target: { value: 'price' } });
+    fireEvent.change(screen.getByLabelText('Order'), { target: { value: 'asc' } });
 
     fireEvent.click(screen.getByRole('button', { name: /search/i }));
 
@@ -233,8 +262,8 @@ describe('SearchPage', () => {
     render(<SearchPage />);
 
     fireEvent.change(screen.getByLabelText('Search query'), { target: { value: 'Test' } });
-    fireEvent.change(screen.getByLabelText('Minimum price'), { target: { value: '300' } });
-    fireEvent.change(screen.getByLabelText('Maximum price'), { target: { value: '200' } });
+    fireEvent.change(screen.getByLabelText('Min Price'), { target: { value: '300' } });
+    fireEvent.change(screen.getByLabelText('Max Price'), { target: { value: '200' } });
     fireEvent.click(screen.getByRole('button', { name: /search/i }));
 
     await waitFor(() => {
@@ -365,7 +394,7 @@ describe('SearchPage', () => {
       expect(screen.getByText('A')).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByLabelText('Export format'), { target: { value: 'csv' } });
+    fireEvent.change(screen.getByLabelText('Export Format'), { target: { value: 'csv' } });
     const exportBtn = screen.getByRole('button', { name: /export/i });
     fireEvent.click(exportBtn);
 
@@ -391,7 +420,7 @@ describe('SearchPage', () => {
       expect(screen.getByText('A')).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByLabelText('Export format'), { target: { value: 'csv' } });
+    fireEvent.change(screen.getByLabelText('Export Format'), { target: { value: 'csv' } });
     fireEvent.click(screen.getByRole('button', { name: /export/i }));
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent(/Failed to export/);

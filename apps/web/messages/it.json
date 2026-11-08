@@ -98,13 +98,14 @@
         "cancelled": "Cancelled",
         "completed": "Completed"
       }
-    }
+    },
+    "selectType": "Seleziona tipo"
   },
   "auth": {
     "signIn": "Sign In",
     "signUp": "Sign Up",
     "signOut": "Sign Out",
-    "profile": "Profile",
+    "profile": "Profilo",
     "settings": "Settings",
     "user": "User",
     "login": {
@@ -166,7 +167,9 @@
       "weakPassword": "Password must be at least 8 characters",
       "emailAlreadyExists": "An account with this email already exists",
       "invalidEmail": "Please enter a valid email address"
-    }
+    },
+    "loading": "Caricamento...",
+    "userMenu": "Menu utente"
   },
   "cma": {
     "steps": {
@@ -192,30 +195,30 @@
       }
     },
     "subject": {
-      "searchPlaceholder": "Search by address, city, or property ID...",
-      "searchAriaLabel": "Search properties",
-      "searchButton": "Search",
-      "searching": "Searching...",
-      "selectedSubject": "Selected Subject Property",
-      "selected": "Selected",
-      "price": "Price:",
-      "area": "Area:",
-      "rooms": "Rooms:",
-      "type": "Type:",
-      "searchResults": "Search Results ({count})",
-      "property": "Property",
-      "roomsCount": "{count} rooms",
-      "nextComparables": "Next: Select Comparables"
+      "searchPlaceholder": "Cerca per indirizzo, città o titolo...",
+      "searchAriaLabel": "Cerca l'immobile di riferimento",
+      "searching": "Ricerca in corso...",
+      "searchButton": "Cerca",
+      "selectedSubject": "Immobile di riferimento selezionato",
+      "selected": "Selezionato",
+      "price": "Prezzo",
+      "area": "Superficie",
+      "rooms": "Locali",
+      "type": "Tipo",
+      "property": "Immobile",
+      "nextComparables": "Avanti: comparabili",
+      "roomsCount": "{count} locali",
+      "searchResults": "Search Results ({count})"
     },
     "comparables": {
-      "selectRange": "Select {min}-{max} comparable properties. Drag to reorder by relevance.",
-      "refresh": "Refresh",
-      "finding": "Finding similar properties...",
+      "refresh": "Aggiorna",
+      "finding": "Ricerca in corso...",
+      "similarity": "Similarità",
+      "noComparables": "Nessun immobile comparable selezionato.",
+      "selectedComparables": "Comparabili selezionati",
+      "selectRange": "Seleziona da {min} a {max} comparabili",
+      "selectMore": "Seleziona altri {count}",
       "selected": "Selected:",
-      "selectMore": "Select at least {count} more",
-      "similarity": "Similarity",
-      "noComparables": "No comparable properties found. Try adjusting your search criteria.",
-      "selectedComparables": "Selected Comparables",
       "roomsCount": "{count} rooms",
       "property": "Property {id}",
       "back": "Back",
@@ -430,7 +433,7 @@
     "searching": "Searching...",
     "exporting": "Exporting...",
     "saving": "Saving...",
-    "testing": "Testing...",
+    "testing": "Prova in corso...",
     "error": "Error",
     "success": "Success",
     "toggleTheme": "Toggle theme",
@@ -450,7 +453,17 @@
     "skipToContent": "Skip to main content",
     "tryTheseChips": {
       "heading": "Prova una di queste"
-    }
+    },
+    "logIn": "Accedi",
+    "installApp": "Installa app",
+    "installAppDescription": "Installa questa app sul tuo dispositivo per un accesso rapido e un'esperienza migliore.",
+    "later": "Più tardi",
+    "installing": "Installazione...",
+    "install": "Installa",
+    "backOnline": "Sei di nuovo online",
+    "offlineMessage": "Sei offline. Alcune funzioni potrebbero non essere disponibili.",
+    "newVersionAvailable": "È disponibile una nuova versione!",
+    "dismissUpdate": "Chiudi"
   },
   "demo": {
     "banner": "Modalità demo — ricerca e dati cittadini disponibili",
@@ -525,7 +538,9 @@
       "singular": "{count} document expiring soon",
       "plural": "{count} documents expiring soon",
       "description": "The following documents will expire within 30 days:"
-    }
+    },
+    "searchPlaceholder": "Cerca documenti...",
+    "searchLabel": "Cerca documenti"
   },
   "error": {
     "generic": "Something went wrong",
@@ -534,7 +549,10 @@
     "forbidden": "Access forbidden",
     "serverError": "Server error",
     "tryAgain": "Please try again later",
-    "goHome": "Go to homepage"
+    "goHome": "Go to homepage",
+    "chatUnavailable": "La chat non è temporaneamente disponibile",
+    "chatErrorFallback": "Si è verificato un errore imprevisto. Riprova.",
+    "retry": "Riprova"
   },
   "favorites": {
     "title": "My Favorites",
@@ -595,14 +613,125 @@
       "roi": "ROI (1 Year)",
       "onePercentRule": "1% Rule",
       "onePercentRulePass": "Pass - Rent is ≥ 1% of price",
-      "onePercentRuleFail": "Fail - Rent is < 1% of price"
+      "onePercentRuleFail": "Fail - Rent is < 1% of price",
+      "description": "Metriche complete e punteggio di qualità dell'investimento.",
+      "score": "Punteggio dell'investimento",
+      "riskScore": "Punteggio di rischio",
+      "cashOnCashRoi": "ROI cash-on-cash",
+      "netYield": "Rendimento netto",
+      "grossYield": "Rendimento lordo",
+      "totalInvestment": "Investimento totale",
+      "annualIncome": "Reddito annuo",
+      "monthlyIncome": "Reddito mensile (affitto)",
+      "mortgagePayment": "Rata del mutuo ipotecario",
+      "netMonthlyCashFlow": "Flusso di cassa mensile netto",
+      "cashFlowBreakdown": "Dettaglio del flusso di cassa mensile",
+      "metrics": "Metriche dell'investimento",
+      "irr": "IRR"
     },
     "advanced": {
       "title": "Advanced Investment Analysis",
       "holdingPeriod": "Holding Period (Years)",
       "sellingCosts": "Selling Costs (%)",
       "incomeGrowth": "Income Growth (%)",
-      "expenseGrowth": "Expense Growth (%)"
+      "expenseGrowth": "Expense Growth (%)",
+      "propertyDetails": "Dettagli dell'immobile",
+      "summary": "Riepilogo dell'investimento",
+      "taxImplications": "Implicazioni fiscali",
+      "taxDescription": "Ammortamento annuo, detrazioni e benefici fiscali",
+      "annualDepreciation": "Ammortamento annuo",
+      "totalTaxDeductions": "Detrazioni fiscali totali",
+      "annualTaxBenefit": "Beneficio fiscale annuo"
+    },
+    "emptyDescription": "Inserisci i dati dell'immobile per analizzarne il potenziale di investimento.",
+    "emptyHint": "I risultati compariranno qui dopo l'analisi.",
+    "scoreExcellent": "Eccellente",
+    "scoreGood": "Buono",
+    "scoreFair": "Discreto",
+    "scorePoor": "Scarso",
+    "charts": {
+      "cashFlow": {
+        "title": "Proiezione del flusso di cassa",
+        "description": "Flusso di cassa annuo e rendimento cumulativo",
+        "ariaLabel": "Grafico della proiezione del flusso di cassa: flusso di cassa annuo e rendimento cumulativo nel tempo",
+        "annualCashFlow": "Flusso di cassa annuo",
+        "cumulativeCashFlow": "Flusso di cassa cumulativo",
+        "equity": "Capitale proprio",
+        "propertyValue": "Valore dell'immobile",
+        "totalCashFlow": "Flusso di cassa totale",
+        "finalEquity": "Capitale proprio finale",
+        "year": "Anno {year}"
+      },
+      "diversification": {
+        "title": "Diversificazione del portafoglio",
+        "description": "Analisi della distribuzione geografica e per tipologia di immobile",
+        "byCity": "Per città",
+        "geographicAria": "Grafico a torta della distribuzione geografica del portafoglio per città",
+        "geographicScore": "Punteggio geografico",
+        "byPropertyType": "Per tipologia di immobile",
+        "typeAria": "Grafico a torta della distribuzione del portafoglio per tipologia di immobile",
+        "typeScore": "Punteggio per tipologia",
+        "value": "Valore",
+        "concentrationRisk": "Rischio di concentrazione",
+        "largestHolding": "Posizione più grande"
+      },
+      "risk": {
+        "title": "Valutazione del rischio",
+        "description": "Analisi del rischio di investimento e raccomandazioni",
+        "ariaLabel": "Punteggio di rischio: {score} su 100, {level}",
+        "outOf100": "su 100",
+        "lowRisk": "Rischio basso",
+        "moderateRisk": "Rischio moderato",
+        "elevatedRisk": "Rischio elevato",
+        "highRisk": "Rischio alto",
+        "riskFactors": "Fattori di rischio",
+        "recommendations": "Raccomandazioni"
+      },
+      "scenario": {
+        "title": "Scenari di apprezzamento",
+        "description": "Proiezioni del valore dell'immobile in diverse condizioni di mercato",
+        "ariaLabel": "Grafico a linee degli scenari di apprezzamento: proiezioni del valore dell'immobile in condizioni pessimistiche, realistiche e ottimistiche",
+        "value": "Valore",
+        "perYear": "{rate}%/anno",
+        "total": "Totale:",
+        "year": "Anno {year}",
+        "pessimistic": "Pessimistico",
+        "realistic": "Realistico",
+        "optimistic": "Ottimistico"
+      },
+      "multiYear": {
+        "title": "Proiezione pluriennale del flusso di cassa",
+        "description": "Proiezione su {years} anni con crescita dell'affitto e apprezzamento"
+      }
+    },
+    "formIntro": "Calcola ROI, tasso di capitalizzazione, flusso di cassa e punteggio di qualità dell'investimento.",
+    "form": {
+      "propertyInformation": "Informazioni sull'immobile",
+      "financingDetails": "Dettagli del finanziamento",
+      "financing": "Finanziamento",
+      "closingCosts": "Spese di acquisto e vendita ($)",
+      "renovationCosts": "Costi di ristrutturazione ($)",
+      "monthlyOperatingExpenses": "Spese operative mensili",
+      "propertyTax": "Imposta sulla proprietà ($)",
+      "insurance": "Assicurazione ($)",
+      "hoaFees": "Quote HOA ($)",
+      "managementFee": "Compenso di gestione (% dell'affitto)",
+      "projectionSettings": "Impostazioni della proiezione",
+      "projectionYears": "Anni di proiezione",
+      "expectedAppreciation": "Apprezzamento atteso (%)",
+      "rentGrowthRate": "Tasso di crescita dell'affitto (%)",
+      "landValueRatio": "Quota del valore del terreno (%)",
+      "marketVolatility": "Volatilità del mercato (0-100)"
+    },
+    "error": {
+      "analysisFailed": "Analisi non riuscita",
+      "unknown": "Errore sconosciuto"
+    },
+    "tabs": {
+      "cashFlow": "Flusso di cassa",
+      "scenarios": "Scenari",
+      "tax": "Fisco",
+      "risk": "Rischio"
     }
   },
   "knowledge": {
@@ -637,6 +766,72 @@
       "quarter": "Last Quarter",
       "year": "Last Year",
       "all": "All Time"
+    },
+    "anomalies": {
+      "title": "Anomalie di mercato",
+      "allSeverities": "Tutte le gravità",
+      "allTypes": "Tutti i tipi",
+      "loading": "Caricamento delle anomalie...",
+      "noneDetected": "Nessuna anomalia rilevata",
+      "emptyHint": "Le anomalie compariranno qui quando il sistema le rileverà.",
+      "loadFailed": "Caricamento delle anomalie non riuscito",
+      "searchPlaceholder": "Cerca anomalie...",
+      "searchLabel": "Cerca anomalie",
+      "filterSeverity": "Filtra per gravità",
+      "filterType": "Filtra per tipo di anomalia",
+      "metric": "Metrica",
+      "expected": "Atteso",
+      "actual": "Reale",
+      "deviation": "Deviazione",
+      "zScore": "Z-Score",
+      "types": {
+        "priceSpike": "Picco dei prezzi",
+        "priceDrop": "Calo dei prezzi",
+        "volumeSpike": "Picco del volume",
+        "volumeDrop": "Calo del volume",
+        "unusualPattern": "Schema anomalo"
+      },
+      "severities": {
+        "low": "Bassa",
+        "medium": "Media",
+        "high": "Alta",
+        "critical": "Critica"
+      }
+    },
+    "areaComparison": {
+      "description": "Confronta gli indicatori di mercato di due città affiancate",
+      "firstCity": "Prima città",
+      "secondCity": "Seconda città",
+      "priceDifference": "Differenza di prezzo",
+      "cheaperArea": "Area più economica",
+      "moreListings": "Più annunci",
+      "amenityAvailability": "Disponibilità di servizi (%)",
+      "bothCitiesRequired": "Inserisci il nome di entrambe le città",
+      "compareFailed": "Confronto delle aree non riuscito",
+      "cityPlaceholder": "es. es. Varsavia",
+      "metric": "Metrica",
+      "avgPrice": "Prezzo medio",
+      "medianPrice": "Prezzo mediano",
+      "pricePerSqm": "Prezzo/m²",
+      "listings": "Annunci",
+      "avgRooms": "Locali medi"
+    },
+    "priceHistory": {
+      "title": "Storico dei prezzi",
+      "noData": "Nessuno storico dei prezzi disponibile",
+      "currentPrice": "Prezzo attuale",
+      "firstRecorded": "Prima rilevazione",
+      "priceChange": "Variazione del prezzo",
+      "loadFailed": "Caricamento dello storico dei prezzi non riuscito",
+      "price": "Prezzo",
+      "pricePerSqm": "Prezzo/m²",
+      "anomalyCount": "{count, plural, one {# anomalia} other {# anomalie}}",
+      "chartLabel": "Grafico dello storico prezzi con {count} rilevazioni, tendenza: {trend}",
+      "trend": {
+        "increasing": "in aumento",
+        "decreasing": "in calo",
+        "stable": "stabile"
+      }
     }
   },
   "mortgage": {
@@ -654,7 +849,9 @@
       "totalInterest": "Total Interest",
       "totalCost": "Total Cost",
       "loanAmount": "Loan Amount",
-      "downPaymentAmount": "Down Payment Amount"
+      "downPaymentAmount": "Down Payment Amount",
+      "description": "Le tue rate di mutuo stimate",
+      "monthlyBreakdown": "Dettaglio della rata mensile"
     },
     "tco": {
       "title": "Total Cost of Ownership",
@@ -664,7 +861,85 @@
       "maintenanceHint": "Common rule: 1-2% of property value per year",
       "propertyTax": "Property Tax",
       "insurance": "Insurance",
-      "utilities": "Utilities"
+      "utilities": "Utilities",
+      "monthlyHoa": "Quota mensile HOA",
+      "annualPropertyTax": "Imposta annuale sulla proprietà",
+      "annualInsurance": "Assicurazione annuale",
+      "monthlyUtilities": "Utenze mensili",
+      "monthlyInternet": "Internet mensile",
+      "monthlyParking": "Parcheggio mensile",
+      "maintenancePercent": "Manutenzione (% del valore)",
+      "description": "Costo totale comprese tutte le spese",
+      "totalOverYears": "Totale su {years} anni",
+      "allInCost": "Costo mensile complessivo",
+      "monthlyCostBreakdown": "Dettaglio dei costi mensili",
+      "mortgage": "Mutuo ipotecario",
+      "hoa": "HOA",
+      "totalOver30Years": "Costo totale (30 anni)",
+      "downPayment": "Anticipo",
+      "compareScenarios": "Confronta scenari immobiliari",
+      "comparisonSummary": "Riepilogo del confronto",
+      "monthlyDifference": "Differenza mensile",
+      "equityDifference": "Differenza di capitale proprio",
+      "breakEvenPoint": "Punto di pareggio",
+      "breakEvenHint": "Quando i costi si eguagliano",
+      "recommended": "Consigliato",
+      "comparisonFailed": "Confronto non riuscito",
+      "scenarios": {
+        "centralApartment": "Appartamento in centro",
+        "suburbanHouse": "Casa in periferia",
+        "scenarioA": "Scenario A",
+        "scenarioB": "Scenario B"
+      }
+    },
+    "emptyDescription": "Compila i dati dell'immobile per calcolare le rate del mutuo.",
+    "emptyHint": "I risultati compariranno qui dopo il calcolo.",
+    "hideTcoOptions": "Nascondi opzioni TCO",
+    "showTcoOptions": "Mostra opzioni TCO",
+    "tcoOptionsTitle": "Opzioni del costo totale di proprietà",
+    "calculationFailed": "Calcolo non riuscito",
+    "retry": "Riprova",
+    "exportToPdf": "Esporta in PDF",
+    "hideComparison": "Nascondi confronto",
+    "compareScenarios": "Confronta scenari",
+    "charts": {
+      "breakdown": {
+        "title": "Dettaglio dei costi mensili",
+        "description": "Ripartizione dei costi di proprietà",
+        "categories": {
+          "mortgage": "Mutuo ipotecario",
+          "propertyTax": "Imposta sulla proprietà",
+          "insurance": "Assicurazione",
+          "hoa": "HOA",
+          "utilities": "Utenze",
+          "internet": "Internet",
+          "parking": "Parcheggio",
+          "maintenance": "Manutenzione"
+        },
+        "perMonth": "{value}/mese",
+        "percentOfTotal": "{percent}% del totale",
+        "fixedCosts": "Costi fissi",
+        "variableCosts": "Costi variabili",
+        "discretionary": "Costi discrezionali",
+        "ariaLabel": "Grafico a torta con il dettaglio dei costi mensili: {categories}"
+      },
+      "projection": {
+        "title": "Proiezioni di proprietà",
+        "description": "Costi cumulativi, capitale proprio accumulato e valore dell'immobile nel tempo",
+        "ariaLabel": "Grafico a linee della proiezione di proprietà: costi cumulativi, capitale proprio accumulato, valore dell'immobile e saldo del prestito nel tempo",
+        "year": "Anno {year}",
+        "years": "Anni",
+        "totalCost": "Costo totale",
+        "equityBuilt": "Capitale proprio accumulato",
+        "propertyValue": "Valore dell'immobile",
+        "loanBalance": "Saldo del prestito",
+        "cost": "Costo:",
+        "equity": "Capitale proprio:",
+        "value": "Valore:"
+      }
+    },
+    "error": {
+      "unknown": "Errore sconosciuto"
     }
   },
   "nav": {
@@ -690,7 +965,14 @@
       "good": "Good",
       "fair": "Fair",
       "poor": "Poor",
-      "veryPoor": "Very Poor"
+      "veryPoor": "Very Poor",
+      "short": {
+        "exc": "Ott.",
+        "good": "Buo.",
+        "fair": "Med.",
+        "poor": "Scad.",
+        "vpoor": "Molto scad."
+      }
     },
     "components": {
       "safety": "Safety",
@@ -700,7 +982,197 @@
       "greenSpace": "Green Space",
       "publicTransport": "Public Transport",
       "restaurants": "Restaurants",
-      "shopping": "Shopping"
+      "shopping": "Shopping",
+      "airQuality": "Qualità dell'aria",
+      "noiseLevel": "Livello di rumore"
+    },
+    "factorBreakdown": {
+      "title": "Dettaglio dei fattori di qualità",
+      "overall": "Complessivo:",
+      "per100": "/ 100",
+      "dataConfidence": "Affidabilità dei dati:",
+      "confidenceHigh": "Alta",
+      "confidenceMedium": "Media",
+      "confidenceLow": "Bassa",
+      "scoreRanges": "Intervalli di punteggio:",
+      "excellent": "85+ Eccellente",
+      "good": "70-84 Buono",
+      "fair": "55-69 Discreto",
+      "poor": "40-54 Scarso",
+      "veryPoor": "<40 Molto scarso",
+      "factors": {
+        "safety": {
+          "label": "Sicurezza",
+          "weight": "15%",
+          "description": "Tasso di criminalità e vicinanza alla polizia"
+        },
+        "schools": {
+          "label": "Scuole",
+          "weight": "15%",
+          "description": "Qualità delle scuole e distanza"
+        },
+        "amenities": {
+          "label": "Servizi",
+          "weight": "15%",
+          "description": "Negozi, ristoranti e servizi"
+        },
+        "walkability": {
+          "label": "Accessibilità pedonale",
+          "weight": "15%",
+          "description": "Infrastrutture a misura di pedone"
+        },
+        "greenSpace": {
+          "label": "Spazi verdi",
+          "weight": "10%",
+          "description": "Parchi e aree naturali"
+        },
+        "airQuality": {
+          "label": "Qualità dell'aria",
+          "weight": "10%",
+          "description": "Indice di qualità dell'aria (AQI)"
+        },
+        "noiseLevel": {
+          "label": "Livello di rumore",
+          "weight": "10%",
+          "description": "Livelli di rumore di fondo"
+        },
+        "publicTransport": {
+          "label": "Trasporto pubblico",
+          "weight": "10%",
+          "description": "Accessibilità al trasporto pubblico"
+        }
+      }
+    },
+    "whatsNearby": {
+      "title": "Cosa c'è nei dintorni",
+      "description": "Punti di interesse nel quartiere",
+      "descriptionWalking": "Punti di interesse raggiungibili a piedi",
+      "dataNotAvailable": "Non sono disponibili dati sui luoghi vicini per questa posizione.",
+      "nearestPlace": "Luogo più vicino",
+      "placesNearby": "{count} luoghi nei dintorni",
+      "noFoundNearby": "Nessun {category} trovato nei dintorni",
+      "openInMaps": "Apri in Google Maps",
+      "mapComingSoon": "Integrazione delle mappe in arrivo",
+      "location": "Posizione:",
+      "categories": {
+        "schools": {
+          "label": "Scuole",
+          "description": "Istituti scolastici nelle vicinanze"
+        },
+        "amenities": {
+          "label": "Servizi",
+          "description": "Negozi, ristoranti e servizi"
+        },
+        "greenSpaces": {
+          "label": "Spazi verdi",
+          "description": "Parchi e aree ricreative"
+        },
+        "transport": {
+          "label": "Trasporti",
+          "description": "Punti di accesso al trasporto pubblico"
+        },
+        "safety": {
+          "label": "Sicurezza",
+          "description": "Polizia e servizi di emergenza"
+        }
+      },
+      "mapUnavailable": "L'anteprima della mappa non è disponibile in questo report"
+    },
+    "cityComparison": {
+      "title": "Confronto con la città",
+      "description": "Come questo quartiere si confronta con la media della città",
+      "descriptionCity": "Come questo quartiere si confronta con la media di {city}",
+      "dataNotAvailable": "Non sono disponibili dati di confronto con la città per questa posizione.",
+      "percentile": "percentile",
+      "outstanding": "Straordinario",
+      "excellent": "Eccellente",
+      "aboveAverage": "Sopra la media",
+      "average": "Nella media",
+      "belowAverage": "Sotto la media",
+      "poor": "Scarso",
+      "scoresHigherThan": "Questo quartiere ottiene punteggi superiori rispetto al {percentile}% delle aree di {city}",
+      "cityAverage": "Media della città:",
+      "scoreComparison": "Confronto dei punteggi",
+      "thisArea": "Quest'area",
+      "cityAvg": "Media città",
+      "score": "Punteggio",
+      "betterThanAverage": "Migliore della media",
+      "averageAcross": "Questo quartiere si attesta vicino alla media cittadina in tutti i fattori.",
+      "pointsAbove": "{count} punti sopra la media",
+      "pointsBelow": "{count} punti sotto la media",
+      "equalToAverage": "Uguale alla media cittadina",
+      "percentileLabel": "Posizione percentile: {value}",
+      "scoreComparisonLabel": "Confronto dei punteggi: quest'area {area}, media cittadina {average}"
+    },
+    "details": {
+      "quality": "Qualità del quartiere",
+      "noData": "Nessun dato disponibile sul quartiere",
+      "assessment": "Valutazione della qualità del quartiere",
+      "loading": "Caricamento dei dati del quartiere...",
+      "failedToLoad": "Caricamento dei dati del quartiere non riuscito",
+      "tryAgain": "Riprova",
+      "overview": "Panoramica",
+      "allFactors": "Tutti i fattori",
+      "extended": "Esteso",
+      "nearby": "Nei dintorni",
+      "dataSources": "Fonti dei dati",
+      "detailedFactorInfo": "Informazioni dettagliate sui fattori",
+      "detailedFactorDescription": "Valori grezzi e fonti dei dati per ogni fattore",
+      "factor": "Fattore",
+      "score": "Punteggio",
+      "rawValue": "Valore grezzo",
+      "confidence": "Affidabilità",
+      "source": "Fonte",
+      "dataFreshness": "Attualità dei dati:",
+      "safety": "Sicurezza",
+      "schools": "Scuole",
+      "walkability": "Accessibilità pedonale",
+      "greenSpace": "Spazi verdi",
+      "amenities": "Servizi",
+      "airQuality": "Qualità dell'aria",
+      "noiseLevel": "Livello di rumore",
+      "publicTransport": "Trasporto pubblico"
+    },
+    "newFactors": {
+      "title": "Fattori di qualità estesi",
+      "description": "Metriche aggiuntive di ambiente e accessibilità per una valutazione completa del quartiere",
+      "source": "Fonte:",
+      "confidence": "Affidabilità:",
+      "airQuality": {
+        "label": "Qualità dell'aria",
+        "description": "Misura i livelli di inquinamento dell'aria tramite l'Indice di Qualità dell'Aria (AQI). I valori più bassi indicano un'aria più pulita."
+      },
+      "noiseLevel": {
+        "label": "Livello di rumore",
+        "description": "Livello medio di rumore di fondo in decibel. I valori più bassi indicano un ambiente più silenzioso."
+      },
+      "publicTransport": {
+        "label": "Trasporto pubblico",
+        "description": "Numero di fermate del trasporto pubblico entro 1 km. I valori più alti indicano una maggiore accessibilità."
+      },
+      "ratings": {
+        "good": "Buona",
+        "moderate": "Moderata",
+        "unhealthySensitive": "Nociva per le persone sensibili",
+        "unhealthy": "Nociva",
+        "veryUnhealthy": "Molto nociva",
+        "quiet": "Silenzioso",
+        "noisy": "Rumoroso",
+        "veryNoisy": "Molto rumoroso",
+        "excellent": "Eccellente",
+        "fair": "Discreta",
+        "limited": "Limitata",
+        "unknown": "Sconosciuta"
+      },
+      "dataFreshness": "Attualità dei dati: qualità dell'aria aggiornata {airQuality}, livello di rumore aggiornato {noiseLevel}, trasporto aggiornato {transport}",
+      "stopsWithin1km": "{count} fermate entro 1 km",
+      "scoreLabel": "Punteggio {label}: {score} su 100",
+      "confidenceLabel": "Affidabilità: {value}%"
+    },
+    "overallScore": "Punteggio complessivo",
+    "quality": {
+      "badge": "Qualità del quartiere: {rating} ({score}/100)",
+      "score": "Qualità del quartiere: {score}/100"
     }
   },
   "portfolio": {
@@ -715,7 +1187,18 @@
       "totalRent": "Total Monthly Rent",
       "averageCapRate": "Average Cap Rate",
       "totalCashFlow": "Total Monthly Cash Flow"
-    }
+    },
+    "emptyHint": "Aggiungi almeno un immobile per analizzare il portafoglio.",
+    "propertyLabel": "Immobile",
+    "propertyPrice": "Prezzo di acquisto ($)",
+    "monthlyRent": "Affitto mensile ($)",
+    "monthlyCashFlow": "Flusso di cassa mensile ($)",
+    "capRate": "Tasso di capitalizzazione (%)",
+    "city": "Città",
+    "cityPlaceholder": "es. Berlin",
+    "propertyType": "Tipologia di immobile",
+    "selectType": "Seleziona il tipo",
+    "analyzeButton": "Analizza il portafoglio"
   },
   "property": {
     "card": {
@@ -726,7 +1209,10 @@
       "baths": "{count, plural, one {# bath} other {# baths}}",
       "areaUnit": "m²",
       "noLongerAvailable": "Property no longer available",
-      "locationUnavailable": "Location unavailable"
+      "locationUnavailable": "Location unavailable",
+      "addToFavorites": "Aggiungi ai preferiti",
+      "removeFromFavorites": "Rimuovi dai preferiti",
+      "loginRequired": "Accedi per salvare questo immobile"
     },
     "favorite": {
       "add": "Add to favorites",
@@ -748,7 +1234,9 @@
       "location": "Location",
       "features": "Features",
       "contact": "Contact agent"
-    }
+    },
+    "estimateLabel": "Rata mensile stimata: {value}",
+    "estimateTitle": "Rata mensile stimata con {down} % di anticipo, {years} anni fissi al {rate} % TAEG. Non è un'offerta di credito."
   },
   "rentVsBuy": {
     "title": "Calcolatrice Affitto vs Acquisto",
@@ -779,7 +1267,8 @@
       "rentIncreaseRate": "Aumento dell'affitto (%)",
       "investmentReturnRate": "Rendimento dell'investimento (%)",
       "marginalTaxRate": "Aliquota marginale (%)",
-      "projectionYears": "Periodo di proiezione (anni)"
+      "projectionYears": "Periodo di proiezione (anni)",
+      "growthRates": "Tassi di crescita"
     },
     "results": {
       "title": "Risultati dell'analisi",
@@ -809,7 +1298,12 @@
         "equityGrowth": {
           "title": "Crescita del capitale proprio e del valore della proprietà",
           "ariaLabel": "Grafico della crescita del capitale proprio e del valore della proprietà nel tempo"
-        }
+        },
+        "cumulativeRent": "Affitto cumulativo",
+        "cumulativeOwnership": "Costi di proprietà cumulativi",
+        "propertyValue": "Valore dell'immobile",
+        "equity": "Capitale proprio",
+        "year": "Anno {year}"
       }
     }
   },
@@ -828,6 +1322,22 @@
       "disabled": "Alerts disabled",
       "enable": "Enable alerts",
       "disable": "Disable alerts"
+    },
+    "dialog": {
+      "title": "Salva ricerca",
+      "name": "Nome della ricerca",
+      "namePlaceholder": "es. Appartamenti di 2 locali a Madrid",
+      "alertFrequency": "Frequenza degli avvisi",
+      "frequencyInstant": "Istantanea - notifica subito",
+      "frequencyDaily": "Riepilogo giornaliero - una volta al giorno",
+      "frequencyWeekly": "Riepilogo settimanale - una volta a settimana",
+      "frequencyNone": "Nessun avviso - salva solo",
+      "hint": "Riceverai avvisi su nuovi annunci e cali di prezzo che corrispondono a questa ricerca.",
+      "saved": "Ricerca salvata!",
+      "savedHint": "Riceverai avvisi in base alle tue preferenze.",
+      "nameRequired": "Inserisci un nome per questa ricerca",
+      "loginRequired": "Accedi per salvare le ricerche",
+      "saveFailed": "Impossibile salvare la ricerca"
     }
   },
   "search": {
@@ -869,7 +1379,8 @@
     "emptyState": {
       "title": "Start Your Property Search",
       "description": "Enter a search query to explore thousands of property listings.",
-      "tryExamples": "Try these examples:"
+      "tryExamples": "Try these examples:",
+      "exportHint": "L'esportazione sarà disponibile quando avrai risultati di ricerca."
     },
     "results": {
       "noResults": "No Results Found",
@@ -882,7 +1393,16 @@
       "format": "Export Format",
       "csv": "CSV",
       "json": "JSON",
-      "export": "Export"
+      "export": "Export",
+      "columns": "Colonne (facoltative)",
+      "columnsPlaceholder": "es. id, città, prezzo",
+      "delimiter": "Delimitatore CSV",
+      "delimiterComma": "Virgola (,)",
+      "delimiterSemicolon": "Punto e virgola (;)",
+      "decimalSeparator": "Separatore decimale",
+      "decimalDot": "Punto (.)",
+      "decimalComma": "Virgola (,)",
+      "includeHeader": "Includi la riga di intestazione"
     },
     "saveSearch": {
       "button": "Save Search",
@@ -895,7 +1415,14 @@
     "errors": {
       "searchFailed": "Search Failed",
       "connectionFailed": "Connection failed. Please try again.",
-      "timeout": "Search timed out. Please try again."
+      "timeout": "Search timed out. Please try again.",
+      "invalidMinPrice": "Il prezzo minimo deve essere un numero valido.",
+      "invalidMaxPrice": "Il prezzo massimo deve essere un numero valido.",
+      "invalidMinRooms": "Il numero minimo di locali deve essere un numero valido.",
+      "minGreaterThanMax": "Il prezzo minimo non può superare quello massimo.",
+      "emptyQuery": "Inserisci una query di ricerca.",
+      "genericSearch": "Non è stato possibile eseguire la ricerca. Riprova.",
+      "exportFailed": "Non è stato possibile esportare. Riprova."
     },
     "feedback": {
       "helpful": "Was this helpful?",
@@ -903,18 +1430,58 @@
       "thumbsDown": "Thumbs down — not relevant",
       "thanks": "Thanks for your feedback!",
       "error": "Failed to submit"
-    }
+    },
+    "map": {
+      "noMappableResults": "Nessun risultato mappabile",
+      "noMappableResultsHint": "Questi annunci non includono le coordinate.",
+      "shown": "{shown} di {total} sulla mappa",
+      "filteredByArea": "(filtrato per area)",
+      "enhanced": "Mappa avanzata",
+      "useMapbox": "Usa Mapbox",
+      "drawArea": "Disegna area",
+      "drawing": "Disegno...",
+      "enableDrawing": "Abilita disegno",
+      "disableDrawing": "Disabilita disegno",
+      "clearArea": "Cancella area"
+    },
+    "queryLabel": "Query di ricerca",
+    "searchLabel": "Ricerca immobili",
+    "view": {
+      "label": "Modalità di visualizzazione",
+      "list": "Elenco",
+      "map": "Mappa"
+    },
+    "preset": {
+      "title": "Salva filtro",
+      "name": "Nome del filtro",
+      "namePlaceholder": "es. Appartamenti economici a Berlino",
+      "description": "Descrizione (facoltativa)",
+      "descriptionPlaceholder": "Breve descrizione di questo filtro...",
+      "setDefault": "Imposta come filtro predefinito",
+      "hint": "Salva le impostazioni filtro attuali per un accesso rapido.",
+      "saved": "Filtro salvato!",
+      "savedHint": "Puoi applicare questi filtri rapidamente dal menu filtri.",
+      "nameRequired": "Inserisci un nome per questo filtro",
+      "loginRequired": "Accedi per salvare i filtri",
+      "saveFailed": "Impossibile salvare il filtro",
+      "save": "Salva filtro",
+      "saving": "Salvataggio..."
+    },
+    "clearPriceFilter": "Cancella filtro prezzo",
+    "filterByPropertyType": "Filtra per tipo di immobile",
+    "propertyMap": "Mappa degli immobili",
+    "propertyMapWithMapbox": "Mappa degli immobili con Mapbox"
   },
   "settings": {
     "title": "Settings",
     "description": "Manage your account settings and preferences.",
     "tabs": {
-      "identity": "Identity",
-      "notifications": "Notifications",
-      "models": "Models"
+      "identity": "Identità",
+      "notifications": "Notifiche",
+      "models": "Modelli"
     },
     "identity": {
-      "title": "Identity",
+      "title": "Identità",
       "description": "Set the email address used to scope settings to your account.",
       "emailLabel": "Email",
       "emailPlaceholder": "Enter your email",
@@ -924,36 +1491,78 @@
       "invalidEmail": "Please enter a valid email address."
     },
     "notifications": {
-      "title": "Notifications",
+      "title": "Notifiche",
       "description": "Configure how you receive notifications.",
       "emailNotifications": "Email Notifications",
       "pushNotifications": "Push Notifications",
       "savedSearchAlerts": "Saved Search Alerts",
       "priceDropAlerts": "Price Drop Alerts",
-      "newListingAlerts": "New Listing Alerts"
+      "newListingAlerts": "New Listing Alerts",
+      "instant": "Istantaneo"
     },
     "models": {
-      "title": "Models",
-      "description": "Select your default model and compare pricing.",
-      "defaultModel": "Default Model",
-      "refreshCatalog": "Refresh Catalog",
-      "runtimeCheck": "Runtime check",
-      "testConnection": "Test Connection",
-      "connectionSuccess": "Connection successful",
-      "connectionFailed": "Connection failed",
-      "noModels": "No models available",
+      "title": "Modelli",
+      "description": "Scegli il modello predefinito e confronta i prezzi.",
+      "defaultModel": "Modello predefinito",
+      "refreshCatalog": "Aggiorna catalogo",
+      "runtimeCheck": "Controllo dell'ambiente",
+      "testConnection": "Prova connessione",
+      "connectionSuccess": "Connessione riuscita.",
+      "connectionFailed": "Connessione non riuscita.",
+      "noModels": "Nessun modello disponibile",
       "pricing": {
         "title": "Model Pricing",
         "input": "Input",
         "output": "Output",
         "per1kTokens": "per 1K tokens"
-      }
+      },
+      "modelCatalog": "Catalogo dei modelli",
+      "supportedProviders": "Provider supportati:",
+      "model": "Modello",
+      "context": "Contesto",
+      "inputPer1m": "Input / 1M",
+      "outputPer1m": "Output / 1M",
+      "capabilities": "Capacità",
+      "downloadedModels": "Modelli scaricati",
+      "localModelsOffline": "Modelli locali e uso offline",
+      "runtimeCheckDesc": "Esegui un controllo mirato dell'ambiente per questo provider.",
+      "failedToLoadCatalog": "Caricamento del catalogo non riuscito",
+      "refreshing": "Aggiornamento...",
+      "pricingUnavailable": "I prezzi potrebbero non essere disponibili per alcuni modelli ospitati.",
+      "provider": "Provider:",
+      "local": "Locale",
+      "hosted": "Ospitato",
+      "apiKeyRequired": "Richiede chiave API",
+      "noApiKeyRequired": "Non richiede chiave API",
+      "localModelsDesc": "I modelli locali girano sulla tua macchina. Il prezzo per token non si applica: i costi dipendono dall'hardware e dalle impostazioni dell'ambiente di esecuzione.",
+      "runtimeDetectedModels": "Il controllo dell'ambiente ha rilevato i modelli:",
+      "runtimeNotDetected": "Ambiente locale non rilevato. Avvialo e assicurati che l'API possa raggiungerlo.",
+      "runtimeDetected": "Ambiente locale rilevato. Modelli scaricati: {count}.",
+      "runtimeUnknown": "Lo stato dell'ambiente locale è sconosciuto.",
+      "ollamaStep1": "1. Installa Ollama:",
+      "ollamaStep2": "2. Avvia Ollama, poi scarica un modello:",
+      "ollamaStep3": "3. Se l'API gira in Docker, imposta OLLAMA_BASE_URL su http://host.docker.internal:11434.",
+      "emptyCatalog": "Al momento non è configurato alcun modello. Aggiungi le tue chiavi API nella sezione Identità qui sopra per iniziare.",
+      "emptyCatalogHint": "Il catalogo qui sotto elenca ogni provider configurato: scegli un modello lì quando imposti la chiave API.",
+      "loadFailed": "Caricamento del catalogo dei modelli non riuscito. Riprova."
     },
     "saved": "Settings saved successfully.",
     "error": "Failed to save settings.",
     "emailRequired": "Set an email in Identity settings above to access this section.",
     "profile": {
-      "loadingProfile": "Loading profile..."
+      "loadingProfile": "Loading profile...",
+      "email": "Email",
+      "phone": "Telefono",
+      "bio": "Biografia",
+      "timezone": "Fuso orario",
+      "language": "Lingua"
+    },
+    "privacy": {
+      "processing": "Elaborazione...",
+      "title": "Privacy e dati"
+    },
+    "taskModel": {
+      "saved": "Preferenza del modello salvata."
     }
   },
   "tools": {
@@ -1028,5 +1637,131 @@
     "errorGeneric": "Something went wrong. Please try again.",
     "studioNote": "Questa è la versione gratuita e open source. La versione ospitata è in sviluppo presso NestLab.",
     "studioLink": "Visita nestlab.tech"
+  },
+  "pages": {
+    "search": {
+      "title": "Trova il tuo immobile",
+      "description": "Cerca tra migliaia di annunci con la ricerca semantica basata sull'IA."
+    },
+    "favorites": {
+      "title": "I miei preferiti",
+      "description": "Tutti gli annunci salvati, in un unico posto.",
+      "newCollection": "Nuova raccolta",
+      "collectionName": "Nome della raccolta"
+    },
+    "savedSearches": {
+      "title": "Ricerche salvate",
+      "description": "Gestisci le ricerche salvate e gli avvisi.",
+      "pauseAlerts": "Sospendi avvisi",
+      "resumeAlerts": "Riprendi avvisi",
+      "deleteSearch": "Elimina ricerca"
+    },
+    "leads": {
+      "title": "Panel dei contatti",
+      "description": "Tutte le richieste raccolte sul sito.",
+      "searchPlaceholder": "Cerca lead..."
+    },
+    "knowledge": {
+      "title": "Conoscenza",
+      "description": "I documenti e il contesto di mercato su cui si basa l'assistente."
+    },
+    "documents": {
+      "title": "Documenti",
+      "description": "Carica e gestisci i documenti che l'assistente legge.",
+      "loading": "Caricamento dei documenti...",
+      "errorTitle": "Impossibile caricare i documenti",
+      "refresh": "Aggiorna",
+      "upload": "Carica documento",
+      "expiringTitle": "{count, plural, one {# documento in scadenza a breve} other {# documenti in scadenza a breve}}",
+      "expiringIntro": "I seguenti documenti scadono entro 30 giorni:",
+      "andMore": "e altri {count}",
+      "emptyTitle": "Ancora nessun documento",
+      "emptyDescription": "Carica il primo documento per iniziare a organizzare i file degli immobili. Sono supportati PDF, DOC, DOCX, JPG e PNG fino a 10 MB.",
+      "uploadFirst": "Carica il primo documento",
+      "loadMore": "Carica altri"
+    },
+    "marketTrends": {
+      "title": "Tendenze del mercato",
+      "description": "Andamento di prezzi e volumi nei mercati monitorati."
+    },
+    "cityOverview": {
+      "title": "Panoramica della città",
+      "description": "Indicatori di quartiere per le città che segui."
+    },
+    "agents": {
+      "title": "Trova agenti",
+      "description": "Agenti che operano nel mercato che stai cercando.",
+      "searchByCity": "Cerca per città..."
+    },
+    "settings": {
+      "title": "Impostazioni",
+      "description": "Il tuo account, i tuoi modelli e le tue notifiche.",
+      "loadingModelCatalog": "Caricamento del catalogo dei modelli"
+    },
+    "tools": {
+      "title": "Strumenti",
+      "description": "Calcolatori e analisi che trasformano un annuncio in una decisione.",
+      "propertyPrice": "Prezzo dell'immobile",
+      "columnsHint": "Colonne (facoltative), ad es. id, city, price",
+      "propertyId": "ID immobile"
+    },
+    "analytics": {
+      "title": "Analytics e strumenti",
+      "description": "Analisi del portafoglio e i calcolatori che la sostengono."
+    },
+    "valuation": {
+      "title": "Valutazione e previsione con IA",
+      "description": "Intervallo di prezzo modelato per un indirizzo preciso.",
+      "forecastChart": "Grafico delle previsioni"
+    },
+    "usage": {
+      "title": "Panel di utilizzo",
+      "description": "Cosa è stato chiesto all'assistente e quanto è costato.",
+      "totalSearches": "Ricerche totali",
+      "propertyViews": "Visualizzazioni immobili",
+      "propertyClicks": "Click sugli immobili"
+    },
+    "cma": {
+      "title": "Analisi comparativa di mercato",
+      "description": "Valuta un immobile rispetto ad annunci comparabili."
+    },
+    "showcase": {
+      "title": "Vetrina",
+      "description": "Cosa sa fare l'assistente, dall'inizio alla fine."
+    },
+    "agentAnalytics": {
+      "title": "Analytics degli agenti",
+      "description": "Come rendono gli annunci con ogni agente.",
+      "totalLeads": "Lead totali",
+      "totalRevenue": "Ricavi totali"
+    },
+    "admin": {
+      "monitoring": {
+        "title": "Monitoraggio della produzione",
+        "description": "Stato live dello stack distribuito."
+      },
+      "connectors": {
+        "title": "Connettori MCP",
+        "description": "Strumenti esterni che l'assistente può richiamare."
+      },
+      "dataSources": {
+        "title": "Fonti di dati",
+        "description": "Da dove arrivano gli annunci."
+      },
+      "bulkJobs": {
+        "title": "Processi di importazione ed esportazione in blocco",
+        "description": "Sposta annunci in blocco dentro e fuori."
+      }
+    }
+  },
+  "states": {
+    "empty": {
+      "title": "Qui non c'è ancora nulla",
+      "description": "Gli elementi che aggiungi compariranno qui."
+    },
+    "error": {
+      "title": "Qualcosa è andato storto",
+      "description": "Non è stato possibile caricare i dati. Riprova tra poco."
+    }
   }
 }

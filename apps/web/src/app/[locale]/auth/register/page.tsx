@@ -55,7 +55,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full">
       <CardHeader className="space-y-1 text-center">
         <div className="flex justify-center mb-2">
           <div className="rounded-full bg-primary/10 p-3">

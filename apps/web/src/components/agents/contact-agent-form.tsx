@@ -97,8 +97,8 @@ export function ContactAgentForm({
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-8 text-center">
-          <div className="mb-4 rounded-full bg-green-100 p-3">
-            <Send className="h-6 w-6 text-green-600" />
+          <div className="mb-4 rounded-full bg-success/15 p-3">
+            <Send className="h-6 w-6 text-success" />
           </div>
           <h3 className="mb-2 text-lg font-semibold">Message Sent!</h3>
           <p className="text-muted-foreground">The agent will get back to you soon.</p>
@@ -189,7 +189,7 @@ export function ContactAgentForm({
               placeholder="Tell us how we can help you..."
               rows={4}
               required
-              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
 

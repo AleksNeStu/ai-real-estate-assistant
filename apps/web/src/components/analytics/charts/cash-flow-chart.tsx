@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { YearlyCashFlow } from '@/lib/types';
+import { useTranslations } from 'next-intl';
 
 interface CashFlowChartProps {
   data: YearlyCashFlow[];
@@ -22,12 +23,15 @@ interface CashFlowChartProps {
 
 export function CashFlowChart({
   data,
-  title = 'Cash Flow Projection',
-  description = 'Yearly cash flow and cumulative returns',
+  title,
+  description,
   className,
 }: CashFlowChartProps) {
+  const t = useTranslations('investment');
+  const chartTitle = title ?? t('charts.cashFlow.title');
+  const chartDescription = description ?? t('charts.cashFlow.description');
   const chartData = data.map((item) => ({
-    year: `Year ${item.year}`,
+    year: t('charts.cashFlow.year', { year: item.year }),
     cashFlow: item.cash_flow,
     cumulativeCashFlow: item.cumulative_cash_flow,
     equity: item.equity,
@@ -47,14 +51,14 @@ export function CashFlowChart({
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <CardTitle>{chartTitle}</CardTitle>
+        <CardDescription>{chartDescription}</CardDescription>
       </CardHeader>
       <CardContent>
         <div
           className="h-72"
           role="img"
-          aria-label="Cash flow projection chart showing yearly cash flow and cumulative returns over time"
+          aria-label={t('charts.cashFlow.ariaLabel')}
         >
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData}>
@@ -65,12 +69,12 @@ export function CashFlowChart({
                 formatter={(value: number, name: string) => [
                   `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
                   name === 'cashFlow'
-                    ? 'Annual Cash Flow'
+                    ? t('charts.cashFlow.annualCashFlow')
                     : name === 'cumulativeCashFlow'
-                      ? 'Cumulative Cash Flow'
+                      ? t('charts.cashFlow.cumulativeCashFlow')
                       : name === 'equity'
-                        ? 'Equity'
-                        : 'Property Value',
+                        ? t('charts.cashFlow.equity')
+                        : t('charts.cashFlow.propertyValue'),
                 ]}
               />
               <Legend />
@@ -78,19 +82,19 @@ export function CashFlowChart({
                 type="monotone"
                 dataKey="cumulativeCashFlow"
                 stackId="1"
-                stroke="#22c55e"
-                fill="#22c55e"
+                stroke="hsl(var(--chart-2))"
+                fill="hsl(var(--chart-2))"
                 fillOpacity={0.3}
-                name="Cumulative Cash Flow"
+                name={t('charts.cashFlow.cumulativeCashFlow')}
               />
               <Area
                 type="monotone"
                 dataKey="equity"
                 stackId="2"
-                stroke="#3b82f6"
-                fill="#3b82f6"
+                stroke="hsl(var(--chart-1))"
+                fill="hsl(var(--chart-1))"
                 fillOpacity={0.3}
-                name="Equity"
+                name={t('charts.cashFlow.equity')}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -99,16 +103,16 @@ export function CashFlowChart({
         {/* Summary */}
         <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t">
           <div>
-            <p className="text-sm text-muted-foreground">Total Cash Flow</p>
+            <p className="text-sm text-muted-foreground">{t('charts.cashFlow.totalCashFlow')}</p>
             <p
-              className={`text-lg font-semibold ${totalCashFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}
+              className={`text-lg font-semibold ${totalCashFlow >= 0 ? 'text-success' : 'text-destructive'}`}
             >
               ${totalCashFlow.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Final Equity</p>
-            <p className="text-lg font-semibold text-blue-600">
+            <p className="text-sm text-muted-foreground">{t('charts.cashFlow.finalEquity')}</p>
+            <p className="text-lg font-semibold text-info">
               ${finalEquity.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </p>
           </div>

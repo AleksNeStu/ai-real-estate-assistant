@@ -12,6 +12,7 @@ import { compareTCO, ApiError } from '@/lib/api';
 import type { TCOInput, TCOComparisonResult, EnhancedTCOResult } from '@/lib/types';
 import { TCOBreakdownChart } from './charts/tco-breakdown-chart';
 import { TCOProjectionChart } from './charts/tco-projection-chart';
+import { useTranslations } from 'next-intl';
 
 interface TCOComparisonProps {
   className?: string;
@@ -182,17 +183,18 @@ interface ResultCardProps {
 }
 
 function ResultCard({ result, name, isRecommended }: ResultCardProps) {
+  const t = useTranslations('mortgage');
   const formatCurrency = (value: number) =>
     `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
   return (
-    <Card className={isRecommended ? 'border-green-500 border-2' : ''}>
+    <Card className={isRecommended ? 'border-success border-2' : ''}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">{name}</CardTitle>
           {isRecommended && (
-            <Badge variant="default" className="bg-green-600">
-              Recommended
+            <Badge variant="default" className="bg-success">
+              {t('tco.recommended')}
             </Badge>
           )}
         </div>
@@ -200,19 +202,19 @@ function ResultCard({ result, name, isRecommended }: ResultCardProps) {
       <CardContent>
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div>
-            <p className="text-xs text-muted-foreground">Monthly TCO</p>
+            <p className="text-xs text-muted-foreground">{t('tco.monthlyTco')}</p>
             <p className="text-xl font-bold">{formatCurrency(result.monthly_tco)}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Annual TCO</p>
+            <p className="text-xs text-muted-foreground">{t('tco.annualTco')}</p>
             <p className="text-lg font-semibold">{formatCurrency(result.annual_tco)}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Total Cost (30yr)</p>
+            <p className="text-xs text-muted-foreground">{t('tco.totalOver30Years')}</p>
             <p className="text-lg font-semibold">{formatCurrency(result.total_ownership_cost)}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Down Payment</p>
+            <p className="text-xs text-muted-foreground">{t('tco.downPayment')}</p>
             <p className="text-lg font-semibold">{formatCurrency(result.down_payment)}</p>
           </div>
         </div>
@@ -229,6 +231,7 @@ function ResultCard({ result, name, isRecommended }: ResultCardProps) {
 }
 
 export function TCOComparison({ className }: TCOComparisonProps) {
+  const t = useTranslations('mortgage');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TCOComparisonResult | null>(null);
@@ -269,8 +272,8 @@ export function TCOComparison({ className }: TCOComparisonProps) {
       const comparisonResult = await compareTCO({
         scenario_a: scenarioA,
         scenario_b: scenarioB,
-        scenario_a_name: 'Central Apartment',
-        scenario_b_name: 'Suburban House',
+        scenario_a_name: t('tco.scenarios.centralApartment'),
+        scenario_b_name: t('tco.scenarios.suburbanHouse'),
         comparison_years: 10,
         appreciation_rate: 3,
         priority_monthly_cashflow: 0.3,
@@ -284,7 +287,7 @@ export function TCOComparison({ className }: TCOComparisonProps) {
       } else if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Comparison failed');
+        setError(t('tco.comparisonFailed'));
       }
     } finally {
       setLoading(false);
@@ -295,7 +298,7 @@ export function TCOComparison({ className }: TCOComparisonProps) {
     <div className={className}>
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Compare Property Scenarios</CardTitle>
+          <CardTitle>{t('tco.compareScenarios')}</CardTitle>
           <CardDescription>
             Compare Total Cost of Ownership between two property scenarios with trade-off analysis
             and recommendations.
@@ -305,13 +308,13 @@ export function TCOComparison({ className }: TCOComparisonProps) {
           {/* Input Forms Side by Side */}
           <div className="grid md:grid-cols-2 gap-4 mb-4">
             <ScenarioForm
-              title="Scenario A"
+              title={t('tco.scenarios.scenarioA')}
               formData={scenarioA}
               onChange={setScenarioA}
               disabled={loading}
             />
             <ScenarioForm
-              title="Scenario B"
+              title={t('tco.scenarios.scenarioB')}
               formData={scenarioB}
               onChange={setScenarioB}
               disabled={loading}
@@ -342,16 +345,16 @@ export function TCOComparison({ className }: TCOComparisonProps) {
           {/* Summary Card */}
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Comparison Summary</CardTitle>
+              <CardTitle>{t('tco.comparisonSummary')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-3 gap-6">
                 {/* Cost Difference */}
                 <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-2">Monthly Difference</p>
+                  <p className="text-sm text-muted-foreground mb-2">{t('tco.monthlyDifference')}</p>
                   <p
                     className={`text-2xl font-bold ${
-                      result.monthly_cost_difference > 0 ? 'text-red-600' : 'text-green-600'
+                      result.monthly_cost_difference > 0 ? 'text-destructive' : 'text-success'
                     }`}
                   >
                     {result.monthly_cost_difference > 0 ? '+' : ''}$
@@ -366,10 +369,10 @@ export function TCOComparison({ className }: TCOComparisonProps) {
 
                 {/* Equity Difference */}
                 <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-2">Equity Difference</p>
+                  <p className="text-sm text-muted-foreground mb-2">{t('tco.equityDifference')}</p>
                   <p
                     className={`text-2xl font-bold ${
-                      result.equity_difference < 0 ? 'text-red-600' : 'text-green-600'
+                      result.equity_difference < 0 ? 'text-destructive' : 'text-success'
                     }`}
                   >
                     {result.equity_difference > 0 ? '+' : ''}$
@@ -384,13 +387,13 @@ export function TCOComparison({ className }: TCOComparisonProps) {
 
                 {/* Break Even */}
                 <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-2">Break-Even Point</p>
+                  <p className="text-sm text-muted-foreground mb-2">{t('tco.breakEvenPoint')}</p>
                   {result.break_even_years ? (
                     <p className="text-2xl font-bold">{result.break_even_years.toFixed(1)} years</p>
                   ) : (
                     <p className="text-2xl font-bold text-muted-foreground">N/A</p>
                   )}
-                  <p className="text-xs text-muted-foreground mt-1">When costs equalize</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('tco.breakEvenHint')}</p>
                 </div>
               </div>
 
@@ -398,11 +401,11 @@ export function TCOComparison({ className }: TCOComparisonProps) {
               <div className="mt-6 p-4 bg-primary/5 rounded-lg">
                 <div className="flex items-start gap-3">
                   {result.recommendation === 'scenario_a' ? (
-                    <Check className="h-5 w-5 text-green-600 mt-0.5" aria-hidden="true" />
+                    <Check className="h-5 w-5 text-success mt-0.5" aria-hidden="true" />
                   ) : result.recommendation === 'scenario_b' ? (
-                    <Check className="h-5 w-5 text-green-600 mt-0.5" aria-hidden="true" />
+                    <Check className="h-5 w-5 text-success mt-0.5" aria-hidden="true" />
                   ) : (
-                    <ArrowRight className="h-5 w-5 text-blue-600 mt-0.5" aria-hidden="true" />
+                    <ArrowRight className="h-5 w-5 text-info mt-0.5" aria-hidden="true" />
                   )}
                   <div>
                     <p className="font-medium">Recommendation: {result.recommendation}</p>
@@ -417,7 +420,7 @@ export function TCOComparison({ className }: TCOComparisonProps) {
               <div className="grid md:grid-cols-2 gap-4 mt-4">
                 <div className="p-4 bg-muted rounded-lg">
                   <h4 className="font-medium mb-2 flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-600" aria-hidden="true" />
+                    <Check className="h-4 w-4 text-success" aria-hidden="true" />
                     {result.scenario_a_name} Advantages
                   </h4>
                   <ul className="text-sm space-y-1">
@@ -430,7 +433,7 @@ export function TCOComparison({ className }: TCOComparisonProps) {
                 </div>
                 <div className="p-4 bg-muted rounded-lg">
                   <h4 className="font-medium mb-2 flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-600" aria-hidden="true" />
+                    <Check className="h-4 w-4 text-success" aria-hidden="true" />
                     {result.scenario_b_name} Advantages
                   </h4>
                   <ul className="text-sm space-y-1">

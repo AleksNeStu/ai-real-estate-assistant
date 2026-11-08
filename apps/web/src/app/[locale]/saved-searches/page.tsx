@@ -11,13 +11,17 @@ import {
   RefreshCw,
   AlertCircle,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
 import { getSavedSearches, deleteSavedSearch, toggleSavedSearchAlert, ApiError } from '@/lib/api';
 import type { SavedSearch } from '@/lib/types';
+import { EmptyState } from '@/components/ui/states';
 
 export default function SavedSearchesPage() {
+  const t = useTranslations('pages.savedSearches');
   const [searches, setSearches] = useState<SavedSearch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -139,26 +143,27 @@ export default function SavedSearchesPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <Bookmark className="h-8 w-8 text-primary" aria-hidden="true" />
-          <div>
-            <h1 className="text-3xl font-bold">Saved Searches</h1>
-            <p className="text-muted-foreground">
-              Manage your saved searches and alert preferences
-            </p>
-          </div>
-        </div>
-        <Button
-          variant="outline"
-          onClick={fetchSearches}
-          disabled={loading}
-          aria-label="Refresh saved searches"
-        >
-          <RefreshCw className="h-4 w-4 mr-2" aria-hidden="true" />
-          Refresh
-        </Button>
-      </div>
+      <PageHeader
+        className="mb-8"
+        title={
+          <span className="flex items-center gap-4">
+            <Bookmark className="h-8 w-8 text-primary" aria-hidden="true" />
+            {t('title')}
+          </span>
+        }
+        description={t('description')}
+        actions={
+          <Button
+            variant="outline"
+            onClick={fetchSearches}
+            disabled={loading}
+            aria-label="Refresh saved searches"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" aria-hidden="true" />
+            Refresh
+          </Button>
+        }
+      />
 
       {error && (
         <div
@@ -171,16 +176,11 @@ export default function SavedSearchesPage() {
       )}
 
       {searches.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Search className="h-12 w-12 text-muted-foreground mb-4" aria-hidden="true" />
-            <h3 className="text-lg font-semibold">No saved searches yet</h3>
-            <p className="text-muted-foreground mt-2 text-center max-w-md">
-              Save searches from the search page to get notified about new properties that match
-              your criteria.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Search}
+          title="No saved searches yet"
+          description="Save searches from the search page to get notified about new properties that match your criteria."
+        />
       ) : (
         <div className="grid gap-4">
           {searches.map((search) => (
@@ -235,9 +235,9 @@ export default function SavedSearchesPage() {
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                   <span>Created: {formatDate(search.created_at)}</span>
                   <span>Used: {search.use_count} times</span>
-                  {search.notify_on_new && <span className="text-green-600">New matches</span>}
+                  {search.notify_on_new && <span className="text-success">New matches</span>}
                   {search.notify_on_price_drop && (
-                    <span className="text-blue-600">Price drops</span>
+                    <span className="text-info">Price drops</span>
                   )}
                 </div>
                 {search.description && (

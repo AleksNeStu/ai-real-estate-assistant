@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { RefreshCw, AlertCircle, Loader2, Database, Sparkles } from 'lucide-react';
 import { IdentitySettings } from '@/components/settings/identity-settings';
 import { ModelSettings } from '@/components/settings/model-settings';
@@ -10,6 +11,7 @@ import { ProfileSettings } from '@/components/settings/profile-settings';
 import { PrivacySettings } from '@/components/settings/privacy-settings';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
 import { getModelsCatalog, testModelRuntime, ApiError } from '@/lib/api';
 import type { ModelProviderCatalog } from '@/lib/types';
 
@@ -52,6 +54,9 @@ function ModelCatalogComparisonTable({
     { loading: boolean; status: 'success' | 'error'; message: string; availableModels: string[] }
   >;
 }) {
+  const t = useTranslations('settings');
+  const tCommon = useTranslations('common');
+
   return (
     <div className="grid gap-6">
       {catalog.map((provider) => (
@@ -59,29 +64,37 @@ function ModelCatalogComparisonTable({
           <CardHeader>
             <CardTitle className="text-xl">{provider.display_name}</CardTitle>
             <CardDescription>
-              <span className="mr-3">Provider: {provider.name}</span>
-              <span className="mr-3">{provider.is_local ? 'Local' : 'Hosted'}</span>
-              <span>{provider.requires_api_key ? 'API key required' : 'No API key required'}</span>
+              <span className="mr-3">
+                {t('models.provider')} {provider.name}
+              </span>
+              <span className="mr-3">
+                {provider.is_local ? t('models.local') : t('models.hosted')}
+              </span>
+              <span>
+                {provider.requires_api_key
+                  ? t('models.apiKeyRequired')
+                  : t('models.noApiKeyRequired')}
+              </span>
             </CardDescription>
           </CardHeader>
           <CardContent>
             {provider.is_local ? (
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card px-4 py-3 text-sm">
                 <div className="flex-1">
-                  <div className="font-medium">Runtime check</div>
+                  <div className="font-medium">{t('models.runtimeCheck')}</div>
                   {runtimeTests[provider.name] ? (
                     <div
                       className={
                         runtimeTests[provider.name].status === 'success'
-                          ? 'text-xs text-emerald-600'
-                          : 'text-xs text-red-600'
+                          ? 'text-xs text-success'
+                          : 'text-xs text-destructive'
                       }
                     >
                       {runtimeTests[provider.name].message}
                     </div>
                   ) : (
                     <div className="text-xs text-muted-foreground">
-                      Run a targeted runtime check for this provider.
+                      {t('models.runtimeCheckDesc')}
                     </div>
                   )}
                 </div>
@@ -90,7 +103,9 @@ function ModelCatalogComparisonTable({
                   onClick={() => onRuntimeTest(provider.name)}
                   disabled={runtimeTests[provider.name]?.loading === true}
                 >
-                  {runtimeTests[provider.name]?.loading ? 'Testing...' : 'Test Connection'}
+                  {runtimeTests[provider.name]?.loading
+                    ? tCommon('testing')
+                    : t('models.testConnection')}
                 </Button>
               </div>
             ) : null}
@@ -99,19 +114,19 @@ function ModelCatalogComparisonTable({
                 <thead>
                   <tr className="text-left text-muted-foreground">
                     <th className="pb-2 pr-4 font-medium" scope="col">
-                      Model
+                      {t('models.model')}
                     </th>
                     <th className="pb-2 pr-4 font-medium" scope="col">
-                      Context
+                      {t('models.context')}
                     </th>
                     <th className="pb-2 pr-4 font-medium" scope="col">
-                      Input / 1M
+                      {t('models.inputPer1m')}
                     </th>
                     <th className="pb-2 pr-4 font-medium" scope="col">
-                      Output / 1M
+                      {t('models.outputPer1m')}
                     </th>
                     <th className="pb-2 pr-4 font-medium" scope="col">
-                      Capabilities
+                      {t('models.capabilities')}
                     </th>
                   </tr>
                 </thead>
@@ -151,29 +166,28 @@ function ModelCatalogComparisonTable({
             </div>
             {provider.is_local ? (
               <div className="mt-4 space-y-3">
-                <p className="text-xs text-muted-foreground">
-                  Local models run on your machine. Token pricing is not applicable; costs depend on
-                  your hardware and runtime settings.
-                </p>
+                <p className="text-xs text-muted-foreground">{t('models.localModelsDesc')}</p>
                 <div className="rounded-lg border bg-card p-4 text-sm">
-                  <div className="font-medium">Local models & offline usage</div>
+                  <div className="font-medium">{t('models.localModelsOffline')}</div>
                   {runtimeTests[provider.name] &&
                   runtimeTests[provider.name].availableModels.length ? (
                     <div className="mt-1 text-xs text-muted-foreground">
-                      Runtime check detected models:{' '}
+                      {t('models.runtimeDetectedModels')}{' '}
                       {runtimeTests[provider.name].availableModels.join(', ')}
                     </div>
                   ) : null}
                   <div className="mt-1 text-muted-foreground">
                     {provider.runtime_available === false
-                      ? 'Local runtime not detected. Start your local runtime and ensure the API can reach it.'
+                      ? t('models.runtimeNotDetected')
                       : provider.runtime_available === true
-                        ? `Local runtime detected. Downloaded models: ${provider.available_models?.length ?? 0}.`
-                        : 'Local runtime status is unknown.'}
+                        ? t('models.runtimeDetected', {
+                            count: provider.available_models?.length ?? 0,
+                          })
+                        : t('models.runtimeUnknown')}
                   </div>
                   <div className="mt-3 space-y-2 text-muted-foreground">
                     <div>
-                      1. Install Ollama:{' '}
+                      {t('models.ollamaStep1')}{' '}
                       <a
                         className="underline underline-offset-4"
                         href="https://ollama.com/download"
@@ -183,19 +197,17 @@ function ModelCatalogComparisonTable({
                         ollama.com/download
                       </a>
                     </div>
-                    <div>2. Start Ollama, then download a model:</div>
+                    <div>{t('models.ollamaStep2')}</div>
                     <div className="rounded-md bg-muted px-3 py-2 font-mono text-xs text-foreground">
                       ollama pull llama3.3:8b
                     </div>
-                    <div>
-                      3. If the API runs in Docker, set{' '}
-                      <span className="font-mono">OLLAMA_BASE_URL</span> to{' '}
-                      <span className="font-mono">http://host.docker.internal:11434</span>.
-                    </div>
+                    <div className="font-mono text-xs">{t('models.ollamaStep3')}</div>
                   </div>
                   {provider.available_models?.length ? (
                     <div className="mt-3">
-                      <div className="text-xs font-medium text-foreground">Downloaded models</div>
+                      <div className="text-xs font-medium text-foreground">
+                        {t('models.downloadedModels')}
+                      </div>
                       <div className="mt-1 text-xs text-muted-foreground">
                         {provider.available_models.join(', ')}
                       </div>
@@ -205,7 +217,7 @@ function ModelCatalogComparisonTable({
               </div>
             ) : provider.models.some((m) => !m.pricing) ? (
               <p className="mt-4 text-xs text-muted-foreground">
-                Pricing may be unavailable for some hosted models.
+                {t('models.pricingUnavailable')}
               </p>
             ) : null}
           </CardContent>
@@ -216,6 +228,10 @@ function ModelCatalogComparisonTable({
 }
 
 export default function SettingsPage() {
+  const t = useTranslations('pages.settings');
+  const tSettings = useTranslations('settings');
+  const tCommon = useTranslations('common');
+  const tAuth = useTranslations('auth');
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [catalog, setCatalog] = useState<ModelProviderCatalog[] | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(true);
@@ -236,7 +252,7 @@ export default function SettingsPage() {
       [providerName]: {
         loading: true,
         status: 'success',
-        message: 'Testing connection...',
+        message: tCommon('testing'),
         availableModels: prev[providerName]?.availableModels ?? [],
       },
     }));
@@ -245,7 +261,9 @@ export default function SettingsPage() {
       const result = await testModelRuntime(providerName);
       const ok = result.runtime_available === true;
       const models = Array.isArray(result.available_models) ? result.available_models : [];
-      const message = ok ? 'Connection successful.' : result.runtime_error || 'Connection failed.';
+      const message = ok
+        ? tSettings('models.connectionSuccess')
+        : result.runtime_error || tSettings('models.connectionFailed');
       setRuntimeTests((prev) => ({
         ...prev,
         [providerName]: {
@@ -256,7 +274,7 @@ export default function SettingsPage() {
         },
       }));
     } catch (err) {
-      let msg = 'Connection failed.';
+      let msg = tSettings('models.connectionFailed');
 
       if (err instanceof ApiError) {
         msg = err.message;
@@ -288,7 +306,7 @@ export default function SettingsPage() {
       const data = await getModelsCatalog();
       setCatalog(data);
     } catch (err) {
-      let msg = 'Failed to load model catalog. Please try again.';
+      let msg = tSettings('models.loadFailed');
       let reqId: string | undefined = undefined;
 
       if (err instanceof ApiError) {
@@ -320,35 +338,30 @@ export default function SettingsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col space-y-4 mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">
-          Manage your account settings and notification preferences.
-        </p>
-      </div>
+      <PageHeader className="mb-8" title={t('title')} description={t('description')} />
 
       <div className="grid gap-8">
         {/* Identity Section - Always populated */}
         <section>
-          <h2 className="text-lg font-semibold mb-4">Identity</h2>
+          <h2 className="text-lg font-semibold mb-4">{tSettings('identity.title')}</h2>
           <IdentitySettings onChange={(email) => setUserEmail(email)} />
         </section>
 
         {/* Profile Section - Task #88 */}
         <section>
-          <h2 className="text-lg font-semibold mb-4">Profile</h2>
+          <h2 className="text-lg font-semibold mb-4">{tAuth('profile')}</h2>
           <ProfileSettings userEmail={userEmail} />
         </section>
 
         {/* Privacy & Data Section - Task #88 */}
         <section>
-          <h2 className="text-lg font-semibold mb-4">Privacy & Data</h2>
+          <h2 className="text-lg font-semibold mb-4">{tSettings('privacy.title')}</h2>
           <PrivacySettings userEmail={userEmail} />
         </section>
 
         {/* Notifications Section - Always populated */}
         <section>
-          <h2 className="text-lg font-semibold mb-4">Notifications</h2>
+          <h2 className="text-lg font-semibold mb-4">{tSettings('notifications.title')}</h2>
           <NotificationSettings userEmail={userEmail} />
         </section>
 
@@ -356,9 +369,9 @@ export default function SettingsPage() {
         <section>
           <div className="flex items-start justify-between gap-4 mb-4">
             <div>
-              <h2 className="text-lg font-semibold">Models</h2>
+              <h2 className="text-lg font-semibold">{tSettings('models.title')}</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Select your default model and compare pricing/capabilities across providers.
+                {tSettings('models.description')}
               </p>
             </div>
             <Button
@@ -369,12 +382,12 @@ export default function SettingsPage() {
               {catalogRefreshing ? (
                 <span className="inline-flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Refreshing...
+                  {tSettings('models.refreshing')}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-2">
                   <RefreshCw className="h-4 w-4" />
-                  Refresh Catalog
+                  {tSettings('models.refreshCatalog')}
                 </span>
               )}
             </Button>
@@ -395,29 +408,27 @@ export default function SettingsPage() {
                 aria-live="polite"
               >
                 <Database className="h-10 w-10 text-muted-foreground mb-3" aria-hidden="true" />
-                <h3 className="text-base font-semibold text-foreground mb-2">Model Catalog</h3>
+                <h3 className="text-base font-semibold text-foreground mb-2">
+                  {tSettings('models.modelCatalog')}
+                </h3>
                 <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-4">
-                  No models are currently configured. Add your API keys in the Identity section
-                  above to get started.
+                  {tSettings('models.emptyCatalog')}
                 </p>
                 <div className="text-xs text-muted-foreground max-w-md">
-                  <p className="font-medium mb-1">Supported providers:</p>
+                  <p className="font-medium mb-1">{tSettings('models.supportedProviders')}</p>
                   <p>
                     OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI,
                     Fireworks AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot,
                     OpenCode, and Ollama (local).
                   </p>
-                  <p className="mt-2">
-                    The live catalog below lists every configured provider — pick a model
-                    there once your API key is set.
-                  </p>
+                  <p className="mt-2">{tSettings('models.emptyCatalogHint')}</p>
                 </div>
               </div>
             )}
 
             {/* STATE 2: Loading state */}
             {catalogLoading && (
-              <div role="status" aria-live="polite" aria-label="Loading model catalog">
+              <div role="status" aria-live="polite" aria-label={t('loadingModelCatalog')}>
                 <CatalogSkeleton />
               </div>
             )}
@@ -431,7 +442,7 @@ export default function SettingsPage() {
               >
                 <AlertCircle className="h-10 w-10 text-destructive mb-3" aria-hidden="true" />
                 <h3 className="text-base font-semibold text-destructive mb-2">
-                  Failed to Load Catalog
+                  {tSettings('models.failedToLoadCatalog')}
                 </h3>
                 <p className="text-sm text-destructive/90 max-w-md mb-4">{catalogError}</p>
                 {requestId && (
@@ -441,7 +452,7 @@ export default function SettingsPage() {
                 )}
                 <Button variant="outline" onClick={() => fetchCatalog('initial')} className="gap-2">
                   <RefreshCw className="h-4 w-4" />
-                  Retry
+                  {tCommon('retry')}
                 </Button>
               </div>
             )}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
+import { useTranslations } from 'next-intl';
 import {
   Search,
   Eye,
@@ -30,6 +31,8 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageHeader } from '@/components/ui/page-header';
+import { ErrorState } from '@/components/ui/states';
 
 import { getUserActivitySummary, getUserActivityTrends, exportUserActivityCSV } from '@/lib/api';
 import type { UserActivitySummary, UserActivityTrendPoint } from '@/lib/types';
@@ -53,14 +56,14 @@ import {
 
 // Chart colors
 const CHART_COLORS = [
-  '#3b82f6', // blue
-  '#10b981', // green
-  '#f59e0b', // amber
-  '#8b5cf6', // purple
-  '#ec4899', // pink
-  '#06b6d4', // cyan
-  '#f97316', // orange
-  '#84cc16', // lime
+  'hsl(var(--chart-1))', // blue
+  'hsl(var(--chart-2))', // green
+  'hsl(var(--chart-3))', // amber
+  'hsl(var(--chart-4))', // purple
+  'hsl(var(--chart-6))', // pink
+  'hsl(var(--chart-5))', // cyan
+  'hsl(var(--caution))', // orange
+  'hsl(var(--chart-7))', // lime
 ];
 
 // Format milliseconds to human-readable time
@@ -95,11 +98,11 @@ function MetricCard({
   color?: 'blue' | 'green' | 'purple' | 'amber' | 'pink';
 }) {
   const colorClasses = {
-    blue: 'text-blue-600 bg-blue-100',
-    green: 'text-green-600 bg-green-100',
-    purple: 'text-purple-600 bg-purple-100',
-    amber: 'text-amber-600 bg-amber-100',
-    pink: 'text-pink-600 bg-pink-100',
+    blue: 'text-info bg-info/15',
+    green: 'text-success bg-success/15',
+    purple: 'text-critical bg-critical/20',
+    amber: 'text-warning bg-warning/15',
+    pink: 'text-chart-6 bg-chart-6/20',
   };
 
   return (
@@ -119,6 +122,8 @@ function MetricCard({
 }
 
 export default function UsagePage() {
+  const t = useTranslations('pages.usage');
+  const tCommon = useTranslations('common');
   const [summary, setSummary] = useState<UserActivitySummary | null>(null);
   const [trends, setTrends] = useState<UserActivityTrendPoint[]>([]);
   const [interval, setInterval] = useState<'day' | 'week' | 'month'>('week');
@@ -140,11 +145,11 @@ export default function UsagePage() {
       setSummary(summaryData);
       setTrends(trendsData.trends);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load usage data');
+      setError(err instanceof Error ? err.message : t('loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [interval]);
+  }, [interval, t]);
 
   useEffect(() => {
     loadData();
@@ -189,21 +194,21 @@ export default function UsagePage() {
 
   const trendsChartData = trends.map((trend) => ({
     date: format(new Date(trend.date), 'MMM dd'),
-    Searches: trend.searches,
-    'Property Views': trend.property_views,
-    'Tool Uses': trend.tool_uses,
-    Exports: trend.exports,
+    searches: trend.searches,
+    propertyViews: trend.property_views,
+    toolUses: trend.tool_uses,
+    exports: trend.exports,
   }));
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-        <p className="text-lg font-medium">{error}</p>
-        <Button onClick={loadData} className="mt-4">
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Try Again
-        </Button>
+      <div className="container mx-auto px-4 py-8">
+        <ErrorState
+          title={tCommon('error')}
+          description={error}
+          onRetry={loadData}
+          retryLabel={tCommon('retry')}
+        />
       </div>
     );
   }
@@ -211,33 +216,36 @@ export default function UsagePage() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Usage Dashboard</h1>
-          <p className="text-muted-foreground">Track your activity and analytics</p>
-        </div>
-        <div className="flex gap-2">
-          <Select value={interval} onValueChange={(v: 'day' | 'week' | 'month') => setInterval(v)}>
-            <SelectTrigger className="w-[140px]">
-              <Calendar className="mr-2 h-4 w-4" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="day">Daily</SelectItem>
-              <SelectItem value="week">Weekly</SelectItem>
-              <SelectItem value="month">Monthly</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline" onClick={loadData} disabled={loading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-          <Button variant="outline" onClick={handleExport} disabled={exporting}>
-            <Download className="mr-2 h-4 w-4" />
-            {exporting ? 'Exporting...' : 'Export CSV'}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={t('title')}
+        description={t('description')}
+        actions={
+          <div className="flex gap-2">
+            <Select
+              value={interval}
+              onValueChange={(v: 'day' | 'week' | 'month') => setInterval(v)}
+            >
+              <SelectTrigger className="w-[140px]">
+                <Calendar className="mr-2 h-4 w-4" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="day">{t('interval.day')}</SelectItem>
+                <SelectItem value="week">{t('interval.week')}</SelectItem>
+                <SelectItem value="month">{t('interval.month')}</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" onClick={loadData} disabled={loading}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              {t('actions.refresh')}
+            </Button>
+            <Button variant="outline" onClick={handleExport} disabled={exporting}>
+              <Download className="mr-2 h-4 w-4" />
+              {exporting ? tCommon('exporting') : t('actions.exportCsv')}
+            </Button>
+          </div>
+        }
+      />
 
       {/* Summary Period Badge */}
       {summary && (
@@ -247,7 +255,7 @@ export default function UsagePage() {
             {formatDate(summary.period_start)} - {formatDate(summary.period_end)}
           </Badge>
           <span className="text-sm text-muted-foreground">
-            {summary.unique_sessions} unique sessions
+            {t('sessions', { count: summary.unique_sessions })}
           </span>
         </div>
       )}
@@ -271,31 +279,30 @@ export default function UsagePage() {
       ) : summary ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <MetricCard
-            title="Total Searches"
+            title={t('totalSearches')}
             value={summary.total_searches.toLocaleString()}
             icon={Search}
-            description={`${summary.unique_sessions} sessions`}
             color="blue"
           />
           <MetricCard
-            title="Property Views"
+            title={t('propertyViews')}
             value={summary.total_property_views.toLocaleString()}
             icon={Eye}
-            description="Properties viewed"
+            description={t('propertiesViewed')}
             color="green"
           />
           <MetricCard
-            title="Tools Used"
+            title={t('toolsUsed')}
             value={summary.total_tool_uses.toLocaleString()}
             icon={Wrench}
-            description="Calculator & analysis tools"
+            description={t('calculatorTools')}
             color="purple"
           />
           <MetricCard
-            title="Avg Response Time"
+            title={t('avgResponseTime')}
             value={formatDuration(summary.avg_processing_time_ms)}
             icon={Clock}
-            description="Processing time"
+            description={t('processingTime')}
             color="amber"
           />
         </div>
@@ -305,24 +312,24 @@ export default function UsagePage() {
       {summary && !loading && (
         <div className="grid gap-4 md:grid-cols-3">
           <MetricCard
-            title="Property Clicks"
+            title={t('propertyClicks')}
             value={summary.total_property_clicks.toLocaleString()}
             icon={MousePointerClick}
-            description="Click-through rate"
+            description={t('clickThroughRate')}
             color="pink"
           />
           <MetricCard
-            title="Exports"
+            title={t('exports')}
             value={summary.total_exports.toLocaleString()}
             icon={Download}
-            description="Data exported"
+            description={t('dataExported')}
             color="blue"
           />
           <MetricCard
-            title="Favorites"
+            title={t('favorites')}
             value={summary.total_favorites.toLocaleString()}
             icon={Star}
-            description="Properties saved"
+            description={t('propertiesSaved')}
             color="amber"
           />
         </div>
@@ -333,19 +340,19 @@ export default function UsagePage() {
         <TabsList>
           <TabsTrigger value="trends">
             <TrendingUp className="mr-2 h-4 w-4" />
-            Activity Trends
+            {t('tabs.activityTrends')}
           </TabsTrigger>
           <TabsTrigger value="tools">
             <Wrench className="mr-2 h-4 w-4" />
-            Top Tools
+            {t('tabs.topTools')}
           </TabsTrigger>
           <TabsTrigger value="cities">
             <MapPin className="mr-2 h-4 w-4" />
-            Top Cities
+            {t('tabs.topCities')}
           </TabsTrigger>
           <TabsTrigger value="daily">
             <BarChart3 className="mr-2 h-4 w-4" />
-            Daily Activity
+            {t('tabs.dailyActivity')}
           </TabsTrigger>
         </TabsList>
 
@@ -353,14 +360,17 @@ export default function UsagePage() {
         <TabsContent value="trends" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Activity Over Time</CardTitle>
-              <CardDescription>Your usage trends grouped by {interval}</CardDescription>
+              <CardTitle>{t('charts.activityOverTime')}</CardTitle>
+              <CardDescription>
+                {t('charts.activityOverTimeDescription', { interval: t(`interval.${interval}`) })}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
                 <Skeleton className="h-72 w-full" />
               ) : trendsChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
+                <div role="img" aria-label={t('aria.activityOverTime')}>
+                  <ResponsiveContainer width="100%" height={300}>
                   <LineChart data={trendsChartData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis
@@ -386,7 +396,8 @@ export default function UsagePage() {
                     <Legend />
                     <Line
                       type="monotone"
-                      dataKey="Searches"
+                      dataKey="searches"
+                      name={t('series.searches')}
                       stroke={CHART_COLORS[0]}
                       strokeWidth={2}
                       dot={{ r: 4 }}
@@ -394,7 +405,8 @@ export default function UsagePage() {
                     />
                     <Line
                       type="monotone"
-                      dataKey="Property Views"
+                      dataKey="propertyViews"
+                      name={t('series.propertyViews')}
                       stroke={CHART_COLORS[1]}
                       strokeWidth={2}
                       dot={{ r: 4 }}
@@ -402,7 +414,8 @@ export default function UsagePage() {
                     />
                     <Line
                       type="monotone"
-                      dataKey="Tool Uses"
+                      dataKey="toolUses"
+                      name={t('series.toolUses')}
                       stroke={CHART_COLORS[2]}
                       strokeWidth={2}
                       dot={{ r: 4 }}
@@ -410,7 +423,8 @@ export default function UsagePage() {
                     />
                     <Line
                       type="monotone"
-                      dataKey="Exports"
+                      dataKey="exports"
+                      name={t('series.exports')}
                       stroke={CHART_COLORS[3]}
                       strokeWidth={2}
                       dot={{ r: 4 }}
@@ -418,9 +432,10 @@ export default function UsagePage() {
                     />
                   </LineChart>
                 </ResponsiveContainer>
+                </div>
               ) : (
                 <div className="flex items-center justify-center h-72 text-muted-foreground">
-                  No trend data available
+                  {t('empty.noTrendData')}
                 </div>
               )}
             </CardContent>
@@ -431,14 +446,15 @@ export default function UsagePage() {
         <TabsContent value="tools" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Most Used Tools</CardTitle>
-              <CardDescription>Your favorite analysis and calculation tools</CardDescription>
+              <CardTitle>{t('charts.mostUsedTools')}</CardTitle>
+              <CardDescription>{t('charts.mostUsedToolsDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
                 <Skeleton className="h-72 w-full" />
               ) : topToolsData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
+                <div role="img" aria-label={t('aria.mostUsedTools')}>
+                  <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={topToolsData} layout="horizontal">
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis
@@ -467,10 +483,11 @@ export default function UsagePage() {
                     <Bar dataKey="count" fill={CHART_COLORS[0]} radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
+                </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-72 text-muted-foreground">
                   <Wrench className="h-12 w-12 mb-4" />
-                  <p>No tool usage data yet</p>
+                  <p>{t('empty.noToolUsage')}</p>
                 </div>
               )}
             </CardContent>
@@ -482,13 +499,14 @@ export default function UsagePage() {
           <div className="grid gap-4 md:grid-cols-2">
             <Card className="md:col-span-2">
               <CardHeader>
-                <CardTitle>Top Search Cities</CardTitle>
-                <CardDescription>Most searched locations</CardDescription>
+                <CardTitle>{t('charts.topSearchCities')}</CardTitle>
+                <CardDescription>{t('charts.topSearchCitiesDescription')}</CardDescription>
               </CardHeader>
               <CardContent>
                 {loading ? (
                   <Skeleton className="h-72 w-full" />
                 ) : topCitiesData.length > 0 ? (
+                  <div role="img" aria-label={t('aria.topSearchCities')}>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={topCitiesData}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -518,10 +536,11 @@ export default function UsagePage() {
                       <Bar dataKey="count" fill={CHART_COLORS[1]} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
+                  </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-72 text-muted-foreground">
                     <MapPin className="h-12 w-12 mb-4" />
-                    <p>No city data yet</p>
+                    <p>{t('empty.noCityData')}</p>
                   </div>
                 )}
               </CardContent>
@@ -531,11 +550,12 @@ export default function UsagePage() {
             {topCitiesData.length > 0 && !loading && (
               <Card className="md:col-span-2">
                 <CardHeader>
-                  <CardTitle>Search Distribution</CardTitle>
-                  <CardDescription>Percentage of searches by city</CardDescription>
+                  <CardTitle>{t('charts.searchDistribution')}</CardTitle>
+                  <CardDescription>{t('charts.searchDistributionDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={250}>
+                  <div role="img" aria-label={t('aria.searchDistribution')}>
+                    <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
                       <Pie
                         data={topCitiesData}
@@ -565,7 +585,8 @@ export default function UsagePage() {
                         }}
                       />
                     </PieChart>
-                  </ResponsiveContainer>
+                    </ResponsiveContainer>
+                  </div>
                 </CardContent>
               </Card>
             )}
@@ -576,14 +597,15 @@ export default function UsagePage() {
         <TabsContent value="daily" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Daily Activity</CardTitle>
-              <CardDescription>Events per day over the selected period</CardDescription>
+              <CardTitle>{t('charts.dailyActivity')}</CardTitle>
+              <CardDescription>{t('charts.dailyActivityDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
                 <Skeleton className="h-72 w-full" />
               ) : dailyEventsData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
+                <div role="img" aria-label={t('aria.dailyActivity')}>
+                  <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={dailyEventsData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis
@@ -612,10 +634,11 @@ export default function UsagePage() {
                     <Bar dataKey="count" fill={CHART_COLORS[5]} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
+                </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-72 text-muted-foreground">
                   <BarChart3 className="h-12 w-12 mb-4" />
-                  <p>No daily activity data yet</p>
+                  <p>{t('empty.noDailyActivity')}</p>
                 </div>
               )}
             </CardContent>

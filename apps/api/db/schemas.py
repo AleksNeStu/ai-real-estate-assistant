@@ -2231,6 +2231,7 @@ class CMAComparableResponse(BaseModel):
     district: Optional[str] = None
     price: float
     price_per_sqm: float
+    currency: Optional[str] = Field(None, description="Currency of the price, e.g. PLN")
     area_sqm: Optional[float] = None
     rooms: Optional[float] = None
     year_built: Optional[int] = None

@@ -35,17 +35,41 @@ function Get-BestPyVersionArg {
   return "-3"
 }
 
+function Test-VenvInterpreter {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$Interpreter
+  )
+
+  if (-not (Test-Path $Interpreter)) {
+    return $false
+  }
+
+  # A virtualenv without pyvenv.cfg is a broken leftover: the interpreter
+  # refuses to start with "No pyvenv.cfg file".
+  $scriptsDir = Split-Path -Parent $Interpreter
+  $venvRoot = Split-Path -Parent $scriptsDir
+  return (Test-Path (Join-Path $venvRoot "pyvenv.cfg"))
+}
+
 function Get-PythonInvocation {
   param(
     [Parameter(Mandatory = $true)]
     [string]$ProjectRoot
   )
 
-  $venvPython = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
-  if (Test-Path $venvPython) {
-    return @{
-      Python = $venvPython
-      Args   = @()
+  # The backend virtualenv comes first: it carries the API dependencies.
+  $candidates = @(
+    (Join-Path $ProjectRoot "apps\api\.venv\Scripts\python.exe"),
+    (Join-Path $ProjectRoot ".venv\Scripts\python.exe")
+  )
+
+  foreach ($candidate in $candidates) {
+    if (Test-VenvInterpreter -Interpreter $candidate) {
+      return @{
+        Python = $candidate
+        Args   = @()
+      }
     }
   }
 

@@ -51,7 +51,7 @@ describe('CMAPage', () => {
     render(<CMAPage />);
     const searchInput = screen.getByRole('textbox');
     expect(searchInput).toBeInTheDocument();
-    expect(searchInput).toHaveAttribute('placeholder', 'searchPlaceholder');
+    expect(searchInput).toHaveAttribute('placeholder', 'Search by address, city or title...');
   });
 
   it('renders correct page structure with h1', () => {

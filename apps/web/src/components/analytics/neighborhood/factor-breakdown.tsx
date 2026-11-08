@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import type { NeighborhoodQualityResult } from '@/lib/types';
 import {
   Shield,
@@ -40,102 +41,103 @@ interface FactorConfig {
  * - New factors (40%): Air Quality, Noise Level, Public Transport
  */
 export function FactorBreakdown({ result, compact = false, className = '' }: FactorBreakdownProps) {
+  const t = useTranslations('neighborhood');
   const factorConfigs: FactorConfig[] = [
     {
       key: 'safety_score',
-      label: 'Safety',
+      label: t('factorBreakdown.factors.safety.label'),
       icon: <Shield className="h-4 w-4" aria-hidden="true" />,
       weight: '15%',
-      description: 'Crime rate and police proximity',
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
+      description: t('factorBreakdown.factors.safety.description'),
+      color: 'text-chart-1',
+      bgColor: 'bg-chart-1/10',
     },
     {
       key: 'schools_score',
-      label: 'Schools',
+      label: t('factorBreakdown.factors.schools.label'),
       icon: <GraduationCap className="h-4 w-4" aria-hidden="true" />,
       weight: '15%',
-      description: 'School quality and proximity',
-      color: 'text-indigo-600',
-      bgColor: 'bg-indigo-50',
+      description: t('factorBreakdown.factors.schools.description'),
+      color: 'text-chart-4',
+      bgColor: 'bg-chart-4/10',
     },
     {
       key: 'amenities_score',
-      label: 'Amenities',
+      label: t('factorBreakdown.factors.amenities.label'),
       icon: <ShoppingBag className="h-4 w-4" aria-hidden="true" />,
       weight: '15%',
-      description: 'Shops, restaurants, services',
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
+      description: t('factorBreakdown.factors.amenities.description'),
+      color: 'text-chart-6',
+      bgColor: 'bg-chart-6/10',
     },
     {
       key: 'walkability_score',
-      label: 'Walkability',
+      label: t('factorBreakdown.factors.walkability.label'),
       icon: <Footprints className="h-4 w-4" aria-hidden="true" />,
       weight: '15%',
-      description: 'Pedestrian-friendly infrastructure',
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
+      description: t('factorBreakdown.factors.walkability.description'),
+      color: 'text-chart-2',
+      bgColor: 'bg-chart-2/10',
     },
     {
       key: 'green_space_score',
-      label: 'Green Space',
+      label: t('factorBreakdown.factors.greenSpace.label'),
       icon: <Trees className="h-4 w-4" aria-hidden="true" />,
       weight: '10%',
-      description: 'Parks and natural areas',
-      color: 'text-emerald-600',
-      bgColor: 'bg-emerald-50',
+      description: t('factorBreakdown.factors.greenSpace.description'),
+      color: 'text-chart-7',
+      bgColor: 'bg-chart-7/10',
     },
     {
       key: 'air_quality_score',
-      label: 'Air Quality',
+      label: t('factorBreakdown.factors.airQuality.label'),
       icon: <Wind className="h-4 w-4" aria-hidden="true" />,
       weight: '10%',
-      description: 'Air pollution index (AQI)',
-      color: 'text-cyan-600',
-      bgColor: 'bg-cyan-50',
+      description: t('factorBreakdown.factors.airQuality.description'),
+      color: 'text-chart-5',
+      bgColor: 'bg-chart-5/10',
     },
     {
       key: 'noise_level_score',
-      label: 'Noise Level',
+      label: t('factorBreakdown.factors.noiseLevel.label'),
       icon: <Volume2 className="h-4 w-4" aria-hidden="true" />,
       weight: '10%',
-      description: 'Ambient noise levels',
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
+      description: t('factorBreakdown.factors.noiseLevel.description'),
+      color: 'text-chart-3',
+      bgColor: 'bg-chart-3/10',
     },
     {
       key: 'public_transport_score',
-      label: 'Public Transport',
+      label: t('factorBreakdown.factors.publicTransport.label'),
       icon: <Bus className="h-4 w-4" aria-hidden="true" />,
       weight: '10%',
-      description: 'Transit accessibility',
-      color: 'text-rose-600',
-      bgColor: 'bg-rose-50',
+      description: t('factorBreakdown.factors.publicTransport.description'),
+      color: 'text-chart-8',
+      bgColor: 'bg-chart-8/10',
     },
   ];
 
   const getScoreColor = (score: number): string => {
-    if (score >= 85) return 'bg-green-500';
-    if (score >= 70) return 'bg-lime-500';
-    if (score >= 55) return 'bg-yellow-500';
-    if (score >= 40) return 'bg-orange-500';
-    return 'bg-red-500';
+    if (score >= 85) return 'bg-success';
+    if (score >= 70) return 'bg-chart-7';
+    if (score >= 55) return 'bg-warning';
+    if (score >= 40) return 'bg-caution';
+    return 'bg-destructive';
   };
 
   const getConfidenceIndicator = (factorKey: string): { level: string; color: string } => {
     const detail = result.factor_details?.[factorKey as keyof typeof result.factor_details];
     if (!detail) {
-      return { level: 'N/A', color: 'text-gray-400' };
+      return { level: 'N/A', color: 'text-muted-foreground' };
     }
 
     if (detail.confidence >= 0.8) {
-      return { level: 'High', color: 'text-green-600' };
+      return { level: t('factorBreakdown.confidenceHigh'), color: 'text-chart-2' };
     }
     if (detail.confidence >= 0.6) {
-      return { level: 'Medium', color: 'text-yellow-600' };
+      return { level: t('factorBreakdown.confidenceMedium'), color: 'text-warning' };
     }
-    return { level: 'Low', color: 'text-red-600' };
+    return { level: t('factorBreakdown.confidenceLow'), color: 'text-destructive' };
   };
 
   if (compact) {
@@ -169,7 +171,7 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">Quality Factors Breakdown</h3>
+        <h3 className="text-lg font-semibold">{t('factorBreakdown.title')}</h3>
         <div className="text-sm text-muted-foreground">
           Overall: <span className="font-semibold">{result.overall_score.toFixed(1)}/100</span>
         </div>
@@ -207,7 +209,7 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
                 </div>
 
                 {/* Progress bar */}
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-muted rounded-full h-2">
                   <div
                     className={`h-2 rounded-full ${getScoreColor(score)}`}
                     style={{ width: `${Math.min(score, 100)}%` }}
@@ -225,7 +227,7 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
               {/* Confidence indicator */}
               {detail && (
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Data confidence:</span>
+                  <span className="text-muted-foreground">{t('factorBreakdown.dataConfidence')}</span>
                   <span className={confidence.color}>{confidence.level}</span>
                 </div>
               )}
@@ -236,25 +238,25 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
 
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-2 border-t">
-        <span className="font-medium">Score ranges:</span>
+        <span className="font-medium">{t('factorBreakdown.scoreRanges')}</span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-green-500" />
+          <span className="w-3 h-3 rounded-full bg-success" />
           85+ Excellent
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-lime-500" />
+          <span className="w-3 h-3 rounded-full bg-chart-7" />
           70-84 Good
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-yellow-500" />
+          <span className="w-3 h-3 rounded-full bg-warning" />
           55-69 Fair
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-orange-500" />
+          <span className="w-3 h-3 rounded-full bg-caution" />
           40-54 Poor
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-red-500" />
+          <span className="w-3 h-3 rounded-full bg-destructive" />
           &lt;40 Very Poor
         </span>
       </div>

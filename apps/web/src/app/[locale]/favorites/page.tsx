@@ -3,15 +3,21 @@
 import { useEffect, useState } from 'react';
 import { FolderPlus, Heart, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { PropertyCard } from '@/components/property';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Modal } from '@/components/ui/modal';
+import { PageHeader } from '@/components/ui/page-header';
 
 export default function FavoritesPage() {
   const locale = useLocale();
+  const t = useTranslations('pages.favorites');
+  const tCommon = useTranslations('common');
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const {
     favorites,
@@ -53,9 +59,10 @@ export default function FavoritesPage() {
   if (!isAuthenticated) {
     return (
       <div className="container mx-auto px-4 py-8">
+        <PageHeader title={t('title')} description={t('description')} />
         <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
           <Heart className="h-16 w-16 text-muted-foreground mb-4" aria-hidden="true" />
-          <h1 className="text-2xl font-bold mb-2">Sign in to view your favorites</h1>
+          <p className="text-lg font-medium mb-2">Sign in to view your favorites</p>
           <p className="text-muted-foreground mb-6">
             Save properties you love and access them from any device.
           </p>
@@ -83,18 +90,20 @@ export default function FavoritesPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">My Favorites</h1>
-            <p className="text-muted-foreground">
-              {favorites.length} saved {favorites.length === 1 ? 'property' : 'properties'}
-            </p>
-          </div>
-          <Button variant="outline" onClick={() => setShowNewCollectionModal(true)}>
-            <FolderPlus className="h-4 w-4 mr-2" />
-            New Collection
-          </Button>
-        </div>
+        <PageHeader
+          title={t('title')}
+          description={t('description')}
+          actions={
+            <Button variant="outline" onClick={() => setShowNewCollectionModal(true)}>
+              <FolderPlus className="h-4 w-4 mr-2" />
+              New Collection
+            </Button>
+          }
+        >
+          <p className="text-muted-foreground">
+            {favorites.length} saved {favorites.length === 1 ? 'property' : 'properties'}
+          </p>
+        </PageHeader>
 
         {/* Error state */}
         {error && (
@@ -112,9 +121,9 @@ export default function FavoritesPage() {
             <div className="rounded-lg border bg-card p-4">
               <h2 className="font-semibold mb-4">Collections</h2>
               <div className="space-y-2" role="listbox" aria-label="Collections">
-                <button
+                <button type="button"
                   onClick={() => setSelectedCollection(null)}
-                  className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 ${
                     selectedCollection === null
                       ? 'bg-primary text-primary-foreground'
                       : 'hover:bg-muted'
@@ -126,10 +135,10 @@ export default function FavoritesPage() {
                 </button>
 
                 {collections.map((collection) => (
-                  <button
+                  <button type="button"
                     key={collection.id}
                     onClick={() => setSelectedCollection(collection.id)}
-                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 ${
                       selectedCollection === collection.id
                         ? 'bg-primary text-primary-foreground'
                         : 'hover:bg-muted'
@@ -197,41 +206,38 @@ export default function FavoritesPage() {
       </div>
 
       {/* New Collection Modal */}
-      {showNewCollectionModal && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="new-collection-title"
-        >
-          <div className="bg-background rounded-lg p-6 max-w-md w-full mx-4 shadow-lg">
-            <h2 className="text-lg font-semibold mb-4" id="new-collection-title">
-              New Collection
-            </h2>
-            <label
-              htmlFor="collection-name-input"
-              className="block text-sm font-medium mb-1 sr-only"
+      <Modal
+        open={showNewCollectionModal}
+        onClose={() => setShowNewCollectionModal(false)}
+        title={t('newCollection')}
+        closeLabel={tCommon('close')}
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowNewCollectionModal(false)}
             >
-              Collection name
-            </label>
-            <input
-              id="collection-name-input"
-              type="text"
-              value={newCollectionName}
-              onChange={(e) => setNewCollectionName(e.target.value)}
-              placeholder="Collection name"
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm mb-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              autoFocus
-            />
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowNewCollectionModal(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreateCollection}>Create</Button>
-            </div>
-          </div>
-        </div>
-      )}
+              {tCommon('cancel')}
+            </Button>
+            <Button type="button" onClick={handleCreateCollection}>
+              {tCommon('create')}
+            </Button>
+          </>
+        }
+      >
+        <Label htmlFor="collection-name-input" className="sr-only">
+          {t('collectionName')}
+        </Label>
+        <Input
+          id="collection-name-input"
+          type="text"
+          value={newCollectionName}
+          onChange={(e) => setNewCollectionName(e.target.value)}
+          placeholder={t('collectionName')}
+          autoFocus
+        />
+      </Modal>
     </div>
   );
 }

@@ -149,6 +149,13 @@ def get_llm_for_free_user() -> Optional[BaseChatModel]:
     Returns the first successful LLM, or None if all fail.
     """
     settings = get_settings()
+    if settings.demo_mode:
+        # A demo deployment must never reach a paid provider: the mock answers
+        # every request, so a visitor cannot spend the operator's keys.
+        from core.demo import get_demo_llm
+
+        return get_demo_llm()
+
     if not settings.free_tier_enabled:
         return None
 

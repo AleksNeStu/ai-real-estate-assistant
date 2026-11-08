@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   calculateMortgage,
   comparePropertiesApi,
@@ -16,10 +17,14 @@ import {
 } from "@/lib/api";
 import type { PromptTemplateInfo, NeighborhoodQualityResult } from "@/lib/types";
 
+import { PageHeader } from "@/components/ui/page-header";
+
 export default function ToolsPage() {
+  const t = useTranslations("pages.tools");
+
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      <h1 className="text-2xl font-semibold">Tools</h1>
+      <PageHeader title={t('title')} description={t('description')} />
       <MortgageSection />
       <CompareSection />
       <PriceAnalysisSection />
@@ -73,8 +78,8 @@ function MortgageSection() {
           onChange={(e) => setLoanYears(e.target.value)}
         />
       </div>
-      <button
-        className="bg-black text-white px-3 py-2 rounded"
+      <button type="button"
+        className="bg-black text-white px-3 py-2 rounded focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
         onClick={async () => {
           setError(null);
           setLoading(true);
@@ -96,8 +101,8 @@ function MortgageSection() {
       >
         {loading ? "Calculating..." : "Calculate"}
       </button>
-      {error && <p className="text-red-600 mt-2">{error}</p>}
-      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
+      {error && <p className="text-destructive mt-2">{error}</p>}
+      {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
       {result && <p className="mt-2">Monthly payment: {result.monthly_payment.toFixed(2)}</p>}
     </section>
   );
@@ -126,8 +131,8 @@ function CompareSection() {
         onChange={(e) => setIds(e.target.value)}
       />
       <div className="flex flex-wrap gap-2">
-        <button
-          className="bg-black text-white px-3 py-2 rounded"
+        <button type="button"
+          className="bg-black text-white px-3 py-2 rounded focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
           onClick={async () => {
             setError(null);
             setLoading(true);
@@ -156,8 +161,8 @@ function CompareSection() {
           <option value="md">Markdown</option>
           <option value="pdf">PDF</option>
         </select>
-        <button
-          className="bg-black text-white px-3 py-2 rounded"
+        <button type="button"
+          className="bg-black text-white px-3 py-2 rounded focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
           disabled={exporting}
           onClick={async () => {
             setExportError(null);
@@ -241,9 +246,9 @@ function CompareSection() {
           </div>
         ) : null}
       </div>
-      {error && <p className="text-red-600 mt-2">{error}</p>}
-      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
-      {exportError && <p className="text-red-600 mt-2">{exportError}</p>}
+      {error && <p className="text-destructive mt-2">{error}</p>}
+      {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
+      {exportError && <p className="text-destructive mt-2">{exportError}</p>}
       {data && (
         <div className="mt-2">
           <p>Count: {data.summary?.count}</p>
@@ -271,8 +276,8 @@ function PriceAnalysisSection() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      <button
-        className="bg-black text-white px-3 py-2 rounded"
+      <button type="button"
+        className="bg-black text-white px-3 py-2 rounded focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
         onClick={async () => {
           setError(null);
           setLoading(true);
@@ -289,8 +294,8 @@ function PriceAnalysisSection() {
       >
         {loading ? "Analyzing..." : "Analyze"}
       </button>
-      {error && <p className="text-red-600 mt-2">{error}</p>}
-      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
+      {error && <p className="text-destructive mt-2">{error}</p>}
+      {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
       {data && (
         <div className="mt-2">
           <p>Count: {data.count}</p>
@@ -317,8 +322,8 @@ function LocationAnalysisSection() {
         value={pid}
         onChange={(e) => setPid(e.target.value)}
       />
-      <button
-        className="bg-black text-white px-3 py-2 rounded"
+      <button type="button"
+        className="bg-black text-white px-3 py-2 rounded focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
         onClick={async () => {
           setError(null);
           setLoading(true);
@@ -335,8 +340,8 @@ function LocationAnalysisSection() {
       >
         {loading ? "Analyzing..." : "Analyze"}
       </button>
-      {error && <p className="text-red-600 mt-2">{error}</p>}
-      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
+      {error && <p className="text-destructive mt-2">{error}</p>}
+      {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
       {data && (
         <div className="mt-2">
           <p>City: {data.city ?? "-"}</p>
@@ -360,11 +365,11 @@ function NeighborhoodQualitySection() {
   const hint = error ? getToolHint(error) : null;
 
   const getScoreColor = (score: number): string => {
-    if (score >= 85) return "text-green-600";
-    if (score >= 70) return "text-lime-600";
-    if (score >= 55) return "text-yellow-600";
-    if (score >= 40) return "text-orange-600";
-    return "text-red-600";
+    if (score >= 85) return "text-success";
+    if (score >= 70) return "text-chart-7";
+    if (score >= 55) return "text-warning";
+    if (score >= 40) return "text-warning";
+    return "text-destructive";
   };
 
   const getRatingLabel = (score: number): string => {
@@ -410,8 +415,8 @@ function NeighborhoodQualitySection() {
           onChange={(e) => setNeighborhood(e.target.value)}
         />
       </div>
-      <button
-        className="bg-black text-white px-3 py-2 rounded"
+      <button type="button"
+        className="bg-black text-white px-3 py-2 rounded focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
         onClick={async () => {
           setError(null);
           setLoading(true);
@@ -434,15 +439,15 @@ function NeighborhoodQualitySection() {
       >
         {loading ? "Analyzing..." : "Analyze"}
       </button>
-      {error && <p className="text-red-600 mt-2">{error}</p>}
-      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
+      {error && <p className="text-destructive mt-2">{error}</p>}
+      {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
       {data && (
         <div className="mt-4 space-y-3">
           <div className="flex items-center gap-4">
             <h3 className="text-lg font-semibold">
               Overall Score: <span className={`${getScoreColor(data.overall_score)} text-2xl`}>{data.overall_score.toFixed(1)}</span>/100
             </h3>
-            <span className={`px-2 py-1 rounded text-sm ${getScoreColor(data.overall_score)} bg-gray-100`}>
+            <span className={`px-2 py-1 rounded text-sm ${getScoreColor(data.overall_score)} bg-muted`}>
               {getRatingLabel(data.overall_score)}
             </span>
           </div>
@@ -455,12 +460,12 @@ function NeighborhoodQualitySection() {
             <ScoreBar label="Green Space" score={data.green_space_score} weight="15%" />
           </div>
 
-          <div className="mt-4 p-3 bg-gray-50 rounded text-sm">
+          <div className="mt-4 p-3 bg-background rounded text-sm">
             <p className="font-semibold">Location:</p>
             <p>City: {data.city || "-"}</p>
             <p>Neighborhood: {data.neighborhood || "-"}</p>
             <p>Coordinates: {data.latitude?.toFixed(4) || "-"}, {data.longitude?.toFixed(4) || "-"}</p>
-            <p className="mt-2 text-gray-600">Data Sources: {data.data_sources.join(", ")}</p>
+            <p className="mt-2 text-muted-foreground">Data Sources: {data.data_sources.join(", ")}</p>
           </div>
         </div>
       )}
@@ -470,20 +475,20 @@ function NeighborhoodQualitySection() {
 
 function ScoreBar({ label, score, weight }: { label: string; score: number; weight: string }) {
   const getScoreColor = (score: number): string => {
-    if (score >= 85) return "bg-green-500";
-    if (score >= 70) return "bg-lime-500";
-    if (score >= 55) return "bg-yellow-500";
-    if (score >= 40) return "bg-orange-500";
-    return "bg-red-500";
+    if (score >= 85) return "bg-success";
+    if (score >= 70) return "bg-chart-7";
+    if (score >= 55) return "bg-warning";
+    if (score >= 40) return "bg-warning";
+    return "bg-destructive";
   };
 
   return (
     <div>
       <div className="flex justify-between mb-1">
         <span className="text-sm font-medium">{label}</span>
-        <span className="text-sm text-gray-600">{score.toFixed(1)}/100 (Weight: {weight})</span>
+        <span className="text-sm text-muted-foreground">{score.toFixed(1)}/100 (Weight: {weight})</span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2.5">
+      <div className="w-full bg-muted rounded-full h-2.5">
         <div
           className={`h-2.5 rounded-full ${getScoreColor(score)}`}
           style={{ width: `${score}%` }}
@@ -543,7 +548,7 @@ function PromptTemplatesSection() {
   return (
     <section>
       <h2 className="text-xl font-medium">Prompt Templates</h2>
-      <p className="text-sm text-gray-600 mt-1">
+      <p className="text-sm text-muted-foreground mt-1">
         Pick a template, fill variables, and generate ready-to-use text.
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 my-2">
@@ -560,7 +565,7 @@ function PromptTemplatesSection() {
           ))}
         </select>
         {selected ? (
-          <div className="text-sm text-gray-600 flex items-center">
+          <div className="text-sm text-muted-foreground flex items-center">
             {selected.description}
           </div>
         ) : null}
@@ -586,15 +591,15 @@ function PromptTemplatesSection() {
                 }
                 aria-label={`Variable ${v.name}`}
               />
-              <span className="text-xs text-gray-500">{v.description}</span>
+              <span className="text-xs text-muted-foreground">{v.description}</span>
             </div>
           ))}
         </div>
       ) : null}
 
       <div className="flex flex-wrap gap-2 items-center">
-        <button
-          className="bg-black text-white px-3 py-2 rounded"
+        <button type="button"
+          className="bg-black text-white px-3 py-2 rounded focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
           disabled={!selected || loading}
           onClick={async () => {
             if (!selected) return;
@@ -619,8 +624,8 @@ function PromptTemplatesSection() {
         >
           {loading ? "Generating..." : "Generate"}
         </button>
-        <button
-          className="border px-3 py-2 rounded"
+        <button type="button"
+          className="border px-3 py-2 rounded focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
           disabled={!result}
           onClick={async () => {
             if (!result) return;
@@ -632,7 +637,7 @@ function PromptTemplatesSection() {
           Copy
         </button>
       </div>
-      {error && <p className="text-red-600 mt-2">{error}</p>}
+      {error && <p className="text-destructive mt-2">{error}</p>}
       {result ? (
         <textarea
           className="border p-2 w-full mt-2"
@@ -661,8 +666,8 @@ function ValuationSection() {
         value={pid}
         onChange={(e) => setPid(e.target.value)}
       />
-      <button
-        className="bg-black text-white px-3 py-2 rounded"
+      <button type="button"
+        className="bg-black text-white px-3 py-2 rounded focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
         onClick={async () => {
           setError(null);
           setLoading(true);
@@ -679,8 +684,8 @@ function ValuationSection() {
       >
         {loading ? "Estimating..." : "Estimate"}
       </button>
-      {error && <p className="text-red-600 mt-2">{error}</p>}
-      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
+      {error && <p className="text-destructive mt-2">{error}</p>}
+      {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
       {value !== null && <p className="mt-2">Estimated value: {value.toFixed(2)}</p>}
     </section>
   );
@@ -702,8 +707,8 @@ function LegalCheckSection() {
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
-      <button
-        className="bg-black text-white px-3 py-2 rounded"
+      <button type="button"
+        className="bg-black text-white px-3 py-2 rounded focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
         onClick={async () => {
           setError(null);
           setLoading(true);
@@ -720,8 +725,8 @@ function LegalCheckSection() {
       >
         {loading ? "Analyzing..." : "Analyze"}
       </button>
-      {error && <p className="text-red-600 mt-2">{error}</p>}
-      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
+      {error && <p className="text-destructive mt-2">{error}</p>}
+      {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
       {data && (
         <div className="mt-2">
           <p>Score: {data.score}</p>
@@ -747,8 +752,8 @@ function EnrichAddressSection() {
         value={address}
         onChange={(e) => setAddress(e.target.value)}
       />
-      <button
-        className="bg-black text-white px-3 py-2 rounded"
+      <button type="button"
+        className="bg-black text-white px-3 py-2 rounded focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
         onClick={async () => {
           setError(null);
           setLoading(true);
@@ -765,12 +770,12 @@ function EnrichAddressSection() {
       >
         {loading ? "Enriching..." : "Enrich"}
       </button>
-      {error && <p className="text-red-600 mt-2">{error}</p>}
-      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
+      {error && <p className="text-destructive mt-2">{error}</p>}
+      {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
       {data && (
         <div className="mt-2">
           <p>Address: {data.address}</p>
-          <pre className="bg-gray-100 p-2 rounded text-sm">{JSON.stringify(data.data, null, 2)}</pre>
+          <pre className="bg-muted p-2 rounded text-sm">{JSON.stringify(data.data, null, 2)}</pre>
         </div>
       )}
     </section>
@@ -808,8 +813,8 @@ function CrmSyncSection() {
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
-      <button
-        className="bg-black text-white px-3 py-2 rounded"
+      <button type="button"
+        className="bg-black text-white px-3 py-2 rounded focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
         onClick={async () => {
           setError(null);
           setLoading(true);
@@ -826,8 +831,8 @@ function CrmSyncSection() {
       >
         {loading ? "Syncing..." : "Sync"}
       </button>
-      {error && <p className="text-red-600 mt-2">{error}</p>}
-      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
+      {error && <p className="text-destructive mt-2">{error}</p>}
+      {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
       {id && <p className="mt-2">Contact ID: {id}</p>}
     </section>
   );

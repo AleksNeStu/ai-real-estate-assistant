@@ -25,6 +25,7 @@ RESET := \033[0m
 
 # Phony targets
 .PHONY: help security security-quick test test-api test-web e2e lint lint-api lint-web format
+.PHONY: dev dev-api dev-web
 .PHONY: docker-up docker-down docker-logs docker-build
 .PHONY: ci ci-quick setup clean install docs
 .PHONY: sprav sprav-quick sprav-json benchmark-search benchmark-chat load-test
@@ -176,14 +177,26 @@ format:
 ## DEVELOPMENT
 ## ============================================================================
 
-# Note: dev / dev-api / dev-web targets were removed on 2026-06-17.
-# They referenced scripts/start.py which no longer exists in this repo.
-# Use the cross-platform launchers directly:
+# The dev / dev-api / dev-web targets were removed on 2026-06-17 together with
+# scripts/start.py. The launcher is back, so the targets are back too.
+# Cross-platform launchers remain the primary entry point:
 #   bash scripts/dev/run.sh                 # both backend + frontend (Linux/macOS)
 #   pwsh scripts/dev/run.ps1                # both (Windows PowerShell)
 #   bash scripts/dev/{be,fe}.sh              # backend/frontend only (Linux/macOS)
 #   pwsh scripts/dev/{be,fe}.ps1             # backend/frontend only (Windows)
 # Standalone (no auto-bootstrap) variants in scripts/local/.
+
+## dev: Start development servers (auto mode: Docker if available, else local)
+dev:
+	$(PYTHON) $(SCRIPTS_DIR)/start.py --mode auto
+
+## dev-api: Start backend development server only
+dev-api:
+	$(PYTHON) $(SCRIPTS_DIR)/start.py --mode local --service backend
+
+## dev-web: Start frontend development server only
+dev-web:
+	$(PYTHON) $(SCRIPTS_DIR)/start.py --mode local --service frontend
 
 ## setup: Run environment setup (first-time setup)
 setup:

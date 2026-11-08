@@ -95,9 +95,9 @@ export function StepExport({ report, onReset, onPrev }: StepExportProps) {
     <div className="space-y-6">
       {/* Success message */}
       <div className="text-center py-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success/15 mb-4">
           <svg
-            className="w-8 h-8 text-green-600"
+            className="w-8 h-8 text-success"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -117,9 +117,9 @@ export function StepExport({ report, onReset, onPrev }: StepExportProps) {
         {/* PDF Download */}
         <div className="border rounded-lg p-4 hover:bg-muted/30 transition-colors">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-red-100 rounded">
+            <div className="p-2 bg-destructive/15 rounded">
               <svg
-                className="w-5 h-5 text-red-600"
+                className="w-5 h-5 text-destructive"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -146,9 +146,9 @@ export function StepExport({ report, onReset, onPrev }: StepExportProps) {
         {/* JSON Download */}
         <div className="border rounded-lg p-4 hover:bg-muted/30 transition-colors">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-blue-100 rounded">
+            <div className="p-2 bg-info/15 rounded">
               <svg
-                className="w-5 h-5 text-blue-600"
+                className="w-5 h-5 text-info"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -175,9 +175,9 @@ export function StepExport({ report, onReset, onPrev }: StepExportProps) {
         {/* Share Link */}
         <div className="border rounded-lg p-4 hover:bg-muted/30 transition-colors">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-green-100 rounded">
+            <div className="p-2 bg-success/15 rounded">
               <svg
-                className="w-5 h-5 text-green-600"
+                className="w-5 h-5 text-success"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

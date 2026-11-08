@@ -3,11 +3,11 @@ param(
   [string[]]$Args
 )
 
-$root = Resolve-Path (Join-Path $PSScriptRoot "..\..\..")
+$root = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 Set-Location $root
 
-. (Join-Path $PSScriptRoot "..\_shared\resolve_python.ps1")
+. (Join-Path $PSScriptRoot "..\shared\resolve_python.ps1")
 
 $invocation = Get-PythonInvocation -ProjectRoot $root
-& $invocation.Python @($invocation.Args) (Join-Path $root "scripts\launcher\bootstrap.py") --dev @Args
+& $invocation.Python @($invocation.Args) (Join-Path $root "scripts\setup\bootstrap.py") --dev @Args
 exit $LASTEXITCODE

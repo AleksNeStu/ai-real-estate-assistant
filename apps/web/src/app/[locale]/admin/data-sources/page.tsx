@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   FileUp,
   Loader2,
@@ -33,6 +34,7 @@ import {
   EditDataSourceDialog,
 } from '@/components/admin/data-sources';
 import type { DataSource, DataSourceUpdate, IngestResponse, PortalAdapterInfo } from '@/lib/types';
+import { PageHeader } from '@/components/ui/page-header';
 
 interface ErrorState {
   message: string;
@@ -47,6 +49,7 @@ interface SheetInfo {
 type TabType = 'sources' | 'import';
 
 export default function DataSourcesPage() {
+  const t = useTranslations('pages.admin.dataSources');
   // Data sources state
   const [sources, setSources] = useState<DataSource[]>([]);
   const [loadingSources, setLoadingSources] = useState(true);
@@ -381,12 +384,7 @@ export default function DataSourcesPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex flex-col space-y-2 mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Data Sources</h1>
-        <p className="text-muted-foreground">
-          Manage data sources for property imports and sync status.
-        </p>
-      </div>
+      <PageHeader className="mb-8" title={t('title')} description={t('description')} />
 
       {/* Tab Navigation */}
       <div className="flex gap-4 border-b-2 mb-6">
@@ -569,7 +567,7 @@ export default function DataSourcesPage() {
                       <div className="flex gap-2">
                         <button
                           type="button"
-                          className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 disabled:opacity-50"
+                          className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
                           onClick={importMode === 'url' ? onLoadSheets : onLoadSheetsUpload}
                           disabled={loadingSheets || loading}
                         >
@@ -630,7 +628,7 @@ export default function DataSourcesPage() {
 
                 <button
                   type="button"
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2"
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
                   onClick={onIngest}
                   disabled={loading}
                 >
@@ -848,7 +846,7 @@ export default function DataSourcesPage() {
 
                   <button
                     type="button"
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2"
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
                     onClick={onFetchFromPortal}
                     disabled={loading}
                   >
@@ -892,7 +890,7 @@ export default function DataSourcesPage() {
 
       {/* Success Display */}
       {result && (
-        <div className="flex items-start gap-3 p-4 bg-green-50 text-green-900 dark:bg-green-950 dark:text-green-100 rounded mt-4">
+        <div className="flex items-start gap-3 p-4 bg-success/10 text-success dark:bg-success/30 dark:text-success rounded mt-4">
           <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="font-medium">Import Successful</p>
@@ -916,7 +914,7 @@ export default function DataSourcesPage() {
           <button
             type="button"
             onClick={() => setResult(null)}
-            className="text-green-900/50 hover:text-green-900 dark:text-green-100/50 dark:hover:text-green-100"
+            className="text-success/50 hover:text-success dark:text-success/50 dark:hover:text-success"
           >
             <X className="w-4 h-4" />
           </button>

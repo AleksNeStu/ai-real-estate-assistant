@@ -175,7 +175,7 @@ export function ModelSettings({ catalog, userEmail }: { catalog: ModelProviderCa
               <Label htmlFor="preferred_provider">Provider</Label>
               <select
                 id="preferred_provider"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
                 value={preferredProvider || ""}
                 onChange={(e) => {
                   const nextProvider = e.target.value || null;
@@ -221,7 +221,7 @@ export function ModelSettings({ catalog, userEmail }: { catalog: ModelProviderCa
               <Label htmlFor="preferred_model">Model</Label>
               <select
                 id="preferred_model"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
                 value={preferredModel || ""}
                 onChange={(e) => setPreferredModel(e.target.value || null)}
                 disabled={!preferredProvider}
@@ -236,8 +236,8 @@ export function ModelSettings({ catalog, userEmail }: { catalog: ModelProviderCa
             </div>
 
             <div className="flex items-center justify-end gap-4">
-              {success && <span className="text-green-600 text-sm">{success}</span>}
-              {error && <span className="text-red-600 text-sm">{error}</span>}
+              {success && <span className="text-success text-sm">{success}</span>}
+              {error && <span className="text-destructive text-sm">{error}</span>}
               <Button onClick={handleSave} disabled={saving || !canSave}>
                 {saving ? "Saving..." : "Save Default Model"}
               </Button>

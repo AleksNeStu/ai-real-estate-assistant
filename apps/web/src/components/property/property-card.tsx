@@ -1,11 +1,15 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+
 import { HeartButton } from './heart-button';
 import { MortgageEstimate } from './MortgageEstimate';
 import { CommuteBadge } from '@/components/commute';
+import { Card, CardContent } from '@/components/ui/card';
 import { useLeadTracking } from '@/hooks/useLeadTracking';
+import { formatPrice } from '@/lib/format';
+import { cn } from '@/lib/utils';
 import type { Property, CommuteTimeResult, CommuteMode } from '@/lib/types';
 
 interface PropertyCardProps {
@@ -17,19 +21,37 @@ interface PropertyCardProps {
   showCommuteBadge?: boolean;
   /** Optional: Whether to show the inline monthly payment estimate (v5.1). */
   showMortgageEstimate?: boolean;
+  /** Optional: extra content under the card body (listing generator, rating). */
+  footer?: React.ReactNode;
+  className?: string;
 }
 
+/**
+ * The one property card in the product.
+ *
+ * Search results, the favourites list and the city overview used to draw
+ * their own card, each with its own price format, its own title size and
+ * its own copy — the search card even ignored the property's currency and
+ * never rendered the photo. This card is the single implementation all
+ * three surfaces use.
+ */
 export function PropertyCard({
   property,
   showFavoriteButton = true,
   commuteData,
   showCommuteBadge = false,
   showMortgageEstimate = true,
+  footer,
+  className,
 }: PropertyCardProps) {
   const t = useTranslations('property.card');
+  const locale = useLocale();
   const { trackPropertyView } = useLeadTracking();
-  const cardRef = useRef<HTMLElement | null>(null);
+  const cardRef = useRef<HTMLDivElement | null>(null);
   const stopTrackingRef = useRef<(() => void) | null>(null);
+
+  const title = property.title || t('untitled');
+  const price = formatPrice(property.price, property.currency || 'USD', locale);
 
   // Lead tracking: a property view is only recorded once the card is actually
   // on screen, so a grid of results does not inflate the engagement score.
@@ -81,21 +103,23 @@ export function PropertyCard({
   }, [property.id, trackPropertyView]);
 
   return (
-    <article
+    <Card
       ref={cardRef}
       data-testid="property-card"
-      className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden"
-      aria-label={property.title || t('untitled')}
+      role="article"
+      aria-label={title}
+      className={cn('group flex flex-col overflow-hidden', className)}
     >
       <div className="aspect-video w-full bg-muted relative">
         {property.images?.[0] ? (
           <img
             src={property.images[0]}
-            alt={property.title || t('untitled')}
-            className="w-full h-full object-cover"
+            alt={title}
+            className="size-full object-cover"
+            loading="lazy"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+          <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
             {t('imagePlaceholder')}
           </div>
         )}
@@ -112,32 +136,35 @@ export function PropertyCard({
             <CommuteBadge
               duration={commuteData.duration_seconds}
               mode={commuteData.mode as CommuteMode}
-              className="bg-white/95 dark:bg-gray-900/90 backdrop-blur-sm"
+              className="bg-background/95 backdrop-blur-sm"
             />
           </div>
         )}
       </div>
 
-      <div className="p-6 space-y-2">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="text-2xl font-semibold leading-none tracking-tight">
-            {property.title || t('untitled')}
+      <CardContent className="flex flex-1 flex-col gap-2 p-6">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="font-display text-lg font-semibold leading-snug tracking-tight line-clamp-2">
+            {title}
           </h3>
           {showMortgageEstimate && property.price ? (
             <MortgageEstimate
               price={property.price}
               currency={property.currency || 'USD'}
+              locale={locale}
               className="shrink-0"
             />
           ) : null}
         </div>
+
         <p className="text-sm text-muted-foreground">
-          {property.city}
-          {property.country ? `, ${property.country}` : ''}
+          {[property.city, property.country].filter(Boolean).join(', ')}
         </p>
-        <div className="font-bold text-lg">
-          {property.price ? `$${property.price.toLocaleString()}` : t('priceOnRequest')}
-        </div>
+
+        <p className="font-mono text-lg font-semibold tabular-nums tracking-tight">
+          {price || t('priceOnRequest')}
+        </p>
+
         <p className="text-sm text-muted-foreground">
           {[
             property.rooms ? t('beds', { count: property.rooms }) : null,
@@ -145,9 +172,13 @@ export function PropertyCard({
             property.area_sqm ? `${property.area_sqm} ${t('areaUnit')}` : null,
           ]
             .filter(Boolean)
-            .join(' \u2022 ')}
+            .join(' • ')}
         </p>
-      </div>
-    </article>
+
+        {footer ? <div className="mt-auto space-y-1 pt-2">{footer}</div> : null}
+      </CardContent>
+    </Card>
   );
 }
+
+export default PropertyCard;

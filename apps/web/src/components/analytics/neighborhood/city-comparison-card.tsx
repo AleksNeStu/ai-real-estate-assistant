@@ -14,6 +14,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import type { NeighborhoodQualityResult } from '@/lib/types';
+import { useTranslations } from 'next-intl';
 
 interface CityComparisonCardProps {
   result: NeighborhoodQualityResult;
@@ -29,18 +30,19 @@ interface CityComparisonCardProps {
  * - Visual comparison chart
  */
 export function CityComparisonCard({ result, className = '' }: CityComparisonCardProps) {
+  const t = useTranslations('neighborhood');
   const comparison = result.city_comparison;
 
   if (!comparison) {
     return (
       <Card className={className}>
         <CardHeader>
-          <CardTitle>City Comparison</CardTitle>
-          <CardDescription>How this neighborhood compares to the city average</CardDescription>
+          <CardTitle>{t('cityComparison.title')}</CardTitle>
+          <CardDescription>{t('cityComparison.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8 text-muted-foreground">
-            <p className="text-sm">City comparison data not available for this location.</p>
+            <p className="text-sm">{t('cityComparison.dataNotAvailable')}</p>
           </div>
         </CardContent>
       </Card>
@@ -48,52 +50,52 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
   }
 
   const getPercentileColor = (percentile: number): string => {
-    if (percentile >= 80) return 'text-green-600';
-    if (percentile >= 60) return 'text-lime-600';
-    if (percentile >= 40) return 'text-yellow-600';
-    if (percentile >= 20) return 'text-orange-600';
-    return 'text-red-600';
+    if (percentile >= 80) return 'text-success';
+    if (percentile >= 60) return 'text-chart-7';
+    if (percentile >= 40) return 'text-warning';
+    if (percentile >= 20) return 'text-caution';
+    return 'text-destructive';
   };
 
   const getPercentileLabel = (percentile: number): string => {
-    if (percentile >= 90) return 'Outstanding';
-    if (percentile >= 75) return 'Excellent';
-    if (percentile >= 60) return 'Above Average';
-    if (percentile >= 40) return 'Average';
-    if (percentile >= 25) return 'Below Average';
-    return 'Poor';
+    if (percentile >= 90) return t('cityComparison.outstanding');
+    if (percentile >= 75) return t('cityComparison.excellent');
+    if (percentile >= 60) return t('cityComparison.aboveAverage');
+    if (percentile >= 40) return t('cityComparison.average');
+    if (percentile >= 25) return t('cityComparison.belowAverage');
+    return t('cityComparison.poor');
   };
 
   // Prepare chart data
   const chartData = [
     {
-      name: 'This Area',
+      name: t('cityComparison.thisArea'),
       score: result.overall_score,
-      fill: '#3b82f6',
+      fill: 'hsl(var(--chart-1))',
     },
     {
-      name: 'City Avg',
+      name: t('cityComparison.cityAvg'),
       score: comparison.city_average,
-      fill: '#94a3b8',
+      fill: 'hsl(var(--muted-foreground))',
     },
   ];
 
   // Factor labels mapping
   const factorLabels: Record<string, string> = {
-    safety_score: 'Safety',
-    schools_score: 'Schools',
-    amenities_score: 'Amenities',
-    walkability_score: 'Walkability',
-    green_space_score: 'Green Space',
-    air_quality_score: 'Air Quality',
-    noise_level_score: 'Noise Level',
-    public_transport_score: 'Public Transport',
+    safety_score: t('components.safety'),
+    schools_score: t('components.schools'),
+    amenities_score: t('components.amenities'),
+    walkability_score: t('components.walkability'),
+    green_space_score: t('components.greenSpace'),
+    air_quality_score: t('components.airQuality'),
+    noise_level_score: t('components.noiseLevel'),
+    public_transport_score: t('components.publicTransport'),
   };
 
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle>City Comparison</CardTitle>
+        <CardTitle>{t('cityComparison.title')}</CardTitle>
         <CardDescription>
           How this neighborhood compares to {result.city || 'the city'} average
         </CardDescription>
@@ -107,7 +109,7 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
               <svg
                 className="w-full h-full transform -rotate-90"
                 role="img"
-                aria-label={`Percentile rank: ${comparison.percentile}`}
+                aria-label={t('cityComparison.percentileLabel', { value: comparison.percentile })}
               >
                 <circle
                   cx="64"
@@ -116,7 +118,7 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
                   stroke="currentColor"
                   strokeWidth="12"
                   fill="none"
-                  className="text-gray-200"
+                  className="text-muted-foreground"
                 />
                 <circle
                   cx="64"
@@ -134,7 +136,7 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
                 <span className={`text-3xl font-bold ${getPercentileColor(comparison.percentile)}`}>
                   {comparison.percentile}
                 </span>
-                <span className="text-xs text-muted-foreground">percentile</span>
+                <span className="text-xs text-muted-foreground">{t('cityComparison.percentile')}</span>
               </div>
             </div>
           </div>
@@ -150,8 +152,8 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
               {result.city || 'the city'}
             </p>
             <div className="flex items-center gap-2 justify-center sm:justify-start">
-              <span className="text-sm text-muted-foreground">City Average:</span>
-              <span className="text-lg font-bold text-gray-600">
+              <span className="text-sm text-muted-foreground">{t('cityComparison.cityAverage')}</span>
+              <span className="text-lg font-bold text-muted-foreground">
                 {comparison.city_average.toFixed(1)}
               </span>
             </div>
@@ -160,11 +162,14 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
 
         {/* Comparison Chart */}
         <div className="mb-6">
-          <h5 className="text-sm font-medium mb-3">Score Comparison</h5>
+          <h5 className="text-sm font-medium mb-3">{t('cityComparison.scoreComparison')}</h5>
           <div
             className="h-40"
             role="img"
-            aria-label={`Score comparison: This area ${result.overall_score.toFixed(1)}, City average ${comparison.city_average.toFixed(1)}`}
+            aria-label={t('cityComparison.scoreComparisonLabel', {
+              area: result.overall_score.toFixed(1),
+              average: comparison.city_average.toFixed(1),
+            })}
           >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} layout="vertical" barSize={40}>
@@ -178,7 +183,7 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
                   tickLine={false}
                 />
                 <Tooltip
-                  formatter={(value: number) => [value.toFixed(1), 'Score']}
+                  formatter={(value: number) => [value.toFixed(1), t('cityComparison.score')]}
                   contentStyle={{ fontSize: '12px' }}
                 />
                 <Bar dataKey="score" radius={[4, 4, 4, 4]}>
@@ -195,10 +200,10 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Better than average */}
           {comparison.better_than.length > 0 && (
-            <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+            <div className="rounded-lg border border-success/30 bg-success/10 p-4">
               <div className="flex items-center gap-2 mb-3">
-                <TrendingUp className="h-4 w-4 text-green-600" aria-hidden="true" />
-                <h5 className="text-sm font-semibold text-green-800">Better Than Average</h5>
+                <TrendingUp className="h-4 w-4 text-success" aria-hidden="true" />
+                <h5 className="text-sm font-semibold text-success">{t('cityComparison.betterThanAverage')}</h5>
               </div>
               <ul className="space-y-1">
                 {comparison.better_than.map((factor) => {
@@ -206,8 +211,8 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
                   const score = result[factorKey as keyof NeighborhoodQualityResult] as number;
                   return (
                     <li key={factor} className="flex items-center justify-between text-xs">
-                      <span className="text-green-700">{factorLabels[factorKey] || factor}</span>
-                      <span className="font-semibold text-green-800">{score?.toFixed(1)}</span>
+                      <span className="text-success">{factorLabels[factorKey] || factor}</span>
+                      <span className="font-semibold text-success">{score?.toFixed(1)}</span>
                     </li>
                   );
                 })}
@@ -217,10 +222,10 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
 
           {/* Worse than average */}
           {comparison.worse_than.length > 0 && (
-            <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
+            <div className="rounded-lg border border-caution/30 bg-caution/10 p-4">
               <div className="flex items-center gap-2 mb-3">
-                <TrendingDown className="h-4 w-4 text-orange-600" aria-hidden="true" />
-                <h5 className="text-sm font-semibold text-orange-800">Below Average</h5>
+                <TrendingDown className="h-4 w-4 text-caution" aria-hidden="true" />
+                <h5 className="text-sm font-semibold text-caution">{t('cityComparison.belowAverage')}</h5>
               </div>
               <ul className="space-y-1">
                 {comparison.worse_than.map((factor) => {
@@ -228,8 +233,8 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
                   const score = result[factorKey as keyof NeighborhoodQualityResult] as number;
                   return (
                     <li key={factor} className="flex items-center justify-between text-xs">
-                      <span className="text-orange-700">{factorLabels[factorKey] || factor}</span>
-                      <span className="font-semibold text-orange-800">{score?.toFixed(1)}</span>
+                      <span className="text-caution">{factorLabels[factorKey] || factor}</span>
+                      <span className="font-semibold text-caution">{score?.toFixed(1)}</span>
                     </li>
                   );
                 })}
@@ -239,10 +244,10 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
 
           {/* All equal case */}
           {comparison.better_than.length === 0 && comparison.worse_than.length === 0 && (
-            <div className="md:col-span-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <div className="md:col-span-2 rounded-lg border border-border bg-muted p-4">
               <div className="flex items-center gap-2">
-                <Minus className="h-4 w-4 text-gray-600" aria-hidden="true" />
-                <p className="text-sm text-gray-600">
+                <Minus className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                <p className="text-sm text-muted-foreground">
                   This neighborhood scores close to the city average across all factors.
                 </p>
               </div>
@@ -255,10 +260,10 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
           <div
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
               result.overall_score > comparison.city_average
-                ? 'bg-green-100 text-green-800'
+                ? 'bg-success/20 text-success'
                 : result.overall_score < comparison.city_average
-                  ? 'bg-orange-100 text-orange-800'
-                  : 'bg-gray-100 text-gray-800'
+                  ? 'bg-caution/20 text-caution'
+                  : 'bg-muted text-foreground'
             }`}
           >
             {result.overall_score > comparison.city_average ? (
@@ -270,10 +275,14 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
             )}
             <span className="text-sm font-medium">
               {result.overall_score > comparison.city_average
-                ? `${(result.overall_score - comparison.city_average).toFixed(1)} points above average`
+                ? t('cityComparison.pointsAbove', {
+                    count: (result.overall_score - comparison.city_average).toFixed(1),
+                  })
                 : result.overall_score < comparison.city_average
-                  ? `${(comparison.city_average - result.overall_score).toFixed(1)} points below average`
-                  : 'Equal to city average'}
+                  ? t('cityComparison.pointsBelow', {
+                      count: (comparison.city_average - result.overall_score).toFixed(1),
+                    })
+                  : t('cityComparison.equalToAverage')}
             </span>
           </div>
         </div>

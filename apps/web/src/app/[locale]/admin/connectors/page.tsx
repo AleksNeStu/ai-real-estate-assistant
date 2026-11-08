@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Activity,
   AlertCircle,
@@ -30,6 +31,8 @@ import type {
   MCPConnectorHealthResponse,
   MCPHealthResponse,
 } from '@/lib/types';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/states';
 
 interface ErrorState {
   message: string;
@@ -40,28 +43,28 @@ interface ErrorState {
 function StatusBadge({ status }: { status: string }) {
   const statusConfig: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
     active: {
-      bg: 'bg-green-100 dark:bg-green-900/30',
-      text: 'text-green-700 dark:text-green-400',
+      bg: 'bg-success/20 dark:bg-success/30',
+      text: 'text-success dark:text-success',
       icon: <CheckCircle2 className="w-3 h-3" />,
     },
     disabled: {
-      bg: 'bg-gray-100 dark:bg-gray-800',
-      text: 'text-gray-600 dark:text-gray-400',
+      bg: 'bg-muted dark:bg-muted',
+      text: 'text-muted-foreground dark:text-muted-foreground',
       icon: <Pause className="w-3 h-3" />,
     },
     error: {
-      bg: 'bg-red-100 dark:bg-red-900/30',
-      text: 'text-red-700 dark:text-red-400',
+      bg: 'bg-destructive/20 dark:bg-destructive/30',
+      text: 'text-destructive dark:text-destructive',
       icon: <AlertCircle className="w-3 h-3" />,
     },
     not_instantiated: {
-      bg: 'bg-yellow-100 dark:bg-yellow-900/30',
-      text: 'text-yellow-700 dark:text-yellow-400',
+      bg: 'bg-warning/20 dark:bg-warning/30',
+      text: 'text-warning dark:text-warning',
       icon: <Clock className="w-3 h-3" />,
     },
     unknown: {
-      bg: 'bg-gray-100 dark:bg-gray-800',
-      text: 'text-gray-600 dark:text-gray-400',
+      bg: 'bg-muted dark:bg-muted',
+      text: 'text-muted-foreground dark:text-muted-foreground',
       icon: <AlertTriangle className="w-3 h-3" />,
     },
   };
@@ -81,10 +84,10 @@ function StatusBadge({ status }: { status: string }) {
 // Health status badge
 function HealthBadge({ status }: { status: string }) {
   const config: Record<string, { bg: string; text: string }> = {
-    healthy: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400' },
-    unhealthy: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400' },
-    degraded: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-400' },
-    error: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400' },
+    healthy: { bg: 'bg-success/20 dark:bg-success/30', text: 'text-success dark:text-success' },
+    unhealthy: { bg: 'bg-destructive/20 dark:bg-destructive/30', text: 'text-destructive dark:text-destructive' },
+    degraded: { bg: 'bg-warning/20 dark:bg-warning/30', text: 'text-warning dark:text-warning' },
+    error: { bg: 'bg-destructive/20 dark:bg-destructive/30', text: 'text-destructive dark:text-destructive' },
   };
 
   const { bg, text } = config[status] || config.error;
@@ -97,6 +100,7 @@ function HealthBadge({ status }: { status: string }) {
 }
 
 export default function ConnectorsPage() {
+  const t = useTranslations('pages.admin.connectors');
   // Connectors list state
   const [connectors, setConnectors] = useState<MCPConnectorInfo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -209,18 +213,15 @@ export default function ConnectorsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex flex-col space-y-2 mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">MCP Connectors</h1>
-            <p className="text-muted-foreground">
-              Manage and monitor MCP connector registry (Edition: {edition})
-            </p>
-          </div>
+      <PageHeader
+        className="mb-8"
+        title={t('title')}
+        description={t('description')}
+        actions={
           <div className="flex gap-2">
             <button
               type="button"
-              className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 flex items-center gap-2"
+              className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 flex items-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               onClick={loadConnectors}
               disabled={loading}
             >
@@ -229,7 +230,7 @@ export default function ConnectorsPage() {
             </button>
             <button
               type="button"
-              className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 flex items-center gap-2"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 flex items-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               onClick={handleHealthCheckAll}
               disabled={checkingAllHealth}
             >
@@ -241,8 +242,10 @@ export default function ConnectorsPage() {
               Health Check All
             </button>
           </div>
-        </div>
-      </div>
+        }
+      >
+        <span className="text-xs text-muted-foreground">Edition: {edition}</span>
+      </PageHeader>
 
       {/* Overall Health Status */}
       {overallHealth && (
@@ -293,10 +296,7 @@ export default function ConnectorsPage() {
           Loading connectors...
         </div>
       ) : connectors.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
-          <Database className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>No connectors registered</p>
-        </div>
+        <EmptyState icon={Database} title="No connectors registered" />
       ) : (
         <div className="grid gap-4">
           {connectors.map((connector) => (
@@ -311,7 +311,7 @@ export default function ConnectorsPage() {
                     <h3 className="font-semibold">{connector.display_name}</h3>
                     <StatusBadge status={connector.status} />
                     {connector.accessible_in_ce && (
-                      <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded">
+                      <span className="text-xs bg-info/20 dark:bg-info/30 text-info dark:text-info px-2 py-0.5 rounded">
                         CE
                       </span>
                     )}
@@ -346,7 +346,7 @@ export default function ConnectorsPage() {
                   )}
                   <button
                     type="button"
-                    className="p-2 hover:bg-secondary rounded"
+                    className="p-2 hover:bg-secondary rounded focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleHealthCheck(connector.name);
@@ -378,7 +378,7 @@ export default function ConnectorsPage() {
                   </div>
                   {healthResults[connector.name].errors.length > 0 && (
                     <div className="mt-2">
-                      <span className="text-red-500 font-medium">Errors:</span>
+                      <span className="text-destructive font-medium">Errors:</span>
                       <ul className="list-disc list-inside text-xs mt-1">
                         {healthResults[connector.name].errors.map((err, i) => (
                           <li key={i}>{err}</li>
@@ -401,7 +401,7 @@ export default function ConnectorsPage() {
               <h2 className="text-xl font-bold">{selectedConnector.display_name}</h2>
               <button
                 type="button"
-                className="p-2 hover:bg-secondary rounded"
+                className="p-2 hover:bg-secondary rounded focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
                 onClick={() => setSelectedConnector(null)}
               >
                 <X className="w-5 h-5" />
@@ -437,7 +437,7 @@ export default function ConnectorsPage() {
                     {selectedConnector.description}
                   </p>
                   {selectedConnector.error_message && (
-                    <div className="mt-2 p-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded text-sm">
+                    <div className="mt-2 p-2 bg-destructive/20 dark:bg-destructive/30 text-destructive dark:text-destructive rounded text-sm">
                       Error: {selectedConnector.error_message}
                     </div>
                   )}
@@ -448,26 +448,26 @@ export default function ConnectorsPage() {
                   <h3 className="font-semibold mb-2">Capabilities</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedConnector.requires_api_key && (
-                      <span className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded text-xs">
+                      <span className="px-2 py-1 bg-warning/20 dark:bg-warning/30 text-warning dark:text-warning rounded text-xs">
                         API Key Required
                       </span>
                     )}
                     {selectedConnector.supports_streaming && (
-                      <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded text-xs">
+                      <span className="px-2 py-1 bg-info/20 dark:bg-info/30 text-info dark:text-info rounded text-xs">
                         Streaming
                       </span>
                     )}
                     {selectedConnector.accessible_in_ce && (
-                      <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs">
+                      <span className="px-2 py-1 bg-success/20 dark:bg-success/30 text-success dark:text-success rounded text-xs">
                         CE Accessible
                       </span>
                     )}
                     {selectedConnector.enabled ? (
-                      <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs">
+                      <span className="px-2 py-1 bg-success/20 dark:bg-success/30 text-success dark:text-success rounded text-xs">
                         Enabled
                       </span>
                     ) : (
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded text-xs">
+                      <span className="px-2 py-1 bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground rounded text-xs">
                         Disabled
                       </span>
                     )}
@@ -526,7 +526,7 @@ export default function ConnectorsPage() {
                 <div className="flex gap-2 pt-4 border-t">
                   <button
                     type="button"
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 flex items-center gap-2"
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 flex items-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
                     onClick={() => handleHealthCheck(selectedConnector.name)}
                     disabled={checkingHealth.has(selectedConnector.name)}
                   >

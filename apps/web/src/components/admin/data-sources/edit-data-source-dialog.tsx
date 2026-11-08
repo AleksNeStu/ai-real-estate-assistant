@@ -65,7 +65,8 @@ export function EditDataSourceDialog({
       aria-modal="true"
       aria-labelledby="edit-dialog-title"
     >
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      {/* The backdrop only closes the dialog for the mouse — the cancel button and Escape serve the keyboard. */}
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
 
       <div className="relative bg-card rounded-lg shadow-lg w-full max-w-lg mx-4 max-h-[90vh] flex flex-col">
         {/* Header */}

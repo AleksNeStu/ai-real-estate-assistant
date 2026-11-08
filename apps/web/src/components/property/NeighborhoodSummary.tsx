@@ -89,7 +89,7 @@ export function NeighborhoodSummary({
         .join(' ')}
       aria-live="polite"
     >
-      <Sparkles className="h-5 w-5 mt-0.5 text-violet-500 shrink-0" aria-hidden />
+      <Sparkles className="h-5 w-5 mt-0.5 text-chart-4 shrink-0" aria-hidden />
       <div className="flex-1 min-w-0">
         <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
           {neighborhood ? `${neighborhood}, ` : ''}

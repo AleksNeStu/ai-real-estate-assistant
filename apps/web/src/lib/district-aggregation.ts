@@ -126,14 +126,16 @@ export function pointInPolygon(
  * Get color for district based on average price (choropleth)
  */
 export function getDistrictColor(avgPrice: number | null, maxPrice: number): string {
-  if (avgPrice === null) return "rgba(156, 163, 175, 0.3)"; // Gray for no data
+  // Mapbox paints this layer itself and does not understand CSS variables,
+  // so the colours are the values of the design tokens in a literal form.
+  if (avgPrice === null) return "hsla(240, 4%, 46%, 0.3)"; // Muted - no data
 
   const ratio = avgPrice / maxPrice;
 
-  if (ratio < 0.25) return "rgba(34, 197, 94, 0.4)"; // Green - low
-  if (ratio < 0.5) return "rgba(234, 179, 8, 0.4)"; // Yellow - medium-low
-  if (ratio < 0.75) return "rgba(249, 115, 22, 0.4)"; // Orange - medium-high
-  return "rgba(239, 68, 68, 0.4)"; // Red - high
+  if (ratio < 0.25) return "hsla(142, 76%, 36%, 0.4)"; // Success - low
+  if (ratio < 0.5) return "hsla(32, 95%, 44%, 0.4)"; // Warning - medium-low
+  if (ratio < 0.75) return "hsla(20, 90%, 48%, 0.4)"; // Caution - medium-high
+  return "hsla(0, 84%, 60%, 0.4)"; // Destructive - high
 }
 
 /**

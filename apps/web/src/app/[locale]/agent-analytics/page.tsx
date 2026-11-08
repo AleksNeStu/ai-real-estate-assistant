@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   Activity,
   ArrowDown,
@@ -22,6 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PageHeader } from '@/components/ui/page-header';
 import {
   getAgentMetrics,
   getTeamComparison,
@@ -39,8 +41,8 @@ import type {
 
 // Color coding for percentages
 const getChangeColor = (value: number | null): string => {
-  if (value === null) return 'text-gray-500';
-  return value >= 0 ? 'text-green-500' : 'text-red-500';
+  if (value === null) return 'text-muted-foreground';
+  return value >= 0 ? 'text-success' : 'text-destructive';
 };
 
 const getChangeIcon = (value: number | null) => {
@@ -64,11 +66,12 @@ function MetricCard({
   change?: number | null;
   format?: 'number' | 'currency' | 'percent' | 'days';
 }) {
+  const locale = useLocale();
   const formattedValue = (() => {
     if (typeof value === 'string') return value;
     switch (format) {
       case 'currency':
-        return new Intl.NumberFormat('de-DE', {
+        return new Intl.NumberFormat(locale, {
           style: 'currency',
           currency: 'EUR',
           minimumFractionDigits: 0,
@@ -77,9 +80,13 @@ function MetricCard({
       case 'percent':
         return `${value.toFixed(1)}%`;
       case 'days':
-        return `${value.toFixed(1)} days`;
+        return new Intl.NumberFormat(locale, {
+          style: 'unit',
+          unit: 'day',
+          maximumFractionDigits: 1,
+        }).format(value);
       default:
-        return new Intl.NumberFormat('de-DE').format(value);
+        return new Intl.NumberFormat(locale).format(value);
     }
   })();
 
@@ -185,10 +192,11 @@ function ComparisonRow({
   avg: number;
   format: 'number' | 'currency' | 'percent';
 }) {
+  const locale = useLocale();
   const formattedAvg = (() => {
     switch (format) {
       case 'currency':
-        return new Intl.NumberFormat('de-DE', {
+        return new Intl.NumberFormat(locale, {
           style: 'currency',
           currency: 'EUR',
           minimumFractionDigits: 0,
@@ -217,17 +225,17 @@ function ComparisonRow({
 // Coaching Insights Panel
 function CoachingInsightsPanel({ insights }: { insights: CoachingInsight[] }) {
   const categoryConfig = {
-    strength: { icon: Star, color: 'text-yellow-500', bg: 'bg-yellow-50', label: 'Strength' },
+    strength: { icon: Star, color: 'text-warning', bg: 'bg-warning/10', label: 'Strength' },
     improvement: {
       icon: AlertCircle,
-      color: 'text-red-500',
-      bg: 'bg-red-50',
+      color: 'text-destructive',
+      bg: 'bg-destructive/10',
       label: 'Improvement',
     },
     opportunity: {
       icon: Lightbulb,
-      color: 'text-blue-500',
-      bg: 'bg-blue-50',
+      color: 'text-info',
+      bg: 'bg-info/10',
       label: 'Opportunity',
     },
   };
@@ -312,7 +320,7 @@ function GoalProgressCard({ goals }: { goals: GoalProgress[] }) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium capitalize">{goal.goal_type}</span>
-                {goal.is_achieved && <CheckCircle className="h-4 w-4 text-green-500" />}
+                {goal.is_achieved && <CheckCircle className="h-4 w-4 text-success" />}
               </div>
               <span className="text-sm text-muted-foreground">
                 {goal.progress_percent.toFixed(0)}%
@@ -336,6 +344,8 @@ function GoalProgressCard({ goals }: { goals: GoalProgress[] }) {
 
 // Performance Trends Chart (simplified without recharts for now)
 function PerformanceTrendsCard({ trends }: { trends: PerformanceTrendPoint[] }) {
+  const locale = useLocale();
+
   if (trends.length === 0) {
     return (
       <Card>
@@ -401,7 +411,7 @@ function PerformanceTrendsCard({ trends }: { trends: PerformanceTrendPoint[] }) 
             </div>
             <div className="text-center">
               <div className="text-lg font-bold">
-                {new Intl.NumberFormat('de-DE', {
+                {new Intl.NumberFormat(locale, {
                   style: 'currency',
                   currency: 'EUR',
                   notation: 'compact',
@@ -418,6 +428,7 @@ function PerformanceTrendsCard({ trends }: { trends: PerformanceTrendPoint[] }) 
 
 // Main Page Component
 export default function AgentAnalyticsPage() {
+  const t = useTranslations('pages.agentAnalytics');
   const [metrics, setMetrics] = useState<AgentMetrics | null>(null);
   const [comparison, setComparison] = useState<TeamComparison | null>(null);
   const [trends, setTrends] = useState<PerformanceTrendPoint[]>([]);
@@ -459,10 +470,7 @@ export default function AgentAnalyticsPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Agent Analytics</h1>
-          <p className="text-muted-foreground">Loading your performance data...</p>
-        </div>
+        <p className="text-muted-foreground">Loading your performance data...</p>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <Card key={i}>
@@ -494,10 +502,7 @@ export default function AgentAnalyticsPage() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Agent Analytics</h1>
-        <p className="text-muted-foreground">Track your performance and get actionable insights</p>
-      </div>
+      <PageHeader title={t('title')} description={t('description')} />
 
       {/* Overview Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

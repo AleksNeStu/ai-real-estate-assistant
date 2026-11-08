@@ -44,7 +44,7 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
                 />
               ) : (
                 <div
-                  className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-2xl font-bold text-white"
+                  className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-info to-critical text-2xl font-bold text-info-foreground"
                   aria-hidden="true"
                 >
                   {displayName.charAt(0).toUpperCase()}
@@ -52,10 +52,10 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
               )}
               {agent.is_verified && (
                 <div
-                  className="absolute -bottom-1 -right-1 rounded-full bg-green-500 p-1.5"
+                  className="absolute -bottom-1 -right-1 rounded-full bg-success p-1.5"
                   aria-label="Verified agent"
                 >
-                  <Award className="h-4 w-4 text-white" aria-hidden="true" />
+                  <Award className="h-4 w-4 text-info-foreground" aria-hidden="true" />
                 </div>
               )}
             </div>
@@ -76,7 +76,7 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
                 )}
               </div>
               {agent.is_verified && (
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                <Badge variant="secondary" className="bg-success/15 text-success">
                   Verified
                 </Badge>
               )}
@@ -86,7 +86,7 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
             <div className="mb-3 flex flex-wrap items-center gap-4 text-sm">
               {agent.average_rating > 0 && (
                 <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" aria-hidden="true" />
+                  <Star className="h-4 w-4 fill-warning text-warning" aria-hidden="true" />
                   <span className="font-medium">{agent.average_rating.toFixed(1)}</span>
                   <span className="text-muted-foreground">({agent.total_reviews} reviews)</span>
                 </div>
