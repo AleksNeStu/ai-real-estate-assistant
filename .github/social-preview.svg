@@ -101,12 +101,12 @@
       </text>
     </g>
 
-    <!-- Card 2: 7,000+ tests -->
+    <!-- Card 2: 8,000+ tests -->
     <g transform="translate(260, 0)">
       <rect x="0" y="0" width="240" height="170" rx="12" fill="#18181b" stroke="#27272a" stroke-width="1"/>
       <text x="120" y="85" font-family="'Inter', system-ui, sans-serif"
             font-size="48" font-weight="700" fill="#fafafa" text-anchor="middle" letter-spacing="-2">
-        7,000+
+        8,000+
       </text>
       <text x="120" y="130" font-family="'Inter', system-ui, sans-serif"
             font-size="16" font-weight="500" fill="#e4e4e7" text-anchor="middle" letter-spacing="2">
@@ -115,7 +115,7 @@
       <line x1="80" y1="148" x2="160" y2="148" stroke="#27272a" stroke-width="1"/>
       <text x="120" y="163" font-family="'Inter', system-ui, sans-serif"
             font-size="11" font-weight="400" fill="#71717a" text-anchor="middle">
-        90%+ backend coverage
+        80%+ coverage
       </text>
     </g>
 
@@ -151,7 +151,7 @@
       <line x1="80" y1="148" x2="160" y2="148" stroke="#27272a" stroke-width="1"/>
       <text x="120" y="163" font-family="'Inter', system-ui, sans-serif"
             font-size="11" font-weight="400" fill="#71717a" text-anchor="middle">
-        AA compliant
+        AA audited
       </text>
     </g>
   </g>
