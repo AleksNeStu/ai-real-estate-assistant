@@ -458,7 +458,7 @@ export function InvestmentAnalyzer() {
                   const labelKey = SCORE_LABEL_KEYS[key.replace(/_score$/, '')];
                   const label = labelKey
                     ? t(`analyzer.scoreLabels.${labelKey}`)
-                    : key.replace(/_/g, ' ').replace('score', 'score').replace('yield', 'yield');
+                    : key.replace(/_/g, ' ');
                   return (
                     <div key={key} className="flex justify-between">
                       <span className="text-muted-foreground">{label}:</span>
