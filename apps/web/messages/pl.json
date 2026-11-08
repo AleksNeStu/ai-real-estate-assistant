@@ -110,7 +110,19 @@
       "messagePlaceholder": "Napisz, w czym możemy pomóc...",
       "submit": "Wyślij wiadomość",
       "success": "Wiadomość wysłana pomyślnie!",
-      "successDescription": "Agent skontaktuje się z Tobą wkrótce."
+      "successDescription": "Agent skontaktuje się z Tobą wkrótce.",
+      "intro": "Wyślij wiadomość do tego agenta. Odpowie na Twoje zapytanie tak szybko, jak to możliwe.",
+      "namePlaceholder": "Jan Kowalski",
+      "emailPlaceholder": "jan@example.com",
+      "phonePlaceholder": "+1 234 567 8900",
+      "typePlaceholder": "Wybierz typ",
+      "closeAria": "Zamknij formularz",
+      "successTitle": "Wiadomość wysłana!",
+      "errors": {
+        "send": "Nie udało się wysłać wiadomości"
+      },
+      "cancel": "Anuluj",
+      "sending": "Wysyłanie..."
     },
     "viewingForm": {
       "title": "Umów wizytę",
@@ -1942,12 +1954,102 @@
       "description": "Zarządzaj zapisanymi wyszukiwaniami i alertami.",
       "pauseAlerts": "Wstrzymaj alerty",
       "resumeAlerts": "Wznów alerty",
-      "deleteSearch": "Usuń wyszukiwanie"
+      "deleteSearch": "Usuń wyszukiwanie",
+      "loginRequired": "Zaloguj się, aby zobaczyć zapisane wyszukiwania",
+      "errors": {
+        "load": "Nie udało się wczytać zapisanych wyszukiwań",
+        "toggleAlert": "Nie udało się przełączyć alertu",
+        "delete": "Nie udało się usunąć wyszukiwania"
+      },
+      "filters": {
+        "allProperties": "Wszystkie nieruchomości"
+      },
+      "loading": "Ładowanie zapisanych wyszukiwań...",
+      "refreshAria": "Odśwież zapisane wyszukiwania",
+      "emptyTitle": "Brak zapisanych wyszukiwań",
+      "alerts": {
+        "newMatches": "Nowe dopasowania",
+        "priceDrops": "Spadki cen"
+      },
+      "emptyDescription": "Zapisuj wyszukiwania ze strony wyszukiwania, aby otrzymywać powiadomienia o nowych nieruchomościach spełniających Twoje kryteria.",
+      "created": "Utworzono: {date}",
+      "used": "Użyto: {count} razy",
+      "paused": "Wstrzymane",
+      "deleteConfirm": "Czy na pewno chcesz usunąć „{name}”?",
+      "frequency": {
+        "instant": "Natychmiast",
+        "daily": "Codziennie",
+        "weekly": "Tygodniowo",
+        "none": "Brak"
+      },
+      "roomsLabel": "{count} pokoje"
     },
     "leads": {
       "title": "Panel zapytań",
       "description": "Wszystkie zebrane zapytania z całej witryny.",
-      "searchPlaceholder": "Szukaj leadów..."
+      "searchPlaceholder": "Szukaj leadów...",
+      "status": {
+        "new": "Nowy",
+        "contacted": "Skontaktowany",
+        "qualified": "Zakwalifikowany",
+        "converted": "Konwertowany",
+        "lost": "Utracony"
+      },
+      "errors": {
+        "load": "Nie udało się wczytać leadów",
+        "updateStatus": "Nie udało się zaktualizować statusu",
+        "recalculate": "Nie udało się przeliczyć wyników",
+        "export": "Nie udało się wyeksportować leadów"
+      },
+      "actions": {
+        "recalculate": "Przelicz wyniki"
+      },
+      "stats": {
+        "total": "Wszystkich leadów",
+        "newLast24h": "+{count} w ostatnich 24 godzinach",
+        "highValue": "Leady o wysokiej wartości",
+        "highValueHint": "Wynik > 70",
+        "averageScore": "Średni wynik",
+        "conversionRate": "Współczynnik konwersji",
+        "converted": "konwertowanych: {count}"
+      },
+      "tabs": {
+        "all": "Wszystkie leady",
+        "highValue": "O wysokiej wartości",
+        "new": "Nowe"
+      },
+      "filters": {
+        "status": "Status",
+        "allStatus": "Wszystkie statusy",
+        "sortBy": "Sortuj według",
+        "scoreDesc": "Wynik (od najwyższego)",
+        "scoreAsc": "Wynik (od najniższego)",
+        "lastActivity": "Ostatnia aktywność",
+        "dateCreated": "Data utworzenia"
+      },
+      "empty": {
+        "noLeads": "Nie znaleziono leadów",
+        "noLeadsHint": "Zmień filtry lub poczekaj na nowe leady",
+        "noHighValue": "Brak leadów o wysokiej wartości",
+        "noHighValueHint": "Leady z wynikiem powyżej 70 pojawią się tutaj"
+      },
+      "lead": {
+        "anonymous": "Anonimowy lead",
+        "newLead": "Nowy lead",
+        "search": "Wyszukiwanie",
+        "engage": "Zaangażowanie",
+        "intent": "Zainteresowanie",
+        "viewDetails": "Zobacz szczegóły",
+        "sendEmail": "Wyślij e-mail",
+        "scheduleCall": "Zaplanuj rozmowę",
+        "markContacted": "Oznacz jako skontaktowany",
+        "markQualified": "Oznacz jako zakwalifikowany",
+        "markConverted": "Oznacz jako konwertowany",
+        "markLost": "Oznacz jako utracony",
+        "score": "Wynik leada",
+        "scoreValue": "Wynik: {score}",
+        "contact": "Kontakt"
+      }
     },
     "knowledge": {
       "title": "Wiedza",
@@ -2488,6 +2590,37 @@
           "start": "Uruchom zadanie eksportu"
         }
       }
+    },
+    "commute": {
+      "title": "Analiza dojazdu",
+      "modes": {
+        "driving": "Samochodem",
+        "walking": "Pieszo",
+        "transit": "Transportem",
+        "bicycling": "Rowerem"
+      },
+      "modePlaceholder": "Tryb",
+      "calculateAria": "Oblicz dojazd",
+      "setDefaultAria": "Ustaw jako domyślne",
+      "removeDestinationAria": "Usuń punkt docelowy",
+      "empty": "Nie zapisano punktów docelowych",
+      "addDestination": "Dodaj punkt docelowy",
+      "namePlaceholder": "np. Praca, Szkoła",
+      "addressLabel": "Adres (opcjonalnie)",
+      "addressPlaceholder": "np. ul. Główna 123",
+      "latPlaceholder": "52.2297",
+      "lonPlaceholder": "21.0122",
+      "errors": {
+        "propertyLocation": "Lokalizacja nieruchomości niedostępna",
+        "calculate": "Nie udało się obliczyć dojazdu",
+        "requiredFields": "Wypełnij wszystkie wymagane pola",
+        "propertyLocationHint": "Lokalizacja nieruchomości niedostępna. Nie można obliczyć czasu dojazdu."
+      },
+      "nameLabel": "Nazwa",
+      "latitudeLabel": "Szerokość geograficzna",
+      "longitudeLabel": "Długość geograficzna",
+      "via": "przez",
+      "arrival": "Przyjazd: {time}"
     }
   },
   "states": {

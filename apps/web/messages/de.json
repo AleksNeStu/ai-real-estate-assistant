@@ -110,7 +110,19 @@
       "messagePlaceholder": "Schreib uns, wie wir helfen können...",
       "submit": "Nachricht senden",
       "success": "Nachricht erfolgreich gesendet!",
-      "successDescription": "Der Agent meldet sich in Kürze bei dir."
+      "successDescription": "Der Agent meldet sich in Kürze bei dir.",
+      "intro": "Senden Sie eine Nachricht an diesen Makler. Er antwortet so bald wie möglich auf Ihre Anfrage.",
+      "namePlaceholder": "Max Mustermann",
+      "emailPlaceholder": "max@example.com",
+      "phonePlaceholder": "+1 234 567 8900",
+      "typePlaceholder": "Typ auswählen",
+      "closeAria": "Formular schließen",
+      "successTitle": "Nachricht gesendet!",
+      "errors": {
+        "send": "Nachricht konnte nicht gesendet werden"
+      },
+      "cancel": "Abbrechen",
+      "sending": "Wird gesendet..."
     },
     "viewingForm": {
       "title": "Besichtigung vereinbaren",
@@ -1942,12 +1954,102 @@
       "description": "Verwalten Sie gespeicherte Suchen und Benachrichtigungen.",
       "pauseAlerts": "Benachrichtigungen pausieren",
       "resumeAlerts": "Benachrichtigungen fortsetzen",
-      "deleteSearch": "Suche löschen"
+      "deleteSearch": "Suche löschen",
+      "loginRequired": "Melde dich an, um deine gespeicherten Suchen zu sehen",
+      "errors": {
+        "load": "Gespeicherte Suchen konnten nicht geladen werden",
+        "toggleAlert": "Benachrichtigung konnte nicht umgeschaltet werden",
+        "delete": "Suche konnte nicht gelöscht werden"
+      },
+      "filters": {
+        "allProperties": "Alle Objekte"
+      },
+      "loading": "Gespeicherte Suchen werden geladen...",
+      "refreshAria": "Gespeicherte Suchen aktualisieren",
+      "emptyTitle": "Noch keine gespeicherten Suchen",
+      "alerts": {
+        "newMatches": "Neue Treffer",
+        "priceDrops": "Preissenkungen"
+      },
+      "emptyDescription": "Speichere Suchen auf der Suchseite, um über neue Objekte benachrichtigt zu werden, die deinen Kriterien entsprechen.",
+      "created": "Erstellt: {date}",
+      "used": "Verwendet: {count} Mal",
+      "paused": "Pausiert",
+      "deleteConfirm": "Möchtest du „{name}“ wirklich löschen?",
+      "frequency": {
+        "instant": "Sofort",
+        "daily": "Täglich",
+        "weekly": "Wöchentlich",
+        "none": "Keine"
+      },
+      "roomsLabel": "{count} Zimmer"
     },
     "leads": {
       "title": "Lead-Übersicht",
       "description": "Alle Anfragen, die auf der Website aufgelaufen sind.",
-      "searchPlaceholder": "Leads suchen..."
+      "searchPlaceholder": "Leads suchen...",
+      "status": {
+        "new": "Neu",
+        "contacted": "Kontaktiert",
+        "qualified": "Qualifiziert",
+        "converted": "Umgewandelt",
+        "lost": "Verloren"
+      },
+      "errors": {
+        "load": "Leads konnten nicht geladen werden",
+        "updateStatus": "Status konnte nicht aktualisiert werden",
+        "recalculate": "Scores konnten nicht neu berechnet werden",
+        "export": "Leads konnten nicht exportiert werden"
+      },
+      "actions": {
+        "recalculate": "Scores neu berechnen"
+      },
+      "stats": {
+        "total": "Leads insgesamt",
+        "newLast24h": "+{count} in den letzten 24 Stunden",
+        "highValue": "Leads mit hohem Wert",
+        "highValueHint": "Score > 70",
+        "averageScore": "Durchschnittlicher Score",
+        "conversionRate": "Conversion-Rate",
+        "converted": "umgewandelt: {count}"
+      },
+      "tabs": {
+        "all": "Alle Leads",
+        "highValue": "Hoher Wert",
+        "new": "Neu"
+      },
+      "filters": {
+        "status": "Status",
+        "allStatus": "Alle Status",
+        "sortBy": "Sortieren nach",
+        "scoreDesc": "Score (absteigend)",
+        "scoreAsc": "Score (aufsteigend)",
+        "lastActivity": "Letzte Aktivität",
+        "dateCreated": "Erstellt am"
+      },
+      "empty": {
+        "noLeads": "Keine Leads gefunden",
+        "noLeadsHint": "Passe die Filter an oder warte auf neue Leads",
+        "noHighValue": "Keine Leads mit hohem Wert",
+        "noHighValueHint": "Leads mit einem Score über 70 erscheinen hier"
+      },
+      "lead": {
+        "anonymous": "Anonymer Lead",
+        "newLead": "Neuer Lead",
+        "search": "Suche",
+        "engage": "Interaktion",
+        "intent": "Absicht",
+        "viewDetails": "Details anzeigen",
+        "sendEmail": "E-Mail senden",
+        "scheduleCall": "Anruf planen",
+        "markContacted": "Als kontaktiert markieren",
+        "markQualified": "Als qualifiziert markieren",
+        "markConverted": "Als umgewandelt markieren",
+        "markLost": "Als verloren markieren",
+        "score": "Lead-Score",
+        "scoreValue": "Score: {score}",
+        "contact": "Kontakt"
+      }
     },
     "knowledge": {
       "title": "Wissen",
@@ -2488,6 +2590,37 @@
           "start": "Exportauftrag starten"
         }
       }
+    },
+    "commute": {
+      "title": "Pendelanalyse",
+      "modes": {
+        "driving": "Auto",
+        "walking": "Zu Fuß",
+        "transit": "Nahverkehr",
+        "bicycling": "Fahrrad"
+      },
+      "modePlaceholder": "Modus",
+      "calculateAria": "Pendelzeit berechnen",
+      "setDefaultAria": "Als Standard festlegen",
+      "removeDestinationAria": "Ziel entfernen",
+      "empty": "Keine Ziele gespeichert",
+      "addDestination": "Ziel hinzufügen",
+      "namePlaceholder": "z. B. Arbeit, Schule",
+      "addressLabel": "Adresse (optional)",
+      "addressPlaceholder": "z. B. Hauptstraße 123",
+      "latPlaceholder": "52.2297",
+      "lonPlaceholder": "21.0122",
+      "errors": {
+        "propertyLocation": "Standort des Objekts nicht verfügbar",
+        "calculate": "Pendelzeit konnte nicht berechnet werden",
+        "requiredFields": "Bitte fülle alle Pflichtfelder aus",
+        "propertyLocationHint": "Standort des Objekts nicht verfügbar. Fahrzeiten können nicht berechnet werden."
+      },
+      "nameLabel": "Name",
+      "latitudeLabel": "Breitengrad",
+      "longitudeLabel": "Längengrad",
+      "via": "über",
+      "arrival": "Ankunft: {time}"
     }
   },
   "states": {

@@ -22,6 +22,7 @@ import { EmptyState } from '@/components/ui/states';
 
 export default function SavedSearchesPage() {
   const t = useTranslations('pages.savedSearches');
+  const tCommon = useTranslations('common');
   const [searches, setSearches] = useState<SavedSearch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,12 +41,12 @@ export default function SavedSearchesPage() {
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.category === 'auth') {
-          setError('Please log in to view your saved searches');
+          setError(t('loginRequired'));
         } else {
           setError(err.message);
         }
       } else {
-        setError(err instanceof Error ? err.message : 'Failed to load saved searches');
+        setError(err instanceof Error ? err.message : t('errors.load'));
       }
     } finally {
       setLoading(false);
@@ -58,14 +59,14 @@ export default function SavedSearchesPage() {
       const updated = await toggleSavedSearchAlert(id, !currentState);
       setSearches(searches.map((s) => (s.id === id ? updated : s)));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to toggle alert');
+      setError(err instanceof Error ? err.message : t('errors.toggleAlert'));
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete "${name}"?`)) {
+    if (!confirm(t('deleteConfirm', { name }))) {
       return;
     }
 
@@ -74,7 +75,7 @@ export default function SavedSearchesPage() {
       await deleteSavedSearch(id);
       setSearches(searches.filter((s) => s.id !== id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete search');
+      setError(err instanceof Error ? err.message : t('errors.delete'));
     } finally {
       setActionLoading(null);
     }
@@ -98,21 +99,21 @@ export default function SavedSearchesPage() {
     if (filters.min_rooms || filters.max_rooms) {
       const min = filters.min_rooms || '';
       const max = filters.max_rooms || '';
-      parts.push(`${min}-${max} rooms`);
+      parts.push(t('roomsLabel', { count: `${min}-${max}` }));
     }
-    return parts.join(' | ') || 'All properties';
+    return parts.join(' | ') || t('filters.allProperties');
   };
 
   const formatFrequency = (frequency: string): string => {
     switch (frequency) {
       case 'instant':
-        return 'Instant';
+        return t('frequency.instant');
       case 'daily':
-        return 'Daily';
+        return t('frequency.daily');
       case 'weekly':
-        return 'Weekly';
+        return t('frequency.weekly');
       case 'none':
-        return 'None';
+        return t('frequency.none');
       default:
         return frequency;
     }
@@ -135,7 +136,7 @@ export default function SavedSearchesPage() {
           aria-live="polite"
         >
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
-          <span className="sr-only">Loading saved searches...</span>
+          <span className="sr-only">{t('loading')}</span>
         </div>
       </div>
     );
@@ -157,10 +158,10 @@ export default function SavedSearchesPage() {
             variant="outline"
             onClick={fetchSearches}
             disabled={loading}
-            aria-label="Refresh saved searches"
+            aria-label={t('refreshAria')}
           >
             <RefreshCw className="h-4 w-4 mr-2" aria-hidden="true" />
-            Refresh
+            {tCommon('refresh')}
           </Button>
         }
       />
@@ -176,11 +177,7 @@ export default function SavedSearchesPage() {
       )}
 
       {searches.length === 0 ? (
-        <EmptyState
-          icon={Search}
-          title="No saved searches yet"
-          description="Save searches from the search page to get notified about new properties that match your criteria."
-        />
+        <EmptyState icon={Search} title={t('emptyTitle')} description={t('emptyDescription')} />
       ) : (
         <div className="grid gap-4">
           {searches.map((search) => (
@@ -191,7 +188,7 @@ export default function SavedSearchesPage() {
                     {search.name}
                     {!search.is_active && (
                       <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                        Paused
+                        {t('paused')}
                       </span>
                     )}
                   </CardTitle>
@@ -205,8 +202,8 @@ export default function SavedSearchesPage() {
                     size="sm"
                     onClick={() => handleToggleAlert(search.id, search.is_active)}
                     disabled={actionLoading === search.id}
-                    title={search.is_active ? 'Pause alerts' : 'Resume alerts'}
-                    aria-label={search.is_active ? 'Pause alerts' : 'Resume alerts'}
+                    title={search.is_active ? t('pauseAlerts') : t('resumeAlerts')}
+                    aria-label={search.is_active ? t('pauseAlerts') : t('resumeAlerts')}
                     aria-pressed={search.is_active}
                   >
                     {actionLoading === search.id ? (
@@ -225,7 +222,7 @@ export default function SavedSearchesPage() {
                     size="sm"
                     onClick={() => handleDelete(search.id, search.name)}
                     disabled={actionLoading === search.id}
-                    title="Delete search"
+                    title={t('deleteSearch')}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -233,11 +230,13 @@ export default function SavedSearchesPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                  <span>Created: {formatDate(search.created_at)}</span>
-                  <span>Used: {search.use_count} times</span>
-                  {search.notify_on_new && <span className="text-success">New matches</span>}
+                  <span>{t('created', { date: formatDate(search.created_at) })}</span>
+                  <span>{t('used', { count: search.use_count })}</span>
+                  {search.notify_on_new && (
+                    <span className="text-success">{t('alerts.newMatches')}</span>
+                  )}
                   {search.notify_on_price_drop && (
-                    <span className="text-info">Price drops</span>
+                    <span className="text-info">{t('alerts.priceDrops')}</span>
                   )}
                 </div>
                 {search.description && (

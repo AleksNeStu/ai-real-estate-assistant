@@ -110,7 +110,19 @@
       "messagePlaceholder": "Розкажіть, чим ми можемо допомогти...",
       "submit": "Надіслати повідомлення",
       "success": "Повідомлення успішно надіслано!",
-      "successDescription": "Агент зв’яжеться з вами незабаром."
+      "successDescription": "Агент зв’яжеться з вами незабаром.",
+      "intro": "Надішліть повідомлення цьому агенту. Він відповість на ваш запит якнайшвидше.",
+      "namePlaceholder": "Іван Іванов",
+      "emailPlaceholder": "ivan@example.com",
+      "phonePlaceholder": "+1 234 567 8900",
+      "typePlaceholder": "Виберіть тип",
+      "closeAria": "Закрити форму",
+      "successTitle": "Повідомлення надіслано!",
+      "errors": {
+        "send": "Не вдалося надіслати повідомлення"
+      },
+      "cancel": "Скасувати",
+      "sending": "Надсилання..."
     },
     "viewingForm": {
       "title": "Домовитися про показ",
@@ -1942,12 +1954,102 @@
       "description": "Керуйте збереженими пошуками та сповіщеннями.",
       "pauseAlerts": "Призупинити сповіщення",
       "resumeAlerts": "Відновити сповіщення",
-      "deleteSearch": "Видалити пошук"
+      "deleteSearch": "Видалити пошук",
+      "loginRequired": "Увійдіть, щоб побачити збережені пошуки",
+      "errors": {
+        "load": "Не вдалося завантажити збережені пошуки",
+        "toggleAlert": "Не вдалося перемкнути оповіщення",
+        "delete": "Не вдалося видалити пошук"
+      },
+      "filters": {
+        "allProperties": "Усі об’єкти"
+      },
+      "loading": "Завантаження збережених пошуків...",
+      "refreshAria": "Оновити збережені пошуки",
+      "emptyTitle": "Збережених пошуків ще немає",
+      "alerts": {
+        "newMatches": "Нові збіги",
+        "priceDrops": "Падіння цін"
+      },
+      "emptyDescription": "Зберігайте запити на сторінці пошуку, щоб отримувати сповіщення про нові об’єкти, що відповідають вашим критеріям.",
+      "created": "Створено: {date}",
+      "used": "Використано: {count} разів",
+      "paused": "Призупинено",
+      "deleteConfirm": "Ви впевнені, що хочете видалити «{name}»?",
+      "frequency": {
+        "instant": "Миттєво",
+        "daily": "Щодня",
+        "weekly": "Щотижня",
+        "none": "Немає"
+      },
+      "roomsLabel": "{count} кімнат"
     },
     "leads": {
       "title": "Панель запитів",
       "description": "Усі звернення, зібрані на сайті.",
-      "searchPlaceholder": "Пошук лідів..."
+      "searchPlaceholder": "Пошук лідів...",
+      "status": {
+        "new": "Новий",
+        "contacted": "Зв’язок встановлено",
+        "qualified": "Кваліфіковано",
+        "converted": "Конвертовано",
+        "lost": "Втрачено"
+      },
+      "errors": {
+        "load": "Не вдалося завантажити ліди",
+        "updateStatus": "Не вдалося оновити статус",
+        "recalculate": "Не вдалося перерахувати оцінки",
+        "export": "Не вдалося вивантажити ліди"
+      },
+      "actions": {
+        "recalculate": "Перерахувати оцінки"
+      },
+      "stats": {
+        "total": "Усього лідів",
+        "newLast24h": "+{count} за останні 24 години",
+        "highValue": "Ліди високої вартості",
+        "highValueHint": "Оцінка > 70",
+        "averageScore": "Середня оцінка",
+        "conversionRate": "Конверсія",
+        "converted": "конвертовано: {count}"
+      },
+      "tabs": {
+        "all": "Усі ліди",
+        "highValue": "Висока вартість",
+        "new": "Нові"
+      },
+      "filters": {
+        "status": "Статус",
+        "allStatus": "Усі статуси",
+        "sortBy": "Сортувати за",
+        "scoreDesc": "Оцінка (за спаданням)",
+        "scoreAsc": "Оцінка (за зростанням)",
+        "lastActivity": "Остання активність",
+        "dateCreated": "Дата створення"
+      },
+      "empty": {
+        "noLeads": "Лідів не знайдено",
+        "noLeadsHint": "Змініть фільтри або зачекайте на нові ліди",
+        "noHighValue": "Немає лідів високої вартості",
+        "noHighValueHint": "Ліди з оцінкою понад 70 з’являться тут"
+      },
+      "lead": {
+        "anonymous": "Анонімний лід",
+        "newLead": "Новий лід",
+        "search": "Пошук",
+        "engage": "Залучення",
+        "intent": "Намір",
+        "viewDetails": "Переглянути деталі",
+        "sendEmail": "Надіслати лист",
+        "scheduleCall": "Запланувати дзвінок",
+        "markContacted": "Позначити як зв’язок",
+        "markQualified": "Позначити як кваліфікований",
+        "markConverted": "Позначити як конвертований",
+        "markLost": "Позначити як втрачений",
+        "score": "Оцінка ліда",
+        "scoreValue": "Оцінка: {score}",
+        "contact": "Зв’язок"
+      }
     },
     "knowledge": {
       "title": "База знань",
@@ -2488,6 +2590,37 @@
           "start": "Запустити завдання експорту"
         }
       }
+    },
+    "commute": {
+      "title": "Аналіз дороги",
+      "modes": {
+        "driving": "Автомобілем",
+        "walking": "Пішки",
+        "transit": "Громадським транспортом",
+        "bicycling": "Велосипедом"
+      },
+      "modePlaceholder": "Режим",
+      "calculateAria": "Обчислити дорогу",
+      "setDefaultAria": "Зробити типовим",
+      "removeDestinationAria": "Видалити пункт призначення",
+      "empty": "Пункти призначення не збережено",
+      "addDestination": "Додати пункт призначення",
+      "namePlaceholder": "напр., Робота, Школа",
+      "addressLabel": "Адреса (необов’язково)",
+      "addressPlaceholder": "напр., вул. Головна, 123",
+      "latPlaceholder": "52.2297",
+      "lonPlaceholder": "21.0122",
+      "errors": {
+        "propertyLocation": "Розташування об’єкта недоступне",
+        "calculate": "Не вдалося обчислити дорогу",
+        "requiredFields": "Заповніть усі обов’язкові поля",
+        "propertyLocationHint": "Розташування об’єкта недоступне. Час у дорозі обчислити неможливо."
+      },
+      "nameLabel": "Назва",
+      "latitudeLabel": "Широта",
+      "longitudeLabel": "Довгота",
+      "via": "через",
+      "arrival": "Прибуття: {time}"
     }
   },
   "states": {

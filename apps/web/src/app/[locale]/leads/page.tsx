@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { formatDistanceToNow } from 'date-fns';
-import { useTranslations } from 'next-intl';
+import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   Users,
   Download,
@@ -70,17 +69,32 @@ function getScoreBadgeVariant(score: number): 'default' | 'secondary' | 'destruc
   return 'outline';
 }
 
-// Status badge mapping
-const statusConfig: Record<LeadStatus, { label: string; color: string; icon: typeof Star }> = {
-  new: { label: 'New', color: 'bg-info/15 text-info', icon: AlertCircle },
-  contacted: { label: 'Contacted', color: 'bg-warning/15 text-warning', icon: Mail },
-  qualified: { label: 'Qualified', color: 'bg-success/15 text-success', icon: CheckCircle },
-  converted: { label: 'Converted', color: 'bg-critical/20 text-critical', icon: Target },
-  lost: { label: 'Lost', color: 'bg-muted text-foreground', icon: TrendingDown },
-};
-
 export default function LeadsPage() {
   const t = useTranslations('pages.leads');
+  const tCommon = useTranslations('common');
+  const locale = useLocale();
+
+  // Status badge mapping
+  const statusConfig: Record<LeadStatus, { label: string; color: string; icon: typeof Star }> = {
+    new: { label: t('status.new'), color: 'bg-info/15 text-info', icon: AlertCircle },
+    contacted: { label: t('status.contacted'), color: 'bg-warning/15 text-warning', icon: Mail },
+    qualified: {
+      label: t('status.qualified'),
+      color: 'bg-success/15 text-success',
+      icon: CheckCircle,
+    },
+    converted: {
+      label: t('status.converted'),
+      color: 'bg-critical/20 text-critical',
+      icon: Target,
+    },
+    lost: { label: t('status.lost'), color: 'bg-muted text-foreground', icon: TrendingDown },
+  };
+
+  const relativeFormatter = useMemo(
+    () => new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }),
+    [locale]
+  );
   const [leads, setLeads] = useState<LeadWithScore[]>([]);
   const [highValueLeads, setHighValueLeads] = useState<LeadWithScore[]>([]);
   const [statistics, setStatistics] = useState<ScoringStatistics | null>(null);
@@ -115,11 +129,11 @@ export default function LeadsPage() {
       setHighValueLeads(highValueResponse);
       setStatistics(statsResponse);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load leads');
+      setError(err instanceof Error ? err.message : t('errors.load'));
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, t]);
 
   useEffect(() => {
     loadLeads();
@@ -131,7 +145,7 @@ export default function LeadsPage() {
       await updateLeadStatus(leadId, status);
       setLeads((prev) => prev.map((lead) => (lead.id === leadId ? { ...lead, status } : lead)));
     } catch (err) {
-      console.error('Failed to update status:', err);
+      console.error(t('errors.updateStatus'), err);
     }
   };
 
@@ -142,7 +156,7 @@ export default function LeadsPage() {
       await recalculateScores();
       await loadLeads();
     } catch (err) {
-      console.error('Failed to recalculate scores:', err);
+      console.error(t('errors.recalculate'), err);
     } finally {
       setRecalculating(false);
     }
@@ -159,19 +173,35 @@ export default function LeadsPage() {
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error('Failed to export leads:', err);
+      console.error(t('errors.export'), err);
     }
   };
 
-  // Format time ago
-  const formatTimeAgo = (dateString: string) => {
-    return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+  // Format time ago (the reference point lives in state so rendering stays pure)
+  const [now, setNow] = useState<number | null>(null);
+
+  useEffect(() => {
+    const update = () => setNow(Date.now());
+    update();
+    const interval = setInterval(update, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTimeAgo = (dateString: string): string => {
+    if (now === null) return new Date(dateString).toLocaleDateString(locale);
+    const diffMinutes = Math.round((new Date(dateString).getTime() - now) / 60000);
+    if (Math.abs(diffMinutes) < 60) return relativeFormatter.format(diffMinutes, 'minute');
+    const diffHours = Math.round(diffMinutes / 60);
+    if (Math.abs(diffHours) < 24) return relativeFormatter.format(diffHours, 'hour');
+    const diffDays = Math.round(diffHours / 24);
+    if (Math.abs(diffDays) < 30) return relativeFormatter.format(diffDays, 'day');
+    return relativeFormatter.format(Math.round(diffDays / 30), 'month');
   };
 
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <ErrorState title={error} onRetry={loadLeads} retryLabel="Try Again" />
+        <ErrorState title={error} onRetry={loadLeads} retryLabel={tCommon('tryAgain')} />
       </div>
     );
   }
@@ -186,11 +216,11 @@ export default function LeadsPage() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleExport}>
               <Download className="mr-2 h-4 w-4" />
-              Export
+              {tCommon('export')}
             </Button>
             <Button variant="outline" onClick={handleRecalculateScores} disabled={recalculating}>
               <RefreshCw className={`mr-2 h-4 w-4 ${recalculating ? 'animate-spin' : ''}`} />
-              Recalculate Scores
+              {t('actions.recalculate')}
             </Button>
           </div>
         }
@@ -201,29 +231,29 @@ export default function LeadsPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('stats.total')}</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{statistics.total_leads}</div>
               <p className="text-xs text-muted-foreground">
-                +{statistics.new_leads_24h} in last 24h
+                {t('stats.newLast24h', { count: statistics.new_leads_24h })}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">High Value Leads</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('stats.highValue')}</CardTitle>
               <Star className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{statistics.high_value_leads}</div>
-              <p className="text-xs text-muted-foreground">Score &gt; 70</p>
+              <p className="text-xs text-muted-foreground">{t('stats.highValueHint')}</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Average Score</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('stats.averageScore')}</CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -233,13 +263,13 @@ export default function LeadsPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('stats.conversionRate')}</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{statistics.conversion_rate.toFixed(1)}%</div>
               <p className="text-xs text-muted-foreground">
-                {statistics.converted_leads} converted
+                {t('stats.converted', { count: statistics.converted_leads })}
               </p>
             </CardContent>
           </Card>
@@ -249,9 +279,9 @@ export default function LeadsPage() {
       {/* Main Content */}
       <Tabs defaultValue="all" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="all">All Leads</TabsTrigger>
-          <TabsTrigger value="high-value">High Value</TabsTrigger>
-          <TabsTrigger value="new">New</TabsTrigger>
+          <TabsTrigger value="all">{t('tabs.all')}</TabsTrigger>
+          <TabsTrigger value="high-value">{t('tabs.highValue')}</TabsTrigger>
+          <TabsTrigger value="new">{t('tabs.new')}</TabsTrigger>
         </TabsList>
 
         {/* Filters */}
@@ -260,7 +290,7 @@ export default function LeadsPage() {
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search leads..."
+                placeholder={t('searchPlaceholder')}
                 value={filters.search || ''}
                 onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                 className="pl-8"
@@ -276,15 +306,15 @@ export default function LeadsPage() {
               }
             >
               <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={t('filters.status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="new">New</SelectItem>
-                <SelectItem value="contacted">Contacted</SelectItem>
-                <SelectItem value="qualified">Qualified</SelectItem>
-                <SelectItem value="converted">Converted</SelectItem>
-                <SelectItem value="lost">Lost</SelectItem>
+                <SelectItem value="all">{t('filters.allStatus')}</SelectItem>
+                <SelectItem value="new">{t('status.new')}</SelectItem>
+                <SelectItem value="contacted">{t('status.contacted')}</SelectItem>
+                <SelectItem value="qualified">{t('status.qualified')}</SelectItem>
+                <SelectItem value="converted">{t('status.converted')}</SelectItem>
+                <SelectItem value="lost">{t('status.lost')}</SelectItem>
               </SelectContent>
             </Select>
             <Select
@@ -292,13 +322,13 @@ export default function LeadsPage() {
               onValueChange={(value) => setFilters({ ...filters, sort: value })}
             >
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort by" />
+                <SelectValue placeholder={t('filters.sortBy')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="score_desc">Score (High to Low)</SelectItem>
-                <SelectItem value="score_asc">Score (Low to High)</SelectItem>
-                <SelectItem value="last_activity">Recent Activity</SelectItem>
-                <SelectItem value="created">Date Created</SelectItem>
+                <SelectItem value="score_desc">{t('filters.scoreDesc')}</SelectItem>
+                <SelectItem value="score_asc">{t('filters.scoreAsc')}</SelectItem>
+                <SelectItem value="last_activity">{t('filters.lastActivity')}</SelectItem>
+                <SelectItem value="created">{t('filters.dateCreated')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -326,8 +356,8 @@ export default function LeadsPage() {
           ) : leads.length === 0 ? (
             <EmptyState
               icon={Users}
-              title="No leads found"
-              description="Try adjusting your filters or wait for new leads to come in"
+              title={t('empty.noLeads')}
+              description={t('empty.noLeadsHint')}
             />
           ) : (
             <div className="space-y-4">
@@ -349,7 +379,9 @@ export default function LeadsPage() {
                         {/* Info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="font-medium truncate">{lead.name || 'Anonymous Lead'}</p>
+                            <p className="font-medium truncate">
+                              {lead.name || t('lead.anonymous')}
+                            </p>
                             <Badge variant={getScoreBadgeVariant(lead.total_score)}>
                               <Star className="mr-1 h-3 w-3" />
                               {lead.total_score}
@@ -382,15 +414,15 @@ export default function LeadsPage() {
                         {/* Score Breakdown Mini */}
                         <div className="hidden md:flex items-center gap-2">
                           <div className="text-center">
-                            <p className="text-xs text-muted-foreground">Search</p>
+                            <p className="text-xs text-muted-foreground">{t('lead.search')}</p>
                             <p className="font-medium">{lead.search_activity_score}</p>
                           </div>
                           <div className="text-center">
-                            <p className="text-xs text-muted-foreground">Engage</p>
+                            <p className="text-xs text-muted-foreground">{t('lead.engage')}</p>
                             <p className="font-medium">{lead.engagement_score}</p>
                           </div>
                           <div className="text-center">
-                            <p className="text-xs text-muted-foreground">Intent</p>
+                            <p className="text-xs text-muted-foreground">{t('lead.intent')}</p>
                             <p className="font-medium">{lead.intent_score}</p>
                           </div>
                         </div>
@@ -403,28 +435,28 @@ export default function LeadsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                            <DropdownMenuItem>Send Email</DropdownMenuItem>
-                            <DropdownMenuItem>Schedule Call</DropdownMenuItem>
+                            <DropdownMenuItem>{t('lead.viewDetails')}</DropdownMenuItem>
+                            <DropdownMenuItem>{t('lead.sendEmail')}</DropdownMenuItem>
+                            <DropdownMenuItem>{t('lead.scheduleCall')}</DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handleStatusUpdate(lead.id, 'contacted')}
                             >
-                              Mark as Contacted
+                              {t('lead.markContacted')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleStatusUpdate(lead.id, 'qualified')}
                             >
-                              Mark as Qualified
+                              {t('lead.markQualified')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleStatusUpdate(lead.id, 'converted')}
                             >
-                              Mark as Converted
+                              {t('lead.markConverted')}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => handleStatusUpdate(lead.id, 'lost')}>
-                              Mark as Lost
+                              {t('lead.markLost')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -433,7 +465,7 @@ export default function LeadsPage() {
                       {/* Score Bar */}
                       <div className="mt-4">
                         <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                          <span>Lead Score</span>
+                          <span>{t('lead.score')}</span>
                           <span>{lead.total_score}/100</span>
                         </div>
                         <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -457,10 +489,8 @@ export default function LeadsPage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Star className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-lg font-medium">No high-value leads</p>
-                <p className="text-sm text-muted-foreground">
-                  Leads with score above 70 will appear here
-                </p>
+                <p className="text-lg font-medium">{t('empty.noHighValue')}</p>
+                <p className="text-sm text-muted-foreground">{t('empty.noHighValueHint')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -474,7 +504,7 @@ export default function LeadsPage() {
                           {lead.name?.charAt(0) || lead.email?.charAt(0) || '?'}
                         </div>
                         <div>
-                          <p className="font-medium">{lead.name || 'Anonymous Lead'}</p>
+                          <p className="font-medium">{lead.name || t('lead.anonymous')}</p>
                           <p className="text-sm text-muted-foreground">{lead.email}</p>
                         </div>
                       </div>
@@ -514,19 +544,19 @@ export default function LeadsPage() {
                             <AlertCircle className="h-5 w-5 text-info" />
                           </div>
                           <div>
-                            <p className="font-medium">{lead.name || 'New Lead'}</p>
+                            <p className="font-medium">{lead.name || t('lead.newLead')}</p>
                             <p className="text-sm text-muted-foreground">{lead.email}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge variant={getScoreBadgeVariant(lead.total_score)}>
-                            Score: {lead.total_score}
+                            {t('lead.scoreValue', { score: lead.total_score })}
                           </Badge>
                           <Button
                             size="sm"
                             onClick={() => handleStatusUpdate(lead.id, 'contacted')}
                           >
-                            Contact
+                            {t('lead.contact')}
                           </Button>
                         </div>
                       </div>

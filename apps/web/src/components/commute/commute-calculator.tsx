@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   MapPin,
   Clock,
@@ -43,11 +44,11 @@ const MODE_ICONS: Record<CommuteMode, React.ReactNode> = {
   transit: <Train className="h-4 w-4" />,
 };
 
-const MODE_LABELS: Record<CommuteMode, string> = {
-  driving: 'Drive',
-  walking: 'Walk',
-  bicycling: 'Bike',
-  transit: 'Transit',
+const MODE_LABEL_KEYS: Record<CommuteMode, string> = {
+  driving: 'driving',
+  walking: 'walking',
+  bicycling: 'bicycling',
+  transit: 'transit',
 };
 
 export interface SavedDestinationWithResult extends SavedDestination {
@@ -76,6 +77,7 @@ export function CommuteCalculator({
   const [destinations, setDestinations] = useState<SavedDestinationWithResult[]>([]);
   const [isAdding, setIsAdding] = useState(initialShowForm);
   const [selectedMode, setSelectedMode] = useState<CommuteMode>('transit');
+  const t = useTranslations('pages.commute');
   const [error, setError] = useState<string | null>(null);
   const [calculatingId, setCalculatingId] = useState<string | null>(null);
 
@@ -117,7 +119,7 @@ export function CommuteCalculator({
   const handleCalculate = useCallback(
     async (destination: SavedDestinationWithResult) => {
       if (!propertyLat || !propertyLon) {
-        setError('Property location not available');
+        setError(t('errors.propertyLocation'));
         return;
       }
 
@@ -144,12 +146,12 @@ export function CommuteCalculator({
           onCommuteCalculated(response.result);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to calculate commute');
+        setError(err instanceof Error ? err.message : t('errors.calculate'));
       } finally {
         setCalculatingId(null);
       }
     },
-    [propertyId, propertyLat, propertyLon, selectedMode, onCommuteCalculated]
+    [propertyId, propertyLat, propertyLon, selectedMode, onCommuteCalculated, t]
   );
 
   // Add a new destination
@@ -158,7 +160,7 @@ export function CommuteCalculator({
     const lon = parseFloat(form.lon);
 
     if (!form.name || isNaN(lat) || isNaN(lon)) {
-      setError('Please fill in all required fields');
+      setError(t('errors.requiredFields'));
       return;
     }
 
@@ -176,7 +178,7 @@ export function CommuteCalculator({
     saveToStorage(newDestinations);
     setForm({ name: '', address: '', lat: '', lon: '' });
     setIsAdding(false);
-  }, [destinations, form, saveToStorage]);
+  }, [destinations, form, saveToStorage, t]);
 
   // Remove a destination
   const handleRemove = useCallback(
@@ -212,21 +214,21 @@ export function CommuteCalculator({
       <div className={cn('flex items-center justify-between mb-4', compact && 'flex-wrap')}>
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium">Commute Analysis</span>
+          <span className="font-medium">{t('title')}</span>
         </div>
         <Select
           value={selectedMode}
           onValueChange={(value) => setSelectedMode(value as CommuteMode)}
         >
           <SelectTrigger className="w-32">
-            <SelectValue placeholder="Mode" />
+            <SelectValue placeholder={t('modePlaceholder')} />
           </SelectTrigger>
           <SelectContent>
-            {Object.entries(MODE_LABELS).map(([mode, label]) => (
+            {Object.entries(MODE_LABEL_KEYS).map(([mode, labelKey]) => (
               <SelectItem key={mode} value={mode}>
                 <div className="flex items-center gap-2">
                   {MODE_ICONS[mode as CommuteMode]}
-                  <span>{label}</span>
+                  <span>{t(`modes.${labelKey}`)}</span>
                 </div>
               </SelectItem>
             ))}
@@ -278,7 +280,7 @@ export function CommuteCalculator({
                     size="sm"
                     onClick={() => handleCalculate(dest)}
                     disabled={!canCalculate || calculatingId === dest.id}
-                    aria-label="Calculate commute"
+                    aria-label={t('calculateAria')}
                   >
                     {calculatingId === dest.id ? (
                       <div className="h-4 w-4 animate-spin border-2 border-current border-t-transparent rounded-full" />
@@ -290,14 +292,12 @@ export function CommuteCalculator({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleSetDefault(dest.id)}
-                    aria-label="Set as default"
+                    aria-label={t('setDefaultAria')}
                   >
                     <Star
                       className={cn(
                         'h-4 w-4',
-                        dest.is_default
-                          ? 'fill-warning text-warning'
-                          : 'text-muted-foreground'
+                        dest.is_default ? 'fill-warning text-warning' : 'text-muted-foreground'
                       )}
                     />
                   </Button>
@@ -305,7 +305,7 @@ export function CommuteCalculator({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleRemove(dest.id)}
-                    aria-label="Remove destination"
+                    aria-label={t('removeDestinationAria')}
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
@@ -316,12 +316,12 @@ export function CommuteCalculator({
                 <div className="mt-2 pt-2 border-t border-dashed text-xs text-muted-foreground">
                   <div className="flex items-center gap-4">
                     <span>
-                      {dest.lastCalculated.distance_text} via{' '}
-                      {MODE_LABELS[dest.lastCalculated.mode as CommuteMode] ||
+                      {dest.lastCalculated.distance_text} {t('via')}{' '}
+                      {t(`modes.${MODE_LABEL_KEYS[dest.lastCalculated.mode as CommuteMode]}`) ||
                         dest.lastCalculated.mode}
                     </span>
                     {dest.lastCalculated.arrival_time && (
-                      <span>Arrival: {dest.lastCalculated.arrival_time}</span>
+                      <span>{t('arrival', { time: dest.lastCalculated.arrival_time })}</span>
                     )}
                   </div>
                 </div>
@@ -332,7 +332,7 @@ export function CommuteCalculator({
       ) : (
         <div className="text-center py-6 text-sm text-muted-foreground">
           <MapPinned className="h-8 w-8 mx-auto mb-2 opacity-50" />
-          <p>No destinations saved</p>
+          <p>{t('empty')}</p>
           <p className="text-xs">
             Add your work location or other frequent destinations to check commute times.
           </p>
@@ -343,7 +343,7 @@ export function CommuteCalculator({
       {isAdding ? (
         <div className="mt-4 p-3 border rounded-lg bg-muted/50 dark:bg-muted/20">
           <div className="flex items-center justify-between mb-3">
-            <span className="font-medium">Add Destination</span>
+            <span className="font-medium">{t('addDestination')}</span>
             <Button variant="ghost" size="sm" onClick={() => setIsAdding(false)}>
               <X className="h-4 w-4" />
             </Button>
@@ -351,31 +351,31 @@ export function CommuteCalculator({
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
               <Label htmlFor="dest-name" className="text-sm">
-                Name *
+                {t('nameLabel')} *
               </Label>
               <Input
                 id="dest-name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="e.g., Work, School"
+                placeholder={t('namePlaceholder')}
                 className="h-9"
               />
             </div>
             <div className="col-span-2">
               <Label htmlFor="dest-address" className="text-sm">
-                Address (optional)
+                {t('addressLabel')}
               </Label>
               <Input
                 id="dest-address"
                 value={form.address}
                 onChange={(e) => setForm({ ...form, address: e.target.value })}
-                placeholder="e.g., 123 Main St"
+                placeholder={t('addressPlaceholder')}
                 className="h-9"
               />
             </div>
             <div>
               <Label htmlFor="dest-lat" className="text-sm">
-                Latitude *
+                {t('latitudeLabel')} *
               </Label>
               <Input
                 id="dest-lat"
@@ -383,13 +383,13 @@ export function CommuteCalculator({
                 step="any"
                 value={form.lat}
                 onChange={(e) => setForm({ ...form, lat: e.target.value })}
-                placeholder="52.2297"
+                placeholder={t('latPlaceholder')}
                 className="h-9"
               />
             </div>
             <div>
               <Label htmlFor="dest-lon" className="text-sm">
-                Longitude *
+                {t('longitudeLabel')} *
               </Label>
               <Input
                 id="dest-lon"
@@ -397,7 +397,7 @@ export function CommuteCalculator({
                 step="any"
                 value={form.lon}
                 onChange={(e) => setForm({ ...form, lon: e.target.value })}
-                placeholder="21.0122"
+                placeholder={t('lonPlaceholder')}
                 className="h-9"
               />
             </div>
@@ -424,7 +424,7 @@ export function CommuteCalculator({
           onClick={() => setIsAdding(true)}
         >
           <Plus className="h-4 w-4 mr-1" />
-          Add Destination
+          {t('addDestination')}
         </Button>
       )}
 
@@ -432,7 +432,7 @@ export function CommuteCalculator({
       {!canCalculate && (
         <div className="mt-4 text-xs text-muted-foreground flex items-center gap-1">
           <MapPin className="h-3 w-3" />
-          Property location not available. Cannot calculate commute times.
+          {t('errors.propertyLocationHint')}
         </div>
       )}
     </div>

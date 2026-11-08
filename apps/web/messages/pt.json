@@ -110,7 +110,19 @@
       "messagePlaceholder": "Diz-nos como podemos ajudar...",
       "submit": "Enviar mensagem",
       "success": "Mensagem enviada com sucesso!",
-      "successDescription": "O agente entrará em contacto contigo em breve."
+      "successDescription": "O agente entrará em contacto contigo em breve.",
+      "intro": "Envie uma mensagem a este agente. Ele responderá à sua consulta o mais breve possível.",
+      "namePlaceholder": "João Silva",
+      "emailPlaceholder": "joao@example.com",
+      "phonePlaceholder": "+1 234 567 8900",
+      "typePlaceholder": "Selecione o tipo",
+      "closeAria": "Fechar formulário",
+      "successTitle": "Mensagem enviada!",
+      "errors": {
+        "send": "Não foi possível enviar a mensagem"
+      },
+      "cancel": "Cancelar",
+      "sending": "A enviar..."
     },
     "viewingForm": {
       "title": "Agendar uma visita",
@@ -1942,12 +1954,102 @@
       "description": "Faça a gestão das suas pesquisas guardadas e alertas.",
       "pauseAlerts": "Pausar alertas",
       "resumeAlerts": "Retomar alertas",
-      "deleteSearch": "Excluir busca"
+      "deleteSearch": "Excluir busca",
+      "loginRequired": "Inicie sessão para ver as suas pesquisas guardadas",
+      "errors": {
+        "load": "Não foi possível carregar as pesquisas guardadas",
+        "toggleAlert": "Não foi possível alternar o alerta",
+        "delete": "Não foi possível eliminar a pesquisa"
+      },
+      "filters": {
+        "allProperties": "Todos os imóveis"
+      },
+      "loading": "A carregar pesquisas guardadas...",
+      "refreshAria": "Atualizar as pesquisas guardadas",
+      "emptyTitle": "Ainda não há pesquisas guardadas",
+      "alerts": {
+        "newMatches": "Novas correspondências",
+        "priceDrops": "Quedas de preço"
+      },
+      "emptyDescription": "Guarde pesquisas na página de pesquisa para ser notificado de novos imóveis que correspondam aos seus critérios.",
+      "created": "Criado: {date}",
+      "used": "Usado: {count} vezes",
+      "paused": "Em pausa",
+      "deleteConfirm": "Tem a certeza de que quer eliminar «{name}»?",
+      "frequency": {
+        "instant": "Instantâneo",
+        "daily": "Diária",
+        "weekly": "Semanal",
+        "none": "Nenhuma"
+      },
+      "roomsLabel": "{count} quartos"
     },
     "leads": {
       "title": "Painel de contactos",
       "description": "Todos os pedidos captados no site.",
-      "searchPlaceholder": "Buscar leads..."
+      "searchPlaceholder": "Buscar leads...",
+      "status": {
+        "new": "Novo",
+        "contacted": "Contactado",
+        "qualified": "Qualificado",
+        "converted": "Convertido",
+        "lost": "Perdido"
+      },
+      "errors": {
+        "load": "Não foi possível carregar os leads",
+        "updateStatus": "Não foi possível atualizar o estado",
+        "recalculate": "Não foi possível recalcular as pontuações",
+        "export": "Não foi possível exportar os leads"
+      },
+      "actions": {
+        "recalculate": "Recalcular pontuações"
+      },
+      "stats": {
+        "total": "Leads totais",
+        "newLast24h": "+{count} nas últimas 24 horas",
+        "highValue": "Leads de alto valor",
+        "highValueHint": "Pontuação > 70",
+        "averageScore": "Pontuação média",
+        "conversionRate": "Taxa de conversão",
+        "converted": "convertidos: {count}"
+      },
+      "tabs": {
+        "all": "Todos os leads",
+        "highValue": "Alto valor",
+        "new": "Novos"
+      },
+      "filters": {
+        "status": "Estado",
+        "allStatus": "Todos os estados",
+        "sortBy": "Ordenar por",
+        "scoreDesc": "Pontuação (da mais alta)",
+        "scoreAsc": "Pontuação (da mais baixa)",
+        "lastActivity": "Atividade recente",
+        "dateCreated": "Data de criação"
+      },
+      "empty": {
+        "noLeads": "Nenhum lead encontrado",
+        "noLeadsHint": "Ajuste os filtros ou aguarde novos leads",
+        "noHighValue": "Não há leads de alto valor",
+        "noHighValueHint": "Os leads com pontuação superior a 70 aparecerão aqui"
+      },
+      "lead": {
+        "anonymous": "Lead anónimo",
+        "newLead": "Novo lead",
+        "search": "Pesquisa",
+        "engage": "Interação",
+        "intent": "Intenção",
+        "viewDetails": "Ver detalhes",
+        "sendEmail": "Enviar e-mail",
+        "scheduleCall": "Agendar chamada",
+        "markContacted": "Marcar como contactado",
+        "markQualified": "Marcar como qualificado",
+        "markConverted": "Marcar como convertido",
+        "markLost": "Marcar como perdido",
+        "score": "Pontuação do lead",
+        "scoreValue": "Pontuação: {score}",
+        "contact": "Contactar"
+      }
     },
     "knowledge": {
       "title": "Conhecimento",
@@ -2488,6 +2590,37 @@
           "start": "Iniciar trabalho de exportação"
         }
       }
+    },
+    "commute": {
+      "title": "Análise do trajeto",
+      "modes": {
+        "driving": "De carro",
+        "walking": "A pé",
+        "transit": "De transports",
+        "bicycling": "De bicicleta"
+      },
+      "modePlaceholder": "Modo",
+      "calculateAria": "Calcular trajeto",
+      "setDefaultAria": "Definir como predefinido",
+      "removeDestinationAria": "Remover destino",
+      "empty": "Nenhum destino guardado",
+      "addDestination": "Adicionar destino",
+      "namePlaceholder": "ex., Trabalho, Escola",
+      "addressLabel": "Morada (opcional)",
+      "addressPlaceholder": "ex., Rua Principal 123",
+      "latPlaceholder": "52.2297",
+      "lonPlaceholder": "21.0122",
+      "errors": {
+        "propertyLocation": "Localização do imóvel indisponível",
+        "calculate": "Não foi possível calcular o trajeto",
+        "requiredFields": "Preencha todos os campos obrigatórios",
+        "propertyLocationHint": "Localização do imóvel indisponível. Não é possível calcular os tempos de trajeto."
+      },
+      "nameLabel": "Nome",
+      "latitudeLabel": "Latitude",
+      "longitudeLabel": "Longitude",
+      "via": "via",
+      "arrival": "Chegada: {time}"
     }
   },
   "states": {

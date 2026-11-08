@@ -110,7 +110,19 @@
       "messagePlaceholder": "Raccontaci come possiamo aiutarti...",
       "submit": "Invia messaggio",
       "success": "Messaggio inviato correttamente!",
-      "successDescription": "L’agente ti risponderà a breve."
+      "successDescription": "L’agente ti risponderà a breve.",
+      "intro": "Invia un messaggio a questo agente. Risponderà alla tua richiesta il prima possibile.",
+      "namePlaceholder": "Mario Rossi",
+      "emailPlaceholder": "mario@example.com",
+      "phonePlaceholder": "+1 234 567 8900",
+      "typePlaceholder": "Seleziona il tipo",
+      "closeAria": "Chiudi il modulo",
+      "successTitle": "Messaggio inviato!",
+      "errors": {
+        "send": "Impossibile inviare il messaggio"
+      },
+      "cancel": "Annulla",
+      "sending": "Invio..."
     },
     "viewingForm": {
       "title": "Prenota una visita",
@@ -1942,12 +1954,102 @@
       "description": "Gestisci le ricerche salvate e gli avvisi.",
       "pauseAlerts": "Sospendi avvisi",
       "resumeAlerts": "Riprendi avvisi",
-      "deleteSearch": "Elimina ricerca"
+      "deleteSearch": "Elimina ricerca",
+      "loginRequired": "Accedi per vedere le ricerche salvate",
+      "errors": {
+        "load": "Impossibile caricare le ricerche salvate",
+        "toggleAlert": "Impossibile attivare o disattivare l’avviso",
+        "delete": "Impossibile eliminare la ricerca"
+      },
+      "filters": {
+        "allProperties": "Tutti gli immobili"
+      },
+      "loading": "Caricamento delle ricerche salvate...",
+      "refreshAria": "Aggiorna le ricerche salvate",
+      "emptyTitle": "Nessuna ricerca salvata",
+      "alerts": {
+        "newMatches": "Nuove corrispondenze",
+        "priceDrops": "Cali di prezzo"
+      },
+      "emptyDescription": "Salva le ricerche dalla pagina di ricerca per ricevere notifiche su nuovi immobili che corrispondono ai tuoi criteri.",
+      "created": "Creato: {date}",
+      "used": "Usato: {count} volte",
+      "paused": "In pausa",
+      "deleteConfirm": "Vuoi davvero eliminare «{name}»?",
+      "frequency": {
+        "instant": "Istantanea",
+        "daily": "Giornaliera",
+        "weekly": "Settimanale",
+        "none": "Nessuna"
+      },
+      "roomsLabel": "{count} locali"
     },
     "leads": {
       "title": "Panel dei contatti",
       "description": "Tutte le richieste raccolte sul sito.",
-      "searchPlaceholder": "Cerca lead..."
+      "searchPlaceholder": "Cerca lead...",
+      "status": {
+        "new": "Nuovo",
+        "contacted": "Contattato",
+        "qualified": "Qualificato",
+        "converted": "Convertito",
+        "lost": "Perso"
+      },
+      "errors": {
+        "load": "Impossibile caricare i lead",
+        "updateStatus": "Impossibile aggiornare lo stato",
+        "recalculate": "Impossibile ricalcolare i punteggi",
+        "export": "Impossibile esportare i lead"
+      },
+      "actions": {
+        "recalculate": "Ricalcola i punteggi"
+      },
+      "stats": {
+        "total": "Lead totali",
+        "newLast24h": "+{count} nelle ultime 24 ore",
+        "highValue": "Lead ad alto valore",
+        "highValueHint": "Punteggio > 70",
+        "averageScore": "Punteggio medio",
+        "conversionRate": "Tasso di conversione",
+        "converted": "convertiti: {count}"
+      },
+      "tabs": {
+        "all": "Tutti i lead",
+        "highValue": "Alto valore",
+        "new": "Nuovi"
+      },
+      "filters": {
+        "status": "Stato",
+        "allStatus": "Tutti gli stati",
+        "sortBy": "Ordina per",
+        "scoreDesc": "Punteggio (dal più alto)",
+        "scoreAsc": "Punteggio (dal più basso)",
+        "lastActivity": "Attività recente",
+        "dateCreated": "Data di creazione"
+      },
+      "empty": {
+        "noLeads": "Nessun lead trovato",
+        "noLeadsHint": "Modifica i filtri o attendi nuovi lead",
+        "noHighValue": "Nessun lead ad alto valore",
+        "noHighValueHint": "I lead con punteggio superiore a 70 appariranno qui"
+      },
+      "lead": {
+        "anonymous": "Lead anonimo",
+        "newLead": "Nuovo lead",
+        "search": "Ricerca",
+        "engage": "Interazione",
+        "intent": "Intento",
+        "viewDetails": "Vedi dettagli",
+        "sendEmail": "Invia e-mail",
+        "scheduleCall": "Prenota una chiamata",
+        "markContacted": "Segna come contattato",
+        "markQualified": "Segna come qualificato",
+        "markConverted": "Segna come convertito",
+        "markLost": "Segna come perso",
+        "score": "Punteggio del lead",
+        "scoreValue": "Punteggio: {score}",
+        "contact": "Contatta"
+      }
     },
     "knowledge": {
       "title": "Conoscenza",
@@ -2488,6 +2590,37 @@
           "start": "Avvia job di esportazione"
         }
       }
+    },
+    "commute": {
+      "title": "Analisi del percorso",
+      "modes": {
+        "driving": "In auto",
+        "walking": "A piedi",
+        "transit": "Con i mezzi",
+        "bicycling": "In bici"
+      },
+      "modePlaceholder": "Modalità",
+      "calculateAria": "Calcola il percorso",
+      "setDefaultAria": "Imposta come predefinito",
+      "removeDestinationAria": "Rimuovi destinazione",
+      "empty": "Nessuna destinazione salvata",
+      "addDestination": "Aggiungi destinazione",
+      "namePlaceholder": "es. Lavoro, Scuola",
+      "addressLabel": "Indirizzo (opzionale)",
+      "addressPlaceholder": "es. Via Roma 123",
+      "latPlaceholder": "52.2297",
+      "lonPlaceholder": "21.0122",
+      "errors": {
+        "propertyLocation": "Posizione dell’immobile non disponibile",
+        "calculate": "Impossibile calcolare il percorso",
+        "requiredFields": "Compila tutti i campi obbligatori",
+        "propertyLocationHint": "Posizione dell’immobile non disponibile. Impossibile calcolare i tempi di percorrenza."
+      },
+      "nameLabel": "Nome",
+      "latitudeLabel": "Latitudine",
+      "longitudeLabel": "Longitudine",
+      "via": "via",
+      "arrival": "Arrivo: {time}"
     }
   },
   "states": {

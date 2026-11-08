@@ -110,7 +110,19 @@
       "messagePlaceholder": "Size nasıl yardımcı olabileceğimizi yazın...",
       "submit": "Mesajı gönder",
       "success": "Mesaj başarıyla gönderildi!",
-      "successDescription": "Ajan en kısa sürede size dönecek."
+      "successDescription": "Ajan en kısa sürede size dönecek.",
+      "intro": "Bu ajana mesaj gönderin. Talebinizi en kısa sürede yanıtlayacak.",
+      "namePlaceholder": "Ali Yılmaz",
+      "emailPlaceholder": "ali@example.com",
+      "phonePlaceholder": "+1 234 567 8900",
+      "typePlaceholder": "Tür seçin",
+      "closeAria": "Formu kapat",
+      "successTitle": "Mesaj gönderildi!",
+      "errors": {
+        "send": "Mesaj gönderilemedi"
+      },
+      "cancel": "İptal",
+      "sending": "Gönderiliyor..."
     },
     "viewingForm": {
       "title": "Görüşme planlayın",
@@ -1942,12 +1954,102 @@
       "description": "Kayıtlı aramalarınızı ve uyarı tercihlerinizi yönetin.",
       "pauseAlerts": "Uyarıları duraklat",
       "resumeAlerts": "Uyarıları sürdür",
-      "deleteSearch": "Aramayı sil"
+      "deleteSearch": "Aramayı sil",
+      "loginRequired": "Kayıtlı aramalarınızı görmek için giriş yapın",
+      "errors": {
+        "load": "Kayıtlı aramalar yüklenemedi",
+        "toggleAlert": "Uyarı aç/kapat yapılamadı",
+        "delete": "Arama silinemedi"
+      },
+      "filters": {
+        "allProperties": "Tüm emlaklar"
+      },
+      "loading": "Kayıtlı aramalar yükleniyor...",
+      "refreshAria": "Kayıtlı aramaları yenile",
+      "emptyTitle": "Henüz kayıtlı arama yok",
+      "alerts": {
+        "newMatches": "Yeni eşleşmeler",
+        "priceDrops": "Fiyat düşüşleri"
+      },
+      "emptyDescription": "Kriterilerinize uyan yeni emlaklardan haberdar olmak için arama sayfasından aramaları kaydedin.",
+      "created": "Oluşturuldu: {date}",
+      "used": "Kullanıldı: {count} kez",
+      "paused": "Duraklatıldı",
+      "deleteConfirm": "“{name}” adlı kaydı silmek istediğinizden emin misiniz?",
+      "frequency": {
+        "instant": "Anında",
+        "daily": "Günlük",
+        "weekly": "Haftalık",
+        "none": "Yok"
+      },
+      "roomsLabel": "{count} oda"
     },
     "leads": {
       "title": "Talepler panosu",
       "description": "Sitede toplanan tüm talepler.",
-      "searchPlaceholder": "Aday ara..."
+      "searchPlaceholder": "Aday ara...",
+      "status": {
+        "new": "Yeni",
+        "contacted": "İletişime geçildi",
+        "qualified": "Nitelikli",
+        "converted": "Dönüştürüldü",
+        "lost": "Kaybedildi"
+      },
+      "errors": {
+        "load": "Müşteriler yüklenemedi",
+        "updateStatus": "Durum güncellenemedi",
+        "recalculate": "Puanlar yeniden hesaplanamadı",
+        "export": "Müşteriler dışa aktarılamadı"
+      },
+      "actions": {
+        "recalculate": "Puanları yeniden hesapla"
+      },
+      "stats": {
+        "total": "Toplam müşteri",
+        "newLast24h": "son 24 saatte +{count}",
+        "highValue": "Yüksek değerli müşteriler",
+        "highValueHint": "Puan > 70",
+        "averageScore": "Ortalama puan",
+        "conversionRate": "Dönüşüm oranı",
+        "converted": "dönüştürülen: {count}"
+      },
+      "tabs": {
+        "all": "Tüm müşteriler",
+        "highValue": "Yüksek değer",
+        "new": "Yeniler"
+      },
+      "filters": {
+        "status": "Durum",
+        "allStatus": "Tüm durumlar",
+        "sortBy": "Sıralama",
+        "scoreDesc": "Puan (yüksekten düşüğe)",
+        "scoreAsc": "Puan (düşükten yükseğe)",
+        "lastActivity": "Son hareket",
+        "dateCreated": "Oluşturulma tarihi"
+      },
+      "empty": {
+        "noLeads": "Müşteri bulunamadı",
+        "noLeadsHint": "Filtreleri değiştirin veya yeni müşterileri bekleyin",
+        "noHighValue": "Yüksek değerli müşteri yok",
+        "noHighValueHint": "70 üzeri puanlı müşteriler burada görünür"
+      },
+      "lead": {
+        "anonymous": "Anonim müşteri",
+        "newLead": "Yeni müşteri",
+        "search": "Arama",
+        "engage": "Etkileşim",
+        "intent": "Niyet",
+        "viewDetails": "Detayları görüntüle",
+        "sendEmail": "E-posta gönder",
+        "scheduleCall": "Görüşme planla",
+        "markContacted": "İletişime geçildi olarak işaretle",
+        "markQualified": "Nitelikli olarak işaretle",
+        "markConverted": "Dönüştürüldü olarak işaretle",
+        "markLost": "Kaybedildi olarak işaretle",
+        "score": "Müşteri puanı",
+        "scoreValue": "Puan: {score}",
+        "contact": "İletişim"
+      }
     },
     "knowledge": {
       "title": "Bilgi",
@@ -2488,6 +2590,37 @@
           "start": "Dışa aktarma işini başlat"
         }
       }
+    },
+    "commute": {
+      "title": "Yolculuk analizi",
+      "modes": {
+        "driving": "Aracınla",
+        "walking": "Yürüyerek",
+        "transit": "Toplu taşıma",
+        "bicycling": "Bisikletle"
+      },
+      "modePlaceholder": "Mod",
+      "calculateAria": "Yolculuğu hesapla",
+      "setDefaultAria": "Varsayılan yap",
+      "removeDestinationAria": "Hedefi kaldır",
+      "empty": "Kayıtlı hedef yok",
+      "addDestination": "Hedef ekle",
+      "namePlaceholder": "örn. İş, Okul",
+      "addressLabel": "Adres (isteğe bağlı)",
+      "addressPlaceholder": "örn. Ana Cadde No 123",
+      "latPlaceholder": "52.2297",
+      "lonPlaceholder": "21.0122",
+      "errors": {
+        "propertyLocation": "Emlak konumu mevcut değil",
+        "calculate": "Yolculuk hesaplanamadı",
+        "requiredFields": "Lütfen zorunlu alanların tümünü doldurun",
+        "propertyLocationHint": "Emlak konumu mevcut değil. Yolculuk süreleri hesaplanamaz."
+      },
+      "nameLabel": "Ad",
+      "latitudeLabel": "Enlem",
+      "longitudeLabel": "Boylam",
+      "via": "üzerinden",
+      "arrival": "Varış: {time}"
     }
   },
   "states": {

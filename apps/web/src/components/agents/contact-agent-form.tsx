@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Send, Loader2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,12 +25,12 @@ interface ContactAgentFormProps {
   onCancel?: () => void;
 }
 
-const inquiryTypes: { value: InquiryType; label: string }[] = [
-  { value: 'general', label: 'General Inquiry' },
-  { value: 'property', label: 'Property Inquiry' },
-  { value: 'financing', label: 'Financing Options' },
-  { value: 'viewing', label: 'Schedule Viewing' },
-];
+const INQUIRY_TYPE_LABEL_KEYS: Record<InquiryType, string> = {
+  general: 'general',
+  property: 'property',
+  financing: 'financing',
+  viewing: 'viewing',
+};
 
 export function ContactAgentForm({
   agent,
@@ -37,6 +38,7 @@ export function ContactAgentForm({
   onSuccess,
   onCancel,
 }: ContactAgentFormProps) {
+  const t = useTranslations('agents.contactForm');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,7 +87,7 @@ export function ContactAgentForm({
         onSuccess?.();
       }, 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send message');
+      setError(err instanceof Error ? err.message : t('errors.send'));
     } finally {
       setLoading(false);
     }
@@ -100,8 +102,8 @@ export function ContactAgentForm({
           <div className="mb-4 rounded-full bg-success/15 p-3">
             <Send className="h-6 w-6 text-success" />
           </div>
-          <h3 className="mb-2 text-lg font-semibold">Message Sent!</h3>
-          <p className="text-muted-foreground">The agent will get back to you soon.</p>
+          <h3 className="mb-2 text-lg font-semibold">{t('successTitle')}</h3>
+          <p className="text-muted-foreground">{t('successDescription')}</p>
         </CardContent>
       </Card>
     );
@@ -112,36 +114,34 @@ export function ContactAgentForm({
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg">Contact {displayName}</CardTitle>
         {onCancel && (
-          <Button variant="ghost" size="icon" onClick={onCancel} aria-label="Close form">
+          <Button variant="ghost" size="icon" onClick={onCancel} aria-label={t('closeAria')}>
             <X className="h-4 w-4" aria-hidden="true" />
           </Button>
         )}
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground mb-4">
-          Send a message to this agent. They will respond to your inquiry as soon as possible.
-        </p>
+        <p className="text-sm text-muted-foreground mb-4">{t('intro')}</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name">Your Name *</Label>
+              <Label htmlFor="name">{t('name')} *</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="John Doe"
+                placeholder={t('namePlaceholder')}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Your Email *</Label>
+              <Label htmlFor="email">{t('email')} *</Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="john@example.com"
+                placeholder={t('emailPlaceholder')}
                 required
               />
             </div>
@@ -149,17 +149,17 @@ export function ContactAgentForm({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="phone">Your Phone</Label>
+              <Label htmlFor="phone">{t('phone')}</Label>
               <Input
                 id="phone"
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="+1 234 567 8900"
+                placeholder={t('phonePlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="inquiry_type">Inquiry Type</Label>
+              <Label htmlFor="inquiry_type">{t('inquiryType')}</Label>
               <Select
                 value={formData.inquiry_type}
                 onValueChange={(value: InquiryType) =>
@@ -167,12 +167,12 @@ export function ContactAgentForm({
                 }
               >
                 <SelectTrigger id="inquiry_type">
-                  <SelectValue placeholder="Select type" />
+                  <SelectValue placeholder={t('typePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {inquiryTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
+                  {(Object.keys(INQUIRY_TYPE_LABEL_KEYS) as InquiryType[]).map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {t(INQUIRY_TYPE_LABEL_KEYS[type])}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -181,12 +181,12 @@ export function ContactAgentForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="message">Message *</Label>
+            <Label htmlFor="message">{t('message')} *</Label>
             <textarea
               id="message"
               value={formData.message}
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              placeholder="Tell us how we can help you..."
+              placeholder={t('messagePlaceholder')}
               rows={4}
               required
               className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
@@ -202,19 +202,19 @@ export function ContactAgentForm({
           <div className="flex justify-end gap-2">
             {onCancel && (
               <Button type="button" variant="outline" onClick={onCancel}>
-                Cancel
+                {t('cancel')}
               </Button>
             )}
             <Button type="submit" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-                  Sending...
+                  {t('sending')}
                 </>
               ) : (
                 <>
                   <Send className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Send Message
+                  {t('submit')}
                 </>
               )}
             </Button>

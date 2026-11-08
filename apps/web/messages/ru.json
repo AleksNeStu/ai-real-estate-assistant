@@ -110,7 +110,19 @@
       "messagePlaceholder": "Расскажите, чем мы можем помочь...",
       "submit": "Отправить сообщение",
       "success": "Сообщение успешно отправлено!",
-      "successDescription": "Агент свяжется с вами в ближайшее время."
+      "successDescription": "Агент свяжется с вами в ближайшее время.",
+      "intro": "Отправьте сообщение этому агенту. Он ответит на ваш запрос как можно скорее.",
+      "namePlaceholder": "Иван Иванов",
+      "emailPlaceholder": "ivan@example.com",
+      "phonePlaceholder": "+1 234 567 8900",
+      "typePlaceholder": "Выберите тип",
+      "closeAria": "Закрыть форму",
+      "successTitle": "Сообщение отправлено!",
+      "errors": {
+        "send": "Не удалось отправить сообщение"
+      },
+      "cancel": "Отмена",
+      "sending": "Отправка..."
     },
     "viewingForm": {
       "title": "Назначить показ",
@@ -1942,12 +1954,102 @@
       "description": "Управляйте сохранёнными поисками и оповещениями.",
       "pauseAlerts": "Приостановить оповещения",
       "resumeAlerts": "Возобновить оповещения",
-      "deleteSearch": "Удалить поиск"
+      "deleteSearch": "Удалить поиск",
+      "loginRequired": "Войдите, чтобы увидеть сохранённые поиски",
+      "errors": {
+        "load": "Не удалось загрузить сохранённые поиски",
+        "toggleAlert": "Не удалось переключить оповещение",
+        "delete": "Не удалось удалить поиск"
+      },
+      "filters": {
+        "allProperties": "Все объекты"
+      },
+      "loading": "Загрузка сохранённых поисков...",
+      "refreshAria": "Обновить сохранённые поиски",
+      "emptyTitle": "Сохранённых поисков пока нет",
+      "alerts": {
+        "newMatches": "Новые совпадения",
+        "priceDrops": "Падения цен"
+      },
+      "emptyDescription": "Сохраняйте запросы на странице поиска, чтобы получать уведомления о новых объектах, соответствующих вашим критериям.",
+      "created": "Создано: {date}",
+      "used": "Использовано: {count} раз",
+      "paused": "Приостановлено",
+      "deleteConfirm": "Вы уверены, что хотите удалить «{name}»?",
+      "frequency": {
+        "instant": "Мгновенно",
+        "daily": "Ежедневно",
+        "weekly": "Еженедельно",
+        "none": "Нет"
+      },
+      "roomsLabel": "{count} комнат"
     },
     "leads": {
       "title": "Панель лидов",
       "description": "Все обращения, собранные на сайте.",
-      "searchPlaceholder": "Поиск лидов..."
+      "searchPlaceholder": "Поиск лидов...",
+      "status": {
+        "new": "Новый",
+        "contacted": "Связались",
+        "qualified": "Квалифицирован",
+        "converted": "Конвертирован",
+        "lost": "Потерян"
+      },
+      "errors": {
+        "load": "Не удалось загрузить лиды",
+        "updateStatus": "Не удалось обновить статус",
+        "recalculate": "Не удалось пересчитать оценки",
+        "export": "Не удалось выгрузить лиды"
+      },
+      "actions": {
+        "recalculate": "Пересчитать оценки"
+      },
+      "stats": {
+        "total": "Всего лидов",
+        "newLast24h": "+{count} за последние 24 часа",
+        "highValue": "Лиды высокой ценности",
+        "highValueHint": "Оценка > 70",
+        "averageScore": "Средняя оценка",
+        "conversionRate": "Конверсия",
+        "converted": "конвертировано: {count}"
+      },
+      "tabs": {
+        "all": "Все лиды",
+        "highValue": "Высокая ценность",
+        "new": "Новые"
+      },
+      "filters": {
+        "status": "Статус",
+        "allStatus": "Все статусы",
+        "sortBy": "Сортировать по",
+        "scoreDesc": "Оценка (по убыванию)",
+        "scoreAsc": "Оценка (по возрастанию)",
+        "lastActivity": "Недавняя активность",
+        "dateCreated": "Дата создания"
+      },
+      "empty": {
+        "noLeads": "Лиды не найдены",
+        "noLeadsHint": "Измените фильтры или дождитесь новых лидов",
+        "noHighValue": "Нет лидов высокой ценности",
+        "noHighValueHint": "Здесь появятся лиды с оценкой выше 70"
+      },
+      "lead": {
+        "anonymous": "Анонимный лид",
+        "newLead": "Новый лид",
+        "search": "Поиск",
+        "engage": "Вовлечение",
+        "intent": "Намерение",
+        "viewDetails": "Подробнее",
+        "sendEmail": "Отправить письмо",
+        "scheduleCall": "Запланировать звонок",
+        "markContacted": "Отметить как связались",
+        "markQualified": "Отметить как квалифицирован",
+        "markConverted": "Отметить как конвертирован",
+        "markLost": "Отметить как потерян",
+        "score": "Оценка лида",
+        "scoreValue": "Оценка: {score}",
+        "contact": "Связаться"
+      }
     },
     "knowledge": {
       "title": "База знаний",
@@ -2488,6 +2590,37 @@
           "start": "Запустить задание экспорта"
         }
       }
+    },
+    "commute": {
+      "title": "Анализ дороги",
+      "modes": {
+        "driving": "На авто",
+        "walking": "Пешком",
+        "transit": "Транспортом",
+        "bicycling": "На велосипеде"
+      },
+      "modePlaceholder": "Режим",
+      "calculateAria": "Рассчитать дорогу",
+      "setDefaultAria": "Сделать по умолчанию",
+      "removeDestinationAria": "Удалить пункт назначения",
+      "empty": "Пункты назначения не сохранены",
+      "addDestination": "Добавить пункт назначения",
+      "namePlaceholder": "например, Работа, Школа",
+      "addressLabel": "Адрес (необязательно)",
+      "addressPlaceholder": "например, ул. Главная, 123",
+      "latPlaceholder": "52.2297",
+      "lonPlaceholder": "21.0122",
+      "errors": {
+        "propertyLocation": "Расположение объекта недоступно",
+        "calculate": "Не удалось рассчитать дорогу",
+        "requiredFields": "Заполните все обязательные поля",
+        "propertyLocationHint": "Расположение объекта недоступно. Время в пути рассчитать нельзя."
+      },
+      "nameLabel": "Название",
+      "latitudeLabel": "Широта",
+      "longitudeLabel": "Долгота",
+      "via": "через",
+      "arrival": "Прибытие: {time}"
     }
   },
   "states": {

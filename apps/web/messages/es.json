@@ -110,7 +110,19 @@
       "messagePlaceholder": "Cuéntanos cómo podemos ayudarte...",
       "submit": "Enviar mensaje",
       "success": "¡Mensaje enviado correctamente!",
-      "successDescription": "El agente te responderá en breve."
+      "successDescription": "El agente te responderá en breve.",
+      "intro": "Envía un mensaje a este agente. Responderá a tu consulta lo antes posible.",
+      "namePlaceholder": "Juan Pérez",
+      "emailPlaceholder": "juan@example.com",
+      "phonePlaceholder": "+1 234 567 8900",
+      "typePlaceholder": "Selecciona el tipo",
+      "closeAria": "Cerrar formulario",
+      "successTitle": "¡Mensaje enviado!",
+      "errors": {
+        "send": "No se pudo enviar el mensaje"
+      },
+      "cancel": "Cancelar",
+      "sending": "Enviando..."
     },
     "viewingForm": {
       "title": "Programar una visita",
@@ -1942,12 +1954,102 @@
       "description": "Gestiona tus búsquedas guardadas y tus alertas.",
       "pauseAlerts": "Pausar alertas",
       "resumeAlerts": "Reanudar alertas",
-      "deleteSearch": "Eliminar búsqueda"
+      "deleteSearch": "Eliminar búsqueda",
+      "loginRequired": "Inicia sesión para ver tus búsquedas guardadas",
+      "errors": {
+        "load": "No se pudieron cargar las búsquedas guardadas",
+        "toggleAlert": "No se pudo cambiar la alerta",
+        "delete": "No se pudo eliminar la búsqueda"
+      },
+      "filters": {
+        "allProperties": "Todas las propiedades"
+      },
+      "loading": "Cargando búsquedas guardadas...",
+      "refreshAria": "Actualizar las búsquedas guardadas",
+      "emptyTitle": "Aún no hay búsquedas guardadas",
+      "alerts": {
+        "newMatches": "Nuevas coincidencias",
+        "priceDrops": "Bajadas de precio"
+      },
+      "emptyDescription": "Guarda búsquedas desde la página de búsqueda para recibir avisos de nuevas propiedades que coincidan con tus criterios.",
+      "created": "Creado: {date}",
+      "used": "Usado: {count} veces",
+      "paused": "En pausa",
+      "deleteConfirm": "¿Seguro que quieres eliminar «{name}»?",
+      "frequency": {
+        "instant": "Instantánea",
+        "daily": "Diaria",
+        "weekly": "Semanal",
+        "none": "Ninguna"
+      },
+      "roomsLabel": "{count} habitaciones"
     },
     "leads": {
       "title": "Panel de contactos",
       "description": "Todas las consultas capturadas en el sitio.",
-      "searchPlaceholder": "Buscar contactos..."
+      "searchPlaceholder": "Buscar contactos...",
+      "status": {
+        "new": "Nuevo",
+        "contacted": "Contactado",
+        "qualified": "Cualificado",
+        "converted": "Convertido",
+        "lost": "Perdido"
+      },
+      "errors": {
+        "load": "No se pudieron cargar los leads",
+        "updateStatus": "No se pudo actualizar el estado",
+        "recalculate": "No se pudieron recalcular las puntuaciones",
+        "export": "No se pudieron exportar los leads"
+      },
+      "actions": {
+        "recalculate": "Recalcular puntuaciones"
+      },
+      "stats": {
+        "total": "Leads totales",
+        "newLast24h": "+{count} en las últimas 24 horas",
+        "highValue": "Leads de alto valor",
+        "highValueHint": "Puntuación > 70",
+        "averageScore": "Puntuación media",
+        "conversionRate": "Tasa de conversión",
+        "converted": "convertidos: {count}"
+      },
+      "tabs": {
+        "all": "Todos los leads",
+        "highValue": "Alto valor",
+        "new": "Nuevos"
+      },
+      "filters": {
+        "status": "Estado",
+        "allStatus": "Todos los estados",
+        "sortBy": "Ordenar por",
+        "scoreDesc": "Puntuación (de mayor a menor)",
+        "scoreAsc": "Puntuación (de menor a mayor)",
+        "lastActivity": "Actividad reciente",
+        "dateCreated": "Fecha de creación"
+      },
+      "empty": {
+        "noLeads": "No se encontraron leads",
+        "noLeadsHint": "Ajusta los filtros o espera a que lleguen nuevos leads",
+        "noHighValue": "No hay leads de alto valor",
+        "noHighValueHint": "Los leads con puntuación superior a 70 aparecerán aquí"
+      },
+      "lead": {
+        "anonymous": "Lead anónimo",
+        "newLead": "Nuevo lead",
+        "search": "Búsqueda",
+        "engage": "Interacción",
+        "intent": "Intención",
+        "viewDetails": "Ver detalles",
+        "sendEmail": "Enviar correo",
+        "scheduleCall": "Programar llamada",
+        "markContacted": "Marcar como contactado",
+        "markQualified": "Marcar como cualificado",
+        "markConverted": "Marcar como convertido",
+        "markLost": "Marcar como perdido",
+        "score": "Puntuación del lead",
+        "scoreValue": "Puntuación: {score}",
+        "contact": "Contactar"
+      }
     },
     "knowledge": {
       "title": "Conocimiento",
@@ -2488,6 +2590,37 @@
           "start": "Iniciar trabajo de exportación"
         }
       }
+    },
+    "commute": {
+      "title": "Análisis del trayecto",
+      "modes": {
+        "driving": "En coche",
+        "walking": "A pie",
+        "transit": "En transporte público",
+        "bicycling": "En bici"
+      },
+      "modePlaceholder": "Modo",
+      "calculateAria": "Calcular trayecto",
+      "setDefaultAria": "Establecer como predeterminado",
+      "removeDestinationAria": "Eliminar destino",
+      "empty": "No hay destinos guardados",
+      "addDestination": "Añadir destino",
+      "namePlaceholder": "p. ej., Trabajo, Escuela",
+      "addressLabel": "Dirección (opcional)",
+      "addressPlaceholder": "p. ej., Calle Mayor 123",
+      "latPlaceholder": "52.2297",
+      "lonPlaceholder": "21.0122",
+      "errors": {
+        "propertyLocation": "Ubicación de la propiedad no disponible",
+        "calculate": "No se pudo calcular el trayecto",
+        "requiredFields": "Rellena todos los campos obligatorios",
+        "propertyLocationHint": "Ubicación de la propiedad no disponible. No se pueden calcular los tiempos de trayecto."
+      },
+      "nameLabel": "Nombre",
+      "latitudeLabel": "Latitud",
+      "longitudeLabel": "Longitud",
+      "via": "en",
+      "arrival": "Llegada: {time}"
     }
   },
   "states": {

@@ -195,8 +195,8 @@ describe('LeadsPage', () => {
     render(<LeadsPage />);
 
     await waitFor(() => {
-      // The error component shows "Try Again" button on error
-      expect(screen.getByText('Try Again')).toBeInTheDocument();
+      // The error component shows the retry button on error
+      expect(screen.getByText('Try again')).toBeInTheDocument();
     });
   });
 
@@ -367,8 +367,10 @@ describe('LeadsPage', () => {
     render(<LeadsPage />);
 
     await waitFor(() => {
-      // date-fns mock returns '2 hours ago'
-      const timeAgoElements = screen.getAllByText('2 hours ago');
+      // The activity time is rendered with Intl.RelativeTimeFormat, so the exact
+      // wording depends on how long ago the fixture was created.
+      // Intl.RelativeTimeFormat renders 'this minute' / 'N minutes ago' / 'now'
+      const timeAgoElements = screen.getAllByText(/this minute|minute ago|last minute|now/i);
       expect(timeAgoElements.length).toBeGreaterThan(0);
     });
   });
@@ -381,10 +383,10 @@ describe('LeadsPage', () => {
     render(<LeadsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Try Again')).toBeInTheDocument();
+      expect(screen.getByText('Try again')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText('Try Again'));
+    fireEvent.click(screen.getByText('Try again'));
 
     await waitFor(() => {
       expect(screen.getByText('Lead Dashboard')).toBeInTheDocument();

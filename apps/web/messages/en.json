@@ -1749,7 +1749,19 @@
       "messagePlaceholder": "Tell us how we can help you...",
       "submit": "Send Message",
       "success": "Message sent successfully!",
-      "successDescription": "The agent will get back to you soon."
+      "successDescription": "The agent will get back to you soon.",
+      "intro": "Send a message to this agent. They will respond to your inquiry as soon as possible.",
+      "namePlaceholder": "John Doe",
+      "emailPlaceholder": "john@example.com",
+      "phonePlaceholder": "+1 234 567 8900",
+      "typePlaceholder": "Select type",
+      "closeAria": "Close form",
+      "successTitle": "Message Sent!",
+      "errors": {
+        "send": "Failed to send message"
+      },
+      "cancel": "Cancel",
+      "sending": "Sending..."
     },
     "viewingForm": {
       "title": "Schedule a Viewing",
@@ -1942,12 +1954,102 @@
       "description": "Manage your saved searches and alert preferences",
       "pauseAlerts": "Pause alerts",
       "resumeAlerts": "Resume alerts",
-      "deleteSearch": "Delete search"
+      "deleteSearch": "Delete search",
+      "loginRequired": "Please log in to view your saved searches",
+      "errors": {
+        "load": "Failed to load saved searches",
+        "toggleAlert": "Failed to toggle alert",
+        "delete": "Failed to delete search"
+      },
+      "filters": {
+        "allProperties": "All properties"
+      },
+      "loading": "Loading saved searches...",
+      "refreshAria": "Refresh saved searches",
+      "emptyTitle": "No saved searches yet",
+      "alerts": {
+        "newMatches": "New matches",
+        "priceDrops": "Price drops"
+      },
+      "emptyDescription": "Save searches from the search page to get notified about new properties that match your criteria.",
+      "created": "Created: {date}",
+      "used": "Used: {count} times",
+      "paused": "Paused",
+      "deleteConfirm": "Are you sure you want to delete \"{name}\"?",
+      "frequency": {
+        "instant": "Instant",
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "none": "None"
+      },
+      "roomsLabel": "{count} rooms"
     },
     "leads": {
       "title": "Lead Dashboard",
       "description": "Track and manage your leads with AI-powered scoring",
-      "searchPlaceholder": "Search leads..."
+      "searchPlaceholder": "Search leads...",
+      "status": {
+        "new": "New",
+        "contacted": "Contacted",
+        "qualified": "Qualified",
+        "converted": "Converted",
+        "lost": "Lost"
+      },
+      "errors": {
+        "load": "Failed to load leads",
+        "updateStatus": "Failed to update status",
+        "recalculate": "Failed to recalculate scores",
+        "export": "Failed to export leads"
+      },
+      "actions": {
+        "recalculate": "Recalculate Scores"
+      },
+      "stats": {
+        "total": "Total Leads",
+        "newLast24h": "+{count} in last 24h",
+        "highValue": "High Value Leads",
+        "highValueHint": "Score > 70",
+        "averageScore": "Average Score",
+        "conversionRate": "Conversion Rate",
+        "converted": "{count} converted"
+      },
+      "tabs": {
+        "all": "All Leads",
+        "highValue": "High Value",
+        "new": "New"
+      },
+      "filters": {
+        "status": "Status",
+        "allStatus": "All Status",
+        "sortBy": "Sort by",
+        "scoreDesc": "Score (High to Low)",
+        "scoreAsc": "Score (Low to High)",
+        "lastActivity": "Recent Activity",
+        "dateCreated": "Date Created"
+      },
+      "empty": {
+        "noLeads": "No leads found",
+        "noLeadsHint": "Try adjusting your filters or wait for new leads to come in",
+        "noHighValue": "No high-value leads",
+        "noHighValueHint": "Leads with score above 70 will appear here"
+      },
+      "lead": {
+        "anonymous": "Anonymous Lead",
+        "newLead": "New Lead",
+        "search": "Search",
+        "engage": "Engage",
+        "intent": "Intent",
+        "viewDetails": "View Details",
+        "sendEmail": "Send Email",
+        "scheduleCall": "Schedule Call",
+        "markContacted": "Mark as Contacted",
+        "markQualified": "Mark as Qualified",
+        "markConverted": "Mark as Converted",
+        "markLost": "Mark as Lost",
+        "score": "Lead Score",
+        "scoreValue": "Score: {score}",
+        "contact": "Contact"
+      }
     },
     "knowledge": {
       "title": "Knowledge",
@@ -2488,6 +2590,37 @@
           "start": "Start Export Job"
         }
       }
+    },
+    "commute": {
+      "title": "Commute Analysis",
+      "modes": {
+        "driving": "Drive",
+        "walking": "Walk",
+        "transit": "Transit",
+        "bicycling": "Bike"
+      },
+      "modePlaceholder": "Mode",
+      "calculateAria": "Calculate commute",
+      "setDefaultAria": "Set as default",
+      "removeDestinationAria": "Remove destination",
+      "empty": "No destinations saved",
+      "addDestination": "Add Destination",
+      "namePlaceholder": "e.g., Work, School",
+      "addressLabel": "Address (optional)",
+      "addressPlaceholder": "e.g., 123 Main St",
+      "latPlaceholder": "52.2297",
+      "lonPlaceholder": "21.0122",
+      "errors": {
+        "propertyLocation": "Property location not available",
+        "calculate": "Failed to calculate commute",
+        "requiredFields": "Please fill in all required fields",
+        "propertyLocationHint": "Property location not available. Cannot calculate commute times."
+      },
+      "nameLabel": "Name",
+      "latitudeLabel": "Latitude",
+      "longitudeLabel": "Longitude",
+      "via": "via",
+      "arrival": "Arrival: {time}"
     }
   },
   "states": {
