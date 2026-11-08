@@ -6,14 +6,13 @@ and social media content using LLMs.
 """
 
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field, PrivateAttr
 
-from config.settings import settings
-from models.provider_factory import ModelProviderFactory
+from tools.llm_resolution import resolve_tool_llm
 
 logger = logging.getLogger(__name__)
 
@@ -151,18 +150,16 @@ class PropertyDescriptionGeneratorTool(BaseTool):
 
     _llm: BaseChatModel | None = PrivateAttr(default=None)
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, llm: Optional[BaseChatModel] = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        try:
-            self._llm = ModelProviderFactory.create_model(
-                model_id=settings.default_model or "gpt-4o-mini",
-                provider_name=settings.default_provider,
-                temperature=0.7,
-                max_tokens=1000,
-            )
-        except Exception as e:
-            logger.warning("Failed to create LLM for description generator: %s", e)
-            self._llm = None
+        # The model comes from the application - the injected one, or the
+        # mock model of a demo deployment.
+        self._llm = resolve_tool_llm(
+            llm,
+            task_type="description generator",
+            temperature=0.7,
+            max_tokens=1000,
+        )
 
     def _build_prompt(
         self,
@@ -265,18 +262,16 @@ class HeadlineGeneratorTool(BaseTool):
 
     _llm: BaseChatModel | None = PrivateAttr(default=None)
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, llm: Optional[BaseChatModel] = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        try:
-            self._llm = ModelProviderFactory.create_model(
-                model_id=settings.default_model or "gpt-4o-mini",
-                provider_name=settings.default_provider,
-                temperature=0.8,  # Higher temperature for creativity
-                max_tokens=500,
-            )
-        except Exception as e:
-            logger.warning("Failed to create LLM for headline generator: %s", e)
-            self._llm = None
+        # The model comes from the application - the injected one, or the
+        # mock model of a demo deployment.
+        self._llm = resolve_tool_llm(
+            llm,
+            task_type="headline generator",
+            temperature=0.8,  # Higher temperature for creativity
+            max_tokens=500,
+        )
 
     def _build_prompt(
         self,
@@ -396,18 +391,16 @@ class SocialMediaContentGeneratorTool(BaseTool):
 
     _llm: BaseChatModel | None = PrivateAttr(default=None)
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, llm: Optional[BaseChatModel] = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        try:
-            self._llm = ModelProviderFactory.create_model(
-                model_id=settings.default_model or "gpt-4o-mini",
-                provider_name=settings.default_provider,
-                temperature=0.7,
-                max_tokens=800,
-            )
-        except Exception as e:
-            logger.warning("Failed to create LLM for social media generator: %s", e)
-            self._llm = None
+        # The model comes from the application - the injected one, or the
+        # mock model of a demo deployment.
+        self._llm = resolve_tool_llm(
+            llm,
+            task_type="social media generator",
+            temperature=0.7,
+            max_tokens=800,
+        )
 
     def _get_platform_hashtags(self, platform: str, _language: str) -> str:
         """Get platform-specific hashtag counts."""

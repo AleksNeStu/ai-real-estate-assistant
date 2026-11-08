@@ -15,8 +15,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field, PrivateAttr
 
-from config.settings import settings
-from models.provider_factory import ModelProviderFactory
+from tools.llm_resolution import resolve_tool_llm
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +24,7 @@ class NeighborhoodSummaryInput(BaseModel):
     """Input for the neighborhood one-liner tool."""
 
     city: Optional[str] = Field(default=None, description="City name")
-    neighborhood: Optional[str] = Field(
-        default=None, description="Neighborhood or district name"
-    )
+    neighborhood: Optional[str] = Field(default=None, description="Neighborhood or district name")
     property_type: Optional[str] = Field(default=None, description="apartment, house, etc.")
     rooms: Optional[float] = Field(default=None, description="Number of rooms")
     area_sqm: Optional[float] = Field(default=None, description="Area in sqm")
@@ -84,21 +81,14 @@ class NeighborhoodSummaryTool(BaseTool):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        if llm is not None:
-            self._llm = llm
-        else:
-            try:
-                self._llm = ModelProviderFactory.create_model(
-                    model_id=settings.default_model or "gpt-4o-mini",
-                    provider_name=settings.default_provider,
-                    temperature=0.6,
-                    max_tokens=300,
-                )
-            except Exception as e:
-                logger.warning(
-                    "Failed to create LLM for neighborhood summary: %s", e
-                )
-                self._llm = None
+        # The model comes from the application - the injected one, or the
+        # mock model of a demo deployment.
+        self._llm = resolve_tool_llm(
+            llm,
+            task_type="neighborhood summary",
+            temperature=0.6,
+            max_tokens=300,
+        )
 
     @staticmethod
     def _format_size(rooms: Optional[float], area_sqm: Optional[float]) -> str:

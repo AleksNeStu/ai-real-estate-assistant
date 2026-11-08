@@ -14,8 +14,9 @@ that have been decomposed into domain-focused modules:
 The create_property_tools() factory function remains here for convenience.
 """
 
-from typing import Any, List
+from typing import Any, List, Optional
 
+from langchain_core.language_models import BaseChatModel
 from langchain_core.tools import BaseTool
 
 # Re-export OSRM commute tools (Task #114)
@@ -113,13 +114,20 @@ from tools.tco_tools import (  # noqa: F401
 
 
 # Factory function to create all tools
-def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
+def create_property_tools(
+    vector_store: Any = None,
+    llm: Optional[BaseChatModel] = None,
+) -> List[BaseTool]:
     """
     Create all property-related tools.
 
     Args:
         vector_store: Optional vector store for data access.
                       Required for comparison, price, and location tools.
+        llm: The model the application resolved for this request. The tools
+             that write text speak with it, so they use the model the user
+             chose - and the mock model on a demo deployment - instead of
+             building one of their own.
 
     Returns:
         List of initialized tool instances
@@ -143,11 +151,11 @@ def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
         # Task #115: Negotiation helper with price band analysis
         NegotiationTool(vector_store=vector_store),
         # TASK-023: AI Listing Generator
-        PropertyDescriptionGeneratorTool(),
-        HeadlineGeneratorTool(),
-        SocialMediaContentGeneratorTool(),
+        PropertyDescriptionGeneratorTool(llm=llm),
+        HeadlineGeneratorTool(llm=llm),
+        SocialMediaContentGeneratorTool(llm=llm),
         # v5.1: AI Price Forecast with multi-year projection
-        PriceForecastTool(vector_store=vector_store),
+        PriceForecastTool(vector_store=vector_store, llm=llm),
         # v5.1: AI Neighborhood One-Liner
-        NeighborhoodSummaryTool(),
+        NeighborhoodSummaryTool(llm=llm),
     ]

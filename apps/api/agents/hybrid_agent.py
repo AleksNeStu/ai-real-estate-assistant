@@ -102,7 +102,7 @@ class HybridPropertyAgent:
 
         # Try to extract vector_store from retriever to enable tool actions
         vector_store = getattr(retriever, "vector_store", None)
-        self.tools = tools or create_property_tools(vector_store=vector_store)
+        self.tools = tools or create_property_tools(vector_store=vector_store, llm=llm)
 
         self.verbose = verbose
         self.internet_enabled = bool(internet_enabled)

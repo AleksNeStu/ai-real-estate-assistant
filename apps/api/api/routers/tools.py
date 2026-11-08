@@ -2,12 +2,14 @@ from typing import Annotated, List, Optional
 import statistics
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from langchain_core.language_models import BaseChatModel
 from pydantic import BaseModel, Field
 
 from api.dependencies import (
     get_crm_connector,
     get_data_enrichment_service,
     get_legal_check_service,
+    get_llm,
     get_valuation_provider,
     get_vector_store,
 )
@@ -1040,6 +1042,7 @@ class ListingGenerationResponse(BaseModel):
 async def generate_listing(
     request: ListingGenerationRequest,
     store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
+    llm: Annotated[BaseChatModel, Depends(get_llm)],
 ):
     """
     Generate AI-powered listing content for a property.
@@ -1140,9 +1143,9 @@ async def generate_listing(
     property_data = "\n".join(property_parts)
 
     # Initialize tools
-    description_tool = PropertyDescriptionGeneratorTool()
-    headline_tool = HeadlineGeneratorTool()
-    social_tool = SocialMediaContentGeneratorTool()
+    description_tool = PropertyDescriptionGeneratorTool(llm=llm)
+    headline_tool = HeadlineGeneratorTool(llm=llm)
+    social_tool = SocialMediaContentGeneratorTool(llm=llm)
 
     # Generate content
     description = None

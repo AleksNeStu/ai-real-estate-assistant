@@ -23,8 +23,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field, PrivateAttr
 
-from config.settings import settings
-from models.provider_factory import ModelProviderFactory
+from tools.llm_resolution import resolve_tool_llm
 
 logger = logging.getLogger(__name__)
 
@@ -151,19 +150,15 @@ class PriceForecastTool(BaseTool):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        if llm is not None:
-            self._llm = llm
-        else:
-            try:
-                self._llm = ModelProviderFactory.create_model(
-                    model_id=settings.default_model or "gpt-4o-mini",
-                    provider_name=settings.default_provider,
-                    temperature=0.2,  # low temperature for numeric stability
-                    max_tokens=800,
-                )
-            except Exception as e:
-                logger.warning("Failed to create LLM for price forecast: %s", e)
-                self._llm = None
+        # The model comes from the application - the injected one, or the
+        # mock model of a demo deployment. A tool that builds its own model
+        # dies on a deployment without a provider key.
+        self._llm = resolve_tool_llm(
+            llm,
+            task_type="price forecast",
+            temperature=0.2,  # low temperature for numeric stability
+            max_tokens=800,
+        )
         self._vector_store = vector_store
 
     # ---- public helpers used by tests and the router -----------------------
@@ -194,7 +189,9 @@ class PriceForecastTool(BaseTool):
         return sorted(out) if out else [1, 3, 5]
 
     @staticmethod
-    def _extract_comparables(vector_store: Any, features: Dict[str, Any], k: int = 5) -> List[Dict[str, Any]]:
+    def _extract_comparables(
+        vector_store: Any, features: Dict[str, Any], k: int = 5
+    ) -> List[Dict[str, Any]]:
         """Pull top-k similar properties from the vector store, best effort."""
         if vector_store is None:
             return []
@@ -240,9 +237,7 @@ class PriceForecastTool(BaseTool):
     @staticmethod
     def _median_price_per_sqm(comparables: List[Dict[str, Any]]) -> Optional[float]:
         values = [
-            float(c["price_per_sqm"])
-            for c in comparables
-            if c.get("price_per_sqm") is not None
+            float(c["price_per_sqm"]) for c in comparables if c.get("price_per_sqm") is not None
         ]
         if not values:
             return None
@@ -276,9 +271,7 @@ class PriceForecastTool(BaseTool):
         if median_ppsm is not None:
             parts.append(f"City median price-per-sqm: {median_ppsm:.0f}")
         if nbh_median_ppsm is not None and nbh_median_ppsm != median_ppsm:
-            parts.append(
-                f"Neighborhood median price-per-sqm: {nbh_median_ppsm:.0f}"
-            )
+            parts.append(f"Neighborhood median price-per-sqm: {nbh_median_ppsm:.0f}")
         if features.get("price") is not None:
             try:
                 parts.append(f"Listing asking price: {float(features['price']):.0f}")
@@ -329,9 +322,7 @@ class PriceForecastTool(BaseTool):
                 features,
                 comparables,
                 self._median_price_per_sqm(comparables),
-                self._neighborhood_median_price_per_sqm(
-                    comparables, features.get("neighborhood")
-                ),
+                self._neighborhood_median_price_per_sqm(comparables, features.get("neighborhood")),
             ),
         )
         try:
@@ -430,12 +421,8 @@ class PriceForecastTool(BaseTool):
                         ForecastPoint(
                             years_ahead=int(entry["years_ahead"]),
                             estimated_value=float(entry["estimated_value"]),
-                            lower_bound=float(
-                                entry.get("lower_bound", entry["estimated_value"])
-                            ),
-                            upper_bound=float(
-                                entry.get("upper_bound", entry["estimated_value"])
-                            ),
+                            lower_bound=float(entry.get("lower_bound", entry["estimated_value"])),
+                            upper_bound=float(entry.get("upper_bound", entry["estimated_value"])),
                         )
                     )
                 except (KeyError, TypeError, ValueError):
