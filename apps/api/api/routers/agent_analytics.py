@@ -158,7 +158,9 @@ async def get_my_team_comparison(
     description="Get performance trends over time with configurable intervals.",
 )
 async def get_my_trends(
-    interval: str = Query("month", regex="^(day|week|month|quarter)$", description="Time interval"),
+    interval: str = Query(
+        "month", pattern="^(day|week|month|quarter)$", description="Time interval"
+    ),
     periods: int = Query(12, ge=1, le=52, description="Number of periods to return"),
     user: User = Depends(get_current_active_user),
     session: AsyncSession = Depends(get_db),
@@ -265,7 +267,7 @@ async def get_my_goals(
 )
 async def get_top_performers(
     metric: str = Query(
-        "deals", regex="^(deals|revenue|conversion)$", description="Metric to rank by"
+        "deals", pattern="^(deals|revenue|conversion)$", description="Metric to rank by"
     ),
     limit: int = Query(10, ge=1, le=50, description="Maximum results"),
     period_days: int = Query(30, ge=7, le=365, description="Analysis period in days"),

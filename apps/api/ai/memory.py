@@ -7,12 +7,10 @@ import logging
 import os
 from typing import TYPE_CHECKING, Optional, Tuple
 
-try:
-    from langchain.memory import ConversationBufferMemory
-except ImportError:
-    from langchain_classic.memory import ConversationBufferMemory
 from langchain_community.chat_message_histories import SQLChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
+
+from ai.buffer_memory import ConversationBufferMemory
 
 if TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel

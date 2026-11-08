@@ -5,12 +5,8 @@ try:
 except ImportError:
     from langchain_classic.agents import AgentExecutor  # type: ignore[no-redef]
 
-try:
-    from langchain.memory import ConversationBufferMemory
-except ImportError:
-    from langchain_classic.memory import ConversationBufferMemory  # type: ignore[no-redef]
-
 import agents.hybrid_agent as hybrid_agent
+from ai.buffer_memory import ConversationBufferMemory
 
 
 def test_tool_agent_falls_back_when_openai_tools_agent_fails(monkeypatch):

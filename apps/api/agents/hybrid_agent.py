@@ -28,14 +28,12 @@ from core.security_utils import sanitize_for_log
 try:
     from langchain.agents import AgentExecutor, create_openai_tools_agent
     from langchain.chains import ConversationalRetrievalChain
-    from langchain.memory import ConversationBufferMemory
 except ImportError:
     from langchain_classic.agents import (  # type: ignore[no-redef]
         AgentExecutor,
         create_openai_tools_agent,
     )
     from langchain_classic.chains import ConversationalRetrievalChain  # type: ignore[no-redef]
-    from langchain_classic.memory import ConversationBufferMemory  # type: ignore[no-redef]
 
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import BaseTool
@@ -55,6 +53,7 @@ from agents.query_analyzer import (
     Tool,
 )
 from agents.web_research_agent import WebResearchAgent, WebResearchConfig
+from ai.buffer_memory import ConversationBufferMemory
 from tools.property_tools import create_property_tools
 
 logger = logging.getLogger(__name__)

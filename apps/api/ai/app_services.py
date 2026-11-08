@@ -4,15 +4,14 @@ from typing import Any, Dict, List, Optional, Sequence
 
 try:
     from langchain.chains import ConversationalRetrievalChain
-    from langchain.memory import ConversationBufferMemory
 except ImportError:
     from langchain_classic.chains import ConversationalRetrievalChain
-    from langchain_classic.memory import ConversationBufferMemory
 from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.language_models import BaseChatModel
 from langchain_core.retrievers import BaseRetriever
 
 from agents.hybrid_agent import create_hybrid_agent
+from ai.buffer_memory import ConversationBufferMemory
 from models.provider_factory import ModelProviderFactory
 from vector_store.hybrid_retriever import create_retriever
 from vector_store.reranker import StrategicReranker
