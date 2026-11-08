@@ -67,7 +67,7 @@ The frontend is deployed to Render using Docker. See [Deployment Guide](../../do
 - `API_ACCESS_KEY` is injected server-side, never exposed to the browser
 - `NEXT_PUBLIC_API_URL` stays as `/api/v1` (uses proxy) in all environments
 
-**For complete deployment guide**, see [DEPLOYMENT.md](../DEPLOYMENT.md).
+**For complete deployment guide**, see [DEPLOYMENT.md](../../docs/deployment/DEPLOYMENT.md).
 
 ## Security Notes
 

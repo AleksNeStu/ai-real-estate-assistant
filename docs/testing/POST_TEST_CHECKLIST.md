@@ -182,7 +182,7 @@ Run the complete CI test suite locally:
 - **Local execution**: ~Xm (Xx faster than sequential)
 - **CI execution**: ~Xm (Xx faster than sequential)
 
-See [Test Optimization Guide](docs/testing/TEST_OPTIMIZATION.md) for details.
+See [Test Optimization Guide](TEST_OPTIMIZATION.md) for details.
 ```
 
 ### 10. Create GitHub Issue/PR

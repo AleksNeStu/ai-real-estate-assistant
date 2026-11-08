@@ -136,6 +136,6 @@ kill -9 <PID>
 
 ## Related Files
 
-- [`.env.ports`](/.env.ports) - Auto-generated port configuration
-- [`scripts/service_discovery.py`](/scripts/service_discovery.py) - Port discovery script
-- [`deploy/compose/docker-compose.yml`](/deploy/compose/docker-compose.yml) - Docker port mappings
+- [`.env.ports`](../../.env.ports) - Auto-generated port configuration
+- [`scripts/service_discovery.py`](../../scripts/utils/service_discovery.py) - Port discovery script
+- [`deploy/compose/docker-compose.yml`](../../deploy/compose/docker-compose.yml) - Docker port mappings

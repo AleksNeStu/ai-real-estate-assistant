@@ -244,7 +244,7 @@ If you are unsure, start with `docker-compose.quick.yml` locally — it pulls pr
 
 - [QUICKSTART.md](QUICKSTART.md) — three ways to run the app
 - [LOCAL_DEMO.md](LOCAL_DEMO.md) — local demo scripts (auto-seeded data)
-- [DOCKER_NAMING.md](DOCKER_NAMING.md) — container naming convention
+- [container naming](deploy/compose/docker-compose.yml) — container naming convention
 - [docs/deployment/DEPLOYMENT.md](docs/deployment/DEPLOYMENT.md) — main deployment guide
 - [docs/guides/deployment.md](docs/guides/deployment.md) — Docker + Caddy VPS guide
 - [docs/guides/local-development.md](docs/guides/local-development.md) — local dev workflow

@@ -122,7 +122,7 @@ providers are imported lazily, so a deployment only loads what it uses.
 
 ## Quick Links
 
-- [Developer Setup Guide](../development/README.md)
+- [Developer Setup Guide](../development/QUICKSTART.md)
 - [API Documentation](../api/README.md)
 - [Testing Guide](../testing/README.md)
-- [Deployment Guide](../deployment/README.md)
+- [Deployment Guide](../deployment/DEPLOYMENT.md)

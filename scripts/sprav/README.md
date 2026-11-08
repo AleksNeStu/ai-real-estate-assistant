@@ -145,6 +145,5 @@ python scripts/sprav/risk_assessment.py --load risks.json --markdown
 
 ## Related Documentation
 
-- [SPRAV Plan](C:\Users\he\.claude\plans\dazzling-coalescing-clock.md)
-- [CI Workflow](../.github/workflows/ci.yml)
+- [CI Workflow](../../.github/workflows/ci.yml)
 - [Makefile](../../Makefile)

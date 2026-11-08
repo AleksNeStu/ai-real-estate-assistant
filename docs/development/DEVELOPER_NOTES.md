@@ -188,7 +188,7 @@ in V4.
   - `GET /api/v1/settings/test-runtime?provider=<provider_name>` (local providers only; runs a targeted runtime check without reloading the entire catalog)
   - `GET/PUT /api/v1/settings/model-preferences` (requires `X-User-Email` or `?user_email=`)
 - LLM selection:
-  - [get_llm](file:///c:/Projects/ai-real-estate-assistant/api/dependencies.py) loads per-user model preferences
+  - [get_llm](../../apps/api/api/dependencies.py) loads per-user model preferences
     via `X-User-Email`
   - Falls back to `settings.default_provider`/`settings.default_model` if preferences are missing or invalid
 

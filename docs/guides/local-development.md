@@ -2,7 +2,7 @@
 
 This guide covers setting up a local development environment for the AI Real Estate Assistant project.
 
-> **New here?** Start with the [5-Minute Quickstart](../QUICKSTART_5MIN.md) for the fastest path to a running app.
+> **New here?** Start with the [5-Minute Quickstart](../development/QUICKSTART_5MIN.md) for the fastest path to a running app.
 > This guide goes deeper into Docker profiles, local non-Docker setup, and development workflows.
 
 ## Table of Contents

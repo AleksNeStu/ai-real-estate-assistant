@@ -60,7 +60,7 @@ All API endpoints require authentication via the `X-API-Key` header:
 curl -H "X-API-Key: $API_KEY" https://api.example.com/api/v1/search
 ```
 
-**Implementation:** [api/auth.py](../api/auth.py)
+**Implementation:** [api/auth.py](../../apps/api/api/auth.py)
 
 **Key Features:**
 - Supports multiple valid keys via `API_ACCESS_KEYS` (comma-separated)
@@ -83,7 +83,7 @@ Zero-downtime key rotation is supported:
 
 ### Sanitization Layer
 
-All user inputs are sanitized using the [utils/sanitization.py](../utils/sanitization.py) module:
+All user inputs are sanitized using the [utils/sanitization.py](../../apps/api/utils/sanitization.py) module:
 
 **Features:**
 - Control character filtering (prevents log injection)
@@ -115,7 +115,7 @@ strict-whitelist pre-serialiser, so the chromadb metadata type-confusion attack
 that the CVE describes cannot be reached from this app.
 
 The two-layer pre-serialiser, defined in
-[`apps/api/vector_store/chroma_store.py`](../apps/api/vector_store/chroma_store.py):
+[`apps/api/vector_store/chroma_store.py`](../../apps/api/vector_store/chroma_store.py):
 
 1. **`_sanitize_val` (line 304) — inner pre-serialiser, called from
    `property_to_document`** (which is the only path that builds a
@@ -170,7 +170,7 @@ class SearchRequest(BaseModel):
 
 ### Rate Limiting Configuration
 
-**Implementation:** [api/observability.py](../api/observability.py)
+**Implementation:** [api/observability.py](../../apps/api/api/observability.py)
 
 **Environment Variables:**
 ```bash
@@ -215,13 +215,13 @@ REQUEST_MAX_BODY_SIZE_MB=10      # Standard requests
 REQUEST_MAX_UPLOAD_SIZE_MB=25     # File uploads
 ```
 
-**Implementation:** [api/middleware/request_size.py](../api/middleware/request_size.py)
+**Implementation:** [api/middleware/request_size.py](../../apps/api/api/middleware/request_size.py)
 
 **Response:** Returns 413 (Payload Too Large) on exceed
 
 ### Security Headers
 
-**Implementation:** [api/middleware/security.py](../api/middleware/security.py)
+**Implementation:** [api/middleware/security.py](../../apps/api/api/middleware/security.py)
 
 **Headers Applied:**
 - `Content-Security-Policy` - Restricts resource loading
@@ -249,7 +249,7 @@ curl -H "X-API-Key: $API_KEY" https://api.example.com/api/v1/search
 
 ### Content Security Policy
 
-**Implementation:** [frontend/next.config.ts](../frontend/next.config.ts)
+**Implementation:** [frontend/next.config.ts](../../apps/web/next.config.ts)
 
 **Production CSP:**
 ```javascript
@@ -293,7 +293,7 @@ try {
 
 ### Circuit Breaker Pattern
 
-**Implementation:** [utils/circuit.py](../utils/circuit.py)
+**Implementation:** [utils/circuit.py](../../apps/api/utils/circuit.py)
 
 **Purpose:** Prevents cascading failures when LLM providers are down.
 
@@ -311,7 +311,7 @@ CIRCUIT_HALF_OPEN_MAX_CALLS=3 # Test calls in half-open
 
 ### Graceful Shutdown
 
-**Implementation:** [api/main.py](../api/main.py)
+**Implementation:** [api/main.py](../../apps/api/api/main.py)
 
 **Process:**
 1. Stop accepting new requests (uvicorn)

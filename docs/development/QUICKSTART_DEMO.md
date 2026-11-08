@@ -76,7 +76,7 @@ netstat -an | Select-String ":3082|:8082|:6379"
 ```
 
 **Need more help?**
-See [Demo Setup Documentation](../scripts/demo/README.md) for complete guide.
+See [Demo Setup Documentation](../../scripts/demo/README.md) for complete guide.
 
 ## Features to Try
 
@@ -91,6 +91,6 @@ See [Demo Setup Documentation](../scripts/demo/README.md) for complete guide.
 
 ## Next Steps
 
-- Read the [Architecture Documentation](ARCHITECTURE.md)
-- Explore the [API Reference](api/API_REFERENCE.md)
-- Check the [Development Guide](development/CONTRIBUTING.md)
+- Read the [Architecture Documentation](../architecture/ARCHITECTURE.md)
+- Explore the [API Reference](../api/API_REFERENCE.md)
+- Check the [Development Guide](CONTRIBUTING.md)

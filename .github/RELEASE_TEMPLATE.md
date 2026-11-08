@@ -16,4 +16,4 @@ what does it unlock? Be concrete — name the user-visible behaviour change.>
 ### Notes
 
 - <Anything reviewers should know — migration steps, breaking changes, follow-ups.>
-- <Link to the CHANGELOG entry: [CHANGELOG.md](CHANGELOG.md#XYZ---YYYY-MM-DD)>
+- <Link to the CHANGELOG entry: [CHANGELOG.md](../CHANGELOG.md#XYZ---YYYY-MM-DD)>

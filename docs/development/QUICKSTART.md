@@ -1,6 +1,6 @@
 # Quickstart: Run Your AI Realtor in 5 Minutes
 
-> **New here?** Try the **[5-Minute Quickstart →](../QUICKSTART_5MIN.md)** for the fastest path to a running app.
+> **New here?** Try the **[5-Minute Quickstart →](QUICKSTART_5MIN.md)** for the fastest path to a running app.
 
 ## Prerequisites
 

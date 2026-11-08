@@ -468,7 +468,7 @@ Actions → Community Metrics → Run workflow
 - [Testing Guide](../testing/TESTING_GUIDE.md)
 - [Deployment Guide](../deployment/DEPLOYMENT.md)
 - [Contributing Guide](../development/CONTRIBUTING.md)
-- [Architecture](../ARCHITECTURE.md)
+- [Architecture](../architecture/ARCHITECTURE.md)
 
 ---
 

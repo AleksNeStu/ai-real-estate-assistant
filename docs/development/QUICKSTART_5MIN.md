@@ -129,11 +129,11 @@ All checks passed. Open http://localhost:3082 to start chatting.
 
 ### Going Further
 
-- [Developer setup (local without Docker)](development/QUICKSTART.md)
-- [Full Docker options (Ollama, GPU, web search)](../docs/guides/local-development.md)
-- [Troubleshooting](development/TROUBLESHOOTING.md)
-- [Architecture overview](ARCHITECTURE.md)
-- [Contributing guide](../CONTRIBUTING.md)
+- [Developer setup (local without Docker)](QUICKSTART.md)
+- [Full Docker options (Ollama, GPU, web search)](../guides/local-development.md)
+- [Troubleshooting](TROUBLESHOOTING.md)
+- [Architecture overview](../architecture/ARCHITECTURE.md)
+- [Contributing guide](CONTRIBUTING.md)
 
 ### Stop & Clean Up
 
