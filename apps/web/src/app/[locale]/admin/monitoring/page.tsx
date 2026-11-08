@@ -39,6 +39,7 @@ interface Alert {
 
 export default function MonitoringPage() {
   const t = useTranslations('pages.admin.monitoring');
+  const tCommon = useTranslations('common');
   // Data state
   const [healthStatus, setHealthStatus] = useState<HealthStatus | null>(null);
   const [readinessStatus, setReadinessStatus] = useState<ReadinessStatus | null>(null);
@@ -78,8 +79,8 @@ export default function MonitoringPage() {
       // Check for alerts based on thresholds
       checkAlerts(readiness, overviewData);
     } catch (e) {
-      console.error('Failed to load monitoring data:', e);
-      setError(e instanceof Error ? e.message : 'Failed to load monitoring data');
+      console.error(t('errors.load'), e);
+      setError(e instanceof Error ? e.message : t('errors.load'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -94,8 +95,8 @@ export default function MonitoringPage() {
     if (readiness.database_latency_ms && readiness.database_latency_ms > 3000) {
       newAlerts.push({
         type: 'error',
-        message: `High database latency: ${readiness.database_latency_ms}ms`,
-        threshold: 'P95 latency >3s',
+        message: t('alerts.dbLatency', { value: readiness.database_latency_ms }),
+        threshold: t('alerts.dbLatencyThreshold'),
       });
     }
 
@@ -103,8 +104,8 @@ export default function MonitoringPage() {
     if (overview.cache?.hit_rate !== undefined && overview.cache.hit_rate < 20) {
       newAlerts.push({
         type: 'warning',
-        message: `Low cache hit rate: ${overview.cache.hit_rate}%`,
-        threshold: 'Hit rate <20%',
+        message: t('alerts.cacheHitRate', { rate: overview.cache.hit_rate }),
+        threshold: t('alerts.cacheHitRateThreshold'),
       });
     }
 
@@ -112,8 +113,8 @@ export default function MonitoringPage() {
     if (readiness.overall === 'not_ready') {
       newAlerts.push({
         type: 'error',
-        message: 'Service is not ready to handle requests',
-        threshold: 'Overall readiness',
+        message: t('alerts.notReady'),
+        threshold: t('alerts.notReadyThreshold'),
       });
     }
 
@@ -121,8 +122,8 @@ export default function MonitoringPage() {
     if (readiness.database.includes('unhealthy')) {
       newAlerts.push({
         type: 'error',
-        message: 'Database connection is unhealthy',
-        threshold: 'Database health',
+        message: t('alerts.dbUnhealthy'),
+        threshold: t('alerts.dbUnhealthyThreshold'),
       });
     }
 
@@ -130,8 +131,8 @@ export default function MonitoringPage() {
     if (readiness.llm.includes('unhealthy')) {
       newAlerts.push({
         type: 'error',
-        message: 'LLM provider is unhealthy',
-        threshold: 'LLM health',
+        message: t('alerts.llmUnhealthy'),
+        threshold: t('alerts.llmUnhealthyThreshold'),
       });
     }
 
@@ -139,8 +140,8 @@ export default function MonitoringPage() {
     if (readiness.redis.includes('unhealthy')) {
       newAlerts.push({
         type: 'warning',
-        message: 'Redis cache is unhealthy',
-        threshold: 'Redis health',
+        message: t('alerts.redisUnhealthy'),
+        threshold: t('alerts.redisUnhealthyThreshold'),
       });
     }
 
@@ -192,7 +193,7 @@ export default function MonitoringPage() {
       setTestAlertResult(result.message);
       setTimeout(() => setTestAlertResult(null), 5000);
     } catch (e) {
-      setTestAlertResult(e instanceof Error ? e.message : 'Failed to send test alert');
+      setTestAlertResult(e instanceof Error ? e.message : t('errors.testAlert'));
       setTimeout(() => setTestAlertResult(null), 5000);
     } finally {
       setTestAlertLoading(false);
@@ -226,7 +227,7 @@ export default function MonitoringPage() {
         className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${colors[status]}`}
       >
         {icons[status]}
-        {status.replace('_', ' ')}
+        {t(`status.${status}`)}
       </span>
     );
   };
@@ -236,7 +237,7 @@ export default function MonitoringPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-8 h-8 animate-spin mr-3" />
-          Loading monitoring data...
+          {t('loading')}
         </div>
       </div>
     );
@@ -252,7 +253,7 @@ export default function MonitoringPage() {
         actions={
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground">
-              Last refreshed: {lastRefresh.toLocaleTimeString()}
+              {t('lastRefreshed', { time: lastRefresh.toLocaleTimeString() })}
             </span>
             <button
               type="button"
@@ -263,12 +264,12 @@ export default function MonitoringPage() {
               {refreshing ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Refreshing...
+                  {t('refreshing')}
                 </>
               ) : (
                 <>
                   <RefreshCw className="w-4 h-4" />
-                  Refresh
+                  {tCommon('refresh')}
                 </>
               )}
             </button>
@@ -281,12 +282,12 @@ export default function MonitoringPage() {
               {testAlertLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Sending...
+                  {t('sending')}
                 </>
               ) : (
                 <>
                   <Activity className="w-4 h-4" />
-                  Test Alert
+                  {t('testAlert')}
                 </>
               )}
             </button>
@@ -326,7 +327,9 @@ export default function MonitoringPage() {
               <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="font-medium">{alert.message}</p>
-                <p className="text-xs mt-1">Threshold: {alert.threshold}</p>
+                <p className="text-xs mt-1">
+                  {t('alerts.threshold', { threshold: alert.threshold })}
+                </p>
               </div>
             </div>
           ))}
@@ -334,7 +337,7 @@ export default function MonitoringPage() {
       )}
 
       {/* Error Display */}
-      {error && <ErrorState title="Error Loading Data" description={error} className="mb-6" />}
+      {error && <ErrorState title={t('errorTitle')} description={error} className="mb-6" />}
 
       {/* Health & Readiness Status */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -342,22 +345,22 @@ export default function MonitoringPage() {
         <div className="border rounded-lg p-6">
           <div className="flex items-center gap-2 mb-4">
             <Activity className="w-5 h-5" />
-            <h2 className="text-xl font-semibold">Health Status</h2>
+            <h2 className="text-xl font-semibold">{t('health.title')}</h2>
             {healthStatus && <StatusBadge status={healthStatus.status} />}
           </div>
           {healthStatus && (
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">Service:</dt>
+                <dt className="text-muted-foreground">{t('health.service')}</dt>
                 <dd className="font-medium">{healthStatus.service}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">Timestamp:</dt>
+                <dt className="text-muted-foreground">{t('health.timestamp')}</dt>
                 <dd className="font-medium">{new Date(healthStatus.timestamp).toLocaleString()}</dd>
               </div>
               {healthStatus.uptime_seconds && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Uptime:</dt>
+                  <dt className="text-muted-foreground">{t('health.uptime')}</dt>
                   <dd className="font-medium">
                     {Math.floor(healthStatus.uptime_seconds / 3600)}h{' '}
                     {Math.floor((healthStatus.uptime_seconds % 3600) / 60)}m
@@ -366,13 +369,13 @@ export default function MonitoringPage() {
               )}
               {healthStatus.version && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Version:</dt>
+                  <dt className="text-muted-foreground">{t('health.version')}</dt>
                   <dd className="font-medium">{healthStatus.version}</dd>
                 </div>
               )}
               {healthStatus.git && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Git Commit:</dt>
+                  <dt className="text-muted-foreground">{t('health.git')}</dt>
                   <dd className="font-medium font-mono text-xs">
                     {healthStatus.git.commit.slice(0, 7)}
                   </dd>
@@ -386,13 +389,13 @@ export default function MonitoringPage() {
         <div className="border rounded-lg p-6">
           <div className="flex items-center gap-2 mb-4">
             <Server className="w-5 h-5" />
-            <h2 className="text-xl font-semibold">Readiness Status</h2>
+            <h2 className="text-xl font-semibold">{t('readiness.title')}</h2>
             {readinessStatus && <StatusBadge status={readinessStatus.overall} />}
           </div>
           {readinessStatus && (
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between items-center">
-                <dt className="text-muted-foreground">Database:</dt>
+                <dt className="text-muted-foreground">{t('readiness.database')}</dt>
                 <dd>
                   {readinessStatus.database.includes('healthy') ? (
                     <CheckCircle2 className="w-4 h-4 inline text-success" />
@@ -404,17 +407,17 @@ export default function MonitoringPage() {
               </div>
               {readinessStatus.database_latency_ms && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">DB Latency:</dt>
+                  <dt className="text-muted-foreground">{t('readiness.dbLatency')}</dt>
                   <dd className="font-medium">{readinessStatus.database_latency_ms}ms</dd>
                 </div>
               )}
               <div className="flex justify-between items-center">
-                <dt className="text-muted-foreground">Redis:</dt>
+                <dt className="text-muted-foreground">{t('readiness.redis')}</dt>
                 <dd>
                   {readinessStatus.redis === 'healthy' ? (
                     <CheckCircle2 className="w-4 h-4 inline text-success" />
                   ) : readinessStatus.redis === 'disabled' ? (
-                    <span className="text-muted-foreground">Disabled</span>
+                    <span className="text-muted-foreground">{t('readiness.disabled')}</span>
                   ) : (
                     <AlertTriangle className="w-4 h-4 inline text-destructive" />
                   )}
@@ -422,7 +425,7 @@ export default function MonitoringPage() {
                 </dd>
               </div>
               <div className="flex justify-between items-center">
-                <dt className="text-muted-foreground">LLM Provider:</dt>
+                <dt className="text-muted-foreground">{t('readiness.llm')}</dt>
                 <dd>
                   {readinessStatus.llm.includes('healthy') ? (
                     <CheckCircle2 className="w-4 h-4 inline text-success" />
@@ -433,7 +436,7 @@ export default function MonitoringPage() {
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">Last Check:</dt>
+                <dt className="text-muted-foreground">{t('readiness.lastCheck')}</dt>
                 <dd className="font-medium">
                   {new Date(readinessStatus.timestamp).toLocaleString()}
                 </dd>
@@ -450,13 +453,15 @@ export default function MonitoringPage() {
           <div className="border rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <Database className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-sm font-medium text-muted-foreground">Total Properties</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">
+                {t('metrics.totalProperties')}
+              </h3>
             </div>
             <p className="text-2xl font-bold">
               {overview.database.total_properties.toLocaleString()}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {overview.database.recent_properties_24h} in last 24h
+              {t('metrics.inLast24h', { count: overview.database.recent_properties_24h })}
             </p>
           </div>
 
@@ -464,13 +469,15 @@ export default function MonitoringPage() {
           <div className="border rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <HardDrive className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-sm font-medium text-muted-foreground">Knowledge Store</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">
+                {t('metrics.knowledgeStore')}
+              </h3>
             </div>
             <p className="text-2xl font-bold">
               {overview.knowledge_store.documents.toLocaleString()}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {overview.knowledge_store.chunks.toLocaleString()} chunks
+              {t('metrics.chunks', { count: overview.knowledge_store.chunks.toLocaleString() })}
             </p>
           </div>
 
@@ -478,18 +485,22 @@ export default function MonitoringPage() {
           <div className="border rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <Zap className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-sm font-medium text-muted-foreground">Cache Hit Rate</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">
+                {t('metrics.cacheHitRate')}
+              </h3>
             </div>
             {overview.cache.hit_rate !== undefined ? (
               <>
                 <p className="text-2xl font-bold">{overview.cache.hit_rate.toFixed(1)}%</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {overview.cache.hits?.toLocaleString()} hits,{' '}
-                  {overview.cache.misses?.toLocaleString()} misses
+                  {t('metrics.hitsMisses', {
+                    hits: overview.cache.hits?.toLocaleString() ?? '0',
+                    misses: overview.cache.misses?.toLocaleString() ?? '0',
+                  })}
                 </p>
               </>
             ) : (
-              <p className="text-sm text-muted-foreground">No cache data</p>
+              <p className="text-sm text-muted-foreground">{t('metrics.noCacheData')}</p>
             )}
           </div>
 
@@ -497,7 +508,9 @@ export default function MonitoringPage() {
           <div className="border rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <Server className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-sm font-medium text-muted-foreground">Environment</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">
+                {t('metrics.environment')}
+              </h3>
             </div>
             <p className="text-2xl font-bold capitalize">{overview.environment}</p>
             <p className="text-xs text-muted-foreground mt-1">
@@ -512,7 +525,7 @@ export default function MonitoringPage() {
         overview.database.by_source &&
         Object.keys(overview.database.by_source).length > 0 && (
           <div className="border rounded-lg p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-4">Properties by Data Source</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('sources.title')}</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {Object.entries(overview.database.by_source).map(([source, count]) => (
                 <div key={source} className="text-center p-3 bg-secondary rounded">
@@ -528,7 +541,7 @@ export default function MonitoringPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Request Rate Chart */}
         <div className="border rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4">Request Rate (req/min)</h3>
+          <h3 className="text-lg font-semibold mb-4">{t('charts.requestRate')}</h3>
           <div className="h-48 flex items-end justify-between gap-1">
             {requestRateData.map((point, i) => (
               <div
@@ -551,17 +564,13 @@ export default function MonitoringPage() {
 
         {/* Error Rate Chart */}
         <div className="border rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4">Error Rate (%)</h3>
+          <h3 className="text-lg font-semibold mb-4">{t('charts.errorRate')}</h3>
           <div className="h-48 flex items-end justify-between gap-1">
             {errorRateData.map((point, i) => (
               <div
                 key={i}
                 className={`flex-1 rounded-t transition-all hover:opacity-80 ${
-                  point.value > 5
-                    ? 'bg-destructive'
-                    : point.value > 2
-                      ? 'bg-warning'
-                      : 'bg-success'
+                  point.value > 5 ? 'bg-destructive' : point.value > 2 ? 'bg-warning' : 'bg-success'
                 }`}
                 style={{ height: `${Math.min(point.value * 10, 100)}%` }}
                 title={`${new Date(point.timestamp).toLocaleTimeString()}: ${point.value}%`}
@@ -578,7 +587,7 @@ export default function MonitoringPage() {
 
         {/* Response Time Chart */}
         <div className="border rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4">Response Time (ms)</h3>
+          <h3 className="text-lg font-semibold mb-4">{t('charts.responseTime')}</h3>
           <div className="h-48 flex items-end justify-between gap-1">
             {responseTimeData.map((point, i) => (
               <div
@@ -608,19 +617,19 @@ export default function MonitoringPage() {
 
       {/* Legend */}
       <div className="mt-6 p-4 bg-secondary rounded">
-        <h4 className="text-sm font-semibold mb-2">Chart Legend</h4>
+        <h4 className="text-sm font-semibold mb-2">{t('legend.title')}</h4>
         <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-success rounded" />
-            <span>Healthy / Normal</span>
+            <span>{t('legend.healthy')}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-warning rounded" />
-            <span>Warning / Degraded</span>
+            <span>{t('legend.warning')}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-destructive rounded" />
-            <span>Error / Critical</span>
+            <span>{t('legend.error')}</span>
           </div>
         </div>
       </div>

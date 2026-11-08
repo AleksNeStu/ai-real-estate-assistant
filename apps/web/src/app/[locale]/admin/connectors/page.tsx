@@ -39,8 +39,29 @@ interface ErrorState {
   requestId?: string;
 }
 
+function extractErrorState(err: unknown, fallbackMessage: string): ErrorState {
+  let message = fallbackMessage;
+  let requestId: string | undefined = undefined;
+
+  if (err instanceof ApiError) {
+    message = err.message;
+    requestId = err.request_id;
+  } else if (err instanceof Error) {
+    message = err.message;
+  } else {
+    message = String(err);
+  }
+
+  return { message, requestId };
+}
+
+// Known connector statuses that have a translated label.
+const CONNECTOR_STATUS_KEYS = ['active', 'disabled', 'error', 'not_instantiated', 'unknown'];
+const CONNECTOR_HEALTH_KEYS = ['healthy', 'unhealthy', 'degraded', 'error'];
+
 // Status badge component
 function StatusBadge({ status }: { status: string }) {
+  const t = useTranslations('pages.admin.connectors.status');
   const statusConfig: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
     active: {
       bg: 'bg-success/20 dark:bg-success/30',
@@ -76,42 +97,57 @@ function StatusBadge({ status }: { status: string }) {
       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
     >
       {config.icon}
-      {status.replace('_', ' ')}
+      {CONNECTOR_STATUS_KEYS.includes(status) ? t(status) : status}
     </span>
   );
 }
 
 // Health status badge
 function HealthBadge({ status }: { status: string }) {
+  const t = useTranslations('pages.admin.connectors.health');
   const config: Record<string, { bg: string; text: string }> = {
     healthy: { bg: 'bg-success/20 dark:bg-success/30', text: 'text-success dark:text-success' },
-    unhealthy: { bg: 'bg-destructive/20 dark:bg-destructive/30', text: 'text-destructive dark:text-destructive' },
+    unhealthy: {
+      bg: 'bg-destructive/20 dark:bg-destructive/30',
+      text: 'text-destructive dark:text-destructive',
+    },
     degraded: { bg: 'bg-warning/20 dark:bg-warning/30', text: 'text-warning dark:text-warning' },
-    error: { bg: 'bg-destructive/20 dark:bg-destructive/30', text: 'text-destructive dark:text-destructive' },
+    error: {
+      bg: 'bg-destructive/20 dark:bg-destructive/30',
+      text: 'text-destructive dark:text-destructive',
+    },
   };
 
   const { bg, text } = config[status] || config.error;
 
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${bg} ${text}`}>
-      {status}
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${bg} ${text}`}
+    >
+      {CONNECTOR_HEALTH_KEYS.includes(status) ? t(status) : status}
     </span>
   );
 }
 
 export default function ConnectorsPage() {
   const t = useTranslations('pages.admin.connectors');
+  const tCommon = useTranslations('common');
+  const tError = useTranslations('error');
   // Connectors list state
   const [connectors, setConnectors] = useState<MCPConnectorInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [edition, setEdition] = useState<string>('community');
 
   // Selected connector detail
-  const [selectedConnector, setSelectedConnector] = useState<MCPConnectorDetailResponse | null>(null);
+  const [selectedConnector, setSelectedConnector] = useState<MCPConnectorDetailResponse | null>(
+    null
+  );
   const [loadingDetail, setLoadingDetail] = useState(false);
 
   // Health check state
-  const [healthResults, setHealthResults] = useState<Record<string, MCPConnectorHealthResponse>>({});
+  const [healthResults, setHealthResults] = useState<Record<string, MCPConnectorHealthResponse>>(
+    {}
+  );
   const [checkingHealth, setCheckingHealth] = useState<Set<string>>(new Set());
   const [overallHealth, setOverallHealth] = useState<MCPHealthResponse | null>(null);
   const [checkingAllHealth, setCheckingAllHealth] = useState(false);
@@ -127,33 +163,17 @@ export default function ConnectorsPage() {
       setConnectors(response.connectors);
       setEdition(response.edition);
     } catch (e) {
-      console.error('Failed to load connectors:', e);
-      setError(extractErrorState(e));
+      console.error(t('errors.load'), e);
+      setError(extractErrorState(e, tError('generic')));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t, tError]);
 
   // Load connectors on mount
   useEffect(() => {
     loadConnectors();
   }, [loadConnectors]);
-
-  const extractErrorState = (err: unknown): ErrorState => {
-    let message = 'Unknown error';
-    let requestId: string | undefined = undefined;
-
-    if (err instanceof ApiError) {
-      message = err.message;
-      requestId = err.request_id;
-    } else if (err instanceof Error) {
-      message = err.message;
-    } else {
-      message = String(err);
-    }
-
-    return { message, requestId };
-  };
 
   // Load connector detail
   const loadConnectorDetail = async (name: string) => {
@@ -162,7 +182,7 @@ export default function ConnectorsPage() {
       const detail = await getMCPConnector(name);
       setSelectedConnector(detail);
     } catch (e) {
-      setError(extractErrorState(e));
+      setError(extractErrorState(e, tError('generic')));
     } finally {
       setLoadingDetail(false);
     }
@@ -204,7 +224,7 @@ export default function ConnectorsPage() {
       const result = await healthCheckAllMCPConnectors();
       setOverallHealth(result);
     } catch (e) {
-      setError(extractErrorState(e));
+      setError(extractErrorState(e, tError('generic')));
     } finally {
       setCheckingAllHealth(false);
     }
@@ -226,7 +246,7 @@ export default function ConnectorsPage() {
               disabled={loading}
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              {tCommon('refresh')}
             </button>
             <button
               type="button"
@@ -239,31 +259,32 @@ export default function ConnectorsPage() {
               ) : (
                 <Activity className="w-4 h-4" />
               )}
-              Health Check All
+              {t('healthCheckAll')}
             </button>
           </div>
         }
       >
-        <span className="text-xs text-muted-foreground">Edition: {edition}</span>
+        <span className="text-xs text-muted-foreground">{t('edition', { edition })}</span>
       </PageHeader>
 
       {/* Overall Health Status */}
       {overallHealth && (
         <div className="mb-6 p-4 border rounded-lg">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold">Overall Health Status</h3>
+            <h3 className="font-semibold">{t('overall.title')}</h3>
             <HealthBadge status={overallHealth.status} />
           </div>
           <div className="grid grid-cols-3 gap-4 text-sm">
             <div>
-              <span className="text-muted-foreground">Connectors Checked:</span>{' '}
+              <span className="text-muted-foreground">{t('overall.connectorsChecked')}</span>{' '}
               {overallHealth.connectors_checked}
             </div>
             <div>
-              <span className="text-muted-foreground">Edition:</span> {overallHealth.edition}
+              <span className="text-muted-foreground">{t('overall.edition')}</span>{' '}
+              {overallHealth.edition}
             </div>
             <div>
-              <span className="text-muted-foreground">Timestamp:</span>{' '}
+              <span className="text-muted-foreground">{t('overall.timestamp')}</span>{' '}
               {new Date(overallHealth.timestamp).toLocaleTimeString()}
             </div>
           </div>
@@ -275,9 +296,11 @@ export default function ConnectorsPage() {
         <div className="flex items-start gap-3 p-4 bg-destructive/10 text-destructive rounded mb-4">
           <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="font-medium">Error</p>
+            <p className="font-medium">{tCommon('error')}</p>
             <p className="text-sm">{error.message}</p>
-            {error.requestId && <p className="text-xs mt-1">Request ID: {error.requestId}</p>}
+            {error.requestId && (
+              <p className="text-xs mt-1">{t('requestId', { id: error.requestId })}</p>
+            )}
           </div>
           <button
             type="button"
@@ -293,10 +316,10 @@ export default function ConnectorsPage() {
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin mr-2" />
-          Loading connectors...
+          {t('loading')}
         </div>
       ) : connectors.length === 0 ? (
-        <EmptyState icon={Database} title="No connectors registered" />
+        <EmptyState icon={Database} title={t('empty.title')} />
       ) : (
         <div className="grid gap-4">
           {connectors.map((connector) => (
@@ -320,22 +343,22 @@ export default function ConnectorsPage() {
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Database className="w-3 h-3" />
-                      {connector.registered ? 'Registered' : 'Not Registered'}
+                      {connector.registered ? t('badge.registered') : t('badge.notRegistered')}
                     </span>
                     <span className="flex items-center gap-1">
                       <Play className="w-3 h-3" />
-                      {connector.has_instance ? 'Instantiated' : 'No Instance'}
+                      {connector.has_instance ? t('badge.instantiated') : t('badge.noInstance')}
                     </span>
                     {connector.requires_api_key && (
                       <span className="flex items-center gap-1">
                         <Zap className="w-3 h-3" />
-                        API Key Required
+                        {t('badge.apiKeyRequired')}
                       </span>
                     )}
                     {connector.supports_streaming && (
                       <span className="flex items-center gap-1">
                         <Activity className="w-3 h-3" />
-                        Streaming
+                        {t('badge.streaming')}
                       </span>
                     )}
                   </div>
@@ -368,17 +391,17 @@ export default function ConnectorsPage() {
                 <div className="mt-4 pt-4 border-t text-sm">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <span className="text-muted-foreground">Response Time:</span>{' '}
+                      <span className="text-muted-foreground">{t('results.responseTime')}</span>{' '}
                       {healthResults[connector.name].response_time_ms?.toFixed(2) || 'N/A'}ms
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Success:</span>{' '}
-                      {healthResults[connector.name].success ? 'Yes' : 'No'}
+                      <span className="text-muted-foreground">{t('results.success')}</span>{' '}
+                      {healthResults[connector.name].success ? t('results.yes') : t('results.no')}
                     </div>
                   </div>
                   {healthResults[connector.name].errors.length > 0 && (
                     <div className="mt-2">
-                      <span className="text-destructive font-medium">Errors:</span>
+                      <span className="text-destructive font-medium">{t('results.errors')}</span>
                       <ul className="list-disc list-inside text-xs mt-1">
                         {healthResults[connector.name].errors.map((err, i) => (
                           <li key={i}>{err}</li>
@@ -416,20 +439,22 @@ export default function ConnectorsPage() {
               <div className="p-4 space-y-6">
                 {/* Basic Info */}
                 <div>
-                  <h3 className="font-semibold mb-2">Basic Information</h3>
+                  <h3 className="font-semibold mb-2">{t('detail.basicInfo')}</h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-muted-foreground">Name:</span> {selectedConnector.name}
+                      <span className="text-muted-foreground">{t('detail.name')}</span>{' '}
+                      {selectedConnector.name}
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Edition:</span> {selectedConnector.edition}
+                      <span className="text-muted-foreground">{t('detail.edition')}</span>{' '}
+                      {selectedConnector.edition}
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Status:</span>{' '}
+                      <span className="text-muted-foreground">{t('detail.status')}</span>{' '}
                       <StatusBadge status={selectedConnector.status} />
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Min Edition:</span>{' '}
+                      <span className="text-muted-foreground">{t('detail.minEdition')}</span>{' '}
                       {selectedConnector.min_edition}
                     </div>
                   </div>
@@ -438,37 +463,37 @@ export default function ConnectorsPage() {
                   </p>
                   {selectedConnector.error_message && (
                     <div className="mt-2 p-2 bg-destructive/20 dark:bg-destructive/30 text-destructive dark:text-destructive rounded text-sm">
-                      Error: {selectedConnector.error_message}
+                      {t('detail.error', { message: selectedConnector.error_message })}
                     </div>
                   )}
                 </div>
 
                 {/* Capabilities */}
                 <div>
-                  <h3 className="font-semibold mb-2">Capabilities</h3>
+                  <h3 className="font-semibold mb-2">{t('detail.capabilities')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedConnector.requires_api_key && (
                       <span className="px-2 py-1 bg-warning/20 dark:bg-warning/30 text-warning dark:text-warning rounded text-xs">
-                        API Key Required
+                        {t('badge.apiKeyRequired')}
                       </span>
                     )}
                     {selectedConnector.supports_streaming && (
                       <span className="px-2 py-1 bg-info/20 dark:bg-info/30 text-info dark:text-info rounded text-xs">
-                        Streaming
+                        {t('badge.streaming')}
                       </span>
                     )}
                     {selectedConnector.accessible_in_ce && (
                       <span className="px-2 py-1 bg-success/20 dark:bg-success/30 text-success dark:text-success rounded text-xs">
-                        CE Accessible
+                        {t('badge.ceAccessible')}
                       </span>
                     )}
                     {selectedConnector.enabled ? (
                       <span className="px-2 py-1 bg-success/20 dark:bg-success/30 text-success dark:text-success rounded text-xs">
-                        Enabled
+                        {t('badge.enabled')}
                       </span>
                     ) : (
                       <span className="px-2 py-1 bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground rounded text-xs">
-                        Disabled
+                        {t('badge.disabled')}
                       </span>
                     )}
                   </div>
@@ -479,23 +504,23 @@ export default function ConnectorsPage() {
                   <div>
                     <h3 className="font-semibold mb-2 flex items-center gap-2">
                       <Gauge className="w-4 h-4" />
-                      Rate Limit
+                      {t('detail.rateLimit')}
                     </h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <span className="text-muted-foreground">Requests/min:</span>{' '}
+                        <span className="text-muted-foreground">{t('detail.requestsPerMin')}</span>{' '}
                         {selectedConnector.rate_limit.requests_per_minute}
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Burst Size:</span>{' '}
+                        <span className="text-muted-foreground">{t('detail.burstSize')}</span>{' '}
                         {selectedConnector.rate_limit.burst_size}
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Current Requests:</span>{' '}
+                        <span className="text-muted-foreground">{t('detail.currentRequests')}</span>{' '}
                         {selectedConnector.rate_limit.current_requests}
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Remaining:</span>{' '}
+                        <span className="text-muted-foreground">{t('detail.remaining')}</span>{' '}
                         {selectedConnector.rate_limit.remaining}
                       </div>
                     </div>
@@ -505,7 +530,7 @@ export default function ConnectorsPage() {
                 {/* Instance Status */}
                 {selectedConnector.instance_status && (
                   <div>
-                    <h3 className="font-semibold mb-2">Instance Status</h3>
+                    <h3 className="font-semibold mb-2">{t('detail.instanceStatus')}</h3>
                     <pre className="text-xs bg-muted p-2 rounded overflow-auto">
                       {JSON.stringify(selectedConnector.instance_status, null, 2)}
                     </pre>
@@ -515,7 +540,7 @@ export default function ConnectorsPage() {
                 {/* Config (sanitized) */}
                 {selectedConnector.config && (
                   <div>
-                    <h3 className="font-semibold mb-2">Configuration</h3>
+                    <h3 className="font-semibold mb-2">{t('detail.configuration')}</h3>
                     <pre className="text-xs bg-muted p-2 rounded overflow-auto">
                       {JSON.stringify(selectedConnector.config, null, 2)}
                     </pre>
@@ -535,7 +560,7 @@ export default function ConnectorsPage() {
                     ) : (
                       <Activity className="w-4 h-4" />
                     )}
-                    Health Check
+                    {t('healthCheck')}
                   </button>
                 </div>
               </div>

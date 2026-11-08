@@ -19,17 +19,18 @@ interface Message {
   requestId?: string;
 }
 
-// Suggested prompts for empty state
-const SUGGESTED_PROMPTS = [
-  'Find 2-bedroom apartments under $400,000 in Madrid',
-  "What's the average price per square meter in Krakow?",
-  'Compare properties in Warsaw city center',
-  'Calculate mortgage for a $500,000 property with 20% down payment',
-  'Show me houses with gardens in suburban areas',
-];
-
 export default function ChatPage() {
   const t = useTranslations('chat');
+  const tError = useTranslations('error');
+
+  // Suggested prompts for empty state
+  const suggestedPrompts = [
+    t('examplePrompts.madrid'),
+    t('examplePrompts.krakow'),
+    t('examplePrompts.warsaw'),
+    t('examplePrompts.mortgage'),
+    t('examplePrompts.gardens'),
+  ];
 
   // Track if user has sent any message (for empty state)
   const [hasStarted, setHasStarted] = useState(false);
@@ -48,7 +49,7 @@ export default function ChatPage() {
   };
 
   const applyStreamError = (error: unknown, isRetry: boolean = false) => {
-    let message = 'Unknown error';
+    let message = tError('generic');
     let requestId: string | undefined = undefined;
 
     if (error instanceof ApiError) {
@@ -258,7 +259,7 @@ export default function ChatPage() {
                 {t('emptyState.suggestions')}
               </p>
               <div className="flex flex-col gap-2">
-                {SUGGESTED_PROMPTS.map((prompt, idx) => (
+                {suggestedPrompts.map((prompt, idx) => (
                   <button
                     key={idx}
                     type="button"

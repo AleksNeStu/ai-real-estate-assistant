@@ -458,6 +458,13 @@
         "title": "Nessuna fonte disponibile",
         "description": "L’IA non ha trovato fonti pertinenti per questa ricerca."
       }
+    },
+    "examplePrompts": {
+      "madrid": "Trova appartamenti di 2 stanze a Madrid sotto i 400.000 $",
+      "krakow": "Qual è il prezzo medio al metro quadro a Cracovia?",
+      "warsaw": "Confronta gli immobili nel centro di Varsavia",
+      "mortgage": "Calcola il mutuo per un immobile da 500.000 $ con il 20 % di anticipo",
+      "gardens": "Mostrami case con giardino nelle zone periferiche"
     }
   },
   "cityOverview": {
@@ -552,7 +559,10 @@
       "uploadButton": "Carica documento",
       "uploading": "Caricamento in corso...",
       "success": "Caricamento riuscito!",
-      "cancel": "Annulla"
+      "cancel": "Annulla",
+      "removeFile": "Rimuovi il file selezionato",
+      "failedTitle": "Caricamento non riuscito",
+      "invalidType": "Tipo di file non valido: {ext}. Consentiti: {types}"
     },
     "categories": {
       "selectCategory": "Seleziona una categoria (opzionale)",
@@ -580,14 +590,20 @@
       "expired": "Scaduto",
       "expiringSoon": "In scadenza",
       "expires": "Scade",
-      "added": "Aggiunto"
+      "added": "Aggiunto",
+      "filterByCategory": "Filtra per categoria",
+      "sortBy": "Ordina documenti per",
+      "sortOrder": "Ordine: {order}. Fare clic per cambiare.",
+      "property": "Immobile: {id}",
+      "actionsFor": "Azioni per {name}"
     },
     "errors": {
       "loadFailed": "Caricamento dei documenti non riuscito",
       "deleteFailed": "Eliminazione del documento non riuscita",
       "invalidType": "Tipo di file non valido",
       "tooLarge": "File troppo grande. Dimensione massima: 10 MB",
-      "uploadFailed": "Caricamento non riuscito"
+      "uploadFailed": "Caricamento non riuscito",
+      "downloadFailed": "Download non riuscito"
     },
     "expiryAlert": {
       "singular": "{count} documento in scadenza",
@@ -1468,7 +1484,10 @@
       "decimalSeparator": "Separatore decimale",
       "decimalDot": "Punto (.)",
       "decimalComma": "Virgola (,)",
-      "includeHeader": "Includi la riga di intestazione"
+      "includeHeader": "Includi la riga di intestazione",
+      "excel": "Excel",
+      "markdown": "Markdown",
+      "pdf": "PDF"
     },
     "saveSearch": {
       "button": "Salva la ricerca",
@@ -1488,7 +1507,8 @@
       "minGreaterThanMax": "Il prezzo minimo non può superare quello massimo.",
       "emptyQuery": "Inserisci una query di ricerca.",
       "genericSearch": "Non è stato possibile eseguire la ricerca. Riprova.",
-      "exportFailed": "Non è stato possibile esportare. Riprova."
+      "exportFailed": "Non è stato possibile esportare. Riprova.",
+      "invalidPolygon": "Poligono non valido"
     },
     "feedback": {
       "helpful": "Ti è stato utile?",
@@ -1508,7 +1528,8 @@
       "drawing": "Disegno...",
       "enableDrawing": "Abilita disegno",
       "disableDrawing": "Disabilita disegno",
-      "clearArea": "Cancella area"
+      "clearArea": "Cancella area",
+      "propertyClicked": "Immobile selezionato"
     },
     "queryLabel": "Query di ricerca",
     "searchLabel": "Ricerca immobili",
@@ -1536,7 +1557,50 @@
     "clearPriceFilter": "Cancella filtro prezzo",
     "filterByPropertyType": "Filtra per tipo di immobile",
     "propertyMap": "Mappa degli immobili",
-    "propertyMapWithMapbox": "Mappa degli immobili con Mapbox"
+    "propertyMapWithMapbox": "Mappa degli immobili con Mapbox",
+    "examples": {
+      "madrid": "Appartamento di 2 locali sotto i 500.000 $ a Madrid",
+      "houseGarden": "Casa con giardino a Cracovia",
+      "studioCity": "Monolocale vicino al centro",
+      "luxuryParking": "Appartamento di lusso con parcheggio a Varsavia"
+    },
+    "mapControls": {
+      "controls": "Controlli della mappa",
+      "zoomIn": "Ingrandisci",
+      "zoomOut": "Riduci",
+      "fitBounds": "Adatta alla vista",
+      "fitAll": "Mostra tutti gli immobili",
+      "toggleFilters": "Attiva/disattiva i filtri della mappa",
+      "mapFilters": "Filtri della mappa",
+      "toggleHeatmap": "Attiva/disattiva la heatmap",
+      "heatmapMode": "Modalità heatmap",
+      "density": "Densità",
+      "price": "Prezzo",
+      "pricePerSqm": "Prezzo/m²",
+      "yield": "Rendimento",
+      "heatmapIntensity": "Intensità della heatmap",
+      "clusters": "Cluster",
+      "toggleClusters": "Attiva/disattiva i cluster",
+      "clusterSize": "Dimensione del cluster",
+      "maxZoom": "Zoom massimo per il clustering",
+      "priceFilter": "Filtro prezzo",
+      "filterUnder300k": "Filtra sotto 300 mila",
+      "filter300k600k": "Filtra 300–600 mila",
+      "filter600k1M": "Filtra 600 mila–1 mln",
+      "allTypes": "Tutti i tipi",
+      "resetFilters": "Reimposta tutti i filtri",
+      "mapOptions": "Opzioni della mappa",
+      "heatmap": "Heatmap",
+      "mode": "Modalità",
+      "intensity": "Intensità: {value}",
+      "clusterSizeValue": "Dimensione del cluster: {size} px",
+      "maxZoomValue": "Zoom massimo: {zoom}",
+      "under300k": "Sotto 300 mila $",
+      "range300k600k": "300–600 mila $",
+      "range600k1M": "600 mila–1 mln $",
+      "allPrices": "Tutti i prezzi",
+      "resetAll": "Reimposta tutto"
+    }
   },
   "settings": {
     "title": "Impostazioni",
@@ -1887,7 +1951,52 @@
     },
     "knowledge": {
       "title": "Conoscenza",
-      "description": "I documenti e il contesto di mercato su cui si basa l'assistente."
+      "description": "I documenti e il contesto di mercato su cui si basa l'assistente.",
+      "upload": {
+        "filesAria": "File della base di conoscenza",
+        "selectFile": "Seleziona almeno un file da caricare.",
+        "uploading": "Caricamento...",
+        "upload": "Carica",
+        "clear": "Svuota",
+        "processing": "Caricamento ed elaborazione dei documenti...",
+        "failed": "Caricamento non riuscito",
+        "title": "Carica documenti",
+        "chunksIndexed": "Chunk indicizzati: {count}"
+      },
+      "manage": {
+        "title": "Gestisci la base di conoscenza",
+        "clearing": "Svuotamento in corso...",
+        "clear": "Svuota la base di conoscenza",
+        "result": "{message}. Rimossi {removed}. Restano {remaining}.",
+        "confirm": "Cancellare tutti i documenti indicizzati della base di conoscenza? L'operazione non può essere annullata."
+      },
+      "ask": {
+        "title": "Fai domande",
+        "empty": "Carica i documenti e fai domande per ottenere risposte con citazioni dalla tua base di conoscenza.",
+        "placeholder": "Fai una domanda sui documenti caricati...",
+        "questionAria": "Domanda alla base di conoscenza",
+        "topKAria": "Top K",
+        "topKPlaceholder": "Top K (1-50)",
+        "providerAria": "Provider",
+        "providerPlaceholder": "Provider (facoltativo)",
+        "modelAria": "Modello",
+        "modelPlaceholder": "Modello (facoltativo)",
+        "asking": "Domanda in corso...",
+        "ask": "Chiedi",
+        "clear": "Svuota",
+        "searching": "Ricerca nella base di conoscenza...",
+        "failed": "Domanda non riuscita",
+        "citations": "Citazioni",
+        "citationItem": "{source} (frammento {chunk})",
+        "noCitations": "Nessuna citazione restituita.",
+        "enterQuestion": "Inserisci una domanda."
+      },
+      "empty": {
+        "title": "Inizia con la base di conoscenza",
+        "upload": "Carica documenti (PDF, TXT, MD, DOCX) per costruire la tua base di conoscenza locale.",
+        "then": "Poi fai domande e ottieni risposte con citazioni delle fonti.",
+        "providers": "Provider supportati: OpenAI, Anthropic, Google, Grok, DeepSeek e Ollama (locale)."
+      }
     },
     "documents": {
       "title": "Documenti",
@@ -1927,7 +2036,135 @@
       "description": "Calcolatori e analisi che trasformano un annuncio in una decisione.",
       "propertyPrice": "Prezzo dell'immobile",
       "columnsHint": "Colonne (facoltative), ad es. id, city, price",
-      "propertyId": "ID immobile"
+      "propertyId": "ID immobile",
+      "mortgage": {
+        "title": "Calcolatore del mutuo",
+        "downPayment": "Anticipo, %",
+        "interestRate": "Tasso di interesse, %",
+        "loanYears": "Durata del mutuo, anni",
+        "calculating": "Calcolo in corso...",
+        "monthlyPayment": "Rata mensile: {amount}",
+        "failed": "Calcolo non riuscito",
+        "calculate": "Calcola"
+      },
+      "compare": {
+        "title": "Confronta gli immobili",
+        "ids": "ID separati da virgole",
+        "comparing": "Confronto in corso...",
+        "failed": "Confronto non riuscito",
+        "exportFormat": "Formato di esportazione",
+        "exportColumns": "Colonne da esportare",
+        "csvDelimiter": "Separatore CSV",
+        "csvDecimal": "Separatore decimale in CSV",
+        "comma": "Virgola (,)",
+        "semicolon": "Punto e virgola (;)",
+        "dot": "Punto (.)",
+        "includeHeader": "Includi la riga di intestazione",
+        "exporting": "Esportazione in corso...",
+        "exportFailed": "Esportazione non riuscita",
+        "needIds": "Inserisci almeno un ID di immobile.",
+        "compare": "Confronta",
+        "export": "Esporta"
+      },
+      "price": {
+        "title": "Analisi dei prezzi",
+        "query": "Interrogazione (ad es. città o tipo)",
+        "analyzing": "Analisi in corso...",
+        "failed": "Analisi non riuscita"
+      },
+      "location": {
+        "title": "Analisi della posizione",
+        "analyzing": "Analisi in corso...",
+        "failed": "Analisi della posizione non riuscita"
+      },
+      "neighborhood": {
+        "title": "Indice di qualità del quartiere",
+        "latitude": "Latitudine (facoltativo)",
+        "longitude": "Longitudine (facoltativo)",
+        "city": "Città (facoltativo)",
+        "neighborhood": "Quartiere (facoltativo)",
+        "analyzing": "Analisi in corso...",
+        "failed": "Valutazione della qualità del quartiere non riuscita",
+        "excellent": "Eccellente",
+        "good": "Buono",
+        "fair": "Discreto",
+        "poor": "Scarso",
+        "veryPoor": "Molto scarso",
+        "overallScore": "Punteggio complessivo",
+        "safety": "Sicurezza",
+        "schools": "Scuole",
+        "amenities": "Servizi",
+        "walkability": "Pedonalità",
+        "greenSpace": "Verde pubblico",
+        "location": "Posizione:",
+        "coordinates": "Coordinate: {lat}, {lon}",
+        "dataSources": "Fonti dei dati: {sources}",
+        "scoreBar": "{score}/100 (Peso: {weight})"
+      },
+      "templates": {
+        "title": "Modelli di prompt",
+        "description": "Scegli un modello, compila le variabili e genera un testo pronto da usare.",
+        "picker": "Selettore del modello",
+        "loadFailed": "Caricamento dei modelli non riuscito",
+        "renderFailed": "Applicazione del modello non riuscita",
+        "generate": "Genera",
+        "generating": "Generazione in corso...",
+        "copy": "Copia",
+        "output": "Risultato del modello",
+        "variable": "Variabile {name}"
+      },
+      "valuation": {
+        "title": "Valutazione (stub CE)",
+        "estimate": "Valuta",
+        "estimating": "Stima in corso...",
+        "failed": "Valutazione non riuscita"
+      },
+      "legal": {
+        "title": "Verifica del contratto (stub CE)",
+        "contract": "Testo del contratto",
+        "analyzing": "Analisi in corso...",
+        "failed": "Verifica del contratto non riuscita"
+      },
+      "enrich": {
+        "title": "Arricchimento dei dati (stub CE)",
+        "address": "Indirizzo",
+        "enrich": "Arricchisci",
+        "enriching": "Arricchimento in corso...",
+        "failed": "Arricchimento non riuscito"
+      },
+      "crm": {
+        "title": "Sincronizzazione del contatto con il CRM (stub CE)",
+        "name": "Nome",
+        "phone": "Telefono",
+        "email": "Email",
+        "sync": "Sincronizza",
+        "syncing": "Sincronizzazione in corso...",
+        "failed": "Sincronizzazione con il CRM non riuscita"
+      },
+      "fields": {
+        "count": "Conteggio: {value}",
+        "minPrice": "Prezzo minimo: {value}",
+        "maxPrice": "Prezzo massimo: {value}",
+        "diff": "Differenza: {value}",
+        "averagePrice": "Prezzo medio: {value}",
+        "medianPrice": "Prezzo mediano: {value}",
+        "city": "Città: {value}",
+        "neighborhood": "Quartiere: {value}",
+        "latLon": "Lat/Lon: {lat}, {lon}",
+        "score": "Punteggio: {value}",
+        "risks": "Rischi: {value}",
+        "address": "Indirizzo: {value}",
+        "contactId": "ID contatto: {id}",
+        "estimatedValue": "Valore stimato: {value}"
+      },
+      "hints": {
+        "dataEnrichment": "Attivalo sul backend: imposta DATA_ENRICHMENT_ENABLED=true e riavvia l’API.",
+        "crm": "Configuralo sul backend: imposta CRM_WEBHOOK_URL e riavvia l’API.",
+        "valuation": "Configuralo sul backend: imposta VALUATION_MODE=simple e riavvia l’API.",
+        "legalCheck": "Configuralo sul backend: imposta LEGAL_CHECK_MODE=basic e riavvia l’API.",
+        "vectorStore": "Carica e inizializza l’archivio vettoriale (Chroma) prima di usare lo strumento."
+      },
+      "analyze": "Analizza"
     },
     "analytics": {
       "title": "Analytics e strumenti",
@@ -2020,11 +2257,148 @@
     "admin": {
       "monitoring": {
         "title": "Monitoraggio della produzione",
-        "description": "Stato live dello stack distribuito."
+        "description": "Stato live dello stack distribuito.",
+        "loading": "Caricamento dei dati di monitoraggio...",
+        "errors": {
+          "load": "Impossibile caricare i dati di monitoraggio",
+          "testAlert": "Impossibile inviare l’avviso di test"
+        },
+        "lastRefreshed": "Ultimo aggiornamento: {time}",
+        "refreshing": "Aggiornamento...",
+        "sending": "Invio...",
+        "testAlert": "Avviso di test",
+        "errorTitle": "Errore durante il caricamento dei dati",
+        "alerts": {
+          "threshold": "Soglia: {threshold}",
+          "dbLatency": "Latenza elevata del database: {value} ms",
+          "dbLatencyThreshold": "Latenza P95 > 3 s",
+          "cacheHitRate": "Basso tasso di hit della cache: {rate}%",
+          "cacheHitRateThreshold": "Tasso di hit < 20%",
+          "notReady": "Il servizio non è pronto a gestire le richieste",
+          "notReadyThreshold": "Prontitudine complessiva",
+          "dbUnhealthy": "La connessione al database non è sana",
+          "dbUnhealthyThreshold": "Stato del database",
+          "llmUnhealthy": "Il provider LLM non è sano",
+          "llmUnhealthyThreshold": "Stato LLM",
+          "redisUnhealthy": "La cache Redis non è sana",
+          "redisUnhealthyThreshold": "Stato Redis"
+        },
+        "health": {
+          "title": "Stato del sistema",
+          "service": "Servizio:",
+          "timestamp": "Marca temporale:",
+          "uptime": "Tempo di attività:",
+          "version": "Versione:",
+          "git": "Commit Git:"
+        },
+        "readiness": {
+          "title": "Stato di prontezza",
+          "database": "Database:",
+          "dbLatency": "Latenza DB:",
+          "redis": "Redis:",
+          "disabled": "Disabilitato",
+          "llm": "Provider LLM:",
+          "lastCheck": "Ultimo controllo:"
+        },
+        "metrics": {
+          "totalProperties": "Immobili totali",
+          "inLast24h": "{count} nelle ultime 24 ore",
+          "knowledgeStore": "Archivio di conoscenza",
+          "chunks": "chunk: {count}",
+          "cacheHitRate": "Tasso di hit della cache",
+          "hitsMisses": "hit: {hits}, miss: {misses}",
+          "noCacheData": "Nessun dato di cache",
+          "environment": "Ambiente"
+        },
+        "sources": {
+          "title": "Immobili per sorgente dati"
+        },
+        "charts": {
+          "requestRate": "Richieste (req/min)",
+          "errorRate": "Tasso di errori (%)",
+          "responseTime": "Tempo di risposta (ms)"
+        },
+        "legend": {
+          "title": "Legenda dei grafici",
+          "healthy": "Sano / Normale",
+          "warning": "Avviso / Degradato",
+          "error": "Errore / Critico"
+        },
+        "status": {
+          "healthy": "Sano",
+          "unhealthy": "Non sano",
+          "ready": "Pronto",
+          "not_ready": "Non pronto",
+          "degraded": "Degradato"
+        }
       },
       "connectors": {
         "title": "Connettori MCP",
-        "description": "Strumenti esterni che l'assistente può richiamare."
+        "description": "Strumenti esterni che l'assistente può richiamare.",
+        "edition": "Edizione: {edition}",
+        "healthCheckAll": "Controlla tutti",
+        "healthCheck": "Verifica stato",
+        "overall": {
+          "title": "Stato generale",
+          "connectorsChecked": "Connector verificati:",
+          "edition": "Edizione:",
+          "timestamp": "Marca temporale:"
+        },
+        "requestId": "ID richiesta: {id}",
+        "loading": "Caricamento dei connector...",
+        "empty": {
+          "title": "Nessun connector registrato"
+        },
+        "badge": {
+          "registered": "Registrato",
+          "notRegistered": "Non registrato",
+          "instantiated": "Istantiato",
+          "noInstance": "Nessuna istanza",
+          "apiKeyRequired": "Richiede chiave API",
+          "streaming": "Streaming",
+          "ceAccessible": "Accessibile in CE",
+          "enabled": "Abilitato",
+          "disabled": "Disabilitato"
+        },
+        "results": {
+          "responseTime": "Tempo di risposta:",
+          "success": "Successo:",
+          "yes": "Sì",
+          "no": "No",
+          "errors": "Errori:"
+        },
+        "detail": {
+          "basicInfo": "Informazioni di base",
+          "name": "Nome:",
+          "edition": "Edizione:",
+          "status": "Stato:",
+          "minEdition": "Edizione minima:",
+          "error": "Errore: {message}",
+          "capabilities": "Capacità",
+          "rateLimit": "Limite di richieste",
+          "requestsPerMin": "Richieste/min:",
+          "burstSize": "Dimensione burst:",
+          "currentRequests": "Richieste attuali:",
+          "remaining": "Rimanenti:",
+          "instanceStatus": "Stato dell’istanza",
+          "configuration": "Configurazione"
+        },
+        "status": {
+          "active": "Attivo",
+          "disabled": "Disabilitato",
+          "error": "Errore",
+          "not_instantiated": "Non istanziato",
+          "unknown": "Sconosciuto"
+        },
+        "health": {
+          "healthy": "Sano",
+          "unhealthy": "Non sano",
+          "degraded": "Degradato",
+          "error": "Errore"
+        },
+        "errors": {
+          "load": "Impossibile caricare i connector"
+        }
       },
       "dataSources": {
         "title": "Fonti di dati",
@@ -2032,7 +2406,87 @@
       },
       "bulkJobs": {
         "title": "Processi di importazione ed esportazione in blocco",
-        "description": "Sposta annunci in blocco dentro e fuori."
+        "description": "Sposta annunci in blocco dentro e fuori.",
+        "tabs": {
+          "jobs": "Job",
+          "import": "Importazione",
+          "export": "Esportazione"
+        },
+        "requestId": "ID richiesta: {id}",
+        "filters": {
+          "label": "Filtri:",
+          "allTypes": "Tutti i tipi",
+          "allStatuses": "Tutti gli stati"
+        },
+        "errors": {
+          "loadJobs": "Impossibile caricare i job batch",
+          "urlRequired": "Inserisci un URL",
+          "createImport": "Impossibile creare il job di importazione",
+          "createExport": "Impossibile creare il job di esportazione",
+          "cancelJob": "Impossibile annullare il job",
+          "deleteJob": "Impossibile eliminare il job",
+          "queryRequired": "Inserisci una query di ricerca"
+        },
+        "success": {
+          "importCreated": "Job di importazione creato con successo!",
+          "exportCreated": "Job di esportazione creato con successo!"
+        },
+        "confirm": {
+          "deleteJob": "Vuoi davvero eliminare questo job?"
+        },
+        "status": {
+          "pending": "In attesa",
+          "running": "In esecuzione",
+          "completed": "Completato",
+          "failed": "Fallito",
+          "cancelled": "Annullato"
+        },
+        "empty": {
+          "title": "Nessun job batch trovato",
+          "description": "Crea un job di importazione o esportazione per iniziare"
+        },
+        "job": {
+          "progress": "Avanzamento:",
+          "processed": "Processati:",
+          "failed": "Falliti:",
+          "created": "Creato: {date}",
+          "completed": "Completato: {date}",
+          "expires": "Scade: {date}",
+          "cancelTitle": "Annulla job",
+          "downloadTitle": "Scarica risultato",
+          "deleteTitle": "Elimina job"
+        },
+        "pagination": {
+          "page": "Pagina {page} di {total}"
+        },
+        "import": {
+          "title": "Crea job di importazione",
+          "sourceType": "Tipo di sorgente",
+          "typeUrl": "URL",
+          "typeFile": "Caricamento file",
+          "typePortal": "API del portale",
+          "fileUrls": "URL dei file (separati da virgola)",
+          "fileUrlsPlaceholder": "https://example.com/data.csv, https://example.com/data.xlsx",
+          "supports": "Supporta CSV, Excel (.xlsx/.xls) e file JSON",
+          "fileUploadAvailable": "Il caricamento dei file tramite API diretta è disponibile",
+          "fileUploadEndpoint": "Usa l'endpoint /api/v1/admin/ingest/upload",
+          "portalConfigured": "Le importazioni da API del portale si configurano in Sorgenti dati",
+          "portalHint": "Vai alla pagina Sorgenti dati per configurare le connessioni ai portali",
+          "sourceName": "Nome della sorgente (opzionale)",
+          "sourceNamePlaceholder": "es. Immobili a Varsavia T1 2024",
+          "creating": "Creazione del job di importazione...",
+          "start": "Avvia job di importazione"
+        },
+        "export": {
+          "title": "Crea job di esportazione",
+          "format": "Formato di esportazione",
+          "query": "Query di ricerca",
+          "queryPlaceholder": "es. appartamenti a Varsavia sotto 500000 PLN",
+          "queryHint": "Inserisci una query in linguaggio naturale per filtrare gli immobili da esportare",
+          "maxResults": "Risultati massimi",
+          "creating": "Creazione del job di esportazione...",
+          "start": "Avvia job di esportazione"
+        }
       }
     }
   },

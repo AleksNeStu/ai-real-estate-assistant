@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Upload, X, FileText, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { uploadDocument } from '@/lib/api';
 import type { DocumentUploadResponse, DocumentCategory } from '@/lib/types';
@@ -14,16 +15,17 @@ interface DocumentUploadProps {
 const ACCEPTED_TYPES = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
 const MAX_SIZE_MB = 10;
 
-const CATEGORIES: { value: DocumentCategory | ''; label: string }[] = [
-  { value: '', label: 'Select category (optional)' },
-  { value: 'contract', label: 'Contract' },
-  { value: 'inspection', label: 'Inspection Report' },
-  { value: 'photo', label: 'Photo' },
-  { value: 'financial', label: 'Financial Document' },
-  { value: 'other', label: 'Other' },
+const CATEGORIES: { value: DocumentCategory | ''; labelKey: string }[] = [
+  { value: '', labelKey: 'selectCategory' },
+  { value: 'contract', labelKey: 'contract' },
+  { value: 'inspection', labelKey: 'inspection' },
+  { value: 'photo', labelKey: 'photo' },
+  { value: 'financial', labelKey: 'financial' },
+  { value: 'other', labelKey: 'other' },
 ];
 
 export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: DocumentUploadProps) {
+  const t = useTranslations('documents');
   const [file, setFile] = useState<File | null>(null);
   const [category, setCategory] = useState<string>('');
   const [description, setDescription] = useState('');
@@ -34,17 +36,20 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  const validateFile = useCallback((file: File): string | null => {
-    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
-    const validExts = ACCEPTED_TYPES.split(',');
-    if (!validExts.includes(ext)) {
-      return `Invalid file type: ${ext}. Allowed: ${ACCEPTED_TYPES}`;
-    }
-    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      return `File too large. Maximum size: ${MAX_SIZE_MB}MB`;
-    }
-    return null;
-  }, []);
+  const validateFile = useCallback(
+    (file: File): string | null => {
+      const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+      const validExts = ACCEPTED_TYPES.split(',');
+      if (!validExts.includes(ext)) {
+        return t('upload.invalidType', { ext, types: ACCEPTED_TYPES });
+      }
+      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+        return t('errors.tooLarge');
+      }
+      return null;
+    },
+    [t]
+  );
 
   const handleFileSelect = useCallback(
     (selectedFile: File) => {
@@ -105,7 +110,7 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
         onUploadSuccess?.(response);
       }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed');
+      setError(err instanceof Error ? err.message : t('errors.uploadFailed'));
     } finally {
       setUploading(false);
     }
@@ -115,7 +120,7 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center">
         <CheckCircle className="h-12 w-12 text-success mb-4" />
-        <h3 className="text-lg font-semibold">Upload Successful!</h3>
+        <h3 className="text-lg font-semibold">{t('upload.success')}</h3>
         <p className="text-sm text-muted-foreground mt-1">{file?.name}</p>
       </div>
     );
@@ -161,7 +166,7 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
                 setFile(null);
               }}
               className="ml-2 p-1 hover:bg-muted rounded"
-              aria-label="Remove selected file"
+              aria-label={t('upload.removeFile')}
             >
               <X className="h-4 w-4" aria-hidden="true" />
             </button>
@@ -169,11 +174,9 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
         ) : (
           <>
             <Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground" aria-hidden="true" />
-            <p className="font-medium">Drag & drop a file here</p>
-            <p className="text-sm text-muted-foreground mt-1">or click to browse</p>
-            <p className="text-xs text-muted-foreground mt-2">
-              Supports: PDF, DOC, DOCX, JPG, PNG (max {MAX_SIZE_MB}MB)
-            </p>
+            <p className="font-medium">{t('upload.dragDrop')}</p>
+            <p className="text-sm text-muted-foreground mt-1">{t('upload.orClick')}</p>
+            <p className="text-xs text-muted-foreground mt-2">{t('upload.supportedTypes')}</p>
           </>
         )}
       </div>
@@ -182,7 +185,7 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
       <div className="grid gap-4">
         <div>
           <label htmlFor="doc-category" className="text-sm font-medium">
-            Category
+            {t('upload.category')}
           </label>
           <select
             id="doc-category"
@@ -192,7 +195,7 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
           >
             {CATEGORIES.map((cat) => (
               <option key={cat.value} value={cat.value}>
-                {cat.label}
+                {t(`categories.${cat.labelKey}`)}
               </option>
             ))}
           </select>
@@ -200,13 +203,13 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
 
         <div>
           <label htmlFor="doc-description" className="text-sm font-medium">
-            Description
+            {t('upload.description')}
           </label>
           <textarea
             id="doc-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Optional description..."
+            placeholder={t('upload.descriptionPlaceholder')}
             rows={2}
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           />
@@ -214,21 +217,21 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
 
         <div>
           <label htmlFor="doc-tags" className="text-sm font-medium">
-            Tags
+            {t('upload.tags')}
           </label>
           <input
             id="doc-tags"
             type="text"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
-            placeholder="contract, urgent, reviewed (comma-separated)"
+            placeholder={t('upload.tagsPlaceholder')}
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           />
         </div>
 
         <div>
           <label htmlFor="doc-expiry" className="text-sm font-medium">
-            Expiry Date
+            {t('upload.expiryDate')}
           </label>
           <input
             id="doc-expiry"
@@ -248,7 +251,7 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
         >
           <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-destructive">Upload Failed</p>
+            <p className="text-sm font-medium text-destructive">{t('upload.failedTitle')}</p>
             <p className="text-sm text-destructive/90">{error}</p>
           </div>
         </div>
@@ -263,7 +266,7 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
             disabled={uploading}
             className="px-4 py-2 text-sm font-medium rounded-md border border-input hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
           >
-            Cancel
+            {t('upload.cancel')}
           </button>
         )}
         <button
@@ -275,12 +278,12 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
           {uploading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-              Uploading...
+              {t('upload.uploading')}
             </>
           ) : (
             <>
               <Upload className="w-4 h-4" aria-hidden="true" />
-              Upload Document
+              {t('upload.uploadButton')}
             </>
           )}
         </button>

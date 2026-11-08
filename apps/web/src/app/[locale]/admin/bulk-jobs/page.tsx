@@ -24,12 +24,7 @@ import {
   deleteBulkJob,
   ApiError,
 } from '@/lib/api';
-import type {
-  BulkJobResponse,
-  BulkJobType,
-  BulkJobStatus,
-  BulkJobSourceType,
-} from '@/lib/types';
+import type { BulkJobResponse, BulkJobType, BulkJobStatus, BulkJobSourceType } from '@/lib/types';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/states';
 
@@ -46,6 +41,7 @@ const EXPORT_FORMATS = ['csv', 'json', 'xlsx', 'parquet', 'md', 'pdf'];
 
 export default function BulkJobsPage() {
   const t = useTranslations('pages.admin.bulkJobs');
+  const tCommon = useTranslations('common');
   // Jobs state
   const [jobs, setJobs] = useState<BulkJobResponse[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
@@ -90,12 +86,12 @@ export default function BulkJobsPage() {
       if (err instanceof ApiError) {
         setError({ message: err.message, requestId: err.request_id });
       } else {
-        setError({ message: 'Failed to load bulk jobs' });
+        setError({ message: t('errors.loadJobs') });
       }
     } finally {
       setLoadingJobs(false);
     }
-  }, [filterJobType, filterStatus, page, pageSize]);
+  }, [filterJobType, filterStatus, page, pageSize, t]);
 
   useEffect(() => {
     if (activeTab === 'jobs') {
@@ -117,7 +113,7 @@ export default function BulkJobsPage() {
   // Handle import
   const handleImport = async () => {
     if (importSourceType === 'url' && !importUrl) {
-      setError({ message: 'Please enter a URL' });
+      setError({ message: t('errors.urlRequired') });
       return;
     }
 
@@ -127,9 +123,7 @@ export default function BulkJobsPage() {
 
     try {
       const config: Record<string, unknown> =
-        importSourceType === 'url'
-          ? { file_urls: importUrl.split(',').map((u) => u.trim()) }
-          : {};
+        importSourceType === 'url' ? { file_urls: importUrl.split(',').map((u) => u.trim()) } : {};
 
       await createBulkImportJob({
         source_type: importSourceType,
@@ -137,7 +131,7 @@ export default function BulkJobsPage() {
         source_name: importSourceName || undefined,
       });
 
-      setSuccess('Import job created successfully!');
+      setSuccess(t('success.importCreated'));
       setImportUrl('');
       setImportSourceName('');
       setActiveTab('jobs');
@@ -145,7 +139,7 @@ export default function BulkJobsPage() {
       if (err instanceof ApiError) {
         setError({ message: err.message, requestId: err.request_id });
       } else {
-        setError({ message: 'Failed to create import job' });
+        setError({ message: t('errors.createImport') });
       }
     } finally {
       setImporting(false);
@@ -155,7 +149,7 @@ export default function BulkJobsPage() {
   // Handle export
   const handleExport = async () => {
     if (!exportQuery) {
-      setError({ message: 'Please enter a search query' });
+      setError({ message: t('errors.queryRequired') });
       return;
     }
 
@@ -173,14 +167,14 @@ export default function BulkJobsPage() {
         },
       });
 
-      setSuccess('Export job created successfully!');
+      setSuccess(t('success.exportCreated'));
       setExportQuery('');
       setActiveTab('jobs');
     } catch (err) {
       if (err instanceof ApiError) {
         setError({ message: err.message, requestId: err.request_id });
       } else {
-        setError({ message: 'Failed to create export job' });
+        setError({ message: t('errors.createExport') });
       }
     } finally {
       setExporting(false);
@@ -196,14 +190,14 @@ export default function BulkJobsPage() {
       if (err instanceof ApiError) {
         setError({ message: err.message, requestId: err.request_id });
       } else {
-        setError({ message: 'Failed to cancel job' });
+        setError({ message: t('errors.cancelJob') });
       }
     }
   };
 
   // Handle delete job
   const handleDeleteJob = async (jobId: string) => {
-    if (!confirm('Are you sure you want to delete this job?')) return;
+    if (!confirm(t('confirm.deleteJob'))) return;
 
     try {
       await deleteBulkJob(jobId);
@@ -212,7 +206,7 @@ export default function BulkJobsPage() {
       if (err instanceof ApiError) {
         setError({ message: err.message, requestId: err.request_id });
       } else {
-        setError({ message: 'Failed to delete job' });
+        setError({ message: t('errors.deleteJob') });
       }
     }
   };
@@ -221,15 +215,35 @@ export default function BulkJobsPage() {
   const getStatusDisplay = (status: BulkJobStatus) => {
     switch (status) {
       case 'pending':
-        return { icon: Clock, color: 'text-warning bg-warning/10 dark:bg-warning/30', label: 'Pending' };
+        return {
+          icon: Clock,
+          color: 'text-warning bg-warning/10 dark:bg-warning/30',
+          label: t('status.pending'),
+        };
       case 'running':
-        return { icon: Loader2, color: 'text-info bg-info/10 dark:bg-info/30 animate-spin', label: 'Running' };
+        return {
+          icon: Loader2,
+          color: 'text-info bg-info/10 dark:bg-info/30 animate-spin',
+          label: t('status.running'),
+        };
       case 'completed':
-        return { icon: CheckCircle2, color: 'text-success bg-success/10 dark:bg-success/30', label: 'Completed' };
+        return {
+          icon: CheckCircle2,
+          color: 'text-success bg-success/10 dark:bg-success/30',
+          label: t('status.completed'),
+        };
       case 'failed':
-        return { icon: XCircle, color: 'text-destructive bg-destructive/10 dark:bg-destructive/30', label: 'Failed' };
+        return {
+          icon: XCircle,
+          color: 'text-destructive bg-destructive/10 dark:bg-destructive/30',
+          label: t('status.failed'),
+        };
       case 'cancelled':
-        return { icon: XCircle, color: 'text-muted-foreground bg-muted dark:bg-muted', label: 'Cancelled' };
+        return {
+          icon: XCircle,
+          color: 'text-muted-foreground bg-muted dark:bg-muted',
+          label: t('status.cancelled'),
+        };
       default:
         return { icon: Clock, color: 'text-muted-foreground bg-muted', label: status };
     }
@@ -249,7 +263,8 @@ export default function BulkJobsPage() {
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6 border-b">
-        <button type="button"
+        <button
+          type="button"
           onClick={() => setActiveTab('jobs')}
           className={`px-4 py-2 border-b-2 transition-colors ${
             activeTab === 'jobs'
@@ -258,9 +273,10 @@ export default function BulkJobsPage() {
           }`}
         >
           <RefreshCw className="w-4 h-4 inline-block mr-2" />
-          Jobs
+          {t('tabs.jobs')}
         </button>
-        <button type="button"
+        <button
+          type="button"
           onClick={() => setActiveTab('import')}
           className={`px-4 py-2 border-b-2 transition-colors ${
             activeTab === 'import'
@@ -269,9 +285,10 @@ export default function BulkJobsPage() {
           }`}
         >
           <Upload className="w-4 h-4 inline-block mr-2" />
-          Import
+          {t('tabs.import')}
         </button>
-        <button type="button"
+        <button
+          type="button"
           onClick={() => setActiveTab('export')}
           className={`px-4 py-2 border-b-2 transition-colors ${
             activeTab === 'export'
@@ -280,7 +297,7 @@ export default function BulkJobsPage() {
           }`}
         >
           <Download className="w-4 h-4 inline-block mr-2" />
-          Export
+          {t('tabs.export')}
         </button>
       </div>
 
@@ -289,11 +306,17 @@ export default function BulkJobsPage() {
         <div className="flex items-start gap-3 p-4 bg-destructive/10 text-destructive rounded mb-4">
           <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="font-medium">Error</p>
+            <p className="font-medium">{tCommon('error')}</p>
             <p className="text-sm">{error.message}</p>
-            {error.requestId && <p className="text-xs mt-1">Request ID: {error.requestId}</p>}
+            {error.requestId && (
+              <p className="text-xs mt-1">{t('requestId', { id: error.requestId })}</p>
+            )}
           </div>
-          <button type="button" onClick={() => setError(null)} className="text-destructive/50 hover:text-destructive">
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="text-destructive/50 hover:text-destructive"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -304,10 +327,14 @@ export default function BulkJobsPage() {
         <div className="flex items-start gap-3 p-4 bg-success/10 text-success dark:bg-success/30 dark:text-success rounded mb-4">
           <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="font-medium">Success</p>
+            <p className="font-medium">{tCommon('success')}</p>
             <p className="text-sm">{success}</p>
           </div>
-          <button type="button" onClick={() => setSuccess(null)} className="text-success/50 hover:text-success text-success/50">
+          <button
+            type="button"
+            onClick={() => setSuccess(null)}
+            className="text-success/50 hover:text-success text-success/50"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -320,7 +347,7 @@ export default function BulkJobsPage() {
           <div className="flex flex-wrap gap-4 p-4 bg-muted/50 rounded-lg">
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Filters:</span>
+              <span className="text-sm font-medium">{t('filters.label')}</span>
             </div>
             <select
               value={filterJobType}
@@ -330,7 +357,7 @@ export default function BulkJobsPage() {
               }}
               className="border rounded px-2 py-1 text-sm bg-background"
             >
-              <option value="">All Types</option>
+              <option value="">{t('filters.allTypes')}</option>
               {JOB_TYPES.map((type) => (
                 <option key={type} value={type}>
                   {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -345,14 +372,15 @@ export default function BulkJobsPage() {
               }}
               className="border rounded px-2 py-1 text-sm bg-background"
             >
-              <option value="">All Statuses</option>
+              <option value="">{t('filters.allStatuses')}</option>
               {JOB_STATUSES.map((status) => (
                 <option key={status} value={status}>
                   {status.charAt(0).toUpperCase() + status.slice(1)}
                 </option>
               ))}
             </select>
-            <button type="button"
+            <button
+              type="button"
               onClick={() => {
                 setFilterJobType('');
                 setFilterStatus('');
@@ -360,7 +388,7 @@ export default function BulkJobsPage() {
               }}
               className="text-sm text-muted-foreground hover:text-foreground"
             >
-              Clear
+              {tCommon('clear')}
             </button>
           </div>
 
@@ -372,8 +400,8 @@ export default function BulkJobsPage() {
           ) : jobs.length === 0 ? (
             <EmptyState
               icon={FileSpreadsheet}
-              title="No bulk jobs found"
-              description="Create an import or export job to get started"
+              title={t('empty.title')}
+              description={t('empty.description')}
             />
           ) : (
             <div className="space-y-3">
@@ -390,10 +418,16 @@ export default function BulkJobsPage() {
                         <div className="flex items-center gap-3 mb-2">
                           <span
                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                              job.job_type === 'import' ? 'bg-info/20 text-info' : 'bg-critical/20 text-critical'
+                              job.job_type === 'import'
+                                ? 'bg-info/20 text-info'
+                                : 'bg-critical/20 text-critical'
                             }`}
                           >
-                            {job.job_type === 'import' ? <Upload className="w-3 h-3" /> : <Download className="w-3 h-3" />}
+                            {job.job_type === 'import' ? (
+                              <Upload className="w-3 h-3" />
+                            ) : (
+                              <Download className="w-3 h-3" />
+                            )}
                             {job.job_type.toUpperCase()}
                           </span>
                           <span
@@ -407,19 +441,21 @@ export default function BulkJobsPage() {
                         <p className="text-sm text-muted-foreground mb-2">ID: {job.id}</p>
                         <div className="grid grid-cols-3 gap-4 text-sm">
                           <div>
-                            <span className="text-muted-foreground">Progress:</span>{' '}
+                            <span className="text-muted-foreground">{t('job.progress')}</span>{' '}
                             <span className="font-medium">{job.progress_percent.toFixed(1)}%</span>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Processed:</span>{' '}
+                            <span className="text-muted-foreground">{t('job.processed')}</span>{' '}
                             <span className="font-medium">
                               {job.records_processed}/{job.records_total}
                             </span>
                           </div>
                           {job.records_failed > 0 && (
                             <div>
-                              <span className="text-muted-foreground">Failed:</span>{' '}
-                              <span className="font-medium text-destructive">{job.records_failed}</span>
+                              <span className="text-muted-foreground">{t('job.failed')}</span>{' '}
+                              <span className="font-medium text-destructive">
+                                {job.records_failed}
+                              </span>
                             </div>
                           )}
                         </div>
@@ -427,17 +463,24 @@ export default function BulkJobsPage() {
                           <p className="text-sm text-destructive mt-2">{job.error_message}</p>
                         )}
                         <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-                          <span>Created: {formatDate(job.created_at)}</span>
-                          {job.completed_at && <span>Completed: {formatDate(job.completed_at)}</span>}
-                          {job.expires_at && <span>Expires: {formatDate(job.expires_at)}</span>}
+                          <span>{t('job.created', { date: formatDate(job.created_at) })}</span>
+                          {job.completed_at && (
+                            <span>
+                              {t('job.completed', { date: formatDate(job.completed_at) })}
+                            </span>
+                          )}
+                          {job.expires_at && (
+                            <span>{t('job.expires', { date: formatDate(job.expires_at) })}</span>
+                          )}
                         </div>
                       </div>
                       <div className="flex gap-2">
                         {job.status === 'running' && (
-                          <button type="button"
+                          <button
+                            type="button"
                             onClick={() => handleCancelJob(job.id)}
                             className="p-2 text-warning hover:bg-warning/10 rounded"
-                            title="Cancel job"
+                            title={t('job.cancelTitle')}
                           >
                             <XCircle className="w-4 h-4" />
                           </button>
@@ -448,7 +491,7 @@ export default function BulkJobsPage() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="p-2 text-primary hover:bg-primary/10 rounded"
-                            title="Download result"
+                            title={t('job.downloadTitle')}
                           >
                             <Download className="w-4 h-4" />
                           </a>
@@ -456,10 +499,11 @@ export default function BulkJobsPage() {
                         {(job.status === 'completed' ||
                           job.status === 'failed' ||
                           job.status === 'cancelled') && (
-                          <button type="button"
+                          <button
+                            type="button"
                             onClick={() => handleDeleteJob(job.id)}
                             className="p-2 text-destructive hover:bg-destructive/10 rounded"
-                            title="Delete job"
+                            title={t('job.deleteTitle')}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -486,22 +530,24 @@ export default function BulkJobsPage() {
           {/* Pagination */}
           {totalJobs > pageSize && (
             <div className="flex justify-center gap-2 mt-6">
-              <button type="button"
+              <button
+                type="button"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
                 className="px-3 py-1 border rounded disabled:opacity-50"
               >
-                Previous
+                {tCommon('previous')}
               </button>
               <span className="px-3 py-1">
-                Page {page} of {Math.ceil(totalJobs / pageSize)}
+                {t('pagination.page', { page, total: Math.ceil(totalJobs / pageSize) })}
               </span>
-              <button type="button"
+              <button
+                type="button"
                 onClick={() => setPage((p) => p + 1)}
                 disabled={page >= Math.ceil(totalJobs / pageSize)}
                 className="px-3 py-1 border rounded disabled:opacity-50"
               >
-                Next
+                {tCommon('next')}
               </button>
             </div>
           )}
@@ -512,14 +558,15 @@ export default function BulkJobsPage() {
       {activeTab === 'import' && (
         <div className="max-w-2xl mx-auto space-y-6">
           <div className="border rounded-lg p-6">
-            <h2 className="text-lg font-semibold mb-4">Create Import Job</h2>
+            <h2 className="text-lg font-semibold mb-4">{t('import.title')}</h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Source Type</label>
+                <label className="block text-sm font-medium mb-2">{t('import.sourceType')}</label>
                 <div className="flex gap-2">
                   {['url', 'file_upload', 'portal_api'].map((type) => (
-                    <button type="button"
+                    <button
+                      type="button"
                       key={type}
                       onClick={() => setImportSourceType(type as BulkJobSourceType)}
                       className={`px-4 py-2 rounded border ${
@@ -528,9 +575,9 @@ export default function BulkJobsPage() {
                           : 'bg-background hover:bg-muted'
                       }`}
                     >
-                      {type === 'url' && 'URL'}
-                      {type === 'file_upload' && 'File Upload'}
-                      {type === 'portal_api' && 'Portal API'}
+                      {type === 'url' && t('import.typeUrl')}
+                      {type === 'file_upload' && t('import.typeFile')}
+                      {type === 'portal_api' && t('import.typePortal')}
                     </button>
                   ))}
                 </div>
@@ -538,48 +585,47 @@ export default function BulkJobsPage() {
 
               {importSourceType === 'url' && (
                 <div>
-                  <label className="block text-sm font-medium mb-2">File URLs (comma-separated)</label>
+                  <label className="block text-sm font-medium mb-2">{t('import.fileUrls')}</label>
                   <textarea
                     value={importUrl}
                     onChange={(e) => setImportUrl(e.target.value)}
                     className="w-full border rounded p-2 min-h-[100px]"
-                    placeholder="https://example.com/data.csv, https://example.com/data.xlsx"
+                    placeholder={t('import.fileUrlsPlaceholder')}
                     disabled={importing}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Supports CSV, Excel (.xlsx/.xls), JSON files
-                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('import.supports')}</p>
                 </div>
               )}
 
               {importSourceType === 'file_upload' && (
                 <div className="p-8 border-2 border-dashed rounded-lg text-center text-muted-foreground">
                   <Upload className="w-8 h-8 mx-auto mb-2" />
-                  <p>File upload via direct API is available</p>
-                  <p className="text-sm">Use the /api/v1/admin/ingest/upload endpoint</p>
+                  <p>{t('import.fileUploadAvailable')}</p>
+                  <p className="text-sm">{t('import.fileUploadEndpoint')}</p>
                 </div>
               )}
 
               {importSourceType === 'portal_api' && (
                 <div className="p-8 border rounded-lg text-center text-muted-foreground">
-                  <p>Portal API imports are configured in Data Sources</p>
-                  <p className="text-sm mt-1">Visit the Data Sources page to set up portal connections</p>
+                  <p>{t('import.portalConfigured')}</p>
+                  <p className="text-sm mt-1">{t('import.portalHint')}</p>
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium mb-2">Source Name (optional)</label>
+                <label className="block text-sm font-medium mb-2">{t('import.sourceName')}</label>
                 <input
                   type="text"
                   value={importSourceName}
                   onChange={(e) => setImportSourceName(e.target.value)}
                   className="w-full border rounded p-2"
-                  placeholder="e.g., Warsaw Properties Q1 2024"
+                  placeholder={t('import.sourceNamePlaceholder')}
                   disabled={importing}
                 />
               </div>
 
-              <button type="button"
+              <button
+                type="button"
                 onClick={handleImport}
                 disabled={importing || (importSourceType === 'url' && !importUrl)}
                 className="w-full py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
@@ -587,12 +633,12 @@ export default function BulkJobsPage() {
                 {importing ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Creating Import Job...
+                    {t('import.creating')}
                   </>
                 ) : (
                   <>
                     <Upload className="w-4 h-4" />
-                    Start Import Job
+                    {t('import.start')}
                   </>
                 )}
               </button>
@@ -605,11 +651,11 @@ export default function BulkJobsPage() {
       {activeTab === 'export' && (
         <div className="max-w-2xl mx-auto space-y-6">
           <div className="border rounded-lg p-6">
-            <h2 className="text-lg font-semibold mb-4">Create Export Job</h2>
+            <h2 className="text-lg font-semibold mb-4">{t('export.title')}</h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Export Format</label>
+                <label className="block text-sm font-medium mb-2">{t('export.format')}</label>
                 <select
                   value={exportFormat}
                   onChange={(e) => setExportFormat(e.target.value)}
@@ -625,21 +671,19 @@ export default function BulkJobsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Search Query</label>
+                <label className="block text-sm font-medium mb-2">{t('export.query')}</label>
                 <textarea
                   value={exportQuery}
                   onChange={(e) => setExportQuery(e.target.value)}
                   className="w-full border rounded p-2 min-h-[100px]"
-                  placeholder="e.g., apartments in Warsaw under 500000 PLN"
+                  placeholder={t('export.queryPlaceholder')}
                   disabled={exporting}
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Enter a natural language search query to filter properties for export
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">{t('export.queryHint')}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Max Results</label>
+                <label className="block text-sm font-medium mb-2">{t('export.maxResults')}</label>
                 <input
                   type="number"
                   value={exportLimit}
@@ -651,7 +695,8 @@ export default function BulkJobsPage() {
                 />
               </div>
 
-              <button type="button"
+              <button
+                type="button"
                 onClick={handleExport}
                 disabled={exporting || !exportQuery}
                 className="w-full py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
@@ -659,12 +704,12 @@ export default function BulkJobsPage() {
                 {exporting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Creating Export Job...
+                    {t('export.creating')}
                   </>
                 ) : (
                   <>
                     <Download className="w-4 h-4" />
-                    Start Export Job
+                    {t('export.start')}
                   </>
                 )}
               </button>

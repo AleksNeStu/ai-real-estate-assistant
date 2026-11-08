@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   FileText,
   Download,
@@ -15,7 +15,7 @@ import {
   Clock,
   Search,
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { useLocale, useTranslations } from 'next-intl';
 import type { Document as DocumentType, DocumentCategory } from '@/lib/types';
 import { deleteDocument, getDocumentDownloadUrl } from '@/lib/api';
 
@@ -24,14 +24,6 @@ interface DocumentListProps {
   onDocumentDeleted?: (documentId: string) => void;
   onDocumentUpdated?: (document: DocumentType) => void;
 }
-
-const CATEGORY_LABELS: Record<DocumentCategory, string> = {
-  contract: 'Contract',
-  inspection: 'Inspection Report',
-  photo: 'Photo',
-  financial: 'Financial Document',
-  other: 'Other',
-};
 
 const FILE_TYPE_ICONS: Record<string, React.ReactNode> = {
   'application/pdf': <FileText className="h-8 w-8 text-destructive" aria-hidden="true" />,
@@ -45,7 +37,11 @@ const FILE_TYPE_ICONS: Record<string, React.ReactNode> = {
 };
 
 function getFileIcon(fileType: string): React.ReactNode {
-  return FILE_TYPE_ICONS[fileType] || <File className="h-8 w-8 text-muted-foreground" aria-hidden="true" />;
+  return (
+    FILE_TYPE_ICONS[fileType] || (
+      <File className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
+    )
+  );
 }
 
 function formatFileSize(bytes: number): string {
@@ -79,6 +75,41 @@ export function DocumentList({
   const [sortBy, setSortBy] = useState<'date' | 'name' | 'size'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
+  const t = useTranslations('documents');
+  const locale = useLocale();
+
+  const categoryLabels: Record<DocumentCategory, string> = {
+    contract: t('categories.contract'),
+    inspection: t('categories.inspection'),
+    photo: t('categories.photo'),
+    financial: t('categories.financial'),
+    other: t('categories.other'),
+  };
+
+  const relativeFormatter = useMemo(
+    () => new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }),
+    [locale]
+  );
+
+  // The reference point lives in state so that rendering stays pure.
+  const [now, setNow] = useState<number | null>(null);
+
+  useEffect(() => {
+    const update = () => setNow(Date.now());
+    update();
+    const interval = setInterval(update, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatRelative = (date: string): string => {
+    if (now === null) return new Date(date).toLocaleDateString(locale);
+    const diffMinutes = Math.round((new Date(date).getTime() - now) / 60000);
+    if (Math.abs(diffMinutes) < 60) return relativeFormatter.format(diffMinutes, 'minute');
+    const diffHours = Math.round(diffMinutes / 60);
+    if (Math.abs(diffHours) < 24) return relativeFormatter.format(diffHours, 'hour');
+    return relativeFormatter.format(Math.round(diffHours / 24), 'day');
+  };
+
   const handleDownload = async (doc: DocumentType) => {
     try {
       const url = getDocumentDownloadUrl(doc.id);
@@ -89,12 +120,12 @@ export function DocumentList({
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error('Download failed:', error);
+      console.error(t('errors.downloadFailed'), error);
     }
   };
 
   const handleDelete = async (doc: DocumentType) => {
-    if (!confirm(`Delete "${doc.original_filename}"? This cannot be undone.`)) {
+    if (!confirm(t('list.deleteConfirm', { name: doc.original_filename }))) {
       return;
     }
 
@@ -103,8 +134,8 @@ export function DocumentList({
       await deleteDocument(doc.id);
       onDocumentDeleted?.(doc.id);
     } catch (error) {
-      console.error('Delete failed:', error);
-      alert('Failed to delete document');
+      console.error(t('errors.deleteFailed'), error);
+      alert(t('errors.deleteFailed'));
     } finally {
       setDeleting(null);
       setShowMenu(null);
@@ -145,10 +176,8 @@ export function DocumentList({
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <FileText className="h-16 w-16 text-muted-foreground/30 mb-4" aria-hidden="true" />
-        <h3 className="text-lg font-medium text-muted-foreground">No documents yet</h3>
-        <p className="text-sm text-muted-foreground/70 mt-1">
-          Upload your first document to get started
-        </p>
+        <h3 className="text-lg font-medium text-muted-foreground">{t('emptyState.title')}</h3>
+        <p className="text-sm text-muted-foreground/70 mt-1">{t('emptyState.description')}</p>
       </div>
     );
   }
@@ -164,8 +193,8 @@ export function DocumentList({
           />
           <input
             type="text"
-            placeholder="Search documents..."
-            aria-label="Search documents"
+            placeholder={t('list.searchPlaceholder')}
+            aria-label={t('searchLabel')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 rounded-md border border-input bg-background text-sm"
@@ -173,13 +202,13 @@ export function DocumentList({
         </div>
 
         <select
-          aria-label="Filter by category"
+          aria-label={t('list.filterByCategory')}
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value as DocumentCategory | '')}
           className="rounded-md border border-input bg-background px-3 py-2 text-sm"
         >
-          <option value="">All Categories</option>
-          {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
+          <option value="">{t('categories.allCategories')}</option>
+          {Object.entries(categoryLabels).map(([value, label]) => (
             <option key={value} value={value}>
               {label}
             </option>
@@ -187,29 +216,32 @@ export function DocumentList({
         </select>
 
         <select
-          aria-label="Sort documents by"
+          aria-label={t('list.sortBy')}
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as 'date' | 'name' | 'size')}
           className="rounded-md border border-input bg-background px-3 py-2 text-sm"
         >
-          <option value="date">Sort by Date</option>
-          <option value="name">Sort by Name</option>
-          <option value="size">Sort by Size</option>
+          <option value="date">{t('list.sortByDate')}</option>
+          <option value="name">{t('list.sortByName')}</option>
+          <option value="size">{t('list.sortBySize')}</option>
         </select>
 
-        <button type="button"
+        <button
+          type="button"
           onClick={() => setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
           className="px-3 py-2 rounded-md border border-input bg-background text-sm hover:bg-muted"
-          aria-label={`Sort order: ${sortOrder === 'asc' ? 'ascending' : 'descending'}. Click to toggle.`}
+          aria-label={t('list.sortOrder', {
+            order: sortOrder === 'asc' ? t('list.ascending') : t('list.descending'),
+          })}
         >
-          {sortOrder === 'asc' ? '↑ Ascending' : '↓ Descending'}
+          {sortOrder === 'asc' ? `↑ ${t('list.ascending')}` : `↓ ${t('list.descending')}`}
         </button>
       </div>
 
       {/* Document Grid */}
       {filteredDocuments.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
-          <p>No documents match your filters</p>
+          <p>{t('list.noResults')}</p>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -232,7 +264,7 @@ export function DocumentList({
                     }`}
                   >
                     <AlertTriangle className="h-3 w-3" aria-hidden="true" />
-                    {expired ? 'Expired' : 'Expiring Soon'}
+                    {expired ? t('list.expired') : t('list.expiringSoon')}
                   </div>
                 )}
 
@@ -252,28 +284,32 @@ export function DocumentList({
                   {doc.category && (
                     <div className="flex items-center gap-2">
                       <Tag className="h-4 w-4" aria-hidden="true" />
-                      <span>{CATEGORY_LABELS[doc.category]}</span>
+                      <span>{categoryLabels[doc.category]}</span>
                     </div>
                   )}
 
                   {doc.property_id && (
                     <div className="flex items-center gap-2">
                       <Building className="h-4 w-4" aria-hidden="true" />
-                      <span className="truncate">Property: {doc.property_id}</span>
+                      <span className="truncate">
+                        {t('list.property', { id: doc.property_id })}
+                      </span>
                     </div>
                   )}
 
                   {doc.expiry_date && (
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" aria-hidden="true" />
-                      <span>Expires: {new Date(doc.expiry_date).toLocaleDateString()}</span>
+                      <span>
+                        {t('list.expires')}: {new Date(doc.expiry_date).toLocaleDateString(locale)}
+                      </span>
                     </div>
                   )}
 
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4" aria-hidden="true" />
                     <span>
-                      Added {formatDistanceToNow(new Date(doc.created_at), { addSuffix: true })}
+                      {t('list.added')} {formatRelative(doc.created_at)}
                     </span>
                   </div>
                 </div>
@@ -301,19 +337,21 @@ export function DocumentList({
 
                 {/* Actions */}
                 <div className="flex items-center justify-between pt-2 border-t">
-                  <button type="button"
+                  <button
+                    type="button"
                     onClick={() => handleDownload(doc)}
                     className="inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-md hover:bg-muted transition-colors"
                   >
                     <Download className="h-4 w-4" aria-hidden="true" />
-                    Download
+                    {t('list.download')}
                   </button>
 
                   <div className="relative">
-                    <button type="button"
+                    <button
+                      type="button"
                       onClick={() => setShowMenu(showMenu === doc.id ? null : doc.id)}
                       className="p-1.5 rounded-md hover:bg-muted"
-                      aria-label={`Actions for ${doc.original_filename}`}
+                      aria-label={t('list.actionsFor', { name: doc.original_filename })}
                       aria-expanded={showMenu === doc.id}
                     >
                       <MoreVertical className="h-4 w-4" aria-hidden="true" />
@@ -322,15 +360,20 @@ export function DocumentList({
                     {showMenu === doc.id && (
                       <>
                         {/* The overlay only closes the menu for the mouse. */}
-      <div className="fixed inset-0 z-10" onClick={() => setShowMenu(null)} aria-hidden="true" />
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={() => setShowMenu(null)}
+                          aria-hidden="true"
+                        />
                         <div className="absolute right-0 bottom-full mb-1 z-20 w-40 rounded-md border bg-popover shadow-lg">
-                          <button type="button"
+                          <button
+                            type="button"
                             onClick={() => handleDelete(doc)}
                             disabled={deleting === doc.id}
                             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-md disabled:opacity-50"
                           >
                             <Trash2 className="h-4 w-4" aria-hidden="true" />
-                            {deleting === doc.id ? 'Deleting...' : 'Delete'}
+                            {deleting === doc.id ? t('list.deleting') : t('list.delete')}
                           </button>
                         </div>
                       </>

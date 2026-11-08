@@ -247,7 +247,10 @@
       "decimalSeparator": "Decimal Separator",
       "decimalDot": "Dot (.)",
       "decimalComma": "Comma (,)",
-      "includeHeader": "Include header row"
+      "includeHeader": "Include header row",
+      "excel": "Excel",
+      "markdown": "Markdown",
+      "pdf": "PDF"
     },
     "saveSearch": {
       "button": "Save Search",
@@ -267,7 +270,8 @@
       "minGreaterThanMax": "Min price cannot be greater than max price.",
       "emptyQuery": "Please enter a search query.",
       "genericSearch": "Failed to perform search. Please try again.",
-      "exportFailed": "Failed to export. Please try again."
+      "exportFailed": "Failed to export. Please try again.",
+      "invalidPolygon": "Invalid polygon"
     },
     "feedback": {
       "helpful": "Was this helpful?",
@@ -287,7 +291,8 @@
       "drawing": "Drawing...",
       "enableDrawing": "Enable drawing",
       "disableDrawing": "Disable drawing",
-      "clearArea": "Clear area"
+      "clearArea": "Clear area",
+      "propertyClicked": "Property clicked"
     },
     "queryLabel": "Search query",
     "searchLabel": "Property search",
@@ -315,7 +320,50 @@
     "clearPriceFilter": "Clear price filter",
     "filterByPropertyType": "Filter by property type",
     "propertyMap": "Property map",
-    "propertyMapWithMapbox": "Property map with Mapbox"
+    "propertyMapWithMapbox": "Property map with Mapbox",
+    "examples": {
+      "madrid": "2-bedroom apartment under $500,000 in Madrid",
+      "houseGarden": "House with garden in Krakow",
+      "studioCity": "Studio apartment near city center",
+      "luxuryParking": "Luxury apartment with parking in Warsaw"
+    },
+    "mapControls": {
+      "controls": "Map controls",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "fitBounds": "Fit bounds",
+      "fitAll": "Fit all properties",
+      "toggleFilters": "Toggle map filters",
+      "mapFilters": "Map filters",
+      "toggleHeatmap": "Toggle heatmap",
+      "heatmapMode": "Heatmap mode",
+      "density": "Density",
+      "price": "Price",
+      "pricePerSqm": "Price/m²",
+      "yield": "Yield",
+      "heatmapIntensity": "Heatmap intensity",
+      "clusters": "Clusters",
+      "toggleClusters": "Toggle clusters",
+      "clusterSize": "Cluster size",
+      "maxZoom": "Max zoom for clustering",
+      "priceFilter": "Price Filter",
+      "filterUnder300k": "Filter under 300k",
+      "filter300k600k": "Filter 300k-600k",
+      "filter600k1M": "Filter 600k-1M",
+      "allTypes": "All Types",
+      "resetFilters": "Reset all filters",
+      "mapOptions": "Map Options",
+      "heatmap": "Heatmap",
+      "mode": "Mode",
+      "intensity": "Intensity: {value}",
+      "clusterSizeValue": "Cluster Size: {size}px",
+      "maxZoomValue": "Max Zoom: {zoom}",
+      "under300k": "Under $300k",
+      "range300k600k": "$300k-$600k",
+      "range600k1M": "$600k-$1M",
+      "allPrices": "All Prices",
+      "resetAll": "Reset All"
+    }
   },
   "mortgage": {
     "title": "Mortgage Calculator",
@@ -1232,6 +1280,13 @@
         "title": "No sources available",
         "description": "The AI couldn't find relevant sources for this query."
       }
+    },
+    "examplePrompts": {
+      "madrid": "Find 2-bedroom apartments under $400,000 in Madrid",
+      "krakow": "What's the average price per square meter in Krakow?",
+      "warsaw": "Compare properties in Warsaw city center",
+      "mortgage": "Calculate mortgage for a $500,000 property with 20% down payment",
+      "gardens": "Show me houses with gardens in suburban areas"
     }
   },
   "favorites": {
@@ -1754,7 +1809,10 @@
       "uploadButton": "Upload Document",
       "uploading": "Uploading...",
       "success": "Upload Successful!",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "removeFile": "Remove selected file",
+      "failedTitle": "Upload Failed",
+      "invalidType": "Invalid file type: {ext}. Allowed: {types}"
     },
     "categories": {
       "selectCategory": "Select category (optional)",
@@ -1782,14 +1840,20 @@
       "expired": "Expired",
       "expiringSoon": "Expiring Soon",
       "expires": "Expires",
-      "added": "Added"
+      "added": "Added",
+      "filterByCategory": "Filter by category",
+      "sortBy": "Sort documents by",
+      "sortOrder": "Sort order: {order}. Click to toggle.",
+      "property": "Property: {id}",
+      "actionsFor": "Actions for {name}"
     },
     "errors": {
       "loadFailed": "Failed to Load Documents",
       "deleteFailed": "Failed to delete document",
       "invalidType": "Invalid file type",
       "tooLarge": "File too large. Maximum size: 10MB",
-      "uploadFailed": "Upload failed"
+      "uploadFailed": "Upload failed",
+      "downloadFailed": "Download failed"
     },
     "expiryAlert": {
       "singular": "{count} document expiring soon",
@@ -1887,7 +1951,52 @@
     },
     "knowledge": {
       "title": "Knowledge",
-      "description": "Upload documents to your local knowledge base and ask questions with citations."
+      "description": "Upload documents to your local knowledge base and ask questions with citations.",
+      "upload": {
+        "filesAria": "Knowledge files",
+        "selectFile": "Select at least one file to upload.",
+        "uploading": "Uploading...",
+        "upload": "Upload",
+        "clear": "Clear",
+        "processing": "Uploading and processing documents...",
+        "failed": "Upload Failed",
+        "title": "Upload Documents",
+        "chunksIndexed": "Chunks indexed: {count}"
+      },
+      "manage": {
+        "title": "Manage Knowledge Base",
+        "clearing": "Clearing...",
+        "clear": "Clear Knowledge",
+        "result": "{message}. Removed {removed}. Remaining {remaining}.",
+        "confirm": "Clear all indexed knowledge documents? This cannot be undone."
+      },
+      "ask": {
+        "title": "Ask Questions",
+        "empty": "Upload documents and ask questions to get answers with citations from your knowledge base.",
+        "placeholder": "Ask a question about your uploaded documents...",
+        "questionAria": "Knowledge question",
+        "topKAria": "Top K",
+        "topKPlaceholder": "Top K (1-50)",
+        "providerAria": "Provider override",
+        "providerPlaceholder": "Provider (optional)",
+        "modelAria": "Model override",
+        "modelPlaceholder": "Model (optional)",
+        "asking": "Asking...",
+        "ask": "Ask",
+        "clear": "Clear",
+        "searching": "Searching knowledge base...",
+        "failed": "Question Failed",
+        "citations": "Citations",
+        "citationItem": "{source} (chunk {chunk})",
+        "noCitations": "No citations returned.",
+        "enterQuestion": "Enter a question."
+      },
+      "empty": {
+        "title": "Get Started with Knowledge",
+        "upload": "Upload documents (PDF, TXT, MD, DOCX) to build your local knowledge base.",
+        "then": "Then ask questions and get answers with source citations.",
+        "providers": "Supported providers: OpenAI, Anthropic, Google, Grok, DeepSeek, and Ollama (local)."
+      }
     },
     "documents": {
       "title": "Documents",
@@ -1927,7 +2036,135 @@
       "description": "Useful calculators and utilities for real estate.",
       "propertyPrice": "Property price",
       "columnsHint": "Columns (optional), e.g., id, city, price",
-      "propertyId": "Property ID"
+      "propertyId": "Property ID",
+      "mortgage": {
+        "title": "Mortgage Calculator",
+        "downPayment": "Down payment %",
+        "interestRate": "Interest rate %",
+        "loanYears": "Loan years",
+        "calculating": "Calculating...",
+        "monthlyPayment": "Monthly payment: {amount}",
+        "failed": "Calculation failed",
+        "calculate": "Calculate"
+      },
+      "compare": {
+        "title": "Compare Properties",
+        "ids": "IDs comma-separated",
+        "comparing": "Comparing...",
+        "failed": "Compare failed",
+        "exportFormat": "Export format",
+        "exportColumns": "Export columns",
+        "csvDelimiter": "CSV delimiter",
+        "csvDecimal": "CSV decimal separator",
+        "comma": "Comma (,)",
+        "semicolon": "Semicolon (;)",
+        "dot": "Dot (.)",
+        "includeHeader": "Include header row",
+        "exporting": "Exporting...",
+        "exportFailed": "Export failed",
+        "needIds": "Please provide at least one property ID.",
+        "compare": "Compare",
+        "export": "Export"
+      },
+      "price": {
+        "title": "Price Analysis",
+        "query": "Query (e.g., city or type)",
+        "analyzing": "Analyzing...",
+        "failed": "Analysis failed"
+      },
+      "location": {
+        "title": "Location Analysis",
+        "analyzing": "Analyzing...",
+        "failed": "Location analysis failed"
+      },
+      "neighborhood": {
+        "title": "Neighborhood Quality Index",
+        "latitude": "Latitude (optional)",
+        "longitude": "Longitude (optional)",
+        "city": "City (optional)",
+        "neighborhood": "Neighborhood (optional)",
+        "analyzing": "Analyzing...",
+        "failed": "Neighborhood quality analysis failed",
+        "excellent": "Excellent",
+        "good": "Good",
+        "fair": "Fair",
+        "poor": "Poor",
+        "veryPoor": "Very Poor",
+        "overallScore": "Overall Score",
+        "safety": "Safety",
+        "schools": "Schools",
+        "amenities": "Amenities",
+        "walkability": "Walkability",
+        "greenSpace": "Green Space",
+        "location": "Location:",
+        "coordinates": "Coordinates: {lat}, {lon}",
+        "dataSources": "Data Sources: {sources}",
+        "scoreBar": "{score}/100 (Weight: {weight})"
+      },
+      "templates": {
+        "title": "Prompt Templates",
+        "description": "Pick a template, fill variables, and generate ready-to-use text.",
+        "picker": "Template picker",
+        "loadFailed": "Failed to load templates",
+        "renderFailed": "Template render failed",
+        "generate": "Generate",
+        "generating": "Generating...",
+        "copy": "Copy",
+        "output": "Rendered template output",
+        "variable": "Variable {name}"
+      },
+      "valuation": {
+        "title": "Valuation (CE Stub)",
+        "estimate": "Estimate",
+        "estimating": "Estimating...",
+        "failed": "Valuation failed"
+      },
+      "legal": {
+        "title": "Legal Check (CE Stub)",
+        "contract": "Contract text",
+        "analyzing": "Analyzing...",
+        "failed": "Legal check failed"
+      },
+      "enrich": {
+        "title": "Data Enrichment (CE Stub)",
+        "address": "Address",
+        "enrich": "Enrich",
+        "enriching": "Enriching...",
+        "failed": "Enrichment failed"
+      },
+      "crm": {
+        "title": "CRM Sync Contact (CE Stub)",
+        "name": "Name",
+        "phone": "Phone",
+        "email": "Email",
+        "sync": "Sync",
+        "syncing": "Syncing...",
+        "failed": "CRM sync failed"
+      },
+      "fields": {
+        "count": "Count: {value}",
+        "minPrice": "Min price: {value}",
+        "maxPrice": "Max price: {value}",
+        "diff": "Diff: {value}",
+        "averagePrice": "Average price: {value}",
+        "medianPrice": "Median price: {value}",
+        "city": "City: {value}",
+        "neighborhood": "Neighborhood: {value}",
+        "latLon": "Lat/Lon: {lat}, {lon}",
+        "score": "Score: {value}",
+        "risks": "Risks: {value}",
+        "address": "Address: {value}",
+        "contactId": "Contact ID: {id}",
+        "estimatedValue": "Estimated value: {value}"
+      },
+      "hints": {
+        "dataEnrichment": "Enable on the backend: set DATA_ENRICHMENT_ENABLED=true and restart the API.",
+        "crm": "Configure on the backend: set CRM_WEBHOOK_URL and restart the API.",
+        "valuation": "Configure on the backend: set VALUATION_MODE=simple and restart the API.",
+        "legalCheck": "Configure on the backend: set LEGAL_CHECK_MODE=basic and restart the API.",
+        "vectorStore": "Load/initialize the vector store (Chroma) before running this tool."
+      },
+      "analyze": "Analyze"
     },
     "analytics": {
       "title": "Analytics & Tools",
@@ -1935,7 +2172,8 @@
     },
     "valuation": {
       "title": "AI Property Valuation & Forecast",
-      "forecastChart": "Forecast chart"
+      "forecastChart": "Forecast chart",
+      "description": "Modeled price range for a specific address."
     },
     "usage": {
       "title": "Usage Dashboard",
@@ -2019,11 +2257,148 @@
     "admin": {
       "monitoring": {
         "title": "Production Monitoring",
-        "description": "Real-time system health, metrics, and operational insights"
+        "description": "Real-time system health, metrics, and operational insights",
+        "loading": "Loading monitoring data...",
+        "errors": {
+          "load": "Failed to load monitoring data",
+          "testAlert": "Failed to send test alert"
+        },
+        "lastRefreshed": "Last refreshed: {time}",
+        "refreshing": "Refreshing...",
+        "sending": "Sending...",
+        "testAlert": "Test Alert",
+        "errorTitle": "Error Loading Data",
+        "alerts": {
+          "threshold": "Threshold: {threshold}",
+          "dbLatency": "High database latency: {value}ms",
+          "dbLatencyThreshold": "P95 latency >3s",
+          "cacheHitRate": "Low cache hit rate: {rate}%",
+          "cacheHitRateThreshold": "Hit rate <20%",
+          "notReady": "Service is not ready to handle requests",
+          "notReadyThreshold": "Overall readiness",
+          "dbUnhealthy": "Database connection is unhealthy",
+          "dbUnhealthyThreshold": "Database health",
+          "llmUnhealthy": "LLM provider is unhealthy",
+          "llmUnhealthyThreshold": "LLM health",
+          "redisUnhealthy": "Redis cache is unhealthy",
+          "redisUnhealthyThreshold": "Redis health"
+        },
+        "health": {
+          "title": "Health Status",
+          "service": "Service:",
+          "timestamp": "Timestamp:",
+          "uptime": "Uptime:",
+          "version": "Version:",
+          "git": "Git Commit:"
+        },
+        "readiness": {
+          "title": "Readiness Status",
+          "database": "Database:",
+          "dbLatency": "DB Latency:",
+          "redis": "Redis:",
+          "disabled": "Disabled",
+          "llm": "LLM Provider:",
+          "lastCheck": "Last Check:"
+        },
+        "metrics": {
+          "totalProperties": "Total Properties",
+          "inLast24h": "{count} in last 24h",
+          "knowledgeStore": "Knowledge Store",
+          "chunks": "{count} chunks",
+          "cacheHitRate": "Cache Hit Rate",
+          "hitsMisses": "{hits} hits, {misses} misses",
+          "noCacheData": "No cache data",
+          "environment": "Environment"
+        },
+        "sources": {
+          "title": "Properties by Data Source"
+        },
+        "charts": {
+          "requestRate": "Request Rate (req/min)",
+          "errorRate": "Error Rate (%)",
+          "responseTime": "Response Time (ms)"
+        },
+        "legend": {
+          "title": "Chart Legend",
+          "healthy": "Healthy / Normal",
+          "warning": "Warning / Degraded",
+          "error": "Error / Critical"
+        },
+        "status": {
+          "healthy": "Healthy",
+          "unhealthy": "Unhealthy",
+          "ready": "Ready",
+          "not_ready": "Not ready",
+          "degraded": "Degraded"
+        }
       },
       "connectors": {
         "title": "MCP Connectors",
-        "description": "Manage and monitor MCP connector registry"
+        "description": "Manage and monitor MCP connector registry",
+        "edition": "Edition: {edition}",
+        "healthCheckAll": "Health Check All",
+        "healthCheck": "Health Check",
+        "overall": {
+          "title": "Overall Health Status",
+          "connectorsChecked": "Connectors Checked:",
+          "edition": "Edition:",
+          "timestamp": "Timestamp:"
+        },
+        "requestId": "Request ID: {id}",
+        "loading": "Loading connectors...",
+        "empty": {
+          "title": "No connectors registered"
+        },
+        "badge": {
+          "registered": "Registered",
+          "notRegistered": "Not Registered",
+          "instantiated": "Instantiated",
+          "noInstance": "No Instance",
+          "apiKeyRequired": "API Key Required",
+          "streaming": "Streaming",
+          "ceAccessible": "CE Accessible",
+          "enabled": "Enabled",
+          "disabled": "Disabled"
+        },
+        "results": {
+          "responseTime": "Response Time:",
+          "success": "Success:",
+          "yes": "Yes",
+          "no": "No",
+          "errors": "Errors:"
+        },
+        "detail": {
+          "basicInfo": "Basic Information",
+          "name": "Name:",
+          "edition": "Edition:",
+          "status": "Status:",
+          "minEdition": "Min Edition:",
+          "error": "Error: {message}",
+          "capabilities": "Capabilities",
+          "rateLimit": "Rate Limit",
+          "requestsPerMin": "Requests/min:",
+          "burstSize": "Burst Size:",
+          "currentRequests": "Current Requests:",
+          "remaining": "Remaining:",
+          "instanceStatus": "Instance Status",
+          "configuration": "Configuration"
+        },
+        "status": {
+          "active": "Active",
+          "disabled": "Disabled",
+          "error": "Error",
+          "not_instantiated": "Not instantiated",
+          "unknown": "Unknown"
+        },
+        "health": {
+          "healthy": "Healthy",
+          "unhealthy": "Unhealthy",
+          "degraded": "Degraded",
+          "error": "Error"
+        },
+        "errors": {
+          "load": "Failed to load connectors"
+        }
       },
       "dataSources": {
         "title": "Data Sources",
@@ -2031,7 +2406,87 @@
       },
       "bulkJobs": {
         "title": "Bulk Import/Export Jobs",
-        "description": "Manage bulk data import and export operations"
+        "description": "Manage bulk data import and export operations",
+        "tabs": {
+          "jobs": "Jobs",
+          "import": "Import",
+          "export": "Export"
+        },
+        "requestId": "Request ID: {id}",
+        "filters": {
+          "label": "Filters:",
+          "allTypes": "All Types",
+          "allStatuses": "All Statuses"
+        },
+        "errors": {
+          "loadJobs": "Failed to load bulk jobs",
+          "urlRequired": "Please enter a URL",
+          "createImport": "Failed to create import job",
+          "createExport": "Failed to create export job",
+          "cancelJob": "Failed to cancel job",
+          "deleteJob": "Failed to delete job",
+          "queryRequired": "Please enter a search query"
+        },
+        "success": {
+          "importCreated": "Import job created successfully!",
+          "exportCreated": "Export job created successfully!"
+        },
+        "confirm": {
+          "deleteJob": "Are you sure you want to delete this job?"
+        },
+        "status": {
+          "pending": "Pending",
+          "running": "Running",
+          "completed": "Completed",
+          "failed": "Failed",
+          "cancelled": "Cancelled"
+        },
+        "empty": {
+          "title": "No bulk jobs found",
+          "description": "Create an import or export job to get started"
+        },
+        "job": {
+          "progress": "Progress:",
+          "processed": "Processed:",
+          "failed": "Failed:",
+          "created": "Created: {date}",
+          "completed": "Completed: {date}",
+          "expires": "Expires: {date}",
+          "cancelTitle": "Cancel job",
+          "downloadTitle": "Download result",
+          "deleteTitle": "Delete job"
+        },
+        "pagination": {
+          "page": "Page {page} of {total}"
+        },
+        "import": {
+          "title": "Create Import Job",
+          "sourceType": "Source Type",
+          "typeUrl": "URL",
+          "typeFile": "File Upload",
+          "typePortal": "Portal API",
+          "fileUrls": "File URLs (comma-separated)",
+          "fileUrlsPlaceholder": "https://example.com/data.csv, https://example.com/data.xlsx",
+          "supports": "Supports CSV, Excel (.xlsx/.xls), JSON files",
+          "fileUploadAvailable": "File upload via direct API is available",
+          "fileUploadEndpoint": "Use the /api/v1/admin/ingest/upload endpoint",
+          "portalConfigured": "Portal API imports are configured in Data Sources",
+          "portalHint": "Visit the Data Sources page to set up portal connections",
+          "sourceName": "Source Name (optional)",
+          "sourceNamePlaceholder": "e.g., Warsaw Properties Q1 2024",
+          "creating": "Creating Import Job...",
+          "start": "Start Import Job"
+        },
+        "export": {
+          "title": "Create Export Job",
+          "format": "Export Format",
+          "query": "Search Query",
+          "queryPlaceholder": "e.g., apartments in Warsaw under 500000 PLN",
+          "queryHint": "Enter a natural language search query to filter properties for export",
+          "maxResults": "Max Results",
+          "creating": "Creating Export Job...",
+          "start": "Start Export Job"
+        }
       }
     }
   },

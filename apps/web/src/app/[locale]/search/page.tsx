@@ -48,18 +48,18 @@ const PropertyMapboxMap = dynamic(() => import('@/components/search/property-map
   loading: () => <div className="h-[420px] w-full bg-muted animate-pulse rounded-lg" />,
 });
 
-// Example queries for empty state
-const EXAMPLE_QUERIES = [
-  '2-bedroom apartment under $500,000 in Madrid',
-  'House with garden in Krakow',
-  'Studio apartment near city center',
-  'Luxury apartment with parking in Warsaw',
-];
-
 function SearchPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const t = useTranslations('search');
+
+  // Example queries for empty state
+  const exampleQueries = [
+    t('examples.madrid'),
+    t('examples.houseGarden'),
+    t('examples.studioCity'),
+    t('examples.luxuryParking'),
+  ];
   const tCommon = useTranslations('common');
   const tPage = useTranslations('pages.search');
   const { trackSearchDebounced, flushSearch } = useTrackSearchDebounced(1000);
@@ -114,7 +114,7 @@ function SearchPageContent() {
       // Validate polygon
       const validation = validatePolygon(coordinates);
       if (!validation.valid) {
-        warn('Invalid polygon', { error: validation.error });
+        warn(t('errors.invalidPolygon'), { error: validation.error });
         // Still set the polygon but log the issue
         // In production, you might want to show a toast notification
       }
@@ -129,7 +129,7 @@ function SearchPageContent() {
         router.replace(`?${params.toString()}`, { scroll: false });
       }
     },
-    [searchParams, router]
+    [searchParams, router, t]
   );
 
   const handlePolygonClear = useCallback(() => {
@@ -161,7 +161,7 @@ function SearchPageContent() {
   // Handle property marker click on map
   const handlePropertyClick = (point: PropertyMapPoint) => {
     // For now, just log the click. Future enhancement: scroll to property in list
-    info('Property clicked', { id: point.id, title: point.title });
+    info(t('map.propertyClicked'), { id: point.id, title: point.title });
   };
 
   const mapPoints = useMemo(() => extractMapPoints(results), [results]);
@@ -211,10 +211,8 @@ function SearchPageContent() {
     const max = maxPrice.trim() ? Number(maxPrice) : undefined;
     const minRooms = rooms.trim() ? Number(rooms) : undefined;
 
-    if (min !== undefined && Number.isNaN(min))
-      return { error: t('errors.invalidMinPrice') };
-    if (max !== undefined && Number.isNaN(max))
-      return { error: t('errors.invalidMaxPrice') };
+    if (min !== undefined && Number.isNaN(min)) return { error: t('errors.invalidMinPrice') };
+    if (max !== undefined && Number.isNaN(max)) return { error: t('errors.invalidMaxPrice') };
     if (minRooms !== undefined && Number.isNaN(minRooms)) {
       return { error: t('errors.invalidMinRooms') };
     }
@@ -284,7 +282,7 @@ function SearchPageContent() {
     setExportError(null);
     try {
       if (!query.trim()) {
-        setExportError('Please enter a search query.');
+        setExportError(t('errors.emptyQuery'));
         return;
       }
 
@@ -395,231 +393,234 @@ function SearchPageContent() {
                 <div className="mb-4 flex items-center gap-2 font-semibold">
                   <Filter className="h-4 w-4" aria-hidden="true" /> {t('filters.title')}
                 </div>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="sort-by" className="mb-1 block text-sm font-medium">
-                        {t('filters.sortBy')}
-                      </label>
-                      <select
-                        id="sort-by"
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        aria-label={t('filters.sortBy')}
-                        disabled={loading}
-                      >
-                        <option value="relevance">{t('sortOptions.relevance')}</option>
-                        <option value="price">{t('sortOptions.price')}</option>
-                        <option value="price_per_sqm">{t('sortOptions.pricePerSqm')}</option>
-                        <option value="area_sqm">{t('sortOptions.area')}</option>
-                        <option value="year_built">{t('sortOptions.yearBuilt')}</option>
-                      </select>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="sort-by" className="mb-1 block text-sm font-medium">
+                          {t('filters.sortBy')}
+                        </label>
+                        <select
+                          id="sort-by"
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          value={sortBy}
+                          onChange={(e) => setSortBy(e.target.value)}
+                          aria-label={t('filters.sortBy')}
+                          disabled={loading}
+                        >
+                          <option value="relevance">{t('sortOptions.relevance')}</option>
+                          <option value="price">{t('sortOptions.price')}</option>
+                          <option value="price_per_sqm">{t('sortOptions.pricePerSqm')}</option>
+                          <option value="area_sqm">{t('sortOptions.area')}</option>
+                          <option value="year_built">{t('sortOptions.yearBuilt')}</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label htmlFor="sort-order" className="mb-1 block text-sm font-medium">
+                          {t('filters.order')}
+                        </label>
+                        <select
+                          id="sort-order"
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          value={sortOrder}
+                          onChange={(e) => setSortOrder(e.target.value)}
+                          aria-label={t('filters.order')}
+                          disabled={loading}
+                        >
+                          <option value="desc">{t('orderOptions.descending')}</option>
+                          <option value="asc">{t('orderOptions.ascending')}</option>
+                        </select>
+                      </div>
                     </div>
                     <div>
-                      <label htmlFor="sort-order" className="mb-1 block text-sm font-medium">
-                        {t('filters.order')}
-                      </label>
-                      <select
-                        id="sort-order"
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        value={sortOrder}
-                        onChange={(e) => setSortOrder(e.target.value)}
-                        aria-label={t('filters.order')}
-                        disabled={loading}
-                      >
-                        <option value="desc">{t('orderOptions.descending')}</option>
-                        <option value="asc">{t('orderOptions.ascending')}</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label htmlFor="min-price" className="mb-1 block text-sm font-medium">
-                      {t('filters.minPrice')}
-                    </label>
-                    <input
-                      id="min-price"
-                      type="number"
-                      inputMode="numeric"
-                      min={0}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      value={minPrice}
-                      onChange={(e) => setMinPrice(e.target.value)}
-                      aria-label={t('filters.minPrice')}
-                      disabled={loading}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="max-price" className="mb-1 block text-sm font-medium">
-                      {t('filters.maxPrice')}
-                    </label>
-                    <input
-                      id="max-price"
-                      type="number"
-                      inputMode="numeric"
-                      min={0}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      value={maxPrice}
-                      onChange={(e) => setMaxPrice(e.target.value)}
-                      aria-label={t('filters.maxPrice')}
-                      disabled={loading}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="rooms" className="mb-1 block text-sm font-medium">
-                      {t('filters.minRooms')}
-                    </label>
-                    <input
-                      id="rooms"
-                      type="number"
-                      inputMode="numeric"
-                      min={0}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      value={rooms}
-                      onChange={(e) => setRooms(e.target.value)}
-                      aria-label={t('filters.minRooms')}
-                      disabled={loading}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="property-type" className="mb-1 block text-sm font-medium">
-                      {t('filters.propertyType')}
-                    </label>
-                    <select
-                      id="property-type"
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      value={propertyType}
-                      onChange={(e) => setPropertyType(e.target.value)}
-                      aria-label={t('filters.propertyType')}
-                      disabled={loading}
-                    >
-                      <option value="">{t('propertyTypes.any')}</option>
-                      <option value="apartment">{t('propertyTypes.apartment')}</option>
-                      <option value="house">{t('propertyTypes.house')}</option>
-                      <option value="studio">{t('propertyTypes.studio')}</option>
-                      <option value="loft">{t('propertyTypes.loft')}</option>
-                      <option value="townhouse">{t('propertyTypes.townhouse')}</option>
-                      <option value="other">{t('propertyTypes.other')}</option>
-                    </select>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setMinPrice('');
-                      setMaxPrice('');
-                      setRooms('');
-                      setPropertyType('');
-                      setSortBy('relevance');
-                      setSortOrder('desc');
-                    }}
-                    aria-label={t('filters.clearFilters')}
-                    disabled={loading}
-                  >
-                    {t('filters.clearFilters')}
-                  </Button>
-                  <div className="mt-2 grid grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="export-format" className="mb-1 block text-sm font-medium">
-                        {t('export.format')}
-                      </label>
-                      <select
-                        id="export-format"
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        value={exportFormat}
-                        onChange={(e) => setExportFormat(e.target.value)}
-                        aria-label={t('export.format')}
-                        disabled={loading || results.length === 0}
-                      >
-                        <option value="csv">CSV</option>
-                        <option value="xlsx">Excel</option>
-                        <option value="json">JSON</option>
-                        <option value="md">Markdown</option>
-                        <option value="pdf">PDF</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label htmlFor="export-columns" className="mb-1 block text-sm font-medium">
-                        {t('export.columns')}
+                      <label htmlFor="min-price" className="mb-1 block text-sm font-medium">
+                        {t('filters.minPrice')}
                       </label>
                       <input
-                        id="export-columns"
+                        id="min-price"
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        value={exportColumns}
-                        onChange={(e) => setExportColumns(e.target.value)}
-                        placeholder={t('export.columnsPlaceholder')}
-                        aria-label={t('export.columns')}
+                        value={minPrice}
+                        onChange={(e) => setMinPrice(e.target.value)}
+                        aria-label={t('filters.minPrice')}
                         disabled={loading}
                       />
                     </div>
-                    {exportFormat === 'csv' ? (
-                      <div className="col-span-2 grid grid-cols-2 gap-4">
-                        <div>
-                          <label htmlFor="csv-delimiter" className="mb-1 block text-sm font-medium">
-                            {t('export.delimiter')}
-                          </label>
-                          <select
-                            id="csv-delimiter"
-                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            value={csvDelimiter}
-                            onChange={(e) => setCsvDelimiter(e.target.value)}
-                            aria-label={t('export.delimiter')}
-                            disabled={loading}
-                          >
-                            <option value=",">{t('export.delimiterComma')}</option>
-                            <option value=";">{t('export.delimiterSemicolon')}</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label htmlFor="csv-decimal" className="mb-1 block text-sm font-medium">
-                            {t('export.decimalSeparator')}
-                          </label>
-                          <select
-                            id="csv-decimal"
-                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            value={csvDecimal}
-                            onChange={(e) => setCsvDecimal(e.target.value)}
-                            aria-label={t('export.decimalSeparator')}
-                            disabled={loading}
-                          >
-                            <option value=".">{t('export.decimalDot')}</option>
-                            <option value=",">{t('export.decimalComma')}</option>
-                          </select>
-                        </div>
-                        <label className="col-span-2 flex items-center gap-2 text-sm">
-                          <input
-                            type="checkbox"
-                            checked={exportIncludeHeader}
-                            onChange={(e) => setExportIncludeHeader(e.target.checked)}
-                            aria-label={t('export.includeHeader')}
-                            disabled={loading}
-                          />
-                          {t('export.includeHeader')}
+                    <div>
+                      <label htmlFor="max-price" className="mb-1 block text-sm font-medium">
+                        {t('filters.maxPrice')}
+                      </label>
+                      <input
+                        id="max-price"
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        value={maxPrice}
+                        onChange={(e) => setMaxPrice(e.target.value)}
+                        aria-label={t('filters.maxPrice')}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="rooms" className="mb-1 block text-sm font-medium">
+                        {t('filters.minRooms')}
+                      </label>
+                      <input
+                        id="rooms"
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        value={rooms}
+                        onChange={(e) => setRooms(e.target.value)}
+                        aria-label={t('filters.minRooms')}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="property-type" className="mb-1 block text-sm font-medium">
+                        {t('filters.propertyType')}
+                      </label>
+                      <select
+                        id="property-type"
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        value={propertyType}
+                        onChange={(e) => setPropertyType(e.target.value)}
+                        aria-label={t('filters.propertyType')}
+                        disabled={loading}
+                      >
+                        <option value="">{t('propertyTypes.any')}</option>
+                        <option value="apartment">{t('propertyTypes.apartment')}</option>
+                        <option value="house">{t('propertyTypes.house')}</option>
+                        <option value="studio">{t('propertyTypes.studio')}</option>
+                        <option value="loft">{t('propertyTypes.loft')}</option>
+                        <option value="townhouse">{t('propertyTypes.townhouse')}</option>
+                        <option value="other">{t('propertyTypes.other')}</option>
+                      </select>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setMinPrice('');
+                        setMaxPrice('');
+                        setRooms('');
+                        setPropertyType('');
+                        setSortBy('relevance');
+                        setSortOrder('desc');
+                      }}
+                      aria-label={t('filters.clearFilters')}
+                      disabled={loading}
+                    >
+                      {t('filters.clearFilters')}
+                    </Button>
+                    <div className="mt-2 grid grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="export-format" className="mb-1 block text-sm font-medium">
+                          {t('export.format')}
                         </label>
+                        <select
+                          id="export-format"
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          value={exportFormat}
+                          onChange={(e) => setExportFormat(e.target.value)}
+                          aria-label={t('export.format')}
+                          disabled={loading || results.length === 0}
+                        >
+                          <option value="csv">{t('export.csv')}</option>
+                          <option value="xlsx">{t('export.excel')}</option>
+                          <option value="json">{t('export.json')}</option>
+                          <option value="md">{t('export.markdown')}</option>
+                          <option value="pdf">{t('export.pdf')}</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label htmlFor="export-columns" className="mb-1 block text-sm font-medium">
+                          {t('export.columns')}
+                        </label>
+                        <input
+                          id="export-columns"
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          value={exportColumns}
+                          onChange={(e) => setExportColumns(e.target.value)}
+                          placeholder={t('export.columnsPlaceholder')}
+                          aria-label={t('export.columns')}
+                          disabled={loading}
+                        />
+                      </div>
+                      {exportFormat === 'csv' ? (
+                        <div className="col-span-2 grid grid-cols-2 gap-4">
+                          <div>
+                            <label
+                              htmlFor="csv-delimiter"
+                              className="mb-1 block text-sm font-medium"
+                            >
+                              {t('export.delimiter')}
+                            </label>
+                            <select
+                              id="csv-delimiter"
+                              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                              value={csvDelimiter}
+                              onChange={(e) => setCsvDelimiter(e.target.value)}
+                              aria-label={t('export.delimiter')}
+                              disabled={loading}
+                            >
+                              <option value=",">{t('export.delimiterComma')}</option>
+                              <option value=";">{t('export.delimiterSemicolon')}</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label htmlFor="csv-decimal" className="mb-1 block text-sm font-medium">
+                              {t('export.decimalSeparator')}
+                            </label>
+                            <select
+                              id="csv-decimal"
+                              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                              value={csvDecimal}
+                              onChange={(e) => setCsvDecimal(e.target.value)}
+                              aria-label={t('export.decimalSeparator')}
+                              disabled={loading}
+                            >
+                              <option value=".">{t('export.decimalDot')}</option>
+                              <option value=",">{t('export.decimalComma')}</option>
+                            </select>
+                          </div>
+                          <label className="col-span-2 flex items-center gap-2 text-sm">
+                            <input
+                              type="checkbox"
+                              checked={exportIncludeHeader}
+                              onChange={(e) => setExportIncludeHeader(e.target.checked)}
+                              aria-label={t('export.includeHeader')}
+                              disabled={loading}
+                            />
+                            {t('export.includeHeader')}
+                          </label>
+                        </div>
+                      ) : null}
+                      <div className="flex items-end">
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handleExport}
+                          disabled={exporting || !query.trim() || results.length === 0}
+                          aria-label={exporting ? tCommon('exporting') : tCommon('export')}
+                        >
+                          <Download className="mr-2 h-4 w-4" aria-hidden="true" />
+                          {exporting ? tCommon('exporting') : tCommon('export')}
+                        </Button>
+                      </div>
+                    </div>
+                    {exportError ? (
+                      <div className="text-sm text-destructive" role="alert">
+                        {exportError}
                       </div>
                     ) : null}
-                    <div className="flex items-end">
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={handleExport}
-                        disabled={exporting || !query.trim() || results.length === 0}
-                        aria-label={exporting ? tCommon('exporting') : tCommon('export')}
-                      >
-                        <Download className="mr-2 h-4 w-4" aria-hidden="true" />
-                        {exporting ? tCommon('exporting') : tCommon('export')}
-                      </Button>
-                    </div>
                   </div>
-                  {exportError ? (
-                    <div className="text-sm text-destructive" role="alert">
-                      {exportError}
-                    </div>
-                  ) : null}
                 </div>
-              </div>
               </CardContent>
             </Card>
           </div>
@@ -638,7 +639,7 @@ function SearchPageContent() {
                       {t('emptyState.tryExamples')}
                     </p>
                     <div className="flex flex-col items-center gap-1">
-                      {EXAMPLE_QUERIES.map((example, idx) => (
+                      {exampleQueries.map((example, idx) => (
                         <button
                           key={idx}
                           type="button"
@@ -891,7 +892,9 @@ function SearchPageContent() {
                               footer={
                                 <>
                                   {prop.id && <ListingGenerator propertyId={prop.id} compact />}
-                                  {prop.id && <RelevanceRating query={query} propertyId={prop.id} />}
+                                  {prop.id && (
+                                    <RelevanceRating query={query} propertyId={prop.id} />
+                                  )}
                                 </>
                               }
                             />

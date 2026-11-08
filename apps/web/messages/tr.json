@@ -458,6 +458,13 @@
         "title": "Kaynak mevcut değil",
         "description": "Yapay zekâ bu sorguyla ilgili kaynak bulamadı."
       }
+    },
+    "examplePrompts": {
+      "madrid": "Madrid’de 400.000 $ altındaki 2 yataklı daireleri bul",
+      "krakow": "Kraków’da metrekare başına ortalama fiyat nedir?",
+      "warsaw": "Varşova merkezindeki emlakları karşılaştır",
+      "mortgage": "%20 peşinatla 500.000 $’luk bir mülk için kredi hesapla",
+      "gardens": "Suburb bölgelerinde bahçeli evler göster"
     }
   },
   "cityOverview": {
@@ -552,7 +559,10 @@
       "uploadButton": "Belge yükle",
       "uploading": "Yükleniyor...",
       "success": "Yükleme başarılı!",
-      "cancel": "İptal"
+      "cancel": "İptal",
+      "removeFile": "Seçili dosyayı kaldır",
+      "failedTitle": "Yükleme başarısız",
+      "invalidType": "Geçersiz dosya türü: {ext}. İzin verilenler: {types}"
     },
     "categories": {
       "selectCategory": "Kategori seçin (isteğe bağlı)",
@@ -580,14 +590,20 @@
       "expired": "Süresi dolmuş",
       "expiringSoon": "Yakında süresi doluyor",
       "expires": "Süre",
-      "added": "Eklenme"
+      "added": "Eklenme",
+      "filterByCategory": "Kategoriye göre filtrele",
+      "sortBy": "Belgeleri şuna göre sırala",
+      "sortOrder": "Sıralama düzeni: {order}. Değiştirmek için tıklayın.",
+      "property": "Emlak: {id}",
+      "actionsFor": "{name} için işlemler"
     },
     "errors": {
       "loadFailed": "Belgeler yüklenemedi",
       "deleteFailed": "Belge silinemedi",
       "invalidType": "Geçersiz dosya türü",
       "tooLarge": "Dosya çok büyük. En fazla 10 MB",
-      "uploadFailed": "Yükleme başarısız"
+      "uploadFailed": "Yükleme başarısız",
+      "downloadFailed": "İndirme başarısız"
     },
     "expiryAlert": {
       "singular": "{count} belge yakında süresini dolduruyor",
@@ -1468,7 +1484,10 @@
       "decimalSeparator": "Ondalık ayırıcı",
       "decimalDot": "Nokta (.)",
       "decimalComma": "Virgül (,)",
-      "includeHeader": "Başlık satırını dahil et"
+      "includeHeader": "Başlık satırını dahil et",
+      "excel": "Excel",
+      "markdown": "Markdown",
+      "pdf": "PDF"
     },
     "saveSearch": {
       "button": "Aramayı kaydet",
@@ -1488,7 +1507,8 @@
       "minGreaterThanMax": "En düşük fiyat en yüksek fiyattan büyük olamaz.",
       "emptyQuery": "Lütfen bir arama sorgusu girin.",
       "genericSearch": "Arama gerçekleştirilemedi. Tekrar deneyin.",
-      "exportFailed": "Dışa aktarma gerçekleştirilemedi. Tekrar deneyin."
+      "exportFailed": "Dışa aktarma gerçekleştirilemedi. Tekrar deneyin.",
+      "invalidPolygon": "Geçersiz çokgen"
     },
     "feedback": {
       "helpful": "Bu yardımcı oldu mu?",
@@ -1508,7 +1528,8 @@
       "drawing": "Çiziliyor...",
       "enableDrawing": "Çizimi etkinleştir",
       "disableDrawing": "Çizimi kapat",
-      "clearArea": "Alanı temizle"
+      "clearArea": "Alanı temizle",
+      "propertyClicked": "Emlak seçildi"
     },
     "queryLabel": "Arama sorgusu",
     "searchLabel": "Emlak araması",
@@ -1536,7 +1557,50 @@
     "clearPriceFilter": "Fiyat filtresini temizle",
     "filterByPropertyType": "Mülk türüne göre filtrele",
     "propertyMap": "Mülk haritası",
-    "propertyMapWithMapbox": "Mapboxlu mülk haritası"
+    "propertyMapWithMapbox": "Mapboxlu mülk haritası",
+    "examples": {
+      "madrid": "Madrid’de 500.000 $ altında 2+1 daire",
+      "houseGarden": "Krakow’da bahçeli ev",
+      "studioCity": "Şehir merkezine yakın stüdyo daire",
+      "luxuryParking": "Varşova’da otoparklı lüks daire"
+    },
+    "mapControls": {
+      "controls": "Harita kontrolleri",
+      "zoomIn": "Yakınlaştır",
+      "zoomOut": "Uzaklaştır",
+      "fitBounds": "Sınırlara sığdır",
+      "fitAll": "Tüm emlakları göster",
+      "toggleFilters": "Harita filtrelerini aç/kapat",
+      "mapFilters": "Harita filtreleri",
+      "toggleHeatmap": "Isı haritasını aç/kapat",
+      "heatmapMode": "Isı haritası modu",
+      "density": "Yoğunluk",
+      "price": "Fiyat",
+      "pricePerSqm": "m² başına fiyat",
+      "yield": "Getiri",
+      "heatmapIntensity": "Isı haritası yoğunluğu",
+      "clusters": "Kümeler",
+      "toggleClusters": "Kümeleri aç/kapat",
+      "clusterSize": "Küme boyutu",
+      "maxZoom": "Kümeler için maksimum yakınlaştırma",
+      "priceFilter": "Fiyat filtresi",
+      "filterUnder300k": "300 binin altı",
+      "filter300k600k": "300–600 bin",
+      "filter600k1M": "600 bin–1 milyon",
+      "allTypes": "Tüm türler",
+      "resetFilters": "Tüm filtreleri sıfırla",
+      "mapOptions": "Harita seçenekleri",
+      "heatmap": "Isı haritası",
+      "mode": "Mod",
+      "intensity": "Yoğunluk: {value}",
+      "clusterSizeValue": "Küme boyutu: {size} px",
+      "maxZoomValue": "Maksimum yakınlaştırma: {zoom}",
+      "under300k": "300 bin $ altı",
+      "range300k600k": "300–600 bin $",
+      "range600k1M": "600 bin–1 milyon $",
+      "allPrices": "Tüm fiyatlar",
+      "resetAll": "Tümünü sıfırla"
+    }
   },
   "settings": {
     "title": "Ayarlar",
@@ -1887,7 +1951,52 @@
     },
     "knowledge": {
       "title": "Bilgi",
-      "description": "Asistanın dayandığı belgeler ve piyasa bağlamı."
+      "description": "Asistanın dayandığı belgeler ve piyasa bağlamı.",
+      "upload": {
+        "filesAria": "Bilgi tabanı dosyaları",
+        "selectFile": "Yüklemek için en az bir dosya seçin.",
+        "uploading": "Yükleniyor...",
+        "upload": "Yükle",
+        "clear": "Temizle",
+        "processing": "Belgeler yükleniyor ve işleniyor...",
+        "failed": "Yükleme başarısız",
+        "title": "Belge yükle",
+        "chunksIndexed": "Dizine eklenen parça sayısı: {count}"
+      },
+      "manage": {
+        "title": "Bilgi tabanını yönet",
+        "clearing": "Temizleniyor...",
+        "clear": "Bilgi tabanını temizle",
+        "result": "{message}. {removed} belge silindi. {remaining} belge kaldı.",
+        "confirm": "Dizine eklenen tüm bilgi tabanı belgeleri temizlensin mi? Bu işlem geri alınamaz."
+      },
+      "ask": {
+        "title": "Sorular sorun",
+        "empty": "Belgeleri yükleyin ve bilgi tabanınızdan kaynaklı yanıtlar almak için sorular sorun.",
+        "placeholder": "Yüklediğiniz belgeler hakkında bir soru sorun...",
+        "questionAria": "Bilgi tabanı sorusu",
+        "topKAria": "Top K",
+        "topKPlaceholder": "Top K (1-50)",
+        "providerAria": "Sağlayıcı",
+        "providerPlaceholder": "Sağlayıcı (isteğe bağlı)",
+        "modelAria": "Model",
+        "modelPlaceholder": "Model (isteğe bağlı)",
+        "asking": "Soruluyor...",
+        "ask": "Sor",
+        "clear": "Temizle",
+        "searching": "Bilgi tabanı taranıyor...",
+        "failed": "Soru başarısız",
+        "citations": "Kaynakça",
+        "citationItem": "{source} ({chunk}. parça)",
+        "noCitations": "Kaynakça döndürülmedi.",
+        "enterQuestion": "Bir soru girin."
+      },
+      "empty": {
+        "title": "Bilgi tabanıyla başlayın",
+        "upload": "Yerel bilgi tabanınızı oluşturmak için belgeleri (PDF, TXT, MD, DOCX) yükleyin.",
+        "then": "Ardından sorular sorun ve kaynak gösterimli yanıtlar alın.",
+        "providers": "Desteklenen sağlayıcılar: OpenAI, Anthropic, Google, Grok, DeepSeek ve Ollama (yerel)."
+      }
     },
     "documents": {
       "title": "Belgeler",
@@ -1927,7 +2036,135 @@
       "description": "Bir ilanı bir karara dönüştüren hesaplayıcılar ve analizler.",
       "propertyPrice": "Mülk fiyatı",
       "columnsHint": "Sütunlar (isteğe bağlı), örn. id, city, price",
-      "propertyId": "Mülk ID"
+      "propertyId": "Mülk ID",
+      "mortgage": {
+        "title": "Kredi hesaplayıcı",
+        "downPayment": "Peşinat, %",
+        "interestRate": "Faiz oranı, %",
+        "loanYears": "Vade, yıl",
+        "calculating": "Hesaplanıyor...",
+        "monthlyPayment": "Aylık taksit: {amount}",
+        "failed": "Hesaplama başarısız",
+        "calculate": "Hesapla"
+      },
+      "compare": {
+        "title": "Emlak karşılaştırma",
+        "ids": "Virgülle ayrılmış ID’ler",
+        "comparing": "Karşılaştırılıyor...",
+        "failed": "Karşılaştırma başarısız",
+        "exportFormat": "Dışa aktarma biçimi",
+        "exportColumns": "Dışa aktarılacak sütunlar",
+        "csvDelimiter": "CSV ayırıcısı",
+        "csvDecimal": "CSV ondalık ayırıcısı",
+        "comma": "Virgül (,)",
+        "semicolon": "Noktalı virgül (;)",
+        "dot": "Nokta (.)",
+        "includeHeader": "Başlık satırını dahil et",
+        "exporting": "Dışa aktarılıyor...",
+        "exportFailed": "Dışa aktarma başarısız",
+        "needIds": "En az bir emlak ID’si verin.",
+        "compare": "Karşılaştır",
+        "export": "Dışa aktar"
+      },
+      "price": {
+        "title": "Fiyat analizi",
+        "query": "Sorgu (örn. şehir veya tür)",
+        "analyzing": "Analiz ediliyor...",
+        "failed": "Analiz başarısız"
+      },
+      "location": {
+        "title": "Konum analizi",
+        "analyzing": "Analiz ediliyor...",
+        "failed": "Konum analizi başarısız"
+      },
+      "neighborhood": {
+        "title": "Mahalle kalite endeksi",
+        "latitude": "Enlem (isteğe bağlı)",
+        "longitude": "Boylam (isteğe bağlı)",
+        "city": "Şehir (isteğe bağlı)",
+        "neighborhood": "Mahalle (isteğe bağlı)",
+        "analyzing": "Analiz ediliyor...",
+        "failed": "Mahalle kalitesi analizi başarısız",
+        "excellent": "Mükemmel",
+        "good": "İyi",
+        "fair": "Orta",
+        "poor": "Zayıf",
+        "veryPoor": "Çok zayıf",
+        "overallScore": "Genel puan",
+        "safety": "Güvenlik",
+        "schools": "Okullar",
+        "amenities": "Olanaklar",
+        "walkability": "Yürünebilirlik",
+        "greenSpace": "Yeşil alan",
+        "location": "Konum:",
+        "coordinates": "Koordinatlar: {lat}, {lon}",
+        "dataSources": "Veri kaynakları: {sources}",
+        "scoreBar": "{score}/100 (Ağırlık: {weight})"
+      },
+      "templates": {
+        "title": "Prompt şablonları",
+        "description": "Bir şablon seçin, değişkenleri doldurun ve kullanıma hazır metin oluşturun.",
+        "picker": "Şablon seçici",
+        "loadFailed": "Şablonlar yüklenemedi",
+        "renderFailed": "Şablon uygulanamadı",
+        "generate": "Oluştur",
+        "generating": "Oluşturuluyor...",
+        "copy": "Kopyala",
+        "output": "Şablon çıktısı",
+        "variable": "Değişken {name}"
+      },
+      "valuation": {
+        "title": "Değerleme (CE yer tutucusu)",
+        "estimate": "Değerle",
+        "estimating": "Tahmin ediliyor...",
+        "failed": "Değerleme başarısız"
+      },
+      "legal": {
+        "title": "Sözleşme kontrolü (CE yer tutucusu)",
+        "contract": "Sözleşme metni",
+        "analyzing": "Analiz ediliyor...",
+        "failed": "Sözleşme kontrolü başarısız"
+      },
+      "enrich": {
+        "title": "Veri zenginleştirme (CE yer tutucusu)",
+        "address": "Adres",
+        "enrich": "Zenginleştir",
+        "enriching": "Zenginleştiriliyor...",
+        "failed": "Zenginleştirme başarısız"
+      },
+      "crm": {
+        "title": "CRM iletişim senkronizasyonu (CE yer tutucusu)",
+        "name": "Ad",
+        "phone": "Telefon",
+        "email": "E-posta",
+        "sync": "Senkronize et",
+        "syncing": "Senkronize ediliyor...",
+        "failed": "CRM senkronizasyonu başarısız"
+      },
+      "fields": {
+        "count": "Sayı: {value}",
+        "minPrice": "En düşük fiyat: {value}",
+        "maxPrice": "En yüksek fiyat: {value}",
+        "diff": "Fark: {value}",
+        "averagePrice": "Ortalama fiyat: {value}",
+        "medianPrice": "Medyan fiyat: {value}",
+        "city": "Şehir: {value}",
+        "neighborhood": "Mahalle: {value}",
+        "latLon": "Enlem/Boylam: {lat}, {lon}",
+        "score": "Puan: {value}",
+        "risks": "Riskler: {value}",
+        "address": "Adres: {value}",
+        "contactId": "İletişim kimliği: {id}",
+        "estimatedValue": "Tahmini değer: {value}"
+      },
+      "hints": {
+        "dataEnrichment": "Backend’de etkinleştirin: DATA_ENRICHMENT_ENABLED=true ayarlayın ve API’yi yeniden başlatın.",
+        "crm": "Backend’de yapılandırın: CRM_WEBHOOK_URL ayarlayın ve API’yi yeniden başlatın.",
+        "valuation": "Backend’de yapılandırın: VALUATION_MODE=simple ayarlayın ve API’yi yeniden başlatın.",
+        "legalCheck": "Backend’de yapılandırın: LEGAL_CHECK_MODE=basic ayarlayın ve API’yi yeniden başlatın.",
+        "vectorStore": "Aracı çalıştırmadan önce vektör deposunu (Chroma) yükleyin ve başlatın."
+      },
+      "analyze": "Analiz et"
     },
     "analytics": {
       "title": "Analitik ve araçlar",
@@ -2020,11 +2257,148 @@
     "admin": {
       "monitoring": {
         "title": "Üretim izleme",
-        "description": "Yayındaki yığının canlı durumu."
+        "description": "Yayındaki yığının canlı durumu.",
+        "loading": "İzleme verileri yükleniyor...",
+        "errors": {
+          "load": "İzleme verileri yüklenemedi",
+          "testAlert": "Test uyarısı gönderilemedi"
+        },
+        "lastRefreshed": "Son yenileme: {time}",
+        "refreshing": "Yenileniyor...",
+        "sending": "Gönderiliyor...",
+        "testAlert": "Test uyarısı",
+        "errorTitle": "Veri yüklenirken hata",
+        "alerts": {
+          "threshold": "Eşik: {threshold}",
+          "dbLatency": "Yüksek veritabanı gecikmesi: {value} ms",
+          "dbLatencyThreshold": "P95 gecikmesi > 3 sn",
+          "cacheHitRate": "Düşük önbellek isabet oranı: %{rate}",
+          "cacheHitRateThreshold": "İsabet oranı < %20",
+          "notReady": "Servis istekleri işleyecek durumda değil",
+          "notReadyThreshold": "Genel hazırlık",
+          "dbUnhealthy": "Veritabanı bağlantısı sağlıklı değil",
+          "dbUnhealthyThreshold": "Veritabanı durumu",
+          "llmUnhealthy": "LLM sağlayıcısı sağlıklı değil",
+          "llmUnhealthyThreshold": "LLM durumu",
+          "redisUnhealthy": "Redis önbelleği sağlıklı değil",
+          "redisUnhealthyThreshold": "Redis durumu"
+        },
+        "health": {
+          "title": "Sistem durumu",
+          "service": "Servis:",
+          "timestamp": "Zaman damgası:",
+          "uptime": "Çalışma süresi:",
+          "version": "Sürüm:",
+          "git": "Git commit:"
+        },
+        "readiness": {
+          "title": "Hazırlık durumu",
+          "database": "Veritabanı:",
+          "dbLatency": "Veritabanı gecikmesi:",
+          "redis": "Redis:",
+          "disabled": "Devre dışı",
+          "llm": "LLM sağlayıcısı:",
+          "lastCheck": "Son kontrol:"
+        },
+        "metrics": {
+          "totalProperties": "Toplam emlak",
+          "inLast24h": "son 24 saatte {count}",
+          "knowledgeStore": "Bilgi deposu",
+          "chunks": "parça: {count}",
+          "cacheHitRate": "Önbellek isabet oranı",
+          "hitsMisses": "isabet: {hits}, ıskas: {misses}",
+          "noCacheData": "Önbellek verisi yok",
+          "environment": "Ortam"
+        },
+        "sources": {
+          "title": "Veri kaynağına göre emlaklar"
+        },
+        "charts": {
+          "requestRate": "İstek oranı (istek/dk)",
+          "errorRate": "Hata oranı (%)",
+          "responseTime": "Yanıt süresi (ms)"
+        },
+        "legend": {
+          "title": "Grafik açıklaması",
+          "healthy": "Sağlıklı / Normal",
+          "warning": "Uyarı / Bozuk",
+          "error": "Hata / Kritik"
+        },
+        "status": {
+          "healthy": "Sağlıklı",
+          "unhealthy": "Sağlıklı değil",
+          "ready": "Hazır",
+          "not_ready": "Hazır değil",
+          "degraded": "Bozuk"
+        }
       },
       "connectors": {
         "title": "MCP bağlantıları",
-        "description": "Asistanın çağırabileceği dış araçlar."
+        "description": "Asistanın çağırabileceği dış araçlar.",
+        "edition": "Sürüm: {edition}",
+        "healthCheckAll": "Tümünü denetle",
+        "healthCheck": "Durum denetle",
+        "overall": {
+          "title": "Genel durum",
+          "connectorsChecked": "Denetlenen bağlayıcılar:",
+          "edition": "Sürüm:",
+          "timestamp": "Zaman damgası:"
+        },
+        "requestId": "İstek kimliği: {id}",
+        "loading": "Bağlayıcılar yükleniyor...",
+        "empty": {
+          "title": "Kayıtlı bağlayıcı yok"
+        },
+        "badge": {
+          "registered": "Kayıtlı",
+          "notRegistered": "Kayıtlı değil",
+          "instantiated": "Örnek oluşturuldu",
+          "noInstance": "Örnek yok",
+          "apiKeyRequired": "API anahtarı gerekli",
+          "streaming": "Akış",
+          "ceAccessible": "CE’de erişilebilir",
+          "enabled": "Etkin",
+          "disabled": "Devre dışı"
+        },
+        "results": {
+          "responseTime": "Yanıt süresi:",
+          "success": "Başarı:",
+          "yes": "Evet",
+          "no": "Hayır",
+          "errors": "Hatalar:"
+        },
+        "detail": {
+          "basicInfo": "Temel bilgiler",
+          "name": "Ad:",
+          "edition": "Sürüm:",
+          "status": "Durum:",
+          "minEdition": "Asgari sürüm:",
+          "error": "Hata: {message}",
+          "capabilities": "Yetenekler",
+          "rateLimit": "İstek sınırı",
+          "requestsPerMin": "İstek/dk:",
+          "burstSize": "Burst boyutu:",
+          "currentRequests": "Mevcut istekler:",
+          "remaining": "Kalan:",
+          "instanceStatus": "Örnek durumu",
+          "configuration": "Yapılandırma"
+        },
+        "status": {
+          "active": "Etkin",
+          "disabled": "Devre dışı",
+          "error": "Hata",
+          "not_instantiated": "Örnek oluşturulmadı",
+          "unknown": "Bilinmiyor"
+        },
+        "health": {
+          "healthy": "Sağlıklı",
+          "unhealthy": "Sağlıklı değil",
+          "degraded": "Bozuk",
+          "error": "Hata"
+        },
+        "errors": {
+          "load": "Bağlayıcılar yüklenemedi"
+        }
       },
       "dataSources": {
         "title": "Veri kaynakları",
@@ -2032,7 +2406,87 @@
       },
       "bulkJobs": {
         "title": "Toplu içe/dışa aktarma işleri",
-        "description": "İlanları toplu olarak içeri ve dışarı taşıyın."
+        "description": "İlanları toplu olarak içeri ve dışarı taşıyın.",
+        "tabs": {
+          "jobs": "İşler",
+          "import": "İçe aktarma",
+          "export": "Dışa aktarma"
+        },
+        "requestId": "İstek kimliği: {id}",
+        "filters": {
+          "label": "Filtreler:",
+          "allTypes": "Tüm türler",
+          "allStatuses": "Tüm durumlar"
+        },
+        "errors": {
+          "loadJobs": "Toplu işler yüklenemedi",
+          "urlRequired": "Lütfen bir URL girin",
+          "createImport": "İçe aktarma işi oluşturulamadı",
+          "createExport": "Dışa aktarma işi oluşturulamadı",
+          "cancelJob": "İş iptal edilemedi",
+          "deleteJob": "İş silinemedi",
+          "queryRequired": "Lütfen bir arama sorgusu girin"
+        },
+        "success": {
+          "importCreated": "İçe aktarma işi başarıyla oluşturuldu!",
+          "exportCreated": "Dışa aktarma işi başarıyla oluşturuldu!"
+        },
+        "confirm": {
+          "deleteJob": "Bu işi silmek istediğinizden emin misiniz?"
+        },
+        "status": {
+          "pending": "Beklemede",
+          "running": "Çalışıyor",
+          "completed": "Tamamlandı",
+          "failed": "Başarısız",
+          "cancelled": "İptal edildi"
+        },
+        "empty": {
+          "title": "Toplu iş bulunamadı",
+          "description": "Başlamak için bir içe veya dışa aktarma işi oluşturun"
+        },
+        "job": {
+          "progress": "İlerleme:",
+          "processed": "İşlenen:",
+          "failed": "Başarısız:",
+          "created": "Oluşturuldu: {date}",
+          "completed": "Tamamlandı: {date}",
+          "expires": "Süresi: {date}",
+          "cancelTitle": "İşi iptal et",
+          "downloadTitle": "Sonucu indir",
+          "deleteTitle": "İşi sil"
+        },
+        "pagination": {
+          "page": "Sayfa {page} / {total}"
+        },
+        "import": {
+          "title": "İçe aktarma işi oluştur",
+          "sourceType": "Kaynak türü",
+          "typeUrl": "URL",
+          "typeFile": "Dosya yükleme",
+          "typePortal": "Portal API",
+          "fileUrls": "Dosya URL’leri (virgülle ayrılmış)",
+          "fileUrlsPlaceholder": "https://example.com/data.csv, https://example.com/data.xlsx",
+          "supports": "CSV, Excel (.xlsx/.xls) ve JSON dosyaları desteklenir",
+          "fileUploadAvailable": "Doğrudan API ile dosya yükleme kullanılabilir",
+          "fileUploadEndpoint": "/api/v1/admin/ingest/upload uç noktasını kullanın",
+          "portalConfigured": "Portal API içe aktarmaları Veri Kaynakları’nda yapılandırılır",
+          "portalHint": "Portal bağlantılarını kurmak için Veri Kaynakları sayfasını ziyaret edin",
+          "sourceName": "Kaynak adı (isteğe bağlı)",
+          "sourceNamePlaceholder": "örn. Varşova Emlakları Ç1 2024",
+          "creating": "İçe aktarma işi oluşturuluyor...",
+          "start": "İçe aktarma işini başlat"
+        },
+        "export": {
+          "title": "Dışa aktarma işi oluştur",
+          "format": "Dışa aktarma biçimi",
+          "query": "Arama sorgusu",
+          "queryPlaceholder": "örn. Varşova’da 500000 PLN altındaki daireler",
+          "queryHint": "Dışa aktarılacak emlakları filtrelemek için doğal dilde bir arama sorgusu girin",
+          "maxResults": "En fazla sonuç",
+          "creating": "Dışa aktarma işi oluşturuluyor...",
+          "start": "Dışa aktarma işini başlat"
+        }
       }
     }
   },

@@ -1,11 +1,21 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { FileUp, Loader2, MessageSquareText, Trash2, Upload, AlertCircle, FileText, Sparkles, Database } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { ragQa, resetRagKnowledge, uploadRagDocuments, ApiError } from "@/lib/api";
-import type { RagQaResponse, RagResetResponse, RagUploadResponse } from "@/lib/types";
-import { PageHeader } from "@/components/ui/page-header";
+import { useState } from 'react';
+import {
+  FileUp,
+  Loader2,
+  MessageSquareText,
+  Trash2,
+  Upload,
+  AlertCircle,
+  FileText,
+  Sparkles,
+  Database,
+} from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { ragQa, resetRagKnowledge, uploadRagDocuments, ApiError } from '@/lib/api';
+import type { RagQaResponse, RagResetResponse, RagUploadResponse } from '@/lib/types';
+import { PageHeader } from '@/components/ui/page-header';
 
 interface ErrorState {
   message: string;
@@ -13,7 +23,8 @@ interface ErrorState {
 }
 
 export default function KnowledgePage() {
-  const t = useTranslations("pages.knowledge");
+  const t = useTranslations('pages.knowledge');
+  const tError = useTranslations('error');
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<ErrorState | null>(null);
@@ -23,10 +34,10 @@ export default function KnowledgePage() {
   const [resetError, setResetError] = useState<ErrorState | null>(null);
   const [resetResult, setResetResult] = useState<RagResetResponse | null>(null);
 
-  const [question, setQuestion] = useState<string>("");
-  const [topK, setTopK] = useState<string>("5");
-  const [provider, setProvider] = useState<string>("");
-  const [model, setModel] = useState<string>("");
+  const [question, setQuestion] = useState<string>('');
+  const [topK, setTopK] = useState<string>('5');
+  const [provider, setProvider] = useState<string>('');
+  const [model, setModel] = useState<string>('');
   const [asking, setAsking] = useState(false);
   const [qaError, setQaError] = useState<ErrorState | null>(null);
   const [qaResult, setQaResult] = useState<RagQaResponse | null>(null);
@@ -43,7 +54,7 @@ export default function KnowledgePage() {
   };
 
   const extractErrorState = (err: unknown): ErrorState => {
-    let message = "Unknown error";
+    let message = tError('generic');
     let requestId: string | undefined = undefined;
 
     if (err instanceof ApiError) {
@@ -62,7 +73,7 @@ export default function KnowledgePage() {
     setUploadError(null);
     setUploadResult(null);
     if (!files.length) {
-      setUploadError({ message: "Select at least one file to upload." });
+      setUploadError({ message: t('upload.selectFile') });
       return;
     }
     setUploading(true);
@@ -80,7 +91,7 @@ export default function KnowledgePage() {
     setResetError(null);
     setResetResult(null);
 
-    const confirmed = window.confirm("Clear all indexed knowledge documents? This cannot be undone.");
+    const confirmed = window.confirm(t('manage.confirm'));
     if (!confirmed) return;
 
     setResetting(true);
@@ -102,7 +113,7 @@ export default function KnowledgePage() {
     setQaResult(null);
     const q = question.trim();
     if (!q) {
-      setQaError({ message: "Enter a question." });
+      setQaError({ message: t('ask.enterQuestion') });
       return;
     }
     setAsking(true);
@@ -123,18 +134,14 @@ export default function KnowledgePage() {
 
   return (
     <div className="container mx-auto max-w-5xl px-4 py-8">
-      <PageHeader
-        className="mb-8"
-        title={t('title')}
-        description={t('description')}
-      />
+      <PageHeader className="mb-8" title={t('title')} description={t('description')} />
 
       <div className="grid gap-8">
         {/* Upload Section - 4 Mandated States */}
         <section className="border rounded-lg p-6">
           <div className="flex items-center gap-2 mb-4">
             <Upload className="w-5 h-5" />
-            <h2 className="text-xl font-semibold">Upload Documents</h2>
+            <h2 className="text-xl font-semibold">{t('upload.title')}</h2>
           </div>
 
           {/* Empty/Loading/Error/Populated states for upload */}
@@ -147,7 +154,7 @@ export default function KnowledgePage() {
               const list = e.target.files ? Array.from(e.target.files) : [];
               setFiles(list);
             }}
-            aria-label="Knowledge files"
+            aria-label={t('upload.filesAria')}
             disabled={uploading}
           />
 
@@ -160,7 +167,8 @@ export default function KnowledgePage() {
           ) : null}
 
           <div className="mt-4 flex items-center gap-3">
-            <button type="button"
+            <button
+              type="button"
               className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               disabled={uploading || !files.length}
               onClick={onUpload}
@@ -168,16 +176,17 @@ export default function KnowledgePage() {
               {uploading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Uploading...
+                  {t('upload.uploading')}
                 </>
               ) : (
                 <>
                   <FileUp className="w-4 h-4" />
-                  Upload
+                  {t('upload.upload')}
                 </>
               )}
             </button>
-            <button type="button"
+            <button
+              type="button"
               className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               disabled={uploading || !files.length}
               onClick={() => {
@@ -186,7 +195,7 @@ export default function KnowledgePage() {
                 setUploadResult(null);
               }}
             >
-              Clear
+              {t('upload.clear')}
             </button>
           </div>
 
@@ -198,7 +207,7 @@ export default function KnowledgePage() {
               aria-live="polite"
             >
               <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Uploading and processing documents...</p>
+              <p className="text-sm text-muted-foreground">{t('upload.processing')}</p>
             </div>
           )}
 
@@ -212,7 +221,7 @@ export default function KnowledgePage() {
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-destructive mb-1">Upload Failed</p>
+                  <p className="text-sm font-medium text-destructive mb-1">{t('upload.failed')}</p>
                   <p className="text-sm text-destructive/90">{uploadError.message}</p>
                   {uploadError.requestId && (
                     <p className="text-xs text-muted-foreground mt-2 font-mono">
@@ -228,7 +237,9 @@ export default function KnowledgePage() {
           {uploadResult ? (
             <div className="mt-4 p-4 rounded-lg bg-success/15 border border-chart-7/30">
               <p className="font-medium text-success">{uploadResult.message}</p>
-              <p className="text-sm text-success">Chunks indexed: {uploadResult.chunks_indexed}</p>
+              <p className="text-sm text-success">
+                {t('upload.chunksIndexed', { count: uploadResult.chunks_indexed })}
+              </p>
               {uploadResult.errors.length ? (
                 <ul className="mt-2 text-sm text-warning list-disc pl-5">
                   {uploadResult.errors.map((err, idx) => (
@@ -243,9 +254,10 @@ export default function KnowledgePage() {
           <div className="mt-6 pt-6 border-t">
             <div className="flex items-center gap-2 mb-3">
               <Database className="w-4 h-4" />
-              <p className="font-medium">Manage Knowledge Base</p>
+              <p className="font-medium">{t('manage.title')}</p>
             </div>
-            <button type="button"
+            <button
+              type="button"
               className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               disabled={resetting}
               onClick={onResetKnowledge}
@@ -253,24 +265,20 @@ export default function KnowledgePage() {
               {resetting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Clearing...
+                  {t('manage.clearing')}
                 </>
               ) : (
                 <>
                   <Trash2 className="w-4 h-4" />
-                  Clear Knowledge
+                  {t('manage.clear')}
                 </>
               )}
             </button>
 
             {/* Reset Error State */}
             {resetError && (
-              <div
-                  className="mt-3 flex items-center gap-3"
-                  role="alert"
-                  aria-live="assertive"
-              >
-                <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0" />
+              <div className="mt-3 flex items-center gap-3" role="alert" aria-live="assertive">
+                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
                 <span className="text-sm text-destructive">{resetError.message}</span>
                 {resetError.requestId && (
                   <span className="text-xs text-muted-foreground font-mono">
@@ -284,7 +292,11 @@ export default function KnowledgePage() {
             {resetResult ? (
               <div className="mt-3">
                 <p className="text-sm text-muted-foreground">
-                  {resetResult.message}. Removed {resetResult.documents_removed}. Remaining {resetResult.documents_remaining}.
+                  {t('manage.result', {
+                    message: resetResult.message,
+                    removed: resetResult.documents_removed,
+                    remaining: resetResult.documents_remaining,
+                  })}
                 </p>
               </div>
             ) : null}
@@ -295,7 +307,7 @@ export default function KnowledgePage() {
         <section className="border rounded-lg p-6">
           <div className="flex items-center gap-2 mb-4">
             <MessageSquareText className="w-5 h-5" />
-            <h2 className="text-xl font-semibold">Ask Questions</h2>
+            <h2 className="text-xl font-semibold">{t('ask.title')}</h2>
           </div>
 
           {/* Empty state - prompt user to ask */}
@@ -306,19 +318,17 @@ export default function KnowledgePage() {
               aria-live="polite"
             >
               <FileText className="h-8 w-8 text-muted-foreground mb-2" aria-hidden="true" />
-              <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                Upload documents and ask questions to get answers with citations from your knowledge base.
-              </p>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto">{t('ask.empty')}</p>
             </div>
           )}
 
           <textarea
             className="border p-2 w-full resize-none"
-            placeholder="Ask a question about your uploaded documents..."
+            placeholder={t('ask.placeholder')}
             rows={3}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            aria-label="Knowledge question"
+            aria-label={t('ask.questionAria')}
             disabled={asking}
           />
 
@@ -330,30 +340,31 @@ export default function KnowledgePage() {
               max={50}
               value={topK}
               onChange={(e) => setTopK(e.target.value)}
-              aria-label="Top K"
-              placeholder="Top K (1-50)"
+              aria-label={t('ask.topKAria')}
+              placeholder={t('ask.topKPlaceholder')}
               disabled={asking}
             />
             <input
               className="border p-2 w-full"
               value={provider}
               onChange={(e) => setProvider(e.target.value)}
-              aria-label="Provider override"
-              placeholder="Provider (optional)"
+              aria-label={t('ask.providerAria')}
+              placeholder={t('ask.providerPlaceholder')}
               disabled={asking}
             />
             <input
               className="border p-2 w-full"
               value={model}
               onChange={(e) => setModel(e.target.value)}
-              aria-label="Model override"
-              placeholder="Model (optional)"
+              aria-label={t('ask.modelAria')}
+              placeholder={t('ask.modelPlaceholder')}
               disabled={asking}
             />
           </div>
 
           <div className="mt-4 flex items-center gap-3">
-            <button type="button"
+            <button
+              type="button"
               className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               disabled={asking || !question.trim()}
               onClick={onAsk}
@@ -361,37 +372,38 @@ export default function KnowledgePage() {
               {asking ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Asking...
+                  {t('ask.asking')}
                 </>
               ) : (
                 <>
                   <MessageSquareText className="w-4 h-4" />
-                  Ask
+                  {t('ask.ask')}
                 </>
               )}
             </button>
-            <button type="button"
+            <button
+              type="button"
               className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               disabled={asking || (!question.trim() && !qaResult && !qaError)}
               onClick={() => {
-                setQuestion("");
+                setQuestion('');
                 setQaError(null);
                 setQaResult(null);
               }}
             >
-              Clear
+              {t('ask.clear')}
             </button>
           </div>
 
           {/* Asking Loading State */}
           {asking && (
             <div
-                className="mt-4 p-4 rounded-lg border bg-muted/30 text-center"
-                role="status"
-                aria-live="polite"
+              className="mt-4 p-4 rounded-lg border bg-muted/30 text-center"
+              role="status"
+              aria-live="polite"
             >
               <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Searching knowledge base...</p>
+              <p className="text-sm text-muted-foreground">{t('ask.searching')}</p>
             </div>
           )}
 
@@ -405,7 +417,7 @@ export default function KnowledgePage() {
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-destructive mb-1">Question Failed</p>
+                  <p className="text-sm font-medium text-destructive mb-1">{t('ask.failed')}</p>
                   <p className="text-sm text-destructive/90">{qaError.message}</p>
                   {qaError.requestId && (
                     <p className="text-xs text-muted-foreground mt-2 font-mono">
@@ -422,23 +434,27 @@ export default function KnowledgePage() {
             <div className="mt-4 space-y-4">
               <div className="border rounded p-4 bg-muted/30">
                 <p className="text-xs text-muted-foreground mb-2 font-mono">
-                  llm_used={String(qaResult.llm_used)} provider={qaResult.provider ?? "null"} model={qaResult.model ?? "null"}
+                  llm_used={String(qaResult.llm_used)} provider={qaResult.provider ?? 'null'} model=
+                  {qaResult.model ?? 'null'}
                 </p>
                 <p className="whitespace-pre-wrap text-sm leading-relaxed">{qaResult.answer}</p>
               </div>
 
               <div>
-                <h3 className="font-semibold text-sm mb-2">Citations</h3>
+                <h3 className="font-semibold text-sm mb-2">{t('ask.citations')}</h3>
                 {qaResult.citations.length ? (
                   <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
                     {qaResult.citations.map((c, idx) => (
                       <li key={`${c.source}-${c.chunk_index}-${idx}`}>
-                        {c.source} (chunk {c.chunk_index})
+                        {t('ask.citationItem', {
+                          source: c.source ?? '',
+                          chunk: c.chunk_index ?? 0,
+                        })}
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No citations returned.</p>
+                  <p className="text-sm text-muted-foreground">{t('ask.noCitations')}</p>
                 )}
               </div>
             </div>
@@ -447,21 +463,29 @@ export default function KnowledgePage() {
       </div>
 
       {/* Empty State Guidance - When no data and no operations */}
-      {!uploadResult && !resetResult && !qaResult && !uploadError && !resetError && !qaError && !uploading && !resetting && !asking && (
-        <div
-          className="mt-8 p-6 rounded-lg border bg-muted/20 text-center"
-          role="status"
-          aria-live="polite"
-        >
-          <Sparkles className="h-10 w-10 text-muted-foreground mx-auto mb-3" aria-hidden="true" />
-          <h3 className="text-base font-semibold text-foreground mb-2">Get Started with Knowledge</h3>
-          <div className="text-sm text-muted-foreground max-w-md mx-auto space-y-2">
-            <p>Upload documents (PDF, TXT, MD, DOCX) to build your local knowledge base.</p>
-            <p>Then ask questions and get answers with source citations.</p>
-            <p className="text-xs">Supported providers: OpenAI, Anthropic, Google, Grok, DeepSeek, and Ollama (local).</p>
+      {!uploadResult &&
+        !resetResult &&
+        !qaResult &&
+        !uploadError &&
+        !resetError &&
+        !qaError &&
+        !uploading &&
+        !resetting &&
+        !asking && (
+          <div
+            className="mt-8 p-6 rounded-lg border bg-muted/20 text-center"
+            role="status"
+            aria-live="polite"
+          >
+            <Sparkles className="h-10 w-10 text-muted-foreground mx-auto mb-3" aria-hidden="true" />
+            <h3 className="text-base font-semibold text-foreground mb-2">{t('empty.title')}</h3>
+            <div className="text-sm text-muted-foreground max-w-md mx-auto space-y-2">
+              <p>{t('empty.upload')}</p>
+              <p>{t('empty.then')}</p>
+              <p className="text-xs">{t('empty.providers')}</p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }

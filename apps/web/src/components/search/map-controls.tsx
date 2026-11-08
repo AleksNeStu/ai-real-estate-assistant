@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Layers, Thermometer, MapPin, ZoomIn, ZoomOut, Filter, X } from 'lucide-react';
 import type { HeatmapMode } from './property-map-utils';
 
@@ -42,12 +43,16 @@ export default function MapControls({
   className = '',
 }: MapControlsProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const t = useTranslations('search.mapControls');
+  const tSearch = useTranslations('search');
+  const tTypes = useTranslations('search.propertyTypes');
+  const tFilters = useTranslations('search.filters');
 
   return (
     <div
       className={`absolute top-4 right-4 z-10 flex flex-col gap-2 ${className}`}
       role="group"
-      aria-label="Map controls"
+      aria-label={t('controls')}
     >
       {/* Basic zoom controls */}
       <div className="flex flex-col gap-1 rounded-lg border bg-background shadow-sm">
@@ -55,8 +60,8 @@ export default function MapControls({
           type="button"
           onClick={onZoomIn}
           className="p-2 hover:bg-muted rounded-t-lg transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
-          aria-label="Zoom in"
-          title="Zoom in"
+          aria-label={t('zoomIn')}
+          title={t('zoomIn')}
         >
           <ZoomIn className="h-4 w-4" aria-hidden="true" />
         </button>
@@ -64,8 +69,8 @@ export default function MapControls({
           type="button"
           onClick={onZoomOut}
           className="p-2 hover:bg-muted rounded-b-lg transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
-          aria-label="Zoom out"
-          title="Zoom out"
+          aria-label={t('zoomOut')}
+          title={t('zoomOut')}
         >
           <ZoomOut className="h-4 w-4" aria-hidden="true" />
         </button>
@@ -76,8 +81,8 @@ export default function MapControls({
         type="button"
         onClick={onFitBounds}
         className="p-2 rounded-lg border bg-background shadow-sm hover:bg-muted transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
-        aria-label="Fit bounds"
-        title="Fit all properties"
+        aria-label={t('fitBounds')}
+        title={t('fitAll')}
       >
         <MapPin className="h-4 w-4" aria-hidden="true" />
       </button>
@@ -87,9 +92,9 @@ export default function MapControls({
         type="button"
         onClick={() => setShowAdvanced(!showAdvanced)}
         className="p-2 rounded-lg border bg-background shadow-sm hover:bg-muted transition-colors"
-        aria-label="Toggle map filters"
+        aria-label={t('toggleFilters')}
         aria-pressed={showAdvanced}
-        title="Map filters"
+        title={t('mapFilters')}
       >
         {showAdvanced ? (
           <X className="h-4 w-4" aria-hidden="true" />
@@ -103,25 +108,25 @@ export default function MapControls({
         <div
           className="rounded-lg border bg-background shadow-sm p-3 w-56 space-y-3"
           role="dialog"
-          aria-label="Map filters"
+          aria-label={t('mapFilters')}
         >
           <div className="flex items-center gap-2 font-semibold text-sm">
             <Layers className="h-4 w-4" aria-hidden="true" />
-            Map Options
+            {t('mapOptions')}
           </div>
 
           {/* Heatmap toggle */}
           <label className="flex items-center justify-between cursor-pointer">
             <span className="text-sm flex items-center gap-2">
               <Thermometer className="h-4 w-4" aria-hidden="true" />
-              Heatmap
+              {t('heatmap')}
             </span>
             <input
               type="checkbox"
               checked={options.showHeatmap}
               onChange={(e) => onChange({ ...options, showHeatmap: e.target.checked })}
               className="w-4 h-4 rounded border-border"
-              aria-label="Toggle heatmap"
+              aria-label={t('toggleHeatmap')}
             />
           </label>
 
@@ -129,7 +134,7 @@ export default function MapControls({
           {options.showHeatmap && (
             <div className="space-y-1 pl-6">
               <label htmlFor="heatmap-mode" className="text-xs text-muted-foreground">
-                Mode
+                {t('mode')}
               </label>
               <select
                 id="heatmap-mode"
@@ -138,12 +143,12 @@ export default function MapControls({
                   onChange({ ...options, heatmapMode: e.target.value as HeatmapMode })
                 }
                 className="w-full text-sm rounded border border-input bg-background px-2 py-1"
-                aria-label="Heatmap mode"
+                aria-label={t('heatmapMode')}
               >
-                <option value="density">Density</option>
-                <option value="price">Price</option>
-                <option value="price_per_sqm">Price/m²</option>
-                <option value="yield">Yield</option>
+                <option value="density">{t('density')}</option>
+                <option value="price">{t('price')}</option>
+                <option value="price_per_sqm">{t('pricePerSqm')}</option>
+                <option value="yield">{t('yield')}</option>
               </select>
             </div>
           )}
@@ -152,7 +157,7 @@ export default function MapControls({
           {options.showHeatmap && (
             <div className="space-y-1 pl-6">
               <label htmlFor="heatmap-intensity" className="text-xs text-muted-foreground">
-                Intensity: {options.heatmapIntensity}
+                {t('intensity', { value: options.heatmapIntensity })}
               </label>
               <input
                 id="heatmap-intensity"
@@ -165,20 +170,20 @@ export default function MapControls({
                   onChange({ ...options, heatmapIntensity: parseFloat(e.target.value) })
                 }
                 className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
-                aria-label="Heatmap intensity"
+                aria-label={t('heatmapIntensity')}
               />
             </div>
           )}
 
           {/* Clusters toggle */}
           <label className="flex items-center justify-between cursor-pointer">
-            <span className="text-sm">Clusters</span>
+            <span className="text-sm">{t('clusters')}</span>
             <input
               type="checkbox"
               checked={options.showClusters}
               onChange={(e) => onChange({ ...options, showClusters: e.target.checked })}
               className="w-4 h-4 rounded border-border"
-              aria-label="Toggle clusters"
+              aria-label={t('toggleClusters')}
             />
           </label>
 
@@ -188,8 +193,9 @@ export default function MapControls({
               {/* Cluster size slider */}
               <div className="space-y-1">
                 <label htmlFor="cluster-size" className="text-xs text-muted-foreground">
-                  Cluster Size:{' '}
-                  {options.clusterOptions?.cellSizePx ?? DEFAULT_CLUSTER_OPTIONS.cellSizePx}px
+                  {t('clusterSizeValue', {
+                    size: options.clusterOptions?.cellSizePx ?? DEFAULT_CLUSTER_OPTIONS.cellSizePx,
+                  })}
                 </label>
                 <input
                   id="cluster-size"
@@ -208,16 +214,18 @@ export default function MapControls({
                     })
                   }
                   className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
-                  aria-label="Cluster size"
+                  aria-label={t('clusterSize')}
                 />
               </div>
 
               {/* Max zoom for clustering slider */}
               <div className="space-y-1">
                 <label htmlFor="cluster-max-zoom" className="text-xs text-muted-foreground">
-                  Max Zoom:{' '}
-                  {options.clusterOptions?.maxZoomForClustering ??
-                    DEFAULT_CLUSTER_OPTIONS.maxZoomForClustering}
+                  {t('maxZoomValue', {
+                    zoom:
+                      options.clusterOptions?.maxZoomForClustering ??
+                      DEFAULT_CLUSTER_OPTIONS.maxZoomForClustering,
+                  })}
                 </label>
                 <input
                   id="cluster-max-zoom"
@@ -239,7 +247,7 @@ export default function MapControls({
                     })
                   }
                   className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
-                  aria-label="Max zoom for clustering"
+                  aria-label={t('maxZoom')}
                 />
               </div>
             </div>
@@ -247,58 +255,60 @@ export default function MapControls({
 
           {/* Quick filters */}
           <div className="space-y-2 pt-2 border-t">
-            <div className="text-xs font-medium text-muted-foreground">Price Filter</div>
+            <div className="text-xs font-medium text-muted-foreground">{t('priceFilter')}</div>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => onChange({ ...options, priceRange: [0, 300000] })}
                 className="text-xs px-2 py-1 rounded border hover:bg-muted transition-colors"
-                aria-label="Filter under 300k"
+                aria-label={t('filterUnder300k')}
               >
-                Under $300k
+                {t('under300k')}
               </button>
               <button
                 type="button"
                 onClick={() => onChange({ ...options, priceRange: [300000, 600000] })}
                 className="text-xs px-2 py-1 rounded border hover:bg-muted transition-colors"
-                aria-label="Filter 300k-600k"
+                aria-label={t('filter300k600k')}
               >
-                $300k-$600k
+                {t('range300k600k')}
               </button>
               <button
                 type="button"
                 onClick={() => onChange({ ...options, priceRange: [600000, 1000000] })}
                 className="text-xs px-2 py-1 rounded border hover:bg-muted transition-colors"
-                aria-label="Filter 600k-1M"
+                aria-label={t('filter600k1M')}
               >
-                $600k-$1M
+                {t('range600k1M')}
               </button>
               <button
                 type="button"
                 onClick={() => onChange({ ...options, priceRange: undefined })}
                 className="text-xs px-2 py-1 rounded border hover:bg-muted transition-colors"
-                aria-label="Clear price filter"
+                aria-label={tSearch('clearPriceFilter')}
               >
-                All Prices
+                {t('allPrices')}
               </button>
             </div>
           </div>
 
           {/* Property type filter */}
           <div className="space-y-2 pt-2 border-t">
-            <div className="text-xs font-medium text-muted-foreground">Property Type</div>
+            <div className="text-xs font-medium text-muted-foreground">
+              {tFilters('propertyType')}
+            </div>
             <select
               value={options.propertyType || ''}
               onChange={(e) => onChange({ ...options, propertyType: e.target.value || undefined })}
               className="w-full text-sm rounded border border-input bg-background px-2 py-1"
-              aria-label="Filter by property type"
+              aria-label={tSearch('filterByPropertyType')}
             >
-              <option value="">All Types</option>
-              <option value="apartment">Apartment</option>
-              <option value="house">House</option>
-              <option value="studio">Studio</option>
-              <option value="loft">Loft</option>
-              <option value="townhouse">Townhouse</option>
+              <option value="">{t('allTypes')}</option>
+              <option value="apartment">{tTypes('apartment')}</option>
+              <option value="house">{tTypes('house')}</option>
+              <option value="studio">{tTypes('studio')}</option>
+              <option value="loft">{tTypes('loft')}</option>
+              <option value="townhouse">{tTypes('townhouse')}</option>
             </select>
           </div>
 
@@ -317,9 +327,9 @@ export default function MapControls({
               })
             }
             className="w-full text-xs px-2 py-1 rounded border border-destructive text-destructive hover:bg-destructive/10 transition-colors"
-            aria-label="Reset all filters"
+            aria-label={t('resetFilters')}
           >
-            Reset All
+            {t('resetAll')}
           </button>
         </div>
       )}

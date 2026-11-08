@@ -458,6 +458,13 @@
         "title": "Джерела недоступні",
         "description": "ШІ не знайшов відповідних джерел для цього запиту."
       }
+    },
+    "examplePrompts": {
+      "madrid": "Знайдіть 2-кімнатні квартири в Мадриді дешевше за 400 000 $",
+      "krakow": "Яка середня ціна за квадратний метр у Кракові?",
+      "warsaw": "Порівняйте об’єкти в центрі Варшави",
+      "mortgage": "Розрахуйте іпотеку для об’єкта за 500 000 $ з першим внеском 20 %",
+      "gardens": "Покажіть будинки з садами в приміських районах"
     }
   },
   "cityOverview": {
@@ -552,7 +559,10 @@
       "uploadButton": "Завантажити документ",
       "uploading": "Завантажуємо...",
       "success": "Завантаження успішне!",
-      "cancel": "Скасувати"
+      "cancel": "Скасувати",
+      "removeFile": "Прибрати вибраний файл",
+      "failedTitle": "Не вдалося завантажити",
+      "invalidType": "Недійсний тип файлу: {ext}. Дозволено: {types}"
     },
     "categories": {
       "selectCategory": "Оберіть категорію (необов’язково)",
@@ -580,14 +590,20 @@
       "expired": "Термін минув",
       "expiringSoon": "Скоро завершується",
       "expires": "Термін дії",
-      "added": "Додано"
+      "added": "Додано",
+      "filterByCategory": "Фільтр за категорією",
+      "sortBy": "Сортувати документи за",
+      "sortOrder": "Порядок сортування: {order}. Натисніть, щоб змінити.",
+      "property": "Об’єкт: {id}",
+      "actionsFor": "Дії для {name}"
     },
     "errors": {
       "loadFailed": "Не вдалося завантажити документи",
       "deleteFailed": "Не вдалося видалити документ",
       "invalidType": "Недійсний тип файлу",
       "tooLarge": "Файл завеликий. Максимальний розмір: 10 МБ",
-      "uploadFailed": "Не вдалося завантажити"
+      "uploadFailed": "Не вдалося завантажити",
+      "downloadFailed": "Не вдалося завантажити"
     },
     "expiryAlert": {
       "singular": "{count} документ скоро завершить термін дії",
@@ -1468,7 +1484,10 @@
       "decimalSeparator": "Роздільник десяткового дробу",
       "decimalDot": "Крапка (.)",
       "decimalComma": "Кома (,)",
-      "includeHeader": "Включити рядок заголовка"
+      "includeHeader": "Включити рядок заголовка",
+      "excel": "Excel",
+      "markdown": "Markdown",
+      "pdf": "PDF"
     },
     "saveSearch": {
       "button": "Зберегти пошук",
@@ -1488,7 +1507,8 @@
       "minGreaterThanMax": "Мінімальна ціна не може бути більшою за максимальну.",
       "emptyQuery": "Введіть пошуковий запит.",
       "genericSearch": "Не вдалося виконати пошук. Спробуйте ще раз.",
-      "exportFailed": "Не вдалося виконати експорт. Спробуйте ще раз."
+      "exportFailed": "Не вдалося виконати експорт. Спробуйте ще раз.",
+      "invalidPolygon": "Недійсний багатокутник"
     },
     "feedback": {
       "helpful": "Чи допомогло вам це?",
@@ -1508,7 +1528,8 @@
       "drawing": "Малювання...",
       "enableDrawing": "Увімкнути малювання",
       "disableDrawing": "Вимкнути малювання",
-      "clearArea": "Очистити ділянку"
+      "clearArea": "Очистити ділянку",
+      "propertyClicked": "Об’єкт вибрано"
     },
     "queryLabel": "Пошуковий запит",
     "searchLabel": "Пошук нерухомості",
@@ -1536,7 +1557,50 @@
     "clearPriceFilter": "Очистити фільтр ціни",
     "filterByPropertyType": "Фільтр за типом об'єкта",
     "propertyMap": "Карта об'єктів",
-    "propertyMapWithMapbox": "Карта об'єктів з Mapbox"
+    "propertyMapWithMapbox": "Карта об'єктів з Mapbox",
+    "examples": {
+      "madrid": "2-кімнатна квартира до $500 000 у Мадріді",
+      "houseGarden": "Будинок із садом у Кракові",
+      "studioCity": "Студія в центрі міста",
+      "luxuryParking": "Люксова квартира з парковкою у Варшаві"
+    },
+    "mapControls": {
+      "controls": "Керування картою",
+      "zoomIn": "Наблизити",
+      "zoomOut": "Віддалити",
+      "fitBounds": "Вписати межі",
+      "fitAll": "Показати всі об’єкти",
+      "toggleFilters": "Перемкнути фільтри карти",
+      "mapFilters": "Фільтри карти",
+      "toggleHeatmap": "Перемкнути теплову карту",
+      "heatmapMode": "Режим теплової карти",
+      "density": "Щільність",
+      "price": "Ціна",
+      "pricePerSqm": "Ціна за м²",
+      "yield": "Дохідність",
+      "heatmapIntensity": "Інтенсивність теплової карти",
+      "clusters": "Кластери",
+      "toggleClusters": "Перемкнути кластери",
+      "clusterSize": "Розмір кластера",
+      "maxZoom": "Максимальний зум для кластерів",
+      "priceFilter": "Фільтр ціни",
+      "filterUnder300k": "Фільтр нижче 300 тис.",
+      "filter300k600k": "Фільтр 300–600 тис.",
+      "filter600k1M": "Фільтр 600 тис.–1 млн",
+      "allTypes": "Усі типи",
+      "resetFilters": "Скинути всі фільтри",
+      "mapOptions": "Опції карти",
+      "heatmap": "Теплова карта",
+      "mode": "Режим",
+      "intensity": "Інтенсивність: {value}",
+      "clusterSizeValue": "Розмір кластера: {size} px",
+      "maxZoomValue": "Максимальний зум: {zoom}",
+      "under300k": "До 300 тис. $",
+      "range300k600k": "300–600 тис. $",
+      "range600k1M": "600 тис.–1 млн $",
+      "allPrices": "Усі ціни",
+      "resetAll": "Скинути все"
+    }
   },
   "settings": {
     "title": "Налаштування",
@@ -1887,7 +1951,52 @@
     },
     "knowledge": {
       "title": "База знань",
-      "description": "Документи та ринковий контекст, на яких ґрунтує асистент."
+      "description": "Документи та ринковий контекст, на яких ґрунтує асистент.",
+      "upload": {
+        "filesAria": "Файли бази знань",
+        "selectFile": "Виберіть хоча б один файл для завантаження.",
+        "uploading": "Завантажуємо...",
+        "upload": "Завантажити",
+        "clear": "Очистити",
+        "processing": "Завантажуємо та обробляємо документи...",
+        "failed": "Не вдалося завантажити",
+        "title": "Завантаження документів",
+        "chunksIndexed": "Проіндексовано фрагментів: {count}"
+      },
+      "manage": {
+        "title": "Керування базою знань",
+        "clearing": "Очищаємо...",
+        "clear": "Очистити базу знань",
+        "result": "{message}. Видалено {removed}. Залишилося {remaining}.",
+        "confirm": "Очистити всі проіндексовані документи бази знань? Цю дію не можна скасувати."
+      },
+      "ask": {
+        "title": "Ставте запитання",
+        "empty": "Завантажте документи й ставте запитання, щоб отримувати відповіді з посиланнями на джерела з бази знань.",
+        "placeholder": "Задайте запитання про завантажені документи...",
+        "questionAria": "Запитання до бази знань",
+        "topKAria": "Top K",
+        "topKPlaceholder": "Top K (1-50)",
+        "providerAria": "Провайдер",
+        "providerPlaceholder": "Провайдер (необов’язково)",
+        "modelAria": "Модель",
+        "modelPlaceholder": "Модель (необов’язково)",
+        "asking": "Питаємо...",
+        "ask": "Запитати",
+        "clear": "Очистити",
+        "searching": "Шукаємо в базі знань...",
+        "failed": "Запитання не виконано",
+        "citations": "Посилання на джерела",
+        "citationItem": "{source} (фрагмент {chunk})",
+        "noCitations": "Посилань на джерела немає.",
+        "enterQuestion": "Введіть запитання."
+      },
+      "empty": {
+        "title": "Почніть з бази знань",
+        "upload": "Завантажте документи (PDF, TXT, MD, DOCX), щоб зібрати локальну базу знань.",
+        "then": "Далі ставте запитання та отримуйте відповіді з посиланнями на джерела.",
+        "providers": "Підтримувані провайдери: OpenAI, Anthropic, Google, Grok, DeepSeek та Ollama (локально)."
+      }
     },
     "documents": {
       "title": "Документи",
@@ -1927,7 +2036,135 @@
       "description": "Калькулятори й аналітика, які перетворюють оголошення на рішення.",
       "propertyPrice": "Ціна об'єкта",
       "columnsHint": "Стовпці (необов'язково), наприклад id, city, price",
-      "propertyId": "ID об'єкта"
+      "propertyId": "ID об'єкта",
+      "mortgage": {
+        "title": "Кредитний калькулятор",
+        "downPayment": "Перший внесок, %",
+        "interestRate": "Процентна ставка, %",
+        "loanYears": "Строк кредиту, років",
+        "calculating": "Обчислюємо...",
+        "monthlyPayment": "Щомісячний платіж: {amount}",
+        "failed": "Не вдалося обчислити платіж",
+        "calculate": "Обчислити"
+      },
+      "compare": {
+        "title": "Порівняння об’єктів",
+        "ids": "ID через кому",
+        "comparing": "Порівнюємо...",
+        "failed": "Не вдалося порівняти",
+        "exportFormat": "Формат експорту",
+        "exportColumns": "Стовпці експорту",
+        "csvDelimiter": "Роздільник CSV",
+        "csvDecimal": "Роздільник дробової частини в CSV",
+        "comma": "Кома (,)",
+        "semicolon": "Крапка з комою (;)",
+        "dot": "Крапка (.)",
+        "includeHeader": "Додати рядок заголовка",
+        "exporting": "Експортуємо...",
+        "exportFailed": "Не вдалося експортувати",
+        "needIds": "Вкажіть хоча б один ID об’єкта.",
+        "compare": "Порівняти",
+        "export": "Експортувати"
+      },
+      "price": {
+        "title": "Аналіз цін",
+        "query": "Запит (напр., місто або тип)",
+        "analyzing": "Аналізуємо...",
+        "failed": "Не вдалося виконати аналіз"
+      },
+      "location": {
+        "title": "Аналіз розташування",
+        "analyzing": "Аналізуємо...",
+        "failed": "Не вдалося виконати аналіз розташування"
+      },
+      "neighborhood": {
+        "title": "Індекс якості району",
+        "latitude": "Широта (необов’язково)",
+        "longitude": "Довгота (необов’язково)",
+        "city": "Місто (необов’язково)",
+        "neighborhood": "Район (необов’язково)",
+        "analyzing": "Аналізуємо...",
+        "failed": "Не вдалося оцінити якість району",
+        "excellent": "Відмінно",
+        "good": "Добре",
+        "fair": "Задовільно",
+        "poor": "Погано",
+        "veryPoor": "Дуже погано",
+        "overallScore": "Загальний бал",
+        "safety": "Безпека",
+        "schools": "Школи",
+        "amenities": "Інфраструктура",
+        "walkability": "Прохідність",
+        "greenSpace": "Зелені зони",
+        "location": "Розташування:",
+        "coordinates": "Координати: {lat}, {lon}",
+        "dataSources": "Джерела даних: {sources}",
+        "scoreBar": "{score}/100 (Вага: {weight})"
+      },
+      "templates": {
+        "title": "Шаблони промптів",
+        "description": "Оберіть шаблон, заповніть змінні та отримайте готовий текст.",
+        "picker": "Вибір шаблону",
+        "loadFailed": "Не вдалося завантажити шаблони",
+        "renderFailed": "Не вдалося застосувати шаблон",
+        "generate": "Створити",
+        "generating": "Створюємо...",
+        "copy": "Копіювати",
+        "output": "Результат шаблону",
+        "variable": "Змінна {name}"
+      },
+      "valuation": {
+        "title": "Оцінка (заглушка CE)",
+        "estimate": "Оцінити",
+        "estimating": "Оцінюємо...",
+        "failed": "Не вдалося оцінити"
+      },
+      "legal": {
+        "title": "Перевірка договора (заглушка CE)",
+        "contract": "Текст договора",
+        "analyzing": "Аналізуємо...",
+        "failed": "Не вдалося перевірити договір"
+      },
+      "enrich": {
+        "title": "Збагачення даних (заглушка CE)",
+        "address": "Адреса",
+        "enrich": "Збагатити",
+        "enriching": "Збагачуємо...",
+        "failed": "Не вдалося збагатити дані"
+      },
+      "crm": {
+        "title": "Синхронізація контакту з CRM (заглушка CE)",
+        "name": "Ім’я",
+        "phone": "Телефон",
+        "email": "Електронна пошта",
+        "sync": "Синхронізувати",
+        "syncing": "Синхронізуємо...",
+        "failed": "Не вдалося синхронізувати з CRM"
+      },
+      "fields": {
+        "count": "Кількість: {value}",
+        "minPrice": "Мін. ціна: {value}",
+        "maxPrice": "Макс. ціна: {value}",
+        "diff": "Різниця: {value}",
+        "averagePrice": "Середня ціна: {value}",
+        "medianPrice": "Медіанна ціна: {value}",
+        "city": "Місто: {value}",
+        "neighborhood": "Район: {value}",
+        "latLon": "Широта/довгота: {lat}, {lon}",
+        "score": "Бал: {value}",
+        "risks": "Ризики: {value}",
+        "address": "Адреса: {value}",
+        "contactId": "ID контакту: {id}",
+        "estimatedValue": "Оцінна вартість: {value}"
+      },
+      "hints": {
+        "dataEnrichment": "Увімкніть на бекенді: задайте DATA_ENRICHMENT_ENABLED=true і перезапустіть API.",
+        "crm": "Налаштуйте на бекенді: задайте CRM_WEBHOOK_URL і перезапустіть API.",
+        "valuation": "Налаштуйте на бекенді: задайте VALUATION_MODE=simple і перезапустіть API.",
+        "legalCheck": "Налаштуйте на бекенді: задайте LEGAL_CHECK_MODE=basic і перезапустіть API.",
+        "vectorStore": "Завантажте та ініціалізуйте векторне сховище (Chroma) перед запуском інструмента."
+      },
+      "analyze": "Аналізувати"
     },
     "analytics": {
       "title": "Аналітика та інструменти",
@@ -2020,11 +2257,148 @@
     "admin": {
       "monitoring": {
         "title": "Моніторинг продакшену",
-        "description": "Живий стан розгорнутого стеку."
+        "description": "Живий стан розгорнутого стеку.",
+        "loading": "Завантаження даних моніторингу...",
+        "errors": {
+          "load": "Не вдалося завантажити дані моніторингу",
+          "testAlert": "Не вдалося надіслати тестове оповіщення"
+        },
+        "lastRefreshed": "Останнє оновлення: {time}",
+        "refreshing": "Оновлення...",
+        "sending": "Надсилання...",
+        "testAlert": "Тестове оповіщення",
+        "errorTitle": "Помилка завантаження даних",
+        "alerts": {
+          "threshold": "Порогове значення: {threshold}",
+          "dbLatency": "Висока затримка бази даних: {value} мс",
+          "dbLatencyThreshold": "Затримка P95 > 3 с",
+          "cacheHitRate": "Низький відсоток попадань у кеш: {rate}%",
+          "cacheHitRateThreshold": "Відсоток попадань < 20%",
+          "notReady": "Сервіс не готовий обробляти запити",
+          "notReadyThreshold": "Загальна готовність",
+          "dbUnhealthy": "З’єднання з базою даних у поганому стані",
+          "dbUnhealthyThreshold": "Стан бази даних",
+          "llmUnhealthy": "Провайдер LLM у поганому стані",
+          "llmUnhealthyThreshold": "Стан LLM",
+          "redisUnhealthy": "Кеш Redis у поганому стані",
+          "redisUnhealthyThreshold": "Стан Redis"
+        },
+        "health": {
+          "title": "Стан системи",
+          "service": "Сервіс:",
+          "timestamp": "Часова позначка:",
+          "uptime": "Час роботи:",
+          "version": "Версія:",
+          "git": "Коміт Git:"
+        },
+        "readiness": {
+          "title": "Стан готовності",
+          "database": "База даних:",
+          "dbLatency": "Затримка БД:",
+          "redis": "Redis:",
+          "disabled": "Вимкнено",
+          "llm": "Провайдер LLM:",
+          "lastCheck": "Остання перевірка:"
+        },
+        "metrics": {
+          "totalProperties": "Усього об’єктів",
+          "inLast24h": "{count} за останні 24 години",
+          "knowledgeStore": "Сховище знань",
+          "chunks": "фрагментів: {count}",
+          "cacheHitRate": "Відсоток попадань у кеш",
+          "hitsMisses": "попадань: {hits}, промахів: {misses}",
+          "noCacheData": "Немає даних кешу",
+          "environment": "Середовище"
+        },
+        "sources": {
+          "title": "Об’єкти за джерелами даних"
+        },
+        "charts": {
+          "requestRate": "Частота запитів (запитів/хв)",
+          "errorRate": "Частка помилок (%)",
+          "responseTime": "Час відповіді (мс)"
+        },
+        "legend": {
+          "title": "Умовні позначення на графіках",
+          "healthy": "Працює / Норма",
+          "warning": "Попередження / Погіршення",
+          "error": "Помилка / Критично"
+        },
+        "status": {
+          "healthy": "Працює",
+          "unhealthy": "Збій",
+          "ready": "Готовий",
+          "not_ready": "Не готовий",
+          "degraded": "Погіршено"
+        }
       },
       "connectors": {
         "title": "MCP-коннекторі",
-        "description": "Зовнішні інструменти, які може викликати асистент."
+        "description": "Зовнішні інструменти, які може викликати асистент.",
+        "edition": "Редакція: {edition}",
+        "healthCheckAll": "Перевірити всі",
+        "healthCheck": "Перевірити стан",
+        "overall": {
+          "title": "Загальний стан",
+          "connectorsChecked": "Перевірено конекторів:",
+          "edition": "Редакція:",
+          "timestamp": "Часова позначка:"
+        },
+        "requestId": "ID запиту: {id}",
+        "loading": "Завантаження конекторів...",
+        "empty": {
+          "title": "Конектори не зареєстровані"
+        },
+        "badge": {
+          "registered": "Зареєстрований",
+          "notRegistered": "Не зареєстрований",
+          "instantiated": "Створено екземпляр",
+          "noInstance": "Немає екземпляра",
+          "apiKeyRequired": "Потрібен ключ API",
+          "streaming": "Потокова передача",
+          "ceAccessible": "Доступний у CE",
+          "enabled": "Увімкнено",
+          "disabled": "Вимкнено"
+        },
+        "results": {
+          "responseTime": "Час відповіді:",
+          "success": "Успіх:",
+          "yes": "Так",
+          "no": "Ні",
+          "errors": "Помилки:"
+        },
+        "detail": {
+          "basicInfo": "Основна інформація",
+          "name": "Назва:",
+          "edition": "Редакція:",
+          "status": "Статус:",
+          "minEdition": "Мінімальна редакція:",
+          "error": "Помилка: {message}",
+          "capabilities": "Можливості",
+          "rateLimit": "Обмеження запитів",
+          "requestsPerMin": "Запитів/хв:",
+          "burstSize": "Розмір пакета:",
+          "currentRequests": "Поточні запити:",
+          "remaining": "Залишилось:",
+          "instanceStatus": "Стан екземпляра",
+          "configuration": "Конфігурація"
+        },
+        "status": {
+          "active": "Активний",
+          "disabled": "Вимкнено",
+          "error": "Помилка",
+          "not_instantiated": "Без екземпляра",
+          "unknown": "Невідомо"
+        },
+        "health": {
+          "healthy": "Працює",
+          "unhealthy": "Збій",
+          "degraded": "Погіршено",
+          "error": "Помилка"
+        },
+        "errors": {
+          "load": "Не вдалося завантажити коннектори"
+        }
       },
       "dataSources": {
         "title": "Джерела даних",
@@ -2032,7 +2406,87 @@
       },
       "bulkJobs": {
         "title": "Завдання масового імпорту та експорту",
-        "description": "Масове перенесення оголошень у систему та з неї."
+        "description": "Масове перенесення оголошень у систему та з неї.",
+        "tabs": {
+          "jobs": "Завдання",
+          "import": "Імпорт",
+          "export": "Експорт"
+        },
+        "requestId": "ID запиту: {id}",
+        "filters": {
+          "label": "Фільтри:",
+          "allTypes": "Усі типи",
+          "allStatuses": "Усі статуси"
+        },
+        "errors": {
+          "loadJobs": "Не вдалося завантажити пакетні завдання",
+          "urlRequired": "Введіть URL",
+          "createImport": "Не вдалося створити завдання імпорту",
+          "createExport": "Не вдалося створити завдання експорту",
+          "cancelJob": "Не вдалося скасувати завдання",
+          "deleteJob": "Не вдалося видалити завдання",
+          "queryRequired": "Введіть пошуковий запит"
+        },
+        "success": {
+          "importCreated": "Завдання імпорту успішно створено!",
+          "exportCreated": "Завдання експорту успішно створено!"
+        },
+        "confirm": {
+          "deleteJob": "Ви впевнені, що хочете видалити це завдання?"
+        },
+        "status": {
+          "pending": "Очікує",
+          "running": "Виконується",
+          "completed": "Завершено",
+          "failed": "Помилка",
+          "cancelled": "Скасовано"
+        },
+        "empty": {
+          "title": "Пакетних завдань немає",
+          "description": "Створіть завдання імпорту або експорту, щоб почати"
+        },
+        "job": {
+          "progress": "Прогрес:",
+          "processed": "Оброблено:",
+          "failed": "Помилок:",
+          "created": "Створено: {date}",
+          "completed": "Завершено: {date}",
+          "expires": "Спливає: {date}",
+          "cancelTitle": "Скасувати завдання",
+          "downloadTitle": "Завантажити результат",
+          "deleteTitle": "Видалити завдання"
+        },
+        "pagination": {
+          "page": "Сторінка {page} з {total}"
+        },
+        "import": {
+          "title": "Створити завдання імпорту",
+          "sourceType": "Тип джерела",
+          "typeUrl": "URL",
+          "typeFile": "Завантаження файлу",
+          "typePortal": "Portal API",
+          "fileUrls": "URL файлів (через кому)",
+          "fileUrlsPlaceholder": "https://example.com/data.csv, https://example.com/data.xlsx",
+          "supports": "Підтримуються CSV, Excel (.xlsx/.xls) та файли JSON",
+          "fileUploadAvailable": "Завантаження файлів через прямий API доступне",
+          "fileUploadEndpoint": "Використовуйте ендпоінт /api/v1/admin/ingest/upload",
+          "portalConfigured": "Імпорт із портальних API налаштовується в джерелах даних",
+          "portalHint": "Відкрийте сторінку «Джерела даних», щоб налаштувати підключення до порталів",
+          "sourceName": "Назва джерела (необов’язково)",
+          "sourceNamePlaceholder": "напр., Нерухомість у Варшаві I кв. 2024",
+          "creating": "Створення завдання імпорту...",
+          "start": "Запустити завдання імпорту"
+        },
+        "export": {
+          "title": "Створити завдання експорту",
+          "format": "Формат експорту",
+          "query": "Пошуковий запит",
+          "queryPlaceholder": "напр., квартири у Варшаві до 500000 PLN",
+          "queryHint": "Введіть пошуковий запит природною мовою, щоб відфільтрувати об’єкти для експорту",
+          "maxResults": "Максимум результатів",
+          "creating": "Створення завдання експорту...",
+          "start": "Запустити завдання експорту"
+        }
       }
     }
   },

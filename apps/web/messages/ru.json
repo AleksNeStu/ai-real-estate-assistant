@@ -458,6 +458,13 @@
         "title": "Нет доступных источников",
         "description": "ИИ не смог найти релевантные источники для этого запроса."
       }
+    },
+    "examplePrompts": {
+      "madrid": "Найдите 2-комнатные квартиры в Мадриде дешевле 400 000 $",
+      "krakow": "Какова средняя цена за квадратный метр в Кракове?",
+      "warsaw": "Сравните объекты в центре Варшавы",
+      "mortgage": "Рассчитайте ипотеку для объекта за 500 000 $ с первоначальным взносом 20 %",
+      "gardens": "Покажите дома с садами в пригороде"
     }
   },
   "cityOverview": {
@@ -552,7 +559,10 @@
       "uploadButton": "Загрузить документ",
       "uploading": "Загружаем...",
       "success": "Загрузка выполнена!",
-      "cancel": "Отмена"
+      "cancel": "Отмена",
+      "removeFile": "Убрать выбранный файл",
+      "failedTitle": "Не удалось загрузить",
+      "invalidType": "Недопустимый тип файла: {ext}. Разрешено: {types}"
     },
     "categories": {
       "selectCategory": "Выберите категорию (необязательно)",
@@ -580,14 +590,20 @@
       "expired": "Истёк",
       "expiringSoon": "Скоро истекает",
       "expires": "Действует до",
-      "added": "Добавлен"
+      "added": "Добавлен",
+      "filterByCategory": "Фильтр по категории",
+      "sortBy": "Сортировка документов по",
+      "sortOrder": "Порядок сортировки: {order}. Нажмите, чтобы изменить.",
+      "property": "Объект: {id}",
+      "actionsFor": "Действия для {name}"
     },
     "errors": {
       "loadFailed": "Не удалось загрузить документы",
       "deleteFailed": "Не удалось удалить документ",
       "invalidType": "Недопустимый тип файла",
       "tooLarge": "Файл слишком большой. Максимальный размер: 10 МБ",
-      "uploadFailed": "Ошибка загрузки"
+      "uploadFailed": "Ошибка загрузки",
+      "downloadFailed": "Не удалось скачать"
     },
     "expiryAlert": {
       "singular": "{count} документ скоро истекает",
@@ -1468,7 +1484,10 @@
       "decimalSeparator": "Разделитель дробной части",
       "decimalDot": "Точка (.)",
       "decimalComma": "Запятая (,)",
-      "includeHeader": "Включить строку заголовка"
+      "includeHeader": "Включить строку заголовка",
+      "excel": "Excel",
+      "markdown": "Markdown",
+      "pdf": "PDF"
     },
     "saveSearch": {
       "button": "Сохранить поиск",
@@ -1488,7 +1507,8 @@
       "minGreaterThanMax": "Минимальная цена не может быть больше максимальной.",
       "emptyQuery": "Введите поисковый запрос.",
       "genericSearch": "Не удалось выполнить поиск. Попробуйте ещё раз.",
-      "exportFailed": "Не удалось выполнить экспорт. Попробуйте ещё раз."
+      "exportFailed": "Не удалось выполнить экспорт. Попробуйте ещё раз.",
+      "invalidPolygon": "Некорректный многоугольник"
     },
     "map": {
       "noMappableResults": "Нет результатов с координатами",
@@ -1501,7 +1521,8 @@
       "drawing": "Выделение...",
       "enableDrawing": "Включить выделение",
       "disableDrawing": "Отключить выделение",
-      "clearArea": "Очистить область"
+      "clearArea": "Очистить область",
+      "propertyClicked": "Объект выбран"
     },
     "queryLabel": "Поисковый запрос",
     "searchLabel": "Поиск недвижимости",
@@ -1536,6 +1557,49 @@
       "thanks": "Спасибо за отзыв!",
       "thumbsDown": "Палец вниз — не то, что нужно",
       "thumbsUp": "Палец вверх — подходящий результат"
+    },
+    "examples": {
+      "madrid": "2-комнатная квартира до $500 000 в Мадриде",
+      "houseGarden": "Дом с садом в Кракове",
+      "studioCity": "Студия в центре города",
+      "luxuryParking": "Люксовая квартира с парковкой в Варшаве"
+    },
+    "mapControls": {
+      "controls": "Управление картой",
+      "zoomIn": "Приблизить",
+      "zoomOut": "Отдалить",
+      "fitBounds": "Вписать границы",
+      "fitAll": "Показать все объекты",
+      "toggleFilters": "Переключить фильтры карты",
+      "mapFilters": "Фильтры карты",
+      "toggleHeatmap": "Переключить тепловую карту",
+      "heatmapMode": "Режим тепловой карты",
+      "density": "Плотность",
+      "price": "Цена",
+      "pricePerSqm": "Цена за м²",
+      "yield": "Доходность",
+      "heatmapIntensity": "Интенсивность тепловой карты",
+      "clusters": "Кластеры",
+      "toggleClusters": "Переключить кластеры",
+      "clusterSize": "Размер кластера",
+      "maxZoom": "Максимальный зум для кластеров",
+      "priceFilter": "Фильтр цены",
+      "filterUnder300k": "Фильтр ниже 300 тыс.",
+      "filter300k600k": "Фильтр 300–600 тыс.",
+      "filter600k1M": "Фильтр 600 тыс.–1 млн",
+      "allTypes": "Все типы",
+      "resetFilters": "Сбросить все фильтры",
+      "mapOptions": "Опции карты",
+      "heatmap": "Тепловая карта",
+      "mode": "Режим",
+      "intensity": "Интенсивность: {value}",
+      "clusterSizeValue": "Размер кластера: {size} px",
+      "maxZoomValue": "Максимальный зум: {zoom}",
+      "under300k": "До 300 тыс. $",
+      "range300k600k": "300–600 тыс. $",
+      "range600k1M": "600 тыс.–1 млн $",
+      "allPrices": "Все цены",
+      "resetAll": "Сбросить всё"
     }
   },
   "settings": {
@@ -1887,7 +1951,52 @@
     },
     "knowledge": {
       "title": "База знаний",
-      "description": "Документы и рыночный контекст, на которых рассуждает ассистент."
+      "description": "Документы и рыночный контекст, на которых рассуждает ассистент.",
+      "upload": {
+        "filesAria": "Pliki bazy wiedzy",
+        "selectFile": "Wybierz co najmniej jeden plik do wgrania.",
+        "uploading": "Wgrywanie...",
+        "upload": "Wgraj",
+        "clear": "Wyczyść",
+        "processing": "Wgrywanie i przetwarzanie dokumentów...",
+        "failed": "Wgranie nie powiodło się",
+        "title": "Загрузка документов",
+        "chunksIndexed": "Проиндексировано фрагментов: {count}"
+      },
+      "manage": {
+        "title": "Zarządzaj bazą wiedzy",
+        "clearing": "Czyścimy...",
+        "clear": "Wyczyść bazę wiedzy",
+        "result": "{message}. Usunięto {removed}. Pozostało {remaining}.",
+        "confirm": "Очистить все проиндексированные документы базы знаний? Это действие необратимо."
+      },
+      "ask": {
+        "title": "Zadaj pytania",
+        "empty": "Загрузите документы и задавайте вопросы, чтобы получать ответы со ссылками на источники из базы знаний.",
+        "placeholder": "Задайте вопрос о загруженных документах...",
+        "questionAria": "Вопрос к базе знаний",
+        "topKAria": "Top K",
+        "topKPlaceholder": "Top K (1-50)",
+        "providerAria": "Провайдер",
+        "providerPlaceholder": "Провайдер (необязательно)",
+        "modelAria": "Модель",
+        "modelPlaceholder": "Модель (необязательно)",
+        "asking": "Спрашиваем...",
+        "ask": "Спросить",
+        "clear": "Очистить",
+        "searching": "Ищем в базе знаний...",
+        "failed": "Вопрос не выполнен",
+        "citations": "Источники",
+        "citationItem": "{source} (фрагмент {chunk})",
+        "noCitations": "Источники не найдены.",
+        "enterQuestion": "Введите вопрос."
+      },
+      "empty": {
+        "title": "Начните с базы знаний",
+        "upload": "Загрузите документы (PDF, TXT, MD, DOCX), чтобы собрать локальную базу знаний.",
+        "then": "Затем задавайте вопросы и получайте ответы со ссылками на источники.",
+        "providers": "Поддерживаемые провайдеры: OpenAI, Anthropic, Google, Grok, DeepSeek и Ollama (локально)."
+      }
     },
     "documents": {
       "title": "Документы",
@@ -1927,7 +2036,135 @@
       "description": "Калькуляторы и аналитика, превращающие объявление в решение.",
       "propertyPrice": "Цена объекта",
       "columnsHint": "Колонки (необязательно), например id, city, price",
-      "propertyId": "ID объекта"
+      "propertyId": "ID объекта",
+      "mortgage": {
+        "title": "Ипотечный калькулятор",
+        "downPayment": "Первоначальный взнос, %",
+        "interestRate": "Процентная ставка, %",
+        "loanYears": "Срок кредита, лет",
+        "calculating": "Считаем...",
+        "monthlyPayment": "Ежемесячный платёж: {amount}",
+        "failed": "Не удалось выполнить расчёт",
+        "calculate": "Рассчитать"
+      },
+      "compare": {
+        "title": "Сравнение объектов",
+        "ids": "ID через запятую",
+        "comparing": "Сравниваем...",
+        "failed": "Не удалось выполнить сравнение",
+        "exportFormat": "Формат выгрузки",
+        "exportColumns": "Столбцы выгрузки",
+        "csvDelimiter": "Разделитель CSV",
+        "csvDecimal": "Разделитель дробной части в CSV",
+        "comma": "Запятая (,)",
+        "semicolon": "Точка с запятой (;)",
+        "dot": "Точка (.)",
+        "includeHeader": "Включить строку заголовка",
+        "exporting": "Выгружаем...",
+        "exportFailed": "Не удалось выгрузить",
+        "needIds": "Укажите хотя бы один ID объекта.",
+        "compare": "Сравнить",
+        "export": "Экспортировать"
+      },
+      "price": {
+        "title": "Анализ цен",
+        "query": "Запрос (например, город или тип)",
+        "analyzing": "Анализируем...",
+        "failed": "Не удалось выполнить анализ"
+      },
+      "location": {
+        "title": "Анализ местоположения",
+        "analyzing": "Анализируем...",
+        "failed": "Не удалось выполнить анализ местоположения"
+      },
+      "neighborhood": {
+        "title": "Индекс качества района",
+        "latitude": "Широта (необязательно)",
+        "longitude": "Долгота (необязательно)",
+        "city": "Город (необязательно)",
+        "neighborhood": "Район (необязательно)",
+        "analyzing": "Анализируем...",
+        "failed": "Не удалось оценить качество района",
+        "excellent": "Отлично",
+        "good": "Хорошо",
+        "fair": "Удовлетворительно",
+        "poor": "Плохо",
+        "veryPoor": "Очень плохо",
+        "overallScore": "Общий балл",
+        "safety": "Безопасность",
+        "schools": "Школы",
+        "amenities": "Инфраструктура",
+        "walkability": "Проходимость",
+        "greenSpace": "Зелёные зоны",
+        "location": "Местоположение:",
+        "coordinates": "Координаты: {lat}, {lon}",
+        "dataSources": "Источники данных: {sources}",
+        "scoreBar": "{score}/100 (Вес: {weight})"
+      },
+      "templates": {
+        "title": "Шаблоны промптов",
+        "description": "Выберите шаблон, заполните переменные и получите готовый текст.",
+        "picker": "Выбор шаблона",
+        "loadFailed": "Не удалось загрузить шаблоны",
+        "renderFailed": "Не удалось подставить шаблон",
+        "generate": "Создать",
+        "generating": "Создаём...",
+        "copy": "Копировать",
+        "output": "Результат шаблона",
+        "variable": "Переменная {name}"
+      },
+      "valuation": {
+        "title": "Оценка (заглушка CE)",
+        "estimate": "Оценить",
+        "estimating": "Оцениваем...",
+        "failed": "Не удалось оценить"
+      },
+      "legal": {
+        "title": "Проверка договора (заглушка CE)",
+        "contract": "Текст договора",
+        "analyzing": "Анализируем...",
+        "failed": "Не удалось проверить договор"
+      },
+      "enrich": {
+        "title": "Обогащение данных (заглушка CE)",
+        "address": "Адрес",
+        "enrich": "Обогатить",
+        "enriching": "Обогащаем...",
+        "failed": "Не удалось обогатить данные"
+      },
+      "crm": {
+        "title": "Синхронизация контакта с CRM (заглушка CE)",
+        "name": "Имя",
+        "phone": "Телефон",
+        "email": "Эл. почта",
+        "sync": "Синхронизировать",
+        "syncing": "Синхронизируем...",
+        "failed": "Не удалось синхронизировать с CRM"
+      },
+      "fields": {
+        "count": "Количество: {value}",
+        "minPrice": "Мин. цена: {value}",
+        "maxPrice": "Макс. цена: {value}",
+        "diff": "Разница: {value}",
+        "averagePrice": "Средняя цена: {value}",
+        "medianPrice": "Медианная цена: {value}",
+        "city": "Город: {value}",
+        "neighborhood": "Район: {value}",
+        "latLon": "Широта/долгота: {lat}, {lon}",
+        "score": "Балл: {value}",
+        "risks": "Риски: {value}",
+        "address": "Адрес: {value}",
+        "contactId": "ID контакта: {id}",
+        "estimatedValue": "Оценочная стоимость: {value}"
+      },
+      "hints": {
+        "dataEnrichment": "Включите на бэкенде: задайте DATA_ENRICHMENT_ENABLED=true и перезапустите API.",
+        "crm": "Настройте на бэкенде: задайте CRM_WEBHOOK_URL и перезапустите API.",
+        "valuation": "Настройте на бэкенде: задайте VALUATION_MODE=simple и перезапустите API.",
+        "legalCheck": "Настройте на бэкенде: задайте LEGAL_CHECK_MODE=basic и перезапустите API.",
+        "vectorStore": "Загрузите и инициализируйте векторное хранилище (Chroma) перед запуском инструмента."
+      },
+      "analyze": "Анализировать"
     },
     "analytics": {
       "title": "Аналитика и инструменты",
@@ -2020,11 +2257,148 @@
     "admin": {
       "monitoring": {
         "title": "Мониторинг продакшена",
-        "description": "Живое состояние развёрнутого стека."
+        "description": "Живое состояние развёрнутого стека.",
+        "loading": "Загрузка данных мониторинга...",
+        "errors": {
+          "load": "Не удалось загрузить данные мониторинга",
+          "testAlert": "Не удалось отправить тестовое оповещение"
+        },
+        "lastRefreshed": "Последнее обновление: {time}",
+        "refreshing": "Обновление...",
+        "sending": "Отправка...",
+        "testAlert": "Тестовое оповещение",
+        "errorTitle": "Ошибка загрузки данных",
+        "alerts": {
+          "threshold": "Порог: {threshold}",
+          "dbLatency": "Высокая задержка базы данных: {value} мс",
+          "dbLatencyThreshold": "Задержка P95 > 3 с",
+          "cacheHitRate": "Низкий процент попаданий в кеш: {rate}%",
+          "cacheHitRateThreshold": "Процент попаданий < 20%",
+          "notReady": "Сервис не готов обрабатывать запросы",
+          "notReadyThreshold": "Общая готовность",
+          "dbUnhealthy": "Соединение с базой данных не в порядке",
+          "dbUnhealthyThreshold": "Состояние базы данных",
+          "llmUnhealthy": "Провайдер LLM не в порядке",
+          "llmUnhealthyThreshold": "Состояние LLM",
+          "redisUnhealthy": "Кеш Redis не в порядке",
+          "redisUnhealthyThreshold": "Состояние Redis"
+        },
+        "health": {
+          "title": "Состояние системы",
+          "service": "Сервис:",
+          "timestamp": "Время:",
+          "uptime": "Время работы:",
+          "version": "Версия:",
+          "git": "Коммит Git:"
+        },
+        "readiness": {
+          "title": "Готовность",
+          "database": "База данных:",
+          "dbLatency": "Задержка БД:",
+          "redis": "Redis:",
+          "disabled": "Отключено",
+          "llm": "Провайдер LLM:",
+          "lastCheck": "Последняя проверка:"
+        },
+        "metrics": {
+          "totalProperties": "Всего объектов",
+          "inLast24h": "{count} за последние 24 часа",
+          "knowledgeStore": "Хранилище знаний",
+          "chunks": "фрагментов: {count}",
+          "cacheHitRate": "Процент попаданий в кеш",
+          "hitsMisses": "попаданий: {hits}, промахов: {misses}",
+          "noCacheData": "Нет данных о кеше",
+          "environment": "Среда"
+        },
+        "sources": {
+          "title": "Объекты по источникам данных"
+        },
+        "charts": {
+          "requestRate": "Частота запросов (запросов/мин)",
+          "errorRate": "Доля ошибок (%)",
+          "responseTime": "Время ответа (мс)"
+        },
+        "legend": {
+          "title": "Обозначения на графиках",
+          "healthy": "Работает / Норма",
+          "warning": "Предупреждение / Ухудшение",
+          "error": "Ошибка / Критично"
+        },
+        "status": {
+          "healthy": "Работает",
+          "unhealthy": "Сбой",
+          "ready": "Готов",
+          "not_ready": "Не готов",
+          "degraded": "Ухудшено"
+        }
       },
       "connectors": {
         "title": "MCP-коннекторы",
-        "description": "Внешние инструменты, которые может вызвать ассистент."
+        "description": "Внешние инструменты, которые может вызвать ассистент.",
+        "edition": "Редакция: {edition}",
+        "healthCheckAll": "Проверить все",
+        "healthCheck": "Проверка состояния",
+        "overall": {
+          "title": "Общее состояние",
+          "connectorsChecked": "Проверено коннекторов:",
+          "edition": "Редакция:",
+          "timestamp": "Время:"
+        },
+        "requestId": "ID запроса: {id}",
+        "loading": "Загрузка коннекторов...",
+        "empty": {
+          "title": "Коннекторы не зарегистрированы"
+        },
+        "badge": {
+          "registered": "Зарегистрирован",
+          "notRegistered": "Не зарегистрирован",
+          "instantiated": "Создан экземпляр",
+          "noInstance": "Нет экземпляра",
+          "apiKeyRequired": "Требуется ключ API",
+          "streaming": "Потоковая передача",
+          "ceAccessible": "Доступен в CE",
+          "enabled": "Включён",
+          "disabled": "Выключен"
+        },
+        "results": {
+          "responseTime": "Время ответа:",
+          "success": "Успех:",
+          "yes": "Да",
+          "no": "Нет",
+          "errors": "Ошибки:"
+        },
+        "detail": {
+          "basicInfo": "Основная информация",
+          "name": "Название:",
+          "edition": "Редакция:",
+          "status": "Статус:",
+          "minEdition": "Минимальная редакция:",
+          "error": "Ошибка: {message}",
+          "capabilities": "Возможности",
+          "rateLimit": "Ограничение запросов",
+          "requestsPerMin": "Запросов/мин:",
+          "burstSize": "Размер пакета:",
+          "currentRequests": "Текущие запросы:",
+          "remaining": "Осталось:",
+          "instanceStatus": "Состояние экземпляра",
+          "configuration": "Конфигурация"
+        },
+        "status": {
+          "active": "Активен",
+          "disabled": "Выключен",
+          "error": "Ошибка",
+          "not_instantiated": "Нет экземпляра",
+          "unknown": "Неизвестно"
+        },
+        "health": {
+          "healthy": "Работает",
+          "unhealthy": "Сбой",
+          "degraded": "Ухудшено",
+          "error": "Ошибка"
+        },
+        "errors": {
+          "load": "Не удалось загрузить коннекторы"
+        }
       },
       "dataSources": {
         "title": "Источники данных",
@@ -2032,7 +2406,87 @@
       },
       "bulkJobs": {
         "title": "Задания массового импорта и экспорта",
-        "description": "Масовое перенос объявлений в систему и из неё."
+        "description": "Масовое перенос объявлений в систему и из неё.",
+        "tabs": {
+          "jobs": "Задачи",
+          "import": "Импорт",
+          "export": "Экспорт"
+        },
+        "requestId": "ID запроса: {id}",
+        "filters": {
+          "label": "Фильтры:",
+          "allTypes": "Все типы",
+          "allStatuses": "Все статусы"
+        },
+        "errors": {
+          "loadJobs": "Не удалось загрузить пакетные задания",
+          "urlRequired": "Введите URL",
+          "createImport": "Не удалось создать задание импорта",
+          "createExport": "Не удалось создать задание экспорта",
+          "cancelJob": "Не удалось отменить задание",
+          "deleteJob": "Не удалось удалить задание",
+          "queryRequired": "Введите поисковый запрос"
+        },
+        "success": {
+          "importCreated": "Задание импорта успешно создано!",
+          "exportCreated": "Задание экспорта успешно создано!"
+        },
+        "confirm": {
+          "deleteJob": "Вы уверены, что хотите удалить это задание?"
+        },
+        "status": {
+          "pending": "В очереди",
+          "running": "Выполняется",
+          "completed": "Завершено",
+          "failed": "Ошибка",
+          "cancelled": "Отменено"
+        },
+        "empty": {
+          "title": "Пакетных заданий нет",
+          "description": "Создайте задание импорта или экспорта, чтобы начать"
+        },
+        "job": {
+          "progress": "Прогресс:",
+          "processed": "Обработано:",
+          "failed": "Ошибок:",
+          "created": "Создано: {date}",
+          "completed": "Завершено: {date}",
+          "expires": "Истекает: {date}",
+          "cancelTitle": "Отменить задание",
+          "downloadTitle": "Скачать результат",
+          "deleteTitle": "Удалить задание"
+        },
+        "pagination": {
+          "page": "Страница {page} из {total}"
+        },
+        "import": {
+          "title": "Создать задание импорта",
+          "sourceType": "Тип источника",
+          "typeUrl": "URL",
+          "typeFile": "Загрузка файла",
+          "typePortal": "Portal API",
+          "fileUrls": "URL файлов (через запятую)",
+          "fileUrlsPlaceholder": "https://example.com/data.csv, https://example.com/data.xlsx",
+          "supports": "Поддерживаются CSV, Excel (.xlsx/.xls) и файлы JSON",
+          "fileUploadAvailable": "Загрузка файлов через прямое API доступна",
+          "fileUploadEndpoint": "Используйте эндпоинт /api/v1/admin/ingest/upload",
+          "portalConfigured": "Импорт из портальных API настраивается в источниках данных",
+          "portalHint": "Откройте страницу «Источники данных», чтобы настроить подключения к порталам",
+          "sourceName": "Название источника (необязательно)",
+          "sourceNamePlaceholder": "например, Нерелёванность Варшава I кв. 2024",
+          "creating": "Создание задания импорта...",
+          "start": "Запустить задание импорта"
+        },
+        "export": {
+          "title": "Создать задание экспорта",
+          "format": "Формат экспорта",
+          "query": "Поисковый запрос",
+          "queryPlaceholder": "например, квартиры в Варшаве до 500000 PLN",
+          "queryHint": "Введите поисковый запрос на естественном языке, чтобы отфильтровать объекты для экспорта",
+          "maxResults": "Максимум результатов",
+          "creating": "Создание задания экспорта...",
+          "start": "Запустить задание экспорта"
+        }
       }
     }
   },
