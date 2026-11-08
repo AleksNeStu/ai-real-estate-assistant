@@ -265,9 +265,20 @@ class Property(BaseModel):
             ", ".join(proximity_info) if proximity_info else "proximity information not available"
         )
 
-        text_parts = [
-            f"Property in {self.city}",
-        ]
+        text_parts = []
+
+        # The title and the address lead the text: they are what a visitor
+        # reads on the card, and a listing that names neither is the reason
+        # the catalogue looked like a list of numbers.
+        title = (self.title or "").strip()
+        if title:
+            text_parts.append(f"{title}.")
+
+        address = (self.address or "").strip()
+        if address:
+            text_parts.append(f" Address: {address}.")
+
+        text_parts.append(f"Property in {self.city}")
 
         if self.neighborhood:
             text_parts.append(f", {self.neighborhood} neighborhood")

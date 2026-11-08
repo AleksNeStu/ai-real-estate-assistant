@@ -85,6 +85,95 @@ CITIES = {
 PROPERTY_TYPES = ["apartment", "house", "studio", "loft", "townhouse"]
 LISTING_TYPES = ["sale", "rent"]
 
+# What a square meter of a flat costs in every city of the catalogue, in
+# zloty. A listing's price is its area times this number, so the prices of
+# the catalogue relate to each other the way the prices of a real market do.
+CITY_PRICE_PER_SQM = {
+    "Kraków": 6200,
+    "Warsaw": 6800,
+    "Gdańsk": 5400,
+    "Wrocław": 5000,
+    "Poznań": 5200,
+}
+
+# What a square meter rents for per month in the same cities.
+CITY_RENT_PER_SQM = {
+    "Kraków": 42,
+    "Warsaw": 48,
+    "Gdańsk": 38,
+    "Wrocław": 36,
+    "Poznań": 37,
+}
+
+# The voivodeship of every city, for the listing's region.
+CITY_REGION = {
+    "Kraków": "małopolskie",
+    "Warsaw": "mazowieckie",
+    "Gdańsk": "pomorskie",
+    "Wrocław": "dolnośląskie",
+    "Poznań": "wielkopolskie",
+}
+
+# How many square meters a room occupies in each kind of property. The area
+# of a listing follows from its rooms, so a one-room loft is not 192 m².
+SQ_M_PER_ROOM = {
+    "studio": (24, 34),
+    "apartment": (22, 30),
+    "loft": (30, 45),
+    "townhouse": (24, 32),
+    "house": (22, 30),
+}
+
+# How many rooms and how many floors a kind of property has.
+PROPERTY_SHAPE = {
+    "studio": {"rooms": (1, 1), "floors": (3, 9)},
+    "apartment": {"rooms": (2, 4), "floors": (3, 12)},
+    "loft": {"rooms": (1, 2), "floors": (2, 6)},
+    "townhouse": {"rooms": (3, 5), "floors": (2, 3)},
+    "house": {"rooms": (4, 6), "floors": (1, 2)},
+}
+
+# The title of a listing, per kind of property. {district}, {rooms} and
+# {adjective} are filled in.
+TITLE_TEMPLATES = {
+    "studio": [
+        "Compact studio in {district}",
+        "Bright studio with a separate kitchen in {district}",
+        "Renovated studio in {district}",
+    ],
+    "apartment": [
+        "{rooms} apartment in {district}",
+        "{adjective} {rooms} apartment with a balcony in {district}",
+        "Renovated {rooms} apartment in {district}",
+    ],
+    "loft": [
+        "Loft in a former factory in {district}",
+        "Industrial loft with high ceilings in {district}",
+        "Converted loft in {district}",
+    ],
+    "townhouse": [
+        "Townhouse with a garden in {district}",
+        "Row house in {district}",
+        "Family townhouse in {district}",
+    ],
+    "house": [
+        "Detached house with a garden in {district}",
+        "{adjective} family house in {district}",
+        "House with a garage in {district}",
+    ],
+}
+
+ROOMS_WORDS = {
+    1: "One-room",
+    2: "Two-room",
+    3: "Three-room",
+    4: "Four-room",
+    5: "Five-room",
+    6: "Six-room",
+}
+
+TITLE_ADJECTIVES = ["Sunny", "Spacious", "Bright", "Well-kept", "Quiet", "Renovated"]
+
 # The centre of every district the catalogue uses. A listing stands in its
 # district, not at the edge of the city: the comparable search scores the
 # distance, and a listing of a district ten kilometres away from its
@@ -179,6 +268,150 @@ LEAD_STATUSES = ["new", "contacted", "qualified", "converted", "lost"]
 NOTIFICATION_TYPES = ["email", "push", "sms", "in_app"]
 
 ACTIVITY_TYPES = ["search", "view", "favorite", "inquiry", "login"]
+
+
+def build_demo_listing(index: int) -> dict:
+    """Build one listing of the demo catalogue.
+
+    Every number of the listing is derived from the others: the area
+    follows from the number of rooms, the floor is a floor of the building,
+    the price is the area times the price of a square meter of that city and
+    the amenities follow from the building. The numbers used to be drawn
+    independently of each other, which is how the catalogue came to hold a
+    192 m2 loft with one bathroom on the ninth floor of an eight-floor
+    building.
+
+    The function is pure enough to be tested: it touches no database and no
+    vector store.
+    """
+    city = random.choice(list(CITIES.keys()))
+    city_data = CITIES[city]
+    district = random.choice(city_data["districts"])
+    prop_type = random.choice(PROPERTY_TYPES)
+    listing_type = random.choice(LISTING_TYPES)
+    latitude, longitude = listing_coordinates(city, district)
+
+    shape = PROPERTY_SHAPE[prop_type]
+    rooms = random.randint(*shape["rooms"])
+    area_sqm = int(round(rooms * random.uniform(*SQ_M_PER_ROOM[prop_type]) / 5) * 5)
+    bathrooms = max(1, min(rooms, random.choice([1, 1, 2])))
+
+    total_floors = random.randint(*shape["floors"])
+    floor = random.randint(1, total_floors)
+
+    # A house is older than a flat in a new block; a loft lives in a
+    # building that was once something else.
+    if prop_type in ("house", "townhouse"):
+        year_built = random.randint(1955, 1995)
+    elif prop_type == "loft":
+        year_built = random.randint(1930, 1985)
+    else:
+        year_built = random.randint(1990, 2023)
+
+    # The amenities follow from the building: a two-floor house has no
+    # elevator, a flat on the first floor has no balcony.
+    has_elevator = total_floors >= 4 and random.random() < 0.75
+    has_balcony = (
+        prop_type in ("apartment", "loft") and floor > 1 and random.random() < 0.6
+    )
+    has_parking = random.random() < 0.35
+    has_garden = prop_type in ("house", "townhouse") and random.random() < 0.6
+    has_garage = prop_type == "house" and random.random() < 0.5
+    has_pool = random.random() < 0.05
+    is_furnished = listing_type == "rent" and random.random() < 0.4
+    pets_allowed = random.random() < 0.5
+
+    price_per_sqm = (
+        CITY_PRICE_PER_SQM[city] if listing_type == "sale" else CITY_RENT_PER_SQM[city]
+    )
+    price = area_sqm * price_per_sqm * random.uniform(0.85, 1.2)
+    if listing_type == "sale":
+        price = int(round(price / 1000.0) * 1000)
+    else:
+        price = int(round(price / 50.0) * 50)
+
+    street = random.choice(CITY_STREETS[city])
+    number = random.randint(1, 80)
+    address = f"ul. {street} {number}, {district}, {city}, Poland"
+
+    rooms_word = ROOMS_WORDS.get(rooms, f"{rooms}-room")
+    title = random.choice(TITLE_TEMPLATES[prop_type]).format(
+        district=district,
+        rooms=rooms_word.lower(),
+        adjective=random.choice(TITLE_ADJECTIVES),
+    )
+
+    amenities = []
+    if has_balcony:
+        amenities.append("a balcony")
+    if has_elevator:
+        amenities.append("an elevator")
+    if has_parking:
+        amenities.append("a parking space")
+    if has_garden:
+        amenities.append("a garden")
+    if has_garage:
+        amenities.append("a garage")
+    if is_furnished:
+        amenities.append("fully furnished furniture")
+    amenities_sentence = (
+        "The flat comes with " + ", ".join(amenities) + "."
+        if amenities
+        else "The flat has no special amenities."
+    )
+
+    if listing_type == "sale":
+        price_sentence = (
+            f"Asking price {price:,} PLN ({price / area_sqm:,.0f} PLN per square meter)."
+        )
+    else:
+        price_sentence = f"Monthly rent {price:,} PLN."
+
+    description = (
+        f"{title}. {rooms_word} {prop_type} of {area_sqm} m² on the {floor} "
+        f"floor of a {total_floors}-floor building in {district}, {city}, "
+        f"built in {year_built}. {amenities_sentence} "
+        f"A few minutes on foot from the {district} centre and the tram stop. "
+        f"{price_sentence}"
+    )
+
+    return {
+        "id": f"prop-{index + 1:04d}",
+        "title": title,
+        "address": address,
+        "description": description,
+        "country": "Poland",
+        "region": CITY_REGION[city],
+        "city": city,
+        "district": district,
+        "neighborhood": district,
+        "price": price,
+        "currency": "PLN",
+        "price_per_sqm": round(price / area_sqm, 2),
+        "rooms": rooms,
+        "bathrooms": bathrooms,
+        "area_sqm": area_sqm,
+        "property_type": prop_type,
+        "listing_type": listing_type,
+        "source_url": f"https://demo-real-estate.example.com/property/{index + 1}",
+        "has_parking": has_parking,
+        "has_garden": has_garden,
+        "has_pool": has_pool,
+        "has_garage": has_garage,
+        "is_furnished": is_furnished,
+        "pets_allowed": pets_allowed,
+        "has_balcony": has_balcony,
+        "has_elevator": has_elevator,
+        "floor": floor,
+        "total_floors": total_floors,
+        "year_built": year_built,
+        "energy_rating": random.choice(["A", "B", "C", "D"]),
+        "distance_to_transport": random.randint(80, 900),
+        "distance_to_school": random.randint(150, 1800),
+        "latitude": latitude,
+        "longitude": longitude,
+        "created_at": (datetime.now(UTC) - timedelta(days=random.randint(1, 180))).isoformat(),
+    }
 
 
 # =============================================================================
@@ -312,61 +545,17 @@ class ComprehensiveDemoDataGenerator:
         return len(users)
 
     async def _generate_properties(self, count: int = 250) -> int:
-        """Generate properties and add to ChromaDB vector store."""
+        """Generate properties and add to ChromaDB vector store.
+
+        Every listing is internally consistent - the floor is a floor of the
+        building, the area follows from the number of rooms, the price is
+        the area times the price of a square meter of that city. See
+        ``build_demo_listing``.
+        """
         properties = []
 
         for i in range(count):
-            city = random.choice(list(CITIES.keys()))
-            city_data = CITIES[city]
-            district = random.choice(city_data["districts"])
-            prop_type = random.choice(PROPERTY_TYPES)
-            listing_type = random.choice(LISTING_TYPES)
-            latitude, longitude = listing_coordinates(city, district)
-
-            # Generate realistic price based on type and location
-            base_price = {
-                "Kraków": 400000,
-                "Warsaw": 500000,
-                "Gdańsk": 350000,
-                "Wrocław": 380000,
-                "Poznań": 420000,
-            }[city]
-            price_multiplier = {
-                "apartment": 1.0,
-                "studio": 0.7,
-                "house": 1.5,
-                "townhouse": 1.3,
-                "loft": 1.2,
-            }[prop_type]
-            base_price = int(base_price * price_multiplier * random.uniform(0.5, 2.0))
-
-            property_data = {
-                "id": f"prop-{i + 1:04d}",
-                "title": f"{random.choice(['Modern', 'Luxury', 'Cozy', 'Spacious', 'Elegant'])} {prop_type.capitalize()} in {district}",
-                "address": f"ul. {random.choice(CITY_STREETS[city])} {random.randint(1, 100)}, {district}, {city}, Poland",
-                "city": city,
-                "district": district,
-                "price": base_price,
-                "currency": "PLN",
-                "rooms": random.randint(1, 5),
-                "area_sqm": random.randint(25, 200),
-                "property_type": prop_type,
-                "listing_type": listing_type,
-                "source_url": f"https://demo-real-estate.example.com/property/{i + 1}",
-                "description": f"Beautiful {prop_type} in {district}. Features modern amenities, great location, and excellent connectivity.",
-                "has_parking": random.choice([True, False]),
-                "has_balcony": random.choice([True, False]),
-                "has_elevator": random.choice([True, False]),
-                "floor": random.randint(1, 10),
-                "total_floors": random.randint(3, 15),
-                "year_built": random.randint(1990, 2023),
-                "latitude": latitude,
-                "longitude": longitude,
-                "created_at": (
-                    datetime.now(UTC) - timedelta(days=random.randint(1, 180))
-                ).isoformat(),
-            }
-
+            property_data = build_demo_listing(i)
             properties.append(PropertySchema(**property_data))
             self.property_ids.append(property_data["id"])
 

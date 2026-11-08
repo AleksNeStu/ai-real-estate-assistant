@@ -158,7 +158,8 @@ export function PropertyCard({
         </div>
 
         <p className="text-sm text-muted-foreground">
-          {[property.city, property.country].filter(Boolean).join(', ')}
+          {property.address ||
+            [property.city, property.country].filter(Boolean).join(', ')}
         </p>
 
         <p className="font-mono text-lg font-semibold tabular-nums tracking-tight">

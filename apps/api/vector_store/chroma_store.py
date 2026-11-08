@@ -269,7 +269,7 @@ class ChromaPropertyStore:
             except (TypeError, ValueError):
                 return None
 
-        raw_energy = getattr(prop, "energy_cert", None)
+        raw_energy = getattr(prop, "energy_cert", None) or getattr(prop, "energy_rating", None)
         energy_cert = str(raw_energy).strip() if raw_energy is not None else None
         if energy_cert == "":
             energy_cert = None
@@ -306,6 +306,22 @@ class ChromaPropertyStore:
             "year_built": _ni(getattr(prop, "year_built", None)),
             "energy_cert": energy_cert,
         }
+
+        # The title, the address and the description are what the card shows.
+        # Without them in the metadata a search result carries a null title
+        # and the interface falls back to "Untitled Property" - the catalogue
+        # looks like a list of numbers instead of a list of homes.
+        for key in ("title", "address", "description"):
+            value = getattr(prop, key, None)
+            if isinstance(value, str) and value.strip():
+                metadata[key] = value.strip()
+
+        floor = _ni(getattr(prop, "floor", None))
+        if floor is not None:
+            metadata["floor"] = floor
+        total_floors = _ni(getattr(prop, "total_floors", None))
+        if total_floors is not None:
+            metadata["total_floors"] = total_floors
 
         # Add optional fields if present
         if prop.neighborhood:
