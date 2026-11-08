@@ -81,8 +81,17 @@ Day +30          → Product Hunt (after audiences warmed up)
       the live demo: 87 on `/en` (83 on `/en/search`). The remaining cost is
       total blocking time (440 ms on `/en`), which the demo pays for hosting
       outside the city.
-- [x] The social-preview card is a designed 1200×630 card (it was a cropped
-      screenshot of the application)
+- [x] The social-preview card is a designed image (it was a cropped
+      screenshot of the application) — `.github/social-preview.png`,
+      1280×640, which is GitHub's own social-preview canvas. The 1200×630
+      image is a different asset: the Open Graph card at
+      `apps/web/public/og-image.png`. Every number on the card was checked
+      against the repository on 2026-11-08: 8,000+ tests (7,033 backend +
+      1,309 frontend Jest, 182 Playwright end-to-end), 9 languages, 80%+
+      coverage (85.1% backend over the union of the unit and integration
+      suites, 85.2% frontend lines), and "WCAG 2.1 AA audited" — `ACCESSIBILITY.md`
+      records the audit and its three known map-component limitations, so the
+      card no longer claims a blanket "AA compliant".
 
 ## The demo is deliberately not indexed
 
@@ -93,9 +102,10 @@ reachable for a test but stays out of the index — the drafts can link to it
 without the unfinished pages entering a search index.
 
 **Before the first post, decide:** either keep it that way, or release it (see
-the release step in the deployment notes). If the demo is released, the
-`SEARCH_INDEXING` flag comes off and the product's own `robots.txt` comes back
-with the image.
+the release step in the deployment notes). If the demo is released,
+`SEARCH_INDEXING` is unset in the deployment environment (it is `false` today,
+and `apps/web/src/lib/indexing.ts` only adds the header when it is exactly
+`false`), and the product's own `robots.txt` comes back with the image.
 
 ## Where the audience actually comes from (measured 2026-11-08)
 
@@ -131,8 +141,9 @@ Each draft file contains:
 - Tracking sheet (for directories)
 
 Update `directory-submissions.md`'s tracking sheet as submissions go
-live. Cross-link approvals back to the README's Project Growth
-section.
+live. Cross-link approvals back to the README's "Ideas, forks, and other
+ways to work with us" section — that is the repository's community-facing
+list, and it is the only one it has.
 
 ---
 

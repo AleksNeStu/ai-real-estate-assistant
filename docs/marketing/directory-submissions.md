@@ -181,7 +181,7 @@ ChromaDB. Multi-provider LLM routing with automatic fallback chain.
 
 ## After each approval
 
-- [ ] Add directory link to README's Project Growth section
+- [ ] Add directory link to the README's "Ideas, forks, and other ways to work with us" section
 - [ ] Add directory badge to og-image (if high-value)
 - [ ] Track in the sheet above (Submitted → Approved → Live URL)
 - [ ] Note any learnings (e.g., "AIcyclopedia wanted 3 screenshots, not 1")

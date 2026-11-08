@@ -83,14 +83,27 @@ All major components are injected via FastAPI's `Depends()`:
 
 ### 3. Multi-Provider LLM System
 
-Supports 6 LLM providers with automatic fallback:
+Supports 16 LLM providers with automatic fallback:
 
-1. OpenAI (GPT-4o, GPT-4o-mini, etc.)
-2. Anthropic (Claude 3.5 Sonnet, Haiku)
-3. Google (Gemini Pro)
+1. OpenAI
+2. Anthropic
+3. Google (Gemini)
 4. Grok
 5. DeepSeek
-6. Ollama (local models)
+6. OpenRouter
+7. Groq
+8. Mistral
+9. Qwen
+10. Z.ai (Zhipu)
+11. Moonshot
+12. OpenCode
+13. Together
+14. Fireworks
+15. Hugging Face
+16. Ollama (local models)
+
+The registry lives in `apps/api/models/provider_factory.py` (`_PROVIDER_MODULES`);
+providers are imported lazily, so a deployment only loads what it uses.
 
 ### 4. Dual-Mode Authentication
 

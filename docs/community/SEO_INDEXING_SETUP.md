@@ -176,9 +176,28 @@ The goal is to keep the site warm so crawlers rarely hit a cold instance.
 
 ---
 
-## 4. robots.txt — Current State and AI-Bot Policy
+## 4. robots.txt — Two Files, and Which One the Demo Serves
 
-The current `apps/web/public/robots.txt` reads:
+There are two `robots.txt` files in play, and they say opposite things:
+
+| File | Where it lives | What it says |
+|------|-----------------|--------------|
+| **The product's own** | `apps/web/public/robots.txt`, baked into the image | Allows crawling, allows the AI crawlers explicitly, points at the sitemap, blocks the private paths |
+| **The demo override** | a `robots.txt` mounted into the demo deployment | `User-agent: *` / `Disallow: /` — nothing is crawlable |
+
+The demo currently serves the **override**, and every page also answers
+`X-Robots-Tag: noindex, nofollow`. The override exists so the links in the
+marketing drafts do not release unfinished pages into a search index.
+
+Two things produce that state, and a release has to undo both:
+
+| Knob | Where | State today | On release |
+|------|-------|--------------|------------|
+| `SEARCH_INDEXING` | the deployment's runtime environment | `false` | unset (or `true`) — the guard in `apps/web/src/lib/indexing.ts` only adds `X-Robots-Tag` when it is exactly `false` |
+| `robots.txt` | mounted into the demo deployment | the Disallow-all override | the mount is dropped and the product's own file comes back with the image |
+
+For a future indexed release, this is the file that comes back with the image —
+`apps/web/public/robots.txt`:
 
 ```
 User-agent: *
@@ -206,6 +225,10 @@ Disallow: /*/saved-searches/
 | `User-agent: *` + `Allow: /` | All compliant crawlers may crawl all public routes. |
 | Private path `Disallow` blocks | Prevents `/api/`, `/admin/`, auth flows, and user-specific pages from being crawled. |
 | **Explicit AI-bot `Allow` rules** | We want the demo to be discoverable and citable by AI assistants, so the major crawlers are allowed explicitly. |
+
+With that file in place, the GSC "Excluded" tab in section 1.4 should show **no**
+"Submitted URL blocked by robots.txt" entries — and if it does, the deployment
+is still serving the override, not the product's own file.
 
 ---
 

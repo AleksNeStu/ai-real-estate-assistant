@@ -6,14 +6,20 @@ This document defines the community health metrics tracked for the AI Real Estat
 
 ## Target Metrics (Roadmap Goals)
 
-| Metric | Target | Timeline |
-|--------|--------|----------|
-| GitHub Stars | >= 100 | 6 months post-launch |
-| First External PR Merged | >= 1 | 3 months post-launch |
-| Doc Site Visits Growth | Month-over-month increase | Ongoing |
-| GitHub Issues (good first issue) | >= 5 open at any time | Ongoing |
-| Fork Count | >= 20 | 6 months post-launch |
-| Contributors (external) | >= 3 | 6 months post-launch |
+| Metric | Target | Timeline | Current (2026-11-08) | Status |
+|--------|--------|----------|------------------------|--------|
+| GitHub Stars | >= 100 | 6 months post-launch | 321 | Reached |
+| First External PR Merged | >= 1 | 3 months post-launch | 0 | Not reached |
+| Doc Site Visits Growth | Month-over-month increase | Ongoing | 706 views / 272 uniques (14 days) | Measured, no trend yet |
+| GitHub Issues (good first issue) | >= 5 open at any time | Ongoing | 0 open issues in total | Not met — no onboarding funnel |
+| Fork Count | >= 20 | 6 months post-launch | 119 | Reached |
+| Contributors (external) | >= 3 | 6 months post-launch | 3 | Reached |
+
+The two unmet targets are the same gap seen from two sides: nobody outside the
+owner contributes, because there is nothing for them to pick up — the tracker
+holds **zero** open issues, so a newcomer finds no entry point. The external
+contributors that did exist (`stephenalexbrowne`, `Jwrede`, `KrabbiAI`) came in
+with their own pull requests rather than from an issue.
 
 ## Weekly Tracking
 
@@ -30,6 +36,12 @@ Collected weekly (every Monday) from GitHub Insights:
 | Open PRs | GitHub PRs tab | Manual |
 | Merged PRs (weekly) | GitHub Insights | Manual |
 | Unique Contributors | GitHub Contributors graph | Manual |
+
+> **There is no collection workflow in this repository.** The `community-metrics`
+> workflow was removed together with `star-history` on 2026-08-15, and this
+> repository is frozen for demo purposes, so adding one back would be new code
+> rather than a fix. Until that changes, the weekly snapshot is collected by
+> hand and committed — see [Automation Opportunities](#automation-opportunities).
 
 ### Collection via GitHub CLI
 
@@ -83,43 +95,81 @@ Reports are stored at: `docs/community/reports/YYYY-MM.md`
 
 ## Data Storage
 
-- Weekly snapshots stored in this repo at `docs/community/data/weekly-snapshots.json`
-- Monthly reports at `docs/community/reports/YYYY-MM.md`
+- Weekly snapshots: `docs/community/metrics/<ISO-week>.json` and the
+  human-readable `<ISO-week>.md` next to it
+- Latest snapshot pointer: `docs/community/metrics/latest.json` (a copy of the
+  most recent week, not a frozen legacy file)
+- Monthly reports: `docs/community/reports/YYYY-MM.md` — the directory is
+  created when the first report is written from
+  `docs/community/monthly-report-template.md`
 - No external analytics services required (GitHub-native)
 
-## Automated Star-Growth Metrics
+### Current Snapshots
 
-The `README.md` star-history chart is rendered live by the hosted `api.star-history.com` SVG endpoint (no workflow, no PAT, no orphan branch). The previous self-hosted workflow (`.github/workflows/star-history.yml` + `render_star_history.py`) was removed on 2026-08-15 because:
+| File | Week | Note |
+|------|------|------|
+| `docs/community/metrics/2026-W18.json` / `.md` | 2026-W18 | Superseded — it carried placeholder zeroes from a workflow that could not read the repository |
+| `docs/community/metrics/2026-W45.json` / `.md` | 2026-W45 | The first snapshot collected directly from the GitHub API (321 stars, 119 forks, 706 views / 272 uniques over 14 days) |
+| `docs/community/metrics/latest.json` | 2026-W45 | Copy of the newest week |
 
-1. The `GH_STAR_TOKEN` fine-grained PAT lacked the `Starring: Read` scope needed for GraphQL `stargazers` (verified empirically — returns `FORBIDDEN: Resource not accessible by personal access token`).
-2. The workflow's `git switch --orphan star-history` + `git push --force` pattern created a fresh orphan branch every run, silently destroying previously-pushed SVGs.
+## Star History and Growth-Metrics Data
 
-### Data Location
+The `star-history` workflow, its `render_star_history.py` script and the orphan
+branch it pushed were removed on 2026-08-15:
 
-| File | Description |
-|------|-------------|
-| `https://api.star-history.com/svg?repos=AleksNeStu/ai-real-estate-assistant&type=Date` | Live hosted star-history chart (rendered by `star-history.com` on demand) |
-| `docs/community/metrics/latest.json` | **Immutable legacy snapshot** from 2026-05-04 — historical reference only |
+1. The `GH_STAR_TOKEN` fine-grained PAT lacked the `Starring: Read` scope needed
+   for the GraphQL `stargazers` query (verified empirically — returns
+   `FORBIDDEN: Resource not accessible by personal access token`).
+2. The workflow's `git switch --orphan star-history` + `git push --force` pattern
+   created a fresh orphan branch every run, silently destroying previously-pushed
+   SVGs.
 
-### growth-metrics.json Schema
+The `README.md` no longer embeds a star-history chart, and the `community-metrics`
+workflow that wrote `growth-metrics.json` went with it. Star growth is now
+recorded in the weekly snapshots described above, and the repository has no
+orphan branches (`dev` and `main` only).
+
+### Weekly snapshot schema
+
+`docs/community/metrics/<ISO-week>.json`:
 
 ```json
 {
-  "collected_at": "2026-07-20T12:00:00+00:00",
+  "collected_at": "2026-11-08T17:32:48.536Z",
   "repository": "AleksNeStu/ai-real-estate-assistant",
-  "total_stars": 284,
-  "new_stars_1d": 2,
-  "new_stars_7d": 5,
-  "new_stars_30d": 23,
-  "traffic_available": true,
-  "traffic_error": null,
-  "views_14d": 1200,
-  "unique_visitors_14d": 450,
-  "referrers": [
-    { "referrer": "github.com", "count": 800, "uniques": 300 }
-  ]
+  "week": "2026-W45",
+  "repo_stats": {
+    "stars": 321,
+    "forks": 119,
+    "watchers": 6,
+    "open_issues": 0,
+    "license": "MIT",
+    "default_branch": "dev",
+    "language": "Python"
+  },
+  "issue_stats": {
+    "open_by_label": { "bug": 0, "enhancement": 0, "good first issue": 0, "help wanted": 0, "question": 0 },
+    "total_open": 0
+  },
+  "pr_stats": { "open_prs": 0, "total_merged": null },
+  "contributors": { "total": 6 },
+  "star_growth": {
+    "new_stars_1d": 0,
+    "new_stars_7d": 1,
+    "new_stars_30d": 8,
+    "baseline_2026_07_20": 284
+  },
+  "traffic": {
+    "window_days": 14,
+    "views": 706,
+    "unique_visitors": 272,
+    "referrers": [{ "referrer": "github.com", "count": 122, "uniques": 84 }]
+  }
 }
 ```
+
+`pr_stats.total_merged` is `null` when the count could not be resolved
+reliably — a null is honest, a zero would not be.
 
 ### GitHub Traffic Data Limitations
 
@@ -128,14 +178,16 @@ The `README.md` star-history chart is rendered live by the hosted `api.star-hist
 1. **Rolling 14-day window**: Traffic data covers only the last 14 days. Historical trends cannot be reconstructed from a single snapshot.
 2. **Domain-level attribution**: Referrer data identifies source domains only (e.g., `github.com`, `google.com`). Individual pages or UTM parameters are not exposed.
 3. **Campaign correlation**: GitHub does not provide campaign attribution. Correlating traffic spikes to specific posts, shares, or events requires external tracking (e.g., UTM parameters on outgoing links).
-4. **Traffic errors**: 403/404/429 responses are expected for some configurations and are handled gracefully — `traffic_available` will be `false` and `traffic_error` will contain the error message.
-
+4. **Traffic errors**: 403/404/429 responses are expected for some configurations (the traffic endpoints need push access to the repository). When the endpoints fail, the collector writes the snapshot **without** the `traffic` block rather than writing zeroes — a missing block means "not measured", a zero would mean "measured, nothing came in".
 
 ## Automation Opportunities
 
 Future improvements (contributions welcome):
 
-- [ ] GitHub Action to collect weekly metrics automatically
+- [ ] GitHub Action to collect weekly metrics automatically — *the collection
+      workflow was removed on 2026-08-15; restoring it is new code, which this
+      frozen demo repository does not take. Until the repository is unfrozen,
+      the snapshot is collected by hand and committed.*
 - [ ] Dashboard generation from snapshot data
 - [ ] Slack/Discord notification on milestones
 - [ ] Badge integration (stars, contributors) in README

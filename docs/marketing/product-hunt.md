@@ -165,4 +165,4 @@ the multi-provider routing logic.
 - [ ] Add PH badge to README
 - [ ] Add "Featured on Product Hunt" to landing page (subtle, bottom-right)
 - [ ] Save PH metrics: rank, upvotes, comments
-- [ ] Update README's Project Growth section with PH screenshot
+- [ ] Update the README's "Ideas, forks, and other ways to work with us" section with PH screenshot
