@@ -1,4 +1,4 @@
-# Project Structure (V4)
+# Project Structure
 
 ```
 ai-real-estate-assistant/

@@ -1,4 +1,4 @@
-# Architecture (V4)
+# Architecture
 
 ## System Overview
 The AI Real Estate Assistant is a modern, conversational AI platform helping users find properties
@@ -7,13 +7,13 @@ backend and follows an Open Core & Walled Garden model: Community Edition (publi
 (private, non-repo).
 
 ### Core Components
-- **Frontend**: Next.js 14+ (App Router), TypeScript, Tailwind CSS, Shadcn UI.
+- **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Shadcn UI.
 - **Backend**: FastAPI (Python 3.12+), Pydantic, SSE streaming.
 - **AI Engine**: Hybrid Agent (RAG + Tools), Query Analyzer, Strategic Reranker.
 - **Data**: ChromaDB (Vector Store), Pandas (Analytics), PostgreSQL/JSON (Persistence).
 
 ### Open Core Split
-- **Community Edition (Open Source, AGPLv3)**: local RAG, chat/tools, prompt templates, local
+- **Community Edition (Open Source, MIT)**: local RAG, chat/tools, prompt templates, local
   deployment (Docker Compose), BYOK for LLM (OpenAI key or local Ollama/Llama 3), webhooks for
   integrations.
 - **Hosted Pro (Private)**: multi-agent orchestration, legal risk checks on proprietary datasets,
@@ -23,7 +23,7 @@ backend and follows an Open Core & Walled Garden model: Community Edition (publi
 ## Detailed Component Design
 
 ### 1. Frontend Architecture (Next.js)
-- **Framework**: Next.js 14 (App Router).
+- **Framework**: Next.js 16 (App Router).
 - **Styling**: Tailwind CSS + Shadcn UI.
 - **State Management**: React Hooks + LocalStorage for preferences.
 - **Directory Structure**:
@@ -98,17 +98,19 @@ The digest system bridges raw property data and user notifications.
 - **Embeddings**: FastEmbed (BGE) or OpenAI embeddings
 - **Testing**: Pytest (Backend), Jest (Frontend)
 - **Deployment**: Docker, Render (staging)
-- **CI/CD**: GitHub Actions (ruff, mypy, unit/integration coverage gates; artifacts upload)
-- **CI/CD**: GitHub Actions (ruff, mypy, unit/integration coverage gates; artifacts upload)
+- **CI/CD**: GitHub Actions (ruff lint, unit and integration pytest with coverage artifacts)
 
 ## Security & Licensing
-- **Licensing**: Community Edition under AGPLv3. Hosted Pro is proprietary and operated privately.
+- **Licensing**: Community Edition under the MIT licence (see `LICENSE`). Hosted Pro is
+  proprietary and operated privately.
 - **Secrets**: Never stored client‑side. Env variables on server; redact logs; rate limit per client.
 
 ## Quality Gates
-- Static analysis: ruff (lint), mypy (types), custom RuleEngine (rules/).
+- Static analysis: ruff (lint) in CI; mypy is configured in `apps/api/pyproject.toml` but
+  is not run by the pipeline; a custom RuleEngine lives in `rules/`.
 - RuleEngine scope: ignores translation/templates; enforces max line length and no secrets.
-- Coverage targets: unit ≥90%, integration ≥70%, critical paths ≥90% (CE).
+- Coverage targets: unit ≥85%, integration ≥70% — the thresholds the pipeline
+  reports on its coverage artifacts.
 
 ## API Surface
 - **Search**: `/api/v1/search`

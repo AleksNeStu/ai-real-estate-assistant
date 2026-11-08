@@ -1,10 +1,11 @@
 # Documentation Index
 
-Welcome to the documentation for the AI Real Estate Assistant (v5.1.6).
+Welcome to the documentation for the AI Real Estate Assistant.
 
 ## Architecture
 - **[Architecture](architecture/ARCHITECTURE.md)**: System design, components, and data flow.
-- **[Agent System](architecture/AGENT_SYSTEM.md)**: Agent routing, tools, and patterns.
+- **[Agent System](architecture/agent-system.md)**: Query analysis, agent routing, and the tools
+  behind the assistant.
 - **[ADRs](adr/)**: Architectural Decision Records.
 
 ## User

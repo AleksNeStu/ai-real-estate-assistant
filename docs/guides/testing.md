@@ -224,14 +224,17 @@ The CI pipeline runs the following jobs:
 | Job | Purpose | Commands |
 |-----|---------|----------|
 | gitleaks | Secret scanning | `.gitleaks.toml` rules |
-| backend | Lint, type check, tests | ruff, mypy, pytest |
+| backend | Lint, tests | ruff, pytest |
 | frontend | Lint, tests | ESLint, Jest |
 | security | SAST scanning | bandit, pip-audit |
 | semgrep | Security rules | `semgrep.yml` |
 | trivy | Container scan | Docker image vulnerability |
 | compose_smoke | Docker build test | Build + health check |
 
-### Backend CI Commands
+### Backend commands
+
+The pipeline runs the lint and the two suites; the rest of the list is what the
+local parity helper `scripts/ci/ci_parity.py` runs.
 
 ```powershell
 # Install uv

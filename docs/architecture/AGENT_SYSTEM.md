@@ -1,5 +1,15 @@
 # AI Agent System Documentation
 
+> **Status: historical.** This document describes a development-agent pipeline
+> — `agents/dev/`, `workflows/pipeline.py` — that is no longer part of the
+> backend. The `agents/dev/` package was removed, so `workflows/pipeline.py`
+> can no longer be imported; the rule engine it used (`rules/`) is still live
+> and is exercised by the test suites.
+>
+> The agent system that serves the product — query analysis and the routing
+> between RAG and tools — is documented in
+> [agent-system.md](./agent-system.md).
+
 ## Overview
 The AI Agent System is a comprehensive framework designed to automate development tasks within the Real Estate Assistant project. It leverages specialized autonomous agents to handle coding, debugging, testing, and documentation.
 

@@ -1,22 +1,21 @@
-# Developer Notes (V4)
+# Developer Notes
 
 ## Overview
-This document captures practical details for working on the FastAPI backend and Next.js frontend
-in V4.
+This document captures practical details for working on the FastAPI backend and Next.js frontend.
 
 ## Development Process
-- CI is expected to run on every PR and push; keep ruff, mypy, RuleEngine, and coverage gates green before merging.
+- CI is expected to run on every PR and push; keep ruff and the test suites green before merging.
+  The pipeline does not run mypy and reports the coverage thresholds rather than enforcing them;
+  `scripts/ci/ci_parity.py` is the local helper that runs the full set.
 
 ## Backend (FastAPI)
 - Entry point: `api/main.py`
 - Routers: `api/routers/*` (chat, search, tools, settings, admin, auth)
 - OpenAPI:
   - Runtime schema: `http://localhost:8000/openapi.json`
-  - Repo snapshot: `docs/api/openapi.json` (regenerate: `python scripts\docs\export_openapi.py`)
-  - Generated endpoint index: `docs/api/API_REFERENCE.generated.md` (regenerate: `python scripts\docs\generate_api_reference.py`)
-  - Update full API reference Endpoints section: `python scripts\docs\update_api_reference_full.py`
-  - CI drift check (full API Reference): `python scripts\docs\update_api_reference_full.py --check`
-  - CI drift check (when enabled): fails if snapshot differs from the runtime schema generated from `api/main.py`
+  - Repo snapshot: `docs/api/openapi.json`
+  - The committed endpoint list is compared with that snapshot by the test suite
+    (`tests/integration/api/test_api_reference_full_integration.py`)
 - Observability: `api/observability.py` adds:
   - `X-Request-ID` header to all responses (including unexpected `500` errors)
   - Per-client rate limiting for `/api/v1/*`
@@ -75,7 +74,7 @@ in V4.
   - `UPTIME_MONITOR_COOLDOWN_SECONDS` (default `1800`)
 
 ## Optional Dependencies
-- `langchain-experimental` is required only for the legacy dataframe agent (`ai/agent.py` -> `RealEstateGPT`). The V4 API does not depend on it.
+- `langchain-experimental` is required only for the legacy dataframe agent (`ai/agent.py` -> `RealEstateGPT`). The API does not depend on it.
 
 ## Testing
 - Full CI parity commands (Windows): see `docs/testing/TESTING_GUIDE.md`.
@@ -119,14 +118,15 @@ in V4.
   ```
 - Forbidden token scan (CI-equivalent):
   ```powershell
-  python scripts\security\forbidden_tokens_check.py
+  python scripts\security\forbidden_tokens.py
   ```
 - Run RuleEngine (sample):
   ```powershell
   python -c "from rules.engine import RuleEngine; print('rules ready')"
   ```
 - Lint/typecheck: keep ruff and mypy clean before commit.
-- Coverage targets (CE): unit ≥90%, integration ≥70%, critical paths ≥90%.
+- Coverage thresholds (CE): unit ≥85%, integration ≥70% — reported by the pipeline on its
+  coverage artifacts, and enforced by the local parity helper.
 
 ## Frontend (Next.js)
 - Directory: `frontend/`
@@ -196,11 +196,11 @@ in V4.
 - GitHub Actions workflow: `.github/workflows/ci.yml`
 - Backend:
   - Lint: `ruff`
-  - Type check: `mypy` (strict fail on errors)
-  - Coverage gates:
-    - Diff coverage (unit): `python scripts\\ci\\coverage_gate.py diff --min-coverage 90 --exclude tests/* --exclude scripts/*`
-    - Diff coverage (integration): `python scripts\\ci\\coverage_gate.py diff --min-coverage 70 --exclude tests/* --exclude scripts/*`
-    - Critical coverage (unit): `python scripts\\ci\\coverage_gate.py critical --min-coverage 90`
+  - Tests: the unit and integration suites, each with `--cov`, uploading a coverage artifact
+  - Coverage: the line-rate of each suite is compared with its threshold (unit 85,
+    integration 70) and reported as an annotation - the job is not failed by it
+  - `mypy` is not part of the pipeline; the local parity helper runs it together with
+    `scripts/ci/coverage_gate.py` (diff and critical coverage)
 - Frontend:
   - Lint: `npm run lint`
   - Tests + coverage: `npm run test -- --ci --coverage` (thresholds enforced in `jest.config.ts`)
@@ -216,7 +216,7 @@ in V4.
 
 ## Branch Protection
 - Protect `main` and `dev` branches with required CI checks:
-  - Backend job (ruff, mypy, unit/integration coverage gates)
+  - Backend jobs (ruff lint; unit and integration pytest with coverage artifacts)
   - Frontend job (eslint, jest)
   - Security job (Bandit: high severity/high confidence)
 - Enable “Require branches to be up to date”, “Include administrators”, and “Block force pushes”.

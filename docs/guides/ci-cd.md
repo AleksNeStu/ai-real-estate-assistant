@@ -184,12 +184,11 @@ Detects placeholder secrets in deployment configurations.
 
 #### Backend Lint
 
-Fast Python linting and type checking (no tests).
+Fast Python linting (no tests).
 
 **Steps**:
 1. Install dependencies (uv with caching)
 2. Lint (ruff check)
-3. Type check (mypy)
 
 **Duration**: ~30-60 seconds
 

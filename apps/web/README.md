@@ -1,6 +1,6 @@
 # AI Real Estate Assistant - Frontend
 
-This is the Next.js frontend for the AI Real Estate Assistant (V4).
+This is the Next.js frontend for the AI Real Estate Assistant.
 
 ## Tech Stack
 

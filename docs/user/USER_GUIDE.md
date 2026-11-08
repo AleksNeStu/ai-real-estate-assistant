@@ -239,8 +239,8 @@ Generate ready-to-use text for common real estate workflows (listing description
 4. Fill in the required fields (marked with `*`) and click **Generate**.
 5. Copy the output and paste it into your email/client workflow.
 
-### API Tools (V4)
-If you are using the V4 API (FastAPI), the same tool capabilities are available over HTTP:
+### API Tools
+If you are using the API (FastAPI), the same tool capabilities are available over HTTP:
 - Compare properties by IDs
 - Basic price analysis for a query
 - Basic location lookup for a property ID
@@ -251,7 +251,7 @@ Additional CE stub endpoints (may be disabled depending on server configuration)
 - Data enrichment: `POST /api/v1/tools/enrich-address` (requires `DATA_ENRICHMENT_ENABLED=true`)
 - CRM contact sync: `POST /api/v1/tools/crm-sync-contact` (requires `CRM_WEBHOOK_URL` to be set)
 
-### Models & Costs (V4 API)
+### Models & Costs (API)
 If you are building a client that needs to display available models/providers (and token pricing where applicable):
 - `GET /api/v1/settings/models` returns provider + model metadata, including context windows,
   capabilities, and pricing (when available).
@@ -260,8 +260,8 @@ For local providers (e.g., Ollama), the response includes `runtime_available` an
 `available_models`, and the UI shows setup steps when the local runtime is not detected.
 You can also click **Test Connection** for a local provider to run a targeted runtime check (without refreshing the whole catalog).
 
-### API Export (V4)
-To export search results or specific property IDs via the V4 API (and from the web app UI):
+### API Export
+To export search results or specific property IDs via the API (and from the web app UI):
 - `POST /api/v1/export/properties` supports `format`: `csv`, `xlsx`, `json`, `md`, `pdf`
 - Web app:
   - **Search**: pick export format, optionally provide a comma-separated column list, then click **Export**
