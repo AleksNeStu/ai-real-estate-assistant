@@ -85,6 +85,93 @@ CITIES = {
 PROPERTY_TYPES = ["apartment", "house", "studio", "loft", "townhouse"]
 LISTING_TYPES = ["sale", "rent"]
 
+# The centre of every district the catalogue uses. A listing stands in its
+# district, not at the edge of the city: the comparable search scores the
+# distance, and a listing of a district ten kilometres away from its
+# neighbours scored nothing - the CMA wizard came up with an empty list.
+DISTRICT_CENTRES = {
+    "Kraków": {
+        "Old Town": (50.0625, 19.9390),
+        "Kazimierz": (50.0552, 19.9448),
+        "Podgórze": (50.0510, 19.9600),
+        "Bronowice": (50.0660, 19.9180),
+        "Zwierzyniec": (50.0700, 19.9230),
+    },
+    "Warsaw": {
+        "Śródmieście": (52.2310, 21.0060),
+        "Mokotów": (52.1800, 21.0300),
+        "Wola": (52.2350, 20.9700),
+        "Praga": (52.2540, 21.0450),
+        "Żoliborz": (52.2650, 20.9850),
+    },
+    "Gdańsk": {
+        "Main Town": (54.3480, 18.6530),
+        "Wrzeszcz": (54.3250, 18.6070),
+        "Oliwa": (54.3560, 18.5560),
+        "Jelitkowo": (54.3400, 18.5900),
+        "Brzeźno": (54.3770, 18.6280),
+    },
+    "Wrocław": {
+        "Market Square": (51.1070, 17.0260),
+        "Krzyki": (51.0800, 17.0600),
+        "Fabryczna": (51.0850, 17.0300),
+        "Psie Pole": (51.1120, 17.0800),
+        "Stare Miasto": (51.1050, 17.0400),
+    },
+    "Poznań": {
+        "Old Town": (52.4070, 16.9300),
+        "Wilda": (52.3950, 16.9100),
+        "Jeżyce": (52.4200, 16.9000),
+        "Grunwald": (52.4400, 16.9100),
+        "Winogrady": (52.4200, 16.9400),
+    },
+}
+
+# How far a listing strays from the centre of its district, in degrees.
+# 0.006 of latitude is about 670 metres, 0.009 of longitude about 640.
+DISTRICT_SPREAD_LAT = 0.006
+DISTRICT_SPREAD_LNG = 0.009
+
+# The streets of every city the catalogue uses, so a listing of a district
+# carries an address of that city.
+CITY_STREETS = {
+    "Kraków": ["Floriańska", "Grodzka", "Długa", "Wierzbowa", "Kanonicza"],
+    "Warsaw": ["Marszałkowska", "Nowy Świat", "Krucza", "Mokotowska", "Freta"],
+    "Gdańsk": ["Długa", "Mariacka", "Piwna", "Jęczmienna", "Garbary"],
+    "Wrocław": [
+        "Świętego Mikołaja",
+        "Oławska",
+        "Kazimierza Wielkiego",
+        "Św. Marcina",
+        "Włodkowica",
+    ],
+    "Poznań": ["Długa", "Święty Marcin", "Główny", "Mickiewicza", "Naramowicka"],
+}
+
+
+def district_centre(city: str, district: str) -> tuple[float, float]:
+    """The centre of a district - the point its listings are scattered around."""
+    centres = DISTRICT_CENTRES.get(city)
+    if centres is None:
+        raise KeyError(f"unknown city: {city}")
+    centre = centres.get(district)
+    if centre is None:
+        # A district the table does not know falls back to the centre of its
+        # city, spread as wide as the old generator spread every listing.
+        city_data = CITIES[city]
+        return (city_data["lat"], city_data["lng"])
+    return centre
+
+
+def listing_coordinates(city: str, district: str) -> tuple[float, float]:
+    """The coordinates of a listing - inside its district, near its centre."""
+    lat, lng = district_centre(city, district)
+    return (
+        lat + random.uniform(-DISTRICT_SPREAD_LAT, DISTRICT_SPREAD_LAT),
+        lng + random.uniform(-DISTRICT_SPREAD_LNG, DISTRICT_SPREAD_LNG),
+    )
+
+
 USER_ROLES = ["user", "admin", "agent", "premium_user"]
 
 LEAD_STATUSES = ["new", "contacted", "qualified", "converted", "lost"]
@@ -234,6 +321,7 @@ class ComprehensiveDemoDataGenerator:
             district = random.choice(city_data["districts"])
             prop_type = random.choice(PROPERTY_TYPES)
             listing_type = random.choice(LISTING_TYPES)
+            latitude, longitude = listing_coordinates(city, district)
 
             # Generate realistic price based on type and location
             base_price = {
@@ -255,7 +343,7 @@ class ComprehensiveDemoDataGenerator:
             property_data = {
                 "id": f"prop-{i + 1:04d}",
                 "title": f"{random.choice(['Modern', 'Luxury', 'Cozy', 'Spacious', 'Elegant'])} {prop_type.capitalize()} in {district}",
-                "address": f"ul. {random.choice(['Marszałkowska', 'Grodzka', 'Długa', 'Floriańska', 'Piotrkowska'])} {random.randint(1, 100)}, {district}, {city}, Poland",
+                "address": f"ul. {random.choice(CITY_STREETS[city])} {random.randint(1, 100)}, {district}, {city}, Poland",
                 "city": city,
                 "district": district,
                 "price": base_price,
@@ -272,8 +360,8 @@ class ComprehensiveDemoDataGenerator:
                 "floor": random.randint(1, 10),
                 "total_floors": random.randint(3, 15),
                 "year_built": random.randint(1990, 2023),
-                "latitude": city_data["lat"] + random.uniform(-0.05, 0.05),
-                "longitude": city_data["lng"] + random.uniform(-0.05, 0.05),
+                "latitude": latitude,
+                "longitude": longitude,
                 "created_at": (
                     datetime.now(UTC) - timedelta(days=random.randint(1, 180))
                 ).isoformat(),

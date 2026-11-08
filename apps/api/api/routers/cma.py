@@ -34,6 +34,12 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["CMA"])
 
+# The bar a comparable has to clear to be shown to the operator. The wizard
+# asks for 40 and the report has to draw from the same pool, so the endpoint
+# and the report share one number: three different bars in one feature meant
+# that the wizard showed a comparable the report then refused to use.
+CMA_SUGGESTION_MIN_SCORE = 40.0
+
 
 def _document_to_property(doc: Any) -> Property:
     """Convert a ChromaDB Document to a Property object."""
@@ -289,7 +295,7 @@ def _calculate_valuation(
 async def find_comparables(
     property_id: str,
     max_distance_km: float = Query(default=5.0, ge=0.1, le=50.0),
-    min_score: float = Query(default=50.0, ge=0, le=100),
+    min_score: float = Query(default=CMA_SUGGESTION_MIN_SCORE, ge=0, le=100),
     max_results: int = Query(default=6, ge=1, le=20),
     user: User = Depends(get_current_active_user),
     session: AsyncSession = Depends(get_db),
@@ -415,10 +421,13 @@ async def generate_cma_report(
             )
             scores = [s for s in scores if s.property_id in wanted]
         else:
+            # Auto-select: the report draws from the same pool the wizard
+            # showed the operator, so the comparables it picks are the ones
+            # the operator would have seen.
             scores = selector.find_comparables(
                 subject=subject,
                 max_distance_km=request.max_distance_km,
-                min_score=50.0,
+                min_score=CMA_SUGGESTION_MIN_SCORE,
                 max_results=request.max_comparables,
             )
 

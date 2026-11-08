@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.14] - 2026-11-08
+
+### Fixed
+- **The demo catalogue looks like a city** — the listings of a district stood
+  scattered around the centre of the whole city, up to thirteen kilometres
+  apart. The comparable search scores the distance, so a listing of a district
+  scored nothing for its location and the CMA wizard came up with an empty
+  list. Every listing now stands in its own district, close to the centre of
+  it, with the streets of its own city.
+- **The report finds the comparables the wizard showed** — the wizard asked for
+  a comparable of 40 points and above, the endpoint answered with 50 and the
+  report drew from 50, so the report refused the comparables the operator had
+  just picked and answered "Found only 0 comparables". One bar now serves the
+  wizard, the endpoint and the report.
+
 ## [5.1.13] - 2026-11-08
 
 ### Fixed
