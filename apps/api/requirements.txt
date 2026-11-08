@@ -99,6 +99,12 @@ uvicorn>=0.30.0
 python-multipart>=0.0.29
 email-validator>=2.1.0
 
+# Error tracking & APM (Task #56)
+# The container image installs this file, not pyproject.toml - without the
+# line below the image starts without the SDK and the backend logs
+# "sentry-sdk not installed - error tracking disabled" on every boot.
+sentry-sdk[fastapi]>=2.0.0,<3.0.0
+
 # Authentication
 sqlalchemy>=2.0.0
 aiosqlite>=0.19.0

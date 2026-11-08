@@ -1,8 +1,12 @@
 """
-Unit tests for Sentry initialization and PII filtering (Task #56).
+Unit tests for Sentry initialization and PII filtering (Task #56, #41).
 """
 
+from pathlib import Path
+
 from api.sentry_init import _PII_FIELDS, _before_send
+
+API_ROOT = Path(__file__).resolve().parents[2]
 
 
 class TestPIIRedaction:
@@ -71,6 +75,25 @@ class TestSentryInit:
         assert "query" in _PII_FIELDS
         assert "message" in _PII_FIELDS
         assert "token" in _PII_FIELDS
+
+
+class TestSentryIsInstalledInTheImage:
+    """The container installs requirements.txt - not pyproject.toml.
+
+    The SDK was listed in pyproject.toml only, so the image started without
+    it and the backend logged "sentry-sdk not installed - error tracking
+    disabled" on every boot. The guard keeps the two files in agreement.
+    """
+
+    def test_requirements_file_carries_the_sdk(self):
+        requirements = (API_ROOT / "requirements.txt").read_text(encoding="utf-8")
+        assert "sentry-sdk" in requirements
+
+    def test_the_dockerfile_installs_that_file(self):
+        dockerfile = (
+            API_ROOT.parent.parent / "deploy" / "docker" / "Dockerfile.backend"
+        ).read_text(encoding="utf-8")
+        assert "requirements.txt" in dockerfile
 
 
 class TestSentryHelpers:
