@@ -2101,18 +2101,19 @@
     "heroTitle": "Schaufenster"
   },
   "footer": {
-    "title": "Neue Angebote in deinem Postfach",
-    "description": "Hinterlasse deine E-Mail-Adresse, und wir senden dir die Immobilien, die zu deiner Suche passen.",
+    "title": "Sagen Sie uns, was Sie suchen",
+    "description": "Hinterlassen Sie Ihre E-Mail-Adresse - wir merken uns Ihr Interesse an passenden Angeboten.",
     "emailLabel": "E-Mail-Adresse",
     "emailPlaceholder": "you@example.com",
     "submit": "Benachrichtige mich",
     "submitting": "Wird gesendet...",
-    "success": "Danke — du bist auf der Liste.",
-    "consent": "Mit dem Abonnement stimmst du zu, Updates per E-Mail zu erhalten. Du kannst dich jederzeit abmelden.",
+    "success": "Danke - wir haben Ihr Interesse vermerkt.",
+    "consent": "Ihre Adresse wird nur für diese Anfrage verwendet und niemals verkauft.",
     "errorInvalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein.",
     "errorGeneric": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
     "studioNote": "Dies ist die kostenlose Open-Source-Version. Die gehostete Version entsteht bei NestLab.",
-    "studioLink": "nestlab.tech besuchen"
+    "studioLink": "nestlab.tech besuchen",
+    "demoNotice": "Diese Demo versendet keine E-Mails: Ihre Adresse wird gespeichert, damit eine Agentur nachfassen kann."
   },
   "pages": {
     "search": {

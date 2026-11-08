@@ -2101,18 +2101,19 @@
     "ctaTryDemo": "Demoyu dene"
   },
   "footer": {
-    "title": "Yeni ilanları gelen kutunuzda görün",
-    "description": "E-posta adresinizi bırakın, aramanızla eşleşen emlakları size gönderelim.",
+    "title": "Ne aradığınızı söyleyin",
+    "description": "E-posta adresinizi bırakın, size uyan ilanlara ilginizi kaydedelim.",
     "emailLabel": "E-posta adresi",
     "emailPlaceholder": "you@example.com",
     "submit": "Bana bildir",
     "submitting": "Gönderiliyor...",
-    "success": "Teşekkürler — listeye eklendiniz.",
-    "consent": "Abone olarak emlak güncellemelerini e-posta ile almayı kabul edersiniz. İstediğiniz zaman abonelikten çıkabilirsiniz.",
+    "success": "Teşekkürler - ilginizi kaydettik.",
+    "consent": "Adresiniz yalnızca bu talep için kullanılır ve asla satılmaz.",
     "errorInvalidEmail": "Lütfen geçerli bir e-posta adresi girin.",
     "errorGeneric": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
     "studioNote": "Bu, ücretsiz ve açık kaynaklı sürümdür. Barındırılan sürüm NestLab tarafından geliştiriliyor.",
-    "studioLink": "nestlab.tech adresini ziyaret edin"
+    "studioLink": "nestlab.tech adresini ziyaret edin",
+    "demoNotice": "Bu demo e-posta göndermez: adresiniz, bir danışman sizinle iletişime geçebilsin diye kaydedilir."
   },
   "pages": {
     "search": {

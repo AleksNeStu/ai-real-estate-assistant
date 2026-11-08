@@ -2101,18 +2101,19 @@
     "heroTitle": "Vitrine"
   },
   "footer": {
-    "title": "Recebe novos anúncios na tua caixa de entrada",
-    "description": "Deixa o teu e-mail e enviamos-te os imóveis que combinam com a tua pesquisa.",
+    "title": "Diga-nos o que procura",
+    "description": "Deixe o seu e-mail e registamos o seu interesse por anúncios adequados.",
     "emailLabel": "Endereço de e-mail",
     "emailPlaceholder": "you@example.com",
     "submit": "Avisa-me",
     "submitting": "A enviar...",
-    "success": "Obrigado — estás na lista.",
-    "consent": "Ao subscrever aceitas receber atualizações de imóveis por e-mail. Podes cancelar a qualquer momento.",
+    "success": "Obrigado - registámos o seu interesse.",
+    "consent": "O seu endereço é usado apenas neste pedido e nunca é vendido.",
     "errorInvalidEmail": "Introduza um endereço de e-mail válido.",
     "errorGeneric": "Algo correu mal. Tenta novamente.",
     "studioNote": "Esta é a versão gratuita de código aberto. A versão alojada está em desenvolvimento na NestLab.",
-    "studioLink": "Visite nestlab.tech"
+    "studioLink": "Visite nestlab.tech",
+    "demoNotice": "Esta demonstração não envia e-mails: o seu endereço é guardado para um consultor o poder contacting."
   },
   "pages": {
     "search": {

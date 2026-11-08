@@ -2101,18 +2101,19 @@
     "heroTitle": "Escaparate"
   },
   "footer": {
-    "title": "Recibe nuevas ofertas en tu correo",
-    "description": "Deja tu correo y te enviaremos los inmuebles que coinciden con tu búsqueda.",
+    "title": "Díganos qué busca",
+    "description": "Deje su e-mail y guardaremos su interés en los anuncios que coincidan.",
     "emailLabel": "Dirección de correo electrónico",
     "emailPlaceholder": "you@example.com",
     "submit": "Avísame",
     "submitting": "Enviando...",
-    "success": "Gracias, ya estás en la lista.",
-    "consent": "Al suscribirte aceptas recibir novedades de inmuebles por correo electrónico. Puedes darte de baja en cualquier momento.",
+    "success": "Gracias - hemos guardado su interés.",
+    "consent": "Su dirección se usa solo para esta solicitud y nunca se vende.",
     "errorInvalidEmail": "Introduce un correo electrónico válido.",
     "errorGeneric": "Algo salió mal. Inténtalo de nuevo.",
     "studioNote": "Esta es la versión gratuita de código abierto. La versión alojada está en desarrollo en NestLab.",
-    "studioLink": "Visitar nestlab.tech"
+    "studioLink": "Visitar nestlab.tech",
+    "demoNotice": "Esta demo no envía e-mails: su dirección se guarda para que un agente pueda hacer seguimiento."
   },
   "pages": {
     "search": {

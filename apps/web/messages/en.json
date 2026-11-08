@@ -2101,18 +2101,19 @@
     "closeAria": "Close tour"
   },
   "footer": {
-    "title": "Get new listings in your inbox",
-    "description": "Leave your email and we will send you the properties that match your search.",
+    "title": "Tell us what you are looking for",
+    "description": "Leave your e-mail and we will note your interest in matching properties.",
     "emailLabel": "Email address",
     "emailPlaceholder": "you@example.com",
     "submit": "Notify me",
     "submitting": "Sending...",
-    "success": "Thanks - you are on the list.",
-    "consent": "By subscribing you agree to receive property updates by email. You can unsubscribe at any time.",
+    "success": "Thanks - we have noted your interest.",
+    "consent": "Your address is used for this request only, and never sold.",
     "errorInvalidEmail": "Please enter a valid email address.",
     "errorGeneric": "Something went wrong. Please try again.",
     "studioNote": "This is the free, open-source version. The hosted version is in development by NestLab.",
-    "studioLink": "Visit nestlab.tech"
+    "studioLink": "Visit nestlab.tech",
+    "demoNotice": "This demo does not send e-mail: your address is recorded so an agent can follow up."
   },
   "pages": {
     "search": {

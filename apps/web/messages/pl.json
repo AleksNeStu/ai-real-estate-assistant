@@ -2101,18 +2101,19 @@
     "ctaTryDemo": "Wypróbuj demo"
   },
   "footer": {
-    "title": "Nowe oferty prosto na Twoją skrzynkę",
-    "description": "Podaj adres e-mail, a będziemy wysyłać Ci nieruchomości pasujące do Twoich poszukiwań.",
+    "title": "Powiedzcie, czego szukacie",
+    "description": "Zostawcie e-mail, a zapiszemy zainteresowanie ofertami pasującymi do Waszych kryteriów.",
     "emailLabel": "Adres e-mail",
     "emailPlaceholder": "ty@przyklad.pl",
     "submit": "Powiadom mnie",
     "submitting": "Wysyłanie...",
-    "success": "Dziękujemy — jesteś na liście.",
-    "consent": "Zapisując się, wyrażasz zgodę na otrzymywanie aktualności ofert e-mailem. Możesz zrezygnować w dowolnym momencie.",
+    "success": "Dziękujemy - zapisaliśmy zainteresowanie.",
+    "consent": "Wasz adres służy wyłącznie do tej prośby i nigdy nie jest sprzedawany.",
     "errorInvalidEmail": "Podaj prawidłowy adres e-mail.",
     "errorGeneric": "Coś poszło nie tak. Spróbuj ponownie.",
     "studioNote": "To darmowa wersja z otwartym kodem. Wersja hostowana powstaje w NestLab.",
-    "studioLink": "Odwiedz nestlab.tech"
+    "studioLink": "Odwiedz nestlab.tech",
+    "demoNotice": "To demo nie wysyła e-maili: adres zapisujemy, aby agent mógł się z Wami skontaktować."
   },
   "pages": {
     "search": {

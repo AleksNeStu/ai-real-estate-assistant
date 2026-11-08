@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { AlertCircle, CheckCircle2, Loader2, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getOrCreateVisitorId } from '@/lib/visitor-tracking';
+import { getCapabilities } from '@/lib/api';
 
 type SubmitState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -16,12 +17,34 @@ type SubmitState = 'idle' | 'loading' | 'success' | 'error';
  * endpoint, which creates (or updates) the visitor lead and feeds the lead
  * scoring pipeline. Tracking must never break the page, so every failure is
  * reported in the UI instead of thrown.
+ *
+ * The copy does not promise a subscription the deployment cannot keep: when
+ * the mail service is a dummy, the footer says so instead of claiming that
+ * listings will arrive by e-mail.
  */
 export function SiteFooter() {
   const t = useTranslations('footer');
   const [email, setEmail] = useState('');
   const [state, setState] = useState<SubmitState>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [emailEnabled, setEmailEnabled] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getCapabilities()
+      .then((capabilities) => {
+        if (!cancelled) setEmailEnabled(capabilities.email.enabled);
+      })
+      .catch(() => {
+        // The capability endpoint is unreachable: keep the optimistic copy
+        // rather than claiming on the visitor's behalf that e-mail is off.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -128,6 +151,12 @@ export function SiteFooter() {
               )}
 
               <p className="mt-3 text-xs text-muted-foreground">{t('consent')}</p>
+
+              {!emailEnabled && (
+                <p className="mt-2 text-xs text-muted-foreground" role="note">
+                  {t('demoNotice')}
+                </p>
+              )}
             </form>
           )}
 

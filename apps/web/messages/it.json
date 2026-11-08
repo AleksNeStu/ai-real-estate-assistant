@@ -2101,18 +2101,19 @@
     "heroTitle": "Vetrina"
   },
   "footer": {
-    "title": "Ricevi le nuove offerte nella tua posta",
-    "description": "Lascia la tua email e ti invieremo gli immobili che corrispondono alla tua ricerca.",
+    "title": "Diteci cosa cerca",
+    "description": "Lasci la sua e-mail e registreremo il suo interesse per gli annunci adatti.",
     "emailLabel": "Indirizzo email",
     "emailPlaceholder": "you@example.com",
     "submit": "Avvisami",
     "submitting": "Invio in corso...",
-    "success": "Grazie, sei nella lista.",
-    "consent": "Iscrivendoti accetti di ricevere aggiornamenti sugli immobili via email. Puoi annullare l’iscrizione in qualsiasi momento.",
+    "success": "Grazie - abbiamo registrato il suo interesse.",
+    "consent": "Il suo indirizzo serve solo a questa richiesta e non viene mai venduto.",
     "errorInvalidEmail": "Inserisci un indirizzo email valido.",
     "errorGeneric": "Qualcosa è andato storto. Riprova.",
     "studioNote": "Questa è la versione gratuita e open source. La versione ospitata è in sviluppo presso NestLab.",
-    "studioLink": "Visita nestlab.tech"
+    "studioLink": "Visita nestlab.tech",
+    "demoNotice": "Questa demo non invia e-mail: il suo indirizzo viene salvato perché un agente possa ricontattarla."
   },
   "pages": {
     "search": {
