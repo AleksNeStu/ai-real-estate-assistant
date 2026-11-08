@@ -22,6 +22,10 @@
   --accent-foreground: 240 5.9% 10%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
+  /* The one accent of the design: the teal that marks the single primary
+     action of a screen (#0f766e). Everything else stays zinc. */
+  --action: 175 77% 26%;
+  --action-foreground: 0 0% 100%;
   /* Semantic status colours. The zinc palette carries the chrome; these
      carry meaning (positive, caution, informational) and replace the raw
      tailwind palette classes that were scattered across the app.
@@ -31,8 +35,12 @@
      shade keeps the same hue and lifts it to ~3.2-3.4:1. */
   --success: 142 76% 36%;
   --success-foreground: 0 0% 100%;
-  --warning: 32 95% 44%;
+  /* Amber carries attention: "needs your own key", "planned", "expiring".
+     #b45309 on white is 4.7:1 - the 600 shade of the same hue. */
+  --warning: 26 90% 37%;
   --warning-foreground: 0 0% 100%;
+  /* The amber wash: a panel that asks for attention without shouting. */
+  --warning-surface: 48 100% 96%;
   --info: 221 83% 53%;
   --info-foreground: 0 0% 100%;
   /* Orange sits between warning (amber) and destructive (red): the middle
@@ -58,7 +66,9 @@
   --chart-7-foreground: 0 0% 100%;
   --border: 240 5.9% 90%;
   --input: 240 5.9% 90%;
-  --ring: 240 10% 3.9%;
+  /* The focus ring is the accent: one teal, used for the action and for
+     focus, so the eye learns it once. */
+  --ring: 175 77% 26%;
   --radius: 0.5rem;
 }
 
@@ -77,12 +87,15 @@
   --muted-foreground: 240 5% 64.9%;
   --accent: 240 3.7% 15.9%;
   --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
+  --destructive: 0 91% 71%;
   --destructive-foreground: 0 0% 98%;
   --success: 142 71% 50%;
   --success-foreground: 0 0% 100%;
-  --warning: 38 92% 58%;
+  --warning: 43 96% 56%;
   --warning-foreground: 0 0% 100%;
+  --action: 172 66% 50%;
+  --action-foreground: 179 84% 10%;
+  --warning-surface: 39 59% 8%;
   --info: 217 91% 70%;
   --info-foreground: 0 0% 100%;
   --caution: 25 95% 60%;
@@ -100,7 +113,7 @@
   --chart-7-foreground: 240 10% 3.9%;
   --border: 240 3.7% 15.9%;
   --input: 240 3.7% 15.9%;
-  --ring: 240 4.9% 83.9%;
+  --ring: 172 66% 50%;
 }
 
 @theme inline {
@@ -120,6 +133,9 @@
   --color-accent-foreground: hsl(var(--accent-foreground));
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-action: hsl(var(--action));
+  --color-action-foreground: hsl(var(--action-foreground));
+  --color-warning-surface: hsl(var(--warning-surface));
   --color-success: hsl(var(--success));
   --color-success-foreground: hsl(var(--success-foreground));
   --color-warning: hsl(var(--warning));
@@ -143,18 +159,44 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
+  /* Radius scale of the design: 8 panels and cards, 6 controls, 4 badges,
+     10 for the hero instrument only, full for pills and map markers. */
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+  --radius-xl: 10px;
+
+  /* Type scale. Geist carries the hierarchy through weight and size; the
+     display sizes tighten their tracking as they grow. */
+  --text-hero: 60px;
+  --text-hero--line-height: 62px;
+  --text-hero--letter-spacing: -0.045em;
+  --text-section: 36px;
+  --text-section--line-height: 42px;
+  --text-section--letter-spacing: -0.035em;
+  --text-title: 28px;
+  --text-title--line-height: 34px;
+  --text-title--letter-spacing: -0.03em;
+  --text-h3: 20px;
+  --text-h3--line-height: 26px;
+  --text-h3--letter-spacing: -0.02em;
+  --text-lede: 18px;
+  --text-lede--line-height: 28px;
+  --text-body: 15px;
+  --text-body--line-height: 23px;
+  --text-app: 14px;
+  --text-app--line-height: 20px;
+  --text-annot: 12px;
+  --text-annot--line-height: 16px;
 
   /* Typography roles. The runtime variables are set by next/font on <body>;
      `inline` makes the utilities reference them directly instead of copying
-     the values at build time. Without these three bindings the fonts were
+     the values at build time. Without these bindings the fonts were
      downloaded but never applied, and the whole UI rendered in the browser
-     default sans. */
+     default sans. The design uses one sans and one mono - there is no
+     decorative serif. */
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
-  --font-display: var(--font-templar), Georgia, 'Times New Roman', serif;
 }
 
 @layer base {

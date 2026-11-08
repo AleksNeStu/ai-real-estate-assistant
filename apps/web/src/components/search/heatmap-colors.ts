@@ -8,14 +8,15 @@
  * legend renders the very same constants, so the layer and the legend cannot
  * drift apart.
  */
+import { PALETTE } from '@/lib/palette';
 import type { HeatmapMode } from './property-map-utils';
 
-const BLUE = 'hsl(221, 83%, 53%)';
-const TEAL = 'hsl(192, 91%, 39%)';
-const GREEN = 'hsl(142, 76%, 36%)';
-const AMBER = 'hsl(32, 95%, 44%)';
-const ORANGE = 'hsl(20, 90%, 48%)';
-const RED = 'hsl(0, 84%, 60%)';
+const BLUE = PALETTE.chart1;
+const TEAL = PALETTE.chart5;
+const GREEN = PALETTE.success;
+const AMBER = PALETTE.warning;
+const ORANGE = PALETTE.caution;
+const RED = PALETTE.destructive;
 
 /** The visible stops of every ramp, low density to high density. */
 export const HEATMAP_RAMPS: Record<HeatmapMode, string[]> = {

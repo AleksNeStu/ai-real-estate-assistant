@@ -9,7 +9,10 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        /* The single primary action of a screen is the teal accent.
+           `ink` is the emphasis variant: the same weight, in zinc. */
+        default: "bg-action text-action-foreground hover:bg-action/90",
+        ink: "bg-foreground text-background hover:bg-foreground/90",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:

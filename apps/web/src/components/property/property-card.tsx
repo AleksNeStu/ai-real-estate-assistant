@@ -144,7 +144,7 @@ export function PropertyCard({
 
       <CardContent className="flex flex-1 flex-col gap-2 p-6">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="font-display text-lg font-semibold leading-snug tracking-tight line-clamp-2">
+          <h3 className="font-sans text-lg font-semibold leading-snug tracking-tight line-clamp-2">
             {title}
           </h3>
           {showMortgageEstimate && property.price ? (

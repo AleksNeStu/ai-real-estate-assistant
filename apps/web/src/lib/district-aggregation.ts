@@ -1,4 +1,5 @@
 import type { PropertyMapPoint } from "@/components/search/property-map-utils";
+import { DISTRICT_FILL } from './palette';
 
 export interface DistrictStats {
   name: string;
@@ -128,14 +129,14 @@ export function pointInPolygon(
 export function getDistrictColor(avgPrice: number | null, maxPrice: number): string {
   // Mapbox paints this layer itself and does not understand CSS variables,
   // so the colours are the values of the design tokens in a literal form.
-  if (avgPrice === null) return "hsla(240, 4%, 46%, 0.3)"; // Muted - no data
+  if (avgPrice === null) return DISTRICT_FILL.noData; // Muted - no data
 
   const ratio = avgPrice / maxPrice;
 
-  if (ratio < 0.25) return "hsla(142, 76%, 36%, 0.4)"; // Success - low
-  if (ratio < 0.5) return "hsla(32, 95%, 44%, 0.4)"; // Warning - medium-low
-  if (ratio < 0.75) return "hsla(20, 90%, 48%, 0.4)"; // Caution - medium-high
-  return "hsla(0, 84%, 60%, 0.4)"; // Destructive - high
+  if (ratio < 0.25) return DISTRICT_FILL.low; // Success - low
+  if (ratio < 0.5) return DISTRICT_FILL.mediumLow; // Warning - medium-low
+  if (ratio < 0.75) return DISTRICT_FILL.mediumHigh; // Caution - medium-high
+  return DISTRICT_FILL.high; // Destructive - high
 }
 
 /**

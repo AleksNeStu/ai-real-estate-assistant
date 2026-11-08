@@ -1,5 +1,6 @@
 "use client";
 
+import { heatmapLegendColors } from "./heatmap-colors";
 import type { HeatmapMode } from "./property-map-utils";
 
 interface HeatmapLegendProps {
@@ -9,29 +10,24 @@ interface HeatmapLegendProps {
   className?: string;
 }
 
-const MODE_CONFIG: Record<HeatmapMode, { label: string; unit: string; colors: string[] }> = {
+const MODE_CONFIG: Record<HeatmapMode, { label: string; unit: string }> = {
   density: {
     label: "Property Density",
     unit: "",
-    colors: ["rgba(33, 102, 172, 0)", "rgb(103, 169, 207)", "rgb(209, 229, 240)", "rgb(253, 219, 199)", "rgb(239, 138, 98)", "rgb(178, 24, 43)"],
   },
   price: {
     label: "Price",
     unit: "",
-    colors: ["rgb(34, 197, 94)", "rgb(132, 204, 22)", "rgb(234, 179, 8)", "rgb(249, 115, 22)", "rgb(239, 68, 68)"],
   },
   price_per_sqm: {
     label: "Price per m²",
     unit: "/m²",
-    colors: ["rgb(34, 197, 94)", "rgb(132, 204, 22)", "rgb(234, 179, 8)", "rgb(249, 115, 22)", "rgb(239, 68, 68)"],
   },
   yield: {
     label: "Rental Yield",
     unit: "%",
-    colors: ["rgb(239, 68, 68)", "rgb(249, 115, 22)", "rgb(234, 179, 8)", "rgb(132, 204, 22)", "rgb(34, 197, 94)"],
   },
 };
-
 function formatValue(value: number | undefined, mode: HeatmapMode): string {
   if (value === undefined) return "-";
 
@@ -55,7 +51,8 @@ export default function HeatmapLegend({
   className = "",
 }: HeatmapLegendProps) {
   const config = MODE_CONFIG[mode];
-  const gradientColors = config.colors.join(", ");
+  // The legend paints the very same constants the map layer uses.
+  const gradientColors = heatmapLegendColors(mode).join(", ");
 
   return (
     <div

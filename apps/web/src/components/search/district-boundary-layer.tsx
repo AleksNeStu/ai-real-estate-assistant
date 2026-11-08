@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import type { Map as MapboxMap } from 'mapbox-gl';
 import type { DistrictStats, DistrictBoundary } from '@/lib/district-aggregation';
 import { getDistrictColor } from '@/lib/district-aggregation';
+import { DISTRICT_LAYER } from '@/lib/palette';
 
 interface DistrictBoundaryLayerProps {
   map: MapboxMap | null;
@@ -105,7 +106,7 @@ export default function DistrictBoundaryLayer({
       type: 'line',
       source: SOURCE_ID,
       paint: {
-        'line-color': '#374151',
+        'line-color': DISTRICT_LAYER.line,
         'line-width': 1.5,
       },
     });
@@ -142,8 +143,8 @@ export default function DistrictBoundaryLayer({
           'text-anchor': 'center',
         },
         paint: {
-          'text-color': '#1f2937',
-          'text-halo-color': '#ffffff',
+          'text-color': DISTRICT_LAYER.label,
+          'text-halo-color': DISTRICT_LAYER.halo,
           'text-halo-width': 1.5,
         },
       });
