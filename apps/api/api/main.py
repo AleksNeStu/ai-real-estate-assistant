@@ -44,6 +44,7 @@ from api.routers import (
     auth,
     auth_jwt,  # JWT authentication endpoints
     bulk_jobs,  # Task #80: Import/Export Data API
+    capabilities,  # Task #34: what this deployment can actually do
     chat,
     cma,  # Task #85: Comparative Market Analysis
     collections,  # Task #37: Property collections
@@ -343,10 +344,16 @@ async def startup_event():
     logger.info("Initializing Email Service...")
     email_service = EmailServiceFactory.create_from_env()
 
+    # Whether a real mail transport is in place. The dummy service accepts
+    # every send and delivers nothing, so the capability endpoint reports it
+    # and the frontend stops promising a subscription the demo cannot honour.
+    app.state.email_enabled = email_service is not None
+
     if not email_service:
         logger.warning(
             "No email configuration found in environment. "
-            "Using dummy service (emails will not be sent)."
+            "Using dummy service (emails will not be sent). "
+            "The frontend will report that e-mail delivery is unavailable."
         )
         # Create dummy service for scheduler to function without crashing
         dummy_config = EmailConfig(
@@ -570,6 +577,8 @@ app.include_router(mcp_admin.router, prefix="/api/v1")  # Task #68: MCP Admin (h
 app.include_router(mcp_audit.router, prefix="/api/v1")  # Task #69: MCP Audit (has own auth)
 app.include_router(exports.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(auth.router, prefix="/api/v1")
+# Task #34: the frontend reads this to hide features the deployment cannot serve
+app.include_router(capabilities.router, prefix="/api/v1")
 # Task #62: Prometheus metrics endpoint (no auth required for monitoring)
 app.include_router(metrics.router)
 # Task #57: Production Monitoring Dashboard (health, readiness, metrics, overview)
