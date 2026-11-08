@@ -679,26 +679,54 @@ async def _seed_saved_searches(session, users) -> None:
 
 
 async def _seed_notification_preferences(session, users) -> None:
-    """Create notification preferences for each user."""
-    for user in users:
-        existing = await session.get(NotificationPreferenceDB, user.id)
-        if existing:
-            logger.debug("Notification prefs for user %s already exist", user.id)
-            continue
-        prefs = NotificationPreferenceDB(
-            id=str(uuid.uuid4()),
-            user_id=user.id,
-            price_alerts_enabled=True,
-            new_listings_enabled=True,
-            saved_search_enabled=True,
-            market_updates_enabled=False,
-            alert_frequency="daily",
-            email_enabled=True,
-            push_enabled=False,
-            in_app_enabled=True,
-            price_drop_threshold=5.0,
-        )
-        session.add(prefs)
+    """Create notification preferences for each user.
+
+    The lookup is by ``user_id``, not by the primary key. The row's own id
+    is a fresh UUID, so asking for the row whose id is the user id found
+    nothing: every start inserted a second row for the same user, the
+    unique constraint on ``user_id`` fired, and the seed aborted there -
+    so the rest of the seed never ran and the next start failed the same
+    way.
+
+    A row that cannot be written is logged and skipped: one broken
+    preference must not cost the rest of the seed.
+    """
+    # The user ids are read up front, before the first write. A rollback
+    # expires every ORM object of the session, and refreshing an expired
+    # attribute inside an async session raises MissingGreenlet - so the
+    # ids must not be read from the objects after a failed write.
+    user_ids = [user.id for user in users]
+
+    for user_id in user_ids:
+        try:
+            existing = await session.execute(
+                select(NotificationPreferenceDB).where(
+                    NotificationPreferenceDB.user_id == user_id
+                )
+            )
+            if existing.scalars().first():
+                logger.debug("Notification prefs for user %s already exist", user_id)
+                continue
+            prefs = NotificationPreferenceDB(
+                id=str(uuid.uuid4()),
+                user_id=user_id,
+                price_alerts_enabled=True,
+                new_listings_enabled=True,
+                saved_search_enabled=True,
+                market_updates_enabled=False,
+                alert_frequency="daily",
+                email_enabled=True,
+                push_enabled=False,
+                in_app_enabled=True,
+                price_drop_threshold=5.0,
+            )
+            session.add(prefs)
+            await session.flush()
+        except Exception as exc:
+            logger.warning(
+                "Could not seed notification prefs for user %s: %s", user_id, exc
+            )
+            await session.rollback()
 
 
 async def seed_all(clear: bool = False) -> None:
