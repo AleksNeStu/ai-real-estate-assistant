@@ -15,6 +15,7 @@ from alembic.demo_data_generator import (
     DISTRICT_STREETS,
     SQ_M_PER_ROOM,
     build_demo_listing,
+    ordinal,
 )
 from data.schemas import Property
 from vector_store.chroma_store import ChromaPropertyStore
@@ -46,8 +47,7 @@ def test_the_area_follows_the_number_of_rooms():
         low, high = SQ_M_PER_ROOM[listing["property_type"]]
         per_room = listing["area_sqm"] / listing["rooms"]
         assert low - 1 <= per_room <= high + 1, (
-            f"{listing['property_type']} with {listing['rooms']} rooms "
-            f"and {listing['area_sqm']} m2"
+            f"{listing['property_type']} with {listing['rooms']} rooms and {listing['area_sqm']} m2"
         )
 
 
@@ -86,9 +86,23 @@ def test_the_street_belongs_to_the_district():
     for listing in LISTINGS:
         streets = DISTRICT_STREETS[listing["city"]][listing["district"]]
         assert any(f"ul. {street} " in listing["address"] for street in streets), (
-            f"{listing['address']} does not stand on a street of "
-            f"{listing['district']}"
+            f"{listing['address']} does not stand on a street of {listing['district']}"
         )
+
+
+def test_the_floor_is_named_as_an_ordinal():
+    """The description says "on the 3rd floor", not "on the 3 floor"."""
+    for listing in LISTINGS:
+        floor = listing["floor"]
+        assert f"on the {ordinal(floor)} floor" in listing["description"], (
+            f"the floor of {listing['id']} is not named as an ordinal"
+        )
+
+
+def test_the_description_does_not_repeat_itself():
+    """ "fully furnished furniture" says the same thing twice."""
+    for listing in LISTINGS:
+        assert "furnished furniture" not in listing["description"]
 
 
 def test_the_search_text_leads_with_the_title_and_the_address():

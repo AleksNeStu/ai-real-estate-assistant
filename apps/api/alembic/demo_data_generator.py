@@ -174,6 +174,20 @@ ROOMS_WORDS = {
 
 TITLE_ADJECTIVES = ["Sunny", "Spacious", "Bright", "Well-kept", "Quiet", "Renovated"]
 
+
+def ordinal(number: int) -> str:
+    """The English ordinal of a floor: 1st, 2nd, 3rd, 4th, 9th.
+
+    The description used to read "on the 9 floor of a 9-floor building",
+    which is how a reader learns to distrust the whole catalogue.
+    """
+    if 10 <= number % 100 <= 20:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(number % 10, "th")
+    return f"{number}{suffix}"
+
+
 # The centre of every district the catalogue uses. A listing stands in its
 # district, not at the edge of the city: the comparable search scores the
 # distance, and a listing of a district ten kilometres away from its
@@ -253,18 +267,42 @@ DISTRICT_STREETS: dict[str, dict[str, list[str]]] = {
         "Mokotów": ["Puławska", "Mokotowska", "Iwicka", "Kazimierzowska", "Racławicka"],
         "Wola": ["Aleje Jerozolimskie", "Woronicza", "Towarowa", "Kasprzyka", "Sokoła"],
         "Praga": ["Targowa", "Ząbkowska", "Brzeska", "Stalowa", "Kijowska"],
-        "Żoliborz": ["Słowackiego", "Żeliborska", "Modzelewskiego", "Krasińskiego", "Czartoryskiego"],
+        "Żoliborz": [
+            "Słowackiego",
+            "Żeliborska",
+            "Modzelewskiego",
+            "Krasińskiego",
+            "Czartoryskiego",
+        ],
     },
     "Gdańsk": {
         "Main Town": ["Długa", "Mariacka", "Świętego Ducha", "Ogarna", "Frauengasse"],
-        "Wrzeszcz": ["Wrzeszczyńska", "Słowackiego", "Skarżyńska", "Partyzantów", "Wojska Polskiego"],
+        "Wrzeszcz": [
+            "Wrzeszczyńska",
+            "Słowackiego",
+            "Skarżyńska",
+            "Partyzantów",
+            "Wojska Polskiego",
+        ],
         "Oliwa": ["Aleja Grunwaldzka", "Pułaskiego", "Sobieskiego", "Abrahama", "Polna"],
         "Jelitkowo": ["Jelitkowska", "Nisułka", "Słoneczna", "Kartuska", "Słowackiego"],
-        "Brzeźno": ["Brzeźnieńska", "Kliszewska", "Powstańców Warszawskich", "Kołobrzeska", "Rakoczego"],
+        "Brzeźno": [
+            "Brzeźnieńska",
+            "Kliszewska",
+            "Powstańców Warszawskich",
+            "Kołobrzeska",
+            "Rakoczego",
+        ],
     },
     "Wrocław": {
         "Market Square": ["Rynek", "Szewska", "Włodkowica", "Kuźnicza", "Piotra Ściegiennego"],
-        "Krzyki": ["Białawska", "Armii Krajowej", "Drobnera", "Powstańców Śląskich", "Kamiennogórska"],
+        "Krzyki": [
+            "Białawska",
+            "Armii Krajowej",
+            "Drobnera",
+            "Powstańców Śląskich",
+            "Kamiennogórska",
+        ],
         "Fabryczna": ["Zelazna", "Bukowska", "Wrocławska", "Grabiszyńska", "Legnicka"],
         "Psie Pole": ["Dolnośląska", "Kwiatkowskiego", "Botaniczna", "Jaśminowa", "Słowiańska"],
         "Stare Miasto": ["Odrzańska", "Podwale", "Ruska", "Krasińskiego", "Wyszyńskiego"],
@@ -352,9 +390,7 @@ def build_demo_listing(index: int) -> dict:
     # The amenities follow from the building: a two-floor house has no
     # elevator, a flat on the first floor has no balcony.
     has_elevator = total_floors >= 4 and random.random() < 0.75
-    has_balcony = (
-        prop_type in ("apartment", "loft") and floor > 1 and random.random() < 0.6
-    )
+    has_balcony = prop_type in ("apartment", "loft") and floor > 1 and random.random() < 0.6
     has_parking = random.random() < 0.35
     has_garden = prop_type in ("house", "townhouse") and random.random() < 0.6
     has_garage = prop_type == "house" and random.random() < 0.5
@@ -362,18 +398,14 @@ def build_demo_listing(index: int) -> dict:
     is_furnished = listing_type == "rent" and random.random() < 0.4
     pets_allowed = random.random() < 0.5
 
-    price_per_sqm = (
-        CITY_PRICE_PER_SQM[city] if listing_type == "sale" else CITY_RENT_PER_SQM[city]
-    )
+    price_per_sqm = CITY_PRICE_PER_SQM[city] if listing_type == "sale" else CITY_RENT_PER_SQM[city]
     price = area_sqm * price_per_sqm * random.uniform(0.85, 1.2)
     if listing_type == "sale":
         price = int(round(price / 1000.0) * 1000)
     else:
         price = int(round(price / 50.0) * 50)
 
-    street = random.choice(
-        DISTRICT_STREETS.get(city, {}).get(district) or CITY_STREETS[city]
-    )
+    street = random.choice(DISTRICT_STREETS.get(city, {}).get(district) or CITY_STREETS[city])
     number = random.randint(1, 80)
     address = f"ul. {street} {number}, {district}, {city}, Poland"
 
@@ -396,7 +428,7 @@ def build_demo_listing(index: int) -> dict:
     if has_garage:
         amenities.append("a garage")
     if is_furnished:
-        amenities.append("fully furnished furniture")
+        amenities.append("fully furnished rooms")
     amenities_sentence = (
         "The flat comes with " + ", ".join(amenities) + "."
         if amenities
@@ -411,7 +443,7 @@ def build_demo_listing(index: int) -> dict:
         price_sentence = f"Monthly rent {price:,} PLN."
 
     description = (
-        f"{title}. {rooms_word} {prop_type} of {area_sqm} m² on the {floor} "
+        f"{title}. {rooms_word} {prop_type} of {area_sqm} m² on the {ordinal(floor)} "
         f"floor of a {total_floors}-floor building in {district}, {city}, "
         f"built in {year_built}. {amenities_sentence} "
         f"A few minutes on foot from the {district} centre and the tram stop. "
