@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { divIcon } from 'leaflet';
-import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
+import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import { useTranslations } from 'next-intl';
 
+import { MapTileTheme } from '@/components/ui/map-tile-theme';
 import { cn } from '@/lib/utils';
 import type { CityMarketSummary } from './city-market-stats';
 
@@ -19,33 +20,8 @@ import type { CityMarketSummary } from './city-market-stats';
  * The tiles are raster OSM tiles, and they are light by nature. The dark
  * theme therefore filters the tile pane itself, the same way the search
  * route does: a filter on the pane follows the theme toggle without a
- * re-mount of the map.
+ * re-mount of the map. That filter is the shared MapTileTheme.
  */
-
-const LIGHT_TILE_FILTER = 'grayscale(1)';
-const DARK_TILE_FILTER = 'grayscale(1) invert(1) brightness(.9) contrast(.9)';
-
-function TileTheme() {
-  const map = useMap();
-
-  useEffect(() => {
-    const root = document.documentElement;
-
-    const apply = () => {
-      const dark = root.classList.contains('dark');
-      const pane = map.getPane('tilePane');
-      if (pane) pane.style.filter = dark ? DARK_TILE_FILTER : LIGHT_TILE_FILTER;
-    };
-
-    apply();
-
-    const observer = new MutationObserver(apply);
-    observer.observe(root, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, [map]);
-
-  return null;
-}
 
 /** The marker of one city: a disc with the count, or a dashed empty ring. */
 function cityIcon(count: number, isSelected: boolean) {
@@ -103,7 +79,7 @@ export function CityMarketMap({ cities, selected, onSelect, className }: CityMar
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <TileTheme />
+          <MapTileTheme />
           {cities.map((city) => (
             <Marker
               key={city.city}

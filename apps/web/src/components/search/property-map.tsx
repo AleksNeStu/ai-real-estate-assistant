@@ -5,6 +5,7 @@ import { divIcon, type LatLngBoundsExpression } from 'leaflet';
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { MapTileTheme } from '@/components/ui/map-tile-theme';
 import { formatPrice } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -22,31 +23,8 @@ import {
  * in the dark theme they are inverted as well, so the map belongs to the
  * page instead of shouting over it. The filter is set on the tile pane
  * itself, because that is the only place Leaflet keeps the raster layer.
+ * Every map in the application uses the same primitive: `MapTileTheme`.
  */
-const LIGHT_TILE_FILTER = 'grayscale(1)';
-const DARK_TILE_FILTER = 'grayscale(1) invert(1) brightness(.9) contrast(.9)';
-
-function TileTheme() {
-  const map = useMap();
-
-  useEffect(() => {
-    const root = document.documentElement;
-
-    const apply = () => {
-      const dark = root.classList.contains('dark');
-      const pane = map.getPane('tilePane');
-      if (pane) pane.style.filter = dark ? DARK_TILE_FILTER : LIGHT_TILE_FILTER;
-    };
-
-    apply();
-
-    const observer = new MutationObserver(apply);
-    observer.observe(root, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, [map]);
-
-  return null;
-}
 
 function FitBounds({ bounds }: { bounds: LatLngBoundsExpression | null }) {
   const map = useMap();
@@ -157,7 +135,7 @@ export default function PropertyMap({
           />
           <FitBounds bounds={bounds as LatLngBoundsExpression | null} />
           <ZoomTracker onZoomChange={onZoomChange} />
-          <TileTheme />
+          <MapTileTheme />
           {items.map((item) => {
             if (item.kind === 'point') {
               const p = item.point;
