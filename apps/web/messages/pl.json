@@ -2748,8 +2748,17 @@
       "analyze": "Analizuj"
     },
     "analytics": {
-      "title": "Analityka i narzędzia",
-      "description": "Analityka portfela i kalkulatory, które za nią stoją.",
+      "title": "Analityka",
+      "description": "Pięć kalkulatorów — te same, które asystent wywołuje na czacie.",
+      "note": "deterministyczne · bez modelu · waluta z oferty",
+      "tools": {
+        "label": "Narzędzia",
+        "mortgage": "Kredyt",
+        "investment": "Analiza inwestycji",
+        "advanced": "Analiza zaawansowana",
+        "portfolio": "Portfel",
+        "rentVsBuy": "Wynajem czy kupno"
+      },
       "sections": {
         "advancedInvestment": "Zaawansowana analityka inwestycji"
       }

@@ -1,4 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
+
+import { jest } from '@jest/globals';
 
 import { ToolOutput } from '../tool-output';
 import { ToolRail } from '../tool-rail';
@@ -11,6 +13,8 @@ describe('ToolRail', () => {
           { id: 'tool-mortgage', name: 'mortgage_calculator' },
           { id: 'tool-legal', name: 'legal_check', status: 'needsConfig' },
         ]}
+        selected="tool-mortgage"
+        onSelect={() => {}}
       />
     );
 
@@ -19,13 +23,21 @@ describe('ToolRail', () => {
     expect(screen.getByText('needs config')).toHaveClass('text-warning');
   });
 
-  it('links every tool to its section on the page', () => {
-    render(<ToolRail tools={[{ id: 'tool-mortgage', name: 'mortgage_calculator' }]} />);
-
-    expect(screen.getByText('mortgage_calculator').closest('a')).toHaveAttribute(
-      'href',
-      '#tool-mortgage'
+  it('picks the tool it is asked for', () => {
+    const onSelect = jest.fn();
+    render(
+      <ToolRail
+        tools={[{ id: 'tool-mortgage', name: 'mortgage_calculator' }]}
+        selected="tool-mortgage"
+        onSelect={onSelect}
+      />
     );
+
+    const entry = screen.getByTestId('tool-mortgage_calculator');
+    expect(entry).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(entry);
+    expect(onSelect).toHaveBeenCalledWith('tool-mortgage');
   });
 });
 

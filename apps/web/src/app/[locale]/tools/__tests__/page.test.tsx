@@ -87,10 +87,10 @@ function mockFetchError(urlPattern: string | RegExp, errorMessage: string) {
  * Helper to render the ToolsPage and wait for async effects to settle.
  * The PromptTemplatesSection fires an async useEffect that loads templates.
  */
-async function renderToolsPage() {
+async function renderToolsPage(tool?: string) {
   let utils: ReturnType<typeof render>;
   await act(async () => {
-    utils = render(<ToolsPage />);
+    utils = render(<ToolsPage initialTool={tool ? `tool-${tool}` : undefined} />);
   });
   return utils!;
 }
@@ -111,18 +111,25 @@ describe('ToolsPage', () => {
     expect(screen.getByText('Tools')).toBeInTheDocument();
   });
 
-  it('renders all section headings', async () => {
+  it('lists every tool in the tool list, and shows one at a time', async () => {
     await renderToolsPage();
+    // The console shows one tool at a time; the list carries the rest.
+    for (const name of [
+      'mortgage_calculator',
+      'compare_properties',
+      'price_analysis',
+      'location_analysis',
+      'neighborhood_quality',
+      'prompt_templates',
+      'valuation',
+      'legal_check',
+      'enrich_address',
+      'crm_sync_contact',
+    ]) {
+      expect(screen.getByTestId(`tool-${name}`)).toBeInTheDocument();
+    }
     expect(screen.getByText('Mortgage Calculator')).toBeInTheDocument();
-    expect(screen.getByText('Compare Properties')).toBeInTheDocument();
-    expect(screen.getByText('Price Analysis')).toBeInTheDocument();
-    expect(screen.getByText('Location Analysis')).toBeInTheDocument();
-    expect(screen.getByText('Neighborhood Quality Index')).toBeInTheDocument();
-    expect(screen.getByText('Prompt Templates')).toBeInTheDocument();
-    expect(screen.getByText('Valuation (CE Stub)')).toBeInTheDocument();
-    expect(screen.getByText('Legal Check (CE Stub)')).toBeInTheDocument();
-    expect(screen.getByText('Data Enrichment (CE Stub)')).toBeInTheDocument();
-    expect(screen.getByText('CRM Sync Contact (CE Stub)')).toBeInTheDocument();
+    expect(screen.queryByText('Compare Properties')).not.toBeInTheDocument();
   });
 
   // ---------- Mortgage Calculator ----------
@@ -186,7 +193,7 @@ describe('ToolsPage', () => {
 
   describe('CompareSection', () => {
     it('renders the Compare section', async () => {
-      await renderToolsPage();
+      await renderToolsPage('compare_properties');
       expect(screen.getByPlaceholderText('IDs comma-separated')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /^compare$/i })).toBeInTheDocument();
     });
@@ -196,7 +203,7 @@ describe('ToolsPage', () => {
         summary: { count: 3, min_price: 100000, max_price: 500000, price_difference: 400000 },
       });
 
-      await renderToolsPage();
+      await renderToolsPage('compare_properties');
 
       const idsInput = screen.getByPlaceholderText('IDs comma-separated');
       await act(async () => {
@@ -217,7 +224,7 @@ describe('ToolsPage', () => {
     it('shows error when compare fails', async () => {
       mockFetchError('compare-properties', 'Compare failed');
 
-      await renderToolsPage();
+      await renderToolsPage('compare_properties');
 
       const idsInput = screen.getByPlaceholderText('IDs comma-separated');
       await act(async () => {
@@ -239,7 +246,7 @@ describe('ToolsPage', () => {
 
   describe('PriceAnalysisSection', () => {
     it('renders the Price Analysis section', async () => {
-      await renderToolsPage();
+      await renderToolsPage('price_analysis');
       expect(screen.getByPlaceholderText('Query (e.g., city or type)')).toBeInTheDocument();
       expect(screen.getAllByRole('button', { name: /^analyze$/i }).length).toBeGreaterThan(0);
     });
@@ -251,7 +258,7 @@ describe('ToolsPage', () => {
         median_price: 320000,
       });
 
-      await renderToolsPage();
+      await renderToolsPage('price_analysis');
 
       const queryInput = screen.getByPlaceholderText('Query (e.g., city or type)');
       await act(async () => {
@@ -274,7 +281,7 @@ describe('ToolsPage', () => {
 
   describe('LocationAnalysisSection', () => {
     it('renders the Location Analysis section', async () => {
-      await renderToolsPage();
+      await renderToolsPage('location_analysis');
       const pidInputs = screen.getAllByPlaceholderText('Property ID');
       expect(pidInputs.length).toBeGreaterThanOrEqual(1);
     });
@@ -287,7 +294,7 @@ describe('ToolsPage', () => {
         lon: 13.4,
       });
 
-      await renderToolsPage();
+      await renderToolsPage('location_analysis');
 
       const locationHeading = screen.getByText('Location Analysis');
       const section = locationHeading.closest('section');
@@ -341,7 +348,7 @@ describe('ToolsPage', () => {
     it('shows hint for CRM connector errors', async () => {
       mockFetchError('crm-sync-contact', 'CRM connector not configured');
 
-      await renderToolsPage();
+      await renderToolsPage('crm_sync_contact');
 
       const nameInput = screen.getByPlaceholderText('Name');
       await act(async () => {

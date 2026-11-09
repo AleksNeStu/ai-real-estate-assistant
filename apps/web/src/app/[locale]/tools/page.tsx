@@ -24,68 +24,65 @@ import { ToolRail, type ToolRailEntry } from '@/components/tools/tool-rail';
 
 type ToolTranslator = (key: string) => string;
 
-export default function ToolsPage() {
+export default function ToolsPage({ initialTool }: { initialTool?: string }) {
   const t = useTranslations('pages.tools');
+  const [selected, setSelected] = useState(initialTool ?? 'tool-mortgage_calculator');
 
-  // The console's tool list: what each tool is called in the reader's
-  // language, what it calls itself, and whether it can run as it stands.
+  // The console's tool list: what each tool calls itself, and whether it
+  // can run as it stands. The console shows one tool at a time.
   const rail: ToolRailEntry[] = [
-    { id: 'tool-mortgage', name: 'mortgage_calculator' },
-    { id: 'tool-compare', name: 'compare_properties' },
-    { id: 'tool-price', name: 'price_analysis' },
-    { id: 'tool-location', name: 'location_analysis' },
-    { id: 'tool-neighborhood', name: 'neighborhood_quality' },
-    { id: 'tool-templates', name: 'prompt_templates' },
+    { id: 'tool-mortgage_calculator', name: 'mortgage_calculator' },
+    { id: 'tool-compare_properties', name: 'compare_properties' },
+    { id: 'tool-price_analysis', name: 'price_analysis' },
+    { id: 'tool-location_analysis', name: 'location_analysis' },
+    { id: 'tool-neighborhood_quality', name: 'neighborhood_quality' },
+    { id: 'tool-prompt_templates', name: 'prompt_templates' },
     { id: 'tool-valuation', name: 'valuation', status: 'needsConfig' },
-    { id: 'tool-legal', name: 'legal_check', status: 'needsConfig' },
-    { id: 'tool-enrich', name: 'enrich_address', status: 'needsConfig' },
-    { id: 'tool-crm', name: 'crm_sync_contact', status: 'needsAccount' },
+    { id: 'tool-legal_check', name: 'legal_check', status: 'needsConfig' },
+    { id: 'tool-enrich_address', name: 'enrich_address', status: 'needsConfig' },
+    { id: 'tool-crm_sync_contact', name: 'crm_sync_contact', status: 'needsAccount' },
   ];
+
+  // One form at a time: the console shows the tool the list picked.
+  const sections: Record<string, React.ReactNode> = {
+    'tool-mortgage_calculator': <MortgageSection />,
+    'tool-compare_properties': <CompareSection />,
+    'tool-price_analysis': <PriceAnalysisSection />,
+    'tool-location_analysis': <LocationAnalysisSection />,
+    'tool-neighborhood_quality': <NeighborhoodQualitySection />,
+    'tool-prompt_templates': <PromptTemplatesSection />,
+    'tool-valuation': <ValuationSection />,
+    'tool-legal_check': <LegalCheckSection />,
+    'tool-enrich_address': <EnrichAddressSection />,
+    'tool-crm_sync_contact': <CrmSyncSection />,
+  };
 
   return (
     <div className="mx-auto flex max-w-[1248px] gap-8 px-6 py-8">
       <div className="hidden w-[280px] shrink-0 lg:block">
         <div className="sticky top-20">
-          <ToolRail tools={rail} />
+          <ToolRail tools={rail} selected={selected} onSelect={setSelected} />
         </div>
       </div>
-      <div className="min-w-0 flex-1 space-y-8">
+      <div className="min-w-0 flex-1">
         <PageHeader title={t('title')} description={t('description')} />
         <div className="flex items-baseline justify-between gap-4 border-b border-border pb-3">
           <MonoAnnotation>{t('console.endpoint', { name: '{name}' })}</MonoAnnotation>
           <MonoAnnotation>{t('console.count', { count: rail.length })}</MonoAnnotation>
         </div>
-        <div id="tool-mortgage">
-          <MortgageSection />
-        </div>
-        <div id="tool-compare">
-          <CompareSection />
-        </div>
-        <div id="tool-price">
-          <PriceAnalysisSection />
-        </div>
-        <div id="tool-location">
-          <LocationAnalysisSection />
-        </div>
-        <div id="tool-neighborhood">
-          <NeighborhoodQualitySection />
-        </div>
-        <div id="tool-templates">
-          <PromptTemplatesSection />
-        </div>
-        <hr className="my-4" />
-        <div id="tool-valuation">
-          <ValuationSection />
-        </div>
-        <div id="tool-legal">
-          <LegalCheckSection />
-        </div>
-        <div id="tool-enrich">
-          <EnrichAddressSection />
-        </div>
-        <div id="tool-crm">
-          <CrmSyncSection />
-        </div>
+        <select
+          className="mt-4 w-full rounded-md border border-input bg-background px-3 py-2 text-app lg:hidden"
+          value={selected}
+          onChange={(event) => setSelected(event.target.value)}
+          aria-label={t('console.tools')}
+        >
+          {rail.map((tool) => (
+            <option key={tool.id} value={tool.id}>
+              {tool.name}
+            </option>
+          ))}
+        </select>
+        <div className="mt-6">{sections[selected]}</div>
       </div>
     </div>
   );
@@ -102,7 +99,8 @@ function MortgageSection() {
   const [loading, setLoading] = useState(false);
   const hint = error ? getToolHint(error, t) : null;
   return (
-    <section>
+    <section className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="flex flex-col gap-3">
       <h2 className="text-xl font-medium">{t('mortgage.title')}</h2>
       <div className="grid grid-cols-2 gap-2 my-2">
         <input
@@ -156,13 +154,16 @@ function MortgageSection() {
       </button>
       {error && <p className="text-destructive mt-2">{error}</p>}
       {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
+      </div>
+      <div className="flex flex-col gap-3">
       {result && (
-        <ToolOutput name="mortgage_calculator" raw={result} className="mt-2">
+        <ToolOutput name="mortgage_calculator" raw={result}>
           <p className="m-0">
             {t('mortgage.monthlyPayment', { amount: result.monthly_payment.toFixed(2) })}
           </p>
         </ToolOutput>
       )}
+      </div>
     </section>
   );
 }
@@ -182,7 +183,8 @@ function CompareSection() {
   const [exportError, setExportError] = useState<string | null>(null);
   const hint = error ? getToolHint(error, t) : null;
   return (
-    <section>
+    <section className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="flex flex-col gap-3">
       <h2 className="text-xl font-medium">{t('compare.title')}</h2>
       <input
         className="border p-2 w-full my-2"
@@ -319,8 +321,10 @@ function CompareSection() {
       {error && <p className="text-destructive mt-2">{error}</p>}
       {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
       {exportError && <p className="text-destructive mt-2">{exportError}</p>}
+      </div>
+      <div className="flex flex-col gap-3">
       {data && (
-        <ToolOutput name="compare_properties" raw={data} className="mt-2">
+        <ToolOutput name="compare_properties" raw={data}>
           <div className="flex flex-col">
             <p className="m-0">{t('fields.count', { value: data.summary?.count })}</p>
             <p className="m-0">{t('fields.minPrice', { value: data.summary?.min_price ?? '-' })}</p>
@@ -329,6 +333,7 @@ function CompareSection() {
           </div>
         </ToolOutput>
       )}
+      </div>
     </section>
   );
 }
@@ -341,7 +346,8 @@ function PriceAnalysisSection() {
   const [loading, setLoading] = useState(false);
   const hint = error ? getToolHint(error, t) : null;
   return (
-    <section>
+    <section className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="flex flex-col gap-3">
       <h2 className="text-xl font-medium">{t('price.title')}</h2>
       <input
         className="border p-2 w-full my-2"
@@ -370,13 +376,18 @@ function PriceAnalysisSection() {
       </button>
       {error && <p className="text-destructive mt-2">{error}</p>}
       {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
+      </div>
+      <div className="flex flex-col gap-3">
       {data && (
+        <ToolOutput name="price_analysis" raw={data}>
         <div className="mt-2">
           <p>{t('fields.count', { value: data.count })}</p>
           <p>{t('fields.averagePrice', { value: data.average_price ?? '-' })}</p>
           <p>{t('fields.medianPrice', { value: data.median_price ?? '-' })}</p>
         </div>
+        </ToolOutput>
       )}
+      </div>
     </section>
   );
 }
@@ -389,7 +400,8 @@ function LocationAnalysisSection() {
   const [loading, setLoading] = useState(false);
   const hint = error ? getToolHint(error, t) : null;
   return (
-    <section>
+    <section className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="flex flex-col gap-3">
       <h2 className="text-xl font-medium">{t('location.title')}</h2>
       <input
         className="border p-2 w-full my-2"
@@ -418,13 +430,18 @@ function LocationAnalysisSection() {
       </button>
       {error && <p className="text-destructive mt-2">{error}</p>}
       {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
+      </div>
+      <div className="flex flex-col gap-3">
       {data && (
+        <ToolOutput name="location_analysis" raw={data}>
         <div className="mt-2">
           <p>{t('fields.city', { value: data.city ?? '-' })}</p>
           <p>{t('fields.neighborhood', { value: data.neighborhood ?? '-' })}</p>
           <p>{t('fields.latLon', { lat: data.lat ?? '-', lon: data.lon ?? '-' })}</p>
         </div>
+        </ToolOutput>
       )}
+      </div>
     </section>
   );
 }
@@ -458,7 +475,8 @@ function NeighborhoodQualitySection() {
   };
 
   return (
-    <section>
+    <section className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="flex flex-col gap-3">
       <h2 className="text-xl font-medium">{t('neighborhood.title')}</h2>
       <div className="grid grid-cols-2 gap-2 my-2">
         <input
@@ -519,7 +537,10 @@ function NeighborhoodQualitySection() {
       </button>
       {error && <p className="text-destructive mt-2">{error}</p>}
       {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
+      </div>
+      <div className="flex flex-col gap-3">
       {data && (
+        <ToolOutput name="neighborhood_quality" raw={data}>
         <div className="mt-4 space-y-3">
           <div className="flex items-center gap-4">
             <h3 className="text-lg font-semibold">
@@ -571,7 +592,9 @@ function NeighborhoodQualitySection() {
             </p>
           </div>
         </div>
+        </ToolOutput>
       )}
+      </div>
     </section>
   );
 }
@@ -653,7 +676,8 @@ function PromptTemplatesSection() {
   }, [selected]);
 
   return (
-    <section>
+    <section className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="flex flex-col gap-3">
       <h2 className="text-xl font-medium">{t('templates.title')}</h2>
       <p className="text-sm text-muted-foreground mt-1">{t('templates.description')}</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 my-2">
@@ -745,7 +769,10 @@ function PromptTemplatesSection() {
         </button>
       </div>
       {error && <p className="text-destructive mt-2">{error}</p>}
+      </div>
+      <div className="flex flex-col gap-3">
       {result ? (
+        <ToolOutput name="prompt_templates" raw={result}>
         <textarea
           className="border p-2 w-full mt-2"
           rows={10}
@@ -753,7 +780,9 @@ function PromptTemplatesSection() {
           onChange={(e) => setResult(e.target.value)}
           aria-label={t('templates.output')}
         />
+        </ToolOutput>
       ) : null}
+      </div>
     </section>
   );
 }
@@ -766,7 +795,8 @@ function ValuationSection() {
   const [loading, setLoading] = useState(false);
   const hint = error ? getToolHint(error, t) : null;
   return (
-    <section>
+    <section className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="flex flex-col gap-3">
       <h2 className="text-xl font-medium">{t('valuation.title')}</h2>
       <input
         className="border p-2 w-full my-2"
@@ -795,9 +825,14 @@ function ValuationSection() {
       </button>
       {error && <p className="text-destructive mt-2">{error}</p>}
       {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
+      </div>
+      <div className="flex flex-col gap-3">
       {value !== null && (
-        <p className="mt-2">{t('fields.estimatedValue', { value: value.toFixed(2) })}</p>
+        <ToolOutput name="valuation" raw={{ estimated_value: value }}>
+        <p className="m-0">{t('fields.estimatedValue', { value: value.toFixed(2) })}</p>
+        </ToolOutput>
       )}
+      </div>
     </section>
   );
 }
@@ -810,7 +845,8 @@ function LegalCheckSection() {
   const [loading, setLoading] = useState(false);
   const hint = error ? getToolHint(error, t) : null;
   return (
-    <section>
+    <section className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="flex flex-col gap-3">
       <h2 className="text-xl font-medium">{t('legal.title')}</h2>
       <textarea
         className="border p-2 w-full my-2"
@@ -840,12 +876,17 @@ function LegalCheckSection() {
       </button>
       {error && <p className="text-destructive mt-2">{error}</p>}
       {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
+      </div>
+      <div className="flex flex-col gap-3">
       {data && (
+        <ToolOutput name="legal_check" raw={data}>
         <div className="mt-2">
           <p>{t('fields.score', { value: data.score })}</p>
           <p>{t('fields.risks', { value: Array.isArray(data.risks) ? data.risks.length : 0 })}</p>
         </div>
+        </ToolOutput>
       )}
+      </div>
     </section>
   );
 }
@@ -858,7 +899,8 @@ function EnrichAddressSection() {
   const [loading, setLoading] = useState(false);
   const hint = error ? getToolHint(error, t) : null;
   return (
-    <section>
+    <section className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="flex flex-col gap-3">
       <h2 className="text-xl font-medium">{t('enrich.title')}</h2>
       <input
         className="border p-2 w-full my-2"
@@ -887,12 +929,16 @@ function EnrichAddressSection() {
       </button>
       {error && <p className="text-destructive mt-2">{error}</p>}
       {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
+      </div>
+      <div className="flex flex-col gap-3">
       {data && (
+        <ToolOutput name="enrich_address" raw={data.data}>
         <div className="mt-2">
           <p>{t('fields.address', { value: data.address })}</p>
-          <pre className="bg-muted p-2 rounded text-sm">{JSON.stringify(data.data, null, 2)}</pre>
         </div>
+        </ToolOutput>
       )}
+      </div>
     </section>
   );
 }
@@ -907,7 +953,8 @@ function CrmSyncSection() {
   const [loading, setLoading] = useState(false);
   const hint = error ? getToolHint(error, t) : null;
   return (
-    <section>
+    <section className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="flex flex-col gap-3">
       <h2 className="text-xl font-medium">{t('crm.title')}</h2>
       <div className="grid grid-cols-3 gap-2 my-2">
         <input
@@ -950,7 +997,14 @@ function CrmSyncSection() {
       </button>
       {error && <p className="text-destructive mt-2">{error}</p>}
       {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
-      {id && <p className="mt-2">{t('fields.contactId', { id })}</p>}
+      </div>
+      <div className="flex flex-col gap-3">
+      {id && (
+        <ToolOutput name="crm_sync_contact" raw={{ contact_id: id }}>
+        <p className="m-0">{t('fields.contactId', { id })}</p>
+        </ToolOutput>
+      )}
+      </div>
     </section>
   );
 }

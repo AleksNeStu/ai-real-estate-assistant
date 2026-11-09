@@ -16,21 +16,20 @@ import { ToolsPage } from '../page-objects/tools.page';
 
 test.describe('Tools', () => {
   test.describe('Page Load', () => {
-    test('should display tool sections @smoke', async ({ authenticatedPage }) => {
+    test('should display the tool list @smoke', async ({ authenticatedPage }) => {
       const toolsPage = new ToolsPage(authenticatedPage);
       await toolsPage.navigate();
 
       // Verify main heading
       await expect(toolsPage.heading).toBeVisible();
 
-      // Verify mortgage calculator section
+      // The console shows one tool at a time; the list carries them all.
+      await expect(authenticatedPage.getByTestId('tool-mortgage_calculator')).toBeVisible();
+      await expect(authenticatedPage.getByTestId('tool-compare_properties')).toBeVisible();
+      await expect(authenticatedPage.getByTestId('tool-neighborhood_quality')).toBeVisible();
+
+      // The tool the console opens with is on screen.
       await expect(authenticatedPage.getByText('Mortgage Calculator')).toBeVisible();
-
-      // Verify compare properties section
-      await expect(authenticatedPage.getByText('Compare Properties')).toBeVisible();
-
-      // Verify neighborhood quality section
-      await expect(authenticatedPage.getByText('Neighborhood Quality Index')).toBeVisible();
     });
 
     test('should display mortgage calculator inputs with defaults', async ({
@@ -187,6 +186,7 @@ test.describe('Tools', () => {
       await toolsPage.navigate();
 
       // Clear the IDs input and try to compare
+      await toolsPage.selectTool('compare_properties');
       await toolsPage.compareIdsInput.clear();
       await toolsPage.compareButton.click();
 

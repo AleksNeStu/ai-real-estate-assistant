@@ -2748,8 +2748,17 @@
       "analyze": "Analyze"
     },
     "analytics": {
-      "title": "Analytics & Tools",
-      "description": "Market insights and financial tools to help you make informed decisions.",
+      "title": "Analytics",
+      "description": "Five calculators — the same ones the assistant calls in chat.",
+      "note": "deterministic · no model needed · currency follows the listing",
+      "tools": {
+        "label": "Tools",
+        "mortgage": "Mortgage",
+        "investment": "Investment analyzer",
+        "advanced": "Advanced analyzer",
+        "portfolio": "Portfolio analyzer",
+        "rentVsBuy": "Rent vs buy"
+      },
       "sections": {
         "advancedInvestment": "Advanced Investment Analytics"
       }

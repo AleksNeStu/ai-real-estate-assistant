@@ -42,6 +42,15 @@ export interface ToolCardProps {
   sources?: ToolSource[];
   /** Where the call stands. */
   status?: ToolStatus;
+  /**
+   * The word before the conclusion. A label, so it is the reader's
+   * language: the card defaults to English and the caller passes its own.
+   */
+  resultLabel?: string;
+  /** The name of the intermediate steps, before the count. */
+  stepsLabel?: string;
+  /** The name of the sources, before the count. */
+  sourcesLabel?: string;
   className?: string;
 }
 
@@ -67,6 +76,9 @@ export function ToolCard({
   steps,
   sources,
   status = 'ok',
+  resultLabel = 'Result',
+  stepsLabel = 'Intermediate steps',
+  sourcesLabel = 'Sources',
   className,
 }: ToolCardProps) {
   const call = [label, duration].filter(Boolean).join(' · ');
@@ -105,13 +117,15 @@ export function ToolCard({
 
         {verdict ? (
           <p className="m-0 rounded-md bg-muted px-3 py-2 text-app text-foreground">
-            <span className="font-semibold">Result</span> · {verdict}
+            <span className="font-semibold">{resultLabel}</span> · {verdict}
           </p>
         ) : null}
 
         {steps && steps.length > 0 ? (
           <details className="text-annot text-muted-foreground">
-            <summary className="cursor-pointer">Intermediate steps ({steps.length})</summary>
+            <summary className="cursor-pointer">
+              {stepsLabel} ({steps.length})
+            </summary>
             <ol className="mt-1.5 list-decimal pl-4 font-mono leading-4">
               {steps.map((step) => (
                 <li key={step}>{step}</li>
@@ -122,7 +136,9 @@ export function ToolCard({
 
         {sources && sources.length > 0 ? (
           <details className="rounded-md border border-border bg-muted px-3 py-2 text-annot text-foreground">
-            <summary className="cursor-pointer font-medium">Sources ({sources.length})</summary>
+            <summary className="cursor-pointer font-medium">
+              {sourcesLabel} ({sources.length})
+            </summary>
             <ol className="mt-2 flex list-none flex-col pl-0">
               {sources.map((source, index) => (
                 <li

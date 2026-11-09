@@ -366,6 +366,9 @@ export default function ChatPage() {
                               name={call.name}
                               args={call.args}
                               result={<ToolResult observation={call.result} />}
+                              resultLabel={t('toolCard.result')}
+                              stepsLabel={t('toolCard.steps')}
+                              sourcesLabel={t('toolCard.sources')}
                             />
                           </div>
                         ))}

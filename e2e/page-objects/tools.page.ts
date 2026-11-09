@@ -84,6 +84,17 @@ export class ToolsPage {
   }
 
   /**
+   * Pick a tool in the console's tool list.
+   *
+   * The console shows one tool at a time, so a test that drives a form
+   * picks its tool first. The name is the tool's own name, as the API
+   * calls it: `mortgage_calculator`.
+   */
+  async selectTool(name: string): Promise<void> {
+    await this.page.getByTestId(`tool-${name}`).click();
+  }
+
+  /**
    * Fill the mortgage calculator form with the given values.
    */
   async fillMortgageForm(input: {
@@ -92,6 +103,7 @@ export class ToolsPage {
     interestRate?: string;
     loanYears?: string;
   }): Promise<void> {
+    await this.selectTool('mortgage_calculator');
     await this.mortgagePropertyPriceInput.fill(input.propertyPrice);
     if (input.downPaymentPercent !== undefined) {
       await this.mortgageDownPaymentInput.clear();
@@ -155,6 +167,7 @@ export class ToolsPage {
    * Fill the compare properties form and compare.
    */
   async fillAndCompare(ids: string[]): Promise<void> {
+    await this.selectTool('compare_properties');
     await this.compareIdsInput.fill(ids.join(', '));
     await this.compareButton.click();
   }
@@ -182,6 +195,7 @@ export class ToolsPage {
     lon?: string;
     city?: string;
   }): Promise<void> {
+    await this.selectTool('neighborhood_quality');
     await this.neighborhoodPropertyIdInput.fill(input.propertyId);
     if (input.lat) await this.neighborhoodLatInput.fill(input.lat);
     if (input.lon) await this.neighborhoodLonInput.fill(input.lon);
