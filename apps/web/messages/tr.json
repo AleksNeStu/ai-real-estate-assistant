@@ -218,7 +218,9 @@
       "passwordLabel": "Parola",
       "confirmPasswordLabel": "Parolayı doğrula",
       "haveAccount": "Zaten hesabınız var mı?",
-      "submit": "Hesap oluştur"
+      "submit": "Hesap oluştur",
+      "consentLabel": "Kullanım koşullarını ve gizlilik politikasını kabul ediyor, verilerimin işlenmesine onay veriyorum.",
+      "consentRequired": "Hesap oluşturmak için koşulları kabul edin."
     },
     "forgotPassword": {
       "title": "Parolanızı mı unuttunuz?",
@@ -3364,6 +3366,467 @@
       "thursday": "Perşembe",
       "friday": "Cuma",
       "saturday": "Cumartesi"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Doğal dilde sorun. Eşleşen ilanları alın.",
+      "body": "Emlak araması, finansal analiz ve piyasa içgörüsü için açık kaynak bir asistan. İstediğiniz daireyi yazın; filtreleri çıkarır, katalogu anlama göre arar, eşleşmeleri haritaya koyar ve sayıları sohbette hesaplar.",
+      "placeholder": "Aradığınız emlağı tanımlayın",
+      "ctaSearch": "Canlı demoda arama yapın",
+      "ctaAssistant": "Asistana sorun",
+      "ctaGithub": "GitHub'da yıldızlayın",
+      "demoNote": "Demo bizim ödediğimiz bir modelle yanıt verir, keşfetmek hiçbir şeye mal olmaz — kayıt yok, anahtar yok.",
+      "statLicence": "MIT",
+      "statLicenceLabel": "lisans",
+      "statLanguages": "9",
+      "statLanguagesLabel": "arayüz dili",
+      "statProviders": "17 + Ollama",
+      "statProvidersLabel": "LLM sağlayıcısı",
+      "statDeploy": "1 dosya",
+      "statDeployLabel": "docker compose up",
+      "instrumentParsed": "işlendi",
+      "instrumentOpenAll": "Tümünü aç ({count})",
+      "instrumentNote": "Örnek verili demo kataloğu, gerçek ilanlar değil · bizim ödediğimiz bir model, anahtar yok",
+      "instrumentPerMonth": "≈{amount}/mo",
+      "instrumentPerSqm": "{amount} zł/m²",
+      "matches": "{count} eşleşme"
+    },
+    "chips": {
+      "label": "Bunlardan birini deneyin:",
+      "1": "Kraków'da 500k altı 2 odalı daire",
+      "2": "Bahçeli aile evi, Warsaw",
+      "3": "Şehir merkezine yakın stüdyo, Wrocław",
+      "4": "Yatırım gayrimenkulu, Gdańsk, ROI > 5%",
+      "5": "400k için kredi seçeneklerini karşılaştırın",
+      "6": "3000 PLN/ay altında evcil hayvan dostu kiralıklar"
+    },
+    "features": {
+      "title": "Emlakla ilgili her soru için tek bir asistan.",
+      "body": "Her satır tanımladığı demo bölümünü açar. Altısının tümü hesap olmadan çalışır.",
+      "1": {
+        "title": "Doğal dilde arama",
+        "text": "Ne istediğinizi söyleyin. Filtreler cümleden çıkarılır; katalog anlam ve anahtar kelimeye göre aranır.",
+        "route": "/search"
+      },
+      "2": {
+        "title": "Sohbetin arkasında bir araç seti",
+        "text": "Kredi, kirala mı satın al mı karşılaştırması, ROI, toplam sahip olma maliyeti, karşılaştırma, mahalle kalitesi ve çok yıllı tahmin içeren bir değerleme.",
+        "route": "/chat"
+      },
+      "3": {
+        "title": "Kümelenmiş haritalar",
+        "text": "Her sonuç haritada, emlak türüne göre kümelenmiş ve baktığınız ilçe için alan analitiğiyle.",
+        "route": "/search"
+      },
+      "4": {
+        "title": "Şehir bazlı piyasa analitiği",
+        "text": "Her şehir için ilan sayısı, ortalama, en düşük ve en yüksek fiyat — hepsi tek haritada.",
+        "route": "/city-overview"
+      },
+      "5": {
+        "title": "Kendi belgelerinize sorun",
+        "text": "Dosyaları yükleyin ve sorular sorun — metniniz üzerinde getirme, kaynakları göstererek.",
+        "route": "/knowledge"
+      },
+      "6": {
+        "title": "Ajan dizini",
+        "text": "Ajanlar ve ilanları, iletişim formu ve gösterim talepleriyle.",
+        "route": "/agents"
+      }
+    },
+    "data": {
+      "title": "Bugün itibarıyla veri ve kapsam.",
+      "body": "Motor ülkeye bağlı değildir. Getirdiğiniz ilanlar — CSV veya XLSX içe aktarma, kayıtlı bir veri kaynağı, kendi veritabanınız — kendi para birimleriyle, herhangi bir yerde aranır, haritalanır ve fiyatlandırılır. Demo, örnek verilerle doldurulmuş bir Polonya kataloğu sunar ve ilk canlı sağlayıcı entegrasyonu Polonya içindir; AB'nin geri kalanı, Birleşik Krallık ve ABD sırada.",
+      "noLiveFeed": "Bu demoda canlı veri akışı çalışmıyor.",
+      "catalogueTitle": "Demo kataloğu",
+      "catalogueSummary": "{count} emlak · {agents} ajan",
+      "catalogueNote": "Örnek verili katalogdaki şehir bazlı sayılar.",
+      "coverageTitle": "Bölgeye göre kapsam",
+      "coverageAsOf": "bugün itibarıyla",
+      "coverageRegion": "Bölge",
+      "coverageYours": "Kendi veriniz",
+      "coverageLive": "Canlı sağlayıcı",
+      "coverageWorks": "çalışıyor",
+      "coveragePlanned": "planlanıyor",
+      "coverageNote": "9 arayüz dili · fiyatlar her ilanın kendi para biriminde (zł, €, £, $).",
+      "adaptersTitle": "Zenginleştirme bağdaştırıcıları",
+      "adaptersNote": "Ülkeden bağımsız: her koordinatta çalışırlar.",
+      "adapters": [
+        "OpenStreetMap ilgi noktaları",
+        "Güvenlik",
+        "Gürültü",
+        "Ulaşım",
+        "Hava kalitesi"
+      ]
+    },
+    "limits": {
+      "title": "Demo ne, ne değil.",
+      "1": {
+        "title": "Bizim ödediğimiz bir model",
+        "text": "Demo barındırılan bir modelle yanıt verir, o modele ulaşılamıyorsa yerel bir modele geçer; keşfetmek hiçbir şeye mal olmaz ve hesap gerektirmez."
+      },
+      "2": {
+        "title": "Kendi anahtarınız",
+        "text": "Gerçek bir kurulum, getirdiğiniz sağlayıcı anahtarını kullanır — 17 sağlayıcıdan herhangi biri ya da yerel bir Ollama — ve bir sağlayıcı başarısız olduğunda bir sonrakine geçer."
+      },
+      "3": {
+        "title": "Kendi veriniz",
+        "text": "SQLite ve sahibi olduğunuz bir diskte ChromaDB indeksi, kendi ülkenizde, kendi kimlik doğrulamanızın arkasında."
+      }
+    },
+    "exits": {
+      "title": "Kendiniz çalıştırın, barındırılan pakete geçin ya da bizimle benzerini geliştirin.",
+      "body": "Bu açık kaynaktır — iş birliği, kapalı bir kapı değil. Depo; çalıştırmaya, okumaya, genişletmeye ve kendi kullanıcılarınızın önüne koymaya yetecek kadar eksiksiz kalır. Aşağıdaki her yol aynı MIT kodundan başlar.",
+      "run": {
+        "badge": "MIT · ücretsiz",
+        "title": "Kendiniz çalıştırın",
+        "body": "Kendi sunucunuz, kendi anahtarlarınız, kendi veriniz. Fork'layın, değiştirin, kendi adınızla yayınlayın — sormanız gerekmez. Yol haritası herkese açık; öneriler okunur ve kullanılır.",
+        "ctaFork": "GitHub'da fork'layın",
+        "ctaSuggest": "Bir öneri bırakın",
+        "code1": "git clone github.com/AleksNeStu/ai-real-estate-assistant",
+        "code2": "cp deploy/compose/.env.example deploy/compose/.env",
+        "code3": "docker compose -f deploy/compose/docker-compose.yml up --build",
+        "code4": "→ web :3082 · api :8082/docs · anahtar gerekmez"
+      },
+      "hosted": {
+        "badge": "yakında açılıyor",
+        "title": "Barındırılan pakete geçin",
+        "body": "PropVector AI aynı motoru sizin için çalıştırır: yönetilen işletim, birçok ülkede canlı veri akışları, zenginleştirme hattı, AI CRM, bağlantılar, SSO/MFA, beyaz etiket ve bir destek sözleşmesi.",
+        "priceFree": "Free",
+        "pricePro": "Pro",
+        "priceEnterprise": "Enterprise",
+        "priceFreeValue": "$0",
+        "priceProValue": "$29/mo",
+        "priceEnterpriseValue": "custom",
+        "waitlistLabel": "PropVector AI lansmanı için e-posta",
+        "waitlistPlaceholder": "you@company.com",
+        "waitlistSubmit": "Bana haber verin",
+        "waitlistHint": "Lansmanda tek e-posta. Hiçbir zaman satılmaz, paylaşılmaz.",
+        "waitlistInvalid": "Lütfen geçerli bir e-posta adresi girin.",
+        "waitlistSuccess": "Kaydedildi. PropVector AI lansmanında tek e-posta.",
+        "waitlistNote": "Veya şurada daha fazlasını okuyun:",
+        "link": "propvectorai.com",
+        "waitlistNoteNoMail": "Kaydedildi — adres bu dağıtımda saklanıyor; buradan e-posta gönderilmiyor."
+      },
+      "studio": {
+        "badge": "NestLab Tech",
+        "title": "Stüdyo ile birlikte geliştirin",
+        "body": "Bu depoyu sürdüren ekip, müşteriler için benzer ürünler geliştiriyor — iş akışı otomasyonu, özel AI yazılımı ve EU AI Act uyumluluğu. Ya da benzerini birlikte geliştirelim.",
+        "body2": "Açık sürümden başlamak memnuniyetle karşılanır: halihazırda çalıştırdığınız bir fork iyi bir ilk brief olur.",
+        "ctaTalk": "Stüdyo ile görüşün",
+        "ctaDiscussion": "Veya bir [Commercial] Tartışması açın"
+      }
+    },
+    "compare": {
+      "title": "Bu depoda ne var ve barındırılan paket ne ekliyor.",
+      "body": "Hesaplar, favoriler ve kayıtlı aramalar ücretli bir özellik değildir: kodda vardır ve hesap gerektirir. Barındırılan paket ise çalıştırmayı, canlı veriyi ve kurumsal parçaları satar.",
+      "legendInRepo": "Bu depoda",
+      "legendAccount": "Bu depoda — hesap gerekir",
+      "legendKey": "Bu depoda — kendi anahtarınız gerekir",
+      "legendHosted": "Yalnızca PropVector AI",
+      "columnCapability": "Yetenek",
+      "columnRepo": "Bu depo",
+      "columnHosted": "PropVector AI",
+      "noteLeft": "Free $0 · Pro $29/mo · Enterprise (custom)",
+      "noteRight": "Paketler herkese açık yol haritasını yansıtır ve lansmandan önce değişebilir.",
+      "rows": [
+        {
+          "cap": "Sohbet tabanlı soru-cevap, arama, haritalar, araç seti",
+          "repo": "Bu depoda",
+          "repoState": "inRepo",
+          "pv": "Dahil"
+        },
+        {
+          "cap": "Örnek verili demo kataloğu (Polonya, 5 şehir)",
+          "repo": "Bu depoda",
+          "repoState": "inRepo",
+          "pv": "Dahil"
+        },
+        {
+          "cap": "Kendi veriniz üzerinde vektör araması (ChromaDB)",
+          "repo": "Bu depoda",
+          "repoState": "inRepo",
+          "pv": "Dahil"
+        },
+        {
+          "cap": "Kendi ilanlarınız, herhangi bir ülke (CSV/XLSX içe aktarma, veri kaynakları)",
+          "repo": "Hesap gerekir",
+          "repoState": "account",
+          "pv": "Dahil"
+        },
+        {
+          "cap": "Bulut LLM'leri (17 sağlayıcı) · yerel Ollama hiçbir şey gerektirmez",
+          "repo": "Kendi anahtarınız gerekir",
+          "repoState": "key",
+          "pv": "Yönetilen"
+        },
+        {
+          "cap": "Hesaplar, favoriler, kayıtlı aramalar, fiyat alarmları",
+          "repo": "Hesap gerekir",
+          "repoState": "account",
+          "pv": "Dahil"
+        },
+        {
+          "cap": "Belge kasası, müşteri adayları paneli, kullanım, ajan analitiği",
+          "repo": "Hesap gerekir",
+          "repoState": "account",
+          "pv": "Dahil"
+        },
+        {
+          "cap": "Canlı ilan akışı (önce Polonya; AB, Birleşik Krallık, ABD planlanıyor)",
+          "repo": "Kendi anahtarınız gerekir",
+          "repoState": "key",
+          "pv": "Yönetilen, birçok ülke"
+        },
+        {
+          "cap": "Zenginleştirme hattı (POI, güvenlik, gürültü, ulaşım, hava kalitesi)",
+          "repo": "Kendi anahtarınız gerekir",
+          "repoState": "key",
+          "pv": "Yönetilen"
+        },
+        {
+          "cap": "AI CRM: damla kampanyalar, hatt otomasyonu",
+          "repo": "—",
+          "repoState": "hosted",
+          "pv": "Pro / Enterprise"
+        },
+        {
+          "cap": "CRM bağlantıları (HubSpot, Pipedrive), SSO, MFA",
+          "repo": "—",
+          "repoState": "hosted",
+          "pv": "Enterprise"
+        },
+        {
+          "cap": "Beyaz etiket ve bir destek sözleşmesi",
+          "repo": "—",
+          "repoState": "hosted",
+          "pv": "Enterprise (custom)"
+        }
+      ]
+    },
+    "studio": {
+      "title": "Arkasında kim var.",
+      "propvector": {
+        "name": "PropVector AI",
+        "body": "Bu projenin barındırılan sürümü — canlı veri, hesaplar, AI CRM, kurumsal paketler.",
+        "url": "propvectorai.com"
+      },
+      "nestlab": {
+        "name": "NestLab Tech",
+        "body": "Stüdyo — iş akışı otomasyonu, özel AI yazılımı, EU AI Act uyumluluğu.",
+        "url": "nestlab.tech"
+      }
+    },
+    "faq": {
+      "title": "İnsanların gerçekten sorduğu sorular.",
+      "ask": "Sizinkini Tartışmalar'da sorun",
+      "q1": "Kendi sunucumda çalıştırabilir miyim?",
+      "a1": "Evet — proje tam bunun için var. Tek bir compose dosyası, ya da bu deponun CI'ı yapsın: self-host dağıtım iş akışına bir anahtar ve bir adresi depo sırları olarak verin; her sürüm etiketi makinenizi yeni imajlara taşır.",
+      "q2": "Ücretli bir API anahtarı gerekli mi?",
+      "a2": "Keşfetmek için gerekmez. Demo bizim ödediğimiz bir modelle yanıt verir, dolayısıyla etrafı gezmek hiçbir şeye mal olmaz. Gerçek yanıtlar için kendi anahtarınızı getirirsiniz — 17 sağlayıcıdan herhangi biri ya da yerel bir Ollama — ve bir sağlayıcı başarısız olduğunda uygulama bir sonrakine geçer.",
+      "q3": "Barındırılan sürümle farkı ne?",
+      "a3": "Motor aynı. Barındırılan paket canlı veri akışlarını, hesapları, kayıtlı aramaları, alarmları ve bir AI CRM'i ekler — PropVector AI'ye bakın.",
+      "q4": "Hangi diller?",
+      "a4": "Arayüzde dokuz dil: İngilizce, Lehçe, Rusça, Almanca, İspanyolca, İtalyanca, Portekizce, Türkçe ve Ukraynaca. Belgeler öncelikle İngilizcedir.",
+      "q5": "Veri benim mi?",
+      "a5": "Kendi çalıştırdığınız her şey için evet: SQLite ve sahibi olduğunuz bir diskte ChromaDB indeksi, kendi ülkenizde, kendi kimlik doğrulamanızın arkasında.",
+      "q6": "Ticari olarak kullanabilir miyim?",
+      "a6": "MIT. Fork'layın, değiştirin, yayınlayın. Barındırılan sürüm, yığını kendileri çalıştırmak yerine yönetilen parçaları tercih eden ekipler için ticari yoldur."
+    },
+    "footer": {
+      "brand": "AI Real Estate Assistant",
+      "tagline": "Ücretsiz, açık kaynak sürüm. NestLab Tech tarafından sürdürülüyor; barındırılan sürüm PropVector AI.",
+      "licenceLabel": "lisans",
+      "licence": "MIT",
+      "product": "Ürün",
+      "productLiveDemo": "Canlı demo",
+      "productAssistant": "Asistan",
+      "productCityOverview": "Şehir geneli",
+      "productAgents": "Ajanlar",
+      "openSource": "Açık kaynak",
+      "openSourceGithub": "GitHub",
+      "openSourceDocs": "Belgeler",
+      "openSourceDiscussions": "Tartışmalar",
+      "studio": "Stüdyo",
+      "studioPropVector": "PropVector AI",
+      "studioNestLab": "NestLab Tech",
+      "studioServices": "Hizmetler",
+      "bottom": "realty.kittray.com sürüm imajlarını demo modunda çalıştırır. Demo verisi — gerçek ilanlar değil.",
+      "locales": "EN · PL · RU · DE · ES · IT · PT · TR · UA"
+    }
+  },
+  "shell": {
+    "brand": "AI Estate",
+    "nav": {
+      "search": "Ara",
+      "assistant": "Asistan",
+      "cities": "Şehirler",
+      "analytics": "Analitik",
+      "tools": "Araçlar",
+      "agents": "Ajanlar",
+      "knowledge": "Bilgi",
+      "more": "Daha fazla",
+      "marketTrends": "Pazar eğilimleri",
+      "cma": "CMA raporu",
+      "valuation": "Değerleme",
+      "showcase": "Vitrin"
+    },
+    "demoPill": "Demo modu — bizim ödediğimiz bir model, anahtar yok",
+    "github": "GitHub",
+    "openApp": "Uygulamayı aç",
+    "signIn": "Giriş yap",
+    "signOut": "Çıkış yap",
+    "menu": "Menü",
+    "toggleTheme": "Temayı değiştir",
+    "changeLanguage": "Dili değiştir",
+    "account": {
+      "favorites": "Favoriler",
+      "savedSearches": "Kayıtlı aramalar",
+      "documents": "Belgeler",
+      "leads": "Müşteri adayları",
+      "agentAnalytics": "Ajan analitiği",
+      "usage": "Kullanım",
+      "settings": "Ayarlar",
+      "admin": "Yönetim"
+    },
+    "landing": {
+      "features": "Ne yapar",
+      "data": "Veri",
+      "openSource": "Açık kaynak",
+      "compare": "Karşılaştır",
+      "faq": "SSS"
+    },
+    "demoStrip": {
+      "note": "Denemek hiçbir şeye mal olmaz; gerçek bir kurulum, sizin getirdiğiniz sağlayıcı anahtarını kullanır.",
+      "cta": "Kendi anahtarınızla çalıştırın →"
+    }
+  },
+  "gate": {
+    "eyebrow": "{route} · hesap gerekir",
+    "signIn": "Giriş yap",
+    "createAccount": "Hesap oluştur",
+    "preview": "Giriş yapılmış durumu önizle",
+    "note": "Hesaplar bu açık kaynak depoya dahildir, ücretli bir plana değil. Kendi kurulumunuzda hiçbir şeye mal olmaz. Barındırılan sürüm, {link}, hesapları sizin için çalıştırır.",
+    "link": "PropVector AI",
+    "afterSignIn": "giriş yaptıktan sonra",
+    "routes": {
+      "favorites": {
+        "title": "Kısa listeleriniz",
+        "what": "Beğendiğiniz emlakları adlandırılmış koleksiyonlarda tutun, her birine bir not ekleyin — bir ziyaret saati, gitmeden önce kontrol edilecek bir şey.",
+        "items": [
+          "Kaydedilmiş ilan koleksiyonları",
+          "Her emlak için bir not",
+          "Bir koleksiyonu eşinizle paylaşın",
+          "Her şey kendi sunucunuzda kalır"
+        ]
+      },
+      "saved-searches": {
+        "title": "Kayıtlı aramalar ve fiyat uyarıları",
+        "what": "Bir aramayı bir kez kaydedin ve sizin için çalışsın: uygulama yeni eşleşmeleri ve fiyat düşüşlerini izler, bir şey değiştiğinde haber verir.",
+        "items": [
+          "Kaydedilip yeniden çalıştırılabilen her arama",
+          "Yeni eşleşme ve fiyat düşüşü uyarıları",
+          "Seçtiğiniz saatte günlük özet",
+          "Uyarılar bulutta barındırılan pakette"
+        ]
+      },
+      "documents": {
+        "title": "Belge kasanız",
+        "what": "Bir emlağa ait tapu, sözleşme ve notları emlağın yanında tutun, hangilerinin süresinin yakında dolduğunu bilin.",
+        "items": [
+          "Belge yükleme, listeleme ve silme",
+          "Süre bitiş tarihleri tek yerde",
+          "Belgeler hiçbir zaman paylaşılmaz",
+          "Depolama kendi disk alanınızda"
+        ]
+      },
+      "leads": {
+        "title": "Müşteri adayı panosu",
+        "what": "Her talep ve her yakalanan iletişim puanlanmış bir müşteri adayına dönüşür, böylece kimi aramaya değer olduğunu aramadan önce görürsünüz.",
+        "items": [
+          "Satır yığını değil, puanlanmış müşteri adayları",
+          "Ziyaretçiden müşteriye giden bir huni",
+          "CRM'iniz için CSV dışa aktarımı",
+          "İletişim bilgileri yabancılara karşı maskeli"
+        ]
+      },
+      "agent-analytics": {
+        "title": "Ekip nasıl gidiyor",
+        "what": "Ajan bazlı sayılar, ekip karşılaştırması ve bunlardan çıkan koçluk notları — barındırılan paketin çalıştırdığı aynı yüzeyler.",
+        "items": [
+          "Müşteri adayları, yanıt süresi, gösterimler, anlaşmalar",
+          "Ekip karşılaştırması ve eğilimler",
+          "Sadece grafik değil, koçluk öngörüleri",
+          "Hedefler ve ilerlemeleri"
+        ]
+      },
+      "usage": {
+        "title": "Kurulumunuzda ne oldu",
+        "what": "Aramalar, görüntülemeler, tıklamalar, araç çağrıları ve indirmeler, son otuz günde toplandı ve CSV olarak dışa aktarılabilir.",
+        "items": [
+          "Tüm etkinlik için tek ekran",
+          "Otuz günlük eğilimler",
+          "CSV dışa aktarımı",
+          "Kendi verinizi dışa aktarın veya silin"
+        ]
+      },
+      "settings": {
+        "title": "Ayarlar",
+        "what": "Kimlik, her görevin kullandığı model, bildirimler, profiliniz ve gizliliğiniz — kurulumun neyi saklamaya izin verildiği dâhil.",
+        "items": [
+          "Canlı bir katalogdan görev başına bir model",
+          "Her modelin milyon token başına maliyeti",
+          "Kontrol sizde olan bildirimler",
+          "Kendi verinizi dışa aktarın veya silin"
+        ]
+      },
+      "admin": {
+        "title": "Arka ofis",
+        "what": "Toplu içe aktarmalar, dış dünyaya ulaşan bağlantılar, kataloğun arkasındaki veri kaynakları ve kurulumun sağlığı.",
+        "items": [
+          "CSV ve XLSX içe ve dışa aktarma işleri",
+          "Bağlantılar, sağlık durumlarıyla",
+          "Veri kaynakları ve eşitleme durumları",
+          "Sağlık, hazırlık ve gecikme"
+        ]
+      }
+    }
+  },
+  "designStates": {
+    "notFound": {
+      "code": "404",
+      "title": "Sayfa bulunamadı",
+      "body": "Aradığınız sayfa mevcut değil veya taşınmış.",
+      "ctaSearch": "Emlak ara",
+      "ctaHome": "Ana sayfaya git"
+    },
+    "empty": {
+      "title": "Henüz gösterilecek bir şey yok",
+      "body": "Demo'yu görmek için aşağıdaki örnek sorgulardan birini deneyin."
+    },
+    "loading": {
+      "title": "Yükleniyor"
+    },
+    "error": {
+      "title": "Sohbet geçici olarak kullanılamıyor",
+      "body": "Sağlayıcı yanıt vermedi ve yedek zinciri onu kurtaramadı. Demo kataloğu yerinde — arama, gezinme ve araçlar çalışmaya devam ediyor.",
+      "id": "Hata kimliği: {id}",
+      "retry": "Yeniden dene",
+      "retrying": "Yeniden deneniyor…"
+    },
+    "offline": {
+      "title": "Çevrimdışısınız. Kayıtlı ilanlar ve son arama hâlâ kullanılabilir; yeni aramalar bağlantı geri geldiğinde devam eder."
+    },
+    "update": {
+      "title": "Yeni bir sürüm mevcut.",
+      "reload": "Yeniden yükle"
+    },
+    "install": {
+      "title": "AI Estate kur",
+      "body": "Ana ekranınızdan açın, kayıtlı öğeler için çevrimdışı çalışır.",
+      "install": "Kur",
+      "notNow": "Şimdi değil"
     }
   }
 }

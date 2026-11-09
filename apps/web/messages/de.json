@@ -218,7 +218,9 @@
       "passwordLabel": "Passwort",
       "confirmPasswordLabel": "Passwort bestätigen",
       "haveAccount": "Du hast bereits ein Konto?",
-      "submit": "Konto erstellen"
+      "submit": "Konto erstellen",
+      "consentLabel": "Ich akzeptiere die Nutzungsbedingungen und die Datenschutzerklärung und willige in die Verarbeitung meiner Daten ein.",
+      "consentRequired": "Bitte akzeptieren Sie die Bedingungen, um ein Konto zu erstellen."
     },
     "forgotPassword": {
       "title": "Passwort vergessen?",
@@ -3364,6 +3366,467 @@
       "thursday": "Donnerstag",
       "friday": "Freitag",
       "saturday": "Samstag"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Frag in normaler Sprache. Bekomme passende Angebote.",
+      "body": "Ein Open-Source-Assistent für Immobiliensuche, Finanzanalyse und Marktkenntnis. Beschreibe die Wohnung, die du willst; er extrahiert die Filter, durchsucht den Katalog nach Bedeutung, zeigt die Treffer auf einer Karte und rechnet im Chat die Zahlen.",
+      "placeholder": "Beschreibe die Immobilie, die du suchst",
+      "ctaSearch": "Live-Demo durchsuchen",
+      "ctaAssistant": "Den Assistenten fragen",
+      "ctaGithub": "Auf GitHub einen Stern vergeben",
+      "demoNote": "Die Demo antwortet mit einem Modell, für das wir zahlen, das Herumprobieren kostet nichts — keine Anmeldung, keine Schlüssel.",
+      "statLicence": "MIT",
+      "statLicenceLabel": "Lizenz",
+      "statLanguages": "9",
+      "statLanguagesLabel": "Oberflächensprachen",
+      "statProviders": "17 + Ollama",
+      "statProvidersLabel": "LLM-Anbieter",
+      "statDeploy": "1 Datei",
+      "statDeployLabel": "docker compose up",
+      "instrumentParsed": "ausgewertet",
+      "instrumentOpenAll": "Alle {count} öffnen",
+      "instrumentNote": "Geseedeter Demo-Katalog, keine echten Angebote · ein Modell, für das wir zahlen, keine Schlüssel",
+      "instrumentPerMonth": "≈{amount}/mo",
+      "instrumentPerSqm": "{amount} zł/m²",
+      "matches": "{count} Treffer"
+    },
+    "chips": {
+      "label": "Probier eine davon:",
+      "1": "2-Zimmer-Wohnung in Kraków unter 500k",
+      "2": "Familienhaus mit Garten, Warsaw",
+      "3": "Studio nahe dem Stadtzentrum, Wrocław",
+      "4": "Anlageobjekt, Gdańsk, ROI > 5%",
+      "5": "Hypothekenoptionen für 400k vergleichen",
+      "6": "Haustierfreundliche Mieten unter 3000 PLN/mo"
+    },
+    "features": {
+      "title": "Ein Assistent für die ganze Immobilienfrage.",
+      "body": "Jede Zeile öffnet den Teil der Demo, den sie beschreibt. Alle sechs funktionieren ohne Konto.",
+      "1": {
+        "title": "Natürliche Sprachsuche",
+        "text": "Sag, was du willst. Filter werden aus dem Satz extrahiert; der Katalog wird nach Bedeutung und Stichwort durchsucht.",
+        "route": "/search"
+      },
+      "2": {
+        "title": "Ein Werkzeugkasten hinter dem Chat",
+        "text": "Hypothek, Miete-oder-Kauf, ROI, Gesamtkosten, Vergleich, Wohnquartiersqualität und eine Bewertung mit Mehjahresprognose.",
+        "route": "/chat"
+      },
+      "3": {
+        "title": "Karten mit Clustering",
+        "text": "Jedes Ergebnis auf einer Karte, nach Immobilientyp geclustert, mit Flächenanalysen für den betrachteten Stadtteil.",
+        "route": "/search"
+      },
+      "4": {
+        "title": "Marktanalysen pro Stadt",
+        "text": "Anzahl der Angebote, Durchschnitts-, Minimal- und Maximalpreis je Stadt, auf einer Karte.",
+        "route": "/city-overview"
+      },
+      "5": {
+        "title": "Frag deine eigenen Dokumente",
+        "text": "Dateien hochladen und Fragen stellen — Abruf über deinen Text, mit angezeigten Quellen.",
+        "route": "/knowledge"
+      },
+      "6": {
+        "title": "Maklerverzeichnis",
+        "text": "Makler und ihre Angebote, mit Kontaktformular und Besichtigungsanfragen.",
+        "route": "/agents"
+      }
+    },
+    "data": {
+      "title": "Daten und Abdeckung, Stand heute.",
+      "body": "Die Engine ist an kein Land gebunden. Angebote, die du selbst beisteuerst — ein CSV- oder XLSX-Import, eine registrierte Datenquelle, deine eigene Datenbank — werden überall durchsucht, kartiert und in ihrer eigenen Währung bepreist. Die Demo liefert einen geseedeten polnischen Katalog, und die erste Live-Provider-Integration ist polnisch; als Nächstes kommen der Rest der EU, Großbritannien und die USA.",
+      "noLiveFeed": "Auf dieser Demo läuft kein Live-Feed.",
+      "catalogueTitle": "Demo-Katalog",
+      "catalogueSummary": "{count} Immobilien · {agents} Makler",
+      "catalogueNote": "Anzahlen je Stadt im geseedeten Katalog.",
+      "coverageTitle": "Abdeckung nach Region",
+      "coverageAsOf": "Stand heute",
+      "coverageRegion": "Region",
+      "coverageYours": "Deine Daten",
+      "coverageLive": "Live-Provider",
+      "coverageWorks": "funktioniert",
+      "coveragePlanned": "geplant",
+      "coverageNote": "9 Oberflächensprachen · Preise in der Währung des jeweiligen Angebots (zł, €, £, $).",
+      "adaptersTitle": "Anreicherungs-Adapter",
+      "adaptersNote": "Länderunabhängig: sie funktionieren mit beliebigen Koordinaten.",
+      "adapters": [
+        "OpenStreetMap Points of Interest",
+        "Sicherheit",
+        "Lärm",
+        "Nahverkehr",
+        "Luftqualität"
+      ]
+    },
+    "limits": {
+      "title": "Was die Demo ist — und was nicht.",
+      "1": {
+        "title": "Ein Modell, für das wir zahlen",
+        "text": "Die Demo antwortet mit einem gehosteten Modell und weicht auf ein lokales aus, wenn das gehostete nicht erreichbar ist — das Herumprobieren kostet nichts und braucht kein Konto."
+      },
+      "2": {
+        "title": "Dein eigener Schlüssel",
+        "text": "Ein echter Betrieb nutzt den Anbieter-Schlüssel, den du mitbringst — einen von 17 Anbietern oder ein lokales Ollama — und fällt auf den nächsten zurück, wenn ein Anbieter ausfällt."
+      },
+      "3": {
+        "title": "Deine eigenen Daten",
+        "text": "SQLite plus ein ChromaDB-Index auf einem Volume, das dir gehört, in deinem Land, hinter deiner eigenen Authentifizierung."
+      }
+    },
+    "exits": {
+      "title": "Selbst betreiben, auf die gehostete Stufe wechseln oder etwas Ähnliches mit uns bauen.",
+      "body": "Das ist Open Source — Zusammenarbeit, keine verschlossene Tür. Das Repository bleibt vollständig genug, um es zu betreiben, zu lesen, zu erweitern und deinen eigenen Nutzern vorzustellen. Jeder Weg unten startet vom selben MIT-Code.",
+      "run": {
+        "badge": "MIT · kostenlos",
+        "title": "Selbst betreiben",
+        "body": "Dein Server, deine Schlüssel, deine Daten. Forke es, ändere es, veröffentliche es unter deinem eigenen Namen — du musst niemanden fragen. Der Backlog ist öffentlich; Vorschläge werden gelesen und genutzt.",
+        "ctaFork": "Auf GitHub forken",
+        "ctaSuggest": "Etwas vorschlagen",
+        "code1": "git clone github.com/AleksNeStu/ai-real-estate-assistant",
+        "code2": "cp deploy/compose/.env.example deploy/compose/.env",
+        "code3": "docker compose -f deploy/compose/docker-compose.yml up --build",
+        "code4": "→ web :3082 · api :8082/docs · keine Schlüssel nötig"
+      },
+      "hosted": {
+        "badge": "startet bald",
+        "title": "Zur gehosteten Stufe wechseln",
+        "body": "PropVector AI betreibt dieselbe Engine für dich: verwaltet, Live-Feeds in vielen Ländern, die Anreicherungs-Pipeline, das KI-CRM, Konnektoren, SSO/MFA, White-Label und einen Supportvertrag.",
+        "priceFree": "Free",
+        "pricePro": "Pro",
+        "priceEnterprise": "Enterprise",
+        "priceFreeValue": "$0",
+        "priceProValue": "$29/mo",
+        "priceEnterpriseValue": "individuell",
+        "waitlistLabel": "E-Mail zum Start von PropVector AI",
+        "waitlistPlaceholder": "you@company.com",
+        "waitlistSubmit": "Benachrichtigen",
+        "waitlistHint": "Eine E-Mail beim Start. Nie verkauft, nie weitergegeben.",
+        "waitlistInvalid": "Bitte eine gültige E-Mail-Adresse eingeben.",
+        "waitlistSuccess": "Vermerkt. Eine E-Mail, wenn PropVector AI startet.",
+        "waitlistNote": "Oder mehr lesen unter",
+        "link": "propvectorai.com",
+        "waitlistNoteNoMail": "Vermerkt — die Adresse wird in dieser Installation gespeichert; von hier wird keine E-Mail versendet."
+      },
+      "studio": {
+        "badge": "NestLab Tech",
+        "title": "Mit dem Studio bauen",
+        "body": "Das Team, das dieses Repository pflegt, baut Produkte wie dieses für Kunden — Workflow-Automatisierung, individuelle KI-Software und Bereitschaft für die EU AI Act. Oder wir bauen gemeinsam etwas Ähnliches.",
+        "body2": "Der Einstieg über die offene Version ist willkommen: ein Fork, den du bereits betreibst, ist ein gutes erstes Briefing.",
+        "ctaTalk": "Mit dem Studio sprechen",
+        "ctaDiscussion": "Oder eine [Commercial] Discussion eröffnen"
+      }
+    },
+    "compare": {
+      "title": "Was in diesem Repository steckt und was die gehostete Stufe hinzufügt.",
+      "body": "Konten, Favoriten und gespeicherte Suchen sind keine kostenpflichtige Funktion: sie stehen im Code und brauchen ein Konto. Die gehostete Stufe verkauft den Betrieb, Live-Daten und die Enterprise-Bausteine.",
+      "legendInRepo": "In diesem Repo",
+      "legendAccount": "In diesem Repo — braucht ein Konto",
+      "legendKey": "In diesem Repo — braucht deinen eigenen Schlüssel",
+      "legendHosted": "Nur PropVector AI",
+      "columnCapability": "Funktion",
+      "columnRepo": "Dieses Repository",
+      "columnHosted": "PropVector AI",
+      "noteLeft": "Free $0 · Pro $29/mo · Enterprise (individuell)",
+      "noteRight": "Die Stufen entsprechen der öffentlichen Roadmap und können sich vor dem Start ändern.",
+      "rows": [
+        {
+          "cap": "Frage-Antwort-Dialog, Suche, Karten, der Werkzeugkasten",
+          "repo": "In diesem Repo",
+          "repoState": "inRepo",
+          "pv": "Enthalten"
+        },
+        {
+          "cap": "Geseedeter Demo-Katalog (Polen, 5 Städte)",
+          "repo": "In diesem Repo",
+          "repoState": "inRepo",
+          "pv": "Enthalten"
+        },
+        {
+          "cap": "Vektorsuche (ChromaDB) über deine eigenen Daten",
+          "repo": "In diesem Repo",
+          "repoState": "inRepo",
+          "pv": "Enthalten"
+        },
+        {
+          "cap": "Eigene Angebote, jedes Land (CSV/XLSX-Import, Datenquellen)",
+          "repo": "Braucht ein Konto",
+          "repoState": "account",
+          "pv": "Enthalten"
+        },
+        {
+          "cap": "Cloud-LLMs (17 Anbieter) · lokales Ollama braucht keinen",
+          "repo": "Braucht deinen eigenen Schlüssel",
+          "repoState": "key",
+          "pv": "Verwaltet"
+        },
+        {
+          "cap": "Konten, Favoriten, gespeicherte Suchen, Preisalarme",
+          "repo": "Braucht ein Konto",
+          "repoState": "account",
+          "pv": "Enthalten"
+        },
+        {
+          "cap": "Dokumentenablage, Lead-Board, Nutzung, Makler-Analysen",
+          "repo": "Braucht ein Konto",
+          "repoState": "account",
+          "pv": "Enthalten"
+        },
+        {
+          "cap": "Live-Angebotsfeed (zuerst Polen; EU, UK, US geplant)",
+          "repo": "Braucht deinen eigenen Schlüssel",
+          "repoState": "key",
+          "pv": "Verwaltet, viele Länder"
+        },
+        {
+          "cap": "Anreicherungs-Pipeline (POI, Sicherheit, Lärm, Nahverkehr, Luft)",
+          "repo": "Braucht deinen eigenen Schlüssel",
+          "repoState": "key",
+          "pv": "Verwaltet"
+        },
+        {
+          "cap": "KI-CRM: Drip-Kampagnen, Pipeline-Automatisierung",
+          "repo": "—",
+          "repoState": "hosted",
+          "pv": "Pro / Enterprise"
+        },
+        {
+          "cap": "CRM-Konnektoren (HubSpot, Pipedrive), SSO, MFA",
+          "repo": "—",
+          "repoState": "hosted",
+          "pv": "Enterprise"
+        },
+        {
+          "cap": "White-Label und ein Supportvertrag",
+          "repo": "—",
+          "repoState": "hosted",
+          "pv": "Enterprise (individuell)"
+        }
+      ]
+    },
+    "studio": {
+      "title": "Wer dahintersteht.",
+      "propvector": {
+        "name": "PropVector AI",
+        "body": "Die gehostete Version dieses Projekts — Live-Daten, Konten, KI-CRM, Enterprise-Stufen.",
+        "url": "propvectorai.com"
+      },
+      "nestlab": {
+        "name": "NestLab Tech",
+        "body": "Das Studio — Workflow-Automatisierung, individuelle KI-Software, Bereitschaft für die EU AI Act.",
+        "url": "nestlab.tech"
+      }
+    },
+    "faq": {
+      "title": "Fragen, die wirklich gestellt werden.",
+      "ask": "Frag deine in Discussions",
+      "q1": "Kann ich es auf meinem eigenen Server betreiben?",
+      "a1": "Ja — dafür ist das Projekt da. Eine Compose-Datei, oder du lässt die CI dieses Repositorys es tun: Gib dem Self-Host-Deploy-Workflow einen Schlüssel und eine Adresse als Repository-Secrets, und jedes Release-Tag bringt deine Maschine auf die neuen Images.",
+      "q2": "Brauche ich einen kostenpflichtigen API-Schlüssel?",
+      "a2": "Nicht, um sich umzusehen. Die Demo antwortet mit einem Modell, für das wir zahlen, das Herumprobieren kostet nichts. Für echte Antworten bringst du deinen eigenen Schlüssel mit — einen von 17 Anbietern oder ein lokales Ollama — und die App fällt auf den nächsten zurück, wenn ein Anbieter ausfällt.",
+      "q3": "Was ist der Unterschied zur gehosteten Version?",
+      "a3": "Die Engine ist dieselbe. Die gehostete Stufe ergänzt Live-Daten-Feeds, Konten, gespeicherte Suchen, Alarme und ein KI-CRM — siehe PropVector AI.",
+      "q4": "Welche Sprachen?",
+      "a4": "Neun in der Oberfläche: Englisch, Polnisch, Russisch, Deutsch, Spanisch, Italienisch, Portugiesisch, Türkisch und Ukrainisch. Die Dokumentation ist englischsprachig.",
+      "q5": "Sind die Daten meine?",
+      "a5": "Ja, für alles, was du selbst betreibst: SQLite plus ein ChromaDB-Index auf einem Volume, das dir gehört, in deinem Land, hinter deiner eigenen Authentifizierung.",
+      "q6": "Kann ich es kommerziell nutzen?",
+      "a6": "MIT. Forke es, ändere es, veröffentliche es. Die gehostete Version ist der kommerzielle Weg für Teams, die die verwalteten Bausteine wollen, statt den Stack selbst zu betreiben."
+    },
+    "footer": {
+      "brand": "AI Real Estate Assistant",
+      "tagline": "Die kostenlose, quelloffene Version. Gepflegt von NestLab Tech; die gehostete Version ist PropVector AI.",
+      "licenceLabel": "Lizenz",
+      "licence": "MIT",
+      "product": "Produkt",
+      "productLiveDemo": "Live-Demo",
+      "productAssistant": "Assistent",
+      "productCityOverview": "Stadtübersicht",
+      "productAgents": "Makler",
+      "openSource": "Open Source",
+      "openSourceGithub": "GitHub",
+      "openSourceDocs": "Doku",
+      "openSourceDiscussions": "Discussions",
+      "studio": "Studio",
+      "studioPropVector": "PropVector AI",
+      "studioNestLab": "NestLab Tech",
+      "studioServices": "Leistungen",
+      "bottom": "realty.kittray.com betreibt die Release-Images im Demo-Modus. Demo-Daten — keine echten Angebote.",
+      "locales": "EN · PL · RU · DE · ES · IT · PT · TR · UA"
+    }
+  },
+  "shell": {
+    "brand": "AI Estate",
+    "nav": {
+      "search": "Suche",
+      "assistant": "Assistent",
+      "cities": "Städte",
+      "analytics": "Analysen",
+      "tools": "Werkzeuge",
+      "agents": "Agents",
+      "knowledge": "Wissen",
+      "more": "Mehr",
+      "marketTrends": "Markttrends",
+      "cma": "CMA-Bericht",
+      "valuation": "Bewertung",
+      "showcase": "Showcase"
+    },
+    "demoPill": "Demo-Modus — ein Modell, für das wir zahlen, keine Schlüssel",
+    "github": "GitHub",
+    "openApp": "App öffnen",
+    "signIn": "Anmelden",
+    "signOut": "Abmelden",
+    "menu": "Menü",
+    "toggleTheme": "Design wechseln",
+    "changeLanguage": "Sprache ändern",
+    "account": {
+      "favorites": "Favoriten",
+      "savedSearches": "Gespeicherte Suchen",
+      "documents": "Dokumente",
+      "leads": "Leads",
+      "agentAnalytics": "Agent-Analysen",
+      "usage": "Nutzung",
+      "settings": "Einstellungen",
+      "admin": "Admin"
+    },
+    "landing": {
+      "features": "Was es tut",
+      "data": "Daten",
+      "openSource": "Open Source",
+      "compare": "Vergleich",
+      "faq": "FAQ"
+    },
+    "demoStrip": {
+      "note": "Das Herumprobieren kostet nichts; ein echter Einsatz nutzt den Anbieterschlüssel, den Sie selbst mitbringen.",
+      "cta": "Mit eigenem Schlüssel starten →"
+    }
+  },
+  "gate": {
+    "eyebrow": "{route} · braucht ein Konto",
+    "signIn": "Anmelden",
+    "createAccount": "Konto erstellen",
+    "preview": "Angemeldeten Zustand ansehen",
+    "note": "Konten sind Teil dieses Open-Source-Repositorys, kein Bezahlplan. In deinem eigenen Deployment kosten sie nichts. Die gehostete Version, {link}, betreibt sie für dich.",
+    "link": "PropVector AI",
+    "afterSignIn": "nach der Anmeldung bekommst du",
+    "routes": {
+      "favorites": {
+        "title": "Deine Merklisten",
+        "what": "Behalte die Immobilien, die dir gefallen, in benannten Sammlungen — mit einer Notiz zu jeder — einem Besichtigungstermin, einer Sache, die du vorher prüfen solltest.",
+        "items": [
+          "Sammlungen gespeicherter Angebote",
+          "Eine Notiz zu jeder Immobilie",
+          "Teile eine Sammlung mit deinem Partner",
+          "Alles bleibt auf deinem eigenen Server"
+        ]
+      },
+      "saved-searches": {
+        "title": "Gespeicherte Suchen und Preisalarme",
+        "what": "Speichere eine Suche einmal und lass sie für dich laufen: Die App achtet auf neue Treffer und auf Preisrückgänge und meldet sich, wenn sich etwas ändert.",
+        "items": [
+          "Jede Suche, gespeichert und wieder ausführbar",
+          "Alarme bei neuen Treffern und Preisrückgängen",
+          "Eine tägliche Zusammenfassung zur gewählten Uhrzeit",
+          "Alarme sind Teil des gehosteten Tarifs in der Cloud"
+        ]
+      },
+      "documents": {
+        "title": "Dein Dokumententresor",
+        "what": "Halte die Urkunden, Verträge und Notizen, die zu einer Immobilie gehören, neben der Immobilie selbst und behalte im Blick, welche bald ablaufen.",
+        "items": [
+          "Dokumente hochladen, auflisten und löschen",
+          "Ablaufdaten an einem Ort",
+          "Dokumente werden mit niemandem geteilt",
+          "Der Speicher bleibt auf deinem eigenen Volume"
+        ]
+      },
+      "leads": {
+        "title": "Das Lead-Board",
+        "what": "Jede Anfrage und jeder erfasste Kontakt wird zu einem bewerteten Lead, damit du siehst, wen es sich lohnt anzurufen, bevor du anrufst.",
+        "items": [
+          "Bewertete Leads statt einer Wand aus Zeilen",
+          "Ein Trichter vom Besucher zum Kunden",
+          "Export als CSV für dein CRM",
+          "Kontaktdaten sind für Fremde maskiert"
+        ]
+      },
+      "agent-analytics": {
+        "title": "Wie das Team abschneidet",
+        "what": "Zahlen je Agent, Teamvergleich und die daraus folgenden Coaching-Notizen — dieselben Oberflächen, die der gehostete Tarif fährt.",
+        "items": [
+          "Leads, Antwortzeit, Besichtigungen, Abschlüsse",
+          "Teamvergleich und Trends",
+          "Coaching-Erkenntnisse, nicht nur Diagramme",
+          "Ziele und ihr Fortschritt"
+        ]
+      },
+      "usage": {
+        "title": "Was auf deinem Deployment passiert ist",
+        "what": "Suchen, Aufrufe, Klicks, Werkzeugaufrufe und Downloads, über die letzten dreißig Tage aggregiert und als CSV exportierbar.",
+        "items": [
+          "Ein Bildschirm für die gesamte Aktivität",
+          "Trends über dreißig Tage",
+          "CSV-Export",
+          "Exportiere oder lösche deine eigenen Daten"
+        ]
+      },
+      "settings": {
+        "title": "Einstellungen",
+        "what": "Identität, das Modell für jede Aufgabe, Benachrichtigungen, dein Profil und deine Privatsphäre — auch, was das Deployment speichern darf.",
+        "items": [
+          "Ein Modell pro Aufgabe, aus einem aktuellen Katalog",
+          "Die Kosten jedes Modells pro Million Token",
+          "Benachrichtigungen, die du steuerst",
+          "Exportiere oder lösche deine eigenen Daten"
+        ]
+      },
+      "admin": {
+        "title": "Das Backoffice",
+        "what": "Massenimporte, die Connectoren nach außen, die Datenquellen hinter dem Katalog und der Zustand des Deployments.",
+        "items": [
+          "Import- und Exportjobs für CSV und XLSX",
+          "Die Connectoren, mit ihrem Zustand",
+          "Datenquellen und ihr Synchronisationsstand",
+          "Zustand, Bereitschaft und Latenz"
+        ]
+      }
+    }
+  },
+  "designStates": {
+    "notFound": {
+      "code": "404",
+      "title": "Seite nicht gefunden",
+      "body": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+      "ctaSearch": "Immobilien suchen",
+      "ctaHome": "Zur Startseite"
+    },
+    "empty": {
+      "title": "Noch nichts zu zeigen",
+      "body": "Probiere eine der Beispielanfragen unten, um die Demo in Aktion zu sehen."
+    },
+    "loading": {
+      "title": "Wird geladen"
+    },
+    "error": {
+      "title": "Der Chat ist vorübergehend nicht verfügbar",
+      "body": "Der Anbieter hat nicht geantwortet und die Ausweichkette hat es nicht gerettet. Der Demo-Katalog ist weiterhin da — Suche, Browsen und die Werkzeuge funktionieren weiter.",
+      "id": "Fehler-ID: {id}",
+      "retry": "Erneut versuchen",
+      "retrying": "Neuer Versuch…"
+    },
+    "offline": {
+      "title": "Du bist offline. Gespeicherte Angebote und die letzte Suche bleiben verfügbar; neue Suchen laufen weiter, sobald du wieder online bist."
+    },
+    "update": {
+      "title": "Eine neue Version ist verfügbar.",
+      "reload": "Neu laden"
+    },
+    "install": {
+      "title": "AI Estate installieren",
+      "body": "Öffne es vom Startbildschirm, funktioniert offline für gespeicherte Einträge.",
+      "install": "Installieren",
+      "notNow": "Jetzt nicht"
     }
   }
 }
