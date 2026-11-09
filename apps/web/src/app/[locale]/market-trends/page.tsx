@@ -1,23 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
+import { Loader2 } from 'lucide-react';
 
-// Recharts is a 5+ MB bundle; dynamic-import with ssr: false so it
-// only ships to the browser after the page has rendered. Both charts
-// (price trends and listing volume) live in the lazy component below.
-const MarketTrendsChartsLazy = dynamic(
-  () => import('@/components/market-trends/MarketTrendsCharts').then((m) => m.MarketTrendsCharts),
-  {
-    ssr: false,
-    loading: () => <div className="h-80 w-full bg-muted animate-pulse rounded-lg" />,
-  }
-);
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getMarketTrends, getMarketIndicators, ApiError } from '@/lib/api';
+import { MarketTrends, MarketIndicators, MarketTrendPoint } from '@/lib/types';
+import { AreaComparisonComponent } from '@/components/analytics/area-comparison';
+import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { MonoAnnotation } from '@/components/ui/mono-annotation';
+import { ErrorState } from '@/components/ui/states';
 import {
   Select,
   SelectContent,
@@ -25,28 +22,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  Loader2,
-  AlertCircle,
-  Activity,
-  DollarSign,
-  Building2,
-} from 'lucide-react';
-import { getMarketTrends, getMarketIndicators, ApiError } from '@/lib/api';
-import { MarketTrends, MarketIndicators, MarketTrendPoint } from '@/lib/types';
-import { AreaComparisonComponent } from '@/components/analytics/area-comparison';
-import { PageHeader } from '@/components/ui/page-header';
+import { MarketIndicatorsPanel } from '@/components/market-trends/market-indicators';
+import { DistrictsLedger } from '@/components/market-trends/districts-ledger';
+
+// Recharts is a 5+ MB bundle; dynamic-import with ssr: false so it only
+// ships to the browser after the page has rendered. Both charts live in the
+// lazy component below, and the frame around each of them holds the space
+// open, so the page does not move when the bundle arrives.
+const MarketTrendsChartsLazy = dynamic(
+  () => import('@/components/market-trends/MarketTrendsCharts').then((m) => m.MarketTrendsCharts),
+  {
+    ssr: false,
+    loading: () => <div className="h-64 w-full animate-pulse rounded-lg bg-muted" />,
+  }
+);
+
+const CONTROL_CLASS =
+  'h-9 w-full rounded-md border border-input bg-background px-2.5 text-[13px] text-foreground';
+const LABEL_CLASS = 'text-[12px] font-medium text-foreground';
 
 export default function MarketTrendsPage() {
   const t = useTranslations('pages.marketTrends');
-  // "Apply Filters" and the listing counter are shared copy — they live in the
-  // `search` and `cma` namespaces of the catalogue, so they are read from
+  // "Apply Filters" and the listing counter are shared copy — they live in
+  // the `search` and `cma` namespaces of the catalogue, so they are read from
   // there instead of being written out again here.
   const tSearch = useTranslations('search');
-  const tCma = useTranslations('cma.preview');
+  const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [trends, setTrends] = useState<MarketTrends | null>(null);
@@ -90,231 +91,152 @@ export default function MarketTrendsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [interval, monthsBack]);
 
-  const chartData =
-    trends?.data_points.map((point: MarketTrendPoint) => ({
-      period: point.period,
-      avgPrice: point.average_price,
-      medianPrice: point.median_price,
-      volume: point.volume,
-      currency: point.currency,
-    })) || [];
+  const chartData = useMemo(
+    () =>
+      trends?.data_points.map((point: MarketTrendPoint) => ({
+        period: point.period,
+        avgPrice: point.average_price,
+        medianPrice: point.median_price,
+        volume: point.volume,
+        currency: point.currency,
+      })) || [],
+    [trends]
+  );
 
-  const TrendIcon =
-    indicators?.overall_trend === 'rising'
-      ? TrendingUp
-      : indicators?.overall_trend === 'falling'
-        ? TrendingDown
-        : Minus;
+  // The currency the prices of this market are in. It is what the districts
+  // are quoted in as well - they come from the same catalogue.
+  const currency = useMemo(
+    () => chartData.find((point) => point.currency)?.currency,
+    [chartData]
+  );
 
-  const trendColor =
-    indicators?.overall_trend === 'rising'
-      ? 'text-success'
-      : indicators?.overall_trend === 'falling'
-        ? 'text-destructive'
-        : 'text-muted-foreground';
+  // The price per m² of the last period - the one number of the curve that
+  // belongs on the indicators panel.
+  const pricePerSqm = useMemo(() => {
+    const last = trends?.data_points[trends.data_points.length - 1];
+    return last?.avg_price_per_sqm ?? null;
+  }, [trends]);
+
+  const scope = t('scope', {
+    city: city || t('scope.allCities'),
+    months: monthsBack,
+  });
+  const chartCaption = t('chartCaption', {
+    months: monthsBack,
+    interval: t(`filters.${interval === 'month' ? 'monthly' : interval === 'quarter' ? 'quarterly' : 'yearly'}`),
+  });
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col space-y-8">
-        {/* Header */}
-        <PageHeader title={t('title')} description={t('description')} />
+    <div className="flex min-h-[calc(100vh-56px)] flex-col" aria-live="polite">
+      <div className="border-b border-border px-6 pb-5 pt-6">
+        <PageHeader
+          title={t('title')}
+          description={t('description')}
+          actions={<MonoAnnotation>{scope}</MonoAnnotation>}
+        />
 
         {/* Filters */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('filters.title')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="city">{t('filters.city')}</Label>
-                <Input
-                  id="city"
-                  placeholder={t('filters.cityPlaceholder')}
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="interval">{t('filters.interval')}</Label>
-                <Select value={interval} onValueChange={(v) => setInterval(v as typeof interval)}>
-                  <SelectTrigger id="interval">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="month">{t('filters.monthly')}</SelectItem>
-                    <SelectItem value="quarter">{t('filters.quarterly')}</SelectItem>
-                    <SelectItem value="year">{t('filters.yearly')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="months">{t('filters.monthsBack')}</Label>
-                <Input
-                  id="months"
-                  type="number"
-                  min={1}
-                  max={60}
-                  value={monthsBack}
-                  onChange={(e) => setMonthsBack(parseInt(e.target.value) || 12)}
-                />
-              </div>
-              <div className="flex items-end">
-                <Button onClick={fetchData} disabled={loading}>
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {tSearch('filters.applyFilters')}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Error state */}
-        {error && (
-          <div className="flex items-center gap-2 p-4 border border-destructive/20 bg-destructive/10 rounded-lg">
-            <AlertCircle className="h-5 w-5 text-destructive" />
-            <p className="text-destructive">{error}</p>
+        <div className="mt-5 grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_160px_120px_auto]">
+          <div className="space-y-1.5">
+            <Label htmlFor="city" className={LABEL_CLASS}>
+              {t('filters.city')}
+            </Label>
+            <Input
+              id="city"
+              className={CONTROL_CLASS}
+              placeholder={t('filters.cityPlaceholder')}
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+            />
           </div>
-        )}
-
-        {/* Loading state */}
-        {loading && !trends && (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="space-y-1.5">
+            <Label htmlFor="interval" className={LABEL_CLASS}>
+              {t('filters.interval')}
+            </Label>
+            <Select value={interval} onValueChange={(v) => setInterval(v as typeof interval)}>
+              <SelectTrigger id="interval" className={CONTROL_CLASS}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="month">{t('filters.monthly')}</SelectItem>
+                <SelectItem value="quarter">{t('filters.quarterly')}</SelectItem>
+                <SelectItem value="year">{t('filters.yearly')}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        )}
-
-        {/* Market Indicators */}
-        {indicators && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className={`p-2 rounded-full ${trendColor} bg-muted`}>
-                    <TrendIcon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">{t('stats.overallTrend')}</p>
-                    <p className={`text-xl font-semibold capitalize ${trendColor}`}>
-                      {indicators.overall_trend}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-2 rounded-full bg-primary/10">
-                    <Building2 className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">{t('stats.totalListings')}</p>
-                    <p className="text-xl font-semibold">
-                      {indicators.total_listings.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-2 rounded-full bg-success/15">
-                    <Activity className="h-6 w-6 text-success" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">{t('stats.new7d')}</p>
-                    <p className="text-xl font-semibold">
-                      {indicators.new_listings_7d.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-2 rounded-full bg-destructive/15">
-                    <DollarSign className="h-6 w-6 text-destructive" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">{t('stats.priceDrops7d')}</p>
-                    <p className="text-xl font-semibold">
-                      {indicators.price_drops_7d.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="space-y-1.5">
+            <Label htmlFor="months" className={LABEL_CLASS}>
+              {t('filters.monthsBack')}
+            </Label>
+            <Input
+              id="months"
+              className={CONTROL_CLASS}
+              type="number"
+              min={1}
+              max={60}
+              value={monthsBack}
+              onChange={(e) => setMonthsBack(parseInt(e.target.value) || 12)}
+            />
           </div>
-        )}
-
-        {/* Price + Volume Charts (dynamic-imported recharts bundle) */}
-        {trends && trends.data_points.length > 0 && (
-          <MarketTrendsChartsLazy chartData={chartData} />
-        )}
-
-        {/* Hottest/Coldest Districts */}
-        {indicators &&
-          (indicators.hottest_districts.length > 0 || indicators.coldest_districts.length > 0) && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {indicators.hottest_districts.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-success">{t('areas.hottest')}</CardTitle>
-                    <CardDescription>{t('areas.hottestHint')}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {indicators.hottest_districts.map((district, index) => (
-                        <div key={index} className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium">{district.name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {tCma('listings', { count: district.count })}
-                            </p>
-                          </div>
-                          <p className="font-semibold">${district.avg_price.toLocaleString()}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {indicators.coldest_districts.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-info">{t('areas.affordable')}</CardTitle>
-                    <CardDescription>{t('areas.affordableHint')}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {indicators.coldest_districts.map((district, index) => (
-                        <div key={index} className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium">{district.name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {tCma('listings', { count: district.count })}
-                            </p>
-                          </div>
-                          <p className="font-semibold">${district.avg_price.toLocaleString()}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          )}
-
-        {/* Area Comparison Section - Task #84 */}
-        <AreaComparisonComponent />
+          <div>
+            <Button onClick={fetchData} disabled={loading} className="h-9">
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
+              {tSearch('filters.applyFilters')}
+            </Button>
+          </div>
+        </div>
       </div>
+
+      {error ? (
+        <div className="px-6 pt-6">
+          <ErrorState title={error} />
+        </div>
+      ) : null}
+
+      {loading && !trends ? (
+        <div className="flex items-center justify-center px-6 py-16" role="status">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+        </div>
+      ) : (
+        <div className="grid flex-1 grid-cols-1 gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <main className="flex min-w-0 flex-col gap-6">
+            {trends && trends.data_points.length > 0 ? (
+              <MarketTrendsChartsLazy chartData={chartData} caption={chartCaption} />
+            ) : null}
+
+            <AreaComparisonComponent />
+          </main>
+
+          <aside className="flex min-w-0 flex-col gap-4">
+            {indicators ? (
+              <MarketIndicatorsPanel
+                indicators={indicators}
+                city={city || null}
+                pricePerSqm={pricePerSqm}
+              />
+            ) : null}
+
+            {indicators ? (
+              <DistrictsLedger indicators={indicators} currency={currency} />
+            ) : null}
+
+            <Link
+              href={`/${locale}/cma`}
+              className="flex items-center justify-between rounded-lg border border-border px-4 py-3 text-[14px] font-medium text-foreground transition-colors hover:bg-muted"
+            >
+              {t('aside.cmaCta')}
+              <span aria-hidden="true">→</span>
+            </Link>
+            <Link
+              href={`/${locale}/valuation`}
+              className="flex items-center justify-between rounded-lg border border-border px-4 py-3 text-[14px] font-medium text-foreground transition-colors hover:bg-muted"
+            >
+              {t('aside.valuationCta')}
+              <span aria-hidden="true">→</span>
+            </Link>
+          </aside>
+        </div>
+      )}
     </div>
   );
 }

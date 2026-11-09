@@ -464,6 +464,11 @@
       "session": "sesja: {id}",
       "request": "żądanie: {id}"
     },
+    "toolCard": {
+      "result": "Wynik",
+      "steps": "Kroki pośrednie",
+      "sources": "Źródła"
+    },
     "emptyState": {
       "title": "Rozpocznij rozmowę",
       "description": "Zapytaj mnie o wszystko związane z nieruchomościami.",
@@ -2477,7 +2482,10 @@
     },
     "marketTrends": {
       "title": "Trendy rynkowe",
-      "description": "Zmiany cen i wolumenu na śledzonych rynkach.",
+      "description": "Historia cen, wolumen ofert i wskaźniki rynku dla miasta oraz dowolne dwa obszary obok siebie.",
+      "scope": "{city} · {months} miesięcy wstecz",
+      "scope.allCities": "wszystkie miasta",
+      "chartCaption": "{months} miesięcy · {interval}",
       "errors": {
         "load": "Nie udało się wczytać danych rynkowych"
       },
@@ -2495,7 +2503,23 @@
         "overallTrend": "Trend ogólny",
         "totalListings": "Wszystkich ofert",
         "new7d": "Nowe (7 dni)",
-        "priceDrops7d": "Spadki cen (7 dni)"
+        "priceDrops7d": "Spadki cen (7 dni)",
+        "change12m": "Zmiana, 12 miesięcy",
+        "pricePerSqm": "Cena za m²",
+        "allCities": "wszystkie miasta"
+      },
+      "trend": {
+        "rising": "rosnący",
+        "falling": "malejący",
+        "stable": "stabilny"
+      },
+      "panels": {
+        "indicatorsTitle": "Wskaźniki rynku · {city}",
+        "indicatorsNote": "Policzone z historii katalogu. Z podłączonym dostawcą ten sam widok działa na żywych danych."
+      },
+      "aside": {
+        "cmaCta": "Zrób raport CMA",
+        "valuationCta": "Wycena nieruchomości"
       },
       "areas": {
         "hottest": "Najgorętsze okolice",

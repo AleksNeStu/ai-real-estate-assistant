@@ -45,6 +45,9 @@ jest.mock('lucide-react', () => ({
   Building2: (props: React.SVGProps<SVGSVGElement>) => (
     <svg data-testid="building-icon" {...props} />
   ),
+  AlertTriangle: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg data-testid="alert-triangle-icon" {...props} />
+  ),
 }));
 
 // Mock UI components
@@ -186,7 +189,7 @@ describe('MarketTrendsPage', () => {
     render(<MarketTrendsPage />);
 
     expect(screen.getByText('Market Trends')).toBeInTheDocument();
-    expect(screen.getByText(/Analyze price trends and market indicators/)).toBeInTheDocument();
+    expect(screen.getByText(/Price history, listing volume and market indicators/)).toBeInTheDocument();
   });
 
   it('shows loading state initially', () => {
@@ -252,7 +255,7 @@ describe('MarketTrendsPage', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Filters')).toBeInTheDocument();
+      expect(screen.getByLabelText('City')).toBeInTheDocument();
     });
 
     // Verify filter labels and inputs exist
@@ -275,8 +278,10 @@ describe('MarketTrendsPage', () => {
 
     expect(screen.getByText('Mitte')).toBeInTheDocument();
     expect(screen.getByText('Marzahn')).toBeInTheDocument();
-    expect(screen.getByText('$650,000')).toBeInTheDocument();
-    expect(screen.getByText('$280,000')).toBeInTheDocument();
+    // The indicators carry no currency, so the price is a bare number: a
+    // dollar sign in front of a Polish listing would be a guess.
+    expect(screen.getByText('650,000')).toBeInTheDocument();
+    expect(screen.getByText('280,000')).toBeInTheDocument();
   });
 
   it('shows error state when API fails', async () => {
@@ -291,8 +296,8 @@ describe('MarketTrendsPage', () => {
       expect(screen.getByText('Failed to load market data')).toBeInTheDocument();
     });
 
-    // Error alert icon should be visible
-    expect(screen.getByTestId('alert-icon')).toBeInTheDocument();
+    // Error state icon should be visible
+    expect(screen.getByTestId('alert-triangle-icon')).toBeInTheDocument();
   });
 
   it('renders AreaComparisonComponent', async () => {

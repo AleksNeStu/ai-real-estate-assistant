@@ -1,30 +1,28 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLocale, useTranslations } from 'next-intl';
+import { Loader2 } from 'lucide-react';
+
+import { compareAreas, ApiError } from '@/lib/api';
+import { AreaComparison } from '@/lib/types';
+import { formatPrice, resolveLocale } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  Loader2,
-  AlertCircle,
-  ArrowRight,
-  Building2,
-  DollarSign,
-  BarChart3,
-} from 'lucide-react';
-import { compareAreas, ApiError } from '@/lib/api';
-import { AreaComparison } from '@/lib/types';
-import { formatPrice } from '@/lib/format';
-import { useLocale, useTranslations } from 'next-intl';
+import { MonoAnnotation } from '@/components/ui/mono-annotation';
+import { ErrorState } from '@/components/ui/states';
 
 /**
- * Maps the API amenity_availability keys to the catalogue keys that carry their
- * reader-visible label. Unknown keys fall back to the raw key.
+ * Two areas, side by side.
+ *
+ * The panel is a comparison, so it is drawn as one: the two areas in the
+ * header, the metric down the middle, the two numbers on either side. Every
+ * number is the one the API returned for that area, in the currency of the
+ * listings the area holds.
  */
+
+/** The amenity keys the catalogue names, mapped to their reader-visible label. */
 const AMENITY_LABEL_KEYS: Record<string, string> = {
   parking: 'parking',
   garden: 'garden',
@@ -34,81 +32,16 @@ const AMENITY_LABEL_KEYS: Record<string, string> = {
   elevator: 'elevator',
 };
 
-interface MetricRowProps {
-  label: string;
-  value1: number | string | undefined;
-  value2: number | string | undefined;
-  unit?: string;
-  format?: 'number' | 'currency' | 'percent';
-  higherIsBetter?: boolean;
-  /** The currency the prices are in - the currency of the listings themselves. */
-  currency?: string;
-  /** The currency of the second column, when the two places differ. */
-  currency2?: string;
-  locale?: string;
-}
-
-function MetricRow({
-  label,
-  value1,
-  value2,
-  unit = '',
-  format = 'number',
-  higherIsBetter = true,
-  currency = 'PLN',
-  currency2,
-  locale = 'pl-PL',
-}: MetricRowProps) {
-  const formatValue = (val: number | string | undefined, ownCurrency?: string): string => {
-    if (val === undefined || val === null) return 'N/A';
-    if (typeof val === 'string') return val;
-    // The comparison used to spell a dollar sign into every price, whatever
-    // currency the listings were priced in.
-    if (format === 'currency') return formatPrice(val, ownCurrency ?? currency, locale);
-    if (format === 'percent') return `${val.toFixed(1)}%`;
-    return `${val.toLocaleString()}${unit}`;
-  };
-
-  const num1 = typeof value1 === 'number' ? value1 : 0;
-  const num2 = typeof value2 === 'number' ? value2 : 0;
-  const diff = num1 - num2;
-  const diffPercent = num2 !== 0 ? ((diff / num2) * 100).toFixed(1) : '0';
-
-  const isPositive = diff > 0;
-  const isBetter = higherIsBetter ? isPositive : !isPositive;
-
-  return (
-    <div className="grid grid-cols-5 items-center py-3 border-b border-border/50 gap-4">
-      <div className="col-span-2 text-right">
-        <span className="font-semibold">{formatValue(value1, currency)}</span>
-      </div>
-      <div className="col-span-1 text-center">
-        <div className="text-xs text-muted-foreground">{label}</div>
-        {diff !== 0 && (
-          <div
-            className={`flex items-center justify-center gap-1 text-xs ${isBetter ? 'text-success' : 'text-destructive'}`}
-          >
-            {isPositive ? (
-              <TrendingUp className="h-3 w-3" aria-hidden="true" />
-            ) : (
-              <TrendingDown className="h-3 w-3" aria-hidden="true" />
-            )}
-            <span>{diffPercent}%</span>
-          </div>
-        )}
-      </div>
-      <div className="col-span-2 text-left">
-        <span className="font-semibold">{formatValue(value2, currency2 ?? currency)}</span>
-      </div>
-    </div>
-  );
-}
+const CONTROL_CLASS =
+  'h-9 w-full rounded-md border border-input bg-background px-2.5 text-[13px] text-foreground';
+const LABEL_CLASS = 'text-[12px] font-medium text-foreground';
 
 export function AreaComparisonComponent() {
   const t = useTranslations('marketTrends');
   const tInv = useTranslations('investment');
   const tCompare = useTranslations('pages.tools.compare');
   const locale = useLocale();
+
   const [city1, setCity1] = useState('Warsaw');
   const [city2, setCity2] = useState('Krakow');
   const [loading, setLoading] = useState(false);
@@ -140,210 +73,162 @@ export function AreaComparisonComponent() {
     }
   };
 
-  const TrendIcon =
-    comparison && comparison.price_difference > 0
-      ? TrendingUp
-      : comparison && comparison.price_difference < 0
-        ? TrendingDown
-        : Minus;
+  const money = (value: number | undefined, currency?: string): string => {
+    if (value === undefined || value === null) return '—';
+    return formatPrice(value, currency ?? 'PLN', resolveLocale(locale));
+  };
+
+  const number = (value: number | undefined): string => {
+    if (value === undefined || value === null) return '—';
+    return value.toLocaleString();
+  };
+
+  const rows: Array<{ label: string; left: string; right: string }> = comparison
+    ? [
+        {
+          label: t('areaComparison.avgPrice'),
+          left: money(comparison.area1.avg_price, comparison.area1.currency),
+          right: money(comparison.area2.avg_price, comparison.area2.currency),
+        },
+        {
+          label: t('areaComparison.medianPrice'),
+          left: money(comparison.area1.median_price, comparison.area1.currency),
+          right: money(comparison.area2.median_price, comparison.area2.currency),
+        },
+        {
+          label: t('areaComparison.pricePerSqm'),
+          left: money(comparison.area1.avg_price_per_sqm, comparison.area1.currency),
+          right: money(comparison.area2.avg_price_per_sqm, comparison.area2.currency),
+        },
+        {
+          label: t('areaComparison.listings'),
+          left: number(comparison.area1.property_count),
+          right: number(comparison.area2.property_count),
+        },
+        {
+          label: t('areaComparison.avgRooms'),
+          left: number(comparison.area1.most_common_room_count),
+          right: number(comparison.area2.most_common_room_count),
+        },
+      ]
+    : [];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5" aria-hidden="true" />
-          {tInv('areaComparison.title')}
-        </CardTitle>
-        <CardDescription>{t('areaComparison.description')}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Input Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="city1">{t('areaComparison.firstCity')}</Label>
+    <section className="rounded-lg border border-border">
+      <header className="flex items-baseline justify-between gap-4 border-b border-border px-4 py-3">
+        <h2 className="text-[15px] font-semibold text-foreground">{tInv('areaComparison.title')}</h2>
+        <MonoAnnotation>
+          {comparison ? comparison.area1.city : t('areaComparison.description')}
+        </MonoAnnotation>
+      </header>
+
+      <div className="px-4 py-4">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="city1" className={LABEL_CLASS}>
+              {t('areaComparison.firstCity')}
+            </Label>
             <Input
               id="city1"
+              className={CONTROL_CLASS}
               placeholder={t('areaComparison.cityPlaceholder')}
               value={city1}
               onChange={(e) => setCity1(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleCompare()}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="city2">{t('areaComparison.secondCity')}</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="city2" className={LABEL_CLASS}>
+              {t('areaComparison.secondCity')}
+            </Label>
             <Input
               id="city2"
+              className={CONTROL_CLASS}
               placeholder={t('areaComparison.cityPlaceholder')}
               value={city2}
               onChange={(e) => setCity2(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleCompare()}
             />
           </div>
-          <div className="flex items-end">
-            <Button onClick={handleCompare} disabled={loading} className="w-full">
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
-              {tCompare('compare')}
-            </Button>
-          </div>
         </div>
 
-        {/* Error State */}
-        {error && (
-          <div
-            className="flex items-center gap-2 p-4 border border-destructive/20 bg-destructive/10 rounded-lg"
-            role="alert"
-          >
-            <AlertCircle className="h-5 w-5 text-destructive" aria-hidden="true" />
-            <p className="text-destructive">{error}</p>
+        <div className="mt-3 flex items-center gap-3">
+          <Button onClick={handleCompare} disabled={loading} size="sm" className="h-9">
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
+            {tCompare('compare')}
+          </Button>
+          {comparison ? (
+            <MonoAnnotation>
+              {t('areaComparison.priceDifference')} {comparison.price_difference_percent.toFixed(1)}%
+            </MonoAnnotation>
+          ) : null}
+        </div>
+
+        {error ? (
+          <div className="mt-4">
+            <ErrorState title={t('areaComparison.compareFailed')} description={error} />
           </div>
-        )}
+        ) : null}
 
-        {/* Loading State */}
-        {loading && !comparison && (
-          <div className="flex items-center justify-center h-48" role="status" aria-live="polite">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
+        {loading && !comparison ? (
+          <div className="flex items-center justify-center py-10" role="status">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
           </div>
-        )}
+        ) : null}
 
-        {/* Comparison Results */}
-        {comparison && (
-          <div className="space-y-6">
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="bg-muted/50">
-                <CardContent className="pt-4">
-                  <div className="flex items-center gap-2">
-                    <TrendIcon className="h-5 w-5 text-primary" aria-hidden="true" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">{t('areaComparison.priceDifference')}</p>
-                      <p className="text-lg font-semibold">
-                        {comparison.price_difference > 0 ? '+' : ''}
-                        {comparison.price_difference_percent.toFixed(1)}%
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-muted/50">
-                <CardContent className="pt-4">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-success" aria-hidden="true" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">{t('areaComparison.cheaperArea')}</p>
-                      <p className="text-lg font-semibold">{comparison.cheaper_area}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-muted/50">
-                <CardContent className="pt-4">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5 text-info" aria-hidden="true" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">{t('areaComparison.moreListings')}</p>
-                      <p className="text-lg font-semibold">{comparison.more_properties_area}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+        {comparison ? (
+          <>
+            <div className="mt-5 grid grid-cols-[minmax(0,1fr)_auto_auto] gap-x-4 border-t border-foreground pt-2 text-[12px] leading-4 text-muted-foreground">
+              <span>{t('areaComparison.metric')}</span>
+              <span className="text-right">{comparison.area1.city}</span>
+              <span className="text-right">{comparison.area2.city}</span>
             </div>
-
-            {/* Comparison Table */}
-            <div className="rounded-lg border">
-              {/* Header */}
-              <div className="grid grid-cols-5 bg-muted/50 p-3 font-semibold text-sm">
-                <div className="col-span-2 text-center">{comparison.area1.city}</div>
-                <div className="col-span-1 text-center">{t('areaComparison.metric')}</div>
-                <div className="col-span-2 text-center">{comparison.area2.city}</div>
+            {rows.map((row) => (
+              <div
+                key={row.label}
+                className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-baseline gap-x-4 border-b border-border py-2"
+              >
+                <span className="text-[13px] leading-5 text-muted-foreground">{row.label}</span>
+                <span className="text-right font-mono text-[13px] leading-5 text-foreground">
+                  {row.left}
+                </span>
+                <span className="text-right font-mono text-[13px] leading-5 text-foreground">
+                  {row.right}
+                </span>
               </div>
+            ))}
 
-              {/* Metrics */}
-              <div className="p-3">
-                <MetricRow
-                  label={t('areaComparison.avgPrice')}
-                  value1={comparison.area1.avg_price}
-                  value2={comparison.area2.avg_price}
-                  format="currency"
-                  higherIsBetter={false}
-                  currency={comparison.area1.currency}
-                  currency2={comparison.area2.currency}
-                  locale={locale}
-                />
-                <MetricRow
-                  label={t('areaComparison.medianPrice')}
-                  value1={comparison.area1.median_price}
-                  value2={comparison.area2.median_price}
-                  format="currency"
-                  higherIsBetter={false}
-                  currency={comparison.area1.currency}
-                  currency2={comparison.area2.currency}
-                  locale={locale}
-                />
-                <MetricRow
-                  label={t('areaComparison.pricePerSqm')}
-                  value1={comparison.area1.avg_price_per_sqm}
-                  value2={comparison.area2.avg_price_per_sqm}
-                  format="currency"
-                  higherIsBetter={false}
-                  currency={comparison.area1.currency}
-                  currency2={comparison.area2.currency}
-                  locale={locale}
-                />
-                <MetricRow
-                  label={t('areaComparison.listings')}
-                  value1={comparison.area1.property_count}
-                  value2={comparison.area2.property_count}
-                  format="number"
-                  higherIsBetter={true}
-                />
-                <MetricRow
-                  label={t('areaComparison.avgRooms')}
-                  value1={comparison.area1.most_common_room_count}
-                  value2={comparison.area2.most_common_room_count}
-                  format="number"
-                  higherIsBetter={false}
-                />
-              </div>
-            </div>
-
-            {/* Amenity Comparison */}
             {comparison.area1.amenity_availability &&
-              Object.keys(comparison.area1.amenity_availability).length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold mb-3">{t('areaComparison.amenityAvailability')}</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {Object.entries(comparison.area1.amenity_availability).map(([key, val1]) => {
-                      const val2 = comparison.area2.amenity_availability?.[key] ?? 0;
-                      const diff = val1 - val2;
-                      const amenityKey = AMENITY_LABEL_KEYS[key];
-                      const amenityLabel = amenityKey
-                        ? tInv(`areaComparison.amenities.${amenityKey}`)
-                        : key.replace(/_/g, ' ');
-                      return (
-                        <div key={key} className="text-sm p-2 bg-muted/30 rounded">
-                          <div className="capitalize font-medium">{amenityLabel}</div>
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <span>{val1.toFixed(0)}%</span>
-                            <ArrowRight className="h-3 w-3" aria-hidden="true" />
-                            <span>{val2.toFixed(0)}%</span>
-                            {diff !== 0 && (
-                              <span className={diff > 0 ? 'text-success' : 'text-destructive'}>
-                                ({diff > 0 ? '+' : ''}
-                                {diff.toFixed(0)}%)
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+            Object.keys(comparison.area1.amenity_availability).length > 0 ? (
+              <div className="mt-4">
+                <h3 className="text-[12px] font-medium text-muted-foreground">
+                  {t('areaComparison.amenityAvailability')}
+                </h3>
+                <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
+                  {Object.entries(comparison.area1.amenity_availability).map(([key, val1]) => {
+                    const val2 = comparison.area2.amenity_availability?.[key] ?? 0;
+                    const amenityKey = AMENITY_LABEL_KEYS[key];
+                    const amenityLabel = amenityKey
+                      ? tInv(`areaComparison.amenities.${amenityKey}`)
+                      : key.replace(/_/g, ' ');
+                    return (
+                      <div
+                        key={key}
+                        className="flex items-baseline justify-between gap-2 border-b border-border py-1"
+                      >
+                        <span className="truncate text-[13px] text-foreground">{amenityLabel}</span>
+                        <span className="font-mono text-[12px] text-muted-foreground">
+                          {val1.toFixed(0)}% / {val2.toFixed(0)}%
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
-              )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              </div>
+            ) : null}
+          </>
+        ) : null}
+      </div>
+    </section>
   );
 }

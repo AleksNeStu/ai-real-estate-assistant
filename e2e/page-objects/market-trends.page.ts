@@ -27,8 +27,10 @@ export class MarketTrendsPage {
     this.intervalSelect = page.locator('#interval');
     this.monthsBackInput = page.locator('#months');
     this.applyFiltersButton = page.getByRole('button', { name: /apply filters/i });
-    this.indicatorCards = page.locator('.grid.grid-cols-1.md\\:grid-cols-4 > .rounded-lg');
-    this.priceTrendsCard = page.locator('text=/price trends/i').locator('..');
+    // The indicators are a ledger of rows, not a grid of cards: one row per
+    // indicator, in the panel beside the charts.
+    this.indicatorCards = page.locator('[data-testid="indicator-row"]');
+    this.priceTrendsCard = page.locator('text=/average and median prices/i').locator('..');
     this.volumeCard = page.locator('text=/listing volume/i').locator('..');
     this.errorMessage = page.locator('[class*="bg-destructive"], [class*="border-destructive"]');
     this.loadingSpinner = page.locator('.animate-spin');
@@ -89,10 +91,10 @@ export class MarketTrendsPage {
   }
 
   /**
-   * Get the number of indicator cards visible.
+   * Get the number of indicator rows visible.
    */
   async getIndicatorCardCount(): Promise<number> {
-    // The indicator grid has 4 cards
+    // The indicator panel carries one row per indicator.
     return await this.indicatorCards.count();
   }
 

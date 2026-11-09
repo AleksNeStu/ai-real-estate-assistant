@@ -1422,6 +1422,11 @@
       "session": "session: {id}",
       "request": "request: {id}"
     },
+    "toolCard": {
+      "result": "Result",
+      "steps": "Intermediate steps",
+      "sources": "Sources"
+    },
     "emptyState": {
       "title": "Start a Conversation",
       "description": "Ask me anything about real estate.",
@@ -2477,7 +2482,10 @@
     },
     "marketTrends": {
       "title": "Market Trends",
-      "description": "Analyze price trends and market indicators across different areas.",
+      "description": "Price history, listing volume and market indicators per city, and any two areas side by side.",
+      "scope": "{city} · {months} months back",
+      "scope.allCities": "all cities",
+      "chartCaption": "{months} months · {interval}",
       "errors": {
         "load": "Failed to load market data"
       },
@@ -2495,7 +2503,23 @@
         "overallTrend": "Overall Trend",
         "totalListings": "Total Listings",
         "new7d": "New (7 days)",
-        "priceDrops7d": "Price Drops (7d)"
+        "priceDrops7d": "Price Drops (7d)",
+        "change12m": "Change, 12 months",
+        "pricePerSqm": "Price per m²",
+        "allCities": "all cities"
+      },
+      "trend": {
+        "rising": "rising",
+        "falling": "falling",
+        "stable": "stable"
+      },
+      "panels": {
+        "indicatorsTitle": "Market indicators · {city}",
+        "indicatorsNote": "Computed from the catalogue's history. With a live provider the same view runs on real feeds."
+      },
+      "aside": {
+        "cmaCta": "Build a CMA report",
+        "valuationCta": "Value a property"
       },
       "areas": {
         "hottest": "Hottest Areas",

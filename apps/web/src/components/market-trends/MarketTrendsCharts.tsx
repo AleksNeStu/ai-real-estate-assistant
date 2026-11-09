@@ -2,25 +2,18 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  LineChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
 } from 'recharts';
 
+import { ChartFrame } from '@/components/ui/chart-frame';
 import { formatCompactPrice, formatPrice } from '@/lib/format';
 
 export interface ChartDataPoint {
@@ -34,18 +27,31 @@ export interface ChartDataPoint {
 
 interface MarketTrendsChartsProps {
   chartData: ChartDataPoint[];
+  /** The mono note on the frame: the period, the scope, the unit. */
+  caption?: string;
+  /** The height the price curve is drawn in. */
+  priceHeight?: number;
+  /** The height the volume bars are drawn in. */
+  volumeHeight?: number;
 }
 
 /**
- * Charts for /market-trends. Renders two recharts visualizations
- * (line chart of average / median price over time, bar chart of
- * listing volume).
+ * The price curve and the listing volume.
  *
- * Extracted into its own component so the page can dynamic-import it
- * with `ssr: false`, which keeps the recharts bundle (5+ MB) out of
- * the initial page payload.
+ * Both charts sit in a chart frame: the title above, the note beside it in
+ * mono, and the space for the chart held open underneath - so the page does
+ * not move when the bundle arrives.
+ *
+ * The curve is drawn the way the prototype draws it: the median in ink, the
+ * average in the muted voice, the grid as hairlines. The charts are the only
+ * thing on the page that carries a colour, and they do not carry one.
  */
-export function MarketTrendsCharts({ chartData }: MarketTrendsChartsProps) {
+export function MarketTrendsCharts({
+  chartData,
+  caption,
+  priceHeight = 280,
+  volumeHeight = 200,
+}: MarketTrendsChartsProps) {
   const t = useTranslations('marketTrends.charts');
   const locale = useLocale();
 
@@ -56,63 +62,95 @@ export function MarketTrendsCharts({ chartData }: MarketTrendsChartsProps) {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('pricesTitle')}</CardTitle>
-          <CardDescription>{t('pricesDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-80" role="img" aria-label={t('pricesAria')}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="period" tick={{ fontSize: 12 }} />
-                <YAxis
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={(v) => axisPrice(v)}
-                />
-                <Tooltip formatter={(value: number) => [fullPrice(value)]} />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="avgPrice"
-                  stroke="hsl(var(--chart-1))"
-                  strokeWidth={2}
-                  name={t('averagePrice')}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="medianPrice"
-                  stroke="hsl(var(--chart-2))"
-                  strokeWidth={2}
-                  name={t('medianPrice')}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+      <ChartFrame title={t('pricesTitle')} caption={caption} height={priceHeight}>
+        <div
+          className="w-full"
+          style={{ height: priceHeight }}
+          role="img"
+          aria-label={t('pricesAria')}
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData}>
+              <CartesianGrid stroke="hsl(var(--border))" vertical={false} />
+              <XAxis
+                dataKey="period"
+                tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                axisLine={{ stroke: 'hsl(var(--border))' }}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                tickFormatter={(v) => axisPrice(v)}
+                axisLine={false}
+                tickLine={false}
+                width={56}
+              />
+              <Tooltip
+                formatter={(value: number) => [fullPrice(value)]}
+                contentStyle={{
+                  background: 'hsl(var(--background))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: 6,
+                  fontSize: 12,
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="medianPrice"
+                stroke="hsl(var(--foreground))"
+                strokeWidth={2}
+                dot={false}
+                name={t('medianPrice')}
+              />
+              <Line
+                type="monotone"
+                dataKey="avgPrice"
+                stroke="hsl(var(--muted-foreground))"
+                strokeWidth={1.5}
+                strokeOpacity={0.7}
+                dot={false}
+                name={t('averagePrice')}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </ChartFrame>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('volumeTitle')}</CardTitle>
-          <CardDescription>{t('volumeDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-80" role="img" aria-label={t('volumeAria')}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="period" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="volume" fill="hsl(var(--chart-4))" name={t('listings')} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+      <ChartFrame title={t('volumeTitle')} caption={caption} height={volumeHeight}>
+        <div
+          className="w-full"
+          style={{ height: volumeHeight }}
+          role="img"
+          aria-label={t('volumeAria')}
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
+              <CartesianGrid stroke="hsl(var(--border))" vertical={false} />
+              <XAxis
+                dataKey="period"
+                tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                axisLine={{ stroke: 'hsl(var(--border))' }}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                axisLine={false}
+                tickLine={false}
+                width={40}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: 'hsl(var(--background))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: 6,
+                  fontSize: 12,
+                }}
+              />
+              <Bar dataKey="volume" fill="hsl(var(--muted-foreground))" name={t('listings')} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </ChartFrame>
     </>
   );
 }
