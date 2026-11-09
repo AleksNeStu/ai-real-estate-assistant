@@ -2,25 +2,30 @@
 
 import React from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
 import { formatPrice as formatPriceInLocale } from '@/lib/format';
+import { StatTile } from '@/components/ui/stat-tile';
 import type { CMAComparable } from '@/lib/types';
 
 interface StepAdjustmentsProps {
   comparables: CMAComparable[];
   onComparablesChange: (comparables: CMAComparable[]) => void;
-  onNext: () => void;
-  onPrev: () => void;
 }
 
+/**
+ * The adjustments.
+ *
+ * One comparable is one block under a rule: the factors it differs by, the
+ * percentage each one carries and what it adds up to. The numbers are the
+ * API's own - a factor the reader changes is changed in place, and the
+ * adjusted price follows.
+ */
 export function StepAdjustments({
   comparables,
   onComparablesChange,
-  onNext,
-  onPrev,
 }: StepAdjustmentsProps) {
   const locale = useLocale();
   const t = useTranslations('cma.adjustments');
+
   const handleAdjustmentChange = (compIndex: number, adjIndex: number, newPercent: number) => {
     const updatedComparables = [...comparables];
     const adjustments = [...updatedComparables[compIndex].adjustments];
@@ -32,7 +37,7 @@ export function StepAdjustments({
     const newAmount = Math.round((basePrice * newPercent) / 100);
 
     adjustments[adjIndex] = {
-      ...adjustments[adjIndex],
+      ...oldAdjustment,
       adjustment_percent: newPercent,
       adjustment_amount: newAmount - oldAmount + oldAdjustment.adjustment_amount,
     };
@@ -69,19 +74,6 @@ export function StepAdjustments({
     return formatPriceInLocale(value, currency || 'EUR', locale);
   };
 
-  const getCategoryColor = (category: string): string => {
-    const colors: Record<string, string> = {
-      location: 'text-info',
-      size: 'text-success',
-      age: 'text-warning',
-      condition: 'text-critical',
-      amenities: 'text-chart-6',
-      floor: 'text-chart-5',
-      market: 'text-warning',
-    };
-    return colors[category] || 'text-muted-foreground';
-  };
-
   const getTotalAdjustments = (comp: CMAComparable): number => {
     return comp.adjustments.reduce((sum, adj) => sum + adj.adjustment_amount, 0);
   };
@@ -110,133 +102,122 @@ export function StepAdjustments({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-sm text-muted-foreground mb-4">{t('description')}</div>
+    <div className="flex flex-col gap-6">
+      <p className="text-[14px] leading-5 text-muted-foreground">{t('description')}</p>
 
-      {comparables.map((comp, compIndex) => (
-        <div key={comp.property_id} className="border rounded-lg p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-medium">{t('comparable', { index: compIndex + 1 })}</h4>
-            <span className="text-sm text-muted-foreground">
-              {t('similarity')} {comp.similarity_score.toFixed(1)}
-            </span>
-          </div>
-
-          {/* Adjustments table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 px-2 font-medium text-muted-foreground">
-                    {t('factor')}
-                  </th>
-                  <th className="text-left py-2 px-2 font-medium text-muted-foreground">
-                    {t('subject')}
-                  </th>
-                  <th className="text-left py-2 px-2 font-medium text-muted-foreground">
-                    {t('comparableLabel')}
-                  </th>
-                  <th className="text-center py-2 px-2 font-medium text-muted-foreground w-24">
-                    {t('adjPercent')}
-                  </th>
-                  <th className="text-right py-2 px-2 font-medium text-muted-foreground">
-                    {t('amount')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {comp.adjustments.map((adj, adjIndex) => (
-                  <tr key={adjIndex} className="border-b last:border-b-0">
-                    <td className="py-2 px-2">
-                      <span className={`text-xs font-medium ${getCategoryColor(adj.category)}`}>
-                        {adj.category}
-                      </span>
-                      <p className="text-xs text-muted-foreground mt-0.5">{adj.description}</p>
-                    </td>
-                    <td className="py-2 px-2 text-xs">{adj.subject_value || '-'}</td>
-                    <td className="py-2 px-2 text-xs">{adj.comp_value || '-'}</td>
-                    <td className="py-2 px-2 text-center">
-                      <input
-                        type="number"
-                        className="w-16 border rounded px-2 py-1 text-center text-xs"
-                        value={adj.adjustment_percent}
-                        onChange={(e) =>
-                          handleAdjustmentChange(
-                            compIndex,
-                            adjIndex,
-                            parseFloat(e.target.value) || 0
-                          )
-                        }
-                      />
-                      %
-                    </td>
-                    <td
-                      className={`py-2 px-2 text-right text-xs font-medium ${
-                        adj.adjustment_amount >= 1
-                          ? 'text-success'
-                          : adj.adjustment_amount < 1
-                            ? 'text-destructive'
-                            : ''
-                      }`}
-                    >
-                      {adj.adjustment_amount >= 1 ? '+' : ''}
-                      {formatCurrency(Math.abs(adj.adjustment_amount))}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Total */}
-          <div className="flex justify-between items-center mt-3 pt-2 border-t bg-muted/30 rounded">
-            <span className="text-sm font-medium">{t('totalAdjustments')}</span>
-            <div className="text-right">
-              <span
-                className={`text-lg font-semibold ${
-                  getTotalAdjustments(comp) >= 1 ? 'text-success' : 'text-destructive'
-                }`}
-              >
-                {getTotalAdjustments(comp) >= 1 ? '+' : '-'}
-                {formatCurrency(Math.abs(getTotalAdjustments(comp)))}
+      {comparables.map((comp, compIndex) => {
+        const total = getTotalAdjustments(comp);
+        return (
+          <section key={comp.property_id} className="border-t border-foreground pt-2.5">
+            <div className="flex items-baseline justify-between gap-3">
+              <h3 className="text-[14px] font-semibold text-foreground">
+                {t('comparable', { index: compIndex + 1 })}
+              </h3>
+              <span className="font-mono text-[12px] text-muted-foreground">
+                {t('similarity')} {comp.similarity_score.toFixed(1)}
               </span>
-              <p className="text-xs text-muted-foreground">
-                {t('adjustedPrice')} {formatCurrency(comp.adjusted_price)}
-              </p>
             </div>
-          </div>
-        </div>
-      ))}
 
-      {/* Summary */}
-      <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-        <h4 className="text-sm font-medium mb-2">{t('adjustmentSummary')}</h4>
-        <div className="grid grid-cols-3 gap-4 text-sm">
-          <div>
-            <p className="text-muted-foreground">{t('avgAdjustment')}</p>
-            <p className="font-medium">{formatCurrency(getAverageAdjustment(comparables))}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">{t('priceRange')}</p>
-            <p className="font-medium">
-              {formatCurrency(getLowestPrice(comparables))} -{' '}
-              {formatCurrency(getHighestPrice(comparables))}
-            </p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">{t('medianPrice')}</p>
-            <p className="font-medium">{formatCurrency(getMedianPrice(comparables))}</p>
-          </div>
-        </div>
-      </div>
+            <div className="mt-2 flex flex-col">
+              <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1fr)_64px_auto] items-baseline gap-x-4 border-b border-border py-2 text-[12px] text-muted-foreground">
+                <span>{t('factor')}</span>
+                <span>{t('subject')}</span>
+                <span>{t('comparableLabel')}</span>
+                <span className="text-right">{t('adjPercent')}</span>
+                <span className="text-right">{t('amount')}</span>
+              </div>
 
-      {/* Navigation */}
-      <div className="flex justify-between pt-4">
-        <Button variant="outline" onClick={onPrev}>
-          {t('back')}
-        </Button>
-        <Button onClick={onNext}>{t('nextPreview')}</Button>
-      </div>
+              {comp.adjustments.map((adj, adjIndex) => (
+                <div
+                  key={adjIndex}
+                  className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1fr)_64px_auto] items-baseline gap-x-4 border-b border-border py-2.5"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-[13px] font-medium text-foreground">
+                      {adj.category}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[12px] text-muted-foreground">
+                      {adj.description}
+                    </span>
+                  </span>
+                  <span className="font-mono text-[13px] text-foreground">
+                    {adj.subject_value || '-'}
+                  </span>
+                  <span className="font-mono text-[13px] text-foreground">
+                    {adj.comp_value || '-'}
+                  </span>
+                  <span className="text-right">
+                    <input
+                      type="number"
+                      aria-label={t('adjPercentFor', {
+                        category: adj.category,
+                        index: compIndex + 1,
+                      })}
+                      className="w-16 rounded-sm border border-input bg-background px-1.5 py-1 text-right font-mono text-[12px] text-foreground outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
+                      value={adj.adjustment_percent}
+                      onChange={(e) =>
+                        handleAdjustmentChange(
+                          compIndex,
+                          adjIndex,
+                          parseFloat(e.target.value) || 0
+                        )
+                      }
+                    />
+                  </span>
+                  <span
+                    className={`text-right font-mono text-[13px] ${
+                      adj.adjustment_amount >= 1
+                        ? 'text-success'
+                        : adj.adjustment_amount < 1
+                          ? 'text-destructive'
+                          : ''
+                    }`}
+                  >
+                    {adj.adjustment_amount >= 1 ? '+' : ''}
+                    {formatCurrency(Math.abs(adj.adjustment_amount))}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-baseline justify-between gap-4 pt-2.5">
+              <span className="text-[13px] font-medium text-foreground">
+                {t('totalAdjustments')}
+              </span>
+              <span className="text-right">
+                <span
+                  className={`font-mono text-[16px] font-semibold ${
+                    total >= 1 ? 'text-success' : 'text-destructive'
+                  }`}
+                >
+                  {total >= 1 ? '+' : '-'}
+                  {formatCurrency(Math.abs(total))}
+                </span>
+                <span className="mt-0.5 block font-mono text-[12px] text-muted-foreground">
+                  {t('adjustedPrice')} {formatCurrency(comp.adjusted_price)}
+                </span>
+              </span>
+            </div>
+          </section>
+        );
+      })}
+
+      <section className="grid grid-cols-1 gap-4 border-t border-foreground pt-3 sm:grid-cols-3">
+        <StatTile
+          value={formatCurrency(getAverageAdjustment(comparables))}
+          label={t('avgAdjustment')}
+        />
+        <StatTile
+          value={`${formatCurrency(getLowestPrice(comparables))} – ${formatCurrency(
+            getHighestPrice(comparables)
+          )}`}
+          label={t('priceRange')}
+        />
+        <StatTile
+          value={formatCurrency(getMedianPrice(comparables))}
+          label={t('medianPrice')}
+        />
+      </section>
     </div>
   );
 }

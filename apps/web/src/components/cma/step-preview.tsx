@@ -3,26 +3,36 @@
 import React, { useState, useEffect } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
+import { MonoAnnotation } from '@/components/ui/mono-annotation';
 import { formatPrice as formatPriceInLocale } from '@/lib/format';
 import { generateCMAReport } from '@/lib/api';
-import type { Property, CMAComparable, CMAReport } from '@/lib/types';
+import type { Property, CMAComparable } from '@/lib/types';
+
+import { subjectPriceOf, type CMAReportResponse } from './report';
 
 interface StepPreviewProps {
   subjectProperty: Property | null;
   comparables: CMAComparable[];
-  report: CMAReport | null;
-  onReportGenerated: (report: CMAReport) => void;
-  onNext: () => void;
-  onPrev: () => void;
+  report: CMAReportResponse | null;
+  onReportGenerated: (report: CMAReportResponse) => void;
 }
 
+/**
+ * The report.
+ *
+ * The design draws it as a card with a rule under its title and four
+ * numbers under that: the indicated value, the range it sits in, the
+ * adjusted price per m² and what the asking price is against it.
+ *
+ * Every number comes from the report the API generated. The asking price
+ * is the one the report carries - the forecast route cannot compare
+ * against an asking price, because the forecast never returns one.
+ */
 export function StepPreview({
   subjectProperty,
   comparables,
   report,
   onReportGenerated,
-  onNext,
-  onPrev,
 }: StepPreviewProps) {
   const locale = useLocale();
   const t = useTranslations('cma.preview');
@@ -64,219 +74,167 @@ export function StepPreview({
   const formatCurrency = (value: number, currency?: string) => {
     // The wizard used to force every price into euros with German separators,
     // whatever the listing said and whatever language the reader picked.
-    return formatPriceInLocale(value, currency || 'EUR', locale);
-  };
-
-  const getConfidenceColor = (score: number): string => {
-    if (score >= 80) return 'text-success';
-    if (score >= 60) return 'text-warning';
-    return 'text-warning';
-  };
-
-  const getConfidenceLabel = (score: number): string => {
-    if (score >= 80) return t('confidenceHigh');
-    if (score >= 60) return t('confidenceMedium');
-    return t('confidenceLow');
+    // The report carries no currency of its own - the subject's is the one
+    // every number in it is in.
+    return formatPriceInLocale(value, currency || subjectProperty?.currency || 'EUR', locale);
   };
 
   if (isGenerating) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <div
-          className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"
-          aria-hidden="true"
-        ></div>
-        <p className="text-muted-foreground">{t('generating')}</p>
-      </div>
+      <p className="text-[14px] text-muted-foreground" role="status">
+        {t('generating')}
+      </p>
     );
   }
 
   if (error) {
     return (
-      <div className="space-y-4">
-        <div className="text-sm text-destructive bg-destructive/10 px-4 py-3 rounded" role="alert">
+      <div className="flex flex-col gap-3">
+        <p className="text-[14px] text-destructive" role="alert">
           {error}
-        </div>
-        <div className="flex justify-between">
-          <Button variant="outline" onClick={onPrev}>
-            {t('back')}
-          </Button>
-          <Button onClick={generateReport}>{t('tryAgain')}</Button>
-        </div>
+        </p>
+        <Button onClick={generateReport} className="self-start">
+          {t('tryAgain')}
+        </Button>
       </div>
     );
   }
 
   if (!report) {
     return (
-      <div className="space-y-4">
-        <div className="text-center py-8 text-muted-foreground">{t('noReport')}</div>
-        <div className="flex justify-between">
-          <Button variant="outline" onClick={onPrev}>
-            {t('back')}
-          </Button>
-          <Button onClick={generateReport} disabled={!subjectProperty?.id}>
-            {t('generateReport')}
-          </Button>
-        </div>
+      <div className="flex flex-col gap-3">
+        <p className="text-[14px] text-muted-foreground">{t('noReport')}</p>
+        <Button onClick={generateReport} disabled={!subjectProperty?.id} className="self-start">
+          {t('generateReport')}
+        </Button>
       </div>
     );
   }
 
+  const askingPrice = subjectPriceOf(report, subjectProperty?.price ?? null);
+  const versusAsking =
+    askingPrice && report.valuation.estimated_value
+      ? (askingPrice / report.valuation.estimated_value - 1) * 100
+      : null;
+
   return (
-    <div className="space-y-6">
-      {/* Executive Summary */}
-      <div className="border rounded-lg p-4">
-        <h3 className="font-semibold text-lg mb-4">{t('executiveSummary')}</h3>
+    <div className="flex flex-col gap-5">
+      <section className="rounded-lg border border-border p-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <h3 className="text-[18px] font-semibold text-foreground">
+            {t('reportTitle', {
+              subject:
+                subjectProperty?.address ||
+                subjectProperty?.district ||
+                subjectProperty?.city ||
+                t('report'),
+            })}
+          </h3>
+          <MonoAnnotation>
+            {t('prepared', { date: new Date(report.created_at).toLocaleDateString(locale) })}
+          </MonoAnnotation>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Estimated Value */}
-          <div className="bg-primary/5 rounded-lg p-4">
-            <p className="text-sm text-muted-foreground">{t('estimatedValue')}</p>
-            <p className="text-3xl font-bold text-primary mt-1">
+        <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-foreground pt-3 sm:grid-cols-4">
+          <div className="flex flex-col gap-0.5">
+            <dt className="text-[12px] leading-4 text-muted-foreground">
+              {t('estimatedValue')}
+            </dt>
+            <dd className="font-mono text-[20px] font-semibold leading-6 text-foreground">
               {formatCurrency(report.valuation.estimated_value)}
-            </p>
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-sm text-muted-foreground">{t('range')}</span>
-              <span className="text-sm font-medium">
-                {formatCurrency(report.valuation.value_range_low)} -{' '}
-                {formatCurrency(report.valuation.value_range_high)}
-              </span>
-            </div>
+            </dd>
           </div>
-
-          {/* Confidence Score */}
-          <div className="bg-muted/30 rounded-lg p-4">
-            <p className="text-sm text-muted-foreground">{t('confidenceScore')}</p>
-            <div className="flex items-baseline gap-2 mt-1">
-              <span
-                className={`text-3xl font-bold ${getConfidenceColor(
-                  report.valuation.confidence_score
-                )}`}
-              >
-                {report.valuation.confidence_score.toFixed(0)}%
-              </span>
-              <span className="text-sm text-muted-foreground">
-                ({getConfidenceLabel(report.valuation.confidence_score)})
-              </span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2 mt-3">
-              <div
-                className={`h-2 rounded-full ${
-                  report.valuation.confidence_score >= 80
-                    ? 'bg-success'
-                    : report.valuation.confidence_score >= 60
-                      ? 'bg-warning'
-                      : 'bg-warning'
-                }`}
-                style={{ width: `${report.valuation.confidence_score}%` }}
-              ></div>
-            </div>
+          <div className="flex flex-col gap-0.5">
+            <dt className="text-[12px] leading-4 text-muted-foreground">
+              {t('rangeLabel')}
+            </dt>
+            <dd className="font-mono text-[16px] font-semibold leading-6 text-foreground">
+              {formatCurrency(report.valuation.value_range_low)} –{' '}
+              {formatCurrency(report.valuation.value_range_high)}
+            </dd>
           </div>
-        </div>
-
-        {/* Price per sqm */}
-        <div className="mt-4 p-3 bg-muted/20 rounded">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">{t('pricePerSqm')}</span>
-            <span className="font-semibold">
+          <div className="flex flex-col gap-0.5">
+            <dt className="text-[12px] leading-4 text-muted-foreground">
+              {t('pricePerSqm')}
+            </dt>
+            <dd className="font-mono text-[16px] font-semibold leading-6 text-foreground">
               {formatCurrency(report.valuation.price_per_sqm)}/m²
-            </span>
+            </dd>
           </div>
-        </div>
-      </div>
+          <div className="flex flex-col gap-0.5">
+            <dt className="text-[12px] leading-4 text-muted-foreground">
+              {t('askingVsValue')}
+            </dt>
+            <dd className="font-mono text-[16px] font-semibold leading-6 text-foreground">
+              {versusAsking === null ? '—' : `${versusAsking > 0 ? '+' : ''}${versusAsking.toFixed(1)}%`}
+            </dd>
+          </div>
+        </dl>
 
-      {/* Subject Property Summary */}
-      <div className="border rounded-lg p-4">
-        <h3 className="font-semibold mb-3">{t('subjectProperty')}</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div>
-            <span className="text-muted-foreground">{t('location')}</span>
-            <p className="font-medium mt-1">{subjectProperty?.address || subjectProperty?.city}</p>
-          </div>
-          <div>
-            <span className="text-muted-foreground">{t('area')}</span>
-            <p className="font-medium mt-1">
-              {subjectProperty?.area_sqm ? `${subjectProperty.area_sqm} m²` : 'N/A'}
-            </p>
-          </div>
-          <div>
-            <span className="text-muted-foreground">{t('rooms')}</span>
-            <p className="font-medium mt-1">{subjectProperty?.rooms || 'N/A'}</p>
-          </div>
-          <div>
-            <span className="text-muted-foreground">{t('type')}</span>
-            <p className="font-medium mt-1 capitalize">{subjectProperty?.property_type}</p>
-          </div>
-        </div>
-      </div>
+        <p className="mt-4 text-[14px] leading-5 text-muted-foreground">
+          {t('summary', { count: report.comparables.length })}
+        </p>
+      </section>
 
-      {/* Comparables Summary */}
-      <div className="border rounded-lg p-4">
-        <h3 className="font-semibold mb-3">
-          {t('comparables', { count: report.comparables.length })}
-        </h3>
-        <div className="space-y-2">
+      <section className="flex flex-col">
+        <div className="flex items-baseline justify-between gap-3">
+          <h3 className="text-[14px] font-semibold text-foreground">
+            {t('comparables', { count: report.comparables.length })}
+          </h3>
+          <MonoAnnotation>{t('similarity')}</MonoAnnotation>
+        </div>
+
+        <div className="mt-1 border-t border-foreground">
           {report.comparables.map((comp, index) => (
             <div
               key={comp.property_id}
-              className="flex items-center justify-between p-2 bg-muted/30 rounded text-sm"
+              className="grid grid-cols-[28px_minmax(0,1fr)_auto_auto] items-baseline gap-x-4 border-b border-border py-2.5"
             >
-              <div className="flex items-center gap-3">
-                <span className="text-muted-foreground w-6">#{index + 1}</span>
-                <span>
-                  {t('property')} {comp.property_id.slice(0, 8)}...
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {t('score')} {comp.similarity_score.toFixed(1)}
-                </span>
-              </div>
-              <span className="font-medium">{formatCurrency(comp.adjusted_price)}</span>
+              <span className="font-mono text-[12px] text-muted-foreground">
+                #{index + 1}
+              </span>
+              <span className="truncate text-[14px] text-foreground">
+                {t('property')} {comp.property_id.slice(0, 8)}
+              </span>
+              <span className="font-mono text-[12px] text-muted-foreground">
+                {comp.similarity_score.toFixed(1)}
+              </span>
+              <span className="text-right font-mono text-[14px] text-foreground">
+                {formatCurrency(comp.adjusted_price)}
+              </span>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Market Context */}
-      {report.market_context && (
-        <div className="border rounded-lg p-4">
-          <h3 className="font-semibold mb-3">{t('marketContext')}</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
-              <span className="text-muted-foreground">{t('avgPricePerSqm')}</span>
-              <p className="font-medium mt-1">
-                {formatCurrency((report.market_context.avg_price_per_sqm as number) || 0)}
-              </p>
-            </div>
-            <div>
-              <span className="text-muted-foreground">{t('medianPrice')}</span>
-              <p className="font-medium mt-1">
-                {formatCurrency((report.market_context.median_price as number) || 0)}
-              </p>
-            </div>
-            <div>
-              <span className="text-muted-foreground">{t('trend')}</span>
-              <p className="font-medium mt-1 capitalize">
-                {(report.market_context.trend as string) || 'N/A'}
-              </p>
-            </div>
-            <div>
-              <span className="text-muted-foreground">{t('inventory')}</span>
-              <p className="font-medium mt-1">
-                {t('listings', { count: (report.market_context.inventory_count as number) || 0 })}
-              </p>
-            </div>
+      {report.market_trend || report.market_avg_price_per_sqm ? (
+        <section className="grid grid-cols-1 gap-4 border-t border-foreground pt-3 sm:grid-cols-3">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[12px] leading-4 text-muted-foreground">{t('trend')}</span>
+            <span className="font-mono text-[14px] text-foreground">
+              {report.market_trend ?? '—'}
+            </span>
           </div>
-        </div>
-      )}
-
-      {/* Navigation */}
-      <div className="flex justify-between pt-4">
-        <Button variant="outline" onClick={onPrev}>
-          {t('back')}
-        </Button>
-        <Button onClick={onNext}>{t('nextExport')}</Button>
-      </div>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[12px] leading-4 text-muted-foreground">
+              {t('avgPricePerSqm')}
+            </span>
+            <span className="font-mono text-[14px] text-foreground">
+              {report.market_avg_price_per_sqm
+                ? formatCurrency(report.market_avg_price_per_sqm)
+                : '—'}
+            </span>
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[12px] leading-4 text-muted-foreground">
+              {t('inventoryDays')}
+            </span>
+            <span className="font-mono text-[14px] text-foreground">
+              {report.market_inventory_days ?? '—'}
+            </span>
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

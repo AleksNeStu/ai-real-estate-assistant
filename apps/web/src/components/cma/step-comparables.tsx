@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
+import { MonoAnnotation } from '@/components/ui/mono-annotation';
 import { findComparables } from '@/lib/api';
 import { formatPrice as formatPriceInLocale } from '@/lib/format';
 import type { CMAComparable, Property } from '@/lib/types';
@@ -11,19 +12,21 @@ interface StepComparablesProps {
   subjectPropertyId: string | null;
   selectedComparables: CMAComparable[];
   onComparablesChange: (comparables: CMAComparable[]) => void;
-  onNext: () => void;
-  onPrev: () => void;
 }
 
-const MIN_COMPARABLES = 3;
-const MAX_COMPARABLES = 6;
+export const MIN_COMPARABLES = 3;
+export const MAX_COMPARABLES = 6;
 
+/**
+ * The comparables.
+ *
+ * A list of listings is a list, not a set of objects: the design draws it
+ * as rows under a rule, the price and the score in mono on the right.
+ */
 export function StepComparables({
   subjectPropertyId,
   selectedComparables,
   onComparablesChange,
-  onNext,
-  onPrev,
 }: StepComparablesProps) {
   const t = useTranslations('cma.comparables');
   const tExtra = useTranslations('cma.comparablesExtra');
@@ -81,137 +84,91 @@ export function StepComparables({
     return formatPriceInLocale(price, currency || 'EUR', locale);
   };
 
-  const getScoreColor = (score: number): string => {
-    if (score >= 80) return 'text-success';
-    if (score >= 60) return 'text-warning';
-    return 'text-warning';
-  };
-
-  const canProceed = selectedComparables.length >= MIN_COMPARABLES;
-
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+    <div className="flex flex-col gap-4">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="text-[14px] font-semibold text-foreground">
           {t('selectRange', { min: MIN_COMPARABLES, max: MAX_COMPARABLES })}
-        </p>
-        <Button variant="outline" size="sm" onClick={fetchComparables} disabled={isLoading}>
-          {t('refresh')}
-        </Button>
-      </div>
-
-      {/* Loading state */}
-      {isLoading && (
-        <div className="flex items-center justify-center py-8">
-          <div
-            className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
-            aria-hidden="true"
-          ></div>
-          <span className="ml-3 text-muted-foreground">{t('finding')}</span>
-        </div>
-      )}
-
-      {/* Error */}
-      {error && (
-        <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded" role="alert">
-          {error}
-        </div>
-      )}
-
-      {/* Selected count */}
-      <div className="flex items-center gap-4">
-        <span className="text-sm">
-          {t('selected')} <strong>{selectedComparables.length}</strong> / {MAX_COMPARABLES}
         </span>
-        {selectedComparables.length < MIN_COMPARABLES && (
-          <span className="text-xs text-warning">
-            {t('selectMore', { count: MIN_COMPARABLES - selectedComparables.length })}
-          </span>
-        )}
+        <div className="flex items-center gap-3">
+          <MonoAnnotation tone={selectedComparables.length < MIN_COMPARABLES ? 'warning' : 'neutral'}>
+            {t('selected')} {selectedComparables.length} / {MAX_COMPARABLES}
+          </MonoAnnotation>
+          <Button variant="outline" size="sm" onClick={fetchComparables} disabled={isLoading}>
+            {t('refresh')}
+          </Button>
+        </div>
       </div>
 
-      {/* Comparables list */}
-      {!isLoading && suggestedComparables.length > 0 && (
-        <div className="space-y-2 max-h-[400px] overflow-y-auto">
+      {isLoading ? (
+        <p className="text-[14px] text-muted-foreground" role="status">
+          {t('finding')}
+        </p>
+      ) : null}
+
+      {error ? (
+        <p className="text-[14px] text-destructive" role="alert">
+          {error}
+        </p>
+      ) : null}
+
+      {!isLoading && !error && suggestedComparables.length === 0 ? (
+        <p className="text-[14px] text-muted-foreground">{t('noComparables')}</p>
+      ) : null}
+
+      {suggestedComparables.length > 0 ? (
+        <div className="flex flex-col">
+          <div className="grid grid-cols-[28px_minmax(0,1fr)_auto_auto] items-baseline gap-x-4 border-b border-foreground py-2 text-[12px] text-muted-foreground">
+            <span />
+            <span>{t('columnAddress')}</span>
+            <span className="text-right">{t('columnPrice')}</span>
+            <span className="text-right">{t('similarity')}</span>
+          </div>
+
           {suggestedComparables.map((comp) => {
             const isSelected = selectedComparables.some((c) => c.property_id === comp.property_id);
             const property = comp as unknown as Property;
+            const atLimit = !isSelected && selectedComparables.length >= MAX_COMPARABLES;
 
             return (
-              <div
+              <label
                 key={comp.property_id}
-                className={`border rounded-lg p-3 cursor-pointer transition-colors ${
-                  isSelected ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
-                }`}
-                onClick={() => toggleComparable(comp)}
+                className={[
+                  'grid cursor-pointer grid-cols-[28px_minmax(0,1fr)_auto_auto] items-baseline gap-x-4 border-b border-border py-3',
+                  atLimit ? 'opacity-40' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => toggleComparable(comp)}
-                      className="mt-1"
-                      disabled={!isSelected && selectedComparables.length >= MAX_COMPARABLES}
-                    />
-                    <div>
-                      <p className="font-medium text-sm">
-                        {property.address || t('property', { id: comp.property_id.slice(0, 8) })}
-                      </p>
-                      <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
-                        <span>{formatPrice(comp.adjusted_price, comp.currency)}</span>
-                        <span>{property.area_sqm ? `${property.area_sqm} m²` : '-'}</span>
-                        <span>
-                          {property.rooms ? t('roomsCount', { count: property.rooms }) : '-'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className={`text-sm font-medium ${getScoreColor(comp.similarity_score)}`}>
-                      {comp.similarity_score.toFixed(0)}%
-                    </span>
-                    <p className="text-xs text-muted-foreground">{t('similarity')}</p>
-                  </div>
-                </div>
-              </div>
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => toggleComparable(comp)}
+                  disabled={atLimit}
+                  aria-label={t('select', {
+                    id: property.address || comp.property_id.slice(0, 8),
+                  })}
+                />
+                <span className="min-w-0">
+                  <span className="block truncate text-[15px] font-medium text-foreground">
+                    {property.address || t('property', { id: comp.property_id.slice(0, 8) })}
+                  </span>
+                  <span className="mt-0.5 block truncate font-mono text-[12px] text-muted-foreground">
+                    {property.area_sqm ? `${property.area_sqm} m²` : '-'}
+                    {property.rooms ? ` · ${t('roomsCount', { count: property.rooms })}` : ''}
+                  </span>
+                </span>
+                <span className="text-right font-mono text-[14px] text-foreground">
+                  {formatPrice(comp.adjusted_price, comp.currency)}
+                </span>
+                <span className="text-right font-mono text-[12px] text-muted-foreground">
+                  {comp.similarity_score.toFixed(0)}%
+                </span>
+              </label>
             );
           })}
         </div>
-      )}
-
-      {/* Empty state */}
-      {!isLoading && !error && suggestedComparables.length === 0 && (
-        <div className="text-center py-8 text-muted-foreground">{t('noComparables')}</div>
-      )}
-
-      {/* Selected comparables summary */}
-      {selectedComparables.length > 0 && (
-        <div className="border-t pt-4">
-          <h4 className="text-sm font-medium mb-2">{t('selectedComparables')}</h4>
-          <div className="flex flex-wrap gap-2">
-            {selectedComparables.map((comp, index) => (
-              <span
-                key={comp.property_id}
-                className="bg-primary/10 text-primary text-xs px-2 py-1 rounded"
-              >
-                #{index + 1} {comp.property_id.slice(0, 8)} ({comp.similarity_score.toFixed(0)}%)
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Navigation */}
-      <div className="flex justify-between pt-4">
-        <Button variant="outline" onClick={onPrev}>
-          {t('back')}
-        </Button>
-        <Button onClick={onNext} disabled={!canProceed}>
-          {t('nextAdjustments')}
-        </Button>
-      </div>
+      ) : null}
     </div>
   );
 }

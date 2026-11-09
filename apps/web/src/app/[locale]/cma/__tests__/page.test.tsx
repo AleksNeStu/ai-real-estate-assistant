@@ -39,12 +39,12 @@ describe('CMAPage', () => {
 
   it('renders the CMAWizard step navigation', () => {
     render(<CMAPage />);
-    // The wizard renders 5 step indicators (1-5)
-    expect(screen.getByText('1')).toBeInTheDocument();
-    expect(screen.getByText('2')).toBeInTheDocument();
-    expect(screen.getByText('3')).toBeInTheDocument();
-    expect(screen.getByText('4')).toBeInTheDocument();
-    expect(screen.getByText('5')).toBeInTheDocument();
+    // The wizard numbers the five steps on the rule (01-05)
+    expect(screen.getByText('01')).toBeInTheDocument();
+    expect(screen.getByText('02')).toBeInTheDocument();
+    expect(screen.getByText('03')).toBeInTheDocument();
+    expect(screen.getByText('04')).toBeInTheDocument();
+    expect(screen.getByText('05')).toBeInTheDocument();
   });
 
   it('renders search input from the wizard', () => {

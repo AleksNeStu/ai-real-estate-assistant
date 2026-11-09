@@ -1,17 +1,13 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
 import { CMAWizard } from '@/components/cma/cma-wizard';
-import { PageHeader } from '@/components/ui/page-header';
 
+/**
+ * The comparative market analysis.
+ *
+ * The route is thin on purpose: the wizard carries the header, the stepper
+ * and the five steps, and the page only says where the wizard goes.
+ */
 export default function CMAPage() {
-  const t = useTranslations('pages.cma');
-
-  return (
-    <div className="container mx-auto max-w-5xl px-4 py-8">
-      <PageHeader className="mb-6" title={t('title')} description={t('description')} />
-      <CMAWizard />
-    </div>
-  );
+  return <CMAWizard />;
 }
