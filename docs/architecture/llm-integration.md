@@ -17,7 +17,7 @@ graph TB
 
     subgraph LLM Layer
         C[ModelProviderFactory]
-        D[16 Providers — see table below]
+        D[17 Providers — see table below]
     end
 
     subgraph User Preferences
@@ -110,6 +110,7 @@ each provider's ``list_models()`` — the row count varies as new models ship.
 | Together AI | `together` | api.together.xyz/v1 | `TOGETHER_API_KEY` | 200+ open-source, OpenAI-compat |
 | Fireworks AI | `fireworks` | api.fireworks.ai/inference/v1 | `FIREWORKS_API_KEY` | Sub-200ms TTFT, OpenAI-compat |
 | HuggingFace | `huggingface` | router.huggingface.co/v1 | `HUGGINGFACE_API_KEY` | 100k+ community models |
+| MiniMax | `minimax` | api.minimax.io/v1 | `REALT_MINIMAX_API_KEY` / `MINIMAX_API_KEY` | OpenAI-compat, the demo's primary |
 | Ollama | `ollama` | localhost:11434 | *(local)* | No API key, runs on host |
 
 The full model list for each provider lives in
@@ -155,7 +156,7 @@ class ModelProviderFactory:
 ### Factory Methods
 
 ```python
-# List all 16 providers
+# List all 17 providers
 providers = ModelProviderFactory.list_providers()
 # ['openai', 'anthropic', 'google', 'grok', 'deepseek', 'openrouter',
 #  'groq', 'mistral', 'qwen', 'zai', 'moonshot', 'opencode',
@@ -378,6 +379,7 @@ provider = ModelProviderFactory.get_provider(
 | OpenAI | `apps/api/models/providers/openai.py` |
 | Anthropic | `apps/api/models/providers/anthropic.py` |
 | Google | `apps/api/models/providers/google.py` |
+| MiniMax | `apps/api/models/providers/minimax.py` |
 | Ollama | `apps/api/models/providers/ollama.py` |
 | User Prefs | `apps/api/models/user_model_preferences.py` |
 | Dependencies | `apps/api/api/dependencies.py` |

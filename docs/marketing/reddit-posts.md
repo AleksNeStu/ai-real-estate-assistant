@@ -21,7 +21,7 @@ The stack is intentionally boring:
 - Backend: FastAPI + Python 3.12
 - Frontend: Next.js 16 + React 19
 - Vector store: ChromaDB (embedded mode for demo, scales to small VPS)
-- 16 LLM providers with automatic fallback chain
+- 17 LLM providers with automatic fallback chain
 - MIT license
 
 What makes it interesting technically:
@@ -117,7 +117,7 @@ difference between "AI demo" and "AI product."
 
 **Environment-conditional lazy loading is the difference between
 a 512 MB host and a $50/month VPS.** On a small host, only the active
-`DEFAULT_PROVIDER` is imported at startup. On a VPS, all 16 providers
+`DEFAULT_PROVIDER` is imported at startup. On a VPS, all 17 providers
 load eagerly. One code path, two memory profiles.
 
 **LangChain vs raw SDKs.** We started with LangChain for tools,
@@ -133,7 +133,7 @@ queries? Curious about other RAG stacks in production.
 
 ## Post 4: r/ChatGPT or r/LocalLLaMA (LLM-architecture angle)
 
-**Title:** How we route 16 LLM providers (OpenAI, Anthropic, Google,
+**Title:** How we route 17 LLM providers (OpenAI, Anthropic, Google,
 Grok, DeepSeek, Ollama) in a self-hostable property search demo
 
 **Body:**

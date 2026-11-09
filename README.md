@@ -8,7 +8,7 @@
 
 An open-source conversational assistant for property search, financial analysis
 and market insight. Ask for *"2-bedroom apartment in Kraków under 500k"* and it
-answers from a semantic index over your own catalogue — with 16 LLM providers,
+answers from a semantic index over your own catalogue — with 17 LLM providers,
 a toolbelt behind the chat (mortgage, comparison, ROI, valuation) and nine
 languages.
 
@@ -62,7 +62,7 @@ Everything is live in demo mode — no signup, no keys, no setup:
 - **A real toolbelt behind the chat** — mortgage calculator, rent-vs-buy, ROI, TCO, valuation with a multi-year price forecast
 - **Interactive maps** — clustered markers with area analytics
 - **Nine languages** — English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, Ukrainian
-- **Honest about its limits** — the demo answers with a local model so it costs nothing to explore; a real deployment uses the provider key you bring
+- **Honest about its limits** — the demo answers with a model we pay for, so it costs nothing to explore, and falls back to a local one if the hosted one is unreachable; a real deployment uses the provider key you bring
 
 **Go straight to a part of it:**
 
@@ -190,7 +190,7 @@ Full notes: [v5.1.10 release](https://github.com/AleksNeStu/ai-real-estate-assis
 
 ## Why developers pick this
 
-1. **Multi-provider LLM routing** — 16 providers with an automatic fallback
+1. **Multi-provider LLM routing** — 17 providers with an automatic fallback
    chain; a per-request provider selection by header or parameter, no code
    change to switch models.
 2. **Hybrid RAG + vector search** — a query-complexity classifier routes
@@ -315,8 +315,9 @@ a key and an address as repository secrets, and every release tag rolls your
 machine onto the new images. See [Deploy it your way](#deploy-it-your-way).
 
 **Do I need a paid API key?**
-Not to look around. The demo answers with a local model, so it costs nothing
-to explore. For real answers you bring your own key — any of 16 providers, or
+Not to look around. The demo answers with a model we pay for, so it costs
+nothing to explore, and a local model takes over when the hosted one is
+unreachable. For real answers you bring your own key — any of 17 providers, or
 a local Ollama — and the app falls back to the next one when a provider fails.
 
 **What is the difference to the hosted version?**

@@ -29,7 +29,7 @@
 
 **Tagline (50-70s):**
 
-> "Open-source, MIT-licensed, self-hostable. 16 LLM providers with
+> "Open-source, MIT-licensed, self-hostable. 17 LLM providers with
 > automatic fallback. FastAPI + Next.js + ChromaDB. Live demo at
 > realty.kittray.com. Source on GitHub: AleksNeStu /
 > ai-real-estate-assistant. Hosted tier at propvectorai.com."
@@ -58,7 +58,7 @@
 - Backend: FastAPI + Python 3.12
 - Frontend: Next.js 16 + React 19
 - Vector store: ChromaDB (embedded mode for demo, scales to VPS)
-- 16 LLM providers with priority cascade
+- 17 LLM providers with priority cascade
 - 9 languages with EU AI Act compliance labels
 - Why this stack: boring tech, no-GPL, 1-year-old libs
 
@@ -97,7 +97,7 @@
 **Section 5: Memory-constrained-host trick (330-390s)**
 
 - Constrained host: 512 MB RAM cap
-- 16 LLM providers × eager import = 530 MB → over the cap
+- 17 LLM providers × eager import = 530 MB → over the cap
 - Environment-conditional lazy loading: only active `DEFAULT_PROVIDER`
   imports at startup
 - Full eager loading on VPS / Docker (no memory constraint)

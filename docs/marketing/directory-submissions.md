@@ -28,7 +28,7 @@ URL: https://realty.kittray.com/
 GitHub: https://github.com/AleksNeStu/ai-real-estate-assistant
 Description: Open-source conversational AI for property search. Ask in
 natural language ("2-bedroom apartment in Kraków under 500k") and get
-matched listings. Built with FastAPI + Next.js 16 + ChromaDB. 16 LLM
+matched listings. Built with FastAPI + Next.js 16 + ChromaDB. 17 LLM
 providers with automatic fallback chain. 9 languages. MIT-licensed.
 ```
 

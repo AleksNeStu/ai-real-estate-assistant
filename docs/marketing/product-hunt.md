@@ -83,7 +83,7 @@ get matched listings. Nothing did that. So I built it.
 **What's interesting technically:**
 
 - Hybrid semantic + keyword retrieval via ChromaDB with MMR reranking
-- Multi-provider LLM routing (16 providers: OpenAI, Anthropic, Google, Grok,
+- Multi-provider LLM routing (17 providers: OpenAI, Anthropic, Google, Grok,
   DeepSeek, local Ollama among them) with automatic fallback chain
 - Environment-conditional lazy provider loading (stays under a
   512 MB cap, eager load on VPS)

@@ -25,7 +25,7 @@ platform extracts filters, runs hybrid semantic + keyword retrieval over
 ChromaDB, and returns matched listings.
 
 The codebase is FastAPI + Next.js 16 + ChromaDB with MMR reranking. It
-plugs into 16 LLM providers (OpenAI, Anthropic, Google, Grok, DeepSeek,
+plugs into 17 LLM providers (OpenAI, Anthropic, Google, Grok, DeepSeek,
 OpenRouter, Groq, Mistral and local Ollama among them) with an automatic
 fallback chain so a single provider rate-limit doesn't kill the demo.
 Per-task and per-user provider selection lives in

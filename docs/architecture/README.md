@@ -83,7 +83,7 @@ All major components are injected via FastAPI's `Depends()`:
 
 ### 3. Multi-Provider LLM System
 
-Supports 16 LLM providers with automatic fallback:
+Supports 17 LLM providers with automatic fallback:
 
 1. OpenAI
 2. Anthropic
@@ -100,7 +100,8 @@ Supports 16 LLM providers with automatic fallback:
 13. Together
 14. Fireworks
 15. Hugging Face
-16. Ollama (local models)
+16. MiniMax
+17. Ollama (local models)
 
 The registry lives in `apps/api/models/provider_factory.py` (`_PROVIDER_MODULES`);
 providers are imported lazily, so a deployment only loads what it uses.
