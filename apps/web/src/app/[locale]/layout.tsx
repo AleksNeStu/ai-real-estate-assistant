@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { TopBar } from '@/components/shell/top-bar';
 import { DemoStrip } from '@/components/shell/demo-strip';
 import { AppFooter } from '@/components/shell/app-footer';
@@ -14,6 +14,7 @@ import { OnboardingTour } from '@/components/onboarding/Tour';
 import { UpdateBanner } from '@/components/pwa/update-banner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import type { Locale } from '@/i18n/config';
+import { catalogueFor } from '@/i18n/catalogue';
 import { routing } from '@/i18n/routing';
 import { SITE_URL, absoluteUrl } from '@/lib/site';
 import { ACTION_HEX } from '@/lib/palette';
@@ -214,8 +215,11 @@ export default async function LocaleLayout({
     })();
   `;
 
-  // Providing all messages to the client
-  const messages = await getMessages();
+  // Providing all messages to the client. The catalogue is the merged one —
+  // the same object the server components read — so a locale that stopped
+  // moving renders the English wording of a key it does not carry, in the
+  // browser as well.
+  const messages = await catalogueFor(locale);
 
   // The JSON-LD document speaks the language of the reader too — the FAQ
   // answers and the description come from the message catalogue.

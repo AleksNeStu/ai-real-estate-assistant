@@ -1,5 +1,6 @@
 import { getRequestConfig } from 'next-intl/server';
 import { locales, type Locale } from './config';
+import { catalogueFor } from './catalogue';
 import enMessages from '../../messages/en.json';
 
 /**
@@ -31,7 +32,10 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   return {
     locale,
-    messages: (await import(`../../messages/${locale}.json`)).default,
+    // The merged catalogue: the English key set with the locale's own words.
+    // A locale that stopped moving renders English for whatever it does not
+    // carry, on the server and in the browser alike.
+    messages: await catalogueFor(locale),
     getMessageFallback: ({ key, namespace }) => {
       const candidates = namespace ? [`${namespace}.${key}`, key] : [key];
       for (const candidate of candidates) {
