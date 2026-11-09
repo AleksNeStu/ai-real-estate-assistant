@@ -30,6 +30,10 @@ from .base import (
 
 MINIMAX_BASE_URL = "https://api.minimax.io/v1"
 
+# The effort levels MiniMax accepts. Anything else is ignored - the
+# deployment must not be able to break the API with a typo.
+_REASONING_EFFORTS = frozenset({"minimal", "low", "medium", "high", "xhigh", "max", "none"})
+
 
 class MiniMaxProvider(RemoteModelProvider):
     """MiniMax model provider — OpenAI-compatible API."""
@@ -136,6 +140,15 @@ class MiniMaxProvider(RemoteModelProvider):
 
             request_timeout = get_settings().llm_request_timeout_seconds
 
+        # How hard the model thinks. M3.1 Flash always reasons and reasons at
+        # 'max' when the parameter is missing, which costs the most tokens for
+        # the least extra value in a demo that answers from a catalogue. The
+        # knob is the deployment's, not the code's: an unknown value is
+        # ignored rather than sent to the API.
+        effort = self._reasoning_effort(model_id)
+        if effort:
+            kwargs.setdefault("extra_body", {})["reasoning"] = {"effort": effort}
+
         llm = ChatOpenAI(
             model=model_id,
             temperature=temperature,
@@ -148,6 +161,18 @@ class MiniMaxProvider(RemoteModelProvider):
         if max_tokens is not None:
             llm.max_tokens = max_tokens
         return llm
+
+    def _reasoning_effort(self, model_id: str) -> Optional[str]:
+        """The effort the deployment asks for, if it asks for one."""
+        from config.settings import get_settings
+
+        effort = (get_settings().minimax_reasoning_effort or "").strip().lower()
+        if effort not in _REASONING_EFFORTS:
+            return None
+        # M3.1 Flash always reasons and answers HTTP 400 to 'none'.
+        if effort == "none" and "M3.1-Flash" in model_id:
+            return None
+        return effort
 
     def validate_connection(self) -> tuple[bool, Optional[str]]:
         """Validate the MiniMax connection: a key and at least one model."""

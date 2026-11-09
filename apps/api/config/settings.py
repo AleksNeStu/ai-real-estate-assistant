@@ -84,6 +84,16 @@ class AppSettings(BaseModel):
         default_factory=lambda: os.getenv("MINIMAX_DEFAULT_MODEL") or "MiniMax-M3.1-Flash",
         description="The MiniMax model the demo answers with",
     )
+    minimax_reasoning_effort: Optional[str] = Field(
+        default_factory=lambda: os.getenv("MINIMAX_REASONING_EFFORT") or None,
+        description=(
+            "How hard the model thinks: minimal, low, medium, high, xhigh or max. "
+            "M3.1 Flash always reasons and reasons at 'max' when the parameter is "
+            "omitted - the deepest setting costs the most tokens for the least "
+            "extra value in a demo that answers from a catalogue. Set it to 'low' "
+            "to keep the answers and drop the reasoning."
+        ),
+    )
     default_currency: str = Field(
         default_factory=lambda: os.getenv("DEFAULT_CURRENCY") or "PLN",
         description=(
