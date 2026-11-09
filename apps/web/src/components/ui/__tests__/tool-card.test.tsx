@@ -55,4 +55,22 @@ describe('ToolCard', () => {
     expect(screen.queryByText('Result')).not.toBeInTheDocument();
     expect(screen.queryByText(/Sources/)).not.toBeInTheDocument();
   });
+
+  it('speaks the caller’s language when the labels are given', () => {
+    render(
+      <ToolCard
+        name="rent_vs_buy"
+        verdict="Buying overtakes renting in year 8."
+        steps={['rent comparables']}
+        sources={[{ title: 'ztp.krakow.pl' }]}
+        resultLabel="Wynik"
+        stepsLabel="Kroki pośrednie"
+        sourcesLabel="Źródła"
+      />
+    );
+
+    expect(screen.getByText('Wynik')).toBeInTheDocument();
+    expect(screen.getByText('Kroki pośrednie (1)')).toBeInTheDocument();
+    expect(screen.getByText('Źródła (1)')).toBeInTheDocument();
+  });
 });
