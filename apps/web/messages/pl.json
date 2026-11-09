@@ -115,7 +115,7 @@
       "statSales": "sprzedaży",
       "statRentals": "wynajmów",
       "scheduleViewingCta": "Umów oglądanie",
-      "roomsLabel": "{count} pokoje",
+      "roomsLabel": "{count, plural, one {# pokój} other {# pokoi}}",
       "listingsNote": "pokazano {shown}",
       "emailAfterContact": "widoczny po kontakcie"
     },

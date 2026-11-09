@@ -2,11 +2,9 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Send, Loader2, X } from 'lucide-react';
+import { Send, Loader2 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -18,9 +16,23 @@ import { contactAgent } from '@/lib/api';
 import { useLeadTracking } from '@/hooks/useLeadTracking';
 import type { AgentProfile, InquiryType } from '@/lib/types';
 
+/**
+ * The contact form of an agent.
+ *
+ * It sits in the sticky column of the profile, always visible, and it is
+ * flat: fields, a rule, one action. The listing the reader has picked is
+ * part of the form - the form says which listing it is about, so the agent
+ * knows what the question is about without asking.
+ *
+ * The form says where the details go: to this agent only, to answer this
+ * request. In demo mode the message is recorded, not e-mailed.
+ */
+
 interface ContactAgentFormProps {
   agent: AgentProfile;
   propertyId?: string;
+  /** The listing the form is about, in one line. */
+  about?: string;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
@@ -35,6 +47,7 @@ const INQUIRY_TYPE_LABEL_KEYS: Record<InquiryType, string> = {
 export function ContactAgentForm({
   agent,
   propertyId,
+  about,
   onSuccess,
   onCancel,
 }: ContactAgentFormProps) {
@@ -43,6 +56,7 @@ export function ContactAgentForm({
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [leadId, setLeadId] = useState<string | null>(null);
   const { trackInteraction } = useLeadTracking();
 
   const [formData, setFormData] = useState({
@@ -59,7 +73,7 @@ export function ContactAgentForm({
     setError(null);
 
     try {
-      await contactAgent(agent.id, {
+      const inquiry = await contactAgent(agent.id, {
         name: formData.name,
         email: formData.email,
         phone: formData.phone || undefined,
@@ -83,6 +97,7 @@ export function ContactAgentForm({
         // ignore — telemetry must not surface as a form failure
       }
 
+      setLeadId(inquiry?.id ?? null);
       setSuccess(true);
       setTimeout(() => {
         onSuccess?.();
@@ -99,130 +114,131 @@ export function ContactAgentForm({
 
   if (success) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-8 text-center">
-          <div className="mb-4 rounded-full bg-success/15 p-3">
-            <Send className="h-6 w-6 text-success" />
-          </div>
-          <h3 className="mb-2 text-lg font-semibold">{t('successTitle')}</h3>
-          <p className="text-muted-foreground">{t('successDescription')}</p>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col gap-1.5 rounded-lg border border-border p-4">
+        <span className="text-[15px] font-semibold text-success">{t('successTitle')}</span>
+        <span className="text-[14px] leading-5 text-muted-foreground">
+          {leadId ? t('successLead', { name: displayName, id: leadId }) : t('successDescription')}
+        </span>
+      </div>
     );
   }
 
+  const fieldClass =
+    'flex h-[38px] w-full rounded-md border border-input bg-background px-2.5 text-[14px] text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50';
+
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg">{t('title', { name: displayName })}</CardTitle>
-        {onCancel && (
-          <Button variant="ghost" size="icon" onClick={onCancel} aria-label={t('closeAria')}>
-            <X className="h-4 w-4" aria-hidden="true" />
-          </Button>
-        )}
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground mb-4">{t('intro')}</p>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+      <span className="text-[18px] font-semibold text-foreground">
+        {t('title', { name: displayName })}
+      </span>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="name">{t('name')} *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder={t('namePlaceholder')}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">{t('email')} *</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder={t('emailPlaceholder')}
-                required
-              />
-            </div>
-          </div>
+      <label className="flex flex-col gap-1">
+        <span className="text-[12px] font-medium text-foreground">{t('name')} *</span>
+        <input
+          id="contact-name"
+          type="text"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          placeholder={t('namePlaceholder')}
+          required
+          className={fieldClass}
+        />
+      </label>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="phone">{t('phone')}</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder={t('phonePlaceholder')}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="inquiry_type">{t('inquiryType')}</Label>
-              <Select
-                value={formData.inquiry_type}
-                onValueChange={(value: InquiryType) =>
-                  setFormData({ ...formData, inquiry_type: value })
-                }
-              >
-                <SelectTrigger id="inquiry_type">
-                  <SelectValue placeholder={t('typePlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {(Object.keys(INQUIRY_TYPE_LABEL_KEYS) as InquiryType[]).map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {t(INQUIRY_TYPE_LABEL_KEYS[type])}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+      <label className="flex flex-col gap-1">
+        <span className="text-[12px] font-medium text-foreground">{t('email')} *</span>
+        <input
+          id="contact-email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          placeholder={t('emailPlaceholder')}
+          required
+          className={fieldClass}
+        />
+      </label>
 
-          <div className="space-y-2">
-            <Label htmlFor="message">{t('message')} *</Label>
-            <textarea
-              id="message"
-              value={formData.message}
-              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              placeholder={t('messagePlaceholder')}
-              rows={4}
-              required
-              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
-            />
-          </div>
+      <label className="flex flex-col gap-1">
+        <span className="text-[12px] font-medium text-foreground">{t('phone')}</span>
+        <input
+          id="contact-phone"
+          type="tel"
+          value={formData.phone}
+          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+          placeholder={t('phonePlaceholder')}
+          className={fieldClass}
+        />
+      </label>
 
-          {error && (
-            <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive" role="alert">
-              {error}
-            </div>
+      <label className="flex flex-col gap-1">
+        <span className="text-[12px] font-medium text-foreground">{t('inquiryType')}</span>
+        <Select
+          value={formData.inquiry_type}
+          onValueChange={(value: InquiryType) => setFormData({ ...formData, inquiry_type: value })}
+        >
+          <SelectTrigger id="inquiry_type" className="h-[38px] rounded-md">
+            <SelectValue placeholder={t('typePlaceholder')} />
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.keys(INQUIRY_TYPE_LABEL_KEYS) as InquiryType[]).map((type) => (
+              <SelectItem key={type} value={type}>
+                {t(INQUIRY_TYPE_LABEL_KEYS[type])}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </label>
+
+      {about ? (
+        <div className="flex flex-col gap-1">
+          <span className="text-[12px] font-medium text-foreground">{t('about')}</span>
+          <span className="flex h-[38px] items-center rounded-md border border-border px-2.5 text-[13px] text-foreground">
+            {about}
+          </span>
+        </div>
+      ) : null}
+
+      <label className="flex flex-col gap-1">
+        <span className="text-[12px] font-medium text-foreground">{t('message')} *</span>
+        <textarea
+          id="contact-message"
+          value={formData.message}
+          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+          placeholder={t('messagePlaceholder')}
+          rows={4}
+          required
+          className="flex w-full resize-y rounded-md border border-input bg-background px-2.5 py-2 text-[14px] leading-5 text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
+        />
+      </label>
+
+      {error ? (
+        <span className="text-[13px] text-destructive" role="alert">
+          {error}
+        </span>
+      ) : null}
+
+      <div className="flex items-center gap-2">
+        <Button type="submit" disabled={loading} className="h-[42px]">
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+              {t('sending')}
+            </>
+          ) : (
+            <>
+              <Send className="mr-2 h-4 w-4" aria-hidden="true" />
+              {t('submit')}
+            </>
           )}
+        </Button>
+        {onCancel ? (
+          <Button type="button" variant="outline" onClick={onCancel}>
+            {t('cancel')}
+          </Button>
+        ) : null}
+      </div>
 
-          <div className="flex justify-end gap-2">
-            {onCancel && (
-              <Button type="button" variant="outline" onClick={onCancel}>
-                {t('cancel')}
-              </Button>
-            )}
-            <Button type="submit" disabled={loading}>
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-                  {t('sending')}
-                </>
-              ) : (
-                <>
-                  <Send className="mr-2 h-4 w-4" aria-hidden="true" />
-                  {t('submit')}
-                </>
-              )}
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+      <span className="text-[12px] leading-[17px] text-muted-foreground">{t('privacyNote')}</span>
+    </form>
   );
 }

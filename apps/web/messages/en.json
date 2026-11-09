@@ -2004,7 +2004,7 @@
       "statSales": "sales",
       "statRentals": "rentals",
       "scheduleViewingCta": "Schedule a viewing",
-      "roomsLabel": "{count} rooms",
+      "roomsLabel": "{count, plural, one {# room} other {# rooms}}",
       "listingsNote": "showing {shown}",
       "emailAfterContact": "shown after contact"
     },
