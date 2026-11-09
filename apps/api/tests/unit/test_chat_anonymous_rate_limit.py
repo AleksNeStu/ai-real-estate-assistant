@@ -6,11 +6,15 @@ wallet — so a request that carries no credential of its own is counted
 against the free-tier limiter, and a request that does carry one is not.
 """
 
+import time
+
+import pytest
+from fastapi import HTTPException
 from starlette.requests import Request
 
 from api.routers import chat
 from config.settings import get_settings
-from utils.free_tier import client_ip
+from utils.free_tier import client_ip, get_free_tier_rate_limiter
 
 
 def _request(
@@ -85,3 +89,54 @@ class TestWhoIsAnonymous:
         monkeypatch.setattr(get_settings(), "demo_api_key_bypass", False, raising=False)
 
         assert chat._request_is_anonymous(_request()) is False
+
+
+class TestTheCounter:
+    """The counter is a counter: it counts, it trips, and it is per address."""
+
+    async def test_the_limit_trips(self):
+        limiter = get_free_tier_rate_limiter()
+
+        for _ in range(limiter.hourly_limit):
+            allowed, reason, _ = await limiter.check("198.51.100.4")
+            assert allowed is True, reason
+
+        allowed, reason, retry_after = await limiter.check("198.51.100.4")
+        assert allowed is False
+        assert "Hourly limit" in reason
+        assert retry_after > 0
+
+    async def test_another_address_has_its_own_counter(self):
+        limiter = get_free_tier_rate_limiter()
+
+        for _ in range(limiter.hourly_limit):
+            await limiter.check("198.51.100.4")
+
+        allowed, reason, _ = await limiter.check("198.51.100.5")
+        assert allowed is True, reason
+
+    async def test_the_router_refuses_the_request_over_the_limit(self):
+        limiter = get_free_tier_rate_limiter()
+        for _ in range(limiter.hourly_limit):
+            await limiter.check("203.0.113.7")
+
+        with pytest.raises(HTTPException) as raised:
+            await chat._check_free_tier_rate_limit(_request())
+
+        assert raised.value.status_code == 429
+        assert (raised.value.headers or {}).get("Retry-After")
+
+    async def test_the_dead_buckets_are_swept(self):
+        """A public demo sees a new address on every visitor."""
+        limiter = get_free_tier_rate_limiter()
+
+        for index in range(limiter.hourly_limit + 1):
+            await limiter.check(f"198.51.100.{index}")
+
+        # Nothing has aged out yet, so every bucket is still there.
+        assert len(limiter._daily) == limiter.hourly_limit + 1
+
+        # A sweep with a clock far in the future drops them.
+        limiter._sweep(time.monotonic() + 2 * 86400)
+        assert limiter._daily == {}
+        assert limiter._hourly == {}

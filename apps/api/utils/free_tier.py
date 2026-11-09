@@ -16,6 +16,9 @@ from starlette.requests import Request
 
 from config.settings import get_settings
 
+# How many checks pass between two sweeps of the dead buckets.
+SWEEP_EVERY_CHECKS = 100
+
 
 class FreeTierRateLimiter:
     """In-memory rate limiter with hourly and daily windows, keyed by client IP."""
@@ -26,6 +29,7 @@ class FreeTierRateLimiter:
         self._hourly: dict[str, list[float]] = defaultdict(list)
         self._daily: dict[str, list[float]] = defaultdict(list)
         self._lock = asyncio.Lock()
+        self._checks_since_sweep = 0
 
     async def check(self, key: str) -> tuple[bool, Optional[str], int]:
         """Check if request is allowed.
@@ -53,7 +57,28 @@ class FreeTierRateLimiter:
 
             self._hourly[key].append(now)
             self._daily[key].append(now)
+
+            self._checks_since_sweep += 1
+            if self._checks_since_sweep >= SWEEP_EVERY_CHECKS:
+                self._sweep(now)
+                self._checks_since_sweep = 0
+
             return True, None, 0
+
+    def _sweep(self, now: float) -> None:
+        """Drop the buckets that no live request belongs to.
+
+        The limiter is keyed by address, and the addresses of a public demo
+        are not a fixed set — every visitor brings a new one. A bucket whose
+        last request is older than a day is dead weight, so it goes; without
+        the sweep the dictionary grows with every address the demo has ever
+        seen.
+        """
+        cutoff = now - 86400
+        stale = [key for key, times in self._daily.items() if not times or times[-1] <= cutoff]
+        for key in stale:
+            self._daily.pop(key, None)
+            self._hourly.pop(key, None)
 
     def get_usage(self, key: str) -> dict[str, int]:
         """Return current usage counts for a key."""

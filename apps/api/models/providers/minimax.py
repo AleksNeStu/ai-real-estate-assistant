@@ -76,8 +76,8 @@ class MiniMaxProvider(RemoteModelProvider):
                 recommended_for=["demo", "chat", "tools", "multilingual"],
             ),
             ModelInfo(
-                id="MiniMax-M2.1",
-                display_name="MiniMax M2.1",
+                id="MiniMax-M2.7",
+                display_name="MiniMax M2.7",
                 provider_name=self.display_name,
                 context_window=204800,
                 pricing=None,
@@ -86,7 +86,7 @@ class MiniMaxProvider(RemoteModelProvider):
                     ModelCapability.FUNCTION_CALLING,
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
-                description="MiniMax M2.1 — stronger reasoning, slower",
+                description="MiniMax M2.7 — stronger reasoning, slower",
                 recommended_for=["analysis", "tools"],
             ),
         ]

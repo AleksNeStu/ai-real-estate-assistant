@@ -208,6 +208,24 @@ def clear_lru_caches() -> None:
     clear_llm_cache()
 
 
+@pytest.fixture(scope="function", autouse=True)
+def reset_free_tier_rate_limiter() -> None:
+    """Start every test with an empty free-tier counter.
+
+    The limiter counts anonymous chat requests per address, and in a test
+    process every request carries the same address. Without a reset the
+    counter fills up during the suite and the limit trips on a test that has
+    nothing to do with rate limiting - the chat router's own suite fails at
+    the twenty-first request.
+    """
+    from utils.free_tier import get_free_tier_rate_limiter
+
+    limiter = get_free_tier_rate_limiter()
+    limiter.reset()
+    yield
+    limiter.reset()
+
+
 @pytest.fixture(scope="function")
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
     """Create a fresh database session for each test."""
