@@ -2428,14 +2428,18 @@
         "processing": "Uploading and processing documents...",
         "failed": "Upload Failed",
         "title": "Upload Documents",
-        "chunksIndexed": "Chunks indexed: {count}"
+        "chunksIndexed": "Chunks indexed: {count}",
+        "dropLabel": "Drop files here, or click to upload",
+        "formats": "PDF, DOCX, TXT, MD"
       },
       "manage": {
         "title": "Manage Knowledge Base",
         "clearing": "Clearing...",
         "clear": "Clear Knowledge",
         "result": "{message}. Removed {removed}. Remaining {remaining}.",
-        "confirm": "Clear all indexed knowledge documents? This cannot be undone."
+        "confirm": "Clear all indexed knowledge documents? This cannot be undone.",
+        "failed": "Clear Failed",
+        "note": "In demo mode the index lives on the server's volume and lasts until it is cleared. On your own deployment it is yours to keep."
       },
       "ask": {
         "title": "Ask Questions",
@@ -2456,13 +2460,34 @@
         "citations": "Citations",
         "citationItem": "{source} (chunk {chunk})",
         "noCitations": "No citations returned.",
-        "enterQuestion": "Enter a question."
+        "enterQuestion": "Enter a question.",
+        "emptyTitle": "Ask your documents",
+        "topKLabel": "top-k",
+        "providerLabel": "provider",
+        "modelLabel": "model",
+        "otherProviders": "Other providers: your own key, in Settings → Models",
+        "passages": "Retrieved passages",
+        "passageCount": "{shown} of {total} · confidence",
+        "noteAi": "AI-generated from your documents · {provider} {model} · not legal advice",
+        "noteExtracted": "Extracted from your documents · no model was used",
+        "unknownSource": "Unknown source",
+        "unknownModel": "unknown"
       },
       "empty": {
         "title": "Get Started with Knowledge",
         "upload": "Upload documents (PDF, TXT, MD, DOCX) to build your local knowledge base.",
         "then": "Then ask questions and get answers with source citations.",
         "providers": "Supported providers: OpenAI, Anthropic, Google, Grok, DeepSeek, and Ollama (local)."
+      },
+      "source": "RAG · ChromaDB · local index",
+      "documents": {
+        "title": "Files to upload",
+        "fileCount": "{count, plural, one {# file} other {# files}}",
+        "empty": "No file is waiting to be uploaded.",
+        "pending": "Waiting to be uploaded",
+        "remove": "Remove",
+        "chunksIndexed": "Chunks indexed",
+        "remaining": "Documents remaining"
       }
     },
     "documents": {
@@ -2778,7 +2803,8 @@
         "oneYear": "1 year",
         "threeYears": "3 years",
         "fiveYears": "5 years",
-        "tenYears": "10 years"
+        "tenYears": "10 years",
+        "short": "{years}y"
       },
       "form": {
         "city": "City",
@@ -2792,13 +2818,16 @@
         "currency": "Currency",
         "currencyPlaceholder": "EUR, USD, GBP…",
         "propertyId": "Property ID (optional)",
-        "propertyIdHint": "Leave blank to enter features manually below.",
+        "propertyIdHint": "The id the catalogue gave the property.",
         "enableHint": "Enter city & area to enable.",
         "estimating": "Estimating…",
         "getForecast": "Get forecast"
       },
       "chart": {
-        "aria": "Forecast chart"
+        "aria": "Forecast chart",
+        "title": "Price forecast",
+        "caption": "{horizons} horizons · confidence band",
+        "empty": "The forecast carries a single point."
       },
       "result": {
         "currentEstimate": "Current estimate",
@@ -2807,7 +2836,20 @@
         "cityMedian": "City median",
         "neighborhoodMedian": "Neighborhood median",
         "keyDrivers": "Key drivers",
-        "today": "Today"
+        "today": "Today",
+        "yearsLabel": "{years, plural, one {# year} other {# years}}",
+        "yearsShort": "+{years}y",
+        "noDrivers": "The model named no driver.",
+        "buildCma": "Build a full CMA"
+      },
+      "source": "valuation_forecast · demo catalogue history",
+      "mode": {
+        "byId": "By property id",
+        "byFeatures": "Enter features"
+      },
+      "empty": {
+        "title": "No forecast yet",
+        "description": "Name the property by its catalogue id, or enter its facts, and the model returns today's value and the projection."
       }
     },
     "usage": {

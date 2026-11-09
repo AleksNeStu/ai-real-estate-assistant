@@ -2428,14 +2428,18 @@
         "processing": "Wgrywanie i przetwarzanie dokumentów...",
         "failed": "Wgranie nie powiodło się",
         "title": "Przesyłanie dokumentów",
-        "chunksIndexed": "Zindeksowanych fragmentów: {count}"
+        "chunksIndexed": "Zindeksowanych fragmentów: {count}",
+        "dropLabel": "Upuść pliki tutaj albo kliknij, aby wgrać",
+        "formats": "PDF, DOCX, TXT, MD"
       },
       "manage": {
         "title": "Zarządzaj bazą wiedzy",
         "clearing": "Czyścimy...",
         "clear": "Wyczyść bazę wiedzy",
         "result": "{message}. Usunięto {removed}. Pozostało {remaining}.",
-        "confirm": "Wyczyścić wszystkie zindeksowane dokumenty bazy wiedzy? Tej operacji nie można cofnąć."
+        "confirm": "Wyczyścić wszystkie zindeksowane dokumenty bazy wiedzy? Tej operacji nie można cofnąć.",
+        "failed": "Nie udało się wyczyścić",
+        "note": "W trybie demo indeks żyje na wolumenie serwera i zostaje, dopóki go nie wyczyścisz. We własnej instalacji jest Twój."
       },
       "ask": {
         "title": "Zadaj pytania",
@@ -2456,13 +2460,34 @@
         "citations": "Źródła",
         "citationItem": "{source} (fragment {chunk})",
         "noCitations": "Nie znaleziono źródeł.",
-        "enterQuestion": "Wpisz pytanie."
+        "enterQuestion": "Wpisz pytanie.",
+        "emptyTitle": "Zadaj pytanie swoim dokumentom",
+        "topKLabel": "top-k",
+        "providerLabel": "provider",
+        "modelLabel": "model",
+        "otherProviders": "Inni providerzy: własny klucz w Ustawienia → Modele",
+        "passages": "Pobrane fragmenty",
+        "passageCount": "{shown} z {total} · pewność",
+        "noteAi": "Wygenerowane przez AI z Twoich dokumentów · {provider} {model} · nie jest poradą prawną",
+        "noteExtracted": "Wycięte z Twoich dokumentów · model nie został użyty",
+        "unknownSource": "Nieznane źródło",
+        "unknownModel": "nieznany"
       },
       "empty": {
         "title": "Zacznij od bazy wiedzy",
         "upload": "Wgraj dokumenty (PDF, TXT, MD, DOCX), aby zbudować lokalną bazę wiedzy.",
         "then": "Następnie zadawaj pytania i otrzymuj odpowiedzi z odesłaniami do źródeł.",
         "providers": "Obsługiwani dostawcy: OpenAI, Anthropic, Google, Grok, DeepSeek oraz Ollama (lokalnie)."
+      },
+      "source": "RAG · ChromaDB · lokalny indeks",
+      "documents": {
+        "title": "Pliki do wgrania",
+        "fileCount": "{count, plural, one {# plik} few {# pliki} other {# plików}}",
+        "empty": "Żaden plik nie czeka na wgranie.",
+        "pending": "Czeka na wgranie",
+        "remove": "Usuń",
+        "chunksIndexed": "Zindeksowane fragmenty",
+        "remaining": "Dokumenty w indeksie"
       }
     },
     "documents": {
@@ -2778,7 +2803,8 @@
         "oneYear": "1 rok",
         "threeYears": "3 lata",
         "fiveYears": "5 lat",
-        "tenYears": "10 lat"
+        "tenYears": "10 lat",
+        "short": "{years, plural, one {# r.} few {# l.} other {# l.}}"
       },
       "form": {
         "city": "Miasto",
@@ -2792,13 +2818,16 @@
         "currency": "Waluta",
         "currencyPlaceholder": "EUR, USD, GBP…",
         "propertyId": "Identyfikator nieruchomości (opcjonalnie)",
-        "propertyIdHint": "Pozostaw puste, aby wprowadzić cechy ręcznie poniżej.",
+        "propertyIdHint": "Id, który nadał katalog.",
         "enableHint": "Podaj miasto i powierzchnię, aby włączyć.",
         "estimating": "Szacowanie…",
         "getForecast": "Oblicz prognozę"
       },
       "chart": {
-        "aria": "Wykres prognozy"
+        "aria": "Wykres prognozy",
+        "title": "Prognoza ceny",
+        "caption": "{horizons} horyzontów · przedział pewności",
+        "empty": "Prognoza zawiera jeden punkt."
       },
       "result": {
         "currentEstimate": "Obecna wycena",
@@ -2807,7 +2836,20 @@
         "cityMedian": "Mediana dla miasta",
         "neighborhoodMedian": "Mediana dla dzielnicy",
         "keyDrivers": "Kluczowe czynniki",
-        "today": "Dziś"
+        "today": "Dziś",
+        "yearsLabel": "{years, plural, one {# rok} few {# lata} other {# lat}}",
+        "yearsShort": "{years, plural, one {+# r.} few {+# l.} other {+# l.}}",
+        "noDrivers": "Model nie wskazał żadnego czynnika.",
+        "buildCma": "Zbuduj pełną analizę porównawczą"
+      },
+      "source": "valuation_forecast · historia katalogu demo",
+      "mode": {
+        "byId": "Po numerze katalogowym",
+        "byFeatures": "Po cechach"
+      },
+      "empty": {
+        "title": "Jeszcze bez prognozy",
+        "description": "Wskaż nieruchomość po numerze katalogowym albo po jej cechach, a model zwróci bieżącą wartość i projekcję."
       }
     },
     "usage": {

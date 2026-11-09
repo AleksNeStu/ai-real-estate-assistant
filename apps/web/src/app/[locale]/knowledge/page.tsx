@@ -1,59 +1,66 @@
 'use client';
 
-import { useState } from 'react';
-import {
-  FileUp,
-  Loader2,
-  MessageSquareText,
-  Trash2,
-  Upload,
-  AlertCircle,
-  FileText,
-  Sparkles,
-  Database,
-} from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
+import { Loader2, MessageSquareText, Trash2, Upload } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+
+import { Button } from '@/components/ui/button';
+import { EmptyState, ErrorState } from '@/components/ui/states';
+import { MonoAnnotation } from '@/components/ui/mono-annotation';
+import { PageHeader } from '@/components/ui/page-header';
+import { DocumentLedger } from '@/components/knowledge/document-ledger';
+import { PassageLedger } from '@/components/knowledge/passage-ledger';
 import { ragQa, resetRagKnowledge, uploadRagDocuments, ApiError } from '@/lib/api';
 import type { RagQaResponse, RagResetResponse, RagUploadResponse } from '@/lib/types';
-import { PageHeader } from '@/components/ui/page-header';
 
-interface ErrorState {
+interface ErrorStateValue {
   message: string;
   requestId?: string;
 }
 
+const TOP_K_MIN = 1;
+const TOP_K_MAX = 50;
+const TOP_K_DEFAULT = 5;
+
 export default function KnowledgePage() {
   const t = useTranslations('pages.knowledge');
   const tError = useTranslations('error');
+  const locale = useLocale();
+
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<ErrorState | null>(null);
+  const [uploadError, setUploadError] = useState<ErrorStateValue | null>(null);
   const [uploadResult, setUploadResult] = useState<RagUploadResponse | null>(null);
+  /** The chunks the uploads of this session wrote. */
+  const [chunksIndexed, setChunksIndexed] = useState(0);
 
   const [resetting, setResetting] = useState(false);
-  const [resetError, setResetError] = useState<ErrorState | null>(null);
+  const [resetError, setResetError] = useState<ErrorStateValue | null>(null);
   const [resetResult, setResetResult] = useState<RagResetResponse | null>(null);
 
   const [question, setQuestion] = useState<string>('');
-  const [topK, setTopK] = useState<string>('5');
+  const [topK, setTopK] = useState<string>(String(TOP_K_DEFAULT));
   const [provider, setProvider] = useState<string>('');
   const [model, setModel] = useState<string>('');
   const [asking, setAsking] = useState(false);
-  const [qaError, setQaError] = useState<ErrorState | null>(null);
+  const [qaError, setQaError] = useState<ErrorStateValue | null>(null);
   const [qaResult, setQaResult] = useState<RagQaResponse | null>(null);
 
   const parseTopK = (): number => {
     const raw = topK.trim();
-    if (!raw) return 5;
+    if (!raw) return TOP_K_DEFAULT;
     const n = Number(raw);
-    if (!Number.isFinite(n)) return 5;
+    if (!Number.isFinite(n)) return TOP_K_DEFAULT;
     const asInt = Math.floor(n);
-    if (asInt < 1) return 1;
-    if (asInt > 50) return 50;
+    if (asInt < TOP_K_MIN) return TOP_K_MIN;
+    if (asInt > TOP_K_MAX) return TOP_K_MAX;
     return asInt;
   };
 
-  const extractErrorState = (err: unknown): ErrorState => {
+  const topKValue = parseTopK();
+
+  const extractErrorState = (err: unknown): ErrorStateValue => {
     let message = tError('generic');
     let requestId: string | undefined = undefined;
 
@@ -80,6 +87,7 @@ export default function KnowledgePage() {
     try {
       const res = await uploadRagDocuments(files);
       setUploadResult(res);
+      setChunksIndexed((total) => total + res.chunks_indexed);
     } catch (e: unknown) {
       setUploadError(extractErrorState(e));
     } finally {
@@ -101,6 +109,7 @@ export default function KnowledgePage() {
       setUploadResult(null);
       setQaResult(null);
       setQaError(null);
+      setChunksIndexed(0);
     } catch (e: unknown) {
       setResetError(extractErrorState(e));
     } finally {
@@ -120,7 +129,7 @@ export default function KnowledgePage() {
     try {
       const res = await ragQa({
         question: q,
-        top_k: parseTopK(),
+        top_k: topKValue,
         provider: provider.trim() || undefined,
         model: model.trim() || undefined,
       });
@@ -132,360 +141,298 @@ export default function KnowledgePage() {
     }
   };
 
+  const citationList = qaResult?.citations ?? [];
+  const answered = Boolean(qaResult);
+  const resolvedProvider = qaResult?.provider ?? null;
+  const resolvedModel = qaResult?.model ?? null;
+
+  const answerNote = useMemo(() => {
+    if (!qaResult) return null;
+    if (!qaResult.llm_used) return t('ask.noteExtracted');
+    return t('ask.noteAi', {
+      provider: resolvedProvider ?? t('ask.unknownModel'),
+      model: resolvedModel ?? t('ask.unknownModel'),
+    });
+  }, [qaResult, resolvedProvider, resolvedModel, t]);
+
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-8">
-      <PageHeader className="mb-8" title={t('title')} description={t('description')} />
+    <div className="flex min-h-[calc(100vh-56px)] flex-col">
+      <div className="border-b border-border px-6 pb-5 pt-6">
+        <PageHeader
+          title={t('title')}
+          description={t('description')}
+          actions={<MonoAnnotation>{t('source')}</MonoAnnotation>}
+        />
+      </div>
 
-      <div className="grid gap-8">
-        {/* Upload Section - 4 Mandated States */}
-        <section className="border rounded-lg p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Upload className="w-5 h-5" />
-            <h2 className="text-xl font-semibold">{t('upload.title')}</h2>
-          </div>
-
-          {/* Empty/Loading/Error/Populated states for upload */}
-          <input
-            className="border p-2 w-full"
-            type="file"
-            multiple
-            accept=".txt,.md,.pdf,.docx"
-            onChange={(e) => {
-              const list = e.target.files ? Array.from(e.target.files) : [];
-              setFiles(list);
+      <div className="grid flex-1 lg:grid-cols-[420px_minmax(0,1fr)]">
+        <aside className="flex flex-col gap-5 border-b border-border px-6 py-5 lg:border-b-0 lg:border-r">
+          <label
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={(event) => {
+              event.preventDefault();
+              const dropped = event.dataTransfer?.files
+                ? Array.from(event.dataTransfer.files)
+                : [];
+              if (dropped.length) setFiles(dropped);
             }}
-            aria-label={t('upload.filesAria')}
-            disabled={uploading}
-          />
+            className="flex h-[120px] cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-muted-foreground bg-muted/40 px-4 text-center hover:bg-muted"
+          >
+            <span className="text-[14px] font-medium text-foreground">
+              {t('upload.dropLabel')}
+            </span>
+            <span className="text-[12px] text-muted-foreground">{t('upload.formats')}</span>
+            <input
+              type="file"
+              multiple
+              accept=".txt,.md,.pdf,.docx"
+              className="sr-only"
+              aria-label={t('upload.filesAria')}
+              onChange={(event) => {
+                const list = event.target.files ? Array.from(event.target.files) : [];
+                setFiles(list);
+              }}
+              disabled={uploading}
+            />
+          </label>
 
-          {files.length ? (
-            <ul className="text-sm text-muted-foreground mt-2 list-disc pl-5">
-              {files.map((f) => (
-                <li key={`${f.name}-${f.size}`}>{f.name}</li>
-              ))}
-            </ul>
+          <Button onClick={onUpload} disabled={uploading || !files.length} className="w-full">
+            {uploading ? (
+              <>
+                <Loader2 className="size-4 animate-spin" aria-hidden />
+                {t('upload.uploading')}
+              </>
+            ) : (
+              <>
+                <Upload className="size-4" aria-hidden />
+                {t('upload.upload')}
+              </>
+            )}
+          </Button>
+
+          {uploading ? (
+            <p className="text-[12px] text-muted-foreground" role="status">
+              {t('upload.processing')}
+            </p>
           ) : null}
 
-          <div className="mt-4 flex items-center gap-3">
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
-              disabled={uploading || !files.length}
-              onClick={onUpload}
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  {t('upload.uploading')}
-                </>
-              ) : (
-                <>
-                  <FileUp className="w-4 h-4" />
-                  {t('upload.upload')}
-                </>
-              )}
-            </button>
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
-              disabled={uploading || !files.length}
-              onClick={() => {
-                setFiles([]);
-                setUploadError(null);
-                setUploadResult(null);
-              }}
-            >
-              {t('upload.clear')}
-            </button>
-          </div>
+          {uploadError ? (
+            <ErrorState
+              title={t('upload.failed')}
+              description={uploadError.message}
+              action={
+                uploadError.requestId ? (
+                  <MonoAnnotation>request_id={uploadError.requestId}</MonoAnnotation>
+                ) : null
+              }
+            />
+          ) : null}
 
-          {/* Upload Loading State */}
-          {uploading && (
-            <div
-              className="mt-4 p-4 rounded-lg border bg-muted/30 text-center"
-              role="status"
-              aria-live="polite"
-            >
-              <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">{t('upload.processing')}</p>
-            </div>
-          )}
-
-          {/* Upload Error State */}
-          {uploadError && (
-            <div
-              className="mt-4 p-4 rounded-lg bg-destructive/10 border border-destructive/20"
-              role="alert"
-              aria-live="assertive"
-            >
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-destructive mb-1">{t('upload.failed')}</p>
-                  <p className="text-sm text-destructive/90">{uploadError.message}</p>
-                  {uploadError.requestId && (
-                    <p className="text-xs text-muted-foreground mt-2 font-mono">
-                      request_id={uploadError.requestId}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Upload Populated State */}
           {uploadResult ? (
-            <div className="mt-4 p-4 rounded-lg bg-success/15 border border-chart-7/30">
-              <p className="font-medium text-success">{uploadResult.message}</p>
-              <p className="text-sm text-success">
+            <div className="flex flex-col gap-1 border-t border-foreground pt-2.5">
+              <p className="text-[13px] font-medium text-success">{uploadResult.message}</p>
+              <p className="text-[12px] text-muted-foreground">
                 {t('upload.chunksIndexed', { count: uploadResult.chunks_indexed })}
               </p>
               {uploadResult.errors.length ? (
-                <ul className="mt-2 text-sm text-warning list-disc pl-5">
-                  {uploadResult.errors.map((err, idx) => (
-                    <li key={idx}>{err}</li>
+                <ul className="mt-1 list-disc pl-4 text-[12px] text-warning">
+                  {uploadResult.errors.map((error, index) => (
+                    <li key={index}>{error}</li>
                   ))}
                 </ul>
               ) : null}
             </div>
           ) : null}
 
-          {/* Knowledge Management Section */}
-          <div className="mt-6 pt-6 border-t">
-            <div className="flex items-center gap-2 mb-3">
-              <Database className="w-4 h-4" />
-              <p className="font-medium">{t('manage.title')}</p>
-            </div>
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
-              disabled={resetting}
+          <DocumentLedger
+            files={files.map((file) => ({
+              name: file.name,
+              size: file.size,
+              type: file.type,
+            }))}
+            chunksIndexed={chunksIndexed}
+            documentsRemaining={resetResult ? resetResult.documents_remaining : null}
+            onRemove={(index) =>
+              setFiles((current) => current.filter((_, position) => position !== index))
+            }
+          />
+
+          <div className="flex flex-col gap-2 border-t border-border pt-4">
+            <Button
+              variant="outline"
               onClick={onResetKnowledge}
+              disabled={resetting}
+              className="self-start"
             >
               {resetting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin" aria-hidden />
                   {t('manage.clearing')}
                 </>
               ) : (
                 <>
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="size-4" aria-hidden />
                   {t('manage.clear')}
                 </>
               )}
-            </button>
+            </Button>
 
-            {/* Reset Error State */}
-            {resetError && (
-              <div className="mt-3 flex items-center gap-3" role="alert" aria-live="assertive">
-                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
-                <span className="text-sm text-destructive">{resetError.message}</span>
-                {resetError.requestId && (
-                  <span className="text-xs text-muted-foreground font-mono">
-                    (request_id={resetError.requestId})
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* Reset Populated State */}
-            {resetResult ? (
-              <div className="mt-3">
-                <p className="text-sm text-muted-foreground">
-                  {t('manage.result', {
-                    message: resetResult.message,
-                    removed: resetResult.documents_removed,
-                    remaining: resetResult.documents_remaining,
-                  })}
-                </p>
-              </div>
+            {resetError ? (
+              <ErrorState
+                title={t('manage.failed')}
+                description={resetError.message}
+                action={
+                  resetError.requestId ? (
+                    <MonoAnnotation>request_id={resetError.requestId}</MonoAnnotation>
+                  ) : null
+                }
+              />
             ) : null}
+
+            {resetResult ? (
+              <p className="text-[12px] text-muted-foreground">
+                {t('manage.result', {
+                  message: resetResult.message,
+                  removed: resetResult.documents_removed,
+                  remaining: resetResult.documents_remaining,
+                })}
+              </p>
+            ) : null}
+
+            <p className="text-[12px] leading-4 text-muted-foreground">{t('manage.note')}</p>
           </div>
-        </section>
+        </aside>
 
-        {/* Q&A Section - 4 Mandated States */}
-        <section className="border rounded-lg p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <MessageSquareText className="w-5 h-5" />
-            <h2 className="text-xl font-semibold">{t('ask.title')}</h2>
-          </div>
-
-          {/* Empty state - prompt user to ask */}
-          {!qaResult && !qaError && !asking && (
-            <div
-              className="flex flex-col items-center justify-center py-8 text-center border rounded-lg border-dashed bg-muted/20 mb-4"
-              role="status"
-              aria-live="polite"
-            >
-              <FileText className="h-8 w-8 text-muted-foreground mb-2" aria-hidden="true" />
-              <p className="text-sm text-muted-foreground max-w-sm mx-auto">{t('ask.empty')}</p>
-            </div>
-          )}
-
-          <textarea
-            className="border p-2 w-full resize-none"
-            placeholder={t('ask.placeholder')}
-            rows={3}
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            aria-label={t('ask.questionAria')}
-            disabled={asking}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-            <input
-              className="border p-2 w-full"
-              type="number"
-              min={1}
-              max={50}
-              value={topK}
-              onChange={(e) => setTopK(e.target.value)}
-              aria-label={t('ask.topKAria')}
-              placeholder={t('ask.topKPlaceholder')}
-              disabled={asking}
-            />
-            <input
-              className="border p-2 w-full"
-              value={provider}
-              onChange={(e) => setProvider(e.target.value)}
-              aria-label={t('ask.providerAria')}
-              placeholder={t('ask.providerPlaceholder')}
-              disabled={asking}
-            />
-            <input
-              className="border p-2 w-full"
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              aria-label={t('ask.modelAria')}
-              placeholder={t('ask.modelPlaceholder')}
-              disabled={asking}
-            />
-          </div>
-
-          <div className="mt-4 flex items-center gap-3">
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
-              disabled={asking || !question.trim()}
-              onClick={onAsk}
-            >
-              {asking ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  {t('ask.asking')}
-                </>
-              ) : (
-                <>
-                  <MessageSquareText className="w-4 h-4" />
-                  {t('ask.ask')}
-                </>
-              )}
-            </button>
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
-              disabled={asking || (!question.trim() && !qaResult && !qaError)}
-              onClick={() => {
-                setQuestion('');
-                setQaError(null);
-                setQaResult(null);
-              }}
-            >
-              {t('ask.clear')}
-            </button>
-          </div>
-
-          {/* Asking Loading State */}
-          {asking && (
-            <div
-              className="mt-4 p-4 rounded-lg border bg-muted/30 text-center"
-              role="status"
-              aria-live="polite"
-            >
-              <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">{t('ask.searching')}</p>
-            </div>
-          )}
-
-          {/* QA Error State */}
-          {qaError && (
-            <div
-              className="mt-4 p-4 rounded-lg bg-destructive/10 border border-destructive/20"
-              role="alert"
-              aria-live="assertive"
-            >
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-destructive mb-1">{t('ask.failed')}</p>
-                  <p className="text-sm text-destructive/90">{qaError.message}</p>
-                  {qaError.requestId && (
-                    <p className="text-xs text-muted-foreground mt-2 font-mono">
-                      request_id={qaError.requestId}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* QA Populated State */}
-          {qaResult && (
-            <div className="mt-4 space-y-4">
-              <div className="border rounded p-4 bg-muted/30">
-                <p className="text-xs text-muted-foreground mb-2 font-mono">
-                  llm_used={String(qaResult.llm_used)} provider={qaResult.provider ?? 'null'} model=
-                  {qaResult.model ?? 'null'}
-                </p>
-                <p className="whitespace-pre-wrap text-sm leading-relaxed">{qaResult.answer}</p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-sm mb-2">{t('ask.citations')}</h3>
-                {qaResult.citations.length ? (
-                  <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
-                    {qaResult.citations.map((c, idx) => (
-                      <li key={`${c.source}-${c.chunk_index}-${idx}`}>
-                        {t('ask.citationItem', {
-                          source: c.source ?? '',
-                          chunk: c.chunk_index ?? 0,
-                        })}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-muted-foreground">{t('ask.noCitations')}</p>
-                )}
-              </div>
-            </div>
-          )}
-        </section>
-      </div>
-
-      {/* Empty State Guidance - When no data and no operations */}
-      {!uploadResult &&
-        !resetResult &&
-        !qaResult &&
-        !uploadError &&
-        !resetError &&
-        !qaError &&
-        !uploading &&
-        !resetting &&
-        !asking && (
-          <div
-            className="mt-8 p-6 rounded-lg border bg-muted/20 text-center"
-            role="status"
-            aria-live="polite"
+        <main className="flex min-w-0 flex-col gap-5 px-6 py-5 lg:px-8">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              void onAsk();
+            }}
+            className="flex flex-col gap-3"
           >
-            <Sparkles className="h-10 w-10 text-muted-foreground mx-auto mb-3" aria-hidden="true" />
-            <h3 className="text-base font-semibold text-foreground mb-2">{t('empty.title')}</h3>
-            <div className="text-sm text-muted-foreground max-w-md mx-auto space-y-2">
-              <p>{t('empty.upload')}</p>
-              <p>{t('empty.then')}</p>
-              <p className="text-xs">{t('empty.providers')}</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                className="h-11 min-w-0 flex-1 rounded-lg border border-input bg-background px-3.5 text-[15px] text-foreground outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
+                placeholder={t('ask.placeholder')}
+                aria-label={t('ask.questionAria')}
+                value={question}
+                onChange={(event) => setQuestion(event.target.value)}
+                disabled={asking}
+              />
+              <Button
+                type="submit"
+                className="h-11 shrink-0"
+                disabled={asking || !question.trim()}
+                data-testid="knowledge-ask"
+              >
+                {asking ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" aria-hidden />
+                    {t('ask.asking')}
+                  </>
+                ) : (
+                  <>
+                    <MessageSquareText className="size-4" aria-hidden />
+                    {t('ask.ask')}
+                  </>
+                )}
+              </Button>
             </div>
-          </div>
-        )}
+
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-muted-foreground">
+              <label className="flex items-center gap-2">
+                <span>{t('ask.topKLabel')}</span>
+                <input
+                  type="range"
+                  min={TOP_K_MIN}
+                  max={TOP_K_MAX}
+                  value={topK}
+                  aria-label={t('ask.topKAria')}
+                  onChange={(event) => setTopK(event.target.value)}
+                  disabled={asking}
+                  className="w-[100px] accent-foreground"
+                />
+                <span className="font-mono text-[12px] font-medium text-foreground">
+                  {topKValue}
+                </span>
+              </label>
+
+              <label className="flex items-center gap-2">
+                <span>{t('ask.providerLabel')}</span>
+                <input
+                  type="text"
+                  value={provider}
+                  aria-label={t('ask.providerAria')}
+                  placeholder={t('ask.providerPlaceholder')}
+                  onChange={(event) => setProvider(event.target.value)}
+                  disabled={asking}
+                  className="h-6 w-[130px] rounded-sm border border-border bg-background px-2 font-mono text-[12px] text-foreground outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
+                />
+              </label>
+
+              <label className="flex items-center gap-2">
+                <span>{t('ask.modelLabel')}</span>
+                <input
+                  type="text"
+                  value={model}
+                  aria-label={t('ask.modelAria')}
+                  placeholder={t('ask.modelPlaceholder')}
+                  onChange={(event) => setModel(event.target.value)}
+                  disabled={asking}
+                  className="h-6 w-[130px] rounded-sm border border-border bg-background px-2 font-mono text-[12px] text-foreground outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
+                />
+              </label>
+
+              <Link
+                href={`/${locale}/settings`}
+                className="ml-auto text-[12px] text-foreground hover:underline"
+              >
+                {t('ask.otherProviders')}
+              </Link>
+            </div>
+          </form>
+
+          {asking ? (
+            <p className="text-[12px] text-muted-foreground" role="status">
+              {t('ask.searching')}
+            </p>
+          ) : null}
+
+          {qaError ? (
+            <ErrorState
+              title={t('ask.failed')}
+              description={qaError.message}
+              action={
+                qaError.requestId ? (
+                  <MonoAnnotation>request_id={qaError.requestId}</MonoAnnotation>
+                ) : null
+              }
+            />
+          ) : null}
+
+          {answered && qaResult ? (
+            <div className="flex flex-col gap-4">
+              <p className="whitespace-pre-wrap text-[15px] leading-6 text-foreground">
+                {qaResult.answer}
+              </p>
+
+              {citationList.length ? (
+                <PassageLedger citations={citationList} topK={topKValue} />
+              ) : (
+                <p className="text-[12px] text-muted-foreground">{t('ask.noCitations')}</p>
+              )}
+
+              <p className="text-[12px] leading-4 text-muted-foreground">{answerNote}</p>
+            </div>
+          ) : null}
+
+          {!answered && !qaError && !asking ? (
+            <EmptyState title={t('ask.emptyTitle')} description={t('ask.empty')} />
+          ) : null}
+        </main>
+      </div>
     </div>
   );
 }

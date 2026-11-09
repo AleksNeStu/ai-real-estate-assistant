@@ -65,7 +65,8 @@ describe("KnowledgePage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Ask" }));
 
     await waitFor(() => expect(screen.getByText("Answer text")).toBeInTheDocument());
-    expect(screen.getByText(/file\.txt \(chunk 0\)/)).toBeInTheDocument();
+    // The passage ledger names the document and the place in it.
+    expect(screen.getByText("file.txt · chunk 0")).toBeInTheDocument();
   });
 
   it("clamps top_k and trims provider/model", async () => {
@@ -86,10 +87,9 @@ describe("KnowledgePage", () => {
     });
   });
 
-  it("defaults top_k when invalid", async () => {
+  it("asks for the default top_k when the slider is untouched", async () => {
     render(<KnowledgePage />);
 
-    fireEvent.change(screen.getByLabelText("Top K"), { target: { value: "abc" } });
     fireEvent.change(screen.getByLabelText("Knowledge question"), { target: { value: "Q" } });
     fireEvent.click(screen.getByRole("button", { name: "Ask" }));
 
