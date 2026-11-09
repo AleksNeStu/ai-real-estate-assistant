@@ -2,8 +2,12 @@
 Design-artifact analyser for ai-real-estate-assistant.
 
 Usage:
-    python design_gap.py <path-to-artifact>            # file or directory
-    python design_gap.py <path> --json                 # machine-readable
+    python scripts/design/design_gap.py <path-to-artifact>      # file or directory
+    python scripts/design/design_gap.py <path> --json           # machine-readable
+
+The artifact the acceptance compares is the v2 prototype:
+
+    python scripts/design/design_gap.py tmp/design/realt2/v2
 
 The artifact format is not known in advance, so nothing here assumes one:
 the analyser extracts what is actually present in the text and compares it
@@ -11,9 +15,15 @@ against the repository's current surface.
 
 It answers four questions:
   1. Tokens - which theme tokens does the artifact define, and how do they
-     map onto the 83 tokens the repo has today?
-  2. Palette - are the artifact's colours a re-skin of the current theme
-     (nearest match exists) or a new colour system?
+     map onto the tokens the repo has today? A token is read in all three
+     forms the prototypes use: `--name: value`, `var(--name, #value)` and
+     `'--name': '#value'`. A token the repo does not carry by name is
+     matched by its colour, and only a token that has no counterpart in
+     either sense is reported as new.
+  2. Palette - are the artifact's colours a re-skin of the current theme or
+     a new colour system? Every literal is compared with the repository's
+     palette and measured against PALETTE_THRESHOLD; the literals outside
+     it are listed with their distance and the file they come from.
   3. Components - does the artifact mention components the repo does not have?
   4. Copy - does the artifact contain message keys that are not in the
      catalogue (which would need all nine locales)?
@@ -31,6 +41,12 @@ REPO = pathlib.Path(__file__).resolve().parents[2]
 GLOBALS_CSS = REPO / "apps" / "web" / "src" / "app" / "globals.css"
 COMPONENTS_DIR = REPO / "apps" / "web" / "src" / "components"
 MESSAGES_EN = REPO / "apps" / "web" / "messages" / "en.json"
+
+# How close two colours have to be to count as the same colour. The unit is
+# the squared distance in HSL: the hue counts double, so a colour that is a
+# few percent off in lightness lands well inside this number and a different
+# colour family lands an order of magnitude outside it.
+PALETTE_THRESHOLD = 100.0
 
 TEXT_SUFFIXES = {
     ".css",
@@ -52,6 +68,10 @@ TEXT_SUFFIXES = {
 }
 
 VAR_RE = re.compile(r"--([A-Za-z0-9_-]+)\s*:\s*([^;{}\n]+)")
+# The prototypes declare a token as a fallback of a var() call: var(--bg,#fff)
+VAR_FALLBACK_RE = re.compile(r"var\(\s*--([A-Za-z0-9_-]+)\s*,\s*([^)]+?)\s*\)")
+# ...and as a quoted property of a theme object: {'--bg':'#09090b'}
+VAR_QUOTED_RE = re.compile(r"['\"]--([A-Za-z0-9_-]+)['\"]\s*:\s*['\"]([^'\"]+)['\"]")
 VAR_USE_RE = re.compile(r"var\(\s*--([A-Za-z0-9_-]+)")
 HEX_RE = re.compile(r"#([0-9a-fA-F]{3,8})\b")
 RGB_RE = re.compile(
@@ -220,6 +240,37 @@ def color_distance(a, b):
     return (dh * 2) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2
 
 
+def token_color(value):
+    """The (h, s, l) a token value carries, or None when it is not a colour."""
+    value = value.strip()
+    triplet = TRIPLET_RE.match(value)
+    if triplet:
+        return (
+            float(triplet.group(1)) % 360,
+            float(triplet.group(2)),
+            float(triplet.group(3)),
+        )
+    if value.startswith("#"):
+        rgba = hex_to_rgb(value)
+        if rgba:
+            return rgb_to_hsl(*rgba[:3])
+    return None
+
+
+def artifact_token_definitions(text):
+    """Every token the artifact declares, in the three forms it uses.
+
+    A var() fallback and a quoted theme property are definitions too: the
+    prototypes never declare a token the way a stylesheet does, and reading
+    only the stylesheet form leaves the comparison empty.
+    """
+    found = {}
+    for pattern in (VAR_RE, VAR_FALLBACK_RE, VAR_QUOTED_RE):
+        for m in pattern.finditer(text):
+            found.setdefault(m.group(1), m.group(2).strip())
+    return found
+
+
 # ---------------------------------------------------------------- repo side
 def repo_tokens():
     css = GLOBALS_CSS.read_text(encoding="utf-8")
@@ -227,6 +278,21 @@ def repo_tokens():
     for m in VAR_RE.finditer(css):
         tokens.setdefault(m.group(1), m.group(2).strip())
     return tokens
+
+
+def repo_token_colors():
+    """The colours the repository's own tokens carry, per theme.
+
+    A token is declared twice - once per theme - so a name maps to a list of
+    colours, and a token is a match for whichever theme is closest.
+    """
+    css = GLOBALS_CSS.read_text(encoding="utf-8")
+    colors = {}
+    for m in VAR_RE.finditer(css):
+        color = token_color(m.group(2).strip())
+        if color is not None:
+            colors.setdefault(m.group(1), []).append(color)
+    return colors
 
 
 def repo_colors():
@@ -274,7 +340,13 @@ def collect_files(target):
 
 
 def main():
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(
+        description=(
+            "Compare a design artifact with the application's current surface. "
+            "The artifact the acceptance reads is the v2 prototype: "
+            "python scripts/design/design_gap.py tmp/design/realt2/v2"
+        )
+    )
     ap.add_argument("artifact")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
@@ -292,13 +364,19 @@ def main():
         except OSError:
             continue
 
+    def source_of(path):
+        """Where a literal came from, relative to the artifact's own root."""
+        try:
+            return path.relative_to(target).as_posix()
+        except ValueError:
+            return path.name
+
     artifact_tokens, token_sources = {}, {}
     for p, text in text_by_file.items():
-        for m in VAR_RE.finditer(text):
-            name = m.group(1)
+        for name, value in artifact_token_definitions(text).items():
             if name not in artifact_tokens:
-                artifact_tokens[name] = m.group(2).strip()
-                token_sources[name] = p.name
+                artifact_tokens[name] = value
+                token_sources[name] = source_of(p)
 
     used_vars = set()
     for text in text_by_file.values():
@@ -307,28 +385,83 @@ def main():
     artifact_colors = []
     for p, text in text_by_file.items():
         for literal, hsl in collect_colors(text):
-            artifact_colors.append((literal, hsl, p.name))
+            artifact_colors.append((literal, hsl, source_of(p)))
 
     r_tokens = repo_tokens()
+    r_token_colors = repo_token_colors()
     r_colors = repo_colors()
     r_components = repo_components()
     r_keys = repo_message_keys()
     r_namespaces = repo_namespaces()
 
-    # 1. token mapping
+    # 1. token mapping. A token the repo does not carry by name is matched by
+    #    its colour; only a token with no counterpart in either sense is new.
     exact = sorted(set(artifact_tokens) & set(r_tokens))
-    only_artifact = sorted(set(artifact_tokens) - set(r_tokens))
-    only_repo = sorted(set(r_tokens) - set(artifact_tokens))
+    aliases, unmatched = [], []
+    for name in sorted(artifact_tokens):
+        if name in r_tokens:
+            continue
+        color = token_color(artifact_tokens[name])
+        if color is None:
+            # Not a colour - a filter, a radius, a size. There is no colour
+            # to match, so it is reported on its own, not as palette drift.
+            unmatched.append(
+                {"token": name, "value": artifact_tokens[name], "colour": False}
+            )
+            continue
+        best_distance = None
+        candidates = []
+        for repo_name, colors in r_token_colors.items():
+            distance = min(color_distance(color, c) for c in colors)
+            if best_distance is None or distance < best_distance:
+                best_distance, candidates = distance, [repo_name]
+            elif distance <= best_distance + 1e-6:
+                candidates.append(repo_name)
+        if best_distance is not None and best_distance <= PALETTE_THRESHOLD:
+            aliases.append(
+                {
+                    "token": name,
+                    "repo_tokens": sorted(candidates),
+                    "distance": round(best_distance, 3),
+                }
+            )
+        else:
+            unmatched.append(
+                {"token": name, "value": artifact_tokens[name], "colour": True}
+            )
 
-    # 2. palette similarity
-    nearest = []
+    claimed = {name for alias in aliases for name in alias["repo_tokens"]}
+    only_repo = sorted(
+        name for name in r_tokens if name not in exact and name not in claimed
+    )
+
+    # 2. palette similarity. Every literal is measured against the repository's
+    #    palette, and the ones outside the threshold are named.
+    nearest = {}
     for literal, hsl, src in artifact_colors:
         if not r_colors:
-            nearest.append((literal, None, src))
+            nearest[literal] = (None, None, src)
             continue
         best = min(r_colors, key=lambda c: color_distance(hsl, c[1]))
-        nearest.append((literal, best, src))
-    matched = sum(1 for n in nearest if n[1])
+        distance = color_distance(hsl, best[1])
+        known = nearest.get(literal)
+        if known is None or (known[1] is not None and distance < known[1]):
+            nearest[literal] = (best, distance, src)
+    matched = sum(1 for n in nearest.values() if n[0])
+    outside = sorted(
+        (
+            {
+                "literal": literal,
+                "distance": round(distance, 2),
+                "nearest_repo": best[0],
+                "source": src,
+            }
+            for literal, (best, distance, src) in nearest.items()
+            if distance is None or distance > PALETTE_THRESHOLD
+        ),
+        key=lambda row: -row["distance"],
+    )
+    within = len(nearest) - len(outside)
 
     # 3. components mentioned in the artifact
     mentioned = set()
@@ -379,14 +512,18 @@ def main():
         "tokens": {
             "defined_in_artifact": len(artifact_tokens),
             "matches_repo_token": len(exact),
-            "new_in_artifact": only_artifact,
+            "aliases_to_repo_token": aliases,
+            "new_in_artifact": unmatched,
             "repo_tokens_without_counterpart": only_repo,
             "exact_matches": exact,
         },
         "palette": {
             "color_literals": len(artifact_colors),
-            "distinct_literals": len({c[0] for c in artifact_colors}),
+            "distinct_literals": len(nearest),
             "closest_repo_match_available": matched,
+            "threshold": PALETTE_THRESHOLD,
+            "within_threshold": within,
+            "outside_threshold": outside,
         },
         "components": {
             "repo_components_mentioned": sorted(mentioned),
@@ -409,12 +546,18 @@ def main():
     print()
     print(
         f"TOKENS  defined in artifact: {t['defined_in_artifact']}   "
-        f"match repo token: {t['matches_repo_token']}   new: {len(t['new_in_artifact'])}"
+        f"match repo token by name: {t['matches_repo_token']}   "
+        f"match repo token by colour: {len(t['aliases_to_repo_token'])}   "
+        f"new: {len(t['new_in_artifact'])}"
     )
-    if t["new_in_artifact"]:
-        print("  new tokens:")
-        for name in t["new_in_artifact"][:40]:
-            print(f"    --{name}: {artifact_tokens[name][:60]}")
+    for alias in t["aliases_to_repo_token"]:
+        print(
+            f"    --{alias['token']:<10} -> {', '.join('--' + n for n in alias['repo_tokens'])}"
+            f"   distance {alias['distance']}"
+        )
+    for row in t["new_in_artifact"]:
+        kind = "colour" if row["colour"] else "not a colour"
+        print(f"    --{row['token']:<10} no counterpart ({kind}): {row['value'][:60]}")
     print(
         f"  repo tokens with no counterpart in the artifact: {len(t['repo_tokens_without_counterpart'])}"
     )
@@ -422,19 +565,15 @@ def main():
     p = report["palette"]
     print(
         f"PALETTE  literals: {p['color_literals']} ({p['distinct_literals']} distinct), "
-        f"with a repo match: {p['closest_repo_match_available']}"
+        f"within the threshold: {p['within_threshold']}, "
+        f"outside: {len(p['outside_threshold'])}"
     )
-    seen = set()
-    for literal, best, src in nearest[:24]:
-        if literal in seen:
-            continue
-        seen.add(literal)
-        target_hsl = (
-            f"hsl({best[1][0]:.0f} {best[1][1]:.0f}% {best[1][2]:.0f}%)"
-            if best
-            else "?"
+    print(f"  threshold: {p['threshold']} (squared HSL distance)")
+    for row in p["outside_threshold"]:
+        print(
+            f"    {row['literal']:<26} distance {row['distance']:>9}   "
+            f"nearest repo {row['nearest_repo']:<28} ({row['source']})"
         )
-        print(f"    {literal:<26} -> nearest repo {target_hsl}   ({src})")
     print()
     c = report["components"]
     print(
