@@ -1,12 +1,8 @@
 import { getTranslations } from 'next-intl/server';
-import { Code2, Star, Building2, Quote } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { PageHeader } from '@/components/ui/page-header';
-import Link from 'next/link';
 import type { Metadata } from 'next';
 
 import { pageMetadata } from '@/lib/metadata';
+import { ShowcaseBody } from './showcase-body';
 
 export async function generateMetadata({
   params,
@@ -29,10 +25,11 @@ export async function generateMetadata({
 /**
  * /<locale>/showcase — public-facing social-proof page.
  *
- * Currently a placeholder. Two sections render an explicit empty state
- * ("no forks or quotes yet — be the first") so the route is reachable
- * from external sources (Show HN thread replies, Product Hunt, Reddit
- * posts) without showing fake data.
+ * Three sections render an explicit empty state ("no forks or quotes yet —
+ * be the first") so the route is reachable from external sources (Show HN
+ * thread replies, Product Hunt, Reddit posts) without showing fake data.
+ * The entry format of every section is one toggle away: the page says what
+ * an entry looks like instead of only saying that there is none.
  *
  * Intended future content:
  *  - Forks: pull from GitHub API (`repos/AleksNeStu/ai-real-estate-assistant/forks`)
@@ -50,105 +47,6 @@ export default async function ShowcasePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations('showcase');
-  const tPage = await getTranslations('pages.showcase');
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col space-y-12 max-w-4xl mx-auto">
-        {/* Hero */}
-        <header className="flex flex-col items-center text-center space-y-3">
-          <PageHeader
-            className="sm:flex-col sm:items-center text-center"
-            title={tPage('title')}
-            description={tPage('description')}
-          />
-        </header>
-
-        {/* Forks / Built With This */}
-        <section aria-labelledby="forks-heading" className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Code2 className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-            <h2
-              id="forks-heading"
-              className="text-2xl font-semibold tracking-tight"
-            >
-              {t('forksTitle')}
-            </h2>
-          </div>
-          <Card>
-            <CardContent className="pt-6 text-center text-muted-foreground">
-              <p className="mb-3">{t('forksEmpty')}</p>
-              <p className="text-sm">
-                {t('forksEmptyHelper')}
-              </p>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Companies / Production Deployments */}
-        <section aria-labelledby="companies-heading" className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-            <h2
-              id="companies-heading"
-              className="text-2xl font-semibold tracking-tight"
-            >
-              {t('companiesTitle')}
-            </h2>
-          </div>
-          <Card>
-            <CardContent className="pt-6 text-center text-muted-foreground">
-              <p className="mb-3">{t('companiesEmpty')}</p>
-              <p className="text-sm">{t('companiesEmptyHelper')}</p>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Quotes / Testimonials */}
-        <section aria-labelledby="quotes-heading" className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Quote className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-            <h2
-              id="quotes-heading"
-              className="text-2xl font-semibold tracking-tight"
-            >
-              {t('quotesTitle')}
-            </h2>
-          </div>
-          <Card>
-            <CardContent className="pt-6 text-center text-muted-foreground">
-              <p className="mb-3">{t('quotesEmpty')}</p>
-              <p className="text-sm">{t('quotesEmptyHelper')}</p>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* CTA — star the repo */}
-        <section className="text-center space-y-3 py-8 border-t">
-          <h2 className="text-2xl font-semibold tracking-tight">
-            {t('ctaTitle')}
-          </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">
-            {t('ctaSubtitle')}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <Button asChild>
-              <Link
-                href="https://github.com/AleksNeStu/ai-real-estate-assistant"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Star className="h-4 w-4 mr-2" aria-hidden="true" />
-                {t('ctaStar')}
-              </Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href={`/${locale}/chat`}>{t('ctaTryDemo')}</Link>
-            </Button>
-          </div>
-        </section>
-      </div>
-    </div>
-  );
+  return <ShowcaseBody locale={locale} />;
 }
