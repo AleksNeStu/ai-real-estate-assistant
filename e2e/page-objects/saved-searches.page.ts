@@ -18,7 +18,9 @@ export class SavedSearchesPage {
     this.page = page;
     this.heading = page.getByRole('heading', { name: /saved searches/i });
     this.refreshButton = page.getByRole('button', { name: /refresh/i });
-    this.searchCards = page.locator('.grid.gap-4 > .rounded-lg');
+    // The searches are a ledger now: one row per search, each one a row of
+    // the ledger under the rule that opens it.
+    this.searchCards = page.locator('[data-testid="saved-search-row"]');
     this.emptyState = page.locator('text=/no saved searches yet/i');
     // The error of the page is a single alert. The selector collects the
     // destructive background as well - both match the same element, so the
@@ -48,18 +50,21 @@ export class SavedSearchesPage {
   }
 
   /**
-   * Get a specific saved search card by name.
+   * Get a specific saved search row by name.
    */
   getSearchCardByName(name: string): Locator {
-    return this.page.locator('.grid.gap-4 > .rounded-lg').filter({ hasText: name });
+    return this.searchCards.filter({ hasText: name });
   }
 
   /**
-   * Get the alert toggle button for a saved search by its name.
+   * Get the alert toggle for a saved search by its name.
+   *
+   * The switch of the ledger is a `role="switch"`, not a button - the state
+   * it carries is the state of the alert, not an action.
    */
   getAlertToggleButton(cardName: string): Locator {
     const card = this.getSearchCardByName(cardName);
-    return card.getByRole('button').first();
+    return card.getByRole('switch');
   }
 
   /**
@@ -67,9 +72,7 @@ export class SavedSearchesPage {
    */
   getDeleteButton(cardName: string): Locator {
     const card = this.getSearchCardByName(cardName);
-    return card
-      .getByRole('button', { name: /delete/i })
-      .or(card.locator('button[title="Delete search"]'));
+    return card.getByRole('button', { name: /delete/i });
   }
 
   /**
@@ -96,7 +99,7 @@ export class SavedSearchesPage {
   }
 
   /**
-   * Get the number of saved search cards displayed.
+   * Get the number of saved search rows displayed.
    */
   async getSearchCount(): Promise<number> {
     return await this.searchCards.count();

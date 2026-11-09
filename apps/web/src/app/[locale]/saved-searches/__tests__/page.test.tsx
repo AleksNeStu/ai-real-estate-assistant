@@ -6,20 +6,18 @@ import type { SavedSearch } from '@/lib/types';
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
-  Bookmark: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg data-testid="bookmark-icon" {...props} />
-  ),
-  Bell: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="bell-icon" {...props} />,
-  BellOff: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="bell-off-icon" {...props} />,
-  Trash2: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="trash-icon" {...props} />,
-  Search: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="search-icon" {...props} />,
-  Loader2: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="loader-icon" {...props} />,
-  RefreshCw: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg data-testid="refresh-icon" {...props} />
-  ),
+  ...jest.requireActual('lucide-react'),
   AlertCircle: (props: React.SVGProps<SVGSVGElement>) => (
     <svg data-testid="alert-circle-icon" {...props} />
   ),
+  Loader2: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg data-testid="loader-icon" {...props} />
+  ),
+  RefreshCw: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg data-testid="refresh-icon" {...props} />
+  ),
+  Search: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="search-icon" {...props} />,
+  Trash2: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="trash-icon" {...props} />,
 }));
 
 // Mock the API module
@@ -116,6 +114,16 @@ describe('SavedSearchesPage', () => {
     });
   });
 
+  it('counts the alerts that are running', async () => {
+    mockGetSavedSearches.mockResolvedValue({ items: mockSearches, total: 2 });
+
+    render(<SavedSearchesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('1 of 2 alerts active')).toBeInTheDocument();
+    });
+  });
+
   it('renders saved search items from API', async () => {
     mockGetSavedSearches.mockResolvedValue({ items: mockSearches, total: 2 });
 
@@ -126,22 +134,47 @@ describe('SavedSearchesPage', () => {
       expect(screen.getByText('Munich Houses')).toBeInTheDocument();
     });
 
-    // Verify filter display for both searches
-    expect(screen.getByText('Berlin | $100,000-$500,000 | apartment')).toBeInTheDocument();
-    expect(screen.getByText('Munich | 3-5 rooms')).toBeInTheDocument();
-    // Verify use count
-    expect(screen.getByText(/5 times/)).toBeInTheDocument();
-    expect(screen.getByText(/2 times/)).toBeInTheDocument();
+    // The filters are written the way the search route writes its chips.
+    expect(
+      screen.getByText('city = Berlin · price ≥ 100,000 · price ≤ 500,000 · type = apartment')
+    ).toBeInTheDocument();
+    expect(screen.getByText('city = Munich · rooms = 3-5')).toBeInTheDocument();
+    // The use count and the creation date are the ones the API carried.
+    expect(screen.getByText(/Used: 5 times/)).toBeInTheDocument();
+    expect(screen.getByText(/Used: 2 times/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Created:/)).toHaveLength(2);
   });
 
-  it('shows Paused badge for inactive searches', async () => {
+  it('writes the rule each alert watches with', async () => {
     mockGetSavedSearches.mockResolvedValue({ items: mockSearches, total: 2 });
 
     render(<SavedSearchesPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Paused')).toBeInTheDocument();
+      expect(screen.getByText('Berlin Apartments')).toBeInTheDocument();
     });
+
+    expect(screen.getByText('New matches')).toBeInTheDocument();
+    expect(screen.getByText('Price drops')).toBeInTheDocument();
+    expect(screen.getByText('Daily')).toBeInTheDocument();
+    expect(screen.getByText('Weekly')).toBeInTheDocument();
+  });
+
+  it('shows the switch of every search with its state', async () => {
+    mockGetSavedSearches.mockResolvedValue({ items: mockSearches, total: 2 });
+
+    render(<SavedSearchesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Berlin Apartments')).toBeInTheDocument();
+    });
+
+    const switches = screen.getAllByRole('switch');
+    expect(switches).toHaveLength(2);
+    expect(switches[0]).toHaveAttribute('aria-checked', 'true');
+    expect(switches[1]).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByText('Alert on')).toBeInTheDocument();
+    expect(screen.getByText('Paused')).toBeInTheDocument();
   });
 
   it('handles delete button click with confirmation', async () => {
@@ -198,9 +231,8 @@ describe('SavedSearchesPage', () => {
       expect(screen.getByText('Berlin Apartments')).toBeInTheDocument();
     });
 
-    // Click the alert toggle for the active search (Berlin - is_active: true)
-    const toggleButtons = screen.getAllByLabelText(/alerts/i);
-    fireEvent.click(toggleButtons[0]);
+    // Click the switch of the active search (Berlin - is_active: true)
+    fireEvent.click(screen.getAllByRole('switch')[0]);
 
     await waitFor(() => {
       expect(mockToggleAlert).toHaveBeenCalledWith('search-1', false);
