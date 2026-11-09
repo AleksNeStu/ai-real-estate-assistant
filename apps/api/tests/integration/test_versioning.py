@@ -11,6 +11,8 @@ Validates:
 import copy
 import json
 import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -300,3 +302,30 @@ class TestBreakingChangeDetection:
         search_resp["properties"]["facets"] = {"type": "object"}
         errors = self._diff(baseline, current)
         assert errors == []
+
+
+class TestTheLiveSchemaAgainstTheBaseline:
+    """The gate itself: the running application against the committed baseline.
+
+    The tests above prove the diff recognises a break. This one proves the
+    break would be caught - the diff runs against the schema the application
+    actually serves, in a process of its own, under the same conditions the
+    baseline was written under. A change that removes an endpoint or a field
+    fails here, and the fix is to regenerate the baseline on purpose.
+    """
+
+    def test_no_breaking_change_against_the_committed_baseline(self):
+        result = subprocess.run(
+            [sys.executable, str(OPENAPI_DIFF_SCRIPT)],
+            capture_output=True,
+            text=True,
+            cwd=str(REPO_ROOT),
+            timeout=300,
+        )
+
+        assert result.returncode == 0, (
+            "The application serves a schema that breaks the committed baseline.\n"
+            f"{result.stdout}\n{result.stderr}\n"
+            "Accept the change on purpose with:\n"
+            "  python scripts/api/openapi_diff.py --generate-baseline"
+        )

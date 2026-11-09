@@ -232,23 +232,7 @@ def main() -> int:
         # Try to export from running app
         print("INFO: No --current specified, attempting to export from app...")
         try:
-            import os
-            import sys
-
-            # Add apps/api to Python path for imports
-            repo_root = Path(__file__).parent.parent
-            api_dir = repo_root / "apps" / "api"
-            if str(api_dir) not in sys.path:
-                sys.path.insert(0, str(api_dir))
-
-            os.environ.setdefault("ENVIRONMENT", "test")
-            os.environ.setdefault("API_ACCESS_KEY", "test-key")
-            # Enable JWT auth so ALL conditional routers are included in the schema
-            os.environ.setdefault("AUTH_JWT_ENABLED", "true")
-
-            from api.main import app
-
-            current_schema = app.openapi()
+            current_schema = export_current_schema()
         except Exception as e:
             print(f"ERROR: Could not export schema from app: {e}")
             print("Provide --current path to pre-exported schema")
