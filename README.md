@@ -61,7 +61,7 @@ Everything is live — no keys, no setup, and the account is free:
 - **Natural-language search** — ask *"2-bedroom apartment in Kraków under 500k"* and get matched listings
 - **A real toolbelt behind the chat** — mortgage calculator, rent-vs-buy, ROI, TCO, valuation with a multi-year price forecast
 - **Interactive maps** — clustered markers with area analytics
-- **Nine languages** — English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, Ukrainian
+- **`9` languages** — English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, Ukrainian
 - **Honest about its limits** — the demo answers with a model we pay for, so it costs nothing to explore, and falls back to a local one if the hosted one is unreachable; a real deployment uses the provider key you bring
 
 The assistant answers with the catalogue in front of it, and shows where every
@@ -71,13 +71,13 @@ number came from:
 
 **Go straight to a part of it:**
 
-| | |
+| Route | What it does |
 |---|---|
-| [Search](https://realty.kittray.com/en/search) | Semantic search over the demo catalogue, with filters and a map |
-| [Assistant](https://realty.kittray.com/en/chat) | The chat and its tools — mortgage, ROI, comparison |
-| [City overview](https://realty.kittray.com/en/city-overview) | Per-city market analytics |
-| [Documents](https://realty.kittray.com/en/documents) | Upload and query your own files |
-| [Agents](https://realty.kittray.com/en/agents) | The agent directory and their listings |
+| [`/en/search`](https://realty.kittray.com/en/search) | Semantic search over the demo catalogue, with filters and a map |
+| [`/en/chat`](https://realty.kittray.com/en/chat) | The chat and its tools — mortgage, ROI, comparison |
+| [`/en/city-overview`](https://realty.kittray.com/en/city-overview) | Per-city market analytics |
+| [`/en/documents`](https://realty.kittray.com/en/documents) | Upload and query your own files |
+| [`/en/agents`](https://realty.kittray.com/en/agents) | The agent directory and their listings |
 
 ## Deploy it your way
 
@@ -145,7 +145,17 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
 
 ## What's new
 
-**v5.1.19** — the demo answers.
+**`v5.1.20`** — the model thinks as hard as the deployment asks it to.
+
+- **The cheapest way to answer** — M3.1 Flash always reasons, and it reasons at
+  `max` when the parameter is missing. The effort is a setting of the
+  deployment now (`MINIMAX_REASONING_EFFORT`), because the bill belongs to the
+  operator who pays it and not to the code. The same request costs `350`
+  output tokens at `max` and `304` at `low`, the input of a demo request is
+  `99.9%` a cache hit, and the ceiling of one answer is a token cap — so a
+  request of the public demo costs about a tenth of a cent.
+
+**`v5.1.19`** — the demo answers.
 
 - **The public demo answers with a real model** — the conversation buffer that
   holds the history of a conversation knew one name for the question and
@@ -153,7 +163,7 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
   chain and the agent executor keep one conversation now, and the factory that
   builds the model follows the flag of the model instead of the flag of the
   demo. The answer is grounded in the catalogue and cites it.
-- **The landing page is the front door** (v5.1.18) — the root of the public
+- **The landing page is the front door** (`v5.1.18`) — the root of the public
   address carries the design system of the project: zinc chrome, one teal
   action, Geist for every number. The hero asks for a property, the catalogue
   counts itself, the features are a ledger, the data coverage is honest about
@@ -161,10 +171,10 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
   waitlist catches the address of a visitor before the account exists.
 - **Sign-in is real** — the registration writes the consent of the GDPR into
   the account, the token is read before the demo user is invented, and the
-  copy of the nine locales follows the state of the deployment instead of
+  copy of the `9` locales follows the state of the deployment instead of
   promising a local model the deployment does not run.
 
-**v5.1.10** — the demo lives on a domain of its own.
+**`v5.1.10`** — the demo lives on a domain of its own.
 
 - **A public address that can be printed on a business card** — the demo moved
   from a platform subdomain to `https://realty.kittray.com`, on a domain
@@ -175,14 +185,14 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
   launch copy and the canonical URL all follow the same value. The public
   address of a deployment is a build argument (`SITE_URL`), so changing it is
   one setting and one release.
-- **A mark, a card and half the README** (v5.1.9) — the icon is now a roof
+- **A mark, a card and half the README** (`v5.1.9`) — the icon is now a roof
   over a point, in the monochrome the design system asks for; the social
   preview says what the project is; the README is the short version.
-- **A second deployment target** (v5.1.8) — the release pipeline now rolls a
+- **A second deployment target** (`v5.1.8`) — the release pipeline now rolls a
   server you own, not only the managed platform. One compose file, one
   workflow, no credentials in the tree.
 - **AI property valuation** — paste a property id, get an estimate of the
-  current value plus a projection for 1, 3, 5 and 10 years, with a confidence
+  current value plus a projection for `1`, `3`, `5` and `10` years, with a confidence
   band and the key drivers. Try it at `/valuation`.
 - **An AI neighbourhood summary** on every property page — what the district
   feels like, what is around it, how easy it is to move around. It falls back
@@ -209,18 +219,18 @@ Full notes: [v5.1.10 release](https://github.com/AleksNeStu/ai-real-estate-assis
 | **Financial tools** | Mortgage calculator, rent-vs-buy, ROI, TCO, comparative market analysis, AI valuation with a multi-year forecast |
 | **Neighbourhood one-liner** | An AI summary of a district's character, lifestyle and accessibility, on every property page |
 | **Maps** | Clustered markers, area comparisons, city-overview analytics |
-| **Localisation** | Nine languages with EU AI Act compliance labels on AI output |
+| **Localisation** | `9` languages with EU AI Act compliance labels on AI output |
 | **Security** | OWASP-hardened: rate limiting, audit logging, SSRF protection, dual-mode auth (API key + JWT), progressive security pipeline in CI |
 
 ## Why developers pick this
 
-1. **Multi-provider LLM routing** — 17 providers with an automatic fallback
+1. **Multi-provider LLM routing** — `17` providers with an automatic fallback
    chain; a per-request provider selection by header or parameter, no code
    change to switch models.
 2. **Hybrid RAG + vector search** — a query-complexity classifier routes
    between RAG-only, hybrid RAG with enhancement, and agent-with-tools;
    ChromaDB with MMR reranking for the retrieval.
-3. **A complete reference stack** — FastAPI + Next.js 16 + ChromaDB, Docker
+3. **A complete reference stack** — FastAPI + Next.js `16` + ChromaDB, Docker
    Compose and Kubernetes, CI that ships the images, and a self-host deploy
    path you can point at your own server.
 
@@ -228,11 +238,11 @@ Full notes: [v5.1.10 release](https://github.com/AleksNeStu/ai-real-estate-assis
 
 | Layer | Technology |
 |---|---|
-| Backend API | FastAPI (Python 3.12+) |
-| Frontend | Next.js 16 + React 19 |
+| Backend API | FastAPI (Python `3.12+`) |
+| Frontend | Next.js `16` + React `19` |
 | Vector DB | ChromaDB (semantic search + MMR reranking) |
 | Relational DB | PostgreSQL / SQLite |
-| LLM providers | OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Together AI, Fireworks AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, local Ollama |
+| LLM providers | OpenAI, Anthropic, Google, Grok, DeepSeek, MiniMax, OpenRouter, Together AI, Fireworks AI, HuggingFace, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, local Ollama |
 | Container | Docker / Docker Compose |
 | CI/CD | GitHub Actions (CI, GHCR images, deploy) |
 | Monitoring | Uptime Kuma + structured logs |
@@ -293,7 +303,7 @@ roadmap:
 | CRM connectors (HubSpot, Pipedrive), SSO, MFA | — | Enterprise |
 | White-label / self-host support contract | — | Enterprise (custom) |
 
-**Free $0** · **Pro $29/mo** · **Enterprise (custom)** — the tiers reflect the
+**Free `$0`** · **Pro `$29/mo`** · **Enterprise (custom)** — the tiers reflect the
 public roadmap and may move before launch.
 
 [PropVector AI](https://propvectorai.com) is launching soon; the landing
@@ -342,7 +352,7 @@ machine onto the new images. See [Deploy it your way](#deploy-it-your-way).
 **Do I need a paid API key?**
 Not to look around. The demo answers with a model we pay for, so it costs
 nothing to explore, and a local model takes over when the hosted one is
-unreachable. For real answers you bring your own key — any of 17 providers, or
+unreachable. For real answers you bring your own key — any of `17` providers, or
 a local Ollama — and the app falls back to the next one when a provider fails.
 
 **What is the difference to the hosted version?**

@@ -130,6 +130,22 @@ By signing off, you certify that:
 - You have the right to submit it under the open-source license indicated
 - The contribution does not violate any third-party intellectual property rights
 
+## Where the work lands
+
+The maintainers' own work lands directly on `dev` — the branch that carries the
+redesign of the interface. `main` is the released line, and it moves only on a
+reviewed promotion: a pull request from `dev` into `main`, fast-forwarded, never
+a force-push (the repository's ruleset requires linear history). Contributors
+work on a branch and open a pull request against `dev` — the process below.
+
+| | |
+|---|---|
+| The working branch | `dev` — the commits, the CI and the live demo are checked here |
+| The released line | `main` — moved only by a reviewed promotion, fast-forwarded |
+| What deploys | a `vX.Y.Z` tag: it publishes the images and rolls the server |
+
+A release is cut from `dev`, and only after the CI on that commit is green.
+
 ## Pull Request Process
 
 1. Create a feature branch from `dev`: `git checkout -b feature/short-description`
