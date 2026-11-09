@@ -25,7 +25,7 @@ dependencies = [
     # store switches itself off again, exactly like the pin above did.
     "langchain-chroma>=1.1.0,<2.0.0",
     "pydantic>=2.0.0,<3.0.0",
-    "openai>=1.0.0,<3.0.0",
+    "openai>=1.0.0,<4.0.0",
     "anthropic>=0.87.0",
     "google-generativeai>=0.8.0,<1.0.0",
     "pandas>=2.2.0,<4.0.0",
