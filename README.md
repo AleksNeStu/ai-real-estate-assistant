@@ -12,8 +12,8 @@ answers from a semantic index over your own catalogue — with 17 LLM providers,
 a toolbelt behind the chat (mortgage, comparison, ROI, valuation) and nine
 languages.
 
-MIT licensed, no signup to look around, and it runs on your own server as
-happily as it runs on a managed platform.
+MIT licensed, an open landing page and a free account for the app itself, and
+it runs on your own server as happily as it runs on a managed platform.
 
 [![Python](https://img.shields.io/badge/Python-3.12+-blue?style=flat&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -50,19 +50,24 @@ happily as it runs on a managed platform.
 
 ### [**Try the live demo →**](https://realty.kittray.com/)
 
-**No login required — explore in demo mode**
+**The landing page is open — the app asks for a free account**
 
 </div>
 
-![The application at realty.kittray.com](docs/screenshots/home.png)
+![The landing page at realty.kittray.com](docs/screenshots/home.png)
 
-Everything is live in demo mode — no signup, no keys, no setup:
+Everything is live — no keys, no setup, and the account is free:
 
 - **Natural-language search** — ask *"2-bedroom apartment in Kraków under 500k"* and get matched listings
 - **A real toolbelt behind the chat** — mortgage calculator, rent-vs-buy, ROI, TCO, valuation with a multi-year price forecast
 - **Interactive maps** — clustered markers with area analytics
 - **Nine languages** — English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, Ukrainian
 - **Honest about its limits** — the demo answers with a model we pay for, so it costs nothing to explore, and falls back to a local one if the hosted one is unreachable; a real deployment uses the provider key you bring
+
+The assistant answers with the catalogue in front of it, and shows where every
+number came from:
+
+![The assistant answering at realty.kittray.com](docs/screenshots/chat.png)
 
 **Go straight to a part of it:**
 
@@ -77,9 +82,9 @@ Everything is live in demo mode — no signup, no keys, no setup:
 ## Deploy it your way
 
 There is a live deployment of this project — the demo above runs the release
-images, in demo mode, on a server its maintainer controls. You do not have to
-stop there: the same images are published on every release, and three ways to
-run them are supported today.
+images, with a seeded catalogue and a model the studio pays for, on a server
+its maintainer controls. You do not have to stop there: the same images are
+published on every release, and three ways to run them are supported today.
 
 | | A hosted platform | Your own VPS | The published images |
 |---|---|---|---|
@@ -139,6 +144,25 @@ The full guide — the memory footprint per setup, the published tags and the
 Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.md).
 
 ## What's new
+
+**v5.1.19** — the demo answers.
+
+- **The public demo answers with a real model** — the conversation buffer that
+  holds the history of a conversation knew one name for the question and
+  refused the other, so every question came back as an error. The retrieval
+  chain and the agent executor keep one conversation now, and the factory that
+  builds the model follows the flag of the model instead of the flag of the
+  demo. The answer is grounded in the catalogue and cites it.
+- **The landing page is the front door** (v5.1.18) — the root of the public
+  address carries the design system of the project: zinc chrome, one teal
+  action, Geist for every number. The hero asks for a property, the catalogue
+  counts itself, the features are a ledger, the data coverage is honest about
+  what it does not have, the product is compared in four states, and the
+  waitlist catches the address of a visitor before the account exists.
+- **Sign-in is real** — the registration writes the consent of the GDPR into
+  the account, the token is read before the demo user is invented, and the
+  copy of the nine locales follows the state of the deployment instead of
+  promising a local model the deployment does not run.
 
 **v5.1.10** — the demo lives on a domain of its own.
 
@@ -263,7 +287,8 @@ roadmap:
 | Bring your own LLM keys, local Ollama | Free | Included |
 | Vector search (ChromaDB) over your own data | Free | Included |
 | Live data feeds and the enrichment pipeline | — | Pro |
-| Accounts, favourites, saved searches, alerts | — | Pro |
+| Accounts, favourites, saved searches | Free | Included |
+| Live feeds, alerts, drip campaigns | — | Pro |
 | AI CRM (lead scoring, drip campaigns, pipeline) | — | Pro / Enterprise |
 | CRM connectors (HubSpot, Pipedrive), SSO, MFA | — | Enterprise |
 | White-label / self-host support contract | — | Enterprise (custom) |

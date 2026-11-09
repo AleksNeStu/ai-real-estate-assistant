@@ -4,7 +4,13 @@ const fs = require("fs");
 
 const BASE = process.argv[2] || "http://localhost:3082";
 const THEME = process.argv[3] || "dark";
-const OUT_DIR = path.join(__dirname, "..", "..", "docs", "screenshots");
+// The output folder and the suffix of the file names are optional: the
+// repository keeps two sets - the light one in docs/screenshots and the
+// dark one in assets/screenshots, which the GitHub profile page shows.
+const OUT_DIR = process.argv[4]
+  ? path.resolve(process.argv[4])
+  : path.join(__dirname, "..", "..", "docs", "screenshots");
+const NAME_SUFFIX = process.argv[5] || "";
 
 const SCREENSHOTS = [
   { name: "home", path: "/", desc: "Landing page" },
@@ -58,6 +64,13 @@ async function captureScreenshots(browser, screenshots) {
 
   const page = await context.newPage();
 
+  // The first-visit tour is a popup over the interface. A screenshot of the
+  // product is not a screenshot of a welcome dialog, so the tour is
+  // remembered as seen before the first page opens.
+  await context.addInitScript(() => {
+    localStorage.setItem("onboarding-tour-dismissed-v1", "1");
+  });
+
   for (const shot of screenshots) {
     const url = `${BASE}${shot.path}`;
     console.log(`Capturing ${shot.name} (${shot.desc})...`);
@@ -76,21 +89,39 @@ async function captureScreenshots(browser, screenshots) {
       // welcome screen. Without this the chat panel always captures empty.
       if (shot.name === "chat") {
         try {
-          const input = page.locator("textarea, input[type='text']").first();
-          await input.waitFor({ state: "visible", timeout: 5000 });
-          await input.fill("Find 2-bedroom apartments under $400,000 in Madrid");
+          // The chat input carries no `type` attribute, so a selector on
+          // `input[type='text']` never matches it - the test id is the
+          // stable handle.
+          const input = page
+            .locator("[data-testid='chat-input'], textarea, input[type='text']")
+            .first();
+          await input.waitFor({ state: "visible", timeout: 15000 });
+          await input.fill("Find a 2-bedroom apartment in Krakow under 500000 PLN");
           await page.keyboard.press("Enter");
+          // The hosted model answers in its own time; the first token of a
+          // streamed reply can take a while, so the wait is generous.
           await page.waitForResponse(
             (r) => r.url().includes("/chat") && r.status() === 200,
-            { timeout: 20000 }
+            { timeout: 60000 }
           );
-          await page.waitForTimeout(3000); // let the streamed reply paint
+          await page.waitForTimeout(8000); // let the streamed reply paint
+          // The conversation lives in its own scroll area, not in the page -
+          // scroll the messages to their end, or the screenshot shows the
+          // empty part of the card.
+          await page.evaluate(() => {
+            const pane = document.querySelector(".overflow-y-auto");
+            if (pane) pane.scrollTop = pane.scrollHeight;
+            // Typing scrolled the window to the input; the page belongs at
+            // its top, with the conversation inside the card.
+            window.scrollTo(0, 0);
+          });
+          await page.waitForTimeout(1000);
         } catch (err) {
           console.warn(`  Chat scripting failed (fallback to empty): ${err.message}`);
         }
       }
 
-      const outPath = path.join(OUT_DIR, `${shot.name}.png`);
+      const outPath = path.join(OUT_DIR, `${shot.name}${NAME_SUFFIX}.png`);
       await page.screenshot({ path: outPath, fullPage: false });
       const size = fs.statSync(outPath).size;
       console.log(`  Saved: ${outPath} (${(size / 1024).toFixed(1)} KB)`);
@@ -126,7 +157,17 @@ async function main() {
         localStorage.setItem("theme", "dark");
         document.documentElement.classList.add("dark");
       });
+    } else {
+      await mobileContext.addInitScript(() => {
+        localStorage.setItem("theme", "light");
+        document.documentElement.classList.remove("dark");
+      });
     }
+
+    // The same first-visit tour as on the desktop.
+    await mobileContext.addInitScript(() => {
+      localStorage.setItem("onboarding-tour-dismissed-v1", "1");
+    });
 
     const mobilePage = await mobileContext.newPage();
 
@@ -137,7 +178,7 @@ async function main() {
         await mobilePage.goto(url, { waitUntil: "load", timeout: 30000 });
         await mobilePage.waitForTimeout(5000);
 
-        const outPath = path.join(OUT_DIR, `${shot.name}.png`);
+        const outPath = path.join(OUT_DIR, `${shot.name}${NAME_SUFFIX}.png`);
         await mobilePage.screenshot({ path: outPath, fullPage: false });
         const size = fs.statSync(outPath).size;
         console.log(`  Saved: ${outPath} (${(size / 1024).toFixed(1)} KB)`);
