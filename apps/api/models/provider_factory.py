@@ -131,6 +131,31 @@ _PROVIDER_KEY_MAP: Dict[str, Optional[str]] = {
     "minimax": settings.minimax_api_key,
 }
 
+# Provider slug -> the settings attribute that holds its API key. The map
+# above is a snapshot taken when this module was imported; this one names
+# where the live value lives, so a provider created later reads the key the
+# settings carry NOW. A deployment that sets a key at runtime
+# (`settings.update_api_key`) then gets the key it just set, and a caller
+# that patches the settings gets its own values instead of the machine's.
+_PROVIDER_KEY_SETTINGS: Dict[str, str] = {
+    "openai": "openai_api_key",
+    "anthropic": "anthropic_api_key",
+    "google": "google_api_key",
+    "grok": "grok_api_key",
+    "deepseek": "deepseek_api_key",
+    "openrouter": "openrouter_api_key",
+    "groq": "groq_api_key",
+    "mistral": "mistral_api_key",
+    "qwen": "qwen_api_key",
+    "zai": "zhipuai_api_key",
+    "moonshot": "moonshot_api_key",
+    "opencode": "opencode_api_key",
+    "together": "together_api_key",
+    "fireworks": "fireworks_api_key",
+    "huggingface": "huggingface_api_key",
+    "minimax": "minimax_api_key",
+}
+
 
 def _bootstrap_providers_eager() -> None:
     """Pre-import every provider module. Used when the host is not memory-capped."""
@@ -261,9 +286,14 @@ class ModelProviderFactory:
         if config is None:
             config = {}
 
-        # Inject API key from settings if not present
+        # Inject API key from settings if not present. The settings are read
+        # live; the import-time snapshot is the fallback for a provider whose
+        # settings carry no such attribute.
         if "api_key" not in config:
-            api_key = _PROVIDER_KEY_MAP.get(provider_name)
+            attribute = _PROVIDER_KEY_SETTINGS.get(provider_name)
+            api_key = getattr(settings, attribute, None) if attribute else None
+            if not api_key:
+                api_key = _PROVIDER_KEY_MAP.get(provider_name)
             if api_key:
                 config["api_key"] = api_key
 
