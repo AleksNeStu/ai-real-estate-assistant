@@ -1743,7 +1743,8 @@
       "nextComparables": "Next: comparables",
       "roomsCount": "{count} rooms",
       "searchResults": "Search Results ({count})",
-      "searchFailed": "Search failed"
+      "searchFailed": "Search failed",
+      "searchResultsHint": "Click to pick the subject"
     },
     "comparables": {
       "refresh": "Refresh",
@@ -1758,7 +1759,10 @@
       "property": "Property {id}",
       "back": "Back",
       "nextAdjustments": "Next: Review Adjustments",
-      "findFailed": "Failed to find comparables"
+      "findFailed": "Failed to find comparables",
+      "columnAddress": "Address",
+      "columnPrice": "Price",
+      "select": "Select {id}"
     },
     "adjustments": {
       "description": "Review and adjust the valuation factors for each comparable property. Positive adjustments increase the comparable's value; negative adjustments decrease it.",
@@ -1776,7 +1780,8 @@
       "priceRange": "Price Range",
       "medianPrice": "Median Price",
       "back": "Back",
-      "nextPreview": "Next: Preview Report"
+      "nextPreview": "Next: Preview Report",
+      "adjPercentFor": "Adjustment percent for {category} of comparable {index}"
     },
     "preview": {
       "noSubject": "No subject property selected",
@@ -1808,7 +1813,15 @@
       "trend": "Trend",
       "inventory": "Inventory",
       "listings": "{count} listings",
-      "failedGenerate": "Failed to generate report"
+      "failedGenerate": "Failed to generate report",
+      "reportTitle": "CMA · {subject}",
+      "report": "the report",
+      "prepared": "prepared {date}",
+      "askingVsValue": "Asking vs value",
+      "summary": "Based on {count} comparable sales, adjusted for size, age and floor. Not a formal appraisal.",
+      "similarity": "similarity",
+      "inventoryDays": "Days on the market",
+      "rangeLabel": "Range"
     },
     "export": {
       "noReport": "No report available. Please go back and generate a report first.",
@@ -1830,11 +1843,18 @@
       "created": "Created:",
       "expires": "Expires:",
       "createNew": "Create New Report",
-      "failedDownload": "Failed to download PDF"
+      "failedDownload": "Failed to download PDF",
+      "title": "Export",
+      "withComparables": "Include comparables table",
+      "withMap": "Include map"
     },
     "comparablesExtra": {
       "notAvailable": "N/A"
-    }
+    },
+    "stepOf": "step {step} of {total}",
+    "back": "Back",
+    "next": "Next",
+    "continueToExport": "Continue to export"
   },
   "admin": {
     "dataSources": {
@@ -2153,6 +2173,8 @@
       "noResults": "No documents match your filters",
       "download": "Download",
       "delete": "Delete",
+      "deleteFor": "Delete {name}",
+      "confirmDelete": "Confirm",
       "deleteConfirm": "Delete \"{name}\"? This cannot be undone.",
       "deleting": "Deleting...",
       "loadMore": "Load More ({page}/{total})",
@@ -2303,14 +2325,17 @@
       "collections": {
         "title": "Collections",
         "aria": "Collections",
-        "all": "All Favorites ({count})"
+        "all": "All Favorites ({count})",
+        "allLabel": "All favorites"
       },
       "list": {
         "loading": "Loading favorites...",
         "empty": "No favorites yet",
         "unavailable": "Property no longer available",
         "emptyHint": "Click the heart icon on any property to save it here.",
-        "browse": "Browse Properties"
+        "browse": "Browse Properties",
+        "remove": "Remove",
+        "removed": "Removed from the collection"
       },
       "savedCount": "{count, plural, one {# saved property} other {# saved properties}}"
     },
@@ -2332,6 +2357,17 @@
       "loading": "Loading saved searches...",
       "refreshAria": "Refresh saved searches",
       "emptyTitle": "No saved searches yet",
+      "summary": "{active} of {total} alerts active",
+      "newSearch": "New search",
+      "run": "Run",
+      "state": {
+        "on": "Alert on",
+        "off": "Paused"
+      },
+      "alertRule": {
+        "both": "New matches and price drops",
+        "none": "No alerts"
+      },
       "alerts": {
         "newMatches": "New matches",
         "priceDrops": "Price drops"
@@ -2414,6 +2450,39 @@
         "score": "Lead Score",
         "scoreValue": "Score: {score}",
         "contact": "Contact"
+      },
+      "board": {
+        "title": "Leads",
+        "description": "Visitors become leads when they search, view or write. Score = engagement × intent × recency, 0–100.",
+        "export": "Export CSV",
+        "exported": "{file} · {count} rows",
+        "recalculate": "Recalculate scores",
+        "recalculating": "Recalculating…",
+        "totalLeads": "{count} leads",
+        "newLast24h": "+{count} in the last 24 hours",
+        "averageScore": "average score {value}",
+        "conversionRate": "conversion {value}%",
+        "showing": "Showing {shown} of {total} leads",
+        "budgetMax": "budget ≤ {amount}",
+        "anonymous": "Anonymous lead",
+        "advance": "Advance →",
+        "emptyColumn": "No leads here",
+        "funnel": {
+          "new": "Leads",
+          "contacted": "Contacted",
+          "qualified": "Qualified",
+          "converted": "Converted",
+          "rate": "{value}% of previous"
+        },
+        "highValue": {
+          "title": "High-value leads",
+          "hint": "score ≥ {threshold}, not yet converted",
+          "empty": "No high-value leads yet",
+          "anonymous": "Anonymous lead",
+          "noInterest": "No interest recorded",
+          "note": "Drip campaigns and pipeline automation on top of this board are part of",
+          "noteLink": "PropVector AI."
+        }
       }
     },
     "knowledge": {
@@ -2503,7 +2572,17 @@
       "emptyTitle": "No documents yet",
       "emptyDescription": "Upload your first document to start organizing your property-related files. Support for PDF, DOC, DOCX, JPG, and PNG files up to 10MB.",
       "uploadFirst": "Upload Your First Document",
-      "loadMore": "Load More"
+      "loadMore": "Load More",
+      "vaultCount": "{count, plural, one {# document} other {# documents}}",
+      "tabAll": "All",
+      "tabExpiring": "Expiring soon",
+      "page": "Page {page} of {total}",
+      "columns": {
+        "name": "Name",
+        "property": "Property",
+        "size": "Size",
+        "expires": "Expires"
+      }
     },
     "marketTrends": {
       "title": "Market Trends",

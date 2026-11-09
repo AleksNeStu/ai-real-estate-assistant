@@ -356,7 +356,8 @@
       "nextComparables": "Dalej: porównywalne",
       "roomsCount": "{count} pokoi",
       "searchResults": "Wyniki wyszukiwania ({count})",
-      "searchFailed": "Wyszukiwanie nie powiodło się"
+      "searchFailed": "Wyszukiwanie nie powiodło się",
+      "searchResultsHint": "Kliknij, aby wybrać przedmiot"
     },
     "comparables": {
       "refresh": "Odśwież",
@@ -371,7 +372,10 @@
       "property": "Nieruchomość {id}",
       "back": "Wstecz",
       "nextAdjustments": "Dalej: przegląd korekt",
-      "findFailed": "Nie znaleziono porównywalnych nieruchomości"
+      "findFailed": "Nie znaleziono porównywalnych nieruchomości",
+      "columnAddress": "Adres",
+      "columnPrice": "Cena",
+      "select": "Wybierz {id}"
     },
     "adjustments": {
       "description": "Przejrzyj i skoryguj czynniki wyceny dla każdej nieruchomości porównywalnej. Korekty dodatnie zwiększają wartość, ujemne ją zmniejszają.",
@@ -389,7 +393,8 @@
       "priceRange": "Zakres cen",
       "medianPrice": "Cena mediana",
       "back": "Wstecz",
-      "nextPreview": "Dalej: podgląd raportu"
+      "nextPreview": "Dalej: podgląd raportu",
+      "adjPercentFor": "Procent korekty dla {category}, porównanie {index}"
     },
     "preview": {
       "noSubject": "Nie wybrano nieruchomości będącej przedmiotem",
@@ -421,7 +426,15 @@
       "inventory": "Zapasy",
       "listings": "{count} ofert",
       "failedGenerate": "Nie udało się wygenerować raportu",
-      "trend": "Trend"
+      "trend": "Trend",
+      "reportTitle": "CMA · {subject}",
+      "report": "analiza",
+      "prepared": "sporządzono {date}",
+      "askingVsValue": "Cena ofertowa wobec wyceny",
+      "summary": "Na podstawie {count} porównywalnych transakcji, skorygowanych o wielkość, wiek i piętro. To nie jest formalna wycena.",
+      "similarity": "podobieństwo",
+      "inventoryDays": "Dni na rynku",
+      "rangeLabel": "Przedział"
     },
     "export": {
       "noReport": "Brak raportu. Wróć i najpierw wygeneruj raport.",
@@ -443,11 +456,18 @@
       "created": "Utworzono:",
       "expires": "Wygasa:",
       "createNew": "Utwórz nowy raport",
-      "failedDownload": "Nie udało się pobrać PDF"
+      "failedDownload": "Nie udało się pobrać PDF",
+      "title": "Eksport",
+      "withComparables": "Z tabelą porównań",
+      "withMap": "Z mapą"
     },
     "comparablesExtra": {
       "notAvailable": "brak danych"
-    }
+    },
+    "stepOf": "krok {step} z {total}",
+    "back": "Wstecz",
+    "next": "Dalej",
+    "continueToExport": "Przejdź do eksportu"
   },
   "chat": {
     "title": "Asystent AI",
@@ -713,6 +733,8 @@
       "noResults": "Żaden dokument nie pasuje do filtrów",
       "download": "Pobierz",
       "delete": "Usuń",
+      "deleteFor": "Usuń {name}",
+      "confirmDelete": "Potwierdź",
       "deleteConfirm": "Usunąć „{name}”? Tej operacji nie można cofnąć.",
       "deleting": "Usuwanie...",
       "loadMore": "Wczytaj więcej ({page}/{total})",
@@ -2303,14 +2325,17 @@
       "collections": {
         "title": "Kolekcje",
         "aria": "Kolekcje",
-        "all": "Wszystkie ulubione ({count})"
+        "all": "Wszystkie ulubione ({count})",
+        "allLabel": "Wszystkie ulubione"
       },
       "list": {
         "loading": "Ładowanie ulubionych...",
         "empty": "Brak ulubionych",
         "unavailable": "Nieruchomość już niedostępna",
         "emptyHint": "Kliknij ikonę serca przy nieruchomości, aby zapisać ją tutaj.",
-        "browse": "Przeglądaj nieruchomości"
+        "browse": "Przeglądaj nieruchomości",
+        "remove": "Usuń",
+        "removed": "Usunięto z kolekcji"
       },
       "savedCount": "{count, plural, one {# zapisana nieruchomość} few {# zapisane nieruchomości} many {# zapisanych nieruchomości} other {# zapisanych nieruchomości}}"
     },
@@ -2332,6 +2357,17 @@
       "loading": "Ładowanie zapisanych wyszukiwań...",
       "refreshAria": "Odśwież zapisane wyszukiwania",
       "emptyTitle": "Brak zapisanych wyszukiwań",
+      "summary": "{active} z {total} alertów aktywnych",
+      "newSearch": "Nowe wyszukiwanie",
+      "run": "Uruchom",
+      "state": {
+        "on": "Alert włączony",
+        "off": "Wstrzymane"
+      },
+      "alertRule": {
+        "both": "Nowe dopasowania i spadki cen",
+        "none": "Bez alertów"
+      },
       "alerts": {
         "newMatches": "Nowe dopasowania",
         "priceDrops": "Spadki cen"
@@ -2414,6 +2450,39 @@
         "score": "Wynik leada",
         "scoreValue": "Wynik: {score}",
         "contact": "Kontakt"
+      },
+      "board": {
+        "title": "Leady",
+        "description": "Odwiedzający stają się leadami, gdy szukają, oglądają albo piszą. Wynik = zaangażowanie × intencja × świeżość, 0–100.",
+        "export": "Eksport CSV",
+        "exported": "{file} · {count} wierszy",
+        "recalculate": "Przelicz wyniki",
+        "recalculating": "Przeliczam…",
+        "totalLeads": "leady: {count}",
+        "newLast24h": "+{count} w ostatnich 24 godzinach",
+        "averageScore": "średni wynik {value}",
+        "conversionRate": "konwersja {value}%",
+        "showing": "Pokazuję {shown} z {total} leadów",
+        "budgetMax": "budżet ≤ {amount}",
+        "anonymous": "Anonimowy lead",
+        "advance": "Przenieś dalej →",
+        "emptyColumn": "Brak leadów",
+        "funnel": {
+          "new": "Leady",
+          "contacted": "Skontaktowane",
+          "qualified": "Zakwalifikowane",
+          "converted": "Przekonwertowane",
+          "rate": "{value}% poprzedniego"
+        },
+        "highValue": {
+          "title": "Leady o wysokiej wartości",
+          "hint": "wynik ≥ {threshold}, jeszcze nie przekonwertowane",
+          "empty": "Brak leadów o wysokiej wartości",
+          "anonymous": "Anonimowy lead",
+          "noInterest": "Brak zapisanych zainteresowań",
+          "note": "Kampanie mailingowe i automatyzacja lejka na tym boardzie to część",
+          "noteLink": "PropVector AI."
+        }
       }
     },
     "knowledge": {
@@ -2503,7 +2572,17 @@
       "emptyTitle": "Brak dokumentów",
       "emptyDescription": "Prześlij pierwszy dokument, aby zacząć porządkować pliki związane z nieruchomościami. Obsługiwane formaty: PDF, DOC, DOCX, JPG i PNG do 10 MB.",
       "uploadFirst": "Prześlij pierwszy dokument",
-      "loadMore": "Wczytaj więcej"
+      "loadMore": "Wczytaj więcej",
+      "vaultCount": "{count, plural, one {# dokument} few {# dokumenty} many {# dokumentów} other {# dokumentu}}",
+      "tabAll": "Wszystkie",
+      "tabExpiring": "Wkrótce wygasa",
+      "page": "Strona {page} z {total}",
+      "columns": {
+        "name": "Nazwa",
+        "property": "Nieruchomość",
+        "size": "Rozmiar",
+        "expires": "Wygasa"
+      }
     },
     "marketTrends": {
       "title": "Trendy rynkowe",
