@@ -6,6 +6,14 @@
 
 ---
 
+## The house style
+
+| File | Purpose |
+|---|---|
+| [materials.md](./materials.md) | The rule that every published material is **dark**, how the screenshots are made, and how the copy is written |
+
+---
+
 ## Drafts
 
 | File | Purpose | Channel | Cadence |

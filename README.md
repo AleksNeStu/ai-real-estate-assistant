@@ -54,7 +54,7 @@ it runs on your own server as happily as it runs on a managed platform.
 
 </div>
 
-![The landing page at realty.kittray.com](docs/screenshots/home.png)
+![The landing page at realty.kittray.com](assets/screenshots/home-dark.png)
 
 Everything is live — no keys, no setup, and the account is free:
 
@@ -67,7 +67,28 @@ Everything is live — no keys, no setup, and the account is free:
 The assistant answers with the catalogue in front of it, and shows where every
 number came from:
 
-![The assistant answering at realty.kittray.com](docs/screenshots/chat.png)
+![The assistant answering at realty.kittray.com](assets/screenshots/chat-dark.png)
+
+**And the application behind it** — the same design system, the same tokens,
+the same ledger:
+
+| | |
+|---|---|
+| ![The search with its filters and map](assets/screenshots/search-dark.png) | ![The market trends with its indicators](assets/screenshots/market-trends-dark.png) |
+| **Search** — the query, the filters and the map in one screen, the results as a ledger of prices | **Market trends** — the indicators, the price curve and the districts that moved |
+| ![The sign-in wall in front of the account routes](assets/screenshots/favorites-dark.png) | ![The tools of the assistant](assets/screenshots/tools-dark.png) |
+| **The gate** — the eight account routes ask for an account, and say what the account is for | **Tools** — the mortgage, the comparison, the valuation and the neighbourhood, in the chat |
+
+**And the rest of it** — the directory of the agents, the market of a city, the
+wizard of the comparative analysis, the knowledge base, the analytics of the
+usage:
+
+| | |
+|---|---|
+| ![The agent directory](assets/screenshots/agents-dark.png) | ![The market of a city](assets/screenshots/city-overview-dark.png) |
+| **Agents** — the directory of the agents and their listings | **City overview** — the market of a city, district by district |
+| ![The wizard of the comparative market analysis](assets/screenshots/cma-dark.png) | ![The knowledge base](assets/screenshots/knowledge-dark.png) |
+| **CMA** — the wizard of the comparative market analysis, step by step | **Knowledge** — the documents the assistant reads, and what it found in them |
 
 **Go straight to a part of it:**
 
