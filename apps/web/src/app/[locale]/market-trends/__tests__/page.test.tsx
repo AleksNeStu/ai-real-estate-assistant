@@ -96,11 +96,9 @@ jest.mock('@/components/ui/select', () => ({
   Select: ({
     children,
     value,
-    onValueChange,
   }: {
     children: React.ReactNode;
     value: string;
-    onValueChange: (v: string) => void;
   }) => (
     <div data-testid="select" data-value={value}>
       {children}
