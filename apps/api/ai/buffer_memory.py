@@ -36,6 +36,14 @@ except ImportError:  # pragma: no cover - older layouts
     from langchain_core.memory import BaseMemory  # type: ignore[no-redef]
 
 
+def _first_present(values: dict[str, Any], candidates: tuple[str, ...], fallback: str) -> str:
+    """The first of ``candidates`` that ``values`` carries, else ``fallback``."""
+    for candidate in candidates:
+        if candidate in values:
+            return candidate
+    return fallback
+
+
 class ConversationBufferMemory(BaseMemory):
     """A memory that keeps the entire conversation history.
 
@@ -86,9 +94,22 @@ class ConversationBufferMemory(BaseMemory):
         return {self.memory_key: self.buffer}
 
     def save_context(self, inputs: dict[str, Any], outputs: dict[str, str]) -> None:
-        """Append the question and the answer to the history."""
+        """Append the question and the answer to the history.
+
+        The memory sits on two chains. The retrieval chain saves the
+        question under ``question`` and the answer under ``answer``; the
+        agent executor saves them under ``input`` and ``output``. The same
+        memory serves both - it holds one conversation - so the other pair
+        is accepted as well. Without this the demo answered every question
+        with "Input key input not found in inputs".
+        """
         input_key = self.input_key
         output_key = self.output_key
+
+        if input_key not in inputs:
+            input_key = _first_present(inputs, ("question", "input"), input_key)
+        if output_key not in outputs:
+            output_key = _first_present(outputs, ("output", "answer"), output_key)
 
         if input_key not in inputs:
             raise ValueError(f"Input key {input_key} not found in inputs")

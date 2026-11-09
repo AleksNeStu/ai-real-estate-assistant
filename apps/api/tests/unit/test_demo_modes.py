@@ -81,6 +81,66 @@ class TestDemoFlags:
         assert _demo_env_flag("DEMO_LLM_MODE") is True
 
 
+class TestTheMockFollowsTheLlmFlag:
+    """The mock answer belongs to the LLM flag alone.
+
+    The demo runs with DEMO_MODE=true - the seeded catalogue and the
+    API-key bypass - and DEMO_LLM_MODE=false, so a real model answers.
+    The factory that builds the model read DEMO_MODE directly, so the mock
+    won and the deployment answered every question with the canned text.
+    """
+
+    @staticmethod
+    def _stub_provider(monkeypatch: pytest.MonkeyPatch) -> None:
+        from types import SimpleNamespace
+
+        from langchain_core.language_models.fake_chat_models import FakeListChatModel
+
+        class StubProvider:
+            def list_models(self):
+                return [SimpleNamespace(id="stub-model")]
+
+            def create_model(self, model_id, **kwargs):
+                return FakeListChatModel(responses=["stub"])
+
+        monkeypatch.setattr(
+            "api.dependencies.ModelProviderFactory.get_provider",
+            staticmethod(lambda provider_name, *args, **kwargs: StubProvider()),
+        )
+
+    def test_the_real_provider_wins_when_the_llm_flag_is_off(
+        self, clean_env: pytest.MonkeyPatch, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from api import dependencies
+
+        self._stub_provider(monkeypatch)
+        monkeypatch.setattr(dependencies.settings, "demo_llm_mode", False)
+        dependencies._create_llm_with_resolved_model_id.cache_clear()
+        try:
+            llm, model_id = dependencies._create_llm_with_resolved_model_id("stub", None)
+        finally:
+            dependencies._create_llm_with_resolved_model_id.cache_clear()
+
+        assert model_id == "stub-model"
+        assert "Mock" not in type(llm).__name__
+
+    def test_the_mock_answers_when_the_llm_flag_is_on(
+        self, clean_env: pytest.MonkeyPatch, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from api import dependencies
+
+        self._stub_provider(monkeypatch)
+        monkeypatch.setattr(dependencies.settings, "demo_llm_mode", True)
+        dependencies._create_llm_with_resolved_model_id.cache_clear()
+        try:
+            llm, model_id = dependencies._create_llm_with_resolved_model_id("stub", None)
+        finally:
+            dependencies._create_llm_with_resolved_model_id.cache_clear()
+
+        assert model_id == "demo-mock"
+        assert "Mock" in type(llm).__name__
+
+
 class TestTokenPriority:
     @pytest.mark.asyncio
     async def test_a_real_token_beats_the_demo_user(self, monkeypatch: pytest.MonkeyPatch) -> None:

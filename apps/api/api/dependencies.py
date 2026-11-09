@@ -95,9 +95,11 @@ def _create_llm(provider_name: str, model_id: Optional[str]) -> BaseChatModel:
 def _create_llm_with_resolved_model_id(
     provider_name: str, model_id: Optional[str]
 ) -> tuple[BaseChatModel, str]:
-    # Check if demo mode is enabled (from env var)
-    # Note: For per-session demo mode, the session check would happen in the calling function
-    if os.getenv("DEMO_MODE", "false").lower() == "true":
+    # The mock answer belongs to the LLM flag alone. DEMO_MODE still carries
+    # the seeded catalogue and the API-key bypass, so a deployment that
+    # answers with a real model runs with DEMO_MODE=true and
+    # DEMO_LLM_MODE=false - and the mock must not win here.
+    if settings.demo_llm_mode:
         from core.demo import get_demo_llm
 
         logger.info("Demo mode enabled — using MockLLM (no real API calls)")
