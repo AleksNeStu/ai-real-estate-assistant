@@ -13,32 +13,6 @@ import { withUtm } from '@/lib/utm';
 const THEME_STORAGE_KEY = 'theme';
 
 /**
- * The routes an anonymous visitor may open.
- *
- * The list mirrors the `demoRoutes` allowlist in `src/proxy.ts` — the proxy is
- * the source of truth for what the deployment answers without a session. The
- * bar must not advertise a route the proxy would redirect to the login page,
- * so the two are kept in step: the proxy allows twelve routes, the bar links
- * to eleven of them (the twelfth is the landing itself).
- */
-const DEMO_VISIBLE_ROUTES = new Set([
-  '/search',
-  '/chat',
-  '/city-overview',
-  '/knowledge',
-  '/analytics',
-  '/market-trends',
-  '/cma',
-  '/tools',
-  '/agents',
-  '/valuation',
-  '/showcase',
-]);
-
-/** Routes that stay hidden in demo mode even though the proxy allows them. */
-const DEMO_HIDDEN_ROUTES = new Set(['/settings']);
-
-/**
  * The mark of the product: a rounded plate, a chevron and a dot.
  *
  * The colours come from the current theme (`currentColor` for the plate, the

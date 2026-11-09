@@ -111,6 +111,63 @@ class TestCatalogueStats:
         assert stats.currencies == ["GBP", "PLN"]
 
 
+class TestTheVectorStoreIsTheCatalogue:
+    """The numbers come from the store the search answers with."""
+
+    async def test_the_store_wins_over_the_cache_file(self, db_session):
+        """A deployment that seeded its vector store reports the seeded numbers."""
+        store = _FakeStore(
+            total=2,
+            metadatas=[
+                {"city": "Kraków", "currency": "PLN"},
+                {"city": "Kraków", "currency": "PLN"},
+            ],
+        )
+
+        with patch.object(catalogue, "load_collection", return_value=_collection()):
+            stats = await catalogue.catalogue_stats(session=db_session, store=store)
+
+        assert stats.total == 2
+        assert [city.name for city in stats.cities] == ["Kraków"]
+        assert stats.currencies == ["PLN"]
+
+    async def test_an_empty_store_falls_back_to_the_cache_file(self, db_session):
+        """A deployment with a catalogue file and no store still reports numbers."""
+        collection = _collection(_property("Warsaw", 300000))
+
+        with patch.object(catalogue, "load_collection", return_value=collection):
+            stats = await catalogue.catalogue_stats(session=db_session, store=_FakeStore())
+
+        assert stats.total == 1
+        assert [city.name for city in stats.cities] == ["Warsaw"]
+
+
+class _FakeCollection:
+    def __init__(self, total: int, metadatas: list[dict]) -> None:
+        self._total = total
+        self._metadatas = metadatas
+
+    def count(self) -> int:
+        return self._total
+
+    def get(self, include=None, limit=None):
+        return {"metadatas": self._metadatas}
+
+
+class _FakeStore:
+    """The shape of the vector store the endpoint reads."""
+
+    def __init__(self, total: int = 0, metadatas: list[dict] | None = None) -> None:
+        self.vector_store = _FakeVectorStore(_FakeCollection(total, metadatas or []))
+
+
+class _FakeVectorStore:
+    """The LangChain Chroma wrapper: the collection hangs under it."""
+
+    def __init__(self, collection) -> None:
+        self._collection = collection
+
+
 @pytest.mark.parametrize("total", [0, 1, 7])
 async def test_the_total_is_never_hardcoded(total, db_session):
     """Whatever the catalogue holds, the total is that number."""

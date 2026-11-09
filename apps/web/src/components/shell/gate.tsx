@@ -4,7 +4,6 @@ import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { getCapabilities } from '@/lib/api/capabilities';
 import { useCapabilities } from '@/hooks/useCapabilities';
 import { GatePreview } from './gate-client';
 
