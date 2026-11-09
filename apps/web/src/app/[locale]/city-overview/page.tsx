@@ -1,318 +1,160 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
-import { MapPin, Building2, Coins, AlertCircle, Loader2 } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
-import { searchProperties } from '@/lib/api';
-import { formatPrice } from '@/lib/format';
-import {
-  computeCenter,
-  extractMapPoints,
-  type PropertyMapPoint,
-} from '@/components/search/property-map-utils';
-import { PageHeader } from '@/components/ui/page-header';
+import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 
-const PropertyMapboxMap = dynamic(() => import('@/components/search/property-mapbox-map'), {
+import { searchProperties } from '@/lib/api';
+import type { SearchResultItem } from '@/lib/types';
+import { MonoAnnotation } from '@/components/ui/mono-annotation';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState, ErrorState, LoadingState } from '@/components/ui/states';
+import { CityMarketLedger } from '@/components/market-trends/city-market-ledger';
+import { CityMarketDetail } from '@/components/market-trends/city-market-detail';
+import {
+  CITY_CATALOGUE,
+  priceScale,
+  summariseCities,
+} from '@/components/market-trends/city-market-stats';
+
+const CityMarketMap = dynamic(() => import('@/components/market-trends/city-market-map'), {
   ssr: false,
-  loading: () => <div className="h-[600px] w-full bg-muted animate-pulse rounded-lg" />,
+  loading: () => <div className="h-full w-full animate-pulse bg-muted/40" />,
 });
 
-interface CityStats {
-  city: string;
-  country: string;
-  propertyCount: number;
-  avgPrice: number;
-  minPrice: number;
-  maxPrice: number;
-  /** The currency the listings of this city are priced in. */
-  currency?: string;
-  points: PropertyMapPoint[];
-  center: { lat: number; lon: number };
-}
-
-const POPULAR_CITIES = [
-  'Warsaw',
-  'Krakow',
-  'Gdansk',
-  'Wroclaw',
-  'Poznan',
-  'Lodz',
-  'Katowice',
-  'Lublin',
-];
-
+/**
+ * The market of a city, city by city.
+ *
+ * The route reads the catalogue once per city and says what it holds: how
+ * many listings, what they cost, and where the city sits on the map. The
+ * catalogue is the only source here - a city it holds nothing for is drawn
+ * as a row with dashes, not hidden.
+ */
 export default function CityOverviewPage() {
   const t = useTranslations('pages.cityOverview');
   const tCommon = useTranslations('common');
-  const locale = useLocale();
+
   const [loading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [cityStats, setCityStats] = useState<CityStats[]>([]);
+  const [listingsByCity, setListingsByCity] = useState<Record<string, SearchResultItem[]>>({});
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const loadCityData = async () => {
       setLoading(true);
       setHasError(false);
 
       const results = await Promise.allSettled(
-        POPULAR_CITIES.map(async (city) => {
+        CITY_CATALOGUE.map(async (city) => {
           const response = await searchProperties({
-            query: `properties in ${city}`,
+            query: `properties in ${city.name}`,
             limit: 100,
           });
-          return { city, response };
+          return { city: city.name, results: response.results };
         })
       );
 
-      const stats: CityStats[] = [];
+      if (cancelled) return;
+
+      const byCity: Record<string, SearchResultItem[]> = {};
+      let covered = 0;
 
       for (const result of results) {
         if (result.status === 'rejected') continue;
-
-        const { city, response } = result.value;
-        if (response.results.length === 0) continue;
-
-        const points = extractMapPoints(response.results);
-        const prices = points.map((p) => p.price).filter((p): p is number => typeof p === 'number');
-
-        const center = computeCenter(points) ?? { lat: 52.2297, lon: 21.0122 };
-
-        stats.push({
-          city,
-          country: response.results[0].property.country || 'Poland',
-          propertyCount: response.results.length,
-          avgPrice:
-            prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0,
-          minPrice: prices.length > 0 ? prices.reduce((a, b) => Math.min(a, b)) : 0,
-          maxPrice: prices.length > 0 ? prices.reduce((a, b) => Math.max(a, b)) : 0,
-          currency: points.find((p) => p.currency)?.currency,
-          points,
-          center,
-        });
+        byCity[result.value.city] = result.value.results;
+        if (result.value.results.length > 0) covered += 1;
       }
 
-      setCityStats(stats.sort((a, b) => b.propertyCount - a.propertyCount));
-      if (stats.length === 0) {
-        setHasError(true);
-      }
+      setListingsByCity(byCity);
+      // The first city the catalogue actually holds is the one that opens.
+      const firstCovered = CITY_CATALOGUE.find(
+        (city) => (byCity[city.name] ?? []).length > 0
+      );
+      setSelectedCity(firstCovered?.name ?? CITY_CATALOGUE[0].name);
+      setHasError(covered === 0);
       setLoading(false);
     };
 
     loadCityData();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const selectedCityData = useMemo(() => {
-    return selectedCity ? cityStats.find((c) => c.city === selectedCity) : null;
-  }, [selectedCity, cityStats]);
+  const cities = useMemo(() => summariseCities(listingsByCity), [listingsByCity]);
+  const scale = useMemo(() => priceScale(cities), [cities]);
+  const selected = useMemo(
+    () => cities.find((city) => city.city === selectedCity) ?? null,
+    [cities, selectedCity]
+  );
 
-  const allPoints = useMemo(() => {
-    return cityStats.flatMap((stat) => stat.points);
-  }, [cityStats]);
-
-  const handleMarkerClick = (point: PropertyMapPoint) => {
-    const city = cityStats.find((c) => c.points.some((p) => p.id === point.id));
-    if (city) {
-      setSelectedCity(city.city);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
+  const listingTotal = useMemo(
+    () => cities.reduce((total, city) => total + city.listingCount, 0),
+    [cities]
+  );
+  const covered = useMemo(() => cities.filter((city) => city.listingCount > 0).length, [cities]);
 
   return (
-    <div className="container mx-auto px-4 py-8" aria-live="polite">
-      <div className="flex flex-col space-y-8">
-        {/* Header */}
-        <PageHeader title={t('title')} description={t('description')} />
-
-        {/* Loading state */}
-        {loading && (
-          <div
-            className="flex flex-col items-center justify-center h-96 text-center"
-            role="status"
-            aria-live="polite"
-          >
-            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" aria-hidden="true" />
-            <p className="text-lg font-medium">{t('loading.title')}</p>
-            <p className="text-sm text-muted-foreground">{t('loading.hint')}</p>
-          </div>
-        )}
-
-        {/* Error state */}
-        {hasError && !loading && cityStats.length === 0 && (
-          <div
-            className="flex flex-col items-center justify-center h-96 text-center border rounded-lg bg-muted/50"
-            role="alert"
-            aria-live="assertive"
-          >
-            <div className="p-4 rounded-full bg-muted mb-4">
-              <AlertCircle className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
-            </div>
-            <h2 className="text-2xl font-bold mb-2">{t('empty.title')}</h2>
-            <p className="text-muted-foreground max-w-md mb-4">{t('errors.noData')}</p>
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              {tCommon('retry')}
-            </button>
-          </div>
-        )}
-
-        {/* Main content */}
-        {!loading && cityStats.length > 0 && (
-          <>
-            {/* Map with all cities */}
-            {allPoints.length > 0 && (
-              <div className="space-y-4">
-                <h2 className="text-2xl font-semibold">{t('map.title')}</h2>
-                <div className="relative">
-                  <PropertyMapboxMap
-                    points={allPoints}
-                    mapboxToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-                    showHeatmap={true}
-                    heatmapIntensity={1.5}
-                    showClusters={true}
-                    onMarkerClick={handleMarkerClick}
-                    className="h-[600px]"
-                  />
-                  <div className="absolute top-4 left-4 z-10 bg-background/90 backdrop-blur rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">{t('map.hint')}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {t('map.summary', { count: allPoints.length, cities: cityStats.length })}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* City cards grid */}
-            <div className="space-y-4">
-              <h2 className="text-2xl font-semibold">{t('stats.title')}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {cityStats.map((stat) => (
-                  <div
-                    key={`${stat.city}-${stat.country}`}
-                    className={`rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden cursor-pointer transition-all hover:shadow-md ${
-                      selectedCity === stat.city ? 'ring-2 ring-primary' : ''
-                    }`}
-                    onClick={() => setSelectedCity(stat.city)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        setSelectedCity(stat.city);
-                      }
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    aria-pressed={selectedCity === stat.city}
-                  >
-                    <div className="p-6 space-y-4">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="text-xl font-bold">{stat.city}</h3>
-                          <p className="text-sm text-muted-foreground">{stat.country}</p>
-                        </div>
-                        <div className="p-2 rounded-full bg-primary/10">
-                          <MapPin className="h-4 w-4 text-primary" aria-hidden="true" />
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                          <span className="text-sm">
-                            {t('stats.properties', { count: stat.propertyCount })}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Coins
-                            className="h-4 w-4 text-muted-foreground"
-                            aria-hidden="true"
-                          />
-                          <div className="text-sm">
-                            <span className="font-medium">
-                              {formatPrice(stat.avgPrice, stat.currency, locale)}
-                            </span>
-                            <span className="text-muted-foreground"> {t('stats.avg')}</span>
-                          </div>
-                        </div>
-
-                        <div className="text-xs text-muted-foreground">
-                          {formatPrice(stat.minPrice, stat.currency, locale)} -{' '}
-                          {formatPrice(stat.maxPrice, stat.currency, locale)}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Selected city details */}
-            {selectedCityData && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-semibold">
-                    {t('cityProperties.title', { city: selectedCityData.city })}
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedCity(null)}
-                    className="text-sm text-muted-foreground hover:text-foreground"
-                  >
-                    {tCommon('close')}
-                  </button>
-                </div>
-
-                <div className="relative">
-                  <PropertyMapboxMap
-                    points={selectedCityData.points}
-                    mapboxToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-                    showHeatmap={true}
-                    heatmapIntensity={2}
-                    showClusters={false}
-                    className="h-[500px]"
-                  />
-                  <div className="absolute top-4 left-4 z-10 bg-background/90 backdrop-blur rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">{selectedCityData.city}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {t('cityProperties.shown', { count: selectedCityData.points.length })}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Property list */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {selectedCityData.points.slice(0, 9).map((point) => (
-                    <div
-                      key={point.id}
-                      className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden"
-                    >
-                      <div className="aspect-video w-full bg-muted flex items-center justify-center">
-                        <MapPin className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
-                      </div>
-                      <div className="p-4 space-y-2">
-                        <h3 className="font-semibold">{point.title ?? t('property.untitled')}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {point.city}, {point.country}
-                        </p>
-                        <div className="font-bold text-lg">
-                          {point.price
-                            ? `$${point.price.toLocaleString()}`
-                            : t('property.priceOnRequest')}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
+    <div className="flex min-h-[calc(100vh-56px)] flex-col" aria-live="polite">
+      <div className="border-b border-border px-6 pb-5 pt-6">
+        <PageHeader
+          title={t('title')}
+          description={t('description')}
+          actions={
+            <MonoAnnotation>
+              {t('source', {
+                listings: listingTotal,
+                covered,
+                total: CITY_CATALOGUE.length,
+              })}
+            </MonoAnnotation>
+          }
+        />
       </div>
+
+      {loading ? (
+        <div className="px-6 py-8">
+          <LoadingState rows={8} />
+        </div>
+      ) : hasError && listingTotal === 0 ? (
+        <div className="px-6 py-8">
+          <ErrorState
+            title={t('empty.title')}
+            description={t('errors.noData')}
+            onRetry={() => window.location.reload()}
+            retryLabel={tCommon('retry')}
+          />
+        </div>
+      ) : (
+        <div className="grid flex-1 grid-cols-1 lg:grid-cols-[600px_minmax(0,1fr)]">
+          <div className="flex flex-col border-b border-border lg:border-b-0 lg:border-r">
+            <CityMarketLedger
+              cities={cities}
+              selected={selectedCity}
+              onSelect={setSelectedCity}
+            />
+            <CityMarketDetail city={selected} scale={scale} />
+          </div>
+
+          <div className="relative min-h-[520px] lg:min-h-[720px]">
+            {listingTotal > 0 ? (
+              <CityMarketMap
+                cities={cities}
+                selected={selectedCity}
+                onSelect={setSelectedCity}
+              />
+            ) : (
+              <EmptyState
+                title={t('empty.title')}
+                description={t('errors.noData')}
+                className="px-6"
+              />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
