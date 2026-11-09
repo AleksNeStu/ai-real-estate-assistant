@@ -43,7 +43,7 @@ export function AccountGate({ route, children }: AccountGateProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const { capabilities, loading } = useCapabilities();
 
-  if (isLoading || loading || !capabilities) {
+  if (isLoading || loading || !capabilities?.auth) {
     return <>{children}</>;
   }
 

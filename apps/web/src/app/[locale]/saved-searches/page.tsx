@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { AlertCircle, Loader2, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -36,11 +36,7 @@ export default function SavedSearchesPage() {
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchSearches();
-  }, []);
-
-  const fetchSearches = async () => {
+  const fetchSearches = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -59,7 +55,11 @@ export default function SavedSearchesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    fetchSearches();
+  }, [fetchSearches]);
 
   const handleToggleAlert = async (id: string, currentState: boolean) => {
     try {

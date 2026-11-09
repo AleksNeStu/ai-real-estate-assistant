@@ -48,7 +48,7 @@ function formatFileSize(bytes: number): string {
  * A file that has already expired gets a negative number of days left, and
  * the caller writes it as expired rather than as "in -3 days".
  */
-function daysUntil(expiryDate?: string, now: number): number | null {
+function daysUntil(expiryDate: string | undefined, now: number): number | null {
   if (!expiryDate) return null;
   const expiry = new Date(expiryDate).getTime();
   if (!Number.isFinite(expiry)) return null;
