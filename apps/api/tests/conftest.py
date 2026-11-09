@@ -226,6 +226,35 @@ def reset_free_tier_rate_limiter() -> None:
     limiter.reset()
 
 
+@pytest.fixture(scope="function", autouse=True)
+def reset_api_rate_limiter() -> None:
+    """Start every test with an empty API counter and the deployment's rate.
+
+    The middleware counts every request by address, and in a test process
+    every request carries the same address. The counter fills up during the
+    suite, and the tests that exercise the limit lower the rate for their
+    own run - a rate the next test would otherwise inherit and be held to.
+    """
+    import sys
+
+    module = sys.modules.get("api.main")
+    if module is None:
+        # The application is not imported yet, so it has no limiter to reset.
+        yield
+        return
+
+    limiter = getattr(module.app.state, "rate_limiter", None)
+    if limiter is None:
+        yield
+        return
+
+    default_rpm = limiter.default_rpm
+    limiter.reset()
+    yield
+    limiter.reset()
+    limiter.default_rpm = default_rpm
+
+
 @pytest.fixture(scope="function")
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
     """Create a fresh database session for each test."""
