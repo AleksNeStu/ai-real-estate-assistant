@@ -30,7 +30,7 @@ export function GatePreview() {
         window.localStorage.setItem(PREVIEW_KEY, '1');
         window.location.reload();
       }}
-      className="border-0 bg-transparent px-3 py-0 text-[13px] text-muted-foreground underline underline-offset-[3px] transition-colors hover:text-foreground"
+      className="inline-flex h-10 items-center border-0 bg-transparent px-3 text-[13px] text-muted-foreground underline underline-offset-[3px] transition-colors hover:text-foreground focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
     >
       {t('preview')}
     </button>

@@ -1,16 +1,31 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Loader2, AlertCircle, FileText, RefreshCw } from 'lucide-react';
+import { Plus, Loader2, FileText, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { getDocuments, getExpiringDocuments } from '@/lib/api';
 import type { Document, DocumentListResponse, ExpiringDocumentsResponse } from '@/lib/types';
 import { DocumentUpload } from '@/components/documents/document-upload';
 import { DocumentList } from '@/components/documents/document-list';
 import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/states';
+import { MonoAnnotation } from '@/components/ui/mono-annotation';
+import { EmptyState, ErrorState } from '@/components/ui/states';
 import { Modal } from '@/components/ui/modal';
 import { PageHeader } from '@/components/ui/page-header';
+
+/**
+ * The document vault.
+ *
+ * The route is the prototype's arrangement: the count of what the vault
+ * holds, the two tabs - everything, and what expires soon - and the ledger
+ * of the files under them. The tab that asks for attention carries the count
+ * the API gave for it, so the badge is never a number of its own.
+ *
+ * A file is a row of a table, not a card: the name, the property it belongs
+ * to, its size and the day it expires.
+ */
+
+type VaultTab = 'all' | 'expiring';
 
 export default function DocumentsPage() {
   const t = useTranslations('pages.documents');
@@ -18,6 +33,9 @@ export default function DocumentsPage() {
   const tDocsErrors = useTranslations('documents.errors');
   const [documents, setDocuments] = useState<Document[]>([]);
   const [expiringDocuments, setExpiringDocuments] = useState<Document[]>([]);
+  const [expiringTotal, setExpiringTotal] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [tab, setTab] = useState<VaultTab>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showUpload, setShowUpload] = useState(false);
@@ -29,6 +47,7 @@ export default function DocumentsPage() {
     try {
       const response: ExpiringDocumentsResponse = await getExpiringDocuments(30);
       setExpiringDocuments(response.items);
+      setExpiringTotal(response.total);
     } catch {
       // Silently fail - expiring docs are optional enhancement
     }
@@ -56,6 +75,7 @@ export default function DocumentsPage() {
         } else {
           setDocuments(response.items);
         }
+        setTotal(response.total);
         setTotalPages(response.total_pages);
         setPage(pageNum);
       } catch (err) {
@@ -102,9 +122,9 @@ export default function DocumentsPage() {
   // Loading state
   if (loading && documents.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px]">
-        <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-        <p className="text-muted-foreground">{t('loading')}</p>
+      <div className="flex min-h-[400px] flex-col items-center justify-center">
+        <Loader2 className="mb-4 h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+        <p className="m-0 text-[14px] text-muted-foreground">{t('loading')}</p>
       </div>
     );
   }
@@ -112,67 +132,129 @@ export default function DocumentsPage() {
   // Error state
   if (error && documents.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-        <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-        <h2 className="text-xl font-semibold mb-2">{t('errorTitle')}</h2>
-        <p className="text-muted-foreground mb-4">{error}</p>
-        <Button type="button" variant="outline" onClick={handleRefresh}>
-          <RefreshCw className="h-4 w-4" aria-hidden="true" />
-          {tCommon('tryAgain')}
-        </Button>
+      <div className="mx-auto max-w-[1100px] px-6 py-8">
+        <ErrorState
+          title={t('errorTitle')}
+          description={error}
+          onRetry={handleRefresh}
+          retryLabel={tCommon('tryAgain')}
+        />
       </div>
     );
   }
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <PageHeader
-        className="mb-6"
-        title={t('title')}
-        description={t('description')}
-        actions={
-          <>
-            <Button type="button" variant="outline" onClick={handleRefresh} disabled={loading}>
-              <RefreshCw
-                className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}
-                aria-hidden="true"
-              />
-              {t('refresh')}
-            </Button>
-            <Button type="button" onClick={() => setShowUpload(true)}>
-              <Plus className="h-4 w-4" aria-hidden="true" />
-              {t('upload')}
-            </Button>
-          </>
-        }
-      />
+  const listed = tab === 'all' ? documents : expiringDocuments;
 
-      {/* Expiring Documents Alert */}
-      {expiringDocuments.length > 0 && (
-        <div className="mb-6 p-4 rounded-lg bg-warning/10 border border-warning/30">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
-            <div>
-              <h3 className="font-medium text-warning">
-                {t('expiringTitle', { count: expiringDocuments.length })}
-              </h3>
-              <p className="text-sm text-warning mt-1">
-                {t('expiringIntro')}
-                {expiringDocuments.slice(0, 3).map((doc, idx) => (
-                  <span key={doc.id}>
-                    {idx > 0 && ', '}
-                    &nbsp;{doc.original_filename}
-                  </span>
-                ))}
-                {expiringDocuments.length > 3 && (
-                  <span> {t('andMore', { count: expiringDocuments.length - 3 })}</span>
-                )}
-              </p>
-            </div>
-          </div>
+  const tabClass = (active: boolean) =>
+    [
+      'inline-flex items-center gap-1.5 border-0 border-b-2 bg-transparent px-0 pb-2 pt-1 text-[14px] leading-5 transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50',
+      active
+        ? 'border-foreground font-medium text-foreground'
+        : 'border-transparent text-muted-foreground hover:text-foreground',
+    ].join(' ');
+
+  return (
+    <div className="flex min-h-[calc(100vh-56px)] flex-col">
+      <div className="border-b border-border px-6 pb-5 pt-6">
+        <PageHeader
+          title={t('title')}
+          description={<MonoAnnotation>{t('vaultCount', { count: total })}</MonoAnnotation>}
+          actions={
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleRefresh}
+                disabled={loading}
+                aria-label={t('refresh')}
+                className="h-9 w-9 px-0"
+              >
+                <RefreshCw
+                  className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}
+                  aria-hidden="true"
+                />
+              </Button>
+              <Button type="button" onClick={() => setShowUpload(true)} className="h-9">
+                <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
+                {t('upload')}
+              </Button>
+            </>
+          }
+        />
+      </div>
+
+      {/* The tabs of the vault. */}
+      <div className="px-6 pt-4">
+        <div className="flex gap-5 border-b border-border" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'all'}
+            onClick={() => setTab('all')}
+            className={tabClass(tab === 'all')}
+          >
+            {t('tabAll')}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'expiring'}
+            onClick={() => setTab('expiring')}
+            className={tabClass(tab === 'expiring')}
+          >
+            {t('tabExpiring')}
+            <span className="rounded-full bg-warning-surface px-1.5 py-px font-mono text-[11px] leading-4 text-warning">
+              {expiringTotal}
+            </span>
+          </button>
         </div>
-      )}
+      </div>
+
+      <main className="px-6 py-5">
+        {listed.length === 0 && !loading ? (
+          <EmptyState
+            icon={FileText}
+            title={t('emptyTitle')}
+            description={t('emptyDescription')}
+            action={
+              <Button type="button" onClick={() => setShowUpload(true)}>
+                <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
+                {t('uploadFirst')}
+              </Button>
+            }
+          />
+        ) : (
+          <>
+            <DocumentList
+              documents={listed}
+              onDocumentDeleted={handleDocumentDeleted}
+              onDocumentUpdated={handleDocumentUpdated}
+            />
+
+            {page < totalPages ? (
+              <div className="mt-5 flex items-center justify-between gap-4">
+                <MonoAnnotation>{t('page', { page, total: totalPages })}</MonoAnnotation>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  className="h-9"
+                >
+                  {loadingMore ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                      {tCommon('loading')}
+                    </>
+                  ) : (
+                    t('loadMore')
+                  )}
+                </Button>
+              </div>
+            ) : null}
+          </>
+        )}
+      </main>
 
       {/* Upload Modal */}
       <Modal
@@ -186,55 +268,6 @@ export default function DocumentsPage() {
           onCancel={() => setShowUpload(false)}
         />
       </Modal>
-
-      {/* Empty State */}
-      {documents.length === 0 && !loading && (
-        <EmptyState
-          icon={FileText}
-          title={t('emptyTitle')}
-          description={t('emptyDescription')}
-          action={
-            <Button type="button" onClick={() => setShowUpload(true)}>
-              <Plus className="h-5 w-5" aria-hidden="true" />
-              {t('uploadFirst')}
-            </Button>
-          }
-        />
-      )}
-
-      {/* Document List */}
-      {documents.length > 0 && (
-        <>
-          <DocumentList
-            documents={documents}
-            onDocumentDeleted={handleDocumentDeleted}
-            onDocumentUpdated={handleDocumentUpdated}
-          />
-
-          {/* Load More */}
-          {page < totalPages && (
-            <div className="flex justify-center mt-6">
-              <button
-                type="button"
-                onClick={handleLoadMore}
-                disabled={loadingMore}
-                className="inline-flex items-center gap-2 px-6 py-2 rounded-md border border-input hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
-              >
-                {loadingMore ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                    {tCommon('loading')}
-                  </>
-                ) : (
-                  <>
-                    {t('loadMore')} ({page}/{totalPages})
-                  </>
-                )}
-              </button>
-            </div>
-          )}
-        </>
-      )}
     </div>
   );
 }

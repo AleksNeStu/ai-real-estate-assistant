@@ -185,13 +185,11 @@ describe('DocumentsPage', () => {
     });
   });
 
-  it('renders page description', async () => {
+  it('renders the count of the vault', async () => {
     render(<DocumentsPage />);
 
     await waitFor(() => {
-      expect(
-        screen.getByText('Manage your property documents, contracts, and reports')
-      ).toBeInTheDocument();
+      expect(screen.getByText('2 documents')).toBeInTheDocument();
     });
   });
 
@@ -207,8 +205,21 @@ describe('DocumentsPage', () => {
     render(<DocumentsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Refresh')).toBeInTheDocument();
+      expect(screen.getByLabelText('Refresh')).toBeInTheDocument();
     });
+  });
+
+  it('renders the two tabs of the vault', async () => {
+    render(<DocumentsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: /all/i })).toBeInTheDocument();
+    });
+
+    const expiring = screen.getByRole('tab', { name: /expiring soon/i });
+    expect(expiring).toBeInTheDocument();
+    // The badge carries the count the API gave for the expiring list.
+    expect(expiring).toHaveTextContent('1');
   });
 
   it('displays documents in the list', async () => {

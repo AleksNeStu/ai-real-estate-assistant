@@ -130,12 +130,12 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
     <div className="space-y-4">
       {/* Drag-drop zone */}
       <div
-        className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
+        className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
           isDragging
-            ? 'border-primary bg-primary/5'
+            ? 'border-action bg-action/5'
             : file
               ? 'border-success bg-success/10'
-              : 'border-muted-foreground/25 hover:border-primary/50'
+              : 'border-muted-foreground/25 hover:border-action/50'
         }`}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
@@ -273,7 +273,7 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
           type="button"
           onClick={handleUpload}
           disabled={!file || uploading}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
+          className="inline-flex items-center gap-2 rounded-md bg-action px-4 py-2 text-sm font-medium text-action-foreground hover:bg-action/90 disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
         >
           {uploading ? (
             <>

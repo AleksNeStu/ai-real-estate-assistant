@@ -1,7 +1,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { usePathname } from 'next/navigation';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useCapabilities } from '@/hooks/useCapabilities';
@@ -37,6 +38,8 @@ export interface AccountGateProps {
 
 export function AccountGate({ route, children }: AccountGateProps) {
   const t = useTranslations('gate');
+  const locale = useLocale();
+  const pathname = usePathname();
   const { isAuthenticated, isLoading } = useAuth();
   const { capabilities, loading } = useCapabilities();
 
@@ -57,6 +60,13 @@ export function AccountGate({ route, children }: AccountGateProps) {
   const copy = t.raw(`routes.${route}`);
   const items = Array.isArray(copy?.items) ? (copy.items as string[]) : [];
 
+  // The visitor came to a route that belongs to an account, so the two ways
+  // in carry that route back: the sign-in sends them to the page they
+  // asked for once the account exists.
+  const back = encodeURIComponent(pathname || `/${locale}/${route}`);
+  const signInHref = `/${locale}/auth/login?redirect=${back}`;
+  const registerHref = `/${locale}/auth/register?redirect=${back}`;
+
   return (
     <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-14 px-6 py-14 lg:grid-cols-[minmax(0,1fr)_420px]">
       <div className="flex flex-col gap-5">
@@ -71,13 +81,13 @@ export function AccountGate({ route, children }: AccountGateProps) {
         </p>
         <div className="flex flex-wrap items-center gap-2">
           <a
-            href="/auth/login"
+            href={signInHref}
             className="inline-flex h-10 items-center rounded-md bg-action px-[18px] text-[14px] font-medium text-action-foreground transition-colors hover:bg-action/90"
           >
             {t('signIn')}
           </a>
           <a
-            href="/auth/register"
+            href={registerHref}
             className="inline-flex h-10 items-center rounded-md border border-border px-4 text-[14px] font-medium text-foreground transition-colors hover:bg-muted"
           >
             {t('createAccount')}
