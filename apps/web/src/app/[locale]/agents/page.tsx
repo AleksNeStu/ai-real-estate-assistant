@@ -1,310 +1,150 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
-import { Search, SlidersHorizontal, RefreshCw, Users, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
+import { Users } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState, ErrorState, LoadingState } from '@/components/ui/states';
+import { MonoAnnotation } from '@/components/ui/mono-annotation';
 import { PageHeader } from '@/components/ui/page-header';
 
+import {
+  AgentFilters,
+  EMPTY_AGENT_FILTERS,
+  type AgentFilterState,
+  type AgentSort,
+} from '@/components/agents/agent-filters';
+import { AgentLedger } from '@/components/agents/agent-ledger';
+
 import { getAgents } from '@/lib/api';
-import type { AgentProfile, AgentFilters } from '@/lib/types';
-import { AgentCard } from '@/components/agents/agent-card';
-import { EmptyState } from '@/components/ui/states';
+import type { AgentProfile } from '@/lib/types';
 
-const SORT_OPTIONS = [
-  { value: 'rating', labelKey: 'rating' },
-  { value: 'reviews', labelKey: 'reviews' },
-  { value: 'listings', labelKey: 'listings' },
-  { value: 'created', labelKey: 'created' },
-] as const;
+/**
+ * The agent directory.
+ *
+ * The route is a catalogue, and the prototype draws a catalogue as rows
+ * under an ink rule with a 248px filter pane beside it - the same measure
+ * the search route gives its own filters. The old grid of cards is gone; the
+ * card that used to draw an agent is still there for the surfaces that want
+ * an object.
+ *
+ * The catalogue is read once and the filters are applied to it in the
+ * browser: the pills answer instantly, and the sort is the one thing the
+ * server owns, because only the server knows how many listings an agent has.
+ */
 
-type SortOption = (typeof SORT_OPTIONS)[number]['value'];
+/** How many agents the directory reads at once. The catalogue is a demo one. */
+const CATALOGUE_SIZE = 100;
 
-export default function AgentsPage({ params }: { params: Promise<{ locale: string }> }) {
-  const t = useTranslations();
+export default function AgentsPage() {
   const tPage = useTranslations('pages.agents');
+  const tAgents = useTranslations('agents');
   const tCommon = useTranslations('common');
-  const tPagination = useTranslations('pages.agents.pagination');
+  const locale = useLocale();
 
-  const [agents, setAgents] = useState<AgentProfile[]>([]);
+  const [catalogue, setCatalogue] = useState<AgentProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [locale, setLocale] = useState<string>('en');
-  const pageSize = 12;
+  const [filters, setFilters] = useState<AgentFilterState>(EMPTY_AGENT_FILTERS);
 
-  const [filters, setFilters] = useState<AgentFilters>({
-    sort_by: 'rating',
-    sort_order: 'desc',
-  });
-
-  // Local filter state for the form
-  const [localCity, setLocalCity] = useState('');
-  const [localSpecialty, setLocalSpecialty] = useState('');
-  const [localMinRating, setLocalMinRating] = useState('any');
-  const [localSortBy, setLocalSortBy] = useState<SortOption>('rating');
-
-  // Get locale from params
-  useEffect(() => {
-    params.then((p) => setLocale(p.locale));
-  }, [params]);
-
-  const loadAgents = useCallback(async () => {
+  const loadCatalogue = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
       const response = await getAgents({
-        ...filters,
-        page,
-        page_size: pageSize,
+        sort_by: filters.sort as AgentSort,
+        sort_order: 'desc',
+        page: 1,
+        page_size: CATALOGUE_SIZE,
       });
 
-      setAgents(response.items);
-      setTotal(response.total);
+      setCatalogue(response.items);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('agents.errors.load'));
+      setError(err instanceof Error ? err.message : tAgents('errors.load'));
     } finally {
       setLoading(false);
     }
-  }, [filters, page, t]);
+  }, [filters.sort, tAgents]);
 
   useEffect(() => {
-    loadAgents();
-  }, [loadAgents]);
+    void loadCatalogue();
+  }, [loadCatalogue]);
 
-  const applyFilters = () => {
-    setFilters({
-      city: localCity || undefined,
-      specialty: localSpecialty || undefined,
-      min_rating:
-        localMinRating && localMinRating !== 'any' ? parseFloat(localMinRating) : undefined,
-      sort_by: localSortBy,
-      sort_order: 'desc',
+  /** The cities and the specialties the catalogue itself names. */
+  const cities = useMemo(() => {
+    const all = catalogue.flatMap((agent) => agent.service_areas ?? []);
+    return Array.from(new Set(all)).sort((a, b) => a.localeCompare(b));
+  }, [catalogue]);
+
+  const specialties = useMemo(() => {
+    const all = catalogue.flatMap((agent) => agent.specialties ?? []);
+    return Array.from(new Set(all)).sort((a, b) => a.localeCompare(b));
+  }, [catalogue]);
+
+  const rows = useMemo(() => {
+    return catalogue.filter((agent) => {
+      if (filters.city && !(agent.service_areas ?? []).includes(filters.city)) return false;
+      if (filters.specialty && !(agent.specialties ?? []).includes(filters.specialty)) return false;
+      if (filters.minRating !== null && agent.average_rating < filters.minRating) return false;
+      return true;
     });
-    setPage(1);
-  };
+  }, [catalogue, filters]);
 
   const clearFilters = () => {
-    setLocalCity('');
-    setLocalSpecialty('');
-    setLocalMinRating('any');
-    setLocalSortBy('rating');
-    setFilters({
-      sort_by: 'rating',
-      sort_order: 'desc',
-    });
-    setPage(1);
+    setFilters((current) => ({ ...current, city: null, specialty: null, minRating: null }));
   };
 
-  const hasActiveFilters = filters.city || filters.specialty || filters.min_rating;
-
-  const totalPages = Math.ceil(total / pageSize);
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <PageHeader className="mb-8" title={tPage('title')} description={tPage('description')} />
-
-      {/* Search and Filter Bar */}
-      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex flex-1 flex-col gap-4 sm:flex-row">
-          {/* Quick Search */}
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder={tPage('searchByCity')}
-              value={localCity}
-              onChange={(e) => setLocalCity(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-
-          {/* Quick Sort */}
-          <Select
-            value={localSortBy}
-            onValueChange={(value: SortOption) => {
-              setLocalSortBy(value);
-              setFilters((prev) => ({ ...prev, sort_by: value }));
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder={t('agents.sort.placeholder')} />
-            </SelectTrigger>
-            <SelectContent>
-              {SORT_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {t(`agents.sort.${option.labelKey}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Filter Button */}
-        <div className="flex gap-2">
-          {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={clearFilters}>
-              <X className="mr-2 h-4 w-4" />
-              {t('agents.filters.clear')}
-            </Button>
-          )}
-          <Button variant="outline" size="sm" onClick={applyFilters}>
-            <SlidersHorizontal className="mr-2 h-4 w-4" />
-            {t('agents.filters.apply')}
-          </Button>
-          <Button variant="ghost" size="icon" onClick={loadAgents}>
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          </Button>
+    <div className="flex min-h-full flex-col bg-background">
+      <div className="flex flex-col gap-3 border-b border-border px-6 py-5 sm:flex-row sm:items-end sm:justify-between">
+        <PageHeader title={tPage('title')} description={tPage('description')} />
+        <div className="flex items-center gap-2">
+          <MonoAnnotation>
+            {tAgents('directory.count', { count: rows.length })}
+          </MonoAnnotation>
+          {process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? (
+            <MonoAnnotation>{tAgents('directory.demoNote')}</MonoAnnotation>
+          ) : null}
         </div>
       </div>
 
-      {/* Advanced Filters */}
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="grid gap-4 md:grid-cols-4">
-            <div className="space-y-2">
-              <Label>{t('agents.filters.city')}</Label>
-              <Input
-                placeholder={t('agents.filters.cityPlaceholder')}
-                value={localCity}
-                onChange={(e) => setLocalCity(e.target.value)}
-              />
-            </div>
+      <div className="grid flex-1 grid-cols-1 lg:grid-cols-[248px_minmax(0,1fr)]">
+        <aside className="border-b border-border px-6 py-4 lg:border-b-0 lg:border-r">
+          <AgentFilters
+            cities={cities}
+            specialties={specialties}
+            value={filters}
+            onChange={setFilters}
+            onClear={clearFilters}
+          />
+        </aside>
 
-            <div className="space-y-2">
-              <Label>{t('agents.filters.specialty')}</Label>
-              <Input
-                placeholder={t('agents.filters.specialtyPlaceholder')}
-                value={localSpecialty}
-                onChange={(e) => setLocalSpecialty(e.target.value)}
-              />
-            </div>
+        <main className="min-w-0">
+          {error ? (
+            <ErrorState
+              title={tAgents('errors.load')}
+              description={error}
+              onRetry={() => void loadCatalogue()}
+              retryLabel={tCommon('retry')}
+            />
+          ) : null}
 
-            <div className="space-y-2">
-              <Label>{t('agents.filters.minRating')}</Label>
-              <Select value={localMinRating} onValueChange={(value) => setLocalMinRating(value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('agents.filters.anyRating')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">{t('agents.filters.any')}</SelectItem>
-                  <SelectItem value="4">{t('agents.filters.stars', { count: 4 })}</SelectItem>
-                  <SelectItem value="4.5">{t('agents.filters.stars', { count: 4.5 })}</SelectItem>
-                  <SelectItem value="4.8">{t('agents.filters.stars', { count: 4.8 })}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          {loading ? <LoadingState rows={8} /> : null}
 
-            <div className="space-y-2">
-              <Label>{t('agents.filters.sortBy')}</Label>
-              <Select
-                value={localSortBy}
-                onValueChange={(value: SortOption) => setLocalSortBy(value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('agents.sort.placeholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {SORT_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {t(`agents.sort.${option.labelKey}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          {!loading && !error && rows.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title={tAgents('noAgents')}
+              description={tAgents('noAgentsDescription')}
+            />
+          ) : null}
 
-      {/* Results */}
-      {error && (
-        <Card className="mb-6 border-destructive">
-          <CardContent className="flex items-center gap-2 p-4 text-destructive">
-            <span>{error}</span>
-            <Button variant="ghost" size="sm" onClick={loadAgents}>
-              {tCommon('retry')}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {loading ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-6">
-                <div className="flex gap-4">
-                  <Skeleton className="h-20 w-20 rounded-full" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
-                    <Skeleton className="h-3 w-2/3" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : agents.length === 0 ? (
-        <EmptyState
-          icon={Users}
-          title={t('agents.noAgents')}
-          description={t('agents.noAgentsDescription')}
-          action={
-            hasActiveFilters ? (
-              <Button variant="outline" onClick={clearFilters}>
-                {t('agents.filters.clear')}
-              </Button>
-            ) : undefined
-          }
-        />
-      ) : (
-        <>
-          <div className="mb-4 text-sm text-muted-foreground">
-            {tPagination('found', { count: total })}
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {agents.map((agent) => (
-              <AgentCard key={agent.id} agent={agent} locale={locale} />
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-8 flex justify-center gap-2">
-          <Button variant="outline" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
-            {tCommon('previous')}
-          </Button>
-          <span className="flex items-center px-4 text-sm">
-            {tPagination('page', { page, total: totalPages })}
-          </span>
-          <Button
-            variant="outline"
-            disabled={page >= totalPages}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            {tCommon('next')}
-          </Button>
-        </div>
-      )}
+          {!loading && !error && rows.length > 0 ? (
+            <AgentLedger agents={rows} locale={locale} />
+          ) : null}
+        </main>
+      </div>
     </div>
   );
 }
