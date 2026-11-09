@@ -7,6 +7,9 @@ Welcome to the documentation for the AI Real Estate Assistant.
 - **[Agent System](architecture/agent-system.md)**: Query analysis, agent routing, and the tools
   behind the assistant.
 - **[ADRs](adr/)**: Architectural Decision Records.
+- **[Reasoning log](reasoning/)**: the derivation behind the decisions that changed how the
+  product behaves — starting with
+  [the interface ships in nine languages and is maintained in two of them](reasoning/2026-11-09-maintained-locales.md).
 
 ## User
 - **[User Guide](user/USER_GUIDE.md)**: How to use the application.

@@ -4,7 +4,9 @@ import {
   defaultLocale,
   localeNames,
   localeFlags,
+  frozenLocales,
   isValidLocale,
+  maintainedLocales,
   type Locale,
 } from '../config';
 
@@ -25,6 +27,20 @@ describe('i18n config', () => {
 
     it('should be readonly array', () => {
       expect(Array.isArray(locales)).toBe(true);
+    });
+  });
+
+  describe('the maintained pair', () => {
+    it('is English and Polish', () => {
+      expect([...maintainedLocales].sort()).toEqual(['en', 'pl']);
+    });
+
+    it('leaves every other locale frozen', () => {
+      expect([...frozenLocales].sort()).toEqual(['de', 'es', 'it', 'pt', 'ru', 'tr', 'uk']);
+    });
+
+    it('covers every locale exactly once', () => {
+      expect([...maintainedLocales, ...frozenLocales].sort()).toEqual([...locales].sort());
     });
   });
 

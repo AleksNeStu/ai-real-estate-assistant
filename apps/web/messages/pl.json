@@ -3644,7 +3644,7 @@
       "productAssistant": "Asystent",
       "productCityOverview": "Przegląd miasta",
       "productAgents": "Agenci",
-      "openSource": "Open source",
+      "openSource": "Kod otwarty",
       "openSourceGithub": "GitHub",
       "openSourceDocs": "Dokumentacja",
       "openSourceDiscussions": "Dyskusje",
@@ -3693,7 +3693,7 @@
     "landing": {
       "features": "Co potrafi",
       "data": "Dane",
-      "openSource": "Open source",
+      "openSource": "Kod otwarty",
       "compare": "Porównanie",
       "faq": "FAQ"
     },

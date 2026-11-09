@@ -1,15 +1,14 @@
 /**
  * The message merge that lets a locale lag behind the English catalogue.
  *
- * The nine catalogues move together — a new key lands in all of them in the
- * same commit, and the key-parity test holds that. The merge is the safety
- * net under that rule: if a catalogue ever falls behind, the key it does not
- * carry falls back to the English wording instead of to the key path itself.
+ * English and Polish are the maintained pair; the other seven catalogues are
+ * frozen and keep the wording they were given. The merge is what makes that
+ * safe: if a catalogue falls behind, the key it does not carry falls back to
+ * the English wording instead of to the key path itself.
  *
  * The merge is what makes that fallback work on both sides of the render:
- * `getRequestConfig` hands the merged catalogue to the server components and
- * `getMessages` hands the same object to `NextIntlClientProvider`, so a
- * client component never sees a missing key.
+ * `catalogue.ts` hands the merged catalogue to the request config and to
+ * `NextIntlClientProvider`, so a client component never sees a missing key.
  *
  * Two rules make the merge safe for a catalogue that stopped moving:
  *

@@ -12,22 +12,14 @@
  * feature therefore costs two translations instead of nine, and the seven
  * older catalogues age into the backlog instead of blocking every change.
  *
- * The lists live here, apart from `config.ts`, because they answer a
- * different question: `config.ts` says what the interface ships, this says
- * what it is kept up to date in.
+ * The lists live in `config.ts` — that is where the locales of the interface
+ * are named — and this module is the one a rule or a test asks: "is this
+ * locale kept up to date?"
  */
 
-import { locales, type Locale } from './config';
+import { maintainedLocales } from './config';
 
-export const maintainedLocales = ['en', 'pl'] as const;
-
-export type MaintainedLocale = (typeof maintainedLocales)[number];
-
-/** The locales that keep their wording and fall back to English. */
-export const frozenLocales = locales.filter(
-  (locale): locale is Exclude<Locale, MaintainedLocale> =>
-    !(maintainedLocales as readonly Locale[]).includes(locale)
-);
+export { frozenLocales, maintainedLocales, type MaintainedLocale } from './config';
 
 /** Whether a locale is kept up to date with every new key. */
 export function isMaintained(locale: string): boolean {

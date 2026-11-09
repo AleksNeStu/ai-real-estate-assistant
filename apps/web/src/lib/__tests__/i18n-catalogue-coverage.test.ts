@@ -7,10 +7,16 @@
  * a key name is invisible at compile time — `useTranslations` would just hand
  * back the key path and the document would ship with "monthlyTco" printed on
  * it. These tests fail loudly instead.
+ *
+ * The catalogues are checked as they render: the merged catalogue, the English
+ * one with the locale's own words. That is the object a frozen locale reads,
+ * so a label it does not translate is still there — in English — instead of
+ * missing from the document.
  */
 
 import { DEFAULT_TCO_PDF_COPY } from '../pdf-export';
 import { DEFAULT_INVESTMENT_PDF_COPY } from '../investment-pdf-export';
+import { mergeMessages } from '../../i18n/merge';
 
 import enCatalog from '../../../messages/en.json';
 import plCatalog from '../../../messages/pl.json';
@@ -24,7 +30,7 @@ import ukCatalog from '../../../messages/uk.json';
 
 type Catalog = Record<string, unknown>;
 
-const CATALOGS: Record<string, Catalog> = {
+const RAW_CATALOGS: Record<string, Catalog> = {
   en: enCatalog as Catalog,
   pl: plCatalog as Catalog,
   ru: ruCatalog as Catalog,
@@ -35,6 +41,13 @@ const CATALOGS: Record<string, Catalog> = {
   tr: trCatalog as Catalog,
   uk: ukCatalog as Catalog,
 };
+
+const CATALOGS: Record<string, Catalog> = Object.fromEntries(
+  Object.entries(RAW_CATALOGS).map(([locale, catalog]) => [
+    locale,
+    mergeMessages(RAW_CATALOGS.en, catalog),
+  ])
+);
 
 const get = (catalog: Catalog, path: string): unknown =>
   path.split('.').reduce<unknown>((acc, part) => (acc == null ? null : (acc as Catalog)[part]), catalog);
