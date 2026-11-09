@@ -30,7 +30,9 @@ jest.mock("react-leaflet", () => ({
     </div>
   ),
   Popup: ({ children }: { children: ReactNode }) => <div data-testid="popup">{children}</div>,
-  useMap: () => ({ fitBounds: fitBoundsMock, setView: setViewMock }),
+  // The map hands out its tile pane so the theme can filter the tiles; the
+  // double has no pane, which is what a map without a raster layer looks like.
+  useMap: () => ({ fitBounds: fitBoundsMock, setView: setViewMock, getPane: () => null }),
   useMapEvents: () => ({ getZoom: () => 12 }),
 }));
 

@@ -251,7 +251,14 @@
       "minRooms": "Minimum Rooms",
       "propertyType": "Property Type",
       "clearFilters": "Clear Filters",
-      "applyFilters": "Apply Filters"
+      "applyFilters": "Apply Filters",
+      "city": "City",
+      "reset": "Reset",
+      "inResults": "{count} in results"
+    },
+    "parsed": {
+      "note": "Read from your sentence — change any of them in the filters.",
+      "empty": "The sentence decides — add filters of your own."
     },
     "sortOptions": {
       "relevance": "Relevance",
@@ -284,7 +291,18 @@
       "noResults": "No Results Found",
       "noResultsHint": "Try adjusting your search terms or filters.",
       "showingResults": "Showing {count} {count, plural, one {property} other {properties}}",
-      "exportResults": "Export Results"
+      "exportResults": "Export Results",
+      "summary": "{count} matches in {city} · sorted by {sort}",
+      "summaryNoCity": "{count} matches · sorted by {sort}"
+    },
+    "area": {
+      "label": "area analytics",
+      "medianPerSqm": "median per m²",
+      "listings": "listings",
+      "medianYearBuilt": "year built",
+      "note": "from the listings in view",
+      "empty": "Nothing to analyse yet",
+      "cityOverview": "City overview →"
     },
     "export": {
       "title": "Export Results",
@@ -303,7 +321,8 @@
       "includeHeader": "Include header row",
       "excel": "Excel",
       "markdown": "Markdown",
-      "pdf": "PDF"
+      "pdf": "PDF",
+      "hint": "CSV · XLSX · JSON · MD · PDF"
     },
     "saveSearch": {
       "button": "Save Search",

@@ -44,19 +44,19 @@ export class SearchPage {
     // cards at the same time resolves to several elements and the strict mode
     // refuses to act on it.
     this.resultsContainer = page.locator('[data-testid="property-card"]').first();
-    this.mapContainer = page.locator('.h-\\[420px\\]').or(page.locator('[class*="map"]'));
-    this.listContainer = page.locator('.grid.grid-cols-1').first();
+    // The route is three panes: the filters, the results and the map. The
+    // map pane and the results pane carry a test id of their own, so the
+    // class-based selectors of the old grid are not needed any more.
+    this.mapContainer = page.getByTestId('search-map');
+    this.listContainer = page.getByTestId('search-results');
     this.resultCount = page.locator('text=/\\d+.*shown/i');
     this.noResultsMessage = page.locator('text=/no results found/i');
     this.loadingSpinner = page.locator('.animate-pulse').first();
     // A failed search shows the error state of the page (role="alert"). The
     // announcer of the router has the same role - it is not part of the page.
     this.errorMessage = page.locator('[role="alert"]:not(#__next-route-announcer__)').first();
-    // The filter card is the one that owns the filter inputs.
-    this.filtersPanel = page
-      .locator('div.rounded-lg.border.bg-card')
-      .filter({ has: page.locator('#min-price') })
-      .first();
+    // The filter pane is the one that owns the filter inputs.
+    this.filtersPanel = page.getByTestId('search-filters');
     // The switch between the list and the map view is a group of its own.
     const viewGroup = page.getByRole('group');
     this.mapViewButton = viewGroup.getByRole('button', { name: /^map$/i });

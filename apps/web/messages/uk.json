@@ -1703,7 +1703,14 @@
       "minRooms": "Мінімальна кількість кімнат",
       "propertyType": "Тип об’єкта",
       "clearFilters": "Очистити фільтри",
-      "applyFilters": "Застосувати фільтри"
+      "applyFilters": "Застосувати фільтри",
+      "city": "Місто",
+      "reset": "Скинути",
+      "inResults": "{count} у результатах"
+    },
+    "parsed": {
+      "note": "Прочитано з вашого речення — змініть будь-який фільтр.",
+      "empty": "Речення вирішує — додайте власні фільтри."
     },
     "sortOptions": {
       "relevance": "Релевантність",
@@ -1736,7 +1743,18 @@
       "noResults": "Результатів не знайдено",
       "noResultsHint": "Спробуйте змінити пошуковий запит або фільтри.",
       "showingResults": "Показано {count} {count, plural, one {об’єкт} few {об’єкти} many {об’єктів} other {об’єкта}}",
-      "exportResults": "Експортувати результати"
+      "exportResults": "Експортувати результати",
+      "summary": "{count} збігів у {city} · сортування: {sort}",
+      "summaryNoCity": "{count} збігів · сортування: {sort}"
+    },
+    "area": {
+      "label": "аналітика району",
+      "medianPerSqm": "медіана за м²",
+      "listings": "оголошень",
+      "medianYearBuilt": "рік будівництва",
+      "note": "з оголошень на екрані",
+      "empty": "Ще немає чого аналізувати",
+      "cityOverview": "Огляд міста →"
     },
     "export": {
       "title": "Експорт результатів",
@@ -1755,7 +1773,8 @@
       "includeHeader": "Включити рядок заголовка",
       "excel": "Excel",
       "markdown": "Markdown",
-      "pdf": "PDF"
+      "pdf": "PDF",
+      "hint": "CSV · XLSX · JSON · MD · PDF"
     },
     "saveSearch": {
       "button": "Зберегти пошук",

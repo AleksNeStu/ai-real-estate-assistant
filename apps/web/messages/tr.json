@@ -1703,7 +1703,14 @@
       "minRooms": "En az oda sayısı",
       "propertyType": "Emlak türü",
       "clearFilters": "Filtreleri temizle",
-      "applyFilters": "Filtreleri uygula"
+      "applyFilters": "Filtreleri uygula",
+      "city": "Şehir",
+      "reset": "Sıfırla",
+      "inResults": "sonuçlarda {count}"
+    },
+    "parsed": {
+      "note": "Cümlenden okundu — filtrelerin değiştir.",
+      "empty": "Cümle belirler — kendi filtrelerini ekle."
     },
     "sortOptions": {
       "relevance": "İlgililik",
@@ -1736,7 +1743,18 @@
       "noResults": "Sonuç bulunamadı",
       "noResultsHint": "Arama terimlerinizi veya filtrelerinizi değiştirmeyi deneyin.",
       "showingResults": "{count} {count, plural, one {ilan} other {ilan}} gösteriliyor",
-      "exportResults": "Sonuçları dışa aktar"
+      "exportResults": "Sonuçları dışa aktar",
+      "summary": "{city} içinde {count} eşleşme · {sort} sırasına göre",
+      "summaryNoCity": "{count} eşleşme · {sort} sırasına göre"
+    },
+    "area": {
+      "label": "bölge analizi",
+      "medianPerSqm": "m² başına medyan",
+      "listings": "ilan",
+      "medianYearBuilt": "yapım yılı",
+      "note": "ekrandaki ilanlardan",
+      "empty": "Henüz analiz edilecek bir şey yok",
+      "cityOverview": "Şehir geneli →"
     },
     "export": {
       "title": "Sonuçları dışa aktar",
@@ -1755,7 +1773,8 @@
       "includeHeader": "Başlık satırını dahil et",
       "excel": "Excel",
       "markdown": "Markdown",
-      "pdf": "PDF"
+      "pdf": "PDF",
+      "hint": "CSV · XLSX · JSON · MD · PDF"
     },
     "saveSearch": {
       "button": "Aramayı kaydet",

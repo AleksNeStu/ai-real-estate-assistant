@@ -220,11 +220,13 @@ describe('SearchPage', () => {
       expect(screen.getByText('A')).toBeInTheDocument();
     });
 
+    // The map is a pane of the route, so it is there from the start. The
+    // switch narrows the route down to the list.
+    expect(screen.getByTestId('property-map')).toHaveTextContent('1');
+    fireEvent.click(screen.getByRole('button', { name: 'List' }));
     expect(screen.queryByTestId('property-map')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Map' }));
     expect(await screen.findByTestId('property-map')).toHaveTextContent('1');
-    fireEvent.click(screen.getByRole('button', { name: 'List' }));
-    expect(screen.queryByTestId('property-map')).not.toBeInTheDocument();
   });
 
   it('sends filters and sorting in the search payload', async () => {

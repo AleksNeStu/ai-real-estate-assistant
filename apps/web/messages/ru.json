@@ -1703,7 +1703,14 @@
       "minRooms": "Мин. комнат",
       "propertyType": "Тип недвижимости",
       "clearFilters": "Сбросить фильтры",
-      "applyFilters": "Применить"
+      "applyFilters": "Применить",
+      "city": "Город",
+      "reset": "Сбросить",
+      "inResults": "{count} в результатах"
+    },
+    "parsed": {
+      "note": "Прочитано из вашего предложения — измените любой фильтр.",
+      "empty": "Предложение решает — добавьте свои фильтры."
     },
     "sortOptions": {
       "relevance": "Релевантность",
@@ -1736,7 +1743,18 @@
       "noResults": "Результаты не найдены",
       "noResultsHint": "Попробуйте изменить условия поиска.",
       "showingResults": "Найдено {count} {count, plural, one {объект} few {объекта} other {объектов}}",
-      "exportResults": "Экспорт результатов"
+      "exportResults": "Экспорт результатов",
+      "summary": "{count} совпадений в {city} · сортировка: {sort}",
+      "summaryNoCity": "{count} совпадений · сортировка: {sort}"
+    },
+    "area": {
+      "label": "аналитика района",
+      "medianPerSqm": "медиана за м²",
+      "listings": "объявлений",
+      "medianYearBuilt": "год постройки",
+      "note": "по объявлениям на экране",
+      "empty": "Пока нечего анализировать",
+      "cityOverview": "Обзор города →"
     },
     "export": {
       "title": "Экспорт результатов",
@@ -1755,7 +1773,8 @@
       "includeHeader": "Включить строку заголовка",
       "excel": "Excel",
       "markdown": "Markdown",
-      "pdf": "PDF"
+      "pdf": "PDF",
+      "hint": "CSV · XLSX · JSON · MD · PDF"
     },
     "saveSearch": {
       "button": "Сохранить поиск",

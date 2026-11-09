@@ -6,6 +6,7 @@ import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 're
 import { useLocale, useTranslations } from 'next-intl';
 
 import { formatPrice } from '@/lib/format';
+import { cn } from '@/lib/utils';
 
 import { computeBounds, computeCenter, type PropertyMapPoint } from './property-map-utils';
 import {
@@ -13,6 +14,39 @@ import {
   getClusterColor,
   type ClusteredMapItem,
 } from './property-map-clustering';
+
+/**
+ * The tiles in the two themes.
+ *
+ * The prototype paints the map through one filter: the tiles are grey, and
+ * in the dark theme they are inverted as well, so the map belongs to the
+ * page instead of shouting over it. The filter is set on the tile pane
+ * itself, because that is the only place Leaflet keeps the raster layer.
+ */
+const LIGHT_TILE_FILTER = 'grayscale(1)';
+const DARK_TILE_FILTER = 'grayscale(1) invert(1) brightness(.9) contrast(.9)';
+
+function TileTheme() {
+  const map = useMap();
+
+  useEffect(() => {
+    const root = document.documentElement;
+
+    const apply = () => {
+      const dark = root.classList.contains('dark');
+      const pane = map.getPane('tilePane');
+      if (pane) pane.style.filter = dark ? DARK_TILE_FILTER : LIGHT_TILE_FILTER;
+    };
+
+    apply();
+
+    const observer = new MutationObserver(apply);
+    observer.observe(root, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, [map]);
+
+  return null;
+}
 
 function FitBounds({ bounds }: { bounds: LatLngBoundsExpression | null }) {
   const map = useMap();
@@ -65,7 +99,13 @@ function ClusterMarker({
   );
 }
 
-export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) {
+export default function PropertyMap({
+  points,
+  className,
+}: {
+  points: PropertyMapPoint[];
+  className?: string;
+}) {
   const t = useTranslations('property');
   const tSearch = useTranslations('search');
   const locale = useLocale();
@@ -98,8 +138,13 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
   );
 
   return (
-    <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
-      <div className="h-[420px] w-full" aria-label={tSearch('propertyMap')} role="application">
+    <div
+      className={cn(
+        'relative h-[420px] w-full overflow-hidden border-b border-border bg-muted/40 text-card-foreground',
+        className
+      )}
+    >
+      <div className="h-full w-full" aria-label={tSearch('propertyMap')} role="application">
         <MapContainer
           center={[center.lat, center.lon]}
           zoom={12}
@@ -112,6 +157,7 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
           />
           <FitBounds bounds={bounds as LatLngBoundsExpression | null} />
           <ZoomTracker onZoomChange={onZoomChange} />
+          <TileTheme />
           {items.map((item) => {
             if (item.kind === 'point') {
               const p = item.point;

@@ -1703,7 +1703,14 @@
       "minRooms": "Número mínimo de quartos",
       "propertyType": "Tipo de imóvel",
       "clearFilters": "Limpar filtros",
-      "applyFilters": "Aplicar filtros"
+      "applyFilters": "Aplicar filtros",
+      "city": "Cidade",
+      "reset": "Repor",
+      "inResults": "{count} nos resultados"
+    },
+    "parsed": {
+      "note": "Lido da sua frase — altere qualquer filtro.",
+      "empty": "A frase decide — acrescente os seus filtros."
     },
     "sortOptions": {
       "relevance": "Relevância",
@@ -1736,7 +1743,18 @@
       "noResults": "Não foram encontrados resultados",
       "noResultsHint": "Tenta ajustar os termos de pesquisa ou os filtros.",
       "showingResults": "A mostrar {count} {count, plural, one {imóvel} other {imóveis}}",
-      "exportResults": "Exportar resultados"
+      "exportResults": "Exportar resultados",
+      "summary": "{count} correspondências em {city} · ordenadas por {sort}",
+      "summaryNoCity": "{count} correspondências · ordenadas por {sort}"
+    },
+    "area": {
+      "label": "análise da área",
+      "medianPerSqm": "mediana por m²",
+      "listings": "anúncios",
+      "medianYearBuilt": "ano de construção",
+      "note": "dos anúncios no ecrã",
+      "empty": "Ainda não há nada a analisar",
+      "cityOverview": "Panorama da cidade →"
     },
     "export": {
       "title": "Exportar resultados",
@@ -1755,7 +1773,8 @@
       "includeHeader": "Incluir a linha de cabeçalho",
       "excel": "Excel",
       "markdown": "Markdown",
-      "pdf": "PDF"
+      "pdf": "PDF",
+      "hint": "CSV · XLSX · JSON · MD · PDF"
     },
     "saveSearch": {
       "button": "Guardar pesquisa",

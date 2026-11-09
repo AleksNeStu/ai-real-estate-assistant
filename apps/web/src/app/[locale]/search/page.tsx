@@ -2,14 +2,11 @@
 
 import { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   Search as SearchIcon,
   MapPin,
-  Filter,
   Download,
-  RefreshCw,
-  AlertCircle,
   Pencil,
 } from 'lucide-react';
 import { searchProperties, exportPropertiesBySearch, ApiError } from '@/lib/api';
@@ -22,11 +19,8 @@ import {
   serializePolygonToUrl,
   deserializePolygonFromUrl,
 } from '@/lib/geo-validation';
-import { ListingGenerator, PropertyCard } from '@/components/property';
-import { RelevanceRating } from '@/components/search/relevance-rating';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { PageHeader } from '@/components/ui/page-header';
+import { MonoAnnotation } from '@/components/ui/mono-annotation';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/states';
 import dynamic from 'next/dynamic';
 import MapControls, {
@@ -35,23 +29,44 @@ import MapControls, {
 } from '@/components/search/map-controls';
 import { SaveSearchButton } from '@/components/search/save-search-button';
 import { PresetSelector } from '@/components/search/preset-selector';
+import { ParsedChips } from '@/components/search/parsed-chips';
+import { ResultsLedger } from '@/components/search/results-ledger';
+import { AreaAnalyticsCard } from '@/components/search/area-analytics-card';
 import { useTrackSearchDebounced } from '@/hooks/useLeadTracking';
 import type { FilterPreset } from '@/lib/types';
+import { formatPrice } from '@/lib/format';
 
 const PropertyMap = dynamic(() => import('@/components/search/property-map'), {
   ssr: false,
-  loading: () => <div className="h-[420px] w-full bg-muted animate-pulse rounded-lg" />,
+  loading: () => <div className="h-[420px] w-full bg-muted animate-pulse" />,
 });
 
 const PropertyMapboxMap = dynamic(() => import('@/components/search/property-mapbox-map'), {
   ssr: false,
-  loading: () => <div className="h-[420px] w-full bg-muted animate-pulse rounded-lg" />,
+  loading: () => <div className="h-[420px] w-full bg-muted animate-pulse" />,
 });
+
+/** The label of a sort, in the catalogue's own words. */
+const SORT_LABEL_KEY: Record<string, string> = {
+  relevance: 'sortOptions.relevance',
+  price: 'sortOptions.price',
+  price_per_sqm: 'sortOptions.pricePerSqm',
+  area_sqm: 'sortOptions.area',
+  year_built: 'sortOptions.yearBuilt',
+};
+
+const CONTROL_CLASS =
+  'h-9 w-full rounded-md border border-input bg-background px-2.5 text-[13px] text-foreground';
+const MONO_CONTROL_CLASS = `${CONTROL_CLASS} font-mono`;
+const LABEL_CLASS = 'text-[12px] font-medium text-foreground';
 
 function SearchPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations('search');
+  const tCommon = useTranslations('common');
+  const tPage = useTranslations('pages.search');
 
   // Example queries for empty state
   const exampleQueries = [
@@ -60,8 +75,6 @@ function SearchPageContent() {
     t('examples.studioCity'),
     t('examples.luxuryParking'),
   ];
-  const tCommon = useTranslations('common');
-  const tPage = useTranslations('pages.search');
   const { trackSearchDebounced, flushSearch } = useTrackSearchDebounced(1000);
 
   // A pending search must not be lost when the visitor leaves the page.
@@ -81,6 +94,7 @@ function SearchPageContent() {
   const [query, setQuery] = useState(() => searchParams.get('q') ?? '');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResultItem[]>([]);
+  const [total, setTotal] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [requestId, setRequestId] = useState<string | undefined>();
   const [hasSearched, setHasSearched] = useState(false);
@@ -106,7 +120,10 @@ function SearchPageContent() {
   const [csvDecimal, setCsvDecimal] = useState<string>('.');
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  // The map is a pane of its own, next to the results - so the map is what
+  // the route opens on. The switch narrows the route to the list.
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [useMapbox, setUseMapbox] = useState(false);
   const [mapFilterOptions, setMapFilterOptions] = useState<MapFilterOptions>({
     showHeatmap: false,
@@ -218,6 +235,56 @@ function SearchPageContent() {
     });
   }, [filteredMapPoints, drawnPolygon]);
 
+  /**
+   * The city the results stand in. It is read from the catalogue, not from
+   * the sentence: the sentence is parsed by the model on the server, and
+   * what came back is the only truth about where the listings are.
+   */
+  const city = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const item of results) {
+      const name = item.property?.city;
+      if (!name) continue;
+      counts.set(name, (counts.get(name) ?? 0) + 1);
+    }
+    let best: string | undefined;
+    let bestCount = 0;
+    counts.forEach((count, name) => {
+      if (count > bestCount) {
+        best = name;
+        bestCount = count;
+      }
+    });
+    return best;
+  }, [results]);
+
+  const listingsInCity = useMemo(
+    () => results.filter((item) => item.property?.city === city).length,
+    [results, city]
+  );
+
+  /**
+   * The chips of the parsed sentence: the filters that are in force, written
+   * the way the landing's instrument writes them.
+   */
+  const chips = useMemo(() => {
+    const list: string[] = [];
+    if (city) list.push(`city = ${city}`);
+
+    const amount = (value: string) => {
+      const parsed = Number(value);
+      if (!Number.isFinite(parsed)) return value;
+      return formatPrice(parsed, resultCurrency ?? 'PLN', locale);
+    };
+
+    if (minPrice.trim()) list.push(`price ≥ ${amount(minPrice.trim())}`);
+    if (maxPrice.trim()) list.push(`price ≤ ${amount(maxPrice.trim())}`);
+    if (rooms.trim()) list.push(`rooms = ${rooms.trim()}`);
+    if (propertyType.trim()) list.push(`type = ${propertyType.trim().toLowerCase()}`);
+
+    return list;
+  }, [city, minPrice, maxPrice, rooms, propertyType, resultCurrency, locale]);
+
   const buildFilters = (): { filters?: Record<string, unknown>; error?: string } => {
     const min = minPrice.trim() ? Number(minPrice) : undefined;
     const max = maxPrice.trim() ? Number(maxPrice) : undefined;
@@ -250,6 +317,7 @@ function SearchPageContent() {
     try {
       if (!query.trim()) {
         setResults([]);
+        setTotal(0);
         setError(t('errors.emptyQuery'));
         return;
       }
@@ -257,6 +325,7 @@ function SearchPageContent() {
       const { filters, error: filterError } = buildFilters();
       if (filterError) {
         setResults([]);
+        setTotal(0);
         setError(filterError);
         return;
       }
@@ -275,9 +344,10 @@ function SearchPageContent() {
         filters,
       });
       setResults(response.results);
-      setViewMode('list');
+      setTotal(response.count ?? response.results.length);
     } catch (err) {
       setResults([]);
+      setTotal(0);
       if (err instanceof ApiError) {
         setError(err.message);
         setRequestId(err.request_id);
@@ -363,28 +433,48 @@ function SearchPageContent() {
     }, 100);
   };
 
-  return (
-    <div className="container mx-auto px-4 py-8" aria-live="polite">
-      <div className="flex flex-col space-y-8">
-        {/* Search Header */}
-        <PageHeader title={tPage('title')} description={tPage('description')} />
+  const resetFilters = () => {
+    setMinPrice('');
+    setMaxPrice('');
+    setRooms('');
+    setPropertyType('');
+    setSortBy('relevance');
+    setSortOrder('desc');
+  };
 
-        {/* Search Bar */}
-        <form
-          onSubmit={handleSearch}
-          className="flex gap-4"
-          role="search"
-          aria-label={t('searchLabel')}
-        >
-          <div className="relative flex-1">
-            <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+  const sortLabel = t(SORT_LABEL_KEY[sortBy] ?? 'sortOptions.relevance');
+  const summary = city
+    ? t('results.summary', { count: total, city, sort: sortLabel })
+    : t('results.summaryNoCity', { count: total, sort: sortLabel });
+  const shownCount = drawnPolygon ? filteredByPolygon.length : filteredMapPoints.length;
+  const showMap = viewMode === 'map';
+
+  return (
+    <div className="flex min-h-full flex-col bg-background" aria-live="polite">
+      {/* The route has a name for the search engine and the screen reader;
+          the top bar of the application already carries it on the screen. */}
+      <h1 className="sr-only">{tPage('title')}</h1>
+
+      {/* The query bar: the sentence, and the filters it produced. */}
+      <form
+        onSubmit={handleSearch}
+        role="search"
+        aria-label={t('searchLabel')}
+        className="flex shrink-0 flex-col gap-2.5 border-b border-border px-6 py-3"
+      >
+        <div className="flex gap-2">
+          <div className="relative min-w-0 flex-1">
+            <SearchIcon
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
             <input
               type="text"
               data-testid="search-input"
               placeholder={t('placeholder')}
               className={[
-                'w-full rounded-md border border-input bg-background',
-                'pl-10 pr-4 py-2 text-sm',
+                'h-11 w-full rounded-lg border border-input bg-background',
+                'pl-9 pr-4 text-[15px]',
                 'placeholder:text-muted-foreground focus-visible:outline-none',
                 'focus-visible:outline-2 focus-visible:outline-ring/50',
                 'disabled:cursor-not-allowed disabled:opacity-50',
@@ -402,254 +492,387 @@ function SearchPageContent() {
             disabled={loading || !query.trim()}
             aria-busy={loading ? 'true' : 'false'}
             aria-label={loading ? tCommon('searching') : tCommon('search')}
+            className="h-11 rounded-lg px-5"
           >
             {loading ? tCommon('searching') : tCommon('search')}
           </Button>
-        </form>
+        </div>
 
-        {/* Filters & Results Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Sidebar Filters */}
-          <div className="space-y-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="mb-4 flex items-center gap-2 font-semibold">
-                  <Filter className="h-4 w-4" aria-hidden="true" /> {t('filters.title')}
-                </div>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="sort-by" className="mb-1 block text-sm font-medium">
-                          {t('filters.sortBy')}
-                        </label>
-                        <select
-                          id="sort-by"
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                          value={sortBy}
-                          onChange={(e) => setSortBy(e.target.value)}
-                          aria-label={t('filters.sortBy')}
-                          disabled={loading}
-                        >
-                          <option value="relevance">{t('sortOptions.relevance')}</option>
-                          <option value="price">{t('sortOptions.price')}</option>
-                          <option value="price_per_sqm">{t('sortOptions.pricePerSqm')}</option>
-                          <option value="area_sqm">{t('sortOptions.area')}</option>
-                          <option value="year_built">{t('sortOptions.yearBuilt')}</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label htmlFor="sort-order" className="mb-1 block text-sm font-medium">
-                          {t('filters.order')}
-                        </label>
-                        <select
-                          id="sort-order"
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                          value={sortOrder}
-                          onChange={(e) => setSortOrder(e.target.value)}
-                          aria-label={t('filters.order')}
-                          disabled={loading}
-                        >
-                          <option value="desc">{t('orderOptions.descending')}</option>
-                          <option value="asc">{t('orderOptions.ascending')}</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div>
-                      <label htmlFor="min-price" className="mb-1 block text-sm font-medium">
-                        {t('filters.minPrice')}
-                      </label>
-                      <input
-                        id="min-price"
-                        type="number"
-                        inputMode="numeric"
-                        min={0}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        value={minPrice}
-                        onChange={(e) => setMinPrice(e.target.value)}
-                        aria-label={t('filters.minPrice')}
-                        disabled={loading}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="max-price" className="mb-1 block text-sm font-medium">
-                        {t('filters.maxPrice')}
-                      </label>
-                      <input
-                        id="max-price"
-                        type="number"
-                        inputMode="numeric"
-                        min={0}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        value={maxPrice}
-                        onChange={(e) => setMaxPrice(e.target.value)}
-                        aria-label={t('filters.maxPrice')}
-                        disabled={loading}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="rooms" className="mb-1 block text-sm font-medium">
-                        {t('filters.minRooms')}
-                      </label>
-                      <input
-                        id="rooms"
-                        type="number"
-                        inputMode="numeric"
-                        min={0}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        value={rooms}
-                        onChange={(e) => setRooms(e.target.value)}
-                        aria-label={t('filters.minRooms')}
-                        disabled={loading}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="property-type" className="mb-1 block text-sm font-medium">
-                        {t('filters.propertyType')}
-                      </label>
-                      <select
-                        id="property-type"
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        value={propertyType}
-                        onChange={(e) => setPropertyType(e.target.value)}
-                        aria-label={t('filters.propertyType')}
-                        disabled={loading}
-                      >
-                        <option value="">{t('propertyTypes.any')}</option>
-                        <option value="apartment">{t('propertyTypes.apartment')}</option>
-                        <option value="house">{t('propertyTypes.house')}</option>
-                        <option value="studio">{t('propertyTypes.studio')}</option>
-                        <option value="loft">{t('propertyTypes.loft')}</option>
-                        <option value="townhouse">{t('propertyTypes.townhouse')}</option>
-                        <option value="other">{t('propertyTypes.other')}</option>
-                      </select>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setMinPrice('');
-                        setMaxPrice('');
-                        setRooms('');
-                        setPropertyType('');
-                        setSortBy('relevance');
-                        setSortOrder('desc');
-                      }}
-                      aria-label={t('filters.clearFilters')}
-                      disabled={loading}
-                    >
-                      {t('filters.clearFilters')}
-                    </Button>
-                    <div className="mt-2 grid grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="export-format" className="mb-1 block text-sm font-medium">
-                          {t('export.format')}
-                        </label>
-                        <select
-                          id="export-format"
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                          value={exportFormat}
-                          onChange={(e) => setExportFormat(e.target.value)}
-                          aria-label={t('export.format')}
-                          disabled={loading || results.length === 0}
-                        >
-                          <option value="csv">{t('export.csv')}</option>
-                          <option value="xlsx">{t('export.excel')}</option>
-                          <option value="json">{t('export.json')}</option>
-                          <option value="md">{t('export.markdown')}</option>
-                          <option value="pdf">{t('export.pdf')}</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label htmlFor="export-columns" className="mb-1 block text-sm font-medium">
-                          {t('export.columns')}
-                        </label>
-                        <input
-                          id="export-columns"
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                          value={exportColumns}
-                          onChange={(e) => setExportColumns(e.target.value)}
-                          placeholder={t('export.columnsPlaceholder')}
-                          aria-label={t('export.columns')}
-                          disabled={loading}
-                        />
-                      </div>
-                      {exportFormat === 'csv' ? (
-                        <div className="col-span-2 grid grid-cols-2 gap-4">
-                          <div>
-                            <label
-                              htmlFor="csv-delimiter"
-                              className="mb-1 block text-sm font-medium"
-                            >
-                              {t('export.delimiter')}
-                            </label>
-                            <select
-                              id="csv-delimiter"
-                              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                              value={csvDelimiter}
-                              onChange={(e) => setCsvDelimiter(e.target.value)}
-                              aria-label={t('export.delimiter')}
-                              disabled={loading}
-                            >
-                              <option value=",">{t('export.delimiterComma')}</option>
-                              <option value=";">{t('export.delimiterSemicolon')}</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label htmlFor="csv-decimal" className="mb-1 block text-sm font-medium">
-                              {t('export.decimalSeparator')}
-                            </label>
-                            <select
-                              id="csv-decimal"
-                              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                              value={csvDecimal}
-                              onChange={(e) => setCsvDecimal(e.target.value)}
-                              aria-label={t('export.decimalSeparator')}
-                              disabled={loading}
-                            >
-                              <option value=".">{t('export.decimalDot')}</option>
-                              <option value=",">{t('export.decimalComma')}</option>
-                            </select>
-                          </div>
-                          <label className="col-span-2 flex items-center gap-2 text-sm">
-                            <input
-                              type="checkbox"
-                              checked={exportIncludeHeader}
-                              onChange={(e) => setExportIncludeHeader(e.target.checked)}
-                              aria-label={t('export.includeHeader')}
-                              disabled={loading}
-                            />
-                            {t('export.includeHeader')}
-                          </label>
-                        </div>
-                      ) : null}
-                      <div className="flex items-end">
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={handleExport}
-                          disabled={exporting || !query.trim() || results.length === 0}
-                          aria-label={exporting ? tCommon('exporting') : tCommon('export')}
-                        >
-                          <Download className="mr-2 h-4 w-4" aria-hidden="true" />
-                          {exporting ? tCommon('exporting') : tCommon('export')}
-                        </Button>
-                      </div>
-                    </div>
-                    {exportError ? (
-                      <div className="text-sm text-destructive" role="alert">
-                        {exportError}
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        <div className="flex flex-wrap items-center gap-2">
+          <ParsedChips chips={chips} note={chips.length ? t('parsed.note') : undefined} />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setFiltersOpen((open) => !open)}
+            aria-expanded={filtersOpen}
+            className="h-7 rounded-full px-3 text-[12px] lg:hidden"
+          >
+            {t('filters.title')}
+          </Button>
+        </div>
+      </form>
+
+      {/* The three panes: the filters, the results, the map. */}
+      <div
+        className={[
+          'grid flex-1 grid-cols-1',
+          showMap
+            ? 'lg:grid-cols-[248px_460px_minmax(0,1fr)]'
+            : 'lg:grid-cols-[248px_minmax(0,1fr)]',
+        ].join(' ')}
+      >
+        {/* The filters. */}
+        <aside
+          data-testid="search-filters"
+          className={[
+            'border-b border-border px-6 py-4 lg:border-b-0 lg:border-r',
+            filtersOpen ? 'block' : 'hidden',
+            'lg:block',
+          ].join(' ')}
+        >
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-[14px] font-semibold text-foreground">{t('filters.title')}</h2>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={resetFilters}
+              disabled={loading}
+              className="h-7 px-2 text-[12px] font-normal text-muted-foreground"
+            >
+              {t('filters.reset')}
+            </Button>
           </div>
 
-          {/* Results Grid - 4 Mandated States */}
-          <div className="md:col-span-3">
+          <div className="mt-4 flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <span className={LABEL_CLASS}>{t('filters.city')}</span>
+              <div className="flex h-9 items-center justify-between gap-2 rounded-md border border-input bg-background px-2.5">
+                <span className="truncate font-mono text-[13px] text-foreground">
+                  {city ?? '—'}
+                </span>
+                {city ? (
+                  <MonoAnnotation className="shrink-0">
+                    {t('filters.inResults', { count: listingsInCity })}
+                  </MonoAnnotation>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="min-price" className={LABEL_CLASS}>
+                {t('filters.minPrice')}
+              </label>
+              <input
+                id="min-price"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                className={MONO_CONTROL_CLASS}
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+                aria-label={t('filters.minPrice')}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="max-price" className={LABEL_CLASS}>
+                {t('filters.maxPrice')}
+              </label>
+              <input
+                id="max-price"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                className={MONO_CONTROL_CLASS}
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+                aria-label={t('filters.maxPrice')}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="rooms" className={LABEL_CLASS}>
+                {t('filters.minRooms')}
+              </label>
+              <input
+                id="rooms"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                className={MONO_CONTROL_CLASS}
+                value={rooms}
+                onChange={(e) => setRooms(e.target.value)}
+                aria-label={t('filters.minRooms')}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="property-type" className={LABEL_CLASS}>
+                {t('filters.propertyType')}
+              </label>
+              <select
+                id="property-type"
+                className={CONTROL_CLASS}
+                value={propertyType}
+                onChange={(e) => setPropertyType(e.target.value)}
+                aria-label={t('filters.propertyType')}
+                disabled={loading}
+              >
+                <option value="">{t('propertyTypes.any')}</option>
+                <option value="apartment">{t('propertyTypes.apartment')}</option>
+                <option value="house">{t('propertyTypes.house')}</option>
+                <option value="studio">{t('propertyTypes.studio')}</option>
+                <option value="loft">{t('propertyTypes.loft')}</option>
+                <option value="townhouse">{t('propertyTypes.townhouse')}</option>
+                <option value="other">{t('propertyTypes.other')}</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="sort-by" className={LABEL_CLASS}>
+                {t('filters.sortBy')}
+              </label>
+              <select
+                id="sort-by"
+                className={CONTROL_CLASS}
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                aria-label={t('filters.sortBy')}
+                disabled={loading}
+              >
+                <option value="relevance">{t('sortOptions.relevance')}</option>
+                <option value="price">{t('sortOptions.price')}</option>
+                <option value="price_per_sqm">{t('sortOptions.pricePerSqm')}</option>
+                <option value="area_sqm">{t('sortOptions.area')}</option>
+                <option value="year_built">{t('sortOptions.yearBuilt')}</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="sort-order" className={LABEL_CLASS}>
+                {t('filters.order')}
+              </label>
+              <select
+                id="sort-order"
+                className={CONTROL_CLASS}
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+                aria-label={t('filters.order')}
+                disabled={loading}
+              >
+                <option value="desc">{t('orderOptions.descending')}</option>
+                <option value="asc">{t('orderOptions.ascending')}</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-col gap-3 border-t border-border pt-4">
+            <SaveSearchButton
+              filters={{
+                query,
+                min_price: minPrice.trim() ? Number(minPrice) : undefined,
+                max_price: maxPrice.trim() ? Number(maxPrice) : undefined,
+                min_rooms: rooms.trim() ? Number(rooms) : undefined,
+                property_type: propertyType.trim() || undefined,
+              }}
+              query={query}
+              className="w-full justify-center"
+            />
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="export-format" className={LABEL_CLASS}>
+                {t('export.format')}
+              </label>
+              <select
+                id="export-format"
+                className={CONTROL_CLASS}
+                value={exportFormat}
+                onChange={(e) => setExportFormat(e.target.value)}
+                aria-label={t('export.format')}
+                disabled={loading || results.length === 0}
+              >
+                <option value="csv">{t('export.csv')}</option>
+                <option value="xlsx">{t('export.excel')}</option>
+                <option value="json">{t('export.json')}</option>
+                <option value="md">{t('export.markdown')}</option>
+                <option value="pdf">{t('export.pdf')}</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="export-columns" className={LABEL_CLASS}>
+                {t('export.columns')}
+              </label>
+              <input
+                id="export-columns"
+                className={MONO_CONTROL_CLASS}
+                value={exportColumns}
+                onChange={(e) => setExportColumns(e.target.value)}
+                placeholder={t('export.columnsPlaceholder')}
+                aria-label={t('export.columns')}
+                disabled={loading}
+              />
+            </div>
+
+            {exportFormat === 'csv' ? (
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="csv-delimiter" className={LABEL_CLASS}>
+                    {t('export.delimiter')}
+                  </label>
+                  <select
+                    id="csv-delimiter"
+                    className={CONTROL_CLASS}
+                    value={csvDelimiter}
+                    onChange={(e) => setCsvDelimiter(e.target.value)}
+                    aria-label={t('export.delimiter')}
+                    disabled={loading}
+                  >
+                    <option value=",">{t('export.delimiterComma')}</option>
+                    <option value=";">{t('export.delimiterSemicolon')}</option>
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="csv-decimal" className={LABEL_CLASS}>
+                    {t('export.decimalSeparator')}
+                  </label>
+                  <select
+                    id="csv-decimal"
+                    className={CONTROL_CLASS}
+                    value={csvDecimal}
+                    onChange={(e) => setCsvDecimal(e.target.value)}
+                    aria-label={t('export.decimalSeparator')}
+                    disabled={loading}
+                  >
+                    <option value=".">{t('export.decimalDot')}</option>
+                    <option value=",">{t('export.decimalComma')}</option>
+                  </select>
+                </div>
+                <label className="flex items-center gap-2 text-[13px] text-foreground">
+                  <input
+                    type="checkbox"
+                    checked={exportIncludeHeader}
+                    onChange={(e) => setExportIncludeHeader(e.target.checked)}
+                    aria-label={t('export.includeHeader')}
+                    disabled={loading}
+                  />
+                  {t('export.includeHeader')}
+                </label>
+              </div>
+            ) : null}
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleExport}
+              disabled={exporting || !query.trim() || results.length === 0}
+              aria-label={exporting ? tCommon('exporting') : tCommon('export')}
+              className="w-full justify-center"
+            >
+              <Download className="mr-1.5 size-3.5" aria-hidden="true" />
+              {exporting ? tCommon('exporting') : tCommon('export')}
+            </Button>
+            <MonoAnnotation>{t('export.hint')}</MonoAnnotation>
+
+            {exportError ? (
+              <div className="text-[12px] text-destructive" role="alert">
+                {exportError}
+              </div>
+            ) : null}
+          </div>
+        </aside>
+
+        {/* The results: a ledger of prices. */}
+        <section
+          data-testid="search-results"
+          className="order-3 flex flex-col lg:order-2 lg:border-r lg:border-border"
+        >
+          <div className="flex flex-col gap-2 border-b border-border px-6 py-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+              <p className="min-w-0 text-[14px] font-semibold text-foreground">{summary}</p>
+              <div className="flex items-center gap-3">
+                <MonoAnnotation>
+                  {t('map.shown', { shown: shownCount, total: results.length })}
+                </MonoAnnotation>
+                <div
+                  className="inline-flex rounded-md border border-border p-0.5"
+                  role="group"
+                  aria-label={t('view.label')}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('list')}
+                    className={[
+                      'rounded-sm px-2.5 py-1 text-[12px]',
+                      viewMode === 'list' ? 'bg-muted font-medium' : 'text-muted-foreground',
+                    ].join(' ')}
+                    aria-pressed={viewMode === 'list'}
+                    aria-label={t('view.list')}
+                  >
+                    {t('view.list')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('map')}
+                    className={[
+                      'rounded-sm px-2.5 py-1 text-[12px]',
+                      viewMode === 'map' ? 'bg-muted font-medium' : 'text-muted-foreground',
+                    ].join(' ')}
+                    aria-pressed={viewMode === 'map'}
+                    aria-label={t('view.map')}
+                  >
+                    {t('view.map')}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {hasSearched && results.length > 0 ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <PresetSelector
+                  onPresetSelect={(preset: FilterPreset) => {
+                    // Apply preset filters to state
+                    const filters = preset.filters;
+                    if (filters.min_price !== undefined) {
+                      setMinPrice(String(filters.min_price));
+                    }
+                    if (filters.max_price !== undefined) {
+                      setMaxPrice(String(filters.max_price));
+                    }
+                    if (filters.min_rooms !== undefined) {
+                      setRooms(String(filters.min_rooms));
+                    }
+                    if (filters.property_type !== undefined) {
+                      setPropertyType(String(filters.property_type));
+                    }
+                    // Trigger search with new filters
+                    setTimeout(() => {
+                      const form = document.querySelector(
+                        'form[role="search"]'
+                      ) as HTMLFormElement | null;
+                      if (form) {
+                        form.requestSubmit();
+                      }
+                    }, 0);
+                  }}
+                  currentFilters={{
+                    min_price: minPrice.trim() ? Number(minPrice) : undefined,
+                    max_price: maxPrice.trim() ? Number(maxPrice) : undefined,
+                    min_rooms: rooms.trim() ? Number(rooms) : undefined,
+                    property_type: propertyType.trim() || undefined,
+                  }}
+                />
+              </div>
+            ) : null}
+          </div>
+
+          <div className="flex-1">
             {/* STATE 1: Empty state (zero-data) */}
             {!hasSearched && !loading && !error && (
               <EmptyState
@@ -657,24 +880,24 @@ function SearchPageContent() {
                 title={t('emptyState.title')}
                 description={t('emptyState.description')}
                 action={
-                  <div className="flex flex-col items-center gap-2">
-                    <p className="text-sm font-medium text-foreground">
+                  <div className="flex flex-col items-start gap-2">
+                    <p className="text-[14px] font-medium text-foreground">
                       {t('emptyState.tryExamples')}
                     </p>
-                    <div className="flex flex-col items-center gap-1">
+                    <div className="flex flex-col items-start gap-1">
                       {exampleQueries.map((example, idx) => (
                         <button
                           key={idx}
                           type="button"
                           onClick={() => handleExampleQuery(example)}
-                          className="text-sm text-primary hover:underline disabled:opacity-50"
+                          className="text-left text-[14px] text-foreground hover:underline disabled:opacity-50"
                           disabled={loading}
                         >
                           &ldquo;{example}&rdquo;
                         </button>
                       ))}
                     </div>
-                    <p className="text-xs text-muted-foreground">{t('emptyState.exportHint')}</p>
+                    <MonoAnnotation>{t('emptyState.exportHint')}</MonoAnnotation>
                   </div>
                 }
               />
@@ -686,18 +909,11 @@ function SearchPageContent() {
                 finished search stay on the screen while the next one runs. */}
             {loading && results.length === 0 && (
               <div
-                className="space-y-4"
                 role="status"
                 aria-live="polite"
                 aria-label={tCommon('loading')}
               >
-                {/* Skeleton results */}
-                <LoadingState variant="cards" rows={6} />
-                {/* Map placeholder */}
-                <div
-                  className="h-[420px] w-full bg-muted animate-pulse rounded-lg border border-dashed"
-                  aria-hidden="true"
-                />
+                <LoadingState variant="rows" rows={6} />
               </div>
             )}
 
@@ -720,7 +936,7 @@ function SearchPageContent() {
 
             {/* STATE 4: Populated state */}
             {!loading && hasSearched && !error && (
-              <div className="space-y-4">
+              <>
                 {results.length === 0 ? (
                   /* No results sub-state of Populated */
                   <EmptyState
@@ -729,209 +945,113 @@ function SearchPageContent() {
                     description={t('results.noResultsHint')}
                   />
                 ) : (
-                  <>
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div
-                          className="inline-flex rounded-md border bg-background p-1"
-                          role="group"
-                          aria-label={t('view.label')}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => setViewMode('list')}
-                            className={[
-                              'rounded-md px-3 py-1.5 text-sm',
-                              viewMode === 'list' ? 'bg-muted font-medium' : 'hover:bg-muted/50',
-                              'disabled:opacity-50',
-                            ].join(' ')}
-                            aria-pressed={viewMode === 'list'}
-                            aria-label={t('view.list')}
-                          >
-                            {t('view.list')}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setViewMode('map')}
-                            className={[
-                              'rounded-md px-3 py-1.5 text-sm',
-                              viewMode === 'map' ? 'bg-muted font-medium' : 'hover:bg-muted/50',
-                              'disabled:opacity-50',
-                            ].join(' ')}
-                            aria-pressed={viewMode === 'map'}
-                            aria-label={t('view.map')}
-                          >
-                            {t('view.map')}
-                          </button>
-                        </div>
-                        <SaveSearchButton
-                          filters={{
-                            query,
-                            min_price: minPrice.trim() ? Number(minPrice) : undefined,
-                            max_price: maxPrice.trim() ? Number(maxPrice) : undefined,
-                            min_rooms: rooms.trim() ? Number(rooms) : undefined,
-                            property_type: propertyType.trim() || undefined,
-                          }}
-                          query={query}
-                        />
-                        <PresetSelector
-                          onPresetSelect={(preset: FilterPreset) => {
-                            // Apply preset filters to state
-                            const filters = preset.filters;
-                            if (filters.min_price !== undefined) {
-                              setMinPrice(String(filters.min_price));
-                            }
-                            if (filters.max_price !== undefined) {
-                              setMaxPrice(String(filters.max_price));
-                            }
-                            if (filters.min_rooms !== undefined) {
-                              setRooms(String(filters.min_rooms));
-                            }
-                            if (filters.property_type !== undefined) {
-                              setPropertyType(String(filters.property_type));
-                            }
-                            // Trigger search with new filters
-                            setTimeout(() => {
-                              const form = document.querySelector('form');
-                              if (form) {
-                                form.requestSubmit();
-                              }
-                            }, 0);
-                          }}
-                          currentFilters={{
-                            min_price: minPrice.trim() ? Number(minPrice) : undefined,
-                            max_price: maxPrice.trim() ? Number(maxPrice) : undefined,
-                            min_rooms: rooms.trim() ? Number(rooms) : undefined,
-                            property_type: propertyType.trim() || undefined,
-                          }}
-                        />
-                      </div>
-                      {viewMode === 'map' && (
-                        <div className="flex items-center gap-2">
-                          <label className="flex items-center gap-2 text-sm">
-                            <input
-                              type="checkbox"
-                              checked={useMapbox}
-                              onChange={(e) => setUseMapbox(e.target.checked)}
-                              className="h-4 w-4 rounded border-input"
-                              aria-label={t('map.useMapbox')}
-                            />
-                            {t('map.enhanced')}
-                          </label>
-                          {useMapbox && (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant={enableDrawing ? 'default' : 'outline'}
-                              onClick={() => {
-                                setEnableDrawing(!enableDrawing);
-                                if (enableDrawing) {
-                                  setDrawnPolygon(null);
-                                }
-                              }}
-                              aria-label={
-                                enableDrawing ? t('map.disableDrawing') : t('map.enableDrawing')
-                              }
-                            >
-                              <Pencil className="h-3 w-3" aria-hidden="true" />
-                              {enableDrawing ? t('map.drawing') : t('map.drawArea')}
-                            </Button>
-                          )}
-                          {drawnPolygon && (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              onClick={handlePolygonClear}
-                              aria-label={t('map.clearArea')}
-                            >
-                              {t('map.clearArea')}
-                            </Button>
-                          )}
-                        </div>
-                      )}
-                      <div className="text-sm text-muted-foreground">
-                        {t('map.shown', {
-                          shown: drawnPolygon ? filteredByPolygon.length : filteredMapPoints.length,
-                          total: results.length,
-                        })}
-                        {drawnPolygon && (
-                          <span className="ml-1 text-primary">{t('map.filteredByArea')}</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {viewMode === 'map' ? (
-                      <div className="relative">
-                        {mapPoints.length ? (
-                          useMapbox ? (
-                            <>
-                              <PropertyMapboxMap
-                                points={drawnPolygon ? filteredByPolygon : filteredMapPoints}
-                                mapboxToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-                                showHeatmap={mapFilterOptions.showHeatmap}
-                                heatmapIntensity={mapFilterOptions.heatmapIntensity}
-                                heatmapMode={mapFilterOptions.heatmapMode}
-                                showClusters={mapFilterOptions.showClusters}
-                                clusterOptions={mapFilterOptions.clusterOptions}
-                                enableDrawing={enableDrawing}
-                                onMarkerClick={handlePropertyClick}
-                                onPolygonDraw={handlePolygonDraw}
-                                onPolygonClear={handlePolygonClear}
-                              />
-                              <MapControls
-                                options={mapFilterOptions}
-                                onChange={setMapFilterOptions}
-                                currency={resultCurrency}
-                                onZoomIn={() => {
-                                  /* Handled by Mapbox */
-                                }}
-                                onZoomOut={() => {
-                                  /* Handled by Mapbox */
-                                }}
-                                onFitBounds={() => {
-                                  /* Handled by Mapbox */
-                                }}
-                              />
-                            </>
-                          ) : (
-                            <PropertyMap points={filteredMapPoints} />
-                          )
-                        ) : (
-                          <EmptyState
-                            icon={MapPin}
-                            title={t('map.noMappableResults')}
-                            description={t('map.noMappableResultsHint')}
-                          />
-                        )}
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {results.map((item, index) => {
-                          const prop = item.property;
-                          return (
-                            <PropertyCard
-                              key={`${prop.id ?? 'unknown'}-${index}`}
-                              property={prop}
-                              footer={
-                                <>
-                                  {prop.id && <ListingGenerator propertyId={prop.id} compact />}
-                                  {prop.id && (
-                                    <RelevanceRating query={query} propertyId={prop.id} />
-                                  )}
-                                </>
-                              }
-                            />
-                          );
-                        })}
-                      </div>
-                    )}
-                  </>
+                  <ResultsLedger results={results} query={query} />
                 )}
-              </div>
+              </>
             )}
           </div>
-        </div>
+        </section>
+
+        {/* The map, with the area analytics over it. */}
+        {showMap ? (
+          <section data-testid="search-map" className="relative order-2 lg:order-3">
+            <div className="lg:sticky lg:top-0">
+              {mapPoints.length ? (
+                useMapbox ? (
+                  <>
+                    <PropertyMapboxMap
+                      points={drawnPolygon ? filteredByPolygon : filteredMapPoints}
+                      mapboxToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+                      showHeatmap={mapFilterOptions.showHeatmap}
+                      heatmapIntensity={mapFilterOptions.heatmapIntensity}
+                      heatmapMode={mapFilterOptions.heatmapMode}
+                      showClusters={mapFilterOptions.showClusters}
+                      clusterOptions={mapFilterOptions.clusterOptions}
+                      enableDrawing={enableDrawing}
+                      onMarkerClick={handlePropertyClick}
+                      onPolygonDraw={handlePolygonDraw}
+                      onPolygonClear={handlePolygonClear}
+                    />
+                    <MapControls
+                      options={mapFilterOptions}
+                      onChange={setMapFilterOptions}
+                      currency={resultCurrency}
+                      onZoomIn={() => {
+                        /* Handled by Mapbox */
+                      }}
+                      onZoomOut={() => {
+                        /* Handled by Mapbox */
+                      }}
+                      onFitBounds={() => {
+                        /* Handled by Mapbox */
+                      }}
+                    />
+                  </>
+                ) : (
+                  <PropertyMap points={filteredMapPoints} />
+                )
+              ) : (
+                <div className="flex h-[420px] items-center justify-center border-b border-border bg-muted/40 px-6">
+                  <EmptyState
+                    icon={MapPin}
+                    title={t('map.noMappableResults')}
+                    description={t('map.noMappableResultsHint')}
+                    className="w-full"
+                  />
+                </div>
+              )}
+
+              {results.length > 0 ? <AreaAnalyticsCard results={results} /> : null}
+
+              {mapPoints.length ? (
+                <div className="absolute right-4 top-4 z-[1000] flex items-center gap-2 rounded-lg border border-border bg-background px-2.5 py-1.5">
+                  <label className="flex items-center gap-2 text-[12px] text-foreground">
+                    <input
+                      type="checkbox"
+                      checked={useMapbox}
+                      onChange={(e) => setUseMapbox(e.target.checked)}
+                      className="size-3.5 rounded border-input"
+                      aria-label={t('map.useMapbox')}
+                    />
+                    {t('map.enhanced')}
+                  </label>
+                  {useMapbox ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={enableDrawing ? 'default' : 'outline'}
+                      onClick={() => {
+                        setEnableDrawing(!enableDrawing);
+                        if (enableDrawing) {
+                          setDrawnPolygon(null);
+                        }
+                      }}
+                      aria-label={
+                        enableDrawing ? t('map.disableDrawing') : t('map.enableDrawing')
+                      }
+                      className="h-7 text-[12px]"
+                    >
+                      <Pencil className="mr-1 size-3" aria-hidden="true" />
+                      {enableDrawing ? t('map.drawing') : t('map.drawArea')}
+                    </Button>
+                  ) : null}
+                  {drawnPolygon ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={handlePolygonClear}
+                      aria-label={t('map.clearArea')}
+                      className="h-7 text-[12px]"
+                    >
+                      {t('map.clearArea')}
+                    </Button>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </section>
+        ) : null}
       </div>
     </div>
   );
@@ -939,20 +1059,15 @@ function SearchPageContent() {
 
 function SearchPageFallback() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col space-y-8">
-        <div className="flex flex-col space-y-4">
-          <div className="h-9 w-64 bg-muted animate-pulse rounded" />
-          <div className="h-5 w-96 bg-muted animate-pulse rounded" />
-        </div>
-        <div className="flex gap-4">
-          <div className="flex-1 h-10 bg-muted animate-pulse rounded" />
-          <div className="h-10 w-24 bg-muted animate-pulse rounded" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="h-[600px] bg-muted animate-pulse rounded-lg" />
-          <div className="md:col-span-3 h-[400px] bg-muted animate-pulse rounded-lg" />
-        </div>
+    <div className="flex min-h-full flex-col bg-background">
+      <div className="flex flex-col gap-2.5 border-b border-border px-6 py-3">
+        <div className="h-11 w-full bg-muted animate-pulse rounded-lg" />
+        <div className="h-4 w-64 bg-muted animate-pulse rounded" />
+      </div>
+      <div className="grid flex-1 grid-cols-1 lg:grid-cols-[248px_460px_minmax(0,1fr)]">
+        <div className="hidden h-[600px] bg-muted animate-pulse lg:block" />
+        <div className="h-[400px] bg-muted animate-pulse" />
+        <div className="hidden h-[420px] bg-muted animate-pulse lg:block" />
       </div>
     </div>
   );
