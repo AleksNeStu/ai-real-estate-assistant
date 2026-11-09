@@ -147,7 +147,9 @@ class MiniMaxProvider(RemoteModelProvider):
         # ignored rather than sent to the API.
         effort = self._reasoning_effort(model_id)
         if effort:
-            kwargs.setdefault("extra_body", {})["reasoning"] = {"effort": effort}
+            extra_body = dict(kwargs.pop("extra_body", None) or {})
+            extra_body["reasoning"] = {"effort": effort}
+            kwargs["extra_body"] = extra_body
 
         llm = ChatOpenAI(
             model=model_id,
