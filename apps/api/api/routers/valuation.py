@@ -23,6 +23,7 @@ from api.models import (
     PriceForecastRequest,
     PriceForecastResponse,
 )
+from config.settings import get_settings
 from tools.neighborhood_summary import NeighborhoodSummaryTool
 from tools.price_forecast_tools import (
     PriceForecastResult,
@@ -52,9 +53,7 @@ def _to_int(value: object) -> Optional[int]:
         return None
 
 
-def _load_property_features(
-    store: Any, property_id: str
-) -> Optional[Dict[str, Any]]:
+def _load_property_features(store: Any, property_id: str) -> Optional[Dict[str, Any]]:
     if store is None or not property_id:
         return None
     try:
@@ -84,7 +83,9 @@ def _load_property_features(
         "price_per_sqm": _to_float(md.get("price_per_sqm")),
         "latitude": _to_float(md.get("lat") or md.get("latitude")),
         "longitude": _to_float(md.get("lon") or md.get("longitude")),
-        "currency": md.get("currency") or "EUR",
+        # The listing's own currency; a listing that carries none is read in
+        # the currency of the deployment.
+        "currency": md.get("currency") or get_settings().default_currency,
     }
 
 

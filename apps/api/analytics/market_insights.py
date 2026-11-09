@@ -95,6 +95,26 @@ class LocationInsights(BaseModel):
     most_common_room_count: Optional[float] = None
     amenity_availability: Dict[str, float] = Field(default_factory=dict)
     price_comparison: Optional[str] = None  # "above_average", "below_average", "average"
+    # The currency the prices are in - the currency of the listings themselves.
+    currency: Optional[str] = None
+
+
+def _dominant_currency(city_df: pd.DataFrame) -> Optional[str]:
+    """The currency most of the listings of a place are priced in.
+
+    An average of prices in two currencies is a number without a meaning, so
+    the currency is reported next to it — and the one most listings carry
+    wins, because that is the one the reader can act on.
+    """
+    if "currency" not in city_df.columns:
+        return None
+
+    currencies = city_df["currency"].dropna()
+    if len(currencies) == 0:
+        return None
+
+    counts = currencies.value_counts()
+    return str(counts.index[0])
 
 
 class PropertyTypeInsights(BaseModel):
@@ -381,6 +401,7 @@ class MarketInsights:
             most_common_room_count=most_common_rooms,
             amenity_availability=amenity_availability,
             price_comparison=price_comparison,
+            currency=_dominant_currency(city_df),
         )
 
     def get_city_price_indices(self, cities: Optional[List[str]] = None) -> pd.DataFrame:

@@ -33,6 +33,11 @@ def load_schema(path: str) -> dict[str, Any]:
         return json.load(f)
 
 
+# The version of the API contract the baseline describes. The versioning
+# middleware announces the same number on every /api/ response.
+CONTRACT_VERSION = "1.0.0"
+
+
 def diff_paths(
     baseline_paths: dict[str, Any],
     current_paths: dict[str, Any],
@@ -134,6 +139,57 @@ def diff_paths(
     return errors
 
 
+def export_current_schema(current_path: str | None = None) -> dict[str, Any]:
+    """The schema of the application, or the one in a file."""
+    if current_path:
+        return load_schema(current_path)
+
+    import os
+    import sys
+
+    # Add apps/api to Python path for imports
+    repo_root = Path(__file__).parent.parent.parent
+    api_dir = repo_root / "apps" / "api"
+    if str(api_dir) not in sys.path:
+        sys.path.insert(0, str(api_dir))
+
+    os.environ.setdefault("ENVIRONMENT", "test")
+    os.environ.setdefault("API_ACCESS_KEY", "test-key")
+    # Enable JWT auth so ALL conditional routers are included in the schema
+    os.environ.setdefault("AUTH_JWT_ENABLED", "true")
+
+    from api.main import app
+
+    return app.openapi()
+
+
+def _generate_baseline(baseline_path: str, current_path: str | None = None) -> int:
+    """Write the current schema as the baseline the diff compares against.
+
+    The baseline carries the contract version, so the file says which
+    contract it describes.
+    """
+    try:
+        schema = export_current_schema(current_path)
+    except Exception as e:
+        print(f"ERROR: Could not export schema from app: {e}")
+        print("Provide --current path to pre-exported schema")
+        return 1
+
+    schema["x-api-contract-version"] = CONTRACT_VERSION
+
+    target = Path(baseline_path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    # The baseline is a machine artifact: it is compared by the tool, not read
+    # by a person. Written compact, it stays inside the size the repository
+    # allows for an added file.
+    target.write_text(
+        json.dumps(schema, separators=(",", ":")) + "\n", encoding="utf-8"
+    )
+    print(f"Wrote the baseline to {target} ({len(schema.get('paths', {}))} paths)")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="OpenAPI schema diff for breaking changes"
@@ -149,6 +205,11 @@ def main() -> int:
         help="Path to current schema (default: export from running app)",
     )
     parser.add_argument(
+        "--generate-baseline",
+        action="store_true",
+        help="Write the current schema as the baseline and exit",
+    )
+    parser.add_argument(
         "--strict",
         action="store_true",
         help="Treat warnings as errors",
@@ -157,9 +218,12 @@ def main() -> int:
 
     baseline_path = args.baseline
 
+    if args.generate_baseline:
+        return _generate_baseline(baseline_path, args.current)
+
     if not Path(baseline_path).exists():
         print(f"ERROR: Baseline schema not found: {baseline_path}")
-        print("Run: python scripts/openapi_diff.py --generate-baseline")
+        print("Run: python scripts/api/openapi_diff.py --generate-baseline")
         return 1
 
     if args.current:

@@ -3389,7 +3389,7 @@
       "instrumentOpenAll": "Abrir todos os {count}",
       "instrumentNote": "Catálogo de demonstração com dados semeados, não são imóveis reais · um modelo que pagamos nós, sem chaves",
       "instrumentPerMonth": "≈{amount}/mo",
-      "instrumentPerSqm": "{amount} zł/m²",
+      "instrumentPerSqm": "{amount} {currency}/m²",
       "matches": "{count} resultados"
     },
     "chips": {
@@ -3449,7 +3449,7 @@
       "coverageLive": "Fornecedor ao vivo",
       "coverageWorks": "funciona",
       "coveragePlanned": "previsto",
-      "coverageNote": "9 idiomas de interface · preços na moeda de cada anúncio (zł, €, £, $).",
+      "coverageNote": "9 idiomas de interface · cada preço na moeda do próprio anúncio — o catálogo de demonstração está em zł.",
       "adaptersTitle": "Adaptadores de enriquecimento",
       "adaptersNote": "Independentes do país: funcionam em quaisquer coordenadas.",
       "adapters": [

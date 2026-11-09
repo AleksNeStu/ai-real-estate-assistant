@@ -423,6 +423,17 @@ export default function PropertyMapboxMap({
   // Calculate value range for legend
   const valueRange = useMemo(() => getValueRange(points, heatmapMode), [points, heatmapMode]);
 
+  // The legend prices the map in the currency of the listings on it.
+  const mapCurrency = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const point of points) {
+      if (!point.currency) continue;
+      counts.set(point.currency, (counts.get(point.currency) ?? 0) + 1);
+    }
+    const dominant = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    return dominant?.[0];
+  }, [points]);
+
   // Detect if mobile viewport
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
@@ -459,6 +470,8 @@ export default function PropertyMapboxMap({
           mode={heatmapMode}
           minValue={valueRange.min}
           maxValue={valueRange.max}
+          currency={mapCurrency}
+          locale={locale}
           className="absolute bottom-4 right-4 z-10"
         />
       )}

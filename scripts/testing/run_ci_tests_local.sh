@@ -107,7 +107,7 @@ $PYTHON ../../scripts/security/forbidden_tokens.py
 
 # 4. OpenAPI breaking-change detection
 echo -e "\n${YELLOW}[4/8] Running OpenAPI diff...${NC}"
-$PYTHON ../../scripts/openapi_diff.py --baseline ../../docs/api-v1-baseline.json
+$PYTHON ../../scripts/api/openapi_diff.py --baseline ../../docs/api-v1-baseline.json
 
 # 5. Alembic migration check
 echo -e "\n${YELLOW}[5/8] Running Alembic migration check...${NC}"

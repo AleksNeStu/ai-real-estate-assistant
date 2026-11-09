@@ -84,6 +84,13 @@ class AppSettings(BaseModel):
         default_factory=lambda: os.getenv("MINIMAX_DEFAULT_MODEL") or "MiniMax-M3.1-Flash",
         description="The MiniMax model the demo answers with",
     )
+    default_currency: str = Field(
+        default_factory=lambda: os.getenv("DEFAULT_CURRENCY") or "PLN",
+        description=(
+            "The currency of the listings a deployment carries. A price without a "
+            "currency of its own is read in this one."
+        ),
+    )
     zhipuai_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("ZHIPUAI_API_KEY") or os.getenv("ZAI_API_KEY"),
         description="Zhipu AI API key - Chinese LLM provider with free tier (glm-4.7-flash)",

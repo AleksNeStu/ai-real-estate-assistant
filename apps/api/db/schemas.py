@@ -616,6 +616,8 @@ class AreaInsightsResponse(BaseModel):
     most_common_room_count: Optional[float] = None
     amenity_availability: dict[str, float] = Field(default_factory=dict)
     price_comparison: Optional[str] = None  # "above_average", "below_average", "average"
+    # The currency the prices are in - the currency of the listings themselves.
+    currency: Optional[str] = None
 
 
 class AreaComparisonResponse(BaseModel):

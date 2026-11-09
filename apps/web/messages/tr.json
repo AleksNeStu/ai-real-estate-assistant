@@ -3389,7 +3389,7 @@
       "instrumentOpenAll": "Tümünü aç ({count})",
       "instrumentNote": "Örnek verili demo kataloğu, gerçek ilanlar değil · bizim ödediğimiz bir model, anahtar yok",
       "instrumentPerMonth": "≈{amount}/mo",
-      "instrumentPerSqm": "{amount} zł/m²",
+      "instrumentPerSqm": "{amount} {currency}/m²",
       "matches": "{count} eşleşme"
     },
     "chips": {
@@ -3449,7 +3449,7 @@
       "coverageLive": "Canlı sağlayıcı",
       "coverageWorks": "çalışıyor",
       "coveragePlanned": "planlanıyor",
-      "coverageNote": "9 arayüz dili · fiyatlar her ilanın kendi para biriminde (zł, €, £, $).",
+      "coverageNote": "9 arayüz dili · her fiyat kendi para biriminde — demo kataloğu zł cinsindendir.",
       "adaptersTitle": "Zenginleştirme bağdaştırıcıları",
       "adaptersNote": "Ülkeden bağımsız: her koordinatta çalışırlar.",
       "adapters": [

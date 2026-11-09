@@ -310,7 +310,9 @@ desktop.ini
 
 # Generated files
 *.generated.*
-!docs/API_REFERENCE.generated.md
+# The API endpoint index is generated, but it is committed on purpose: it is
+# what a reader without the application in front of them reads.
+!docs/api/API_REFERENCE.generated.md
 
 # Large data files (optional - uncomment if needed)
 # *.csv

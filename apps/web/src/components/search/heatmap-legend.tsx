@@ -2,11 +2,15 @@
 
 import { heatmapLegendColors } from "./heatmap-colors";
 import type { HeatmapMode } from "./property-map-utils";
+import { formatCompactPrice } from "@/lib/format";
 
 interface HeatmapLegendProps {
   mode: HeatmapMode;
   minValue?: number;
   maxValue?: number;
+  /** The currency the listings on the map are priced in. */
+  currency?: string;
+  locale?: string;
   className?: string;
 }
 
@@ -28,26 +32,28 @@ const MODE_CONFIG: Record<HeatmapMode, { label: string; unit: string }> = {
     unit: "%",
   },
 };
-function formatValue(value: number | undefined, mode: HeatmapMode): string {
+function formatValue(
+  value: number | undefined,
+  mode: HeatmapMode,
+  currency: string,
+  locale: string
+): string {
   if (value === undefined) return "-";
 
   if (mode === "density") return "";
   if (mode === "yield") return `${value.toFixed(1)}%`;
 
-  // Price and price_per_sqm
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`;
-  }
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}K`;
-  }
-  return `$${value.toFixed(0)}`;
+  // Price and price_per_sqm, in the currency of the listings themselves -
+  // the legend used to spell a dollar sign into every price.
+  return formatCompactPrice(value, currency, locale);
 }
 
 export default function HeatmapLegend({
   mode,
   minValue,
   maxValue,
+  currency = "PLN",
+  locale = "pl-PL",
   className = "",
 }: HeatmapLegendProps) {
   const config = MODE_CONFIG[mode];
@@ -71,10 +77,10 @@ export default function HeatmapLegend({
       />
       <div className="flex justify-between mt-1">
         <span className="text-xs text-muted-foreground">
-          {formatValue(minValue, mode)}
+          {formatValue(minValue, mode, currency, locale)}
         </span>
         <span className="text-xs text-muted-foreground">
-          {formatValue(maxValue, mode)}
+          {formatValue(maxValue, mode, currency, locale)}
         </span>
       </div>
     </div>

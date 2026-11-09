@@ -152,6 +152,7 @@ export function HeroInstrument({ query, locale }: { query: string; locale: strin
               {property.price && property.area_sqm
                 ? t('hero.instrumentPerSqm', {
                     amount: Math.round(property.price / property.area_sqm).toLocaleString('en-US'),
+                    currency: property.currency ?? 'PLN',
                   })
                 : '—'}
             </span>

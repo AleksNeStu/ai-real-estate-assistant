@@ -22,7 +22,7 @@ from fastapi.testclient import TestClient
 
 REPO_ROOT = Path(__file__).resolve().parents[4]  # apps/api/tests/integration → repo root
 BASELINE_PATH = REPO_ROOT / "docs" / "api-v1-baseline.json"
-OPENAPI_DIFF_SCRIPT = REPO_ROOT / "scripts" / "openapi_diff.py"
+OPENAPI_DIFF_SCRIPT = REPO_ROOT / "scripts" / "api" / "openapi_diff.py"
 
 
 def _resolve_ref(schema: dict, root: dict) -> dict:

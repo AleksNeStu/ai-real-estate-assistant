@@ -856,6 +856,8 @@ export interface AreaInsights {
   most_common_room_count?: number;
   amenity_availability: Record<string, number>;
   price_comparison?: 'above_average' | 'below_average' | 'average';
+  /** The currency the prices are in - the currency of the listings themselves. */
+  currency?: string;
 }
 
 export interface AreaComparison {

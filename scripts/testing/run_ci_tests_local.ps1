@@ -127,7 +127,7 @@ try {
 
     # 4. OpenAPI breaking-change detection
     Write-Host "`n[4/8] Running OpenAPI diff..." -ForegroundColor Yellow
-    & $PYTHON ..\..\scripts\openapi_diff.py --baseline ..\..\docs\api-v1-baseline.json
+    & $PYTHON ..\..\scripts\api\openapi_diff.py --baseline ..\..\docs\api-v1-baseline.json
     if ($LASTEXITCODE -ne 0) {
         $FailedSteps += "OpenAPI diff"
         if (-not $ContinueOnError) {

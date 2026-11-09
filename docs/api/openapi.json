@@ -1971,6 +1971,17 @@
           "property_count": {
             "title": "Property Count",
             "type": "integer"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
           }
         },
         "required": [
@@ -2848,6 +2859,18 @@
               }
             ],
             "title": "Year Built"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency",
+            "description": "Currency of the price, e.g. PLN"
           }
         },
         "required": [
@@ -7725,7 +7748,8 @@
                   "ads",
                   "direct",
                   "email",
-                  "social"
+                  "social",
+                  "propvector_waitlist"
                 ],
                 "type": "string"
               },
@@ -7960,6 +7984,16 @@
           "visitor_id": {
             "title": "Visitor Id",
             "type": "string"
+          },
+          "priority_score": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrioritizedScoreResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -8900,6 +8934,16 @@
           "visitor_id": {
             "title": "Visitor Id",
             "type": "string"
+          },
+          "priority_score": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrioritizedScoreResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -9926,6 +9970,17 @@
           "volume": {
             "title": "Volume",
             "type": "integer"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
           }
         },
         "required": [
@@ -13496,7 +13551,6 @@
           "title": {
             "anyOf": [
               {
-                "minLength": 5,
                 "type": "string"
               },
               {
@@ -16884,7 +16938,8 @@
               "schedule_viewing",
               "share",
               "save_search",
-              "download_report"
+              "download_report",
+              "navigation"
             ],
             "title": "Interaction Type",
             "type": "string"
@@ -17167,6 +17222,12 @@
             "minLength": 8,
             "title": "Password",
             "type": "string"
+          },
+          "consent_given": {
+            "type": "boolean",
+            "title": "Consent Given",
+            "description": "Whether the visitor agreed to the processing of their data at sign-up",
+            "default": false
           }
         },
         "required": [
@@ -17776,6 +17837,129 @@
         ],
         "title": "YearlyBreakdown",
         "type": "object"
+      },
+      "CatalogueStatsResponse": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Properties in the catalogue",
+            "default": 0
+          },
+          "agents": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Agents",
+            "description": "Agents in the catalogue",
+            "default": 0
+          },
+          "cities": {
+            "items": {
+              "$ref": "#/components/schemas/CityCount"
+            },
+            "type": "array",
+            "title": "Cities",
+            "description": "Properties per city"
+          },
+          "currencies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Currencies",
+            "description": "Currencies in the catalogue"
+          }
+        },
+        "type": "object",
+        "title": "CatalogueStatsResponse",
+        "description": "What the catalogue holds - the numbers the landing page shows."
+      },
+      "CityCount": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "City name"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Count",
+            "description": "Properties in the city",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "CityCount",
+        "description": "How many properties a city holds."
+      },
+      "OutboundClickRequest": {
+        "properties": {
+          "target": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Target",
+            "description": "Where the click went"
+          },
+          "slot": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slot",
+            "description": "The slot on the page"
+          },
+          "campaign": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Campaign",
+            "description": "The campaign it belongs to"
+          },
+          "visitor_id": {
+            "type": "string",
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Visitor Id",
+            "description": "Visitor UUID from the cookie",
+            "default": "anonymous"
+          },
+          "page_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Url",
+            "description": "The page it happened on"
+          }
+        },
+        "type": "object",
+        "required": [
+          "target"
+        ],
+        "title": "OutboundClickRequest",
+        "description": "A click that leaves the site."
       }
     },
     "securitySchemes": {
@@ -22461,7 +22645,7 @@
             "name": "min_score",
             "required": false,
             "schema": {
-              "default": 50.0,
+              "default": 40.0,
               "maximum": 100,
               "minimum": 0,
               "title": "Min Score",
@@ -31768,6 +31952,24 @@
         "tags": [
           "Tools",
           "Tools"
+        ],
+        "parameters": [
+          {
+            "name": "X-User-Email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Email"
+            }
+          }
         ]
       }
     },
@@ -33105,20 +33307,8 @@
     },
     "/health": {
       "get": {
-        "description": "Health check endpoint to verify API status.\n\nArgs:\n    include_dependencies: Whether to check dependency health\n        (vector store, Redis, LLM providers)\n\nReturns:\n    Comprehensive health status including dependencies",
+        "description": "Liveness probe - checks if the service is alive.\n\nReturns 200 if the service is running, regardless of dependencies.\nUsed by Kubernetes/Docker health checks.",
         "operationId": "health_check_health_get",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "include_dependencies",
-            "required": false,
-            "schema": {
-              "default": true,
-              "title": "Include Dependencies",
-              "type": "boolean"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "content": {
@@ -33127,21 +33317,12 @@
               }
             },
             "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
           }
         },
         "summary": "Health Check",
         "tags": [
-          "System"
+          "Monitoring",
+          "Monitoring"
         ]
       }
     },
@@ -33407,6 +33588,87 @@
           "Monitoring",
           "Monitoring"
         ]
+      }
+    },
+    "/api/v1/capabilities": {
+      "get": {
+        "tags": [
+          "Capabilities"
+        ],
+        "summary": "What this deployment can actually do",
+        "description": "Reports the enabled authentication providers, whether e-mail is really sent, and whether error tracking is configured. The frontend uses it to hide features the deployment cannot serve.",
+        "operationId": "capabilities_api_v1_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Capabilities Api V1 Capabilities Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalogue/stats": {
+      "get": {
+        "tags": [
+          "Catalogue"
+        ],
+        "summary": "What the catalogue holds",
+        "description": "The live numbers of the catalogue: the properties, the cities they are in, the agents and the currencies. An empty catalogue answers with zeros rather than an error.",
+        "operationId": "catalogue_stats_api_v1_catalogue_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogueStatsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/outbound": {
+      "post": {
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Record an outbound click",
+        "description": "Records a click that leaves the site: the target, the slot and the campaign.",
+        "operationId": "record_outbound_click_api_v1_analytics_outbound_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutboundClickRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     }
   },

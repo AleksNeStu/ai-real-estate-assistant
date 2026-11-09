@@ -18,7 +18,8 @@ import {
 } from 'lucide-react';
 import { compareAreas, ApiError } from '@/lib/api';
 import { AreaComparison } from '@/lib/types';
-import { useTranslations } from 'next-intl';
+import { formatPrice } from '@/lib/format';
+import { useLocale, useTranslations } from 'next-intl';
 
 /**
  * Maps the API amenity_availability keys to the catalogue keys that carry their
@@ -40,6 +41,11 @@ interface MetricRowProps {
   unit?: string;
   format?: 'number' | 'currency' | 'percent';
   higherIsBetter?: boolean;
+  /** The currency the prices are in - the currency of the listings themselves. */
+  currency?: string;
+  /** The currency of the second column, when the two places differ. */
+  currency2?: string;
+  locale?: string;
 }
 
 function MetricRow({
@@ -49,11 +55,16 @@ function MetricRow({
   unit = '',
   format = 'number',
   higherIsBetter = true,
+  currency = 'PLN',
+  currency2,
+  locale = 'pl-PL',
 }: MetricRowProps) {
-  const formatValue = (val: number | string | undefined): string => {
+  const formatValue = (val: number | string | undefined, ownCurrency?: string): string => {
     if (val === undefined || val === null) return 'N/A';
     if (typeof val === 'string') return val;
-    if (format === 'currency') return `$${val.toLocaleString()}`;
+    // The comparison used to spell a dollar sign into every price, whatever
+    // currency the listings were priced in.
+    if (format === 'currency') return formatPrice(val, ownCurrency ?? currency, locale);
     if (format === 'percent') return `${val.toFixed(1)}%`;
     return `${val.toLocaleString()}${unit}`;
   };
@@ -69,7 +80,7 @@ function MetricRow({
   return (
     <div className="grid grid-cols-5 items-center py-3 border-b border-border/50 gap-4">
       <div className="col-span-2 text-right">
-        <span className="font-semibold">{formatValue(value1)}</span>
+        <span className="font-semibold">{formatValue(value1, currency)}</span>
       </div>
       <div className="col-span-1 text-center">
         <div className="text-xs text-muted-foreground">{label}</div>
@@ -87,7 +98,7 @@ function MetricRow({
         )}
       </div>
       <div className="col-span-2 text-left">
-        <span className="font-semibold">{formatValue(value2)}</span>
+        <span className="font-semibold">{formatValue(value2, currency2 ?? currency)}</span>
       </div>
     </div>
   );
@@ -97,6 +108,7 @@ export function AreaComparisonComponent() {
   const t = useTranslations('marketTrends');
   const tInv = useTranslations('investment');
   const tCompare = useTranslations('pages.tools.compare');
+  const locale = useLocale();
   const [city1, setCity1] = useState('Warsaw');
   const [city2, setCity2] = useState('Krakow');
   const [loading, setLoading] = useState(false);
@@ -255,6 +267,9 @@ export function AreaComparisonComponent() {
                   value2={comparison.area2.avg_price}
                   format="currency"
                   higherIsBetter={false}
+                  currency={comparison.area1.currency}
+                  currency2={comparison.area2.currency}
+                  locale={locale}
                 />
                 <MetricRow
                   label={t('areaComparison.medianPrice')}
@@ -262,6 +277,9 @@ export function AreaComparisonComponent() {
                   value2={comparison.area2.median_price}
                   format="currency"
                   higherIsBetter={false}
+                  currency={comparison.area1.currency}
+                  currency2={comparison.area2.currency}
+                  locale={locale}
                 />
                 <MetricRow
                   label={t('areaComparison.pricePerSqm')}
@@ -269,6 +287,9 @@ export function AreaComparisonComponent() {
                   value2={comparison.area2.avg_price_per_sqm}
                   format="currency"
                   higherIsBetter={false}
+                  currency={comparison.area1.currency}
+                  currency2={comparison.area2.currency}
+                  locale={locale}
                 />
                 <MetricRow
                   label={t('areaComparison.listings')}

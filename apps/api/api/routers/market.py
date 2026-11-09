@@ -350,6 +350,7 @@ async def compare_areas(
                 most_common_room_count=area1_insights.get("most_common_room_count"),
                 amenity_availability=area1_insights.get("amenity_availability", {}),
                 price_comparison=area1_insights.get("price_comparison"),
+                currency=area1_insights.get("currency"),
             ),
             area2=AreaInsightsResponse(
                 city=area2_insights.get("city", city2),
@@ -360,6 +361,7 @@ async def compare_areas(
                 most_common_room_count=area2_insights.get("most_common_room_count"),
                 amenity_availability=area2_insights.get("amenity_availability", {}),
                 price_comparison=area2_insights.get("price_comparison"),
+                currency=area2_insights.get("currency"),
             ),
             price_difference=comparison.get("price_difference", 0),
             price_difference_percent=comparison.get("price_difference_percent", 0),
@@ -438,6 +440,7 @@ async def get_area_insights(
             most_common_room_count=location_insights.most_common_room_count,
             amenity_availability=location_insights.amenity_availability,
             price_comparison=location_insights.price_comparison,
+            currency=location_insights.currency,
         )
 
     except Exception:

@@ -1139,6 +1139,26 @@ Request a property viewing appointment with an agent.
 | 201 | Successful Response | ViewingAppointmentResponse |
 | 422 | Validation Error | HTTPValidationError |
 
+## POST /api/v1/analytics/outbound
+
+**Summary**: Record an outbound click
+
+**Tags**: Analytics
+
+Records a click that leaves the site: the target, the slot and the campaign.
+
+**Request Body**
+
+- Required: yes
+- application/json: OutboundClickRequest
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 204 | Successful Response |  |
+| 422 | Validation Error | HTTPValidationError |
+
 ## GET /api/v1/anomalies
 
 **Summary**: List Anomalies
@@ -1769,6 +1789,34 @@ Cancel a running bulk job. Only jobs in 'pending' or 'running' status can be can
 |---|---|---|
 | 200 | Successful Response | BulkJobResponse |
 | 422 | Validation Error | HTTPValidationError |
+
+## GET /api/v1/capabilities
+
+**Summary**: What this deployment can actually do
+
+**Tags**: Capabilities
+
+Reports the enabled authentication providers, whether e-mail is really sent, and whether error tracking is configured. The frontend uses it to hide features the deployment cannot serve.
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | object |
+
+## GET /api/v1/catalogue/stats
+
+**Summary**: What the catalogue holds
+
+**Tags**: Catalogue
+
+The live numbers of the catalogue: the properties, the cities they are in, the agents and the currencies. An empty catalogue answers with zeros rather than an error.
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | CatalogueStatsResponse |
 
 ## POST /api/v1/chat
 
@@ -5156,6 +5204,12 @@ Calculate commute time from a property to a destination. Uses Google Routes API 
 
 Generate AI-powered listing content for a property. Generates: - Property description with customizable tone and language - Multiple headline variants - Platform-specific social media content All generated content respects platform character limits.
 
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| X-User-Email | header | string \| null | no |  |
+
 **Request Body**
 
 - Required: yes
@@ -5637,22 +5691,15 @@ Receive and process HelloSign webhook callbacks.
 
 **Summary**: Health Check
 
-**Tags**: System
+**Tags**: Monitoring, Monitoring
 
-Health check endpoint to verify API status. Args: include_dependencies: Whether to check dependency health (vector store, Redis, LLM providers) Returns: Comprehensive health status including dependencies
-
-**Parameters**
-
-| Name | In | Type | Required | Description |
-|---|---|---|---|---|
-| include_dependencies | query | boolean | no |  |
+Liveness probe - checks if the service is alive. Returns 200 if the service is running, regardless of dependencies. Used by Kubernetes/Docker health checks.
 
 **Responses**
 
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | object |
-| 422 | Validation Error | HTTPValidationError |
 
 ## GET /health/detailed
 

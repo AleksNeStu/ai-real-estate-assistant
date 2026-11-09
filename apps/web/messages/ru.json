@@ -3389,7 +3389,7 @@
       "instrumentOpenAll": "Открыть все {count}",
       "instrumentNote": "Заполненный каталог демо, не настоящие объявления · модель, за которую платим мы, без ключей",
       "instrumentPerMonth": "≈{amount}/mo",
-      "instrumentPerSqm": "{amount} zł/m²",
+      "instrumentPerSqm": "{amount} {currency}/м²",
       "matches": "{count} совпадений"
     },
     "chips": {
@@ -3449,7 +3449,7 @@
       "coverageLive": "Живой провайдер",
       "coverageWorks": "работает",
       "coveragePlanned": "в планах",
-      "coverageNote": "9 языков интерфейса · цены в валюте каждого объявления (zł, €, £, $).",
+      "coverageNote": "9 языков интерфейса · каждая цена в валюте своего объявления — каталог демо в zł.",
       "adaptersTitle": "Адаптеры обогащения",
       "adaptersNote": "Не привязаны к стране: работают на любых координатах.",
       "adapters": [

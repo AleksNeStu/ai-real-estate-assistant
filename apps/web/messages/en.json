@@ -3389,7 +3389,7 @@
       "instrumentOpenAll": "Open all {count}",
       "instrumentNote": "Seeded demo catalogue, not real listings · a model we pay for, no keys",
       "instrumentPerMonth": "≈{amount}/mo",
-      "instrumentPerSqm": "{amount} zł/m²",
+      "instrumentPerSqm": "{amount} {currency}/m²",
       "matches": "{count} matches"
     },
     "chips": {
@@ -3449,7 +3449,7 @@
       "coverageLive": "Live provider",
       "coverageWorks": "works",
       "coveragePlanned": "planned",
-      "coverageNote": "9 interface languages · prices in each listing’s own currency (zł, €, £, $).",
+      "coverageNote": "9 interface languages · every price in the currency of its own listing — the demo catalogue is in zł.",
       "adaptersTitle": "Enrichment adapters",
       "adaptersNote": "Country-agnostic: they run on any coordinates.",
       "adapters": [
