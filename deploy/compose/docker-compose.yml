@@ -29,6 +29,18 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      # The project-scoped key wins over the workstation-wide MINIMAX_API_KEY,
+      # so a developer's own MiniMax account never shadows the deployment's key.
+      - MINIMAX_API_KEY=${REALT_MINIMAX_API_KEY:-${MINIMAX_API_KEY:-}}
+      - MINIMAX_BASE_URL=${MINIMAX_BASE_URL:-https://api.minimax.io/v1}
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-MiniMax-M3.1-Flash}
+      - DEMO_MODE=${DEMO_MODE:-true}
+      - DEMO_LLM_MODE=${DEMO_LLM_MODE:-false}
+      - DEMO_USER_BYPASS=${DEMO_USER_BYPASS:-false}
+      - DEMO_API_KEY_BYPASS=${DEMO_API_KEY_BYPASS:-true}
+      - DEMO_DATA_MODE=${DEMO_DATA_MODE:-true}
+      - FREE_TIER_ENABLED=${FREE_TIER_ENABLED:-true}
+      - FREE_TIER_PROVIDER_CASCADE=${FREE_TIER_PROVIDER_CASCADE:-minimax,ollama,openrouter,google}
       - CONTEXT7_API_KEY=${CONTEXT7_API_KEY}
       - OLLAMA_API_BASE=${OLLAMA_API_BASE:-http://ollama:11434}
       - SMTP_USERNAME=${SMTP_USERNAME}

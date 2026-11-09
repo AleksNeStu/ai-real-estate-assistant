@@ -1,8 +1,9 @@
 """
 Free tier rate limiting and LLM cascade for unauthenticated/demo users.
 
-Provides hourly/daily request limits and cascades through free LLM providers:
-OpenRouter free models → Google Gemini Flash → Ollama.
+Provides hourly/daily request limits and cascades through the providers the
+deployment can afford, in the order the cascade is configured:
+MiniMax → Ollama (local, on our own VPS) → OpenRouter free models.
 """
 
 import asyncio
@@ -80,6 +81,26 @@ def get_free_tier_rate_limiter() -> FreeTierRateLimiter:
     return _rate_limiter
 
 
+def _try_create_minimax() -> Optional[BaseChatModel]:
+    """Try to create an LLM using MiniMax.
+
+    MiniMax is the demo's primary: the key is already provisioned and paid
+    for, so the demo does not depend on somebody else's free tier.
+    """
+    settings = get_settings()
+    if not settings.minimax_api_key:
+        return None
+
+    try:
+        from models.provider_factory import ModelProviderFactory
+
+        provider = ModelProviderFactory.get_provider("minimax")
+        model_id = settings.minimax_default_model
+        return provider.create_model(model_id=model_id, temperature=0.0, max_tokens=2048)
+    except Exception:
+        return None
+
+
 def _try_create_openrouter_free() -> Optional[BaseChatModel]:
     """Try to create an LLM using OpenRouter's free models."""
     settings = get_settings()
@@ -137,9 +158,10 @@ def _try_create_ollama() -> Optional[BaseChatModel]:
 
 
 _PROVIDERS_BY_NAME = {
+    "minimax": _try_create_minimax,
+    "ollama": _try_create_ollama,
     "openrouter": _try_create_openrouter_free,
     "google": _try_create_google_flash,
-    "ollama": _try_create_ollama,
 }
 
 
@@ -161,7 +183,9 @@ def get_llm_for_free_user() -> Optional[BaseChatModel]:
 
     cascade = settings.free_tier_provider_cascade
     if not cascade:
-        cascade = ["openrouter", "google", "ollama"]
+        # Every provider that can answer is in this list. A provider that is
+        # registered but unreachable is a fallback that never falls back.
+        cascade = ["minimax", "ollama", "openrouter", "google"]
 
     for provider_name in cascade:
         factory = _PROVIDERS_BY_NAME.get(provider_name)

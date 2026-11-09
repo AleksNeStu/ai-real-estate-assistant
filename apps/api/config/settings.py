@@ -68,6 +68,22 @@ class AppSettings(BaseModel):
         default_factory=lambda: os.getenv("OPENROUTER_API_KEY"),
         description="OpenRouter API key - unified access to 400+ models including free ones",
     )
+    minimax_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("REALT_MINIMAX_API_KEY") or os.getenv("MINIMAX_API_KEY"),
+        description=(
+            "MiniMax API key - OpenAI-compatible endpoint, the demo's primary model. "
+            "REALT_MINIMAX_API_KEY wins over the workstation-wide MINIMAX_API_KEY, so a "
+            "developer's own MiniMax account does not shadow the deployment's key."
+        ),
+    )
+    minimax_base_url: Optional[str] = Field(
+        default_factory=lambda: os.getenv("MINIMAX_BASE_URL") or "https://api.minimax.io/v1",
+        description="MiniMax OpenAI-compatible base URL",
+    )
+    minimax_default_model: str = Field(
+        default_factory=lambda: os.getenv("MINIMAX_DEFAULT_MODEL") or "MiniMax-M3.1-Flash",
+        description="The MiniMax model the demo answers with",
+    )
     zhipuai_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("ZHIPUAI_API_KEY") or os.getenv("ZAI_API_KEY"),
         description="Zhipu AI API key - Chinese LLM provider with free tier (glm-4.7-flash)",
@@ -384,7 +400,7 @@ class AppSettings(BaseModel):
     )
     free_tier_provider_cascade: list[str] = Field(
         default_factory=lambda: _parse_csv_list(
-            os.getenv("FREE_TIER_PROVIDER_CASCADE", "openrouter,google,ollama")
+            os.getenv("FREE_TIER_PROVIDER_CASCADE", "minimax,ollama,openrouter,google")
         ),
         description="Provider cascade order for free tier (comma-separated)",
     )
@@ -867,6 +883,7 @@ class AppSettings(BaseModel):
                 "zai": self.zhipuai_api_key,
                 "moonshot": self.moonshot_api_key,
                 "opencode": self.opencode_api_key,
+                "minimax": self.minimax_api_key,
             }
             for provider, key in single_key_mapping.items():
                 if key:
@@ -1027,6 +1044,9 @@ def update_api_key(provider: str, api_key: str) -> None:
     elif provider == "openrouter":
         settings.openrouter_api_key = api_key
         os.environ["OPENROUTER_API_KEY"] = api_key
+    elif provider == "minimax":
+        settings.minimax_api_key = api_key
+        os.environ["MINIMAX_API_KEY"] = api_key
     elif provider == "zai":
         settings.zhipuai_api_key = api_key
         os.environ["ZHIPUAI_API_KEY"] = api_key

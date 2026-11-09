@@ -15,7 +15,7 @@ class TestFreeTierDemoMode:
     """`get_llm_for_free_user` honours the demo flag before the cascade."""
 
     def test_demo_mode_returns_the_mock(self, monkeypatch):
-        monkeypatch.setattr(free_tier, "get_settings", lambda: _settings(demo_mode=True))
+        monkeypatch.setattr(free_tier, "get_settings", lambda: _settings(demo_llm_mode=True))
 
         llm = free_tier.get_llm_for_free_user()
 
@@ -32,7 +32,7 @@ class TestFreeTierDemoMode:
 
             return _boom
 
-        monkeypatch.setattr(free_tier, "get_settings", lambda: _settings(demo_mode=True))
+        monkeypatch.setattr(free_tier, "get_settings", lambda: _settings(demo_llm_mode=True))
         for name in free_tier._PROVIDERS_BY_NAME:
             monkeypatch.setitem(free_tier._PROVIDERS_BY_NAME, name, _fail(name))
 
@@ -42,23 +42,44 @@ class TestFreeTierDemoMode:
 
     def test_free_tier_disabled_returns_none(self, monkeypatch):
         monkeypatch.setattr(
-            free_tier, "get_settings", lambda: _settings(demo_mode=False, free_tier_enabled=False)
+            free_tier,
+            "get_settings",
+            lambda: _settings(demo_llm_mode=False, free_tier_enabled=False),
         )
 
         assert free_tier.get_llm_for_free_user() is None
 
+    def test_a_demo_with_a_real_model_reaches_the_cascade(self, monkeypatch):
+        """The split: a demo catalogue may still answer with a real model."""
+        built: list[str] = []
+
+        def _fake(name: str):
+            def _build():
+                built.append(name)
+                return None
+
+            return _build
+
+        monkeypatch.setattr(free_tier, "get_settings", lambda: _settings(demo_llm_mode=False))
+        for name in free_tier._PROVIDERS_BY_NAME:
+            monkeypatch.setitem(free_tier._PROVIDERS_BY_NAME, name, _fake(name))
+
+        free_tier.get_llm_for_free_user()
+
+        assert built == list(free_tier._PROVIDERS_BY_NAME)
+
 
 class _Settings:
-    def __init__(self, demo_mode: bool, free_tier_enabled: bool = True) -> None:
-        self.demo_mode = demo_mode
+    def __init__(self, demo_llm_mode: bool, free_tier_enabled: bool = True) -> None:
+        self.demo_llm_mode = demo_llm_mode
         self.free_tier_enabled = free_tier_enabled
         self.free_tier_provider_cascade: list[str] = []
 
 
-def _settings(demo_mode: bool, free_tier_enabled: bool = True) -> _Settings:
-    return _Settings(demo_mode=demo_mode, free_tier_enabled=free_tier_enabled)
+def _settings(demo_llm_mode: bool, free_tier_enabled: bool = True) -> _Settings:
+    return _Settings(demo_llm_mode=demo_llm_mode, free_tier_enabled=free_tier_enabled)
 
 
-@pytest.mark.parametrize("demo_mode", [True, False])
-def test_settings_helper_is_consistent(demo_mode: bool) -> None:
-    assert _settings(demo_mode).demo_mode is demo_mode
+@pytest.mark.parametrize("demo_llm_mode", [True, False])
+def test_settings_helper_is_consistent(demo_llm_mode: bool) -> None:
+    assert _settings(demo_llm_mode).demo_llm_mode is demo_llm_mode

@@ -59,6 +59,29 @@ async def _check_free_tier_rate_limit(req: Request) -> None:
         )
 
 
+def _request_is_anonymous(req: Request) -> bool:
+    """True when the request carries no credential of its own.
+
+    On a deployment with the API-key bypass on, the router's key dependency
+    lets every visitor through. Without a limit, a public demo whose model is
+    a paid key is an open wallet — so anonymous callers are counted, and the
+    count is what the free-tier limiter enforces.
+    """
+    settings = get_settings()
+    if not settings.demo_api_key_bypass:
+        # The API key dependency already rejected everything without a key.
+        return False
+
+    header = (req.headers.get("x-api-key") or "").strip()
+    if header and header != "demo-mode-key":
+        return False
+
+    if req.cookies.get("access_token"):
+        return False
+
+    return True
+
+
 def _build_agent_and_process(
     request: ChatRequest,
     req: Request,
@@ -140,6 +163,9 @@ async def chat_endpoint(
     """
     settings = get_settings()
     request_id = getattr(req.state, "request_id", None) or str(uuid.uuid4())
+
+    if _request_is_anonymous(req):
+        await _check_free_tier_rate_limit(req)
 
     try:
         agent, sanitized_message, session_id = _build_agent_and_process(request, req, llm, store)

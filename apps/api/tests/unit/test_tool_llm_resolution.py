@@ -35,13 +35,13 @@ class TestResolveToolLLM:
         assert resolve_tool_llm(model) is model
 
     def test_a_demo_deployment_speaks_with_the_mock_model(self):
-        with patch("config.settings.settings.demo_mode", True):
+        with patch("config.settings.settings.demo_llm_mode", True):
             model = resolve_tool_llm()
 
         assert isinstance(model, MockLLM)
 
     def test_a_demo_deployment_never_asks_a_provider_for_a_model(self):
-        with patch("config.settings.settings.demo_mode", True):
+        with patch("config.settings.settings.demo_llm_mode", True):
             with patch("models.provider_factory.ModelProviderFactory.create_model") as create_model:
                 resolve_tool_llm()
 
@@ -57,13 +57,13 @@ class TestTheToolsSpeakWithTheApplicationModel:
             assert tool._llm is model, tool_class.__name__
 
     def test_every_tool_speaks_with_the_mock_model_on_a_demo(self):
-        with patch("config.settings.settings.demo_mode", True):
+        with patch("config.settings.settings.demo_llm_mode", True):
             for tool_class in AI_TOOLS:
                 tool = tool_class()
                 assert isinstance(tool._llm, MockLLM), tool_class.__name__
 
     def test_no_tool_asks_a_provider_for_a_model_on_a_demo(self):
-        with patch("config.settings.settings.demo_mode", True):
+        with patch("config.settings.settings.demo_llm_mode", True):
             with patch("models.provider_factory.ModelProviderFactory.create_model") as create_model:
                 for tool_class in AI_TOOLS:
                     tool_class()
