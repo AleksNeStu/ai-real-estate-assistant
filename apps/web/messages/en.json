@@ -2994,7 +2994,33 @@
         "searchDistribution": "Share of searches per city",
         "dailyActivity": "Events per day over the selected period"
       },
-      "loadFailed": "Failed to load usage data"
+      "loadFailed": "Failed to load usage data",
+      "board": {
+        "title": "Usage",
+        "description": "Your activity on this deployment · last 30 days",
+        "export": "Export CSV",
+        "exported": "{file} · {count} events",
+        "period": "last 30 days",
+        "days": "last {count} days",
+        "calls": "{count} calls",
+        "count": "{count} events",
+        "favorites": "{count} favourites",
+        "searchesPerDay": "Searches per day",
+        "logTitle": "Activity log",
+        "logWhen": "When",
+        "logEvent": "Event",
+        "logDetail": "Detail",
+        "note": "The full log — every event with its session and its data — is in the CSV.",
+        "empty": "No activity in this period",
+        "loading": "Loading your activity…",
+        "kinds": {
+          "search": "Searches",
+          "view": "Views",
+          "click": "Clicks",
+          "tool_call": "Tool calls",
+          "download": "Downloads"
+        }
+      }
     },
     "cma": {
       "title": "Comparative Market Analysis",

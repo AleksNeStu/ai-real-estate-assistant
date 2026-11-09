@@ -2994,7 +2994,33 @@
         "searchDistribution": "Udział wyszukiwań w każdym mieście",
         "dailyActivity": "Zdarzenia dziennie w wybranym okresie"
       },
-      "loadFailed": "Nie udało się wczytać danych o użyciu"
+      "loadFailed": "Nie udało się wczytać danych o użyciu",
+      "board": {
+        "title": "Użycie",
+        "description": "Twoja aktywność na tej instalacji · ostatnie 30 dni",
+        "export": "Eksport CSV",
+        "exported": "{file} · {count} zdarzeń",
+        "period": "ostatnie 30 dni",
+        "days": "ostatnie {count} dni",
+        "calls": "{count} wywołań",
+        "count": "{count} zdarzeń",
+        "favorites": "{count} ulubionych",
+        "searchesPerDay": "Wyszukiwania dziennie",
+        "logTitle": "Dziennik aktywności",
+        "logWhen": "Kiedy",
+        "logEvent": "Zdarzenie",
+        "logDetail": "Szczegóły",
+        "note": "Pełny dziennik — każde zdarzenie z jego sesją i danymi — jest w pliku CSV.",
+        "empty": "Brak aktywności w tym okresie",
+        "loading": "Wczytuję Twoją aktywność…",
+        "kinds": {
+          "search": "Wyszukiwania",
+          "view": "Odsłony",
+          "click": "Kliknięcia",
+          "tool_call": "Wywołania narzędzi",
+          "download": "Pobrania"
+        }
+      }
     },
     "cma": {
       "title": "Analiza porównawcza rynku",

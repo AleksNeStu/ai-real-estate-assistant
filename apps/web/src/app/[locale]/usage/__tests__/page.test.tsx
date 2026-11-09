@@ -1,17 +1,13 @@
 /**
- * Tests for Usage Dashboard page.
+ * Tests for the Usage page.
  *
- * Tests for the user activity analytics dashboard including:
- * - Summary metrics display
- * - Loading states
- * - Error handling
- * - Export functionality
- * - Tab navigation presence
- * - Period display
- * - Refresh interaction
+ * The page is the dashboard: the event-kind tiles, the daily chart, the
+ * activity ledger and the CSV export. The gate belongs to another lane and
+ * is mocked here.
  *
- * Note: jest.mock('@/lib/api') does not work in this project (Jest 30 + next/jest).
- * Instead, we mock the global `fetch` to return appropriate API responses.
+ * Note: jest.mock('@/lib/api') does not work in this project (Jest 30 +
+ * next/jest). Instead, we mock the global `fetch` to return appropriate API
+ * responses.
  */
 
 import React from 'react';
@@ -19,6 +15,10 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
 import UsagePage from '../page';
 import type { UserActivitySummary, UserActivityTrendPoint } from '@/lib/types';
+
+jest.mock('@/components/shell/gate', () => ({
+  AccountGate: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
 
 // Mock window.URL.createObjectURL and revokeObjectURL
 global.URL.createObjectURL = jest.fn(() => 'blob:mock-url');
@@ -90,7 +90,6 @@ describe('UsagePage', () => {
   const mockSummary: UserActivitySummary = {
     period_start: '2024-01-01T00:00:00Z',
     period_end: '2024-01-08T00:00:00Z',
-    total_events: 150,
     total_searches: 75,
     total_property_views: 45,
     total_tool_uses: 20,
@@ -143,46 +142,87 @@ describe('UsagePage', () => {
     document.createElement = originalCreateElement;
   });
 
-  it('renders page title and description', async () => {
+  it('renders the page title and its description', async () => {
     render(<UsagePage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Usage Dashboard')).toBeInTheDocument();
-      expect(screen.getByText('Track your activity and analytics')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 1, name: 'Usage' })).toBeInTheDocument();
+      expect(
+        screen.getByText('Your activity on this deployment · last 30 days')
+      ).toBeInTheDocument();
     });
   });
 
-  it('shows loading skeleton while data is loading', () => {
-    // Override fetch to never resolve
-    mockFetch.mockImplementation(() => new Promise(() => {}));
-
-    render(<UsagePage />);
-
-    // Skeleton placeholders should be visible
-    const skeletons = document.querySelectorAll('[class*="animate-pulse"]');
-    expect(skeletons.length).toBeGreaterThan(0);
-  });
-
-  it('displays summary metrics after loading', async () => {
+  it('states every event kind and its total', async () => {
     render(<UsagePage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Total Searches')).toBeInTheDocument();
+      expect(screen.getByText('Searches')).toBeInTheDocument();
       expect(screen.getByText('75')).toBeInTheDocument();
-      expect(screen.getByText('Property Views')).toBeInTheDocument();
+      expect(screen.getByText('Views')).toBeInTheDocument();
       expect(screen.getByText('45')).toBeInTheDocument();
-      expect(screen.getByText('Tools Used')).toBeInTheDocument();
+      expect(screen.getByText('Clicks')).toBeInTheDocument();
+      expect(screen.getByText('30')).toBeInTheDocument();
+      expect(screen.getByText('Tool calls')).toBeInTheDocument();
       expect(screen.getByText('20')).toBeInTheDocument();
+      expect(screen.getByText('Downloads')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeInTheDocument();
     });
   });
 
-  it('displays additional metrics row', async () => {
+  it('draws the daily chart', async () => {
     render(<UsagePage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Property Clicks')).toBeInTheDocument();
-      expect(screen.getByText('Exports')).toBeInTheDocument();
-      expect(screen.getByText('Favorites')).toBeInTheDocument();
+      expect(screen.getByText('Searches per day')).toBeInTheDocument();
+    });
+
+    expect(screen.getAllByTestId('usage-bar')).toHaveLength(mockTrends.length);
+  });
+
+  it('opens the ledger with the searches of the period', async () => {
+    render(<UsagePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Activity log')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Jan 1')).toBeInTheDocument();
+    expect(screen.getByText('10 events')).toBeInTheDocument();
+  });
+
+  it('speaks about the tool calls when the tool kind is chosen', async () => {
+    render(<UsagePage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('usage-kind-tool_call')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('usage-kind-tool_call'));
+
+    await waitFor(() => {
+      expect(screen.getByText('mortgage_calculator')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('8 calls')).toBeInTheDocument();
+  });
+
+  it('says where the full log lives', async () => {
+    render(<UsagePage />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('The full log — every event with its session and its data — is in the CSV.')
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('states the period and the sessions', async () => {
+    render(<UsagePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Jan 1 – Jan 8')).toBeInTheDocument();
+      expect(screen.getByText(/12 unique sessions/)).toBeInTheDocument();
     });
   });
 
@@ -199,7 +239,6 @@ describe('UsagePage', () => {
   });
 
   it('allows retry after error', async () => {
-    // First call fails
     fetchMockRegistry = [];
     mockFetchError('user-activity', 'Failed to load');
 
@@ -209,7 +248,6 @@ describe('UsagePage', () => {
       expect(screen.getByText('Failed to load')).toBeInTheDocument();
     });
 
-    // Set up success response for retry
     fetchMockRegistry = [];
     mockFetchResponse('user-activity/summary', mockSummary);
     mockFetchResponse('user-activity/trends', { trends: mockTrends });
@@ -217,33 +255,11 @@ describe('UsagePage', () => {
     fireEvent.click(screen.getByRole('button', { name: /retry/i }));
 
     await waitFor(() => {
-      expect(screen.getByText('Total Searches')).toBeInTheDocument();
-    });
-  });
-
-  it('renders tab navigation with all tabs present', async () => {
-    render(<UsagePage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('tab', { name: /activity trends/i })).toBeInTheDocument();
-      expect(screen.getByRole('tab', { name: /top tools/i })).toBeInTheDocument();
-      expect(screen.getByRole('tab', { name: /top cities/i })).toBeInTheDocument();
-      expect(screen.getByRole('tab', { name: /daily activity/i })).toBeInTheDocument();
-    });
-  });
-
-  it('displays formatted period date range', async () => {
-    render(<UsagePage />);
-
-    await waitFor(() => {
-      // The period badge shows formatted dates from the summary
-      expect(screen.getByText(/Jan 1, 2024/)).toBeInTheDocument();
-      expect(screen.getByText(/Jan 8, 2024/)).toBeInTheDocument();
+      expect(screen.getByText('Searches')).toBeInTheDocument();
     });
   });
 
   it('exports CSV when export button is clicked', async () => {
-    // Set up blob response for export
     mockFetchBlob('user-activity/export');
 
     render(<UsagePage />);
@@ -256,32 +272,6 @@ describe('UsagePage', () => {
 
     await waitFor(() => {
       expect(mockAnchorClick).toHaveBeenCalled();
-    });
-  });
-
-  it('displays avg response time metric', async () => {
-    render(<UsagePage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Avg Response Time')).toBeInTheDocument();
-      // 1500ms = 1.5s
-      expect(screen.getByText('1.5s')).toBeInTheDocument();
-    });
-  });
-
-  it('shows unique sessions count', async () => {
-    render(<UsagePage />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/12 unique sessions/)).toBeInTheDocument();
-    });
-  });
-
-  it('renders refresh button', async () => {
-    render(<UsagePage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /refresh/i })).toBeInTheDocument();
     });
   });
 });
