@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import RegisterPage from '../register/page';
+import { register } from '@/lib/auth';
 
 // Mock next-intl is handled globally via __mocks__/next-intl.tsx
 // The mock useTranslations returns the key itself, e.g. t('register.fullNameLabel') => 'register.fullNameLabel'
@@ -51,17 +52,43 @@ describe('RegisterPage', () => {
     expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
   });
 
+  it('does not create an account without the consent', async () => {
+    render(<RegisterPage />);
+
+    // The consent box is required in the markup, so the browser refuses the
+    // submission on its own - the account is never created.
+    const consentInput = screen.getByRole('checkbox');
+    expect(consentInput).toBeRequired();
+
+    fireEvent.change(screen.getByLabelText('Email'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'password123' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /create account/i }));
+
+    await waitFor(() => {
+      expect(register).not.toHaveBeenCalled();
+    });
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
   it('submits form with correct values', async () => {
     render(<RegisterPage />);
 
     const nameInput = screen.getByLabelText('Full Name');
     const emailInput = screen.getByLabelText('Email');
     const passwordInput = screen.getByLabelText('Password');
+    const consentInput = screen.getByRole('checkbox');
     const submitButton = screen.getByRole('button', { name: /create account/i });
 
     fireEvent.change(nameInput, { target: { value: 'John Doe' } });
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    // The consent travels with the request: the backend writes the
+    // `gdpr_consent_at` stamp from it.
+    fireEvent.click(consentInput);
 
     fireEvent.click(submitButton);
 

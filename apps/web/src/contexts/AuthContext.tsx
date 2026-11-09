@@ -21,7 +21,7 @@ export interface AuthContextType {
   isDemoMode: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, fullName?: string) => Promise<void>;
+  register: (email: string, password: string, fullName?: string, consentGiven?: boolean) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   clearError: () => void;
@@ -113,21 +113,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  const register = useCallback(async (email: string, password: string, fullName?: string) => {
-    setError(null);
-    setIsLoading(true);
+  const register = useCallback(
+    async (email: string, password: string, fullName?: string, consentGiven = false) => {
+      setError(null);
+      setIsLoading(true);
 
-    try {
-      const response = await authApi.register(email, password, fullName);
-      setUser(response.user);
-    } catch (err) {
-      const message = err instanceof ApiError ? err.message : 'Registration failed';
-      setError(message);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      try {
+        const response = await authApi.register(email, password, fullName, consentGiven);
+        setUser(response.user);
+      } catch (err) {
+        const message = err instanceof ApiError ? err.message : 'Registration failed';
+        setError(message);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
 
   const logout = useCallback(async () => {
     setError(null);

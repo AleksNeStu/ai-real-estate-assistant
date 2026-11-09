@@ -41,9 +41,19 @@ export default function RegisterPage() {
     const fullName = (data.get('fullName') || '').toString().trim();
     const email = (data.get('email') || '').toString().trim();
     const password = (data.get('password') || '').toString();
+    const consentGiven = data.get('consent') === 'on';
+
+    // The consent is what the backend writes `gdpr_consent_at` from, so a
+    // form without it would create an account with no record of it. The box
+    // is required in the markup too - this check is the belt to that braces.
+    if (!consentGiven) {
+      setError(t('register.consentRequired'));
+      setIsLoading(false);
+      return;
+    }
 
     try {
-      await register(email, password, fullName);
+      await register(email, password, fullName, consentGiven);
       // Refresh user context
       await refreshUser();
 
@@ -110,6 +120,19 @@ export default function RegisterPage() {
               disabled={isLoading}
               minLength={8}
             />
+          </div>
+          <div className="flex items-start gap-2.5">
+            <input
+              id="consent"
+              name="consent"
+              type="checkbox"
+              required
+              disabled={isLoading}
+              className="mt-0.5 size-4 shrink-0 accent-[hsl(var(--action))]"
+            />
+            <Label htmlFor="consent" className="text-[13px] leading-5 text-muted-foreground">
+              {t('register.consentLabel')}
+            </Label>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">

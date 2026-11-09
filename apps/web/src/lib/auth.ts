@@ -133,12 +133,16 @@ export async function login(email: string, password: string): Promise<AuthRespon
  * @param email - User email
  * @param password - User password (min 8 chars, must contain uppercase, lowercase, and digit)
  * @param fullName - User's full name (optional)
+ * @param consentGiven - The visitor ticked the consent box. The backend
+ *   writes `gdpr_consent_at` from it, so it has to travel with the request:
+ *   without it the account is created with no record of the consent.
  * @returns AuthResponse with user info and tokens
  */
 export async function register(
   email: string,
   password: string,
-  fullName?: string
+  fullName?: string,
+  consentGiven = false
 ): Promise<AuthResponse> {
   const response = await fetch(`${getAuthApiUrl()}/auth/register`, {
     method: 'POST',
@@ -147,6 +151,7 @@ export async function register(
       email,
       password,
       full_name: fullName,
+      consent_given: consentGiven,
     }),
     credentials: 'include',
   });
