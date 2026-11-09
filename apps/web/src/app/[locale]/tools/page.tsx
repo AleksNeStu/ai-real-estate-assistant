@@ -18,26 +18,75 @@ import {
 import type { PromptTemplateInfo, NeighborhoodQualityResult } from '@/lib/types';
 
 import { PageHeader } from '@/components/ui/page-header';
+import { MonoAnnotation } from '@/components/ui/mono-annotation';
+import { ToolOutput } from '@/components/tools/tool-output';
+import { ToolRail, type ToolRailEntry } from '@/components/tools/tool-rail';
 
 type ToolTranslator = (key: string) => string;
 
 export default function ToolsPage() {
   const t = useTranslations('pages.tools');
 
+  // The console's tool list: what each tool is called in the reader's
+  // language, what it calls itself, and whether it can run as it stands.
+  const rail: ToolRailEntry[] = [
+    { id: 'tool-mortgage', name: 'mortgage_calculator' },
+    { id: 'tool-compare', name: 'compare_properties' },
+    { id: 'tool-price', name: 'price_analysis' },
+    { id: 'tool-location', name: 'location_analysis' },
+    { id: 'tool-neighborhood', name: 'neighborhood_quality' },
+    { id: 'tool-templates', name: 'prompt_templates' },
+    { id: 'tool-valuation', name: 'valuation', status: 'needsConfig' },
+    { id: 'tool-legal', name: 'legal_check', status: 'needsConfig' },
+    { id: 'tool-enrich', name: 'enrich_address', status: 'needsConfig' },
+    { id: 'tool-crm', name: 'crm_sync_contact', status: 'needsAccount' },
+  ];
+
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
-      <PageHeader title={t('title')} description={t('description')} />
-      <MortgageSection />
-      <CompareSection />
-      <PriceAnalysisSection />
-      <LocationAnalysisSection />
-      <NeighborhoodQualitySection />
-      <PromptTemplatesSection />
-      <hr className="my-4" />
-      <ValuationSection />
-      <LegalCheckSection />
-      <EnrichAddressSection />
-      <CrmSyncSection />
+    <div className="mx-auto flex max-w-[1248px] gap-8 px-6 py-8">
+      <div className="hidden w-[280px] shrink-0 lg:block">
+        <div className="sticky top-20">
+          <ToolRail tools={rail} />
+        </div>
+      </div>
+      <div className="min-w-0 flex-1 space-y-8">
+        <PageHeader title={t('title')} description={t('description')} />
+        <div className="flex items-baseline justify-between gap-4 border-b border-border pb-3">
+          <MonoAnnotation>{t('console.endpoint', { name: '{name}' })}</MonoAnnotation>
+          <MonoAnnotation>{t('console.count', { count: rail.length })}</MonoAnnotation>
+        </div>
+        <div id="tool-mortgage">
+          <MortgageSection />
+        </div>
+        <div id="tool-compare">
+          <CompareSection />
+        </div>
+        <div id="tool-price">
+          <PriceAnalysisSection />
+        </div>
+        <div id="tool-location">
+          <LocationAnalysisSection />
+        </div>
+        <div id="tool-neighborhood">
+          <NeighborhoodQualitySection />
+        </div>
+        <div id="tool-templates">
+          <PromptTemplatesSection />
+        </div>
+        <hr className="my-4" />
+        <div id="tool-valuation">
+          <ValuationSection />
+        </div>
+        <div id="tool-legal">
+          <LegalCheckSection />
+        </div>
+        <div id="tool-enrich">
+          <EnrichAddressSection />
+        </div>
+        <div id="tool-crm">
+          <CrmSyncSection />
+        </div>
+      </div>
     </div>
   );
 }
@@ -108,9 +157,11 @@ function MortgageSection() {
       {error && <p className="text-destructive mt-2">{error}</p>}
       {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
       {result && (
-        <p className="mt-2">
-          {t('mortgage.monthlyPayment', { amount: result.monthly_payment.toFixed(2) })}
-        </p>
+        <ToolOutput name="mortgage_calculator" raw={result} className="mt-2">
+          <p className="m-0">
+            {t('mortgage.monthlyPayment', { amount: result.monthly_payment.toFixed(2) })}
+          </p>
+        </ToolOutput>
       )}
     </section>
   );
@@ -269,12 +320,14 @@ function CompareSection() {
       {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
       {exportError && <p className="text-destructive mt-2">{exportError}</p>}
       {data && (
-        <div className="mt-2">
-          <p>{t('fields.count', { value: data.summary?.count })}</p>
-          <p>{t('fields.minPrice', { value: data.summary?.min_price ?? '-' })}</p>
-          <p>{t('fields.maxPrice', { value: data.summary?.max_price ?? '-' })}</p>
-          <p>{t('fields.diff', { value: data.summary?.price_difference ?? '-' })}</p>
-        </div>
+        <ToolOutput name="compare_properties" raw={data} className="mt-2">
+          <div className="flex flex-col">
+            <p className="m-0">{t('fields.count', { value: data.summary?.count })}</p>
+            <p className="m-0">{t('fields.minPrice', { value: data.summary?.min_price ?? '-' })}</p>
+            <p className="m-0">{t('fields.maxPrice', { value: data.summary?.max_price ?? '-' })}</p>
+            <p className="m-0">{t('fields.diff', { value: data.summary?.price_difference ?? '-' })}</p>
+          </div>
+        </ToolOutput>
       )}
     </section>
   );

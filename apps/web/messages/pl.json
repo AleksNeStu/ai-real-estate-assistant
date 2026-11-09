@@ -110,7 +110,14 @@
       "noBio": "Brak opisu.",
       "listingsTab": "Oferty ({count})",
       "contactTab": "Kontakt",
-      "primary": "Główna"
+      "primary": "Główna",
+      "activeListings": "aktywnych ofert",
+      "statSales": "sprzedaży",
+      "statRentals": "wynajmów",
+      "scheduleViewingCta": "Umów oglądanie",
+      "roomsLabel": "{count} pokoje",
+      "listingsNote": "pokazano {shown}",
+      "emailAfterContact": "widoczny po kontakcie"
     },
     "contactForm": {
       "title": "Skontaktuj się z {name}",
@@ -138,7 +145,10 @@
         "send": "Nie udało się wysłać wiadomości"
       },
       "cancel": "Anuluj",
-      "sending": "Wysyłanie..."
+      "sending": "Wysyłanie...",
+      "about": "O",
+      "privacyNote": "Twoje dane trafiają tylko do tego agenta, aby odpowiedzieć na to zapytanie. W trybie demo wiadomość jest zapisywana, a nie wysyłana.",
+      "successLead": "{name} zwykle odpowiada w ciągu jednego dnia roboczego. Utworzono zgłoszenie {id}."
     },
     "viewingForm": {
       "title": "Umów wizytę",
@@ -186,6 +196,18 @@
     "cardExtra": {
       "call": "Zadzwoń",
       "moreAreas": "+{count} więcej"
+    },
+    "directory": {
+      "count": "{count, plural, one {# agent} other {# agentów}}",
+      "demoNote": "dane demo",
+      "noRating": "—",
+      "columns": {
+        "agent": "Agent",
+        "agency": "Agencja",
+        "areas": "Obszar działania",
+        "rating": "Ocena",
+        "reviews": "Opinie"
+      }
     }
   },
   "auth": {
@@ -435,6 +457,13 @@
     "aiLabel": "Asystent AI",
     "aiDisclaimer": "Ta odpowiedź została wygenerowana przez AI. Zweryfikuj ważne informacje niezależnie.",
     "aiDisclosureNotice": "Treść generowana przez AI może nie być zawsze dokładna. W przypadku ważnych decyzji skonsultuj się z profesjonalnym pośrednikiem lub doradcą nieruchomości.",
+    "context": {
+      "toolsUsed": "Użyte narzędzia",
+      "calls": "wywołań: {count}",
+      "empty": "Jeszcze żadnego wywołania narzędzia.",
+      "session": "sesja: {id}",
+      "request": "żądanie: {id}"
+    },
     "emptyState": {
       "title": "Rozpocznij rozmowę",
       "description": "Zapytaj mnie o wszystko związane z nieruchomościami.",
@@ -2210,7 +2239,27 @@
     "ctaTitle": "Wypróbuj sam",
     "ctaSubtitle": "Demo działa bez rejestracji. Kod na licencji MIT, self-hostable w 5 minut.",
     "ctaStar": "Daj gwiazdkę",
-    "ctaTryDemo": "Wypróbuj demo"
+    "ctaTryDemo": "Wypróbuj demo",
+    "showFormat": "Pokaż format wpisu",
+    "entries": "{count, plural, one {# wpis} other {# wpisów}}",
+    "fieldProject": "projekt",
+    "fieldProjectHint": "nazwa i link",
+    "fieldWhatItDoes": "co robi",
+    "fieldWhatItDoesHint": "jedno zdanie",
+    "fieldChanged": "co zmieniono",
+    "fieldChangedHint": "co dodaje fork",
+    "fieldOrganisation": "organizacja",
+    "fieldOrganisationHint": "nazwa, kraj",
+    "fieldDeployment": "wdrożenie",
+    "fieldDeploymentHint": "własny hosting albo PropVector AI",
+    "fieldSince": "od",
+    "fieldSinceHint": "miesiąc, rok",
+    "fieldQuote": "cytat",
+    "fieldQuoteHint": "dosłownie, za zgodą",
+    "fieldPerson": "osoba",
+    "fieldPersonHint": "imię, rola",
+    "fieldLink": "link",
+    "fieldLinkHint": "gdzie powiedziano"
   },
   "footer": {
     "title": "Powiedzcie, czego szukacie",
@@ -2457,7 +2506,29 @@
     },
     "cityOverview": {
       "title": "Przegląd miasta",
-      "description": "Wskaźniki dzielnicowe dla miast, które śledzisz.",
+      "description": "Liczba ofert i ceny miast z katalogu, który serwuje to wdrożenie.",
+      "source": "katalog · {listings, plural, one {# oferta} few {# oferty} many {# ofert} other {# oferty}} · {covered} z {total} miast",
+      "table": {
+        "city": "Miasto",
+        "listings": "Oferty",
+        "average": "Średnia",
+        "min": "Min",
+        "max": "Max",
+        "perSqm": "za m²",
+        "perSqmUnit": "m²"
+      },
+      "ledger": {
+        "note": "Ceny w {unit}. „—” oznacza, że katalog nie ma tam ofert; podłączony dostawca danych je uzupełni."
+      },
+      "detail": {
+        "listings": "{count, plural, one {# oferta} few {# oferty} many {# ofert} other {# oferty}}",
+        "priceRange": "przedział cen, {unit}",
+        "average": "średnio {value}",
+        "searchCta": "Szukaj: {city}",
+        "trendsCta": "Trendy rynku →",
+        "empty": "Katalog nie ma ofert w mieście {city}. Na własnym wdrożeniu podłącz dostawcę danych z Twoim kluczem w Admin → Źródła danych i ten wiersz wypełni się sam.",
+        "dataSourcesCta": "Otwórz źródła danych →"
+      },
       "errors": {
         "noData": "Brak danych miasta. Baza nieruchomości może być pusta albo API jest niedostępne."
       },
@@ -2471,7 +2542,12 @@
       "map": {
         "title": "Mapa wszystkich nieruchomości",
         "hint": "Kliknij znacznik, aby zobaczyć szczegóły miasta",
-        "summary": "{count, plural, one {# nieruchomość} few {# nieruchomości} many {# nieruchomości} other {# nieruchomości}} w {cities, plural, one {# mieście} few {# miastach} many {# miastach} other {# miastach}}"
+        "summary": "{count, plural, one {# nieruchomość} few {# nieruchomości} many {# nieruchomości} other {# nieruchomości}} w {cities, plural, one {# mieście} few {# miastach} many {# miastach} other {# miastach}}",
+        "aria": "Mapa miast objętych katalogiem",
+        "legend": {
+          "listings": "oferty w katalogu",
+          "empty": "jeszcze bez ofert"
+        }
       },
       "stats": {
         "title": "Statystyki rynku według miast",
@@ -2504,6 +2580,17 @@
     "tools": {
       "title": "Narzędzia",
       "description": "Kalkulatory i analizy, które zamieniają ofertę w decyzję.",
+      "console": {
+        "tools": "Narzędzia",
+        "endpoint": "POST /api/v1/tools/{name}",
+        "count": "narzędzi: {count}",
+        "output": "Wynik",
+        "rawJson": "Surowy JSON",
+        "notRun": "Uruchom narzędzie, aby zobaczyć jego wynik.",
+        "ready": "gotowe",
+        "needsConfig": "wymaga konfiguracji",
+        "needsAccount": "wymaga konta"
+      },
       "propertyPrice": "Cena nieruchomości",
       "columnsHint": "Kolumny (opcjonalnie), np. id, city, price",
       "propertyId": "ID nieruchomości",
@@ -3279,7 +3366,8 @@
     "successMessage": "Agent potwierdzi termin wkrótce.",
     "failed": "Nie udało się umówić prezentacji",
     "cancel": "Anuluj",
-    "requesting": "Wysyłanie..."
+    "requesting": "Wysyłanie...",
+    "successDetail": "Agent potwierdzi termin wkrótce. {date}, {time}, {minutes} minut."
   },
   "taskTypes": {
     "chat": "Czat",

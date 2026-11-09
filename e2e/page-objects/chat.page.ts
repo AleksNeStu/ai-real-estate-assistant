@@ -33,16 +33,12 @@ export class ChatPage {
     this.sendButton = page.getByTestId('chat-send').or(page.getByLabel(/^send(ing)? message$/i));
     // Messages container - the scrollable div containing the messages
     this.messagesContainer = page.locator('div.flex-1.overflow-y-auto').first();
-    // A message bubble is a direct child of the messages container. The user
-    // bubble carries a muted background, the assistant one a plain background
-    // with a border. The loading indicator shares the classes of an assistant
-    // bubble, but it is marked with an aria-label and is therefore excluded.
-    this.userMessage = this.messagesContainer.locator(
-      ':scope > div.w-full.items-start.bg-muted\\/50'
-    );
-    this.assistantMessage = this.messagesContainer.locator(
-      ':scope > div.w-full.items-start.bg-background.border:not([aria-label])'
-    );
+    // A turn of the conversation. The user bubble is a muted panel on the
+    // right, the assistant turn is the mark plus the answer, its tool cards
+    // and its citations. Both carry their own handle, so the suite does not
+    // depend on the classes of the bubble.
+    this.userMessage = page.getByTestId('chat-user-message');
+    this.assistantMessage = page.getByTestId('chat-assistant-message');
     this.lastAssistantMessage = this.assistantMessage.last();
     // Retry button appears in error state - button with RefreshCw icon or "Retry" text
     this.retryButton = page.getByRole('button', { name: /^retry$/i });
@@ -51,12 +47,10 @@ export class ChatPage {
     // Citations are in a details element with a "Citations (N)" summary
     this.sourcesContainer = page.locator('details:has(summary:has-text("Citations"))');
     // Loading indicator - the "Thinking..." status of the streaming answer.
-    // It is the only status with an aria-label (the empty state has none).
+    // It is the only status with an aria-label (the demo banner has none).
     this.loadingIndicator = page.locator('[role="status"][aria-label]');
-    // Suggested prompts are buttons in the empty state with text-left class
-    this.suggestedPrompts = page.locator(
-      'button.text-left.text-sm.text-primary, .space-y-2 button.text-left'
-    );
+    // Suggested prompts are the pills of the empty state
+    this.suggestedPrompts = page.getByTestId('chat-suggestion');
     // Session history not currently in UI
     this.sessionHistory = page.locator('aside, [data-testid="session-history"]');
   }

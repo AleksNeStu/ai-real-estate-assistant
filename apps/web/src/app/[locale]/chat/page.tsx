@@ -1,12 +1,18 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { Send, User, Bot, Loader2, Lightbulb, Sparkles, RefreshCw, Info } from 'lucide-react';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { Send, Loader2, Lightbulb, RefreshCw, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { streamChatMessage, ApiError } from '@/lib/api';
 import type { ChatResponse, EnhancedCitation, CitationStats } from '@/lib/types';
 import CitationDisplay from '@/components/CitationDisplay';
 import { useTranslations } from 'next-intl';
+
+import { MonoAnnotation } from '@/components/ui/mono-annotation';
+import { ToolCard } from '@/components/ui/tool-card';
+import { ContextPane } from '@/components/chat/context-pane';
+import { ToolResult } from '@/components/chat/tool-result';
+import { parseToolCalls, type ToolCall } from '@/components/chat/tool-calls';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -15,6 +21,8 @@ interface Message {
   sourcesTruncated?: boolean;
   citationStats?: CitationStats | null;
   intermediateSteps?: ChatResponse['intermediate_steps'];
+  /** The calls the agent made to answer this turn. */
+  toolCalls?: ToolCall[];
   isError?: boolean;
   requestId?: string;
 }
@@ -43,6 +51,19 @@ export default function ChatPage() {
   const [debugMode, setDebugMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+
+  // Every call the assistant made, in the order it made them. The context
+  // pane indexes them; the cards in the conversation are the same calls.
+  const toolCalls = useMemo(
+    () =>
+      messages.flatMap((message, messageIndex) =>
+        (message.toolCalls ?? []).map((call, callIndex) => ({
+          id: `tool-${messageIndex}-${callIndex}`,
+          name: call.name,
+        }))
+      ),
+    [messages]
+  );
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -133,7 +154,7 @@ export default function ChatPage() {
       setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
 
       await streamChatMessage(
-        { message: userMessage, session_id: sid, include_intermediate_steps: debugMode },
+        { message: userMessage, session_id: sid, include_intermediate_steps: true },
         (chunk) => {
           setMessages((prev) => {
             const updated = [...prev];
@@ -153,6 +174,7 @@ export default function ChatPage() {
             const updated = [...prev];
             const lastIdx = updated.length - 1;
             if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+              const toolCalls = parseToolCalls(intermediateSteps);
               updated[lastIdx] = {
                 ...updated[lastIdx],
                 sources: sources && sources.length ? sources : updated[lastIdx].sources,
@@ -164,6 +186,7 @@ export default function ChatPage() {
                   intermediateSteps && intermediateSteps.length
                     ? intermediateSteps
                     : updated[lastIdx].intermediateSteps,
+                toolCalls: toolCalls.length ? toolCalls : updated[lastIdx].toolCalls,
               };
             }
             return updated;
@@ -184,7 +207,7 @@ export default function ChatPage() {
 
     try {
       await streamChatMessage(
-        { message: lastUserMessage, session_id: sessionId, include_intermediate_steps: debugMode },
+        { message: lastUserMessage, session_id: sessionId, include_intermediate_steps: true },
         (chunk) => {
           setMessages((prev) => {
             const updated = [...prev];
@@ -203,6 +226,7 @@ export default function ChatPage() {
             const updated = [...prev];
             const lastIdx = updated.length - 1;
             if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+              const toolCalls = parseToolCalls(intermediateSteps);
               updated[lastIdx] = {
                 ...updated[lastIdx],
                 sources: sources && sources.length ? sources : updated[lastIdx].sources,
@@ -214,6 +238,7 @@ export default function ChatPage() {
                   intermediateSteps && intermediateSteps.length
                     ? intermediateSteps
                     : updated[lastIdx].intermediateSteps,
+                toolCalls: toolCalls.length ? toolCalls : updated[lastIdx].toolCalls,
               };
             }
             return updated;
@@ -228,226 +253,273 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="container mx-auto max-w-4xl p-4 h-[calc(100vh-4rem)] flex flex-col">
+    <div className="flex h-[calc(100vh-4rem)]">
       {/* The chat shows its title in the welcome panel only, so the route
           would lose its H1 as soon as the first message arrives. One heading
-          stays in the document either way: visible in the welcome panel,
-          hidden once the conversation starts. */}
+          stays in the document either way: hidden once the conversation
+          starts. */}
       <h1 className="sr-only">{t('title')}</h1>
-      {/* Messages Area - 4 Mandated States */}
-      <div className="flex-1 overflow-y-auto space-y-4 p-4 rounded-lg border bg-card shadow-sm mb-4">
-        {/* STATE 1: Empty state (zero-data) - before user starts */}
-        {!hasStarted && messages.length === 0 && (
-          <div
-            className="flex flex-col items-center justify-center h-full min-h-[400px] text-center"
-            role="status"
-            aria-live="polite"
-          >
-            <div className="p-4 rounded-full bg-primary/10 mb-4">
-              <Sparkles className="h-12 w-12 text-primary" aria-hidden="true" />
-            </div>
-            <div className="flex items-center gap-2 mb-2">
-              <p className="text-2xl font-bold">{t('title')}</p>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-medium border border-primary/20">
-                {t('aiLabel')}
-              </span>
-            </div>
-            <p className="text-muted-foreground max-w-md mb-6">{t('description')}</p>
-            <div className="space-y-2 mb-6 text-left w-full max-w-md mx-auto">
-              <p className="text-sm font-medium text-foreground flex items-center gap-2">
-                <Lightbulb className="h-4 w-4" aria-hidden="true" />
-                {t('emptyState.suggestions')}
-              </p>
-              <div className="flex flex-col gap-2">
-                {suggestedPrompts.map((prompt, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleSuggestedPrompt(prompt)}
-                    className="text-left text-sm text-primary hover:underline disabled:opacity-50 p-2 rounded-md hover:bg-muted/50 transition-colors"
-                    disabled={isLoading}
-                  >
-                    &ldquo;{prompt}&rdquo;
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="text-xs text-muted-foreground max-w-md">
-              <p className="font-medium mb-1">{t('poweredBy.title')}</p>
-              <p>{t('poweredBy.description')}</p>
-            </div>
-          </div>
-        )}
-
-        {/* STATE 2: Loading state (streaming) - thinking indicator */}
-        {isLoading && (
-          <div
-            className="flex w-full items-start gap-4 p-4 rounded-lg bg-background border"
-            role="status"
-            aria-live="polite"
-            aria-label={t('loading.thinking')}
-          >
-            <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md border shadow bg-primary text-primary-foreground">
-              <Bot className="h-4 w-4" />
-            </div>
-            <div className="flex-1 flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">{t('loading.thinking')}</span>
-            </div>
-          </div>
-        )}
-
-        {/* STATE 3 & 4: Message list (Populated state + inline errors) */}
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={cn(
-              'flex w-full items-start gap-4 p-4 rounded-lg',
-              message.role === 'user'
-                ? 'bg-muted/50'
-                : message.isError
-                  ? 'bg-destructive/10 border border-destructive/20'
-                  : 'bg-background border'
-            )}
-            role={message.role === 'assistant' && message.isError ? 'alert' : undefined}
-            aria-live={message.isError ? 'assertive' : 'polite'}
-          >
+      <main className="flex min-w-0 flex-1 flex-col">
+        <div className="flex flex-1 overflow-y-auto">
+          <div className="mx-auto flex w-full max-w-[780px] flex-col gap-7 px-6 py-7">
+            {/* The demo banner: the honest note about the model behind the answer. */}
             <div
-              className={cn(
-                'flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md border shadow',
-                message.role === 'user' ? 'bg-background' : 'bg-primary text-primary-foreground'
-              )}
+              className="flex items-center justify-center gap-2.5 rounded-md bg-muted px-3 py-2 text-annot text-muted-foreground"
+              role="status"
             >
-              {message.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+              <span className="size-1.5 shrink-0 rounded-full bg-success" aria-hidden="true" />
+              <span>{t('poweredBy.description')}</span>
             </div>
-            <div className="flex-1 space-y-2 overflow-hidden">
-              {/* AI Disclosure Badge - shown for assistant messages (EU AI Act compliance) */}
-              {message.role === 'assistant' && message.content && !message.isError && (
-                <div className="flex items-start gap-2 text-xs text-muted-foreground">
-                  <Info className="h-3 w-3 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                  <p>{t('aiDisclaimer')}</p>
-                </div>
-              )}
 
-              <div className="prose break-words dark:prose-invert text-sm leading-relaxed">
-                {!message.content ? (
-                  <span className="text-muted-foreground italic">{t('loading.thinking')}</span>
-                ) : (
-                  message.content
-                )}
+            {/* STATE 1: Empty state (zero-data) - before user starts */}
+            {!hasStarted && messages.length === 0 && (
+              <div
+                className="flex flex-col items-start gap-4 py-10"
+                role="status"
+                aria-live="polite"
+              >
+                <div className="flex flex-col gap-2">
+                  <p className="m-0 text-section font-semibold text-foreground">{t('title')}</p>
+                  <p className="m-0 max-w-md text-body text-muted-foreground">{t('description')}</p>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <span className="flex items-center gap-2 text-annot text-muted-foreground">
+                    <Lightbulb className="size-4" aria-hidden="true" />
+                    {t('emptyState.suggestions')}
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {suggestedPrompts.map((prompt, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        data-testid="chat-suggestion"
+                        onClick={() => handleSuggestedPrompt(prompt)}
+                        className="rounded-full border border-border px-3 py-1.5 text-app text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+                        disabled={isLoading}
+                      >
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <p className="m-0 max-w-md text-annot text-muted-foreground">
+                  {t('poweredBy.description')}
+                </p>
               </div>
+            )}
 
-              {/* Sources display */}
-              {message.role === 'assistant' && message.sources && message.sources.length > 0 && (
-                <CitationDisplay
-                  citations={message.sources.map((source): EnhancedCitation => {
-                    const metadata = source.metadata || {};
-                    // Check if already enhanced citation format
-                    if ('source_type' in metadata && 'confidence' in metadata) {
-                      return {
-                        source: metadata.source as string | undefined,
-                        chunk_index: metadata.chunk_index as number | undefined,
-                        page_number: metadata.page_number as number | undefined,
-                        paragraph_number: metadata.paragraph_number as number | undefined,
-                        source_type:
-                          (metadata.source_type as EnhancedCitation['source_type']) || 'unknown',
-                        confidence:
-                          (metadata.confidence as EnhancedCitation['confidence']) || 'medium',
-                        confidence_score: (metadata.confidence_score as number) || 0.5,
-                        content_snippet: source.content || null,
-                        source_url: metadata.source_url as string | undefined,
-                        source_title: metadata.source_title as string | undefined,
-                        citation_hash: metadata.citation_hash as string | undefined,
-                        is_duplicate: (metadata.is_duplicate as boolean) || false,
-                        validated: (metadata.validated as boolean) || false,
-                      };
-                    }
-                    // Legacy format - convert to enhanced
-                    return {
-                      source: metadata.source as string | undefined,
-                      chunk_index: metadata.chunk_index as number | undefined,
-                      page_number: metadata.page_number as number | undefined,
-                      paragraph_number: metadata.paragraph_number as number | undefined,
-                      source_type: 'unknown',
-                      confidence: 'medium',
-                      confidence_score: 0.5,
-                      content_snippet: source.content || null,
-                      source_url: undefined,
-                      source_title:
-                        (metadata.title as string | undefined) ||
-                        (metadata.source as string | undefined),
-                      citation_hash: undefined,
-                      is_duplicate: false,
-                      validated: false,
-                    };
-                  })}
-                  stats={message.citationStats}
-                  truncated={message.sourcesTruncated}
-                />
-              )}
-
-              {/* Intermediate steps (debug mode) */}
-              {debugMode &&
-                message.role === 'assistant' &&
-                message.intermediateSteps &&
-                message.intermediateSteps.length > 0 && (
-                  <details className="rounded-md border bg-muted/30 px-3 py-2 text-xs">
-                    <summary className="cursor-pointer select-none font-medium">
-                      {t('debug.trace', { count: message.intermediateSteps.length })}
-                    </summary>
-                    <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-[11px] leading-snug">
-                      {JSON.stringify(message.intermediateSteps, null, 2)}
-                    </pre>
-                  </details>
-                )}
-
-              {/* Error retry button */}
-              {message.isError && (
-                <div className="flex items-center gap-3">
-                  {message.requestId && (
-                    <div className="text-xs text-muted-foreground font-mono">
-                      {t('retry.requestId', { id: message.requestId })}
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={handleRetry}
-                    disabled={isLoading}
-                    className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow hover:bg-primary/90 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:opacity-50"
-                  >
-                    <RefreshCw className="h-3 w-3" />
-                    {t('retry.button')}
-                  </button>
+            {/* STATE 2: Loading state (streaming) - thinking indicator */}
+            {isLoading && (
+              <div
+                className="flex items-center gap-3"
+                role="status"
+                aria-live="polite"
+                aria-label={t('loading.thinking')}
+              >
+                <AssistantMark />
+                <div className="flex items-center gap-2">
+                  <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                  <span className="text-app text-muted-foreground">{t('loading.thinking')}</span>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* STATE 3 & 4: Message list (Populated state + inline errors) */}
+            {messages.map((message, index) =>
+              message.role === 'user' ? (
+                <div key={index} className="flex justify-end">
+                  <p
+                    data-testid="chat-user-message"
+                    className="m-0 max-w-[580px] rounded-lg bg-muted px-3.5 py-2.5 text-app text-foreground"
+                  >
+                    {message.content}
+                  </p>
+                </div>
+              ) : (
+                <div
+                  key={index}
+                  data-testid="chat-assistant-message"
+                  className="grid grid-cols-[28px_minmax(0,1fr)] gap-3.5"
+                  role={message.isError ? 'alert' : undefined}
+                  aria-live={message.isError ? 'assertive' : 'polite'}
+                >
+                  <AssistantMark />
+                  <div className="flex min-w-0 flex-col gap-3">
+                    <div className="break-words text-app leading-relaxed text-foreground">
+                      {!message.content ? (
+                        <span className="text-muted-foreground">{t('loading.thinking')}</span>
+                      ) : (
+                        message.content
+                      )}
+                    </div>
+
+                    {/* The calls the agent made, one card each. */}
+                    {message.toolCalls && message.toolCalls.length > 0 ? (
+                      <div className="flex flex-col gap-3">
+                        {message.toolCalls.map((call, callIndex) => (
+                          <div
+                            key={`tool-${index}-${callIndex}`}
+                            id={`tool-${index}-${callIndex}`}
+                            className="scroll-mt-4"
+                          >
+                            <ToolCard
+                              name={call.name}
+                              args={call.args}
+                              result={<ToolResult observation={call.result} />}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    {/* The sources belong to the answer, not to a card. */}
+                    {message.sources && message.sources.length > 0 && (
+                      <CitationDisplay
+                        citations={message.sources.map((source): EnhancedCitation => {
+                          const metadata = source.metadata || {};
+                          // Check if already enhanced citation format
+                          if ('source_type' in metadata && 'confidence' in metadata) {
+                            return {
+                              source: metadata.source as string | undefined,
+                              chunk_index: metadata.chunk_index as number | undefined,
+                              page_number: metadata.page_number as number | undefined,
+                              paragraph_number: metadata.paragraph_number as number | undefined,
+                              source_type:
+                                (metadata.source_type as EnhancedCitation['source_type']) || 'unknown',
+                              confidence:
+                                (metadata.confidence as EnhancedCitation['confidence']) || 'medium',
+                              confidence_score: (metadata.confidence_score as number) || 0.5,
+                              content_snippet: source.content || null,
+                              source_url: metadata.source_url as string | undefined,
+                              source_title: metadata.source_title as string | undefined,
+                              citation_hash: metadata.citation_hash as string | undefined,
+                              is_duplicate: (metadata.is_duplicate as boolean) || false,
+                              validated: (metadata.validated as boolean) || false,
+                            };
+                          }
+                          // Legacy format - convert to enhanced
+                          return {
+                            source: metadata.source as string | undefined,
+                            chunk_index: metadata.chunk_index as number | undefined,
+                            page_number: metadata.page_number as number | undefined,
+                            paragraph_number: metadata.paragraph_number as number | undefined,
+                            source_type: 'unknown',
+                            confidence: 'medium',
+                            confidence_score: 0.5,
+                            content_snippet: source.content || null,
+                            source_url: undefined,
+                            source_title:
+                              (metadata.title as string | undefined) ||
+                              (metadata.source as string | undefined),
+                            citation_hash: undefined,
+                            is_duplicate: false,
+                            validated: false,
+                          };
+                        })}
+                        stats={message.citationStats}
+                        truncated={message.sourcesTruncated}
+                      />
+                    )}
+
+                    {/* Intermediate steps (debug mode) */}
+                    {debugMode &&
+                      message.intermediateSteps &&
+                      message.intermediateSteps.length > 0 && (
+                        <details className="rounded-md border bg-muted/30 px-3 py-2 text-xs">
+                          <summary className="cursor-pointer select-none font-medium">
+                            {t('debug.trace', { count: message.intermediateSteps.length })}
+                          </summary>
+                          <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-[11px] leading-snug">
+                            {JSON.stringify(message.intermediateSteps, null, 2)}
+                          </pre>
+                        </details>
+                      )}
+
+                    {/* Error retry button */}
+                    {message.isError && (
+                      <div className="flex items-center gap-3">
+                        {message.requestId && (
+                          <MonoAnnotation>{t('retry.requestId', { id: message.requestId })}</MonoAnnotation>
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleRetry}
+                          disabled={isLoading}
+                          className="inline-flex items-center gap-2 rounded-md bg-action px-3 py-1.5 text-xs font-medium text-action-foreground transition-colors hover:bg-action/90 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:opacity-50"
+                        >
+                          <RefreshCw className="size-3" />
+                          {t('retry.button')}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* The disclosure the law asks for, at the end of the answer. */}
+                    {message.content && !message.isError ? (
+                      <div className="flex items-start gap-2 text-annot text-muted-foreground">
+                        <Info className="mt-0.5 size-3 shrink-0" aria-hidden="true" />
+                        <p className="m-0">{t('aiDisclaimer')}</p>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              )
+            )}
+
+            <div ref={messagesEndRef} />
           </div>
-        ))}
+        </div>
 
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input Form */}
-      <form ref={formRef} onSubmit={handleSubmit} className="flex gap-4">
-        <input
-          data-testid="chat-input"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
-          placeholder={hasStarted ? t('input.placeholderStarted') : t('input.placeholderEmpty')}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={isLoading}
-          aria-label={t('input.ariaLabel')}
-        />
-        <button
-          type="submit"
-          data-testid="chat-send"
-          aria-label={isLoading ? t('input.ariaLabelSending') : t('input.ariaLabelSend')}
-          disabled={isLoading || !input.trim()}
-          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:pointer-events-none disabled:opacity-50 w-12"
+        {/* The composer */}
+        <form
+          ref={formRef}
+          onSubmit={handleSubmit}
+          className="mx-auto flex w-full max-w-[780px] flex-col gap-2.5 px-6 pb-6 pt-4"
         >
-          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-        </button>
-      </form>
+          <div className="flex gap-2">
+            <input
+              data-testid="chat-input"
+              className="h-12 flex-1 rounded-lg border border-input bg-background px-3.5 text-app file:border-0 file:bg-transparent file:text-app file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder={hasStarted ? t('input.placeholderStarted') : t('input.placeholderEmpty')}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={isLoading}
+              aria-label={t('input.ariaLabel')}
+            />
+            <button
+              type="submit"
+              data-testid="chat-send"
+              aria-label={isLoading ? t('input.ariaLabelSending') : t('input.ariaLabelSend')}
+              disabled={isLoading || !input.trim()}
+              className="inline-flex size-12 items-center justify-center rounded-lg bg-action text-action-foreground transition-colors hover:bg-action/90 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50 disabled:pointer-events-none disabled:opacity-50"
+            >
+              {isLoading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+            </button>
+          </div>
+          <MonoAnnotation className="truncate">{t('poweredBy.description')}</MonoAnnotation>
+        </form>
+      </main>
+
+      <ContextPane
+        className="hidden lg:flex"
+        tools={toolCalls}
+        sessionId={sessionId}
+        requestId={messages.find((message) => message.requestId)?.requestId}
+      />
     </div>
+  );
+}
+
+/** The assistant's mark: the square the prototype puts beside every turn. */
+function AssistantMark() {
+  return (
+    <span
+      className="flex size-7 shrink-0 select-none items-center justify-center rounded-md bg-foreground text-background"
+      aria-hidden="true"
+    >
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M3 10.5 8 5l5 5.5" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="8" cy="12.5" r="1.4" fill="currentColor" stroke="none" />
+      </svg>
+    </span>
   );
 }
