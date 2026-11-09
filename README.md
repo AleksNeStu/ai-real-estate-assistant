@@ -56,6 +56,14 @@ it runs on your own server as happily as it runs on a managed platform.
 
 ![The landing page at realty.kittray.com](assets/screenshots/home-dark.png)
 
+**Six seconds of the demo** — the landing, the search with its results, the
+assistant answering with its sources:
+
+![Six seconds of the demo](assets/clips/demo-6s.gif)
+
+The master is [`assets/clips/demo-6s.mp4`](assets/clips/demo-6s.mp4) — the same
+six seconds in the form a landing page can play.
+
 Everything is live — no keys, no setup, and the account is free:
 
 - **Natural-language search** — ask *"2-bedroom apartment in Kraków under 500k"* and get matched listings

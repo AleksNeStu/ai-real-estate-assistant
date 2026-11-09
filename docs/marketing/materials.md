@@ -40,6 +40,37 @@ the image shows a conversation rather than an empty panel. The first-visit tour
 is remembered as seen, and the service worker is left alone (it does not
 interfere with the capture).
 
+## How the clip is made
+
+The six-second clip is three scenes of the live deployment — the landing, the
+search with its results, the assistant answering with its sources — cut into one
+master and one inline GIF.
+
+```bash
+node scripts/utils/capture_demo_clip.js https://realty.kittray.com chat
+bash scripts/utils/build_demo_clip.sh
+```
+
+| Asset | Where | What it is |
+|---|---|---|
+| The frames | `tmp/clip/*.png` | the three scenes, an intermediate, not published |
+| `demo-6s.mp4` | `assets/clips/` | the master — what the landing plays |
+| `demo-6s.gif` | `assets/clips/` | what a forum post inlines |
+| `poster.png` | `assets/clips/` | the frame the landing shows before the play button |
+
+Two traps, both of them paid for in a real published frame:
+
+- **The free tier answers with the error inside a 200.** An address gets 20
+  requests an hour and 200 a day (`apps/api/utils/free_tier.py`), and the chat
+  delivers "Hourly limit exceeded" as a normal answer. A capture that checks
+  only the status code publishes the error. The capture reads the pane and
+  rejects the frame.
+- **At document-start `document.documentElement` is still null.** A
+  `classList.add("dark")` in an init script throws there, and inside one script
+  every statement after the throw is skipped — including the flag that
+  dismisses the onboarding tour. Every statement carries its own guard, and the
+  two init scripts stay separate.
+
 ## How the copy is written
 
 The rules of the design system apply to the materials as well:

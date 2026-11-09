@@ -10,7 +10,9 @@ repos:
       - id: trailing-whitespace
       - id: check-merge-conflict
       - id: check-added-large-files
-        exclude: ^apps/api/docs/api/openapi\.json$
+        # The demo clip is a published material: a six-second MP4 and the GIF
+        # the README inlines. They are binaries on purpose, not build residue.
+        exclude: ^apps/api/docs/api/openapi\.json$|^assets/clips/
       - id: check-illegal-windows-names
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
