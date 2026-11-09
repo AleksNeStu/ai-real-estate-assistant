@@ -16,7 +16,8 @@ interface UpdateBannerProps {
  */
 export function UpdateBanner({ className }: UpdateBannerProps) {
   const [showBanner, setShowBanner] = useState(false);
-  const t = useTranslations('common');
+  const t = useTranslations('designStates');
+  const tCommon = useTranslations('common');
 
   useEffect(() => {
     const handleUpdateAvailable = () => {
@@ -45,24 +46,24 @@ export function UpdateBanner({ className }: UpdateBannerProps) {
   return (
     <div
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 bg-info px-4 py-2 text-center text-sm text-info-foreground transition-all',
+        'fixed top-0 left-0 right-0 z-50 border-b border-border bg-muted px-4 py-2.5 text-center text-[13px] leading-5 text-foreground transition-all',
         className
       )}
       role="status"
       aria-live="polite"
     >
-      <div className="flex items-center justify-center gap-3">
-        <RefreshCw className="h-4 w-4" aria-hidden="true" />
-        <span>{t('newVersionAvailable')}</span>
-        <Button variant="secondary" size="sm" onClick={handleUpdate} className="ml-2">
-          {t('refresh')}
+      <div className="mx-auto flex max-w-[1248px] items-center justify-center gap-3">
+        <RefreshCw className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <span>{t('update.title')}</span>
+        <Button variant="outline" size="sm" onClick={handleUpdate}>
+          {t('update.reload')}
         </Button>
         <Button
           variant="ghost"
           size="sm"
           onClick={handleDismiss}
-          className="text-info-foreground hover:text-info-foreground"
-          aria-label={t('dismissUpdate')}
+          className="text-muted-foreground hover:text-foreground"
+          aria-label={tCommon('dismissUpdate')}
         >
           <X className="h-4 w-4" aria-hidden="true" />
         </Button>

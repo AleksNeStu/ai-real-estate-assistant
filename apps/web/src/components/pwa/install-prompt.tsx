@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 
 interface InstallPromptProps {
   className?: string;
@@ -17,7 +16,8 @@ interface InstallPromptProps {
 export function InstallPrompt({ className }: InstallPromptProps) {
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
-  const t = useTranslations('common');
+  const t = useTranslations('designStates');
+  const tCommon = useTranslations('common');
 
   useEffect(() => {
     // Check if already installed
@@ -72,29 +72,29 @@ export function InstallPrompt({ className }: InstallPromptProps) {
   }
 
   return (
-    <Card
-      className={`fixed bottom-4 left-4 right-4 z-50 mx-4 shadow-lg ${className || ''}`}
+    <div
+      className={`fixed bottom-4 left-4 right-4 z-50 mx-4 overflow-hidden rounded-lg border border-border bg-popover shadow-[0_8px_24px_rgb(9_9_11/0.10)] ${className || ''}`}
       role="status"
     >
       <div className="flex items-start gap-3 p-4">
         <div className="flex-shrink-0">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-            <Download className="h-5 w-5 text-primary" aria-hidden="true" />
+          <div className="flex size-9 items-center justify-center rounded-md bg-muted">
+            <Download className="size-4 text-foreground" aria-hidden="true" />
           </div>
         </div>
         <div className="flex-1">
-          <p className="text-sm font-medium text-foreground">{t('installApp')}</p>
-          <p className="text-xs text-muted">{t('installAppDescription')}</p>
+          <p className="text-[14px] font-semibold leading-5 text-foreground">{t('install.title')}</p>
+          <p className="text-[13px] leading-5 text-muted-foreground">{t('install.body')}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={handleLater} className="text-muted">
-            {t('later')}
+          <Button variant="ghost" size="sm" onClick={handleLater} className="text-muted-foreground">
+            {t('install.notNow')}
           </Button>
           <Button size="sm" onClick={handleInstall} disabled={isInstalling}>
-            {isInstalling ? t('installing') : t('install')}
+            {isInstalling ? tCommon('installing') : t('install.install')}
           </Button>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

@@ -37,6 +37,10 @@ def build_capabilities(*, email_enabled: bool) -> dict[str, Any]:
     return {
         "auth": {
             "jwt_enabled": settings.auth_jwt_enabled,
+            # True means an anonymous visitor gets a synthetic user, so the
+            # account routes work without signing in. False means they do not,
+            # and the interface has to ask for an account instead.
+            "demo_user_bypass": settings.demo_user_bypass,
             "oauth": {"google": google, "apple": apple},
         },
         "email": {

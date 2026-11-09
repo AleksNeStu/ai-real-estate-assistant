@@ -59,7 +59,8 @@ function bannerReducer(state: BannerState, action: BannerAction): BannerState {
 export function OfflineBanner({ className }: OfflineBannerProps) {
   const isOnline = useOnlineStatus();
   const [bannerState, dispatch] = useReducer(bannerReducer, 'hidden');
-  const t = useTranslations('common');
+  const t = useTranslations('designStates');
+  const tCommon = useTranslations('common');
 
   // Handle online/offline transitions
   useEffect(() => {
@@ -93,7 +94,7 @@ export function OfflineBanner({ className }: OfflineBannerProps) {
       >
         <div className="flex items-center justify-center gap-2">
           <Wifi className="h-4 w-4" aria-hidden="true" />
-          <span>{t('backOnline')}</span>
+          <span>{tCommon('backOnline')}</span>
         </div>
       </div>
     );
@@ -106,13 +107,13 @@ export function OfflineBanner({ className }: OfflineBannerProps) {
         role="status"
         aria-live="polite"
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 bg-caution px-4 py-2 text-center text-sm text-caution-foreground transition-all',
+          'fixed top-0 left-0 right-0 z-50 border-b border-border bg-warning-surface px-4 py-2.5 text-center text-[13px] leading-5 text-foreground transition-all',
           className
         )}
       >
-        <div className="flex items-center justify-center gap-2">
-          <WifiOff className="h-4 w-4" aria-hidden="true" />
-          <span>{t('offlineMessage')}</span>
+        <div className="mx-auto flex max-w-[1248px] items-center justify-center gap-2">
+          <WifiOff className="h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
+          <span>{t('offline.title')}</span>
         </div>
       </div>
     );

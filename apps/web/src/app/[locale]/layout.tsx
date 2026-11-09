@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono, Cinzel } from 'next/font/google';
+import { Geist, Geist_Mono } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
-import { MainNav } from '@/components/layout/main-nav';
-import { SiteFooter } from '@/components/layout/site-footer';
+import { TopBar } from '@/components/shell/top-bar';
+import { DemoStrip } from '@/components/shell/demo-strip';
+import { AppFooter } from '@/components/shell/app-footer';
+import { ArrivalReporter } from '@/components/shell/arrival-reporter';
 import { SkipNav } from '@/components/layout/SkipNav';
-import { DemoBanner } from '@/components/layout/demo-banner';
 import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/sonner';
 import { InstallPrompt } from '@/components/pwa/install-prompt';
@@ -15,6 +16,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import type { Locale } from '@/i18n/config';
 import { routing } from '@/i18n/routing';
 import { SITE_URL, absoluteUrl } from '@/lib/site';
+import { ACTION_HEX } from '@/lib/palette';
 import { languageAlternates } from '@/lib/metadata';
 import { buildStructuredData } from '@/lib/structured-data';
 
@@ -45,17 +47,13 @@ const geistMono = Geist_Mono({
   subsets: ['latin', 'latin-ext'],
 });
 
-// Using Cinzel as a stand-in for "Phantom Templar" style
-const fontTemplar = Cinzel({
-  variable: '--font-templar',
-  subsets: ['latin', 'latin-ext'],
-});
-
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
-  themeColor: '#2563eb',
+  // The browser chrome cannot read a CSS token, so the teal is written out
+  // in `lib/palette.ts` and asserted against `--action` by the palette test.
+  themeColor: ACTION_HEX,
 };
 
 export function generateStaticParams() {
@@ -258,22 +256,19 @@ export default async function LocaleLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${fontTemplar.variable} font-sans antialiased min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased min-h-screen flex flex-col`}
       >
         <NextIntlClientProvider messages={messages}>
           <Providers>
-            <DemoBanner />
             <UpdateBanner />
             <SkipNav />
-            <header className="border-b bg-background">
-              <div className="flex h-16 items-center px-4 container mx-auto">
-                <MainNav />
-              </div>
-            </header>
+            <ArrivalReporter />
+            <TopBar />
+            <DemoStrip />
             <main id="main-content" className="flex-1">
               <ErrorBoundary>{children}</ErrorBoundary>
             </main>
-            <SiteFooter />
+            <AppFooter />
             <InstallPrompt />
             <OnboardingTour />
             <Toaster />

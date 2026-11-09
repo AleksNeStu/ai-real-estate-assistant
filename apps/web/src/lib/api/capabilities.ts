@@ -11,6 +11,8 @@ import { getApiUrl, buildHeaders, safeFetch, handleResponse } from './client';
 export interface DeploymentCapabilities {
   auth: {
     jwt_enabled: boolean;
+    /** True means an anonymous visitor gets a synthetic user. */
+    demo_user_bypass: boolean;
     oauth: {
       google: boolean;
       apple: boolean;
@@ -23,7 +25,14 @@ export interface DeploymentCapabilities {
   };
   llm: {
     demo_mode: boolean;
-    default_provider: string;
+    /** "local-model" means canned answers; "provider" means a real model answers. */
+    mode: 'local-model' | 'provider';
+    provider: string;
+    model: string;
+  };
+  lead_capture: {
+    /** The waitlist may only promise an e-mail when one can be sent. */
+    waitlist_enabled: boolean;
   };
   observability: {
     error_tracking: boolean;

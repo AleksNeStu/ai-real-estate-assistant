@@ -75,6 +75,8 @@ async function handleRequest(request: NextRequest) {
     '/tools',
     '/chat',
     '/agents',
+    '/valuation',
+    '/showcase',
   ];
   const isDemoRoute =
     pathWithoutLocale === '/' ||
@@ -82,7 +84,31 @@ async function handleRequest(request: NextRequest) {
       (r) => r !== '/' && (pathWithoutLocale === r || pathWithoutLocale.startsWith(r + '/'))
     );
 
-  if (isAuthRoute || isDemoRoute) {
+  /**
+   * The routes that belong to an account.
+   *
+   * These are not redirected to the login page. The redirect threw away the
+   * context: a visitor who opened `/favorites` was told to sign in without
+   * ever hearing what a favourite is. Instead the route renders and the
+   * `AccountGate` layout explains what the account gives, offering the two
+   * ways in. The gate decides from the backend's capabilities whether an
+   * account is needed at all.
+   */
+  const gatedRoutes = [
+    '/favorites',
+    '/saved-searches',
+    '/documents',
+    '/settings',
+    '/leads',
+    '/agent-analytics',
+    '/usage',
+    '/admin',
+  ];
+  const isGatedRoute = gatedRoutes.some(
+    (r) => pathWithoutLocale === r || pathWithoutLocale.startsWith(r + '/')
+  );
+
+  if (isAuthRoute || isDemoRoute || isGatedRoute) {
     return intlResponse;
   }
 
