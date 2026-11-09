@@ -75,7 +75,10 @@ function SearchPageContent() {
     };
   }, [flushSearch]);
 
-  const [query, setQuery] = useState('');
+  // A link that carries a question - the chips of the landing, the example
+  // queries of the empty state - has to land on a search that already holds
+  // that question. The parameter is read once, here.
+  const [query, setQuery] = useState(() => searchParams.get('q') ?? '');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResultItem[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -285,6 +288,17 @@ function SearchPageContent() {
       setLoading(false);
     }
   };
+
+  // A question that arrives in the URL is searched for, once, on arrival.
+  // The landing sends people here with a question in the address; landing on
+  // an empty search box would throw that away.
+  const initialQuery = searchParams.get('q');
+  useEffect(() => {
+    if (initialQuery) {
+      void handleSearch();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleExport = async () => {
     setExporting(true);

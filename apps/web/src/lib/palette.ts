@@ -31,8 +31,8 @@ export const PALETTE = {
   caution: hsl(20, 90, 48),
   /** --destructive */
   destructive: hsl(0, 84.2, 60.2),
-  /** --action - the teal of the single primary action */
-  action: hsl(175, 77, 26),
+  /** --action - the teal of the single primary action (#0f766e) */
+  action: hsl(175.34, 77.44, 26.08),
   /** --muted-foreground, the muted grey of a choropleth without data */
   muted: hsl(240, 3.8, 46.1),
 } as const;
@@ -52,10 +52,22 @@ export const DISTRICT_FILL = {
 
 /** The Mapbox style colours of the district boundary layer. */
 export const DISTRICT_LAYER = {
-  line: '#374151',
-  label: '#1f2937',
-  halo: '#ffffff',
+  /** --district-line */
+  line: hsl(217, 19, 26.7),
+  /** --district-label */
+  label: hsl(215, 27.9, 16.9),
+  /** --district-halo */
+  halo: hsl(0, 0, 100),
 } as const;
+
+/**
+ * The action colour as a hex.
+ *
+ * Most of the app reads the teal from the token. The browser chrome cannot:
+ * `themeColor` is a static export and takes a literal colour, so it is
+ * written out here and the parity test asserts it against `--action`.
+ */
+export const ACTION_HEX = '#0f766e';
 
 /**
  * The token each literal stands for. The parity test walks this table and
@@ -70,4 +82,7 @@ export const TOKEN_SOURCES: Record<string, string> = {
   [PALETTE.destructive]: '--destructive',
   [PALETTE.action]: '--action',
   [PALETTE.muted]: '--muted-foreground',
+  [DISTRICT_LAYER.line]: '--district-line',
+  [DISTRICT_LAYER.label]: '--district-label',
+  [DISTRICT_LAYER.halo]: '--district-halo',
 };

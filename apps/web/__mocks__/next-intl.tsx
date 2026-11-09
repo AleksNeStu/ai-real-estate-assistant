@@ -198,13 +198,19 @@ const stableTranslator = (namespace?: string) => {
   const cacheKey = namespace ?? '';
   let cached = translatorCache.get(cacheKey);
   if (!cached) {
-    cached = (key: string, params?: Record<string, unknown>) => {
+    const translate = (key: string, params?: Record<string, unknown>) => {
       const value = resolve(namespace, key);
       // A key that does not exist in the catalogue must stay visible as the
       // key itself — that is how a missing translation shows up in a test.
       if (typeof value !== 'string') return key;
       return formatMessage(value, params);
     };
+    // `t.raw` hands over a non-string message (a list of strings, an object).
+    // next-intl has it; the mock needs it too, or a component that renders a
+    // list breaks in a test that never touched the catalogue.
+    (translate as unknown as { raw: (key: string) => unknown }).raw = (key: string) =>
+      resolve(namespace, key);
+    cached = translate;
     translatorCache.set(cacheKey, cached);
   }
   return cached;
