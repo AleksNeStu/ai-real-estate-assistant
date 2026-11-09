@@ -1,18 +1,14 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, jest } from '@jest/globals';
 import AnalyticsPage from '../page';
-import en from '../../../../../messages/en.json';
 
 /**
- * The "advanced investment" heading is page copy of its own, so it travels in
- * the message fragments and lands in the catalogue with the central merge.
- * Until it is there, the next-intl mock renders the key itself — the
- * expectation follows the catalogue and falls back to that key.
+ * The tools of the assistant.
+ *
+ * The route is the console: one screen, the five calculators behind a row of
+ * tabs. The test covers the heading, the tab row and the tool that is open.
  */
-const advancedInvestmentHeading =
-  (en.pages.analytics as { sections?: { advancedInvestment?: string } }).sections
-    ?.advancedInvestment ?? 'sections.advancedInvestment';
 
 // Mock next/dynamic to render components directly instead of lazy-loading
 jest.mock('next/dynamic', () => {
@@ -49,7 +45,9 @@ jest.mock('@/components/analytics/advanced-investment-analyzer', () => ({
 }));
 
 jest.mock('@/components/analytics/portfolio-analyzer', () => ({
-  PortfolioAnalyzer: () => <div data-testid="portfolio-analyzer">Portfolio Analyzer Component</div>,
+  PortfolioAnalyzer: () => (
+    <div data-testid="portfolio-analyzer">Portfolio Analyzer Component</div>
+  ),
 }));
 
 jest.mock('@/components/analytics/rent-vs-buy-calculator', () => ({
@@ -59,63 +57,34 @@ jest.mock('@/components/analytics/rent-vs-buy-calculator', () => ({
 }));
 
 describe('AnalyticsPage', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   it('renders the page title and description', () => {
     render(<AnalyticsPage />);
-    expect(screen.getByText('Analytics & Tools')).toBeInTheDocument();
+    expect(screen.getByText('Analytics')).toBeInTheDocument();
     expect(
-      screen.getByText('Market insights and financial tools to help you make informed decisions.')
+      screen.getByText('Five calculators — the same ones the assistant calls in chat.')
     ).toBeInTheDocument();
   });
 
-  it('renders all section headings', () => {
+  it('names the five tools in the tab row', () => {
     render(<AnalyticsPage />);
-    expect(screen.getByText('Mortgage Calculator')).toBeInTheDocument();
-    expect(screen.getByText('Investment Property Analyzer')).toBeInTheDocument();
-    expect(screen.getByText(advancedInvestmentHeading)).toBeInTheDocument();
-    expect(screen.getByText('Portfolio Analyzer')).toBeInTheDocument();
-    expect(screen.getByText('Rent vs Buy Calculator')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Mortgage' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Investment analyzer' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Advanced analyzer' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Portfolio analyzer' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Rent vs buy' })).toBeInTheDocument();
   });
 
-  it('renders the MortgageCalculator component', () => {
+  it('opens on the mortgage calculator', async () => {
     render(<AnalyticsPage />);
-    expect(screen.getByTestId('mortgage-calculator')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('mortgage-calculator')).toBeInTheDocument();
+    });
   });
 
-  it('renders the InvestmentAnalyzer component', () => {
+  it('says that the tools are deterministic', () => {
     render(<AnalyticsPage />);
-    expect(screen.getByTestId('investment-analyzer')).toBeInTheDocument();
-  });
-
-  it('renders the AdvancedInvestmentAnalyzer component', () => {
-    render(<AnalyticsPage />);
-    expect(screen.getByTestId('advanced-investment-analyzer')).toBeInTheDocument();
-  });
-
-  it('renders the PortfolioAnalyzer component', () => {
-    render(<AnalyticsPage />);
-    expect(screen.getByTestId('portfolio-analyzer')).toBeInTheDocument();
-  });
-
-  it('renders the RentVsBuyCalculator component', () => {
-    render(<AnalyticsPage />);
-    expect(screen.getByTestId('rent-vs-buy-calculator')).toBeInTheDocument();
-  });
-
-  it('renders section icons as SVG elements', () => {
-    const { container } = render(<AnalyticsPage />);
-    // Lucide icons render as SVG elements with class containing "lucide"
-    const svgs = container.querySelectorAll('svg[class*="lucide"]');
-    // 5 sections = 5 icons
-    expect(svgs.length).toBeGreaterThanOrEqual(5);
-  });
-
-  it('renders correct page structure with sections', () => {
-    const { container } = render(<AnalyticsPage />);
-    const sections = container.querySelectorAll('section');
-    expect(sections.length).toBe(5);
+    expect(
+      screen.getAllByText('deterministic · no model needed · currency follows the listing').length
+    ).toBeGreaterThan(0);
   });
 });
