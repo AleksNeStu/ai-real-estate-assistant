@@ -62,7 +62,7 @@ export function AccountGate({ route, children }: AccountGateProps) {
     <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-14 px-6 py-14 lg:grid-cols-[minmax(0,1fr)_420px]">
       <div className="flex flex-col gap-5">
         <span className="font-mono text-[12px] leading-4 text-muted-foreground">
-          {t('eyebrow', { route })}
+          {t('eyebrow', { route: `/${route}` })}
         </span>
         <h1 className="m-0 text-[34px] font-semibold leading-10 tracking-[-0.03em]">
           {copy?.title}
