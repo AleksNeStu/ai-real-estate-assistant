@@ -70,16 +70,28 @@ class AgentProfileRepository:
         return profile
 
     async def get_by_id(self, profile_id: str) -> Optional[AgentProfile]:
-        """Get agent profile by ID."""
+        """Get agent profile by ID.
+
+        The user is eager-loaded: a lazy relationship load outside an awaited
+        query raises MissingGreenlet in an async session.
+        """
         result = await self.session.execute(
-            select(AgentProfile).where(AgentProfile.id == profile_id)
+            select(AgentProfile)
+            .options(selectinload(AgentProfile.user))
+            .where(AgentProfile.id == profile_id)
         )
         return result.scalar_one_or_none()
 
     async def get_by_user_id(self, user_id: str) -> Optional[AgentProfile]:
-        """Get agent profile by user ID."""
+        """Get agent profile by user ID.
+
+        The user is eager-loaded: a lazy relationship load outside an awaited
+        query raises MissingGreenlet in an async session.
+        """
         result = await self.session.execute(
-            select(AgentProfile).where(AgentProfile.user_id == user_id)
+            select(AgentProfile)
+            .options(selectinload(AgentProfile.user))
+            .where(AgentProfile.user_id == user_id)
         )
         return result.scalar_one_or_none()
 

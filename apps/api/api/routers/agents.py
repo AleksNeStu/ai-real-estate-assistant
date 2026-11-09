@@ -41,16 +41,25 @@ router = APIRouter(prefix="/agents", tags=["Agents"])
 
 
 async def _build_agent_response(
-    profile: Any, session: AsyncSession, include_user: bool = True
+    profile: Any,
+    user: Any = None,
 ) -> AgentProfileResponse:
-    """Build agent response with user info."""
-    # Get user info
+    """Build agent response with user info.
+
+    The user is never lazy-loaded: a lazy relationship load outside an awaited
+    query raises MissingGreenlet in an async session, and the deployed demo
+    answered 500 for the agent detail because of it. The repository eager-loads
+    the relationship, and the endpoints that already hold the user pass it in.
+    """
     user_data = None
-    if include_user and profile.user:
-        user_data = {
-            "name": profile.user.full_name,
-            "email": profile.user.email,
-        }
+    if profile.user_id:
+        if user is None:
+            user = profile.user
+        if user:
+            user_data = {
+                "name": user.full_name,
+                "email": user.email,
+            }
 
     return AgentProfileResponse(
         id=profile.id,
@@ -154,7 +163,7 @@ async def list_agents(
     # Build response items
     items = []
     for agent in agents:
-        items.append(await _build_agent_response(agent, session))
+        items.append(await _build_agent_response(agent))
 
     total_pages = (total + page_size - 1) // page_size
 
@@ -187,7 +196,7 @@ async def get_agent(
             detail="Agent not found",
         )
 
-    return await _build_agent_response(profile, session)
+    return await _build_agent_response(profile)
 
 
 @router.get(
@@ -404,7 +413,7 @@ async def get_own_profile(
             detail="Agent profile not found. Please create one first.",
         )
 
-    return await _build_agent_response(profile, session)
+    return await _build_agent_response(profile)
 
 
 @router.post(
@@ -436,7 +445,9 @@ async def create_profile(
         **body.model_dump(),
     )
 
-    return await _build_agent_response(profile, session)
+    # The user is passed in: a fresh profile has no loaded relationship, and
+    # loading it lazily raises MissingGreenlet in an async session.
+    return await _build_agent_response(profile, user=user)
 
 
 @router.patch(
@@ -464,7 +475,7 @@ async def update_own_profile(
     update_data = body.model_dump(exclude_unset=True)
     profile = await agent_repo.update(profile, **update_data)
 
-    return await _build_agent_response(profile, session)
+    return await _build_agent_response(profile, user=user)
 
 
 @router.get(
