@@ -443,9 +443,6 @@ function SearchPageContent() {
   };
 
   const sortLabel = t(SORT_LABEL_KEY[sortBy] ?? 'sortOptions.relevance');
-  const summary = city
-    ? t('results.summary', { count: total, city, sort: sortLabel })
-    : t('results.summaryNoCity', { count: total, sort: sortLabel });
   const shownCount = drawnPolygon ? filteredByPolygon.length : filteredMapPoints.length;
   const showMap = viewMode === 'map';
 
@@ -499,7 +496,11 @@ function SearchPageContent() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <ParsedChips chips={chips} note={chips.length ? t('parsed.note') : undefined} />
+          <ParsedChips
+            chips={chips}
+            note={chips.length ? t('parsed.note') : undefined}
+            count={total}
+          />
           <Button
             type="button"
             variant="outline"
@@ -795,7 +796,15 @@ function SearchPageContent() {
         >
           <div className="flex flex-col gap-2 border-b border-border px-6 py-2.5">
             <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-              <p className="min-w-0 text-[14px] font-semibold text-foreground">{summary}</p>
+              <p className="min-w-0 text-[14px]">
+                {city ? (
+                  <span className="font-semibold text-foreground">{city}</span>
+                ) : null}
+                <span className="text-muted-foreground">
+                  {city ? ' · ' : ''}
+                  {t('results.summarySort', { sort: sortLabel })}
+                </span>
+              </p>
               <div className="flex items-center gap-3">
                 <MonoAnnotation>
                   {t('map.shown', { shown: shownCount, total: results.length })}
@@ -934,20 +943,10 @@ function SearchPageContent() {
               />
             )}
 
-            {/* STATE 4: Populated state */}
+            {/* STATE 4: Populated state. The ledger knows how to say that it
+                is empty, so the whole result set goes to it. */}
             {!loading && hasSearched && !error && (
-              <>
-                {results.length === 0 ? (
-                  /* No results sub-state of Populated */
-                  <EmptyState
-                    icon={MapPin}
-                    title={t('results.noResults')}
-                    description={t('results.noResultsHint')}
-                  />
-                ) : (
-                  <ResultsLedger results={results} query={query} />
-                )}
-              </>
+              <ResultsLedger results={results} query={query} />
             )}
           </div>
         </section>

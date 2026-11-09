@@ -1744,8 +1744,7 @@
       "noResultsHint": "Prueba a cambiar los términos de búsqueda o los filtros.",
       "showingResults": "Se muestran {count} {count, plural, one {propiedad} other {propiedades}}",
       "exportResults": "Exportar resultados",
-      "summary": "{count} coincidencias en {city} · ordenadas por {sort}",
-      "summaryNoCity": "{count} coincidencias · ordenadas por {sort}"
+      "summarySort": "ordenadas por {sort}"
     },
     "area": {
       "label": "análisis del área",

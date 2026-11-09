@@ -1744,8 +1744,7 @@
       "noResultsHint": "Спробуйте змінити пошуковий запит або фільтри.",
       "showingResults": "Показано {count} {count, plural, one {об’єкт} few {об’єкти} many {об’єктів} other {об’єкта}}",
       "exportResults": "Експортувати результати",
-      "summary": "{count} збігів у {city} · сортування: {sort}",
-      "summaryNoCity": "{count} збігів · сортування: {sort}"
+      "summarySort": "сортування: {sort}"
     },
     "area": {
       "label": "аналітика району",

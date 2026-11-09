@@ -292,8 +292,7 @@
       "noResultsHint": "Try adjusting your search terms or filters.",
       "showingResults": "Showing {count} {count, plural, one {property} other {properties}}",
       "exportResults": "Export Results",
-      "summary": "{count} matches in {city} · sorted by {sort}",
-      "summaryNoCity": "{count} matches · sorted by {sort}"
+      "summarySort": "sorted by {sort}"
     },
     "area": {
       "label": "area analytics",

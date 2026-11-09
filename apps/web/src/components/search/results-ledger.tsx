@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { HeartButton, ListingGenerator } from '@/components/property';
 import { RelevanceRating } from '@/components/search/relevance-rating';
+import { EmptyState } from '@/components/ui/states';
 import { formatPrice, resolveLocale } from '@/lib/format';
 import { formatMonthlyPayment } from '@/lib/mortgage';
 import type { SearchResultItem } from '@/lib/types';
@@ -30,8 +31,22 @@ export interface ResultsLedgerProps {
 
 export function ResultsLedger({ results, query, className }: ResultsLedgerProps) {
   const t = useTranslations('property.card');
+  const tSearch = useTranslations('search');
   const tLanding = useTranslations('landing.hero');
   const locale = useLocale();
+
+  // A list that knows how to say it is empty. The route hands the whole
+  // result set over, so the case of nothing to show is handled here.
+  if (results.length === 0) {
+    return (
+      <div className={className}>
+        <EmptyState
+          title={tSearch('results.noResults')}
+          description={tSearch('results.noResultsHint')}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={className}>

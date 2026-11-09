@@ -1744,8 +1744,7 @@
       "noResultsHint": "Spróbuj zmienić kryteria wyszukiwania lub filtry.",
       "showingResults": "Wyświetlam {count} {count, plural, one {nieruchomość} few {nieruchomości} other {nieruchomości}}",
       "exportResults": "Eksportuj wyniki",
-      "summary": "{count} trafień w {city} · sortowanie: {sort}",
-      "summaryNoCity": "{count} trafień · sortowanie: {sort}"
+      "summarySort": "sortowanie: {sort}"
     },
     "area": {
       "label": "analiza obszaru",

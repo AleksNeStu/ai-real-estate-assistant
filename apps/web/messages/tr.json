@@ -1744,8 +1744,7 @@
       "noResultsHint": "Arama terimlerinizi veya filtrelerinizi değiştirmeyi deneyin.",
       "showingResults": "{count} {count, plural, one {ilan} other {ilan}} gösteriliyor",
       "exportResults": "Sonuçları dışa aktar",
-      "summary": "{city} içinde {count} eşleşme · {sort} sırasına göre",
-      "summaryNoCity": "{count} eşleşme · {sort} sırasına göre"
+      "summarySort": "{sort} sırasına göre"
     },
     "area": {
       "label": "bölge analizi",

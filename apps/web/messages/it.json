@@ -1744,8 +1744,7 @@
       "noResultsHint": "Prova a modificare i termini di ricerca o i filtri.",
       "showingResults": "Vengono mostrati {count} {count, plural, one {immobile} other {immobili}}",
       "exportResults": "Esporta i risultati",
-      "summary": "{count} corrispondenze a {city} · ordinate per {sort}",
-      "summaryNoCity": "{count} corrispondenze · ordinate per {sort}"
+      "summarySort": "ordinate per {sort}"
     },
     "area": {
       "label": "analisi dell’area",

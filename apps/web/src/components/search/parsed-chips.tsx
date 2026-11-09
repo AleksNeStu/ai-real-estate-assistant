@@ -18,10 +18,12 @@ export interface ParsedChipsProps {
   chips: string[];
   /** The note beside the chips. */
   note?: string;
+  /** How many listings the sentence found - the count the landing's row carries. */
+  count?: number;
   className?: string;
 }
 
-export function ParsedChips({ chips, note, className }: ParsedChipsProps) {
+export function ParsedChips({ chips, note, count, className }: ParsedChipsProps) {
   const t = useTranslations('landing.hero');
   const tSearch = useTranslations('search');
 
@@ -40,6 +42,10 @@ export function ParsedChips({ chips, note, className }: ParsedChipsProps) {
       )}
 
       {note ? <span className="ml-1 text-muted-foreground">{note}</span> : null}
+
+      {typeof count === 'number' && count > 0 ? (
+        <span className="ml-auto font-mono text-muted-foreground">{t('matches', { count })}</span>
+      ) : null}
     </div>
   );
 }

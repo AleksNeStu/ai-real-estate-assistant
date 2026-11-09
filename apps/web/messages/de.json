@@ -1744,8 +1744,7 @@
       "noResultsHint": "Passe deine Suchbegriffe oder Filter an.",
       "showingResults": "Es werden {count} {count, plural, one {Immobilie} other {Immobilien}} angezeigt",
       "exportResults": "Ergebnisse exportieren",
-      "summary": "{count} Treffer in {city} · sortiert nach {sort}",
-      "summaryNoCity": "{count} Treffer · sortiert nach {sort}"
+      "summarySort": "sortiert nach {sort}"
     },
     "area": {
       "label": "Gebietsanalyse",
