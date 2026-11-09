@@ -28,6 +28,13 @@ const FORWARDED_REQUEST_HEADERS = [
   'user-agent',
   'x-user-email',
   'x-request-id',
+  // The address of the visitor. Without these the backend sees the proxy's
+  // own address and counts every visitor of a public deployment as one
+  // caller — a rate limit that then throttles the whole site after one
+  // visitor's worth of requests.
+  'x-forwarded-for',
+  'cf-connecting-ip',
+  'x-real-ip',
   // CORS. Without `origin` the backend cannot tell that the request comes
   // from a browser on another host, and it drops the allow-origin header; a
   // preflight also loses the method and header it is asking about, so the

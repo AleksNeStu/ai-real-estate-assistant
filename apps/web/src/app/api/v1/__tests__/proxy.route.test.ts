@@ -102,6 +102,36 @@ describe("API v1 proxy route", () => {
     expect(headers.get("X-API-Key")).toBe("server-secret-key");
   });
 
+  it("forwards the address of the visitor, so a rate limit counts one caller and not all of them", async () => {
+    (global.fetch as unknown as jest.Mock).mockResolvedValueOnce(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+    );
+
+    const request = makeRequest({
+      url: "http://localhost/api/v1/chat",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Forwarded-For": "198.51.100.4",
+        "CF-Connecting-IP": "198.51.100.4",
+      },
+    });
+
+    await POST(request, { params: Promise.resolve({ path: ["chat"] }) });
+
+    const [, init] = (global.fetch as unknown as jest.Mock).mock.calls[0] as [string, RequestInit & { headers?: Headers }];
+    const headers = init.headers as Headers;
+    // Without these the backend sees this proxy's own address, and every
+    // visitor of a public deployment counts as one caller.
+    expect(headers.get("x-forwarded-for")).toBe("198.51.100.4");
+    expect(headers.get("cf-connecting-ip")).toBe("198.51.100.4");
+  });
+
   it("forwards the CORS headers so a preflight reaches the backend intact", async () => {
     (global.fetch as unknown as jest.Mock).mockResolvedValueOnce(
       new Response(null, {
