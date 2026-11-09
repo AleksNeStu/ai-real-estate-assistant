@@ -12,6 +12,7 @@ from collections import defaultdict
 from typing import Optional
 
 from langchain_core.language_models import BaseChatModel
+from starlette.requests import Request
 
 from config.settings import get_settings
 
@@ -79,6 +80,24 @@ def get_free_tier_rate_limiter() -> FreeTierRateLimiter:
             daily_limit=settings.free_tier_daily_limit,
         )
     return _rate_limiter
+
+
+def client_ip(request: Request) -> str:
+    """The address of the caller, as the edge knows it.
+
+    A deployment behind a reverse proxy or a Cloudflare Worker sees the
+    edge's address on the socket, not the visitor's. The header the edge sets
+    carries the real address, and it is the header the limit is counted
+    against — otherwise every visitor of the public demo shares one bucket.
+
+    The order is the order of trust: the conventional proxy header first, then
+    the edge's own header, then the socket as the last resort.
+    """
+    for header in ("x-forwarded-for", "cf-connecting-ip", "x-real-ip"):
+        value = request.headers.get(header)
+        if value:
+            return value.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
 
 
 def _try_create_minimax() -> Optional[BaseChatModel]:

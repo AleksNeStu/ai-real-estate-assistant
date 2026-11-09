@@ -22,7 +22,7 @@ from api.dependencies import get_llm, get_vector_store
 from api.models import ChatRequest, ChatResponse
 from config.settings import get_settings
 from core.circuit_breaker import ServiceDegradedError
-from utils.free_tier import get_free_tier_rate_limiter, get_llm_for_free_user
+from utils.free_tier import client_ip, get_free_tier_rate_limiter, get_llm_for_free_user
 from utils.sanitization import (
     sanitize_chat_message,
     sanitize_for_logging,
@@ -43,14 +43,8 @@ router = APIRouter(tags=["Chat"])
 
 async def _check_free_tier_rate_limit(req: Request) -> None:
     """Enforce free tier rate limits keyed by client IP."""
-    client_ip = (
-        req.headers.get("x-forwarded-for", req.client.host if req.client else "unknown")
-        .split(",")[0]
-        .strip()
-    )
-
     limiter = get_free_tier_rate_limiter()
-    allowed, reason, retry_after = await limiter.check(client_ip)
+    allowed, reason, retry_after = await limiter.check(client_ip(req))
     if not allowed:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -60,23 +54,26 @@ async def _check_free_tier_rate_limit(req: Request) -> None:
 
 
 def _request_is_anonymous(req: Request) -> bool:
-    """True when the request carries no credential of its own.
+    """True when the request carries no session of its own.
 
-    On a deployment with the API-key bypass on, the router's key dependency
-    lets every visitor through. Without a limit, a public demo whose model is
-    a paid key is an open wallet — so anonymous callers are counted, and the
-    count is what the free-tier limiter enforces.
+    The API key identifies the deployment, not the visitor: the frontend
+    proxy injects it for every browser request, so its presence says nothing
+    about who is calling. The session token is what says a visitor signed in.
+
+    The counting applies only where the deployment is open — with the API-key
+    bypass on, the key dependency lets every visitor through, and a public
+    demo whose model is a paid key would otherwise be an open wallet. A
+    private deployment keeps its own traffic.
     """
     settings = get_settings()
     if not settings.demo_api_key_bypass:
-        # The API key dependency already rejected everything without a key.
-        return False
-
-    header = (req.headers.get("x-api-key") or "").strip()
-    if header and header != "demo-mode-key":
         return False
 
     if req.cookies.get("access_token"):
+        return False
+
+    authorization = (req.headers.get("authorization") or "").strip()
+    if authorization.lower().startswith("bearer "):
         return False
 
     return True
