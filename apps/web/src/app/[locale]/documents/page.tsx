@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Loader2, FileText, RefreshCw } from 'lucide-react';
+import { Plus, Loader2, FileText, RefreshCw, AlertCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { getDocuments, getExpiringDocuments } from '@/lib/api';
 import type { Document, DocumentListResponse, ExpiringDocumentsResponse } from '@/lib/types';
@@ -9,7 +9,7 @@ import { DocumentUpload } from '@/components/documents/document-upload';
 import { DocumentList } from '@/components/documents/document-list';
 import { Button } from '@/components/ui/button';
 import { MonoAnnotation } from '@/components/ui/mono-annotation';
-import { EmptyState, ErrorState } from '@/components/ui/states';
+import { EmptyState } from '@/components/ui/states';
 import { Modal } from '@/components/ui/modal';
 import { PageHeader } from '@/components/ui/page-header';
 
@@ -130,15 +130,27 @@ export default function DocumentsPage() {
   }
 
   // Error state
+  //
+  // The title is a heading, not a line of text: the route failed to load
+  // its documents, and that is what the heading says. The end-to-end suite
+  // reaches for it by role, so it stays a heading.
   if (error && documents.length === 0) {
     return (
       <div className="mx-auto max-w-[1100px] px-6 py-8">
-        <ErrorState
-          title={t('errorTitle')}
-          description={error}
-          onRetry={handleRefresh}
-          retryLabel={tCommon('tryAgain')}
-        />
+        <div className="border-t border-destructive py-8" role="alert">
+          <div className="flex flex-col items-start gap-3">
+            <div className="flex items-baseline gap-3">
+              <AlertCircle className="h-4 w-4 text-destructive" aria-hidden="true" />
+              <h2 className="m-0 text-[15px] font-semibold leading-6 text-foreground">
+                {t('errorTitle')}
+              </h2>
+            </div>
+            <p className="m-0 max-w-md text-[14px] leading-5 text-muted-foreground">{error}</p>
+            <Button type="button" variant="outline" size="sm" onClick={handleRefresh}>
+              {tCommon('tryAgain')}
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
