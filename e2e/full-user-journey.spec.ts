@@ -11,6 +11,7 @@ import {
   mockGetCurrentUser,
   mockSearchSuccess,
   mockChatSuccess,
+  mockLandingApis,
   setupAuthMocks,
 } from './mocks';
 import { TEST_USERS, generateUniqueEmail } from './fixtures/users';
@@ -21,8 +22,11 @@ test.describe('Full User Journey @integration @smoke', () => {
     const testPassword = 'TestPassword123!';
 
     test('step 1: homepage loads successfully', async ({ page }) => {
+      // The landing asks the API for its numbers on load; without a backend
+      // those requests hang and the page never reaches `networkidle`.
+      await mockLandingApis(page);
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
 
       // Homepage should render without errors
       const bodyVisible = await page.locator('body').isVisible();

@@ -21,6 +21,11 @@ export default defineConfig({
   ],
   use: {
     baseURL,
+    // The service worker claims the page on activate (public/sw.js), and a
+    // request that goes through a service worker never reaches `page.route()`
+    // - every mocked API call would escape to the real network. Blocking the
+    // worker keeps the mocks in charge of the API.
+    serviceWorkers: 'block',
     // Capture screenshot on failure
     screenshot: 'only-on-failure',
     // Capture video on failure

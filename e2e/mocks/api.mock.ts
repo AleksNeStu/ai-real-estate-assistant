@@ -264,3 +264,88 @@ export function setupAuthMocks(page: import('@playwright/test').Page): void {
     await mockGetCurrentUser(route);
   });
 }
+
+/**
+ * Mock the calls the landing makes when it loads.
+ *
+ * The landing asks the API for the catalogue counts, for what the deployment
+ * can do, for a live slice of the catalogue and for the waitlist state.
+ * Without a backend those requests hang - the proxy waits for an address
+ * that never answers - and the page never reaches `networkidle`, so every
+ * test that waits for it times out on a page that is in fact fine.
+ *
+ * The shapes are the ones the application serves: `CatalogueStatsResponse`
+ * for the counts, the capabilities dict for the state, the `SearchResponse`
+ * for the slice.
+ */
+export async function mockLandingApis(page: import('@playwright/test').Page): Promise<void> {
+  await page.route('**/api/v1/search', async (route) => {
+    if (route.request().method() === 'OPTIONS') {
+      await route.fulfill({ status: 204, headers: { 'Access-Control-Allow-Origin': '*' } });
+      return;
+    }
+    await mockSearchSuccess(route);
+  });
+
+  await page.route('**/api/v1/catalogue/stats', async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        total: 250,
+        agents: 15,
+        cities: [
+          { name: 'Kraków', count: 62 },
+          { name: 'Warsaw', count: 58 },
+          { name: 'Gdańsk', count: 47 },
+          { name: 'Wrocław', count: 44 },
+          { name: 'Poznań', count: 39 },
+        ],
+        currencies: ['PLN'],
+      }),
+    });
+  });
+
+  await page.route('**/api/v1/capabilities', async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        auth: { jwt_enabled: true, demo_user_bypass: false, oauth: { google: false, apple: false } },
+        email: { enabled: false, provider: 'dummy' },
+        llm: { demo_mode: true, mode: 'local-model', provider: 'minimax', model: 'MiniMax-M3.1-Flash' },
+        lead_capture: { waitlist_enabled: false },
+        observability: { error_tracking: false },
+      }),
+    });
+  });
+
+  await page.route('**/api/v1/leads/visitor', async (route) => {
+    if (route.request().method() === 'OPTIONS') {
+      await route.fulfill({ status: 204, headers: { 'Access-Control-Allow-Origin': '*' } });
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: 'lead-mock-visitor',
+        visitor_id: 'visitor-mock',
+        email: null,
+        phone: null,
+        name: null,
+        status: 'new',
+        source: 'propvector_waitlist',
+        created_at: new Date().toISOString(),
+      }),
+    });
+  });
+
+  await page.route('**/api/v1/leads/track', async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tracked: true }),
+    });
+  });
+}

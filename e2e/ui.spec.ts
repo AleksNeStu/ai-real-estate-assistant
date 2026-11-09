@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { mkdir } from 'fs/promises';
+import { mockLandingApis } from './mocks';
 
 const SCREENSHOT_DIR = process.env.PLAYWRIGHT_SCREENSHOT_DIR || 'artifacts/playwright/screenshots';
 
@@ -46,9 +47,14 @@ test.describe('UI Smoke', () => {
   test('home renders and navigation is available @smoke', async ({ page }) => {
     await ensureScreenshotDir();
     await setupAuth(page);
+    // The landing asks the API for the catalogue numbers, for the state of
+    // the deployment and for a live slice of the catalogue. Without a
+    // backend those requests hang and the page never settles, so they are
+    // answered here.
+    await mockLandingApis(page);
     await page.goto('/');
     // Wait for page to load - either home or login redirect
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Check if we're on login page - if so, we need to skip auth requirement
     const isLoginPage = page.url().includes('/auth/login');
@@ -56,10 +62,13 @@ test.describe('UI Smoke', () => {
       // App requires auth - test the login page instead
       await expect(page.getByRole('heading', { name: /sign in|log in/i })).toBeVisible({ timeout: 10000 });
     } else {
-      // On home page - check navigation
-      const nav = page.getByRole('navigation');
-      await expect(nav.getByRole('link', { name: 'Search', exact: true })).toBeVisible();
-      await expect(nav.getByRole('link', { name: 'Assistant', exact: true })).toBeVisible();
+      // On the landing - the navigation carries the sections of the page
+      // (the app links are on the app pages, not on the landing). The
+      // assertions name the anchors, not the labels: the landing is
+      // localized and the default locale is Polish.
+      const nav = page.getByRole('navigation').first();
+      await expect(nav.locator('a[href="#features"]')).toBeVisible();
+      await expect(nav.locator('a[href="#faq"]')).toBeVisible();
     }
     await page.screenshot({ path: `${SCREENSHOT_DIR}/home.png`, fullPage: true });
   });

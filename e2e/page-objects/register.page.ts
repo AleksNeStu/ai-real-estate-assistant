@@ -10,6 +10,7 @@ export class RegisterPage {
   readonly emailInput: Locator;
   readonly passwordInput: Locator;
   readonly fullNameInput: Locator;
+  readonly consentCheckbox: Locator;
   readonly submitButton: Locator;
   readonly errorMessage: Locator;
   readonly successMessage: Locator;
@@ -31,6 +32,11 @@ export class RegisterPage {
     this.fullNameInput = page
       .getByLabel('Full Name', { exact: true })
       .or(page.getByRole('textbox', { name: /^full name$/i }));
+    // The consent box. The registration form refuses to submit without it -
+    // the backend writes `gdpr_consent_at` from it, so a form without it
+    // would create an account with no record of the consent. A test that
+    // registers a user ticks it, exactly as a person does.
+    this.consentCheckbox = page.locator('#consent, input[name="consent"]');
     // Submit button text is "Create Account" - must be inside the form of the
     // registration, the footer newsletter has a form with a submit button of
     // its own.
@@ -80,6 +86,9 @@ export class RegisterPage {
     if (options.fullName) {
       await this.fullNameInput.fill(options.fullName);
     }
+    // The consent is required by the form: without it the submit is refused
+    // and the account is never created. A person ticks it, so a test does.
+    await this.consentCheckbox.check();
     // Note: confirmPassword is ignored - actual UI doesn't have this field
   }
 

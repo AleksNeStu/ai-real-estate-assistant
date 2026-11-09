@@ -244,9 +244,13 @@ test.describe('Integration Flows', () => {
       const emailInput = page.getByLabel('Email', { exact: true });
       const passwordInput = page.getByLabel('Password', { exact: true });
       const submitButton = page.getByRole('button', { name: /create account|sign up|register/i });
+      // The form refuses to submit without the consent - the backend writes
+      // `gdpr_consent_at` from it.
+      const consentCheckbox = page.locator('#consent, input[name="consent"]');
 
       await emailInput.fill(email);
       await passwordInput.fill('TestPassword123!');
+      await consentCheckbox.check();
       await submitButton.click();
 
       // Should redirect after registration

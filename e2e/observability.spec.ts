@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { writeFile, mkdir } from 'fs/promises';
+import { mockLandingApis } from './mocks';
 
 /**
  * Setup authentication mocks for a page.
@@ -55,10 +56,13 @@ test('collect console and network metrics', async ({ page }) => {
 
   // Setup auth mocks
   await setupAuth(page);
+  // The landing asks the API for its numbers on load; without a backend
+  // those requests hang and the page never reaches `networkidle`.
+  await mockLandingApis(page);
 
   // Navigate and wait for load - handle auth redirects gracefully
   await page.goto('/');
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('load');
 
   // Check what page we're on (could be home or login redirect)
   const currentUrl = page.url();
@@ -73,10 +77,10 @@ test('collect console and network metrics', async ({ page }) => {
   }
 
   await page.goto('/search');
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('load');
 
   await page.goto('/chat');
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('load');
 
   const perf = await page.evaluate(() => {
     const nav = performance.getEntriesByType('navigation');
