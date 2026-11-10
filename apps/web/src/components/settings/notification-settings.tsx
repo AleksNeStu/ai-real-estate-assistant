@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Bell, Smartphone, Mail, Monitor } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';

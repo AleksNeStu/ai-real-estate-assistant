@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, type ChangeEvent } from 'react';
 import { User, Camera, Trash2, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
@@ -141,7 +141,7 @@ export function ProfileSettings({ userEmail }: { userEmail: string | null }) {
     }
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
