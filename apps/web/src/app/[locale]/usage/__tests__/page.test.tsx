@@ -11,7 +11,7 @@
  */
 
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
 import UsagePage from '../page';
 import type { UserActivitySummary, UserActivityTrendPoint } from '@/lib/types';
@@ -156,18 +156,23 @@ describe('UsagePage', () => {
   it('states every event kind and its total', async () => {
     render(<UsagePage />);
 
-    await waitFor(() => {
-      expect(screen.getByText('Searches')).toBeInTheDocument();
-      expect(screen.getByText('75')).toBeInTheDocument();
-      expect(screen.getByText('Views')).toBeInTheDocument();
-      expect(screen.getByText('45')).toBeInTheDocument();
-      expect(screen.getByText('Clicks')).toBeInTheDocument();
-      expect(screen.getByText('30')).toBeInTheDocument();
-      expect(screen.getByText('Tool calls')).toBeInTheDocument();
-      expect(screen.getByText('20')).toBeInTheDocument();
-      expect(screen.getByText('Downloads')).toBeInTheDocument();
-      expect(screen.getByText('5')).toBeInTheDocument();
-    });
+    // The tile is the handle: the same word also names the ledger's rows and
+    // the chart's title, so the assertion is scoped to the tile.
+    const tile = await screen.findByTestId('usage-kind-search');
+    const kinds: Array<[string, string, string]> = [
+      ['usage-kind-search', 'Searches', '75'],
+      ['usage-kind-view', 'Views', '45'],
+      ['usage-kind-click', 'Clicks', '30'],
+      ['usage-kind-tool_call', 'Tool calls', '20'],
+      ['usage-kind-download', 'Downloads', '5'],
+    ];
+
+    for (const [testId, label, value] of kinds) {
+      const tile = screen.getByTestId(testId);
+      expect(tile).toHaveTextContent(label);
+      expect(tile).toHaveTextContent(value);
+    }
+    expect(tile).toBeInTheDocument();
   });
 
   it('draws the daily chart', async () => {
@@ -177,7 +182,11 @@ describe('UsagePage', () => {
       expect(screen.getByText('Searches per day')).toBeInTheDocument();
     });
 
-    expect(screen.getAllByTestId('usage-bar')).toHaveLength(mockTrends.length);
+    // The bars arrive with the series, so the assertion waits for them
+    // rather than for the chart's title - the title is there before it.
+    await waitFor(() => {
+      expect(screen.getAllByTestId('usage-bar')).toHaveLength(mockTrends.length);
+    });
   });
 
   it('opens the ledger with the searches of the period', async () => {
@@ -187,8 +196,12 @@ describe('UsagePage', () => {
       expect(screen.getByText('Activity log')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('Jan 1')).toBeInTheDocument();
-    expect(screen.getByText('10 events')).toBeInTheDocument();
+    // The rows arrive with the series, so the assertion waits for the ledger
+    // itself - the heading is there before it.
+    const ledger = await screen.findByTestId('usage-log');
+    // The day names the axis too, so the assertion is scoped to the ledger.
+    expect(within(ledger).getByText('Jan 1')).toBeInTheDocument();
+    expect(within(ledger).getByText('10 events')).toBeInTheDocument();
   });
 
   it('speaks about the tool calls when the tool kind is chosen', async () => {

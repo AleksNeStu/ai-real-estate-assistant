@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
 import LeadsPage from '../page';
 import * as api from '@/lib/api';
 import type { LeadWithScore, LeadListResponse, ScoringStatistics } from '@/lib/types';
@@ -114,8 +114,11 @@ describe('LeadsPage', () => {
     });
 
     // Three leads reached the first stage; two of them were contacted.
-    expect(screen.getByText('Leads')).toBeInTheDocument();
-    expect(screen.getByText('67% of previous')).toBeInTheDocument();
+    // The funnel is the handle: the word "Leads" also names the page's
+    // heading, so the assertion is scoped to the strip.
+    const funnel = screen.getByTestId('lead-funnel');
+    expect(within(funnel).getByText('Leads')).toBeInTheDocument();
+    expect(within(funnel).getByText('67% of previous')).toBeInTheDocument();
   });
 
   it('holds every lead in a column', async () => {
@@ -143,11 +146,15 @@ describe('LeadsPage', () => {
   it('keeps the high-value leads in the rail', async () => {
     render(<LeadsPage />);
 
+    // The rail's heading is there before its rows are, so the assertion
+    // waits for the lead itself. The lead is also on the board, so the
+    // assertion is scoped to the rail.
+    const rail = screen.getByRole('complementary');
     await waitFor(() => {
-      expect(screen.getByText('High-value leads')).toBeInTheDocument();
+      expect(within(rail).getByText('Bob Wilson')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('Bob Wilson')).toBeInTheDocument();
+    expect(screen.getByText('High-value leads')).toBeInTheDocument();
   });
 
   it('asks the API for the high-value leads at the threshold of the board', async () => {
@@ -182,10 +189,15 @@ describe('LeadsPage', () => {
     window.URL.createObjectURL = jest.fn(() => 'blob:http://localhost/test');
     window.URL.revokeObjectURL = jest.fn();
 
+    // The anchor is a real element with a spied click: a fake object breaks
+    // React's own rendering of the anchor, because React sets attributes on
+    // what it gets back.
     const originalCreateElement = document.createElement.bind(document);
+    const anchorClick = jest.fn();
     jest.spyOn(document, 'createElement').mockImplementation((tag: string) => {
-      if (tag === 'a') return { click: jest.fn(), href: '', download: '' } as unknown as HTMLAnchorElement;
-      return originalCreateElement(tag);
+      const element = originalCreateElement(tag);
+      if (tag === 'a') (element as HTMLAnchorElement).click = anchorClick;
+      return element;
     });
 
     render(<LeadsPage />);
@@ -199,6 +211,7 @@ describe('LeadsPage', () => {
     await waitFor(() => {
       expect(api.exportLeads).toHaveBeenCalled();
     });
+    expect(anchorClick).toHaveBeenCalled();
 
     window.URL.createObjectURL = originalCreateObjectURL;
     window.URL.revokeObjectURL = originalRevokeObjectURL;

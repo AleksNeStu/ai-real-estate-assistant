@@ -74,6 +74,7 @@ export function LeadFunnel({ stages, className }: LeadFunnelProps) {
 
   return (
     <div
+      data-testid="lead-funnel"
       className={cn(
         'grid grid-cols-2 gap-x-6 gap-y-5 border-b border-border pb-5 md:grid-cols-4',
         className
