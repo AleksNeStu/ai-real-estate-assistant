@@ -157,7 +157,7 @@ Two smaller corrections came out of the same pass:
 
 | The gap | The fix |
 |---|---|
-| The monitoring overview counted the rows of a `properties` table this schema does not have, so the database panel read zero while the catalogue holds 250 | `apps/api/api/routers/monitoring.py` now asks the catalogue — the same count the landing reads — and `apps/api/api/routers/catalogue.py` owns that count for both. The listings carry their source and the moment they were scraped (`apps/api/vector_store/chroma_store.py`), so the panel can say where they came from and how fresh they are. Live: 250 listings, `demo-seed` 250, none newer than a day. |
+| The monitoring overview counted the rows of a `properties` table this schema does not have, so the database panel read zero while the catalogue holds 250 | `apps/api/api/routers/monitoring.py` now asks the catalogue — the same count the landing reads — and `apps/api/api/routers/catalogue.py` owns that count for both. The listings carry their source and the moment they were scraped (`apps/api/vector_store/chroma_store.py`), so the panel can say where they came from and how fresh they are. Live on the local deployment: 250 listings, `demo-seed` 250, none newer than a day. |
 | The seeded demo accounts carry no password, so `demo.admin*` and `demo.agent*` cannot be signed into | `apps/api/alembic/demo_data_generator.py` gives them the password the deployment carries in `DEMO_USER_PASSWORD` — the deployment's own value, never the repository's. Without that variable the accounts carry no password, exactly as before. `deploy/compose/docker-compose.yml` and `apps/api/.env.example` name it. |
 | `POST /leads/bulk/assign` was read as an assignment for a lead called "bulk": a path whose first segment is a parameter catches every route of the same shape that comes after it | `apps/api/api/routers/leads.py` declares the bulk routes before the parameterised ones. Live: the endpoint answers 200 with its own count. |
 | The activity summary counted every search in the deployment, not the searches of the account that asks | `apps/api/services/user_activity_service.py` narrows the searches, the views and the clicks to the account — an administrator's view asks without an account and keeps every row. The copy says "your activity on this deployment", and now the two agree. |
@@ -169,6 +169,42 @@ Two smaller corrections came out of the same pass:
 | Nothing records a search. `services/search_metrics_service.py` can write the event and no caller uses it, so the searches, the views and the sessions are zero for every account — the usage console draws an empty chart | `apps/api/api/routers/search.py`, with `apps/api/services/search_metrics_service.py` |
 | The leads board walks at most ten pages of a hundred leads, so a deployment with more than a thousand leads sees the first thousand; the board says so | `apps/web/src/app/[locale]/leads/page.tsx` |
 
+## The deployment
+
+The redesign reached the deployed demo through the repository's own workflows, dispatched by
+hand — a release tag is not the only way to roll a deployment:
+
+| | |
+|---|---|
+| The commit | `a6a631a3b` — the redesign and the four closed gaps |
+| The CI | green on that commit: every job, from the gitleaks scan to the e2e suite |
+| The images | published under the commit's short sha, `a6a631a`, both multi-arch (amd64 and arm64) |
+| The server | `deploy-selfhosted.yml` dispatched with that tag — run 42897283264, green: the node pulled the images and rolled its stack onto them |
+| The promotion | pull request #399, `dev` → `main`: mergeable and clean, every check green. `main` is a clean ancestor of `dev`, so it is a straight fast-forward and the ruleset wants it merged with "rebase and merge" |
+
+The first roll failed twice, for two different reasons worth keeping: the deploy waits twenty
+minutes for the images to appear, and the frontend's multi-arch build (amd64 and arm64, the
+arm64 leg under emulation) took longer than that with a cold cache; and the image tag is the
+**seven-character** short sha, so a tag that is eight characters long never resolves.
+
+The third attempt had a third reason, and it is the expensive one. The backend image published
+in a few minutes; the frontend's multi-arch build ran for **three hours and twenty minutes** on
+the runner and was still going when the roll was needed — the redesign rewrote `apps/web`, so
+the build cache no longer applied to the layer that does the work, and the arm64 leg runs under
+emulation. The image was therefore built on the workstation instead (`docker buildx build
+--platform linux/amd64,linux/arm64`, the same `Dockerfile.frontend` and the same
+`NEXT_PUBLIC_SITE_URL` the repository variable carries) and pushed under the same tag: the
+same two architectures, the same content, published by another route. The lesson for the
+repository: **a cold multi-arch frontend build is not a CI-minute problem but a wall-clock
+problem**, and a deployment that waits twenty minutes for it will keep failing until the
+workflow either builds one platform for the server or the cache is made to survive a change in
+`apps/web`.
+
+Two things about a rollout of this kind are worth knowing. The two images are not atomic — the
+demo's frontend had already been rolled onto the redesign while its backend still answered the
+old code — so the state of a deployment is read from its API, not from its page. And the
+released line was not touched: the promotion is a pull request, and the tag is a separate step.
+
 ## The live sweep
 
 `scripts/ops/live-sweep.js` walks every route of a deployment with a browser and prints one
@@ -178,13 +214,16 @@ registers no account and creates no lead.
 | | |
 |---|---|
 | Against the local deployment | **30 routes, 30 ok, 0 failed** |
-| Against the deployed demo (`https://realty.kittray.com`) | **30 routes, 29 ok, 1 failed** |
+| Against the deployed demo (`https://realty.kittray.com`) | **30 routes, 30 ok, 0 failed** |
 
-The one failure on the deployed demo is `/api/v1/agents/{id}`, which answers 500: the agent's
-user was lazy-loaded outside an awaited query. The fix is in the repository
-(`1ef88f15e fix(api): the agent detail stops raising MissingGreenlet (Task #66)`) and lands
-with the push that carries the redesign. The local deployment, running the repository's
-code, answers 200.
+The deployed demo was swept twice. The first sweep reported one failure,
+`/api/v1/agents/{id}`, which answered 500: the agent's user was lazy-loaded outside an awaited
+query. The fix was in the repository (`1ef88f15e fix(api): the agent detail stops raising
+MissingGreenlet (Task #66)`) but the deployed backend still ran the old image — the frontend
+had been rolled onto the redesign while its backend had not, so the state of the deployment was
+read from its API, not from its page. After the roll onto `a6a631a` the same endpoint answers
+**200**, the catalogue reports **250 listings in 5 cities and 15 agents**, and the sweep of the
+deployed demo is clean: **30 routes, 30 ok, 0 failed**.
 
 Two mistakes in the sweep itself were found and fixed by running it: the gate was looked for
 with an exact address (`/auth/login`) while the gate links to the localised, redirect-aware
