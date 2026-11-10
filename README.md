@@ -28,6 +28,7 @@ it runs on your own server as happily as it runs on a managed platform.
 ## Table of Contents
 
 - [Live demo](#live-demo)
+- [The design](#the-design)
 - [Deploy it your way](#deploy-it-your-way)
 - [What's new](#whats-new)
 - [What it does](#what-it-does)
@@ -107,6 +108,42 @@ usage:
 | [`/en/city-overview`](https://realty.kittray.com/en/city-overview) | Per-city market analytics |
 | [`/en/documents`](https://realty.kittray.com/en/documents) | Upload and query your own files |
 | [`/en/agents`](https://realty.kittray.com/en/agents) | The agent directory and their listings |
+
+## The design
+
+**The interface this project is being ported to — the design, not the product.**
+
+The screens below are the design reference: a static prototype of the next
+version of the interface, with no live data, no account and no model behind
+it. **They are not screenshots of the running application** — the screens in
+[Live demo](#live-demo) are, and those are the ones that show the product as
+it runs today.
+
+What the two share is the palette: the same tokens, out of
+[`apps/web/src/app/globals.css`](apps/web/src/app/globals.css), in the light
+theme and in the dark one. The comparison between them is therefore between
+two renderings of one design, and not between two designs.
+
+| | |
+|---|---|
+| ![The landing of the design](assets/design/Landing-dark.png) | ![The search of the design](assets/design/Search-dark.png) |
+| **Landing** — the working tool: a parsed query, a map and three priced rows | **Search** — the query, the filters and the map in one screen |
+| ![The assistant of the design](assets/design/Chat-dark.png) | ![The tools of the design](assets/design/Tools-dark.png) |
+| **Assistant** — the conversation, its tool calls and the ledger of the matches | **Tools** — the mortgage, the comparison, the valuation and the neighbourhood |
+| ![The analytics of the design](assets/design/Analytics-dark.png) | ![The market trends of the design](assets/design/MarketTrends-dark.png) |
+| **Analytics** — the calculators, the inputs on the left and the numbers on the right | **Market trends** — the indicators, the price curve and the districts that moved |
+| ![The market of a city in the design](assets/design/CityOverview-dark.png) | ![The valuation of the design](assets/design/Valuation-dark.png) |
+| **City overview** — the market of a city, district by district | **Valuation** — the price forecast of one listing, year by year |
+| ![The comparative analysis of the design](assets/design/CMA-dark.png) | ![The knowledge base of the design](assets/design/Knowledge-dark.png) |
+| **CMA** — the wizard of the comparative market analysis, step by step | **Knowledge** — the documents the assistant reads, and what it found in them |
+| ![The favorites of the design](assets/design/Favorites-dark.png) | ![The sign-in of the design](assets/design/Auth-dark.png) |
+| **Favorites** — the saved listings and the saved searches | **Sign in** — the wall in front of the account routes, and what an account is for |
+| ![The top bar of the design](assets/design/TopBar-dark.png) | ![The mobile screens of the design](assets/design/Mobile-dark.png) |
+| **Top bar** — the navigation, the language and the theme switch | **Mobile** — the key screens at 390 |
+
+Both sets of images come out of one capture pipeline —
+`node scripts/utils/take_screenshots.js <page> dark <folder> -dark` — so the
+live screens and the reference are captured the same way.
 
 ## Deploy it your way
 

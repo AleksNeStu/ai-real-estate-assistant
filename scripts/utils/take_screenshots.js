@@ -1,6 +1,7 @@
 const { chromium } = require("playwright");
 const path = require("path");
 const fs = require("fs");
+const http = require("http");
 
 const BASE = process.argv[2] || "http://localhost:3082";
 const THEME = process.argv[3] || "dark";
@@ -11,6 +12,66 @@ const OUT_DIR = process.argv[4]
   ? path.resolve(process.argv[4])
   : path.join(__dirname, "..", "..", "docs", "screenshots");
 const NAME_SUFFIX = process.argv[5] || "";
+
+/**
+ * The design reference is a set of local pages, not routes of the running
+ * application. A target that names a file or a folder is captured as it is;
+ * a target that is a URL keeps the route list of the application below.
+ */
+function referencePages(target) {
+  const resolved = path.resolve(target);
+  if (!fs.existsSync(resolved)) return null;
+  const isFolder = fs.statSync(resolved).isDirectory();
+  const folder = isFolder ? resolved : path.dirname(resolved);
+  const files = isFolder
+    ? fs.readdirSync(resolved).filter((f) => f.endsWith(".dc.html")).sort()
+    : [path.basename(resolved)];
+  if (!files.length) return null;
+  return {
+    folder,
+    shots: files.map((f) => ({
+      name: f.replace(/\.dc\.html$/, ""),
+      file: f,
+      desc: "The design reference",
+    })),
+  };
+}
+
+/**
+ * The reference pages load their parts with fetch(), and fetch() does not
+ * read a file:// URL. The folder is therefore served over the loopback for
+ * the time of the capture, and the server stops with the capture.
+ */
+function serveFolder(folder) {
+  const server = http.createServer((req, res) => {
+    const name = decodeURIComponent(req.url.split("?")[0]).replace(/^\/+/, "");
+    const file = path.join(folder, name);
+    if (!file.startsWith(folder) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
+      res.writeHead(404);
+      res.end("not found");
+      return;
+    }
+    const types = {
+      ".html": "text/html; charset=utf-8",
+      ".js": "text/javascript; charset=utf-8",
+      ".css": "text/css; charset=utf-8",
+      ".json": "application/json",
+      ".svg": "image/svg+xml",
+      ".png": "image/png",
+    };
+    res.writeHead(200, { "Content-Type": types[path.extname(file)] || "application/octet-stream" });
+    fs.createReadStream(file).pipe(res);
+  });
+  return new Promise((resolve) => {
+    server.listen(0, "127.0.0.1", () => resolve(server));
+  });
+}
+
+const REFERENCE = referencePages(BASE);
+
+// The reference is drawn at the width it was designed at; the application
+// keeps the width its own screenshots were taken at.
+const VIEWPORT = REFERENCE ? { width: 1440, height: 900 } : { width: 1280, height: 800 };
 
 const SCREENSHOTS = [
   { name: "home", path: "/", desc: "Landing page" },
@@ -40,27 +101,34 @@ const SCREENSHOTS = [
 
 async function captureScreenshots(browser, screenshots) {
   const context = await browser.newContext({
-    viewport: { width: 1280, height: 800 },
+    viewport: VIEWPORT,
     locale: "en-US",
     colorScheme: THEME,
   });
 
-  // Apply dark/light theme before any page renders
-  if (THEME === "dark") {
-    await context.addInitScript(() => {
-      localStorage.setItem("theme", "dark");
-      document.documentElement.classList.add("dark");
-    });
-  } else {
-    // Force light mode: the frontend doesn't respect `colorScheme: "light"`
-    // on its own, so we explicitly set localStorage and remove the .dark
-    // class. Without this, every "light" capture was actually rendering in
-    // the default dark theme (because the demo page starts dark).
-    await context.addInitScript(() => {
-      localStorage.setItem("theme", "light");
-      document.documentElement.classList.remove("dark");
-    });
-  }
+  // Apply dark/light theme before any page renders. The frontend doesn't
+  // respect `colorScheme: "light"` on its own, so the choice is written to
+  // the storage and the class is set on the document element - without this,
+  // every "light" capture was actually rendering in the default dark theme
+  // (because the demo page starts dark).
+  await context.addInitScript((theme) => {
+    localStorage.setItem("theme", theme);
+    // The design reference keeps its own choice under its own key.
+    localStorage.setItem("re2-theme", theme);
+    // The document element does not exist yet when an init script runs, so
+    // the class is set the moment it does - before the first paint.
+    const mark = () => {
+      if (!document.documentElement) return false;
+      document.documentElement.classList.toggle("dark", theme === "dark");
+      return true;
+    };
+    if (!mark()) {
+      const observer = new MutationObserver(() => {
+        if (mark()) observer.disconnect();
+      });
+      observer.observe(document, { childList: true, subtree: true });
+    }
+  }, THEME);
 
   const page = await context.newPage();
 
@@ -72,7 +140,7 @@ async function captureScreenshots(browser, screenshots) {
   });
 
   for (const shot of screenshots) {
-    const url = `${BASE}${shot.path}`;
+    const url = shot.url || `${BASE}${shot.path}`;
     console.log(`Capturing ${shot.name} (${shot.desc})...`);
     try {
       await page.goto(url, { waitUntil: "load", timeout: 30000 });
@@ -87,7 +155,7 @@ async function captureScreenshots(browser, screenshots) {
       // For the AI chat route, type a question and wait for the assistant
       // response so the screenshot shows a real conversation, not the empty
       // welcome screen. Without this the chat panel always captures empty.
-      if (shot.name === "chat") {
+      if (shot.path === "/en/chat") {
         try {
           // The chat input carries no `type` attribute, so a selector on
           // `input[type='text']` never matches it - the test id is the
@@ -136,14 +204,23 @@ async function captureScreenshots(browser, screenshots) {
 async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
+  // The reference is served over the loopback for the time of the capture.
+  let server = null;
+  let shots = SCREENSHOTS;
+  if (REFERENCE) {
+    server = await serveFolder(REFERENCE.folder);
+    const origin = `http://127.0.0.1:${server.address().port}`;
+    shots = REFERENCE.shots.map((s) => ({ ...s, url: `${origin}/${s.file}` }));
+  }
+
   const browser = await chromium.launch({ headless: true });
 
   // Desktop screenshots
-  const desktop = SCREENSHOTS.filter((s) => !s.mobile);
+  const desktop = shots.filter((s) => !s.mobile);
   await captureScreenshots(browser, desktop);
 
   // Mobile screenshots
-  const mobile = SCREENSHOTS.filter((s) => s.mobile);
+  const mobile = shots.filter((s) => s.mobile);
   if (mobile.length) {
     const mobileContext = await browser.newContext({
       viewport: { width: 375, height: 812 },
@@ -191,10 +268,17 @@ async function main() {
   }
 
   await browser.close();
-  console.log("\nDone! Screenshots saved to docs/screenshots/");
+  if (server) server.close();
+  console.log(`\nDone! Screenshots saved to ${OUT_DIR}`);
 }
 
-main().catch((err) => {
-  console.error("Fatal:", err);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((err) => {
+    console.error("Fatal:", err);
+    process.exit(1);
+  });
+}
+
+// The reference pages are served and addressed here, and the check of the
+// reference uses the same two.
+module.exports = { referencePages, serveFolder };
