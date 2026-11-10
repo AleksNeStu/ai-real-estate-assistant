@@ -205,6 +205,12 @@ demo's frontend had already been rolled onto the redesign while its backend stil
 old code — so the state of a deployment is read from its API, not from its page. And the
 released line was not touched: the promotion is a pull request, and the tag is a separate step.
 
+The repository's other deployment target — the platform-hosted one — rolled the same commit
+successfully. A second, duplicate run of it failed with the deployments API's `409` (`Commit
+status checks failed`), because that API refuses a deployment while a check on the commit has
+not succeeded; the run was dispatched while the CI of that very commit was still running. The
+demo does not live there, so nothing was left half-rolled.
+
 ## The live sweep
 
 `scripts/ops/live-sweep.js` walks every route of a deployment with a browser and prints one
