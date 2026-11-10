@@ -189,3 +189,30 @@ async def test_the_seeded_accounts_carry_no_password_without_one(db_session, mon
     assert len(users) == 2
     for user in users:
         assert user.hashed_password is None
+
+
+@pytest.mark.asyncio
+async def test_the_seeded_agents_carry_their_listings(db_session):
+    """An agent without listings reads zero in the directory.
+
+    The agent directory's Listings column and the profile route's count both
+    read the agent_listings table, so a seed that creates agents but no
+    listings would show an empty column in the demo.
+    """
+    from alembic.demo_data_generator import ComprehensiveDemoDataGenerator
+    from db.models import AgentListing
+
+    generator = ComprehensiveDemoDataGenerator(db_session)
+    generator.agent_ids = ["agent-1", "agent-2", "agent-3"]
+    generator.property_ids = [f"property-{i}" for i in range(20)]
+
+    created = await generator._generate_agent_listings()
+
+    listings = (await db_session.execute(select(AgentListing))).scalars().all()
+    assert len(listings) == created
+    assert created > 0
+    for agent_id in generator.agent_ids:
+        own = [listing for listing in listings if listing.agent_id == agent_id]
+        assert own, f"{agent_id} has no listings"
+        assert all(listing.is_active for listing in own)
+        assert sum(1 for listing in own if listing.is_primary) == 1

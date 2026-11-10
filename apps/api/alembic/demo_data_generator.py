@@ -38,6 +38,7 @@ from loguru import logger
 from config.settings import get_settings
 from data.schemas import Property as PropertySchema
 from db.models import (
+    AgentListing,
     AgentProfile,
     CMAReportDB,
     FavoriteDB,
@@ -539,6 +540,12 @@ class ComprehensiveDemoDataGenerator:
         logger.info("Generating 15 AI agent profiles...")
         results["agents"] = await self._generate_agent_profiles(15)
 
+        # 5b. Link the agents to the properties they represent. The directory
+        # and the profile route both count the agent's ACTIVE listings, so
+        # without these rows every agent reads zero.
+        logger.info("Linking agents to their listings...")
+        results["agent_listings"] = await self._generate_agent_listings()
+
         # 6. Generate Leads
         logger.info("Generating 150 leads...")
         results["leads"] = await self._generate_leads(150)
@@ -583,6 +590,11 @@ class ComprehensiveDemoDataGenerator:
 
         logger.info("Clearing leads...")
         await self.session.execute(delete(Lead))
+
+        logger.info("Clearing agent profiles...")
+        # The listings link agents to properties and carry a unique index on
+        # (agent_id, property_id), so they are cleared BEFORE the profiles.
+        await self.session.execute(delete(AgentListing))
 
         logger.info("Clearing agent profiles...")
         await self.session.execute(delete(AgentProfile))
@@ -777,6 +789,35 @@ class ComprehensiveDemoDataGenerator:
         self.session.add_all(agents)
         await self.session.commit()
         return len(agents)
+
+    async def _generate_agent_listings(self) -> int:
+        """Link the agents to the properties they represent.
+
+        The agent directory's Listings column and the profile route's count
+        both read this table - the count is the number of an agent's ACTIVE
+        listings. Without the rows every agent reads zero, so the demo would
+        show an empty column.
+        """
+        listings = []
+        for agent_id in self.agent_ids:
+            count = random.randint(4, 12)
+            property_ids = random.sample(self.property_ids, min(count, len(self.property_ids)))
+            for index, property_id in enumerate(property_ids):
+                listings.append(
+                    AgentListing(
+                        id=str(uuid.uuid4()),
+                        agent_id=agent_id,
+                        property_id=property_id,
+                        listing_type=random.choice(["sale", "rent", "both"]),
+                        is_primary=index == 0,
+                        is_active=True,
+                        created_at=datetime.now(UTC) - timedelta(days=random.randint(1, 180)),
+                    )
+                )
+
+        self.session.add_all(listings)
+        await self.session.commit()
+        return len(listings)
 
     async def _generate_leads(self, count: int = 150) -> int:
         """Generate leads/inquiries."""
