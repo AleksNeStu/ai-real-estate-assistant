@@ -153,14 +153,21 @@ Two smaller corrections came out of the same pass:
   (`demo.admin2@realestate.demo`) but never gave the role to the user. The role is now
   assigned. `apps/api/alembic/demo_data_generator.py`.
 
+## The gaps that are closed
+
+| The gap | The fix |
+|---|---|
+| The monitoring overview counted the rows of a `properties` table this schema does not have, so the database panel read zero while the catalogue holds 250 | `apps/api/api/routers/monitoring.py` now asks the catalogue — the same count the landing reads — and `apps/api/api/routers/catalogue.py` owns that count for both. The listings carry their source and the moment they were scraped (`apps/api/vector_store/chroma_store.py`), so the panel can say where they came from and how fresh they are. Live: 250 listings, `demo-seed` 250, none newer than a day. |
+| The seeded demo accounts carry no password, so `demo.admin*` and `demo.agent*` cannot be signed into | `apps/api/alembic/demo_data_generator.py` gives them the password the deployment carries in `DEMO_USER_PASSWORD` — the deployment's own value, never the repository's. Without that variable the accounts carry no password, exactly as before. `deploy/compose/docker-compose.yml` and `apps/api/.env.example` name it. |
+| `POST /leads/bulk/assign` was read as an assignment for a lead called "bulk": a path whose first segment is a parameter catches every route of the same shape that comes after it | `apps/api/api/routers/leads.py` declares the bulk routes before the parameterised ones. Live: the endpoint answers 200 with its own count. |
+| The activity summary counted every search in the deployment, not the searches of the account that asks | `apps/api/services/user_activity_service.py` narrows the searches, the views and the clicks to the account — an administrator's view asks without an account and keeps every row. The copy says "your activity on this deployment", and now the two agree. |
+
 ## The gaps that are named, not closed
 
 | The gap | The file that closes it |
 |---|---|
-| The monitoring overview counts the rows of a `properties` table this schema does not have, so the database panel reads zero while the catalogue holds 250 | `apps/api/api/routers/monitoring.py` |
-| The seeded demo accounts carry no password, so `demo.admin*` and `demo.agent*` cannot be signed into — the role is now right, the way in is missing | `apps/api/alembic/demo_data_generator.py` |
-| `/leads/{lead_id}` is declared before `/leads/stats`, so a request for the statistics would be read as a lead id. Nothing calls it today | `apps/api/api/routers/leads.py` |
-| The activity summary counts every search in the deployment, not the searches of the account that asks. The copy says "on this deployment", so the two have to be made to agree | `apps/api/services/user_activity_service.py` |
+| Nothing records a search. `services/search_metrics_service.py` can write the event and no caller uses it, so the searches, the views and the sessions are zero for every account — the usage console draws an empty chart | `apps/api/api/routers/search.py`, with `apps/api/services/search_metrics_service.py` |
+| The leads board walks at most ten pages of a hundred leads, so a deployment with more than a thousand leads sees the first thousand; the board says so | `apps/web/src/app/[locale]/leads/page.tsx` |
 
 ## The live sweep
 
