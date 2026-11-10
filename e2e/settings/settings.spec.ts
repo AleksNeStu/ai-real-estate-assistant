@@ -224,10 +224,11 @@ test.describe('Settings Page', () => {
 
     await page.goto('/settings');
 
-    // Wait for page to load
+    // Wait for page to load, then open the tab that carries the identity
     await expect(page.getByRole('tab', { name: /^identity$/i })).toBeVisible({
       timeout: 15000,
     });
+    await page.getByRole('tab', { name: /^identity$/i }).click();
 
     // The IdentitySettings card should have the email input. Only the id is
     // used: the footer of the site carries a newsletter field labelled

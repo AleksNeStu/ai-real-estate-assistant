@@ -35,7 +35,7 @@ type Tab = (typeof TABS)[number];
 export default function SettingsPage() {
   const t = useTranslations('pages.settings');
   const tCommon = useTranslations('common');
-  const [tab, setTab] = useState<Tab>('identity');
+  const [tab, setTab] = useState<Tab>('models');
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [catalog, setCatalog] = useState<ModelProviderCatalog[] | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(true);

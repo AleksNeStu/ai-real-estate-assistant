@@ -87,7 +87,7 @@ describe('SettingsPage', () => {
 
   it('opens one tab at a time', () => {
     render(<SettingsPage />);
-    expect(screen.getByRole('tab', { name: 'Identity' })).toHaveAttribute(
+    expect(screen.getByRole('tab', { name: 'Models' })).toHaveAttribute(
       'aria-selected',
       'true'
     );
