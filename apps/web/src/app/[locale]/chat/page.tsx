@@ -13,6 +13,7 @@ import { ToolCard } from '@/components/ui/tool-card';
 import { ContextPane } from '@/components/chat/context-pane';
 import { ToolResult } from '@/components/chat/tool-result';
 import { parseToolCalls, type ToolCall } from '@/components/chat/tool-calls';
+import { MarkdownMessage, PlainMessage } from '@/components/chat/markdown-message';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -345,11 +346,16 @@ export default function ChatPage() {
                 >
                   <AssistantMark />
                   <div className="flex min-w-0 flex-col gap-3">
-                    <div className="break-words text-app leading-relaxed text-foreground">
+                    <div className="min-w-0 break-words">
                       {!message.content ? (
-                        <span className="text-muted-foreground">{t('loading.thinking')}</span>
+                        <span className="text-app text-muted-foreground">{t('loading.thinking')}</span>
+                      ) : message.isError ? (
+                        /* The apology is a sentence about a failure, not a
+                           document: it is rendered as plain text, so it can
+                           carry no markup. */
+                        <PlainMessage>{message.content}</PlainMessage>
                       ) : (
-                        message.content
+                        <MarkdownMessage>{message.content}</MarkdownMessage>
                       )}
                     </div>
 
