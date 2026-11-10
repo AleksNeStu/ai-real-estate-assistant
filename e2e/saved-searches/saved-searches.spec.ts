@@ -85,14 +85,15 @@ test.describe('Saved Searches', () => {
       await savedSearchesPage.navigate();
 
       // Verify initial state shows active searches
-      const bellIcon = authenticatedPage.locator('[data-lucide="bell"], svg').first();
       await expect(savedSearchesPage.heading).toBeVisible();
 
       // Toggle the alert for the first search
       await savedSearchesPage.toggleAlert('2-bedroom Berlin');
 
-      // Verify the toggle API was called
-      expect(toggleCallCount).toBe(1);
+      // Verify the toggle API was called. The call is polled: the click
+      // returns before the request reaches the server, and the count read
+      // straight after it would be a race.
+      await expect.poll(() => toggleCallCount, { timeout: 10000 }).toBe(1);
     });
   });
 
