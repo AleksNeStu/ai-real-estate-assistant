@@ -1,22 +1,12 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import {
-  Shield,
-  Download,
-  Loader2,
-  Eye,
-  EyeOff,
-  Mail,
-  Phone,
-  MessageSquare,
-  FileText,
-  Clock,
-} from 'lucide-react';
+import { Download, Loader2, Mail, Phone, MessageSquare, Clock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Label } from '../ui/label';
+import { MonoAnnotation } from '../ui/mono-annotation';
+import { SettingsPanel, SettingsRow } from './settings-panel';
 import { getProfile, updatePrivacySettings, requestDataExport, getExportStatus } from '@/lib/api';
 import {
   ProfileResponse,
@@ -25,6 +15,13 @@ import {
   DataExportStatusResponse,
 } from '@/lib/types';
 
+/**
+ * The data on this deployment.
+ *
+ * What is visible and what is kept are two lists of switches, so they are
+ * ledgers: one rule opens each and every row is a switch with the label
+ * that says what it is. The export is a job, so it carries its progress.
+ */
 export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -106,17 +103,20 @@ export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
 
   if (!userEmail) {
     return (
-      <div className="rounded-md border border-dashed bg-muted/30 p-4 text-muted-foreground">
-        {t('emailRequired')}
-      </div>
+      <SettingsPanel title={t('privacy.privacyControls')} description={t('emailRequired')}>
+        <div />
+      </SettingsPanel>
     );
   }
 
   if (loading) {
     return (
-      <div className="rounded-md border border-dashed bg-muted/30 p-4 text-muted-foreground">
-        {t('privacy.loadingPrivacy')}
-      </div>
+      <SettingsPanel
+        title={t('privacy.privacyControls')}
+        description={t('privacy.loadingPrivacy')}
+      >
+        <div />
+      </SettingsPanel>
     );
   }
 
@@ -179,31 +179,19 @@ export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
   };
 
   return (
-    <div className="grid gap-6">
-      {/* Privacy Controls Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary" aria-hidden="true" />
-            <CardTitle>{t('privacy.privacyControls')}</CardTitle>
-          </div>
-          <CardDescription>{t('privacy.privacyControlsDesc')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between space-x-2">
-            <Label htmlFor="profile_visible" className="flex flex-col space-y-1">
-              <div className="flex items-center gap-2">
-                {settings.profile_visible ? (
-                  <Eye className="h-4 w-4" aria-hidden="true" />
-                ) : (
-                  <EyeOff className="h-4 w-4" aria-hidden="true" />
-                )}
-                <span>{t('privacy.publicProfile')}</span>
-              </div>
-              <span className="font-normal text-muted-foreground">
-                {t('privacy.publicProfileDesc')}
-              </span>
+    <div className="flex flex-col gap-8">
+      <SettingsPanel
+        title={t('privacy.privacyControls')}
+        description={t('privacy.privacyControlsDesc')}
+      >
+        <SettingsRow
+          label={
+            <Label htmlFor="profile_visible" className="flex cursor-pointer items-center gap-2">
+              {t('privacy.publicProfile')}
             </Label>
+          }
+          description={t('privacy.publicProfileDesc')}
+          action={
             <input
               type="checkbox"
               id="profile_visible"
@@ -211,22 +199,17 @@ export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
               checked={settings.profile_visible}
               onChange={() => toggleSetting('profile_visible')}
             />
-          </div>
+          }
+        />
 
-          <div className="flex items-center justify-between space-x-2">
-            <Label htmlFor="activity_visible" className="flex flex-col space-y-1">
-              <div className="flex items-center gap-2">
-                {settings.activity_visible ? (
-                  <Eye className="h-4 w-4" aria-hidden="true" />
-                ) : (
-                  <EyeOff className="h-4 w-4" aria-hidden="true" />
-                )}
-                <span>{t('privacy.activityVisibility')}</span>
-              </div>
-              <span className="font-normal text-muted-foreground">
-                {t('privacy.activityVisibilityDesc')}
-              </span>
+        <SettingsRow
+          label={
+            <Label htmlFor="activity_visible" className="flex cursor-pointer items-center gap-2">
+              {t('privacy.activityVisibility')}
             </Label>
+          }
+          description={t('privacy.activityVisibilityDesc')}
+          action={
             <input
               type="checkbox"
               id="activity_visible"
@@ -234,18 +217,18 @@ export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
               checked={settings.activity_visible}
               onChange={() => toggleSetting('activity_visible')}
             />
-          </div>
+          }
+        />
 
-          <div className="flex items-center justify-between space-x-2">
-            <Label htmlFor="show_email" className="flex flex-col space-y-1">
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4" aria-hidden="true" />
-                <span>{t('privacy.showEmail')}</span>
-              </div>
-              <span className="font-normal text-muted-foreground">
-                {t('privacy.showEmailDesc')}
-              </span>
+        <SettingsRow
+          label={
+            <Label htmlFor="show_email" className="flex cursor-pointer items-center gap-2">
+              <Mail className="h-4 w-4" aria-hidden="true" />
+              {t('privacy.showEmail')}
             </Label>
+          }
+          description={t('privacy.showEmailDesc')}
+          action={
             <input
               type="checkbox"
               id="show_email"
@@ -253,18 +236,18 @@ export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
               checked={settings.show_email}
               onChange={() => toggleSetting('show_email')}
             />
-          </div>
+          }
+        />
 
-          <div className="flex items-center justify-between space-x-2">
-            <Label htmlFor="show_phone" className="flex flex-col space-y-1">
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4" aria-hidden="true" />
-                <span>{t('privacy.showPhone')}</span>
-              </div>
-              <span className="font-normal text-muted-foreground">
-                {t('privacy.showPhoneDesc')}
-              </span>
+        <SettingsRow
+          label={
+            <Label htmlFor="show_phone" className="flex cursor-pointer items-center gap-2">
+              <Phone className="h-4 w-4" aria-hidden="true" />
+              {t('privacy.showPhone')}
             </Label>
+          }
+          description={t('privacy.showPhoneDesc')}
+          action={
             <input
               type="checkbox"
               id="show_phone"
@@ -272,18 +255,18 @@ export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
               checked={settings.show_phone}
               onChange={() => toggleSetting('show_phone')}
             />
-          </div>
+          }
+        />
 
-          <div className="flex items-center justify-between space-x-2">
-            <Label htmlFor="allow_contact" className="flex flex-col space-y-1">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                <span>{t('privacy.allowContact')}</span>
-              </div>
-              <span className="font-normal text-muted-foreground">
-                {t('privacy.allowContactDesc')}
-              </span>
+        <SettingsRow
+          label={
+            <Label htmlFor="allow_contact" className="flex cursor-pointer items-center gap-2">
+              <MessageSquare className="h-4 w-4" aria-hidden="true" />
+              {t('privacy.allowContact')}
             </Label>
+          }
+          description={t('privacy.allowContactDesc')}
+          action={
             <input
               type="checkbox"
               id="allow_contact"
@@ -291,98 +274,24 @@ export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
               checked={settings.allow_contact}
               onChange={() => toggleSetting('allow_contact')}
             />
+          }
+        />
+      </SettingsPanel>
+
+      <SettingsPanel
+        title={t('privacy.dataExportGdpr')}
+        description={t('privacy.dataExportGdprDesc')}
+      >
+        <SettingsRow label={t('privacy.exportIncludes')}>
+          <div className="flex flex-col gap-1 text-annot text-muted-foreground">
+            <span>{t('privacy.exportProfileInfo')}</span>
+            <span>{t('privacy.exportFavorites')}</span>
+            <span>{t('privacy.exportSearchHistory')}</span>
+            <span>{t('privacy.exportDocuments')}</span>
           </div>
-        </CardContent>
-      </Card>
+        </SettingsRow>
 
-      {/* GDPR Data Export Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" aria-hidden="true" />
-            <CardTitle>{t('privacy.dataExportGdpr')}</CardTitle>
-          </div>
-          <CardDescription>{t('privacy.dataExportGdprDesc')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-sm text-muted-foreground">
-            <p className="mb-2">{t('privacy.exportIncludes')}</p>
-            <ul className="list-disc list-inside space-y-1 ml-2">
-              <li>{t('privacy.exportProfileInfo')}</li>
-              <li>{t('privacy.exportFavorites')}</li>
-              <li>{t('privacy.exportSearchHistory')}</li>
-              <li>{t('privacy.exportDocuments')}</li>
-            </ul>
-            <p className="mt-2">{t('privacy.exportProcessingInfo')}</p>
-          </div>
-
-          {/* Export Status */}
-          {exportJob && (
-            <div className="rounded-md bg-muted p-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{t('privacy.exportStatus')}</span>
-                <span
-                  className={`text-sm ${
-                    exportJob.status === 'completed'
-                      ? 'text-success'
-                      : exportJob.status === 'failed'
-                        ? 'text-destructive'
-                        : 'text-warning'
-                  }`}
-                >
-                  {exportJob.status.charAt(0).toUpperCase() + exportJob.status.slice(1)}
-                </span>
-              </div>
-
-              {exportJob.status === 'processing' && (
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{t('privacy.progress')}</span>
-                    <span>{exportJob.progress_percent}%</span>
-                  </div>
-                  <div
-                    className="h-2 bg-muted-foreground/20 rounded-full overflow-hidden"
-                    role="progressbar"
-                    aria-valuenow={exportJob.progress_percent}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-label={t('privacy.exportProgressLabel', {
-                      percent: exportJob.progress_percent,
-                    })}
-                  >
-                    <div
-                      className="h-full bg-primary transition-all duration-300"
-                      style={{ width: `${exportJob.progress_percent}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {exportJob.status === 'completed' && exportJob.download_url && (
-                <Button onClick={handleDownload} className="w-full">
-                  <Download className="mr-2 h-4 w-4" aria-hidden="true" />
-                  {t('privacy.downloadYourData')}
-                </Button>
-              )}
-
-              {exportJob.status === 'failed' && exportJob.error_message && (
-                <p className="text-sm text-destructive">{exportJob.error_message}</p>
-              )}
-
-              {exportJob.expires_at && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Clock className="h-3 w-3" aria-hidden="true" />
-                  <span>
-                    {t('privacy.linkExpires', {
-                      date: new Date(exportJob.expires_at).toLocaleString(),
-                    })}
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Export Button */}
+        <SettingsRow label={t('privacy.exportProcessingInfo')}>
           <Button
             variant="outline"
             onClick={handleExportData}
@@ -399,21 +308,80 @@ export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
                 ? t('privacy.processing')
                 : t('privacy.requestDataExport')}
           </Button>
+        </SettingsRow>
 
-          {profile?.gdpr_consent_at && (
-            <p className="text-xs text-muted-foreground">
-              {t('privacy.gdprConsentGiven', {
-                date: new Date(profile.gdpr_consent_at).toLocaleDateString(),
-              })}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+        {exportJob ? (
+          <SettingsRow label={t('privacy.exportStatus')}>
+            <div className="flex flex-col gap-2">
+              <MonoAnnotation
+                tone={
+                  exportJob.status === 'completed'
+                    ? 'success'
+                    : exportJob.status === 'failed'
+                      ? 'destructive'
+                      : 'warning'
+                }
+              >
+                {exportJob.status.charAt(0).toUpperCase() + exportJob.status.slice(1)}
+              </MonoAnnotation>
 
-      {/* Save Button */}
+              {exportJob.status === 'processing' ? (
+                <div
+                  className="h-2 w-full max-w-[320px] overflow-hidden rounded-full bg-muted-foreground/20"
+                  role="progressbar"
+                  aria-valuenow={exportJob.progress_percent}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={t('privacy.exportProgressLabel', {
+                    percent: exportJob.progress_percent,
+                  })}
+                >
+                  <div
+                    className="h-full bg-primary transition-all duration-300"
+                    style={{ width: `${exportJob.progress_percent}%` }}
+                  />
+                </div>
+              ) : null}
+
+              {exportJob.status === 'completed' && exportJob.download_url ? (
+                <Button onClick={handleDownload}>
+                  <Download className="mr-2 h-4 w-4" aria-hidden="true" />
+                  {t('privacy.downloadYourData')}
+                </Button>
+              ) : null}
+
+              {exportJob.status === 'failed' && exportJob.error_message ? (
+                <MonoAnnotation tone="destructive">{exportJob.error_message}</MonoAnnotation>
+              ) : null}
+
+              {exportJob.expires_at ? (
+                <div className="flex items-center gap-1 text-annot text-muted-foreground">
+                  <Clock className="h-3 w-3" aria-hidden="true" />
+                  <span>
+                    {t('privacy.linkExpires', {
+                      date: new Date(exportJob.expires_at).toLocaleString(),
+                    })}
+                  </span>
+                </div>
+              ) : null}
+            </div>
+          </SettingsRow>
+        ) : null}
+
+        {profile?.gdpr_consent_at ? (
+          <SettingsRow label={t('privacy.gdprConsentGiven', {
+            date: new Date(profile.gdpr_consent_at).toLocaleDateString(),
+          })}>
+            <MonoAnnotation>{t('privacy.gdprConsentGiven', {
+              date: new Date(profile.gdpr_consent_at).toLocaleDateString(),
+            })}</MonoAnnotation>
+          </SettingsRow>
+        ) : null}
+      </SettingsPanel>
+
       <div className="flex items-center justify-end gap-4">
-        {success && <span className="text-success text-sm">{success}</span>}
-        {error && <span className="text-destructive text-sm">{error}</span>}
+        {success ? <MonoAnnotation tone="success">{success}</MonoAnnotation> : null}
+        {error ? <MonoAnnotation tone="destructive">{error}</MonoAnnotation> : null}
         <Button onClick={handleSave} disabled={saving}>
           {saving ? t('privacy.saving') : t('privacy.savePrivacySettings')}
         </Button>

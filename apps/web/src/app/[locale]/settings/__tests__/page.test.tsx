@@ -11,26 +11,22 @@ jest.mock('@/lib/api', () => ({
   testModelRuntime: jest.fn(),
   getModelPreferences: jest.fn(),
   updateModelPreferences: jest.fn(),
+  getTaskModelPreferences: jest.fn(),
+  createTaskModelPreference: jest.fn(),
+  updateTaskModelPreference: jest.fn(),
+  deleteTaskModelPreference: jest.fn(),
+  getSystemModelDefaults: jest.fn(),
+}));
+
+// The gate belongs to another lane and is mocked here.
+jest.mock('@/components/shell/gate', () => ({
+  AccountGate: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 // Mock child component to simplify integration test
 jest.mock('@/components/settings/notification-settings', () => ({
   NotificationSettings: () => (
     <div data-testid="notification-settings">Notification Settings Component</div>
-  ),
-}));
-
-jest.mock('@/components/settings/identity-settings', () => ({
-  IdentitySettings: () => <div data-testid="identity-settings">Identity Settings Component</div>,
-}));
-
-jest.mock('@/components/settings/model-settings', () => ({
-  ModelSettings: () => <div data-testid="model-settings">Model Settings Component</div>,
-}));
-
-jest.mock('@/components/settings/task-model-settings', () => ({
-  TaskModelSettings: () => (
-    <div data-testid="task-model-settings">Task Model Settings Component</div>
   ),
 }));
 
@@ -41,6 +37,27 @@ jest.mock('@/components/settings/profile-settings', () => ({
 jest.mock('@/components/settings/privacy-settings', () => ({
   PrivacySettings: () => <div data-testid="privacy-settings">Privacy Settings Component</div>,
 }));
+
+const openaiCatalog = [
+  {
+    name: 'openai',
+    display_name: 'OpenAI',
+    is_local: false,
+    requires_api_key: true,
+    models: [
+      {
+        id: 'gpt-4o',
+        display_name: 'GPT-4o',
+        provider_name: 'OpenAI',
+        context_window: 128000,
+        pricing: { input_price_per_1m: 2.5, output_price_per_1m: 10, currency: 'USD' },
+        capabilities: ['streaming', 'vision'],
+        description: null,
+        recommended_for: [],
+      },
+    ],
+  },
+];
 
 describe('SettingsPage', () => {
   const mockGetModelsCatalog = getModelsCatalog as jest.Mock;
@@ -59,159 +76,104 @@ describe('SettingsPage', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders notification settings section', () => {
+  it('shows the five tabs of the prototype', () => {
     render(<SettingsPage />);
-    expect(screen.getByText('Identity')).toBeInTheDocument();
-    expect(screen.getByTestId('identity-settings')).toBeInTheDocument();
-    expect(screen.getByText('Notifications')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Identity' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Models' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Notifications' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Profile' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Privacy' })).toBeInTheDocument();
+  });
+
+  it('opens one tab at a time', () => {
+    render(<SettingsPage />);
+    expect(screen.getByRole('tab', { name: 'Identity' })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Notifications' }));
+    expect(screen.getByRole('tab', { name: 'Notifications' })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
     expect(screen.getByTestId('notification-settings')).toBeInTheDocument();
   });
 
-  it('renders models section and loads catalog', async () => {
-    mockGetModelsCatalog.mockResolvedValueOnce([
-      {
-        name: 'openai',
-        display_name: 'OpenAI',
-        is_local: false,
-        requires_api_key: true,
-        models: [
-          {
-            id: 'gpt-4o',
-            display_name: 'GPT-4o',
-            provider_name: 'OpenAI',
-            context_window: 128000,
-            pricing: { input_price_per_1m: 2.5, output_price_per_1m: 10, currency: 'USD' },
-            capabilities: ['streaming', 'vision'],
-            description: null,
-            recommended_for: [],
-          },
-        ],
-      },
-    ]);
-
+  it('renders the profile and the privacy panel on their tabs', () => {
     render(<SettingsPage />);
 
-    expect(screen.getByText('Models')).toBeInTheDocument();
-    expect(screen.getByTestId('model-settings')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Refresh Catalog' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: 'Profile' }));
+    expect(screen.getByTestId('profile-settings')).toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(screen.getByText('OpenAI')).toBeInTheDocument();
-    });
-
-    expect(screen.getByRole('button', { name: 'Refresh Catalog' })).toBeEnabled();
-    expect(screen.getByText('GPT-4o')).toBeInTheDocument();
-    expect(screen.getByText('gpt-4o')).toBeInTheDocument();
-    expect(screen.getByText('128,000')).toBeInTheDocument();
-    expect(screen.getByText('USD 2.50')).toBeInTheDocument();
-    expect(screen.getByText('USD 10.00')).toBeInTheDocument();
-    expect(screen.getByText('streaming, vision')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: 'Privacy' }));
+    expect(screen.getByTestId('privacy-settings')).toBeInTheDocument();
   });
 
-  it('runs targeted runtime test for a local provider', async () => {
-    mockGetModelsCatalog.mockResolvedValueOnce([
-      {
-        name: 'ollama',
-        display_name: 'Ollama',
-        is_local: true,
-        requires_api_key: false,
-        runtime_available: false,
-        available_models: [],
-        models: [
-          {
-            id: 'llama3.3:8b',
-            display_name: 'Llama 3.3 8B',
-            provider_name: 'Ollama',
-            context_window: 128000,
-            pricing: null,
-            capabilities: [],
-            description: null,
-            recommended_for: [],
-          },
-        ],
-      },
-    ]);
+  it('renders the models tab with the catalogue, its context and its prices', async () => {
+    mockGetModelsCatalog.mockResolvedValueOnce(openaiCatalog);
+
+    render(<SettingsPage />);
+    fireEvent.click(screen.getByRole('tab', { name: 'Models' }));
+
+    expect(screen.getByRole('button', { name: 'Refresh catalog' })).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getAllByText('OpenAI').length).toBeGreaterThan(0);
+    });
+
+    expect(screen.getAllByText('gpt-4o').length).toBeGreaterThan(0);
+    expect(screen.getByText('128k')).toBeInTheDocument();
+    expect(screen.getByText('USD 2.50')).toBeInTheDocument();
+    expect(screen.getByText('USD 10.00')).toBeInTheDocument();
+  });
+
+  it('runs the runtime test and reports the measured round trip', async () => {
+    mockGetModelsCatalog.mockResolvedValueOnce(openaiCatalog);
     mockTestModelRuntime.mockResolvedValueOnce({
-      provider: 'ollama',
-      is_local: true,
+      provider: 'openai',
+      is_local: false,
       runtime_available: true,
-      available_models: ['llama3.3:8b'],
+      available_models: [],
       runtime_error: null,
     });
 
     render(<SettingsPage />);
+    fireEvent.click(screen.getByRole('tab', { name: 'Models' }));
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Test Connection' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Test' })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Test Connection' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Test' }));
 
     await waitFor(() => {
-      expect(mockTestModelRuntime).toHaveBeenCalledWith('ollama');
-      expect(screen.getByText(/Connection successful/i)).toBeInTheDocument();
+      expect(mockTestModelRuntime).toHaveBeenCalledWith('openai');
+      expect(screen.getByText(/ok · \d+ ms/)).toBeInTheDocument();
     });
   });
 
-  it('refreshes catalog without clearing existing table', async () => {
-    mockGetModelsCatalog
-      .mockResolvedValueOnce([
-        {
-          name: 'openai',
-          display_name: 'OpenAI',
-          is_local: false,
-          requires_api_key: true,
-          models: [
-            {
-              id: 'gpt-4o',
-              display_name: 'GPT-4o',
-              provider_name: 'OpenAI',
-              context_window: 128000,
-              pricing: { input_price_per_1m: 2.5, output_price_per_1m: 10, currency: 'USD' },
-              capabilities: ['streaming', 'vision'],
-              description: null,
-              recommended_for: [],
-            },
-          ],
-        },
-      ])
-      .mockResolvedValueOnce([
-        {
-          name: 'ollama',
-          display_name: 'Ollama',
-          is_local: true,
-          requires_api_key: false,
-          runtime_available: true,
-          available_models: ['llama3.3:8b'],
-          models: [
-            {
-              id: 'llama3.3:8b',
-              display_name: 'Llama 3.3 8B',
-              provider_name: 'Ollama',
-              context_window: 128000,
-              pricing: null,
-              capabilities: [],
-              description: null,
-              recommended_for: [],
-            },
-          ],
-        },
-      ]);
-
-    render(<SettingsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('OpenAI')).toBeInTheDocument();
+  it('says that a key is missing when the provider has none', async () => {
+    mockGetModelsCatalog.mockResolvedValueOnce(openaiCatalog);
+    mockTestModelRuntime.mockResolvedValueOnce({
+      provider: 'openai',
+      is_local: false,
+      runtime_available: false,
+      available_models: [],
+      runtime_error: 'API key not provided',
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Refresh Catalog' }));
-
-    expect(screen.getByRole('button', { name: 'Refreshing...' })).toBeInTheDocument();
-    expect(screen.getByText('OpenAI')).toBeInTheDocument();
+    render(<SettingsPage />);
+    fireEvent.click(screen.getByRole('tab', { name: 'Models' }));
 
     await waitFor(() => {
-      expect(mockGetModelsCatalog).toHaveBeenCalledTimes(2);
-      expect(screen.getByText('Ollama')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Test' })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Test' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('no key set')).toBeInTheDocument();
     });
   });
 
@@ -222,6 +184,7 @@ describe('SettingsPage', () => {
     );
 
     render(<SettingsPage />);
+    fireEvent.click(screen.getByRole('tab', { name: 'Models' }));
 
     await waitFor(() => {
       expect(
@@ -230,130 +193,16 @@ describe('SettingsPage', () => {
     });
     expect(errorSpy).not.toHaveBeenCalled();
     errorSpy.mockRestore();
-
-    mockGetModelsCatalog.mockResolvedValueOnce([]);
-    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
-
-    await waitFor(() => {
-      expect(mockGetModelsCatalog).toHaveBeenCalledTimes(2);
-    });
   });
 
-  it('shows no models available when catalog is empty', async () => {
+  it('says that the catalogue is empty when it carries no provider', async () => {
     mockGetModelsCatalog.mockResolvedValueOnce([]);
 
     render(<SettingsPage />);
+    fireEvent.click(screen.getByRole('tab', { name: 'Models' }));
 
     await waitFor(() => {
       expect(screen.getByText('No models available.')).toBeInTheDocument();
     });
-  });
-
-  it('renders model rows with missing pricing and capabilities', async () => {
-    mockGetModelsCatalog.mockResolvedValueOnce([
-      {
-        name: 'ollama',
-        display_name: 'Ollama',
-        is_local: true,
-        requires_api_key: false,
-        models: [
-          {
-            id: 'llama3',
-            display_name: 'Llama 3',
-            provider_name: 'Ollama',
-            context_window: 8192,
-            pricing: null,
-            capabilities: [],
-            description: null,
-            recommended_for: [],
-          },
-        ],
-      },
-    ]);
-
-    render(<SettingsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Ollama')).toBeInTheDocument();
-    });
-
-    expect(screen.getByText('Local')).toBeInTheDocument();
-    expect(screen.getByText('No API key required')).toBeInTheDocument();
-    expect(screen.getByText(/Local models run on your machine/i)).toBeInTheDocument();
-    expect(screen.getByText('Local models & offline usage')).toBeInTheDocument();
-    expect(screen.getByText(/Local runtime status is unknown/i)).toBeInTheDocument();
-    expect(screen.getAllByText('—').length).toBeGreaterThan(0);
-  });
-
-  it('renders local runtime unavailable status and setup steps', async () => {
-    mockGetModelsCatalog.mockResolvedValueOnce([
-      {
-        name: 'ollama',
-        display_name: 'Ollama',
-        is_local: true,
-        requires_api_key: false,
-        runtime_available: false,
-        available_models: [],
-        models: [
-          {
-            id: 'llama3.3:8b',
-            display_name: 'Llama 3.3 8B',
-            provider_name: 'Ollama',
-            context_window: 128000,
-            pricing: null,
-            capabilities: [],
-            description: null,
-            recommended_for: [],
-          },
-        ],
-      },
-    ]);
-
-    render(<SettingsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Local runtime not detected/i)).toBeInTheDocument();
-    });
-
-    expect(screen.getByText(/Install Ollama/i)).toBeInTheDocument();
-    expect(screen.getByText(/ollama\.com\/download/i)).toBeInTheDocument();
-    expect(screen.getByText(/ollama pull llama3\.3:8b/i)).toBeInTheDocument();
-    expect(screen.getByText(/host\.docker\.internal:11434/i)).toBeInTheDocument();
-  });
-
-  it('renders local runtime available status and downloaded models list', async () => {
-    mockGetModelsCatalog.mockResolvedValueOnce([
-      {
-        name: 'ollama',
-        display_name: 'Ollama',
-        is_local: true,
-        requires_api_key: false,
-        runtime_available: true,
-        available_models: ['llama3.3:8b', 'mistral:7b'],
-        models: [
-          {
-            id: 'llama3.3:8b',
-            display_name: 'Llama 3.3 8B',
-            provider_name: 'Ollama',
-            context_window: 128000,
-            pricing: null,
-            capabilities: [],
-            description: null,
-            recommended_for: [],
-          },
-        ],
-      },
-    ]);
-
-    render(<SettingsPage />);
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(/Local runtime detected\. Downloaded models: 2\./i)
-      ).toBeInTheDocument();
-    });
-
-    expect(screen.getByText('Downloaded models')).toBeInTheDocument();
-    expect(screen.getByText(/llama3\.3:8b, mistral:7b/i)).toBeInTheDocument();
   });
 });

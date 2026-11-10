@@ -209,12 +209,14 @@ test.describe('Settings Page', () => {
     const mainHeading = page.getByRole('heading', { name: /^settings$/i });
     await expect(mainHeading).toBeVisible({ timeout: 15000 });
 
-    // Verify all section headings are visible
-    await expect(page.getByRole('heading', { level: 2, name: /^identity$/i })).toBeVisible();
-    await expect(page.getByRole('heading', { level: 2, name: /^profile$/i })).toBeVisible();
-    await expect(page.getByRole('heading', { level: 2, name: /privacy/i })).toBeVisible();
-    await expect(page.getByRole('heading', { level: 2, name: /^notifications$/i })).toBeVisible();
-    await expect(page.getByRole('heading', { level: 2, name: /^models$/i })).toBeVisible();
+    // The screen carries five tabs and shows one of them at a time, so every
+    // section is reached through its tab.
+    for (const tab of ['Identity', 'Models', 'Notifications', 'Profile', 'Privacy']) {
+      await page.getByRole('tab', { name: new RegExp(`^${tab}$`, 'i') }).click();
+      await expect(
+        page.getByRole('tab', { name: new RegExp(`^${tab}$`, 'i') })
+      ).toHaveAttribute('aria-selected', 'true');
+    }
   });
 
   test('should display current user identity settings', async ({ page }) => {
@@ -223,7 +225,7 @@ test.describe('Settings Page', () => {
     await page.goto('/settings');
 
     // Wait for page to load
-    await expect(page.getByRole('heading', { level: 2, name: /^identity$/i })).toBeVisible({
+    await expect(page.getByRole('tab', { name: /^identity$/i })).toBeVisible({
       timeout: 15000,
     });
 
@@ -243,6 +245,7 @@ test.describe('Settings Page', () => {
     await page.goto('/settings');
 
     // Wait for notifications section to be visible
+    await page.getByRole('tab', { name: /^notifications$/i }).click();
     await expect(page.getByRole('heading', { name: /^notifications$/i })).toBeVisible({
       timeout: 15000,
     });
@@ -275,14 +278,17 @@ test.describe('Settings Page', () => {
     await page.goto('/settings');
 
     // Wait for models section
-    await expect(page.getByRole('heading', { name: /^models$/i })).toBeVisible({ timeout: 15000 });
+    await page.getByRole('tab', { name: /^models$/i }).click();
+    await expect(page.getByRole('heading', { name: /model catalogue/i })).toBeVisible({
+      timeout: 15000,
+    });
 
     // Should show model providers from the catalog. The names also appear in
     // the provider selection of the model settings - there they are options
     // of a closed list and therefore not visible. The catalog itself is
     // rendered in the table of the models section.
     const modelsSection = page.locator('section').filter({
-      has: page.getByRole('heading', { name: /^models$/i }),
+      has: page.getByRole('heading', { name: /model catalogue/i }),
     });
     await expect(
       modelsSection.getByText('OpenAI', { exact: true }).locator('visible=true')
@@ -293,7 +299,7 @@ test.describe('Settings Page', () => {
 
     // Should show model details
     await expect(modelsSection.getByText('GPT-4o').first()).toBeVisible();
-    await expect(modelsSection.getByText('128,000').first()).toBeVisible(); // context window
+    await expect(modelsSection.getByText('128k').first()).toBeVisible(); // context window
 
     // Should show the Refresh Catalog button
     await expect(page.getByRole('button', { name: /refresh catalog/i })).toBeVisible();
@@ -393,6 +399,7 @@ test.describe('Settings Page', () => {
     await page.goto('/settings');
 
     // Wait for notifications section
+    await page.getByRole('tab', { name: /^notifications$/i }).click();
     await expect(page.getByRole('heading', { name: /^notifications$/i })).toBeVisible({
       timeout: 15000,
     });

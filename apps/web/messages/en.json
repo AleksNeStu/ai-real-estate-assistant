@@ -2703,7 +2703,86 @@
     "settings": {
       "title": "Settings",
       "description": "Manage your account settings and notification preferences.",
-      "loadingModelCatalog": "Loading model catalog"
+      "loadingModelCatalog": "Loading model catalog",
+      "tabs": {
+        "label": "Settings sections",
+        "identity": "Identity",
+        "models": "Models",
+        "notifications": "Notifications",
+        "profile": "Profile",
+        "privacy": "Privacy"
+      },
+      "identity": {
+        "title": "Identity",
+        "description": "How you sign in, and the address this deployment scopes the account by.",
+        "emailLabel": "Email",
+        "hint": "Stored locally in your browser and sent as {header}.",
+        "save": "Save",
+        "saved": "Email saved.",
+        "cleared": "Email cleared.",
+        "invalidEmail": "Please enter a valid email address."
+      },
+      "models": {
+        "loadFailed": "Failed to load model catalog. Please try again.",
+        "failedToLoadCatalog": "Failed to load the model catalogue",
+        "refreshing": "Refreshing...",
+        "refreshCatalog": "Refresh catalog",
+        "noModels": "No models available.",
+        "default": {
+          "context": "Context {size} tokens",
+          "price": "{currency} {input} / 1M in · {output} / 1M out",
+          "priceUnknown": "The catalogue carries no price for this model."
+        },
+        "catalogue": {
+          "title": "Model catalogue",
+          "description": "Every provider this deployment can reach, the context it takes and what a million tokens cost.",
+          "providerCount": "{count, plural, one {# provider} other {# providers}}",
+          "columns": {
+            "model": "Model",
+            "provider": "Provider",
+            "context": "Context",
+            "input": "In / 1M",
+            "output": "Out / 1M",
+            "probe": "Runtime test"
+          },
+          "empty": "No models are configured on this deployment.",
+          "local": "Local",
+          "hosted": "Hosted",
+          "test": "Test",
+          "testing": "Testing...",
+          "ok": "ok · {ms} ms",
+          "noKey": "no key set",
+          "failed": "the probe failed"
+        },
+        "local": {
+          "label": "Local Ollama",
+          "description": "Run a model on this machine instead of a hosted provider.",
+          "install": "Install Ollama, then pull a model:",
+          "env": "Point the API at it:"
+        },
+        "perTask": {
+          "title": "Model per task",
+          "description": "Each task can run on a different model. The keys stay on the server.",
+          "needsEmail": "Set an email in Identity to enable per-task model preferences.",
+          "loading": "Loading preferences...",
+          "loadFailed": "Failed to load preferences.",
+          "selectBoth": "Please select both a provider and a model.",
+          "saved": "Model preference saved.",
+          "failedToSave": "Failed to save model preference.",
+          "resetToDefault": "Reset to system default.",
+          "failedToReset": "Failed to reset model preference.",
+          "systemDefault": "System default",
+          "provider": "Provider",
+          "model": "Model",
+          "save": "Save",
+          "reset": "Reset",
+          "saving": "Saving...",
+          "context": "Context {size} tokens",
+          "contextUnknown": "The catalogue carries no context size for this model.",
+          "price": "{currency} {input} / 1M in · {output} / 1M out",
+          "priceUnknown": "The catalogue carries no price for this model."
+        }
+      }
     },
     "tools": {
       "title": "Tools",

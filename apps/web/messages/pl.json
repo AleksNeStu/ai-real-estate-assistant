@@ -2703,7 +2703,86 @@
     "settings": {
       "title": "Ustawienia",
       "description": "Twoje konto, modele i powiadomienia.",
-      "loadingModelCatalog": "Ładowanie katalogu modeli"
+      "loadingModelCatalog": "Ładowanie katalogu modeli",
+      "tabs": {
+        "label": "Sekcje ustawień",
+        "identity": "Tożsamość",
+        "models": "Modele",
+        "notifications": "Powiadomienia",
+        "profile": "Profil",
+        "privacy": "Prywatność"
+      },
+      "identity": {
+        "title": "Tożsamość",
+        "description": "Jak się logujesz i po jakim adresie wdrożenie przypisuje konto.",
+        "emailLabel": "E-mail",
+        "hint": "Przechowywany lokalnie w tej przeglądarce i wysyłany jako {header}.",
+        "save": "Zapisz",
+        "saved": "E-mail zapisany.",
+        "cleared": "E-mail usunięty.",
+        "invalidEmail": "Podaj poprawny adres e-mail."
+      },
+      "models": {
+        "loadFailed": "Nie udało się wczytać katalogu modeli. Spróbuj ponownie.",
+        "failedToLoadCatalog": "Nie udało się wczytać katalogu modeli",
+        "refreshing": "Odświeżanie...",
+        "refreshCatalog": "Odśwież katalog",
+        "noModels": "Brak dostępnych modeli.",
+        "default": {
+          "context": "Kontekst {size} tokenów",
+          "price": "{currency} {input} / 1M wejścia · {output} / 1M wyjścia",
+          "priceUnknown": "Katalog nie niesie ceny dla tego modelu."
+        },
+        "catalogue": {
+          "title": "Katalog modeli",
+          "description": "Każdy dostępny dostawca, rozmiar jego kontekstu i koszt miliona tokenów.",
+          "providerCount": "{count, plural, one {# dostawca} other {# dostawców}}",
+          "columns": {
+            "model": "Model",
+            "provider": "Dostawca",
+            "context": "Kontekst",
+            "input": "Wejście / 1M",
+            "output": "Wyjście / 1M",
+            "probe": "Test runtime"
+          },
+          "empty": "Na tym wdrożeniu nie skonfigurowano modeli.",
+          "local": "Lokalny",
+          "hosted": "Zdalny",
+          "test": "Testuj",
+          "testing": "Testowanie...",
+          "ok": "ok · {ms} ms",
+          "noKey": "brak klucza",
+          "failed": "test się nie powiódł"
+        },
+        "local": {
+          "label": "Lokalny Ollama",
+          "description": "Uruchom model na tej maszynie zamiast u dostawcy.",
+          "install": "Zainstaluj Ollama, a potem pobierz model:",
+          "env": "Wskaż API na ten adres:"
+        },
+        "perTask": {
+          "title": "Model na zadanie",
+          "description": "Każde zadanie może działać na innym modelu. Klucze zostają na serwerze.",
+          "needsEmail": "Ustaw e-mail w Tożsamości, aby włączyć modele na zadanie.",
+          "loading": "Wczytywanie preferencji...",
+          "loadFailed": "Nie udało się wczytać preferencji.",
+          "selectBoth": "Wybierz dostawcę i model.",
+          "saved": "Preferencja modelu zapisana.",
+          "failedToSave": "Nie udało się zapisać preferencji modelu.",
+          "resetToDefault": "Przywróć domyślne ustawienie systemowe.",
+          "failedToReset": "Nie udało się przywrócić ustawienia systemowego.",
+          "systemDefault": "Domyślne systemowe",
+          "provider": "Dostawca",
+          "model": "Model",
+          "save": "Zapisz",
+          "reset": "Przywróć",
+          "saving": "Zapisywanie...",
+          "context": "Kontekst {size} tokenów",
+          "contextUnknown": "Katalog nie niesie rozmiaru kontekstu dla tego modelu.",
+          "price": "{currency} {input} / 1M wejścia · {output} / 1M wyjścia",
+          "priceUnknown": "Katalog nie niesie ceny dla tego modelu."
+        }
+      }
     },
     "tools": {
       "title": "Narzędzia",
