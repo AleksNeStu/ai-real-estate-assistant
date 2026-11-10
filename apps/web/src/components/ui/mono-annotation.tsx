@@ -33,7 +33,10 @@ export interface MonoAnnotationProps {
 
 export function MonoAnnotation({ children, tone = 'neutral', className }: MonoAnnotationProps) {
   return (
-    <LedgerMonoAnnotation className={cn(TONE_CLASS[tone], className)}>
+    <LedgerMonoAnnotation
+      data-testid="mono-annotation"
+      className={cn(TONE_CLASS[tone], className)}
+    >
       {children}
     </LedgerMonoAnnotation>
   );

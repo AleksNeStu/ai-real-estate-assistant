@@ -85,6 +85,7 @@ export function ToolCard({
 
   return (
     <div
+      data-testid="tool-card"
       className={cn(
         'flex flex-col overflow-hidden rounded-lg border border-border bg-background',
         className

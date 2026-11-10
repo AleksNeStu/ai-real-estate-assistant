@@ -22,7 +22,7 @@ export interface StatTileProps {
 
 export function StatTile({ value, label, hint, className }: StatTileProps) {
   return (
-    <div className={cn('flex flex-col gap-1', className)}>
+    <div data-testid="stat-tile" className={cn('flex flex-col gap-1', className)}>
       <span className="font-mono text-h3 font-semibold text-foreground">{value}</span>
       <span className="text-annot text-muted-foreground">{label}</span>
       {hint ? <span className="font-mono text-annot text-muted-foreground">{hint}</span> : null}

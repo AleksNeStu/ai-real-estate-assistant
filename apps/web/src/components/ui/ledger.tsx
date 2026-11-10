@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -37,12 +37,16 @@ export function LedgerRow({
 export function MonoAnnotation({
   className,
   children,
+  ...rest
 }: {
   className?: string;
   children: ReactNode;
-}) {
+} & HTMLAttributes<HTMLSpanElement>) {
   return (
-    <span className={cn('font-mono text-[12px] leading-4 text-muted-foreground', className)}>
+    <span
+      className={cn('font-mono text-[12px] leading-4 text-muted-foreground', className)}
+      {...rest}
+    >
       {children}
     </span>
   );
