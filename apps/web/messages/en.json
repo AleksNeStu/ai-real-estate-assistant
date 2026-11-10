@@ -118,7 +118,8 @@
       "emailLabel": "Email",
       "submit": "Send reset link",
       "backToLogin": "Back to sign in",
-      "noMailNote": "In demo mode this deployment sends no mail: the link is printed in the API log instead of being mailed.",
+      "noMailNote": "This deployment sends no e-mail: the reset link is printed in the API log instead of being mailed.",
+      "resetSentNoMail": "This deployment sends no e-mail: the reset link is printed in the API log instead of being mailed.",
       "checkEmail": "Check your email",
       "resetSent": "We've sent a password reset link to your email address.",
       "checkInbox": "Please check your inbox for the reset link.",
@@ -2594,7 +2595,7 @@
       "title": "Market Trends",
       "description": "Price history, listing volume and market indicators per city, and any two areas side by side.",
       "scope": "{city} · {months} months back",
-      "scope.allCities": "all cities",
+      "scopeAllCities": "all cities",
       "chartCaption": "{months} months · {interval}",
       "errors": {
         "load": "Failed to load market data"

@@ -118,7 +118,7 @@ export default function MarketTrendsPage() {
   }, [trends]);
 
   const scope = t('scope', {
-    city: city || t('scope.allCities'),
+    city: city || t('scopeAllCities'),
     months: monthsBack,
   });
   const chartCaption = t('chartCaption', {

@@ -251,7 +251,8 @@
       "emailLabel": "E-mail",
       "submit": "Wyślij link resetujący",
       "backToLogin": "Wróć do logowania",
-      "noMailNote": "W trybie demo ta instalacja nie wysyła poczty: link trafia do logu API zamiast do skrzynki.",
+      "noMailNote": "Ta instalacja nie wysyła e-maili: link do resetu hasła trafia do logu API zamiast do skrzynki.",
+      "resetSentNoMail": "Ta instalacja nie wysyła e-maili: link do resetu hasła trafia do logu API zamiast do skrzynki.",
       "checkEmail": "Sprawdź swoją skrzynkę",
       "resetSent": "Wysłaliśmy link do resetowania hasła na Twój adres email.",
       "checkInbox": "Sprawdź skrzynkę odbiorczą, aby znaleźć link resetujący.",
@@ -2594,7 +2595,7 @@
       "title": "Trendy rynkowe",
       "description": "Historia cen, wolumen ofert i wskaźniki rynku dla miasta oraz dowolne dwa obszary obok siebie.",
       "scope": "{city} · {months} miesięcy wstecz",
-      "scope.allCities": "wszystkie miasta",
+      "scopeAllCities": "wszystkie miasta",
       "chartCaption": "{months} miesięcy · {interval}",
       "errors": {
         "load": "Nie udało się wczytać danych rynkowych"
