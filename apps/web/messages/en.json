@@ -3941,6 +3941,13 @@
       "5": "Compare mortgage options for 400k",
       "6": "Pet-friendly rentals under 3000 PLN/mo"
     },
+    "demo": {
+      "title": "Six seconds of the demo.",
+      "body": "The landing, the search with its results and the assistant answering with its sources — filmed on the live deployment.",
+      "play": "Play the demo",
+      "posterAlt": "The landing of the demo, with its search and its assistant",
+      "clipAlt": "Six seconds of the demo: the landing, the search and the assistant answering"
+    },
     "features": {
       "title": "One assistant for the whole property question.",
       "body": "Each line opens the part of the demo it describes. All six work without an account.",

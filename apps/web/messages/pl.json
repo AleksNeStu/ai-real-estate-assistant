@@ -3941,6 +3941,13 @@
       "5": "Porównaj opcje kredytu dla 400 tys.",
       "6": "Wynajem przyjazny zwierzętom poniżej 3000 PLN/mies."
     },
+    "demo": {
+      "title": "Sześć sekund demo.",
+      "body": "Landing, wyszukiwanie z wynikami i asystent odpowiadający ze źródłami — nagrane na działającym wdrożeniu.",
+      "play": "Odtwórz demo",
+      "posterAlt": "Landing demo z wyszukiwarką i asystentem",
+      "clipAlt": "Sześć sekund demo: landing, wyszukiwanie i odpowiedź asystenta"
+    },
     "features": {
       "title": "Jeden asystent dla całego pytania o nieruchomości.",
       "body": "Każdy punkt otwiera część demo, którą opisuje. Wszystkie sześć działają bez konta.",

@@ -34,9 +34,14 @@ $F -loop 1 -i "$FRAMES/1-landing.png" -loop 1 -i "$FRAMES/2-search.png" -loop 1 
 $F -i "$OUT/demo-6s.mp4" -vf "fps=10,scale=560:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=48:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=3:diff_mode=rectangle" -loop 0 "$OUT/demo-6s.gif"
 
 # The poster is the frame the landing shows before the play button, and the
-# still that represents the clip where motion is not possible - the landing
-# scene, which is the densest frame of the three.
-$F -ss 1.0 -i "$OUT/demo-6s.mp4" -frames:v 1 -q:v 3 "$OUT/poster.png"
+# still that represents the clip where motion is not possible - the first
+# frame of the clip, the landing scene.
+#
+# It is taken from the source PNG and not from the MP4: the MP4 carries the
+# H.264 noise of the encode, and re-encoding that noise into a PNG triples
+# the file (330 kB against 101 kB). The first frame of the clip is this frame
+# - the zoom starts at 1.0 - so the poster is the clip, lossless.
+cp "$FRAMES/1-landing.png" "$OUT/poster.png"
 
 for f in demo-6s.mp4 demo-6s.gif poster.png; do
   printf '%-16s %8s bytes\n' "$f" "$(stat -c%s "$OUT/$f")"

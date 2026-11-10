@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { CompareTable } from '@/components/landing/compare-table';
 import { DataCoverage } from '@/components/landing/data-coverage';
+import { DemoSection } from '@/components/landing/demo-section';
 import { ExitCards } from '@/components/landing/exit-cards';
 import { Faq } from '@/components/landing/faq';
 import { LandingFooter } from '@/components/landing/footer';
@@ -31,6 +32,7 @@ export default async function Home({
   return (
     <div className="flex flex-col">
       <Hero locale={locale} />
+      <DemoSection locale={locale} />
       <FeatureLedger locale={locale} />
       <DataCoverage />
 

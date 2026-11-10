@@ -12,7 +12,10 @@ repos:
       - id: check-added-large-files
         # The demo clip is a published material: a six-second MP4 and the GIF
         # the README inlines. They are binaries on purpose, not build residue.
-        exclude: ^apps/api/docs/api/openapi\.json$|^assets/clips/
+        # The same clip is served to the web app from apps/web/public/clips,
+        # and the design reference's screenshots live in assets/design - both
+        # are published materials as well.
+        exclude: ^apps/api/docs/api/openapi\.json$|^assets/clips/|^apps/web/public/clips/|^assets/design/
       - id: check-illegal-windows-names
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
