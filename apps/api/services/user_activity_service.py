@@ -12,7 +12,7 @@ import csv
 import hashlib
 import logging
 from dataclasses import dataclass, field
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from io import StringIO
 from typing import Any, Optional
 
@@ -22,6 +22,35 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db.models import SearchEvent, SearchResultInteraction, UserActivityEvent
 
 logger = logging.getLogger(__name__)
+
+
+def _dialect_name(session: AsyncSession) -> str:
+    """The name of the database dialect behind a session."""
+    try:
+        return session.get_bind().dialect.name
+    except Exception:  # pragma: no cover - an unbound session
+        return "sqlite"
+
+
+def _bucket_date(moment: datetime, interval: str) -> date:
+    """The first day of the calendar period a moment falls in.
+
+    Day buckets are the day itself, week buckets the Monday of that week,
+    month buckets the first of that month - the same three rules the SQL
+    expression applies, so both sides of the comparison agree.
+    """
+    if interval == "month":
+        return moment.date().replace(day=1)
+    if interval == "week":
+        return moment.date() - timedelta(days=moment.date().weekday())
+    return moment.date()
+
+
+def _next_month(first: date) -> date:
+    """The first day of the month after the one that starts on `first`."""
+    if first.month == 12:
+        return date(first.year + 1, 1, 1)
+    return date(first.year, first.month + 1, 1)
 
 
 def hash_user_id(user_id: str) -> str:
@@ -76,6 +105,23 @@ class UserActivityService:
             session: Database session
         """
         self.session = session
+
+    def _bucket_expression(self, column: Any, interval: str) -> Any:
+        """An SQL expression that buckets a timestamp into a calendar period.
+
+        PostgreSQL has `date_trunc`; SQLite does not. Both sides are asked
+        for the same 'YYYY-MM-DD' key - the first day of the day, week or
+        month the timestamp falls in - so the rows bucket the same way on
+        either database and the Python side can compare them as plain dates.
+        """
+        if _dialect_name(self.session) == "postgresql":
+            return func.to_char(func.date_trunc(interval, column), "YYYY-MM-DD")
+        if interval == "month":
+            return func.strftime("%Y-%m-01", column)
+        if interval == "week":
+            # The Monday of the week, like PostgreSQL's date_trunc('week').
+            return func.strftime("%Y-%m-%d", column, "weekday 0", "-6 days")
+        return func.strftime("%Y-%m-%d", column)
 
     async def get_activity_summary(
         self,
@@ -315,21 +361,21 @@ class UserActivityService:
             List of {date, searches, views, clicks, tool_uses, exports} dicts
         """
         # Get search counts by day
-        date_trunc = func.date_trunc("day", SearchEvent.search_timestamp).label("day")
+        day_key = self._bucket_expression(SearchEvent.search_timestamp, "day").label("day")
         searches_query = (
-            select(date_trunc, func.count(SearchEvent.id).label("count"))
+            select(day_key, func.count(SearchEvent.id).label("event_count"))
             .where(
                 and_(
                     SearchEvent.search_timestamp >= period_start,
                     SearchEvent.search_timestamp < period_end,
                 )
             )
-            .group_by(date_trunc)
-            .order_by(date_trunc)
+            .group_by(day_key)
+            .order_by(day_key)
         )
 
         result = await self.session.execute(searches_query)
-        search_by_day = {row.day: row.count for row in result.all()}
+        search_by_day = {key: int(count) for key, count in result.all()}
 
         # Build daily summary
         daily_counts = []
@@ -338,16 +384,11 @@ class UserActivityService:
 
         while current < end:
             day_str = current.isoformat()
-            search_count = 0
-            for day_key, count_val in search_by_day.items():
-                if day_key and day_key.date() == current:
-                    search_count = int(count_val)  # type: ignore[call-overload]
-                    break
 
             daily_counts.append(
                 {
                     "date": day_str,
-                    "searches": search_count,
+                    "searches": search_by_day.get(day_str, 0),
                 }
             )
             current += timedelta(days=1)
@@ -379,53 +420,42 @@ class UserActivityService:
 
         trends = []
 
-        # Determine truncation function based on interval
-        if interval == "month":
-            trunc = func.date_trunc("month", SearchEvent.search_timestamp)
-            delta = timedelta(days=30)
-        elif interval == "week":
-            trunc = func.date_trunc("week", SearchEvent.search_timestamp)
-            delta = timedelta(weeks=1)
-        else:  # day
-            trunc = func.date_trunc("day", SearchEvent.search_timestamp)
-            delta = timedelta(days=1)
+        # The bucket the rows fall into, and the step the buckets advance by.
+        bucket = self._bucket_expression(SearchEvent.search_timestamp, interval)
 
         # Get searches per interval
         search_query = (
-            select(trunc.label("period"), func.count(SearchEvent.id).label("count"))
+            select(bucket.label("period"), func.count(SearchEvent.id).label("event_count"))
             .where(
                 and_(
                     SearchEvent.search_timestamp >= period_start,
                     SearchEvent.search_timestamp < period_end,
                 )
             )
-            .group_by(trunc)
-            .order_by(trunc)
+            .group_by(bucket)
+            .order_by(bucket)
         )
 
         result = await self.session.execute(search_query)
-        searches_by_period = {row.period: row.count for row in result.all()}
+        searches_by_period = {key: int(count) for key, count in result.all()}
 
-        # Generate trend points
-        current = period_start
-        while current < period_end:
-            period_end_current = current + delta
-            period_str = current.date().isoformat()
-
-            # Get count for this period (find closest match)
-            count = 0
-            for period_date, period_count in searches_by_period.items():
-                if period_date and current <= period_date < period_end_current:
-                    count = int(period_count)
-                    break
+        # Generate trend points, one per calendar bucket.
+        current = _bucket_date(period_start, interval)
+        while current < period_end.date():
+            key = current.isoformat()
 
             trends.append(
                 ActivityTrendPoint(
-                    date=period_str,
-                    searches=count,
+                    date=key,
+                    searches=searches_by_period.get(key, 0),
                 )
             )
-            current = period_end_current
+            if interval == "month":
+                current = _next_month(current)
+            elif interval == "week":
+                current += timedelta(weeks=1)
+            else:
+                current += timedelta(days=1)
 
         return trends
 

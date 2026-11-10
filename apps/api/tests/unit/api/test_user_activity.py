@@ -48,7 +48,6 @@ class TestUserActivityAPI:
         test_app.dependency_overrides.clear()
 
     @pytest.mark.asyncio
-    @pytest.mark.xfail(reason="get_activity_summary uses SearchEvent with date_trunc (PostgreSQL)")
     async def test_get_summary_success(self, test_client):
         """Test GET /user-activity/summary returns summary."""
         response = await test_client.get("/api/v1/user-activity/summary")
@@ -62,7 +61,6 @@ class TestUserActivityAPI:
         assert "total_tool_uses" in data
 
     @pytest.mark.asyncio
-    @pytest.mark.xfail(reason="get_activity_summary uses SearchEvent with date_trunc (PostgreSQL)")
     async def test_get_summary_with_date_range(self, test_client):
         """Test GET /user-activity/summary with date range."""
         params = {
@@ -74,7 +72,6 @@ class TestUserActivityAPI:
         assert response.status_code == status.HTTP_200_OK
 
     @pytest.mark.asyncio
-    @pytest.mark.xfail(reason="get_activity_trends uses SearchEvent with date_trunc (PostgreSQL)")
     async def test_get_trends_success(self, test_client):
         """Test GET /user-activity/trends returns trends."""
         response = await test_client.get("/api/v1/user-activity/trends")
@@ -86,7 +83,6 @@ class TestUserActivityAPI:
         assert isinstance(data["trends"], list)
 
     @pytest.mark.asyncio
-    @pytest.mark.xfail(reason="get_activity_trends uses SearchEvent with date_trunc (PostgreSQL)")
     async def test_get_trends_with_interval(self, test_client):
         """Test GET /user-activity/trends with interval parameter."""
         response = await test_client.get(
@@ -190,7 +186,6 @@ class TestUserActivityAdminAPI:
         test_app.dependency_overrides.clear()
 
     @pytest.mark.asyncio
-    @pytest.mark.xfail(reason="get_activity_summary uses SearchEvent with date_trunc (PostgreSQL)")
     async def test_admin_summary_success(self, admin_client):
         """Test GET /user-activity/admin/summary for admin.
 
@@ -211,7 +206,6 @@ class TestUserActivityAdminAPI:
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     @pytest.mark.asyncio
-    @pytest.mark.xfail(reason="get_activity_trends uses SearchEvent with date_trunc (PostgreSQL)")
     async def test_admin_trends_success(self, admin_client):
         """Test GET /user-activity/admin/trends for admin.
 
@@ -341,7 +335,6 @@ class TestUserActivityAPIInputValidation:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
     @pytest.mark.asyncio
-    @pytest.mark.xfail(reason="get_activity_trends uses SearchEvent with date_trunc (PostgreSQL)")
     async def test_trends_valid_intervals(self, test_client):
         """Test GET /user-activity/trends with valid intervals.
 
@@ -409,7 +402,6 @@ class TestUserActivityAPIPrivacy:
             assert "..." in content or len(content.split("\n")) <= 2  # Header only or truncated
 
     @pytest.mark.asyncio
-    @pytest.mark.xfail(reason="get_activity_summary uses SearchEvent with date_trunc (PostgreSQL)")
     async def test_summary_no_raw_user_ids(self, test_client):
         """Test summary does not expose raw user IDs.
 

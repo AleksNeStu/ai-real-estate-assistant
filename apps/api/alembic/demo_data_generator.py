@@ -607,6 +607,7 @@ class ComprehensiveDemoDataGenerator:
             user = User(
                 id=str(uuid.uuid4()),
                 email=f"demo.{role}{i + 1}@realestate.demo",
+                role=role,
                 is_active=True,
                 is_verified=True,
                 created_at=datetime.now(UTC) - timedelta(days=random.randint(1, 365)),

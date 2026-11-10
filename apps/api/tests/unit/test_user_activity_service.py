@@ -1,9 +1,4 @@
-"""Unit tests for UserActivityService (Task #82).
-
-Note: The UserActivityService integrates with SearchEvent which uses
-PostgreSQL-specific features like date_trunc. These tests focus on
-the UserActivityEvent functionality which works with SQLite.
-"""
+"""Unit tests for UserActivityService (Task #82)."""
 
 import hashlib
 from datetime import UTC, datetime, timedelta
@@ -11,7 +6,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from sqlalchemy import select
 
-from db.models import UserActivityEvent
+from db.models import RankingConfig, SearchEvent, UserActivityEvent
 from services.user_activity_service import (
     ActivityTrendPoint,
     UserActivityService,
@@ -72,14 +67,8 @@ class TestUserActivityService:
         assert event.duration_ms is None
 
     @pytest.mark.asyncio
-    @pytest.mark.xfail(reason="get_activity_summary uses SearchEvent with date_trunc (PostgreSQL)")
     async def test_get_activity_summary_returns_aggregated_data(self, activity_service, db_session):
-        """Test that get_activity_summary returns correct aggregations.
-
-        XFail: _get_event_counts_by_day uses SearchEvent with date_trunc.
-        The UserActivityEvent aggregation works but the function fails
-        when calling _get_event_counts_by_day.
-        """
+        """Test that get_activity_summary returns correct aggregations."""
         # Create tool use events
         await activity_service.track_event(
             "test-session-1",
@@ -150,16 +139,8 @@ class TestUserActivityService:
         assert events[0].event_type == "recent_tool_use"
 
     @pytest.mark.asyncio
-    @pytest.mark.xfail(
-        reason="get_activity_summary uses SearchEvent with date_trunc (PostgreSQL-only)"
-    )
     async def test_get_activity_summary_with_user_filter(self, activity_service, db_session):
-        """Test that get_activity_summary can filter by user.
-
-        XFail: This calls _get_event_counts_by_day which uses SearchEvent
-        with PostgreSQL's date_trunc. The user filtering part works,
-        but the function fails in SQLite.
-        """
+        """Test that get_activity_summary can filter by user."""
         user_id_1 = "user-1@example.com"
         user_id_2 = "user-2@example.com"
 
@@ -181,6 +162,69 @@ class TestUserActivityService:
         summary = await activity_service.get_activity_summary(user_id=user_id_2)
 
         assert summary.total_tool_uses == 1
+
+    @pytest.mark.asyncio
+    async def test_get_activity_trends_buckets_by_calendar_period(
+        self, activity_service, db_session
+    ):
+        """The trends land in calendar buckets on any database."""
+        config = RankingConfig(name="trend-test-config", description="trends")
+        db_session.add(config)
+        await db_session.flush()
+
+        # A Wednesday and the Thursday after it.
+        db_session.add(
+            SearchEvent(
+                session_id="trend-session",
+                ranking_config_id=config.id,
+                query="apartments in Krakow",
+                results_count=3,
+                processing_time_ms=12,
+                search_timestamp=datetime(2026, 11, 4, 9, 30, tzinfo=UTC),
+            )
+        )
+        db_session.add(
+            SearchEvent(
+                session_id="trend-session",
+                ranking_config_id=config.id,
+                query="apartments in Warsaw",
+                results_count=2,
+                processing_time_ms=9,
+                search_timestamp=datetime(2026, 11, 5, 18, 0, tzinfo=UTC),
+            )
+        )
+        await db_session.flush()
+
+        period_start = datetime(2026, 11, 1, 0, 0, tzinfo=UTC)
+        period_end = datetime(2026, 11, 8, 0, 0, tzinfo=UTC)
+
+        days = await activity_service.get_activity_trends(
+            period_start=period_start, period_end=period_end, interval="day"
+        )
+        assert {point.date: point.searches for point in days} == {
+            "2026-11-01": 0,
+            "2026-11-02": 0,
+            "2026-11-03": 0,
+            "2026-11-04": 1,
+            "2026-11-05": 1,
+            "2026-11-06": 0,
+            "2026-11-07": 0,
+        }
+
+        # The week starts on its Monday - both searches fall in the same one.
+        # 2026-11-01 is a Sunday, so the first bucket is the week before.
+        weeks = await activity_service.get_activity_trends(
+            period_start=period_start, period_end=period_end, interval="week"
+        )
+        assert {point.date: point.searches for point in weeks} == {
+            "2026-10-26": 0,
+            "2026-11-02": 2,
+        }
+
+        months = await activity_service.get_activity_trends(
+            period_start=period_start, period_end=period_end, interval="month"
+        )
+        assert {point.date: point.searches for point in months} == {"2026-11-01": 2}
 
     @pytest.mark.asyncio
     async def test_export_activity_csv_returns_valid_csv(self, activity_service, db_session):
