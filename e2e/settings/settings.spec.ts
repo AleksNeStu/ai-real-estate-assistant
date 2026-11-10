@@ -245,9 +245,12 @@ test.describe('Settings Page', () => {
 
     await page.goto('/settings');
 
-    // Wait for notifications section to be visible
-    await page.getByRole('tab', { name: /^notifications$/i }).click();
-    await expect(page.getByRole('heading', { name: /^notifications$/i })).toBeVisible({
+    // Wait for notifications section to be visible. The tab carries the state
+    // of the panel it controls; the panel's own headings name its sections
+    // ("Notification Types"), so the tab is the handle.
+    const notificationsTab = page.getByRole('tab', { name: /^notifications$/i });
+    await notificationsTab.click();
+    await expect(notificationsTab).toHaveAttribute('aria-selected', 'true', {
       timeout: 15000,
     });
 
@@ -399,9 +402,12 @@ test.describe('Settings Page', () => {
 
     await page.goto('/settings');
 
-    // Wait for notifications section
-    await page.getByRole('tab', { name: /^notifications$/i }).click();
-    await expect(page.getByRole('heading', { name: /^notifications$/i })).toBeVisible({
+    // Wait for notifications section. The tab carries the state of the panel
+    // it controls; the panel's own headings name its sections, so the tab is
+    // the handle.
+    const notificationsTab = page.getByRole('tab', { name: /^notifications$/i });
+    await notificationsTab.click();
+    await expect(notificationsTab).toHaveAttribute('aria-selected', 'true', {
       timeout: 15000,
     });
 

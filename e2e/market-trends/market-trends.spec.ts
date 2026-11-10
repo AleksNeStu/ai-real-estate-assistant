@@ -64,11 +64,12 @@ test.describe('Market Trends', () => {
       await marketPage.navigate();
       await marketPage.waitForLoad();
 
-      // Verify chart titles
+      // Verify chart titles. The match is exact: the page description reads
+      // "listing volume" too, and a loose match collects both.
       await expect(authenticatedPage.getByText('Average and Median Prices')).toBeVisible({
         timeout: 10000,
       });
-      await expect(authenticatedPage.getByText('Listing Volume')).toBeVisible();
+      await expect(authenticatedPage.getByText('Listing Volume', { exact: true })).toBeVisible();
     });
 
     test('should display hottest and coldest districts', async ({ authenticatedPage }) => {

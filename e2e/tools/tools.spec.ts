@@ -249,11 +249,12 @@ test.describe('Tools', () => {
       await toolsPage.fillAndAnalyzeNeighborhood({ propertyId: 'prop-001' });
       await expect(toolsPage.neighborhoodResult).toBeVisible({ timeout: 10000 });
 
-      // Verify score categories are shown
-      await expect(authenticatedPage.getByText('Safety')).toBeVisible();
-      await expect(authenticatedPage.getByText('Schools')).toBeVisible();
-      await expect(authenticatedPage.getByText('Amenities')).toBeVisible();
-      await expect(authenticatedPage.getByText('Walkability')).toBeVisible();
+      // Verify score categories are shown. The match is exact: the raw JSON of
+      // the tool output carries the same words, and a loose match collects it.
+      await expect(authenticatedPage.getByText('Safety', { exact: true })).toBeVisible();
+      await expect(authenticatedPage.getByText('Schools', { exact: true })).toBeVisible();
+      await expect(authenticatedPage.getByText('Amenities', { exact: true })).toBeVisible();
+      await expect(authenticatedPage.getByText('Walkability', { exact: true })).toBeVisible();
       await expect(authenticatedPage.getByText('Green Space')).toBeVisible();
     });
   });

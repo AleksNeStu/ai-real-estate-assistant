@@ -145,10 +145,9 @@ test.describe('Integration Flows', () => {
       // Navigate to favorites page
       await page.goto('/favorites');
 
-      // Verify favorite is displayed
-      const favoriteCard = page
-        .locator('[data-testid="property-card"], .favorite-card, .property-card')
-        .first();
+      // Verify favorite is displayed. The shelf of saved listings marks each
+      // one with its own handle.
+      const favoriteCard = page.getByTestId('favorite-card').first();
       await expect(favoriteCard).toBeVisible({ timeout: 5000 });
     });
   });
@@ -177,8 +176,9 @@ test.describe('Integration Flows', () => {
       await chatInput.fill('Find me a 2-bedroom apartment in Berlin');
       await page.getByTestId('chat-send').click();
 
-      // 3. Wait for response
-      const assistantMessage = page.locator('div.w-full.items-start.bg-background').first();
+      // 3. Wait for response. The turn of the conversation carries its own
+      // handle, so the suite does not depend on the classes of the bubble.
+      const assistantMessage = page.getByTestId('chat-assistant-message').first();
       await expect(assistantMessage).toBeVisible({ timeout: 15000 });
     });
   });
@@ -426,19 +426,24 @@ test.describe('Integration Flows', () => {
       await page.goto('/leads');
 
       // 2. Verify dashboard loads with statistics
-      await expect(page.getByRole('heading', { name: /lead dashboard/i })).toBeVisible({
+      await expect(page.getByRole('heading', { name: /^leads$/i })).toBeVisible({
         timeout: 10000,
       });
 
-      // 3. Verify leads are displayed with scores
-      await expect(page.getByText('High Value Lead', { exact: true })).toBeVisible({
+      // 3. Verify leads are displayed with scores. The lead stands in the
+      // column of its status; the rail beside the board lists the high-value
+      // ones a second time.
+      await expect(
+        page.locator('section[aria-label="New"]').getByText('High Value Lead', { exact: true })
+      ).toBeVisible({
         timeout: 10000,
       });
       await expect(page.locator('text=92').first()).toBeVisible(); // Score badge
 
-      // 4. Verify statistics cards
-      await expect(page.getByRole('heading', { name: /total leads/i })).toBeVisible();
-      await expect(page.getByText('100', { exact: true }).first()).toBeVisible();
+      // 4. Verify the statistics of the pipeline. The board states them in
+      // mono annotations, not in cards with headings.
+      await expect(page.getByText('100 leads')).toBeVisible();
+      await expect(page.getByText('average score 55.5')).toBeVisible();
     });
 
     test('should filter leads by status @integration', async ({ page }) => {
@@ -527,15 +532,16 @@ test.describe('Integration Flows', () => {
 
       await page.goto('/leads');
 
-      // Verify tab navigation exists
-      await expect(page.getByRole('tab', { name: /all leads/i })).toBeVisible({ timeout: 10000 });
-      await expect(page.getByRole('tab', { name: /new/i })).toBeVisible();
-
-      // Click on New tab to filter
-      await page.getByRole('tab', { name: /new/i }).click();
+      // The board groups the leads by status - one column per stage, each
+      // column named by its status.
+      const newColumn = page.locator('section[aria-label="New"]');
+      await expect(newColumn).toBeVisible({ timeout: 10000 });
 
       // Should show only new leads
-      await expect(page.locator('text=New Lead')).toBeVisible({ timeout: 5000 });
+      await expect(newColumn.getByText('New Lead', { exact: true })).toBeVisible({
+        timeout: 5000,
+      });
+      await expect(newColumn.getByText('Qualified Lead', { exact: true })).toHaveCount(0);
     });
 
     test('should recalculate lead scores @integration', async ({ page }) => {
