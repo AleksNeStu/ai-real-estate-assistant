@@ -30,8 +30,11 @@ import type { LeadStatus, LeadWithScore, ScoringStatistics } from '@/lib/types';
  * the board is for reading, the file is for working.
  */
 
-/** How many leads the board asks for in one page. */
-const BOARD_PAGE_SIZE = 200;
+/** How many leads the board asks for in one page - the API's own maximum. */
+const BOARD_PAGE_SIZE = 100;
+
+/** How many pages the board walks before it stops and says so. */
+const BOARD_MAX_PAGES = 10;
 
 export default function LeadsPage() {
   const t = useTranslations('pages.leads');
@@ -53,13 +56,27 @@ export default function LeadsPage() {
       setLoading(true);
       setError(null);
 
-      const [leadsResponse, highValueResponse] = await Promise.all([
+      const [firstPage, highValueResponse] = await Promise.all([
         getLeads({ page: 1, page_size: BOARD_PAGE_SIZE, sort_by: 'score', sort_order: 'desc' }),
         getHighValueLeads(HIGH_VALUE_THRESHOLD, 10),
       ]);
 
-      setLeads(leadsResponse.items);
-      setTotal(leadsResponse.total);
+      // The API serves one page at a time, so the board walks the rest of
+      // the pages itself - the funnel is only true if it sees every lead.
+      const pageCount = Math.min(firstPage.total_pages, BOARD_MAX_PAGES);
+      const restPages = await Promise.all(
+        Array.from({ length: Math.max(0, pageCount - 1) }, (_, index) =>
+          getLeads({
+            page: index + 2,
+            page_size: BOARD_PAGE_SIZE,
+            sort_by: 'score',
+            sort_order: 'desc',
+          }),
+        ),
+      );
+
+      setLeads([firstPage, ...restPages].flatMap((page) => page.items));
+      setTotal(firstPage.total);
       setHighValueLeads(highValueResponse);
 
       // The scoring statistics are an administrator's view of the model.

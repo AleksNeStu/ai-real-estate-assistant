@@ -52,16 +52,52 @@ export interface CityMarketSummary {
 }
 
 /**
+ * The name of a city in a form two spellings can be compared by.
+ *
+ * The catalogue writes 'Kraków', the route's own catalogue writes 'Krakow',
+ * and both are the same city.
+ */
+function cityKey(name: string): string {
+  // The combining marks the Polish letters carry, so that the two
+  // spellings of a Polish city are one name.
+  const combining = new RegExp('[\u0300-\u036f]', 'g');
+  return name.normalize('NFD').replace(combining, '').toLowerCase().trim();
+}
+
+/**
+ * The listings of one city out of a search that answered with more.
+ *
+ * The search answers by meaning, so a query for one city can answer with
+ * listings of another. A number taken from such an answer belongs to the
+ * search, not to the city - so the listings are counted by the city they
+ * are actually in.
+ */
+export function listingsInCity(
+  city: CityCatalogueEntry,
+  results: SearchResultItem[]
+): SearchResultItem[] {
+  const wanted = new Set([cityKey(city.name), cityKey(city.label)]);
+  return results.filter((item) => {
+    const name = item.property?.city;
+    return typeof name === 'string' && wanted.has(cityKey(name));
+  });
+}
+
+/**
  * What one city is worth, computed from the listings it has.
  *
  * Every number here comes out of the listings themselves: the average, the
  * smallest and the largest price, and the price per square metre. A city the
  * catalogue holds nothing for gets nulls, not zeroes - a zero average would
  * read as "the market is worth nothing", and the difference matters.
+ *
+ * The count of the listings is the catalogue's own when it is given: the
+ * search answers with what it found, not with what the city holds.
  */
 export function summariseCity(
   city: string,
-  results: SearchResultItem[]
+  results: SearchResultItem[],
+  listingCount?: number
 ): CityMarketSummary {
   const entry = CITY_CATALOGUE.find((c) => c.name === city) ?? {
     name: city,
@@ -91,7 +127,7 @@ export function summariseCity(
     city: entry.name,
     label: entry.label,
     country: results[0]?.property?.country ?? 'Poland',
-    listingCount: results.length,
+    listingCount: listingCount ?? results.length,
     avgPrice: prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : null,
     minPrice: prices.length ? Math.min(...prices) : null,
     maxPrice: prices.length ? Math.max(...prices) : null,
@@ -109,11 +145,18 @@ export function summariseCity(
  *
  * Cities the catalogue holds nothing for are kept, with null numbers - the
  * route says what is missing as plainly as what is there.
+ *
+ * The counts are the catalogue's own, keyed by the name the catalogue writes
+ * the city with.
  */
 export function summariseCities(
-  listingsByCity: Record<string, SearchResultItem[]>
+  listingsByCity: Record<string, SearchResultItem[]>,
+  counts: Record<string, number> = {}
 ): CityMarketSummary[] {
-  return CITY_CATALOGUE.map((city) => summariseCity(city.name, listingsByCity[city.name] ?? []));
+  return CITY_CATALOGUE.map((city) => {
+    const count = counts[city.name] ?? counts[city.label];
+    return summariseCity(city.name, listingsByCity[city.name] ?? [], count);
+  });
 }
 
 /**

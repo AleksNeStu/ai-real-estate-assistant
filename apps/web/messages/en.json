@@ -3229,6 +3229,11 @@
           "none": "This view is not available for your account.",
           "disclaimer": "AI-generated from the team's numbers · verify before acting"
         }
+      },
+      "agentsOnly": {
+        "eyebrow": "/agent-analytics · an agent's view",
+        "title": "An agent's view",
+        "description": "This page carries one agent's own numbers - leads, response time, conversions and goals. The account you are signed in with is not an agent account, so there is nothing here to show."
       }
     },
     "admin": {

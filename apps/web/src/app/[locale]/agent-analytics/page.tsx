@@ -10,8 +10,9 @@ import { AgentTrendChart } from '@/components/agents/analytics/agent-trend-chart
 import { AccountGate } from '@/components/shell/gate';
 import { MonoAnnotation } from '@/components/ui/mono-annotation';
 import { PageHeader } from '@/components/ui/page-header';
-import { ErrorState } from '@/components/ui/states';
+import { EmptyState, ErrorState } from '@/components/ui/states';
 import {
+  ApiError,
   getAgentMetrics,
   getAgentsNeedingSupport,
   getCoachingInsights,
@@ -73,6 +74,7 @@ export default function AgentAnalyticsPage() {
   const [support, setSupport] = useState<AgentNeedingSupport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [agentsOnly, setAgentsOnly] = useState(false);
 
   const period = PERIODS.find((entry) => entry.key === periodKey) ?? PERIODS[1];
 
@@ -112,7 +114,14 @@ export default function AgentAnalyticsPage() {
         });
     } catch (err) {
       console.error(t('errors.fetch'), err);
-      setError(t('errors.load'));
+      // The API keeps this view for agents and administrators. A signed-in
+      // account that is neither is not a failure - it is the wrong door, and
+      // the page says so instead of showing a broken one.
+      if (err instanceof ApiError && err.status === 403) {
+        setAgentsOnly(true);
+      } else {
+        setError(t('errors.load'));
+      }
     } finally {
       setLoading(false);
     }
@@ -247,6 +256,15 @@ export default function AgentAnalyticsPage() {
     () => trends.map((trend) => ({ period: trend.period, value: trend.deals_closed })),
     [trends]
   );
+
+  if (agentsOnly) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <MonoAnnotation>{t('agentsOnly.eyebrow')}</MonoAnnotation>
+        <EmptyState title={t('agentsOnly.title')} description={t('agentsOnly.description')} />
+      </div>
+    );
+  }
 
   if (error) {
     return (

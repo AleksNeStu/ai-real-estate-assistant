@@ -34,7 +34,9 @@ export function MarketIndicatorsPanel({
 }: MarketIndicatorsPanelProps) {
   const t = useTranslations('pages.marketTrends');
 
-  const change = indicators.avg_price_change_1y;
+  // The API sends null for a change it cannot compute, so the number is
+  // read the way it arrives - null and missing mean the same here.
+  const change = indicators.avg_price_change_1y ?? undefined;
   const trend = indicators.overall_trend;
   const trendTone =
     trend === 'rising' ? 'success' : trend === 'falling' ? 'destructive' : 'neutral';

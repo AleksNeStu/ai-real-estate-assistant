@@ -68,6 +68,19 @@ describe('MarketIndicatorsPanel', () => {
     expect(screen.getAllByText('—')).toHaveLength(2);
   });
 
+  it('has no change when the API sends null', () => {
+    render(
+      <MarketIndicatorsPanel
+        indicators={{ ...indicators, avg_price_change_1y: null }}
+        city="Krakow"
+      />
+    );
+
+    expect(screen.getByText('Change, 12 months')).toBeInTheDocument();
+    // A null is the API's way of saying it cannot compute the change.
+    expect(screen.getAllByText('—')).toHaveLength(2);
+  });
+
   it('has no price per m² when the trends carry none', () => {
     render(<MarketIndicatorsPanel indicators={indicators} city="Krakow" />);
 

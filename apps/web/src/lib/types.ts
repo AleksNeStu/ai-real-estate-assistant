@@ -835,10 +835,10 @@ export interface MarketTrends {
 export interface MarketIndicators {
   city?: string;
   overall_trend: 'rising' | 'falling' | 'stable';
-  avg_price_change_1m?: number;
-  avg_price_change_3m?: number;
-  avg_price_change_6m?: number;
-  avg_price_change_1y?: number;
+  avg_price_change_1m?: number | null;
+  avg_price_change_3m?: number | null;
+  avg_price_change_6m?: number | null;
+  avg_price_change_1y?: number | null;
   total_listings: number;
   new_listings_7d: number;
   price_drops_7d: number;

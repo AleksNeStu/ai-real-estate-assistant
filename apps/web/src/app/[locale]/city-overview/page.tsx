@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 
 import { searchProperties } from '@/lib/api';
+import { buildHeaders, getApiUrl } from '@/lib/api/client';
 import type { SearchResultItem } from '@/lib/types';
 import { MonoAnnotation } from '@/components/ui/mono-annotation';
 import { PageHeader } from '@/components/ui/page-header';
@@ -13,6 +14,7 @@ import { CityMarketLedger } from '@/components/market-trends/city-market-ledger'
 import { CityMarketDetail } from '@/components/market-trends/city-market-detail';
 import {
   CITY_CATALOGUE,
+  listingsInCity,
   priceScale,
   summariseCities,
 } from '@/components/market-trends/city-market-stats';
@@ -37,6 +39,7 @@ export default function CityOverviewPage() {
   const [loading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [listingsByCity, setListingsByCity] = useState<Record<string, SearchResultItem[]>>({});
+  const [counts, setCounts] = useState<Record<string, number>>({});
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
 
   useEffect(() => {
@@ -46,15 +49,33 @@ export default function CityOverviewPage() {
       setLoading(true);
       setHasError(false);
 
+      // The catalogue says how many listings each city holds. The searches
+      // below say what they cost - a search answers with what it found, so
+      // the two are read from their own sources.
+      const catalogue = fetch(`${getApiUrl()}/catalogue/stats`, {
+        headers: buildHeaders(),
+      })
+        .then((response) => (response.ok ? response.json() : null))
+        .then((data: { cities?: Array<{ name: string; count: number }> } | null) => {
+          const byName: Record<string, number> = {};
+          for (const city of data?.cities ?? []) {
+            byName[city.name] = city.count;
+          }
+          return byName;
+        })
+        .catch(() => ({}) as Record<string, number>);
+
       const results = await Promise.allSettled(
         CITY_CATALOGUE.map(async (city) => {
           const response = await searchProperties({
             query: `properties in ${city.name}`,
             limit: 100,
           });
-          return { city: city.name, results: response.results };
+          return { city, results: response.results };
         })
       );
+
+      const countsByName = await catalogue;
 
       if (cancelled) return;
 
@@ -63,15 +84,21 @@ export default function CityOverviewPage() {
 
       for (const result of results) {
         if (result.status === 'rejected') continue;
-        byCity[result.value.city] = result.value.results;
-        if (result.value.results.length > 0) covered += 1;
+        // A search answers by meaning, so it can answer with the listings of
+        // another city. Only the city's own listings are its listings.
+        const own = listingsInCity(result.value.city, result.value.results);
+        byCity[result.value.city.name] = own;
+        const count = countsByName[result.value.city.label] ?? countsByName[result.value.city.name];
+        if ((count ?? own.length) > 0) covered += 1;
       }
 
       setListingsByCity(byCity);
+      setCounts(countsByName);
       // The first city the catalogue actually holds is the one that opens.
-      const firstCovered = CITY_CATALOGUE.find(
-        (city) => (byCity[city.name] ?? []).length > 0
-      );
+      const firstCovered = CITY_CATALOGUE.find((city) => {
+        const count = countsByName[city.label] ?? countsByName[city.name];
+        return (count ?? (byCity[city.name] ?? []).length) > 0;
+      });
       setSelectedCity(firstCovered?.name ?? CITY_CATALOGUE[0].name);
       setHasError(covered === 0);
       setLoading(false);
@@ -83,7 +110,7 @@ export default function CityOverviewPage() {
     };
   }, []);
 
-  const cities = useMemo(() => summariseCities(listingsByCity), [listingsByCity]);
+  const cities = useMemo(() => summariseCities(listingsByCity, counts), [listingsByCity, counts]);
   const scale = useMemo(() => priceScale(cities), [cities]);
   const selected = useMemo(
     () => cities.find((city) => city.city === selectedCity) ?? null,

@@ -3229,6 +3229,11 @@
           "none": "Ten widok nie jest dostępny dla Twojego konta.",
           "disclaimer": "Wygenerowane z liczb zespołu · sprawdź, zanim zadziałasz"
         }
+      },
+      "agentsOnly": {
+        "eyebrow": "/agent-analytics · widok agenta",
+        "title": "Widok agenta",
+        "description": "Ta strona pokazuje własne liczby jednego agenta - leady, czas reakcji, konwersje i cele. Konto, na które się zalogowano, nie jest kontem agenta, więc nie ma tu czego pokazać."
       }
     },
     "admin": {

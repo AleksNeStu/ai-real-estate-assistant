@@ -23,6 +23,15 @@ jest.mock('@/components/shell/gate', () => ({
 }));
 
 jest.mock('@/lib/api', () => ({
+  ApiError: class ApiError extends Error {
+    status: number;
+
+    constructor(message: string, status: number) {
+      super(message);
+      this.name = 'ApiError';
+      this.status = status;
+    }
+  },
   getAgentMetrics: jest.fn(),
   getTeamComparison: jest.fn(),
   getPerformanceTrends: jest.fn(),
@@ -242,5 +251,20 @@ describe('AgentAnalyticsPage', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
     });
+  });
+
+  it('says the view belongs to an agent when the API refuses the account', async () => {
+    (api.getAgentMetrics as jest.Mock).mockRejectedValue(
+      new api.ApiError('Only agents and admins can access agent analytics', 403)
+    );
+
+    render(<AgentAnalyticsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("An agent's view")).toBeInTheDocument();
+    });
+
+    // The wrong door is not a failure - there is nothing to retry.
+    expect(screen.queryByRole('button', { name: /retry/i })).not.toBeInTheDocument();
   });
 });
