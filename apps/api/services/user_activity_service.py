@@ -16,7 +16,7 @@ from datetime import UTC, date, datetime, timedelta
 from io import StringIO
 from typing import Any, Optional
 
-from sqlalchemy import and_, desc, func, select
+from sqlalchemy import and_, desc, func, select, true
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import SearchEvent, SearchResultInteraction, UserActivityEvent
@@ -123,6 +123,28 @@ class UserActivityService:
             return func.strftime("%Y-%m-%d", column, "weekday 0", "-6 days")
         return func.strftime("%Y-%m-%d", column)
 
+    def _searches_of(self, user_id: Optional[str]) -> Any:
+        """The clause that narrows a search query to one account.
+
+        Without an account every search is in scope - that is the
+        administrator's view of the deployment.
+        """
+        if not user_id:
+            return true()
+        return SearchEvent.user_id == user_id
+
+    def _interactions_of(self, user_id: Optional[str]) -> Any:
+        """The clause that narrows an interaction query to one account.
+
+        An interaction belongs to the search that produced it, and the search
+        carries the account.
+        """
+        if not user_id:
+            return true()
+        return SearchResultInteraction.search_event_id.in_(
+            select(SearchEvent.id).where(SearchEvent.user_id == user_id)
+        )
+
     async def get_activity_summary(
         self,
         user_id: Optional[str] = None,
@@ -146,11 +168,19 @@ class UserActivityService:
 
         user_id_hash = hash_user_id(user_id) if user_id else None
 
+        # The searches, the views and the clicks belong to the account that
+        # asks: the summary is "your activity", not the deployment's. An
+        # administrator's view of the whole deployment asks without an
+        # account and keeps every row.
+        searches_of = self._searches_of(user_id)
+        interactions_of = self._interactions_of(user_id)
+
         # Get search metrics from SearchEvent
         search_query = select(func.count(SearchEvent.id)).where(
             and_(
                 SearchEvent.search_timestamp >= period_start,
                 SearchEvent.search_timestamp < period_end,
+                searches_of,
             )
         )
 
@@ -163,6 +193,7 @@ class UserActivityService:
                 SearchResultInteraction.interaction_timestamp >= period_start,
                 SearchResultInteraction.interaction_timestamp < period_end,
                 SearchResultInteraction.viewed.is_(True),
+                interactions_of,
             )
         )
         result = await self.session.execute(views_query)
@@ -174,6 +205,7 @@ class UserActivityService:
                 SearchResultInteraction.interaction_timestamp >= period_start,
                 SearchResultInteraction.interaction_timestamp < period_end,
                 SearchResultInteraction.clicked.is_(True),
+                interactions_of,
             )
         )
         result = await self.session.execute(clicks_query)
@@ -184,6 +216,7 @@ class UserActivityService:
             and_(
                 SearchEvent.search_timestamp >= period_start,
                 SearchEvent.search_timestamp < period_end,
+                searches_of,
             )
         )
         result = await self.session.execute(sessions_query)
@@ -194,6 +227,7 @@ class UserActivityService:
             and_(
                 SearchEvent.search_timestamp >= period_start,
                 SearchEvent.search_timestamp < period_end,
+                searches_of,
             )
         )
         result = await self.session.execute(avg_time_query)
@@ -242,10 +276,10 @@ class UserActivityService:
         top_tools = await self._get_top_tools(user_id_hash, period_start, period_end)
 
         # Get top search cities (from SearchEvent.filters)
-        top_search_cities = await self._get_top_search_cities(period_start, period_end)
+        top_search_cities = await self._get_top_search_cities(period_start, period_end, user_id)
 
         # Get event counts by day
-        event_counts_by_day = await self._get_event_counts_by_day(period_start, period_end)
+        event_counts_by_day = await self._get_event_counts_by_day(period_start, period_end, user_id)
 
         return UserActivitySummary(
             period_start=period_start,
@@ -311,6 +345,7 @@ class UserActivityService:
         self,
         period_start: datetime,
         period_end: datetime,
+        user_id: Optional[str] = None,
         limit: int = 10,
     ) -> list[dict[str, Any]]:
         """Get most searched cities in period.
@@ -318,6 +353,7 @@ class UserActivityService:
         Args:
             period_start: Start of period
             period_end: End of period
+            user_id: The account whose searches are counted, or None for all
             limit: Maximum results
 
         Returns:
@@ -334,6 +370,7 @@ class UserActivityService:
                     SearchEvent.search_timestamp >= period_start,
                     SearchEvent.search_timestamp < period_end,
                     SearchEvent.filters["city"].is_not(None),
+                    self._searches_of(user_id),
                 )
             )
             .group_by(SearchEvent.filters["city"])
@@ -350,12 +387,14 @@ class UserActivityService:
         self,
         period_start: datetime,
         period_end: datetime,
+        user_id: Optional[str] = None,
     ) -> list[dict[str, Any]]:
         """Get event counts grouped by day.
 
         Args:
             period_start: Start of period
             period_end: End of period
+            user_id: The account whose searches are counted, or None for all
 
         Returns:
             List of {date, searches, views, clicks, tool_uses, exports} dicts
@@ -368,6 +407,7 @@ class UserActivityService:
                 and_(
                     SearchEvent.search_timestamp >= period_start,
                     SearchEvent.search_timestamp < period_end,
+                    self._searches_of(user_id),
                 )
             )
             .group_by(day_key)
@@ -430,6 +470,7 @@ class UserActivityService:
                 and_(
                     SearchEvent.search_timestamp >= period_start,
                     SearchEvent.search_timestamp < period_end,
+                    self._searches_of(user_id),
                 )
             )
             .group_by(bucket)

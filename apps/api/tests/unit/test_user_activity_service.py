@@ -227,6 +227,50 @@ class TestUserActivityService:
         assert {point.date: point.searches for point in months} == {"2026-11-01": 2}
 
     @pytest.mark.asyncio
+    async def test_get_activity_summary_counts_the_accounts_own_searches(
+        self, activity_service, db_session
+    ):
+        """The summary is the account's activity, not the deployment's."""
+        config = RankingConfig(name="scope-test-config", description="scope")
+        db_session.add(config)
+        await db_session.flush()
+
+        for owner, query in (("user-a", "apartments in Krakow"), ("user-b", "flats in Warsaw")):
+            db_session.add(
+                SearchEvent(
+                    session_id=f"scope-{owner}",
+                    user_id=owner,
+                    ranking_config_id=config.id,
+                    query=query,
+                    results_count=1,
+                    processing_time_ms=8,
+                    search_timestamp=datetime(2026, 11, 4, 9, 0, tzinfo=UTC),
+                )
+            )
+        await db_session.flush()
+
+        period_start = datetime(2026, 11, 1, tzinfo=UTC)
+        period_end = datetime(2026, 11, 10, tzinfo=UTC)
+
+        mine = await activity_service.get_activity_summary(
+            user_id="user-a", period_start=period_start, period_end=period_end
+        )
+        assert mine.total_searches == 1
+        assert mine.unique_sessions == 1
+        assert sum(point["searches"] for point in mine.event_counts_by_day) == 1
+
+        trends = await activity_service.get_activity_trends(
+            user_id="user-a", period_start=period_start, period_end=period_end
+        )
+        assert sum(point.searches for point in trends) == 1
+
+        # The deployment's own view keeps every search.
+        everything = await activity_service.get_activity_summary(
+            period_start=period_start, period_end=period_end
+        )
+        assert everything.total_searches == 2
+
+    @pytest.mark.asyncio
     async def test_export_activity_csv_returns_valid_csv(self, activity_service, db_session):
         """Test CSV export format."""
         await activity_service.track_event(
