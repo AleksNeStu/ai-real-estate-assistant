@@ -5,15 +5,30 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(_request: NextRequest) {
-  const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+import { getApiAccessKey, getBackendApiBaseUrl } from '@/lib/proxy-utils';
+
+export async function POST(request: NextRequest) {
+  // The same base the other monitoring routes use - the deployment names it
+  // BACKEND_API_URL, and the old BACKEND_URL default pointed at the
+  // frontend's own port.
+  const backendUrl = getBackendApiBaseUrl().replace(/\/api\/v1\/?$/, '');
   const url = `${backendUrl}/monitoring/test-alert`;
+
+  const headers = new Headers();
+  const apiKey = getApiAccessKey();
+  if (apiKey) {
+    headers.set('X-API-Key', apiKey);
+  }
+  // Sending a test alert is an administrator's action, so the session cookie
+  // travels with the request.
+  const cookie = request.headers.get('cookie');
+  if (cookie) {
+    headers.set('cookie', cookie);
+  }
 
   const response = await fetch(url, {
     method: 'POST',
-    headers: {
-      'X-API-Key': process.env.API_ACCESS_KEY || '',
-    },
+    headers,
   });
 
   const data = await response.json();

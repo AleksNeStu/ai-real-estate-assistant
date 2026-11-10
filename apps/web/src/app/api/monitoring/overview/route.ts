@@ -3,7 +3,7 @@ import { getBackendApiBaseUrl, getApiAccessKey, filterResponseHeaders } from '@/
 
 export const runtime = 'nodejs';
 
-async function proxyRequest(): Promise<Response> {
+async function proxyRequest(request: NextRequest): Promise<Response> {
   const baseUrl = getBackendApiBaseUrl().replace(/\/api\/v1\/?$/, '');
   const targetUrl = `${baseUrl}/monitoring/overview`;
 
@@ -11,6 +11,12 @@ async function proxyRequest(): Promise<Response> {
   const apiKey = getApiAccessKey();
   if (apiKey) {
     headers.set('X-API-Key', apiKey);
+  }
+  // The overview answers for a signed-in account, so the session cookie
+  // travels with the request.
+  const cookie = request.headers.get('cookie');
+  if (cookie) {
+    headers.set('cookie', cookie);
   }
 
   try {
@@ -35,6 +41,6 @@ async function proxyRequest(): Promise<Response> {
   }
 }
 
-export async function GET(): Promise<Response> {
-  return proxyRequest();
+export async function GET(request: NextRequest): Promise<Response> {
+  return proxyRequest(request);
 }
