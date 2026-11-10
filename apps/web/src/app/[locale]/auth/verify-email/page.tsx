@@ -3,18 +3,12 @@
 import { Suspense, useEffect, useReducer } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import { Loader2, CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { Loader2, ArrowLeft } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { AuthCard, AuthHeading, AuthLinks, AuthNote, AuthStatus } from '@/components/auth/auth-shell';
+import { useCapabilities } from '@/hooks/useCapabilities';
 import { verifyEmail } from '@/lib/auth';
 
 type State = {
@@ -38,7 +32,14 @@ function reducer(_state: State, action: Action): State {
 function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const locale = useLocale();
   const t = useTranslations('auth');
+  const { capabilities } = useCapabilities();
+
+  // The deployment that cannot send mail cannot promise a mail. The
+  // capabilities endpoint knows, so the heading follows it: the page says
+  // the link was sent only when a mail was actually sent.
+  const emailEnabled = capabilities?.email.enabled ?? true;
 
   // Get token and derive initial validation state
   const token = searchParams.get('token');
@@ -76,72 +77,65 @@ function VerifyEmailContent() {
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [token, t]);
 
   if (state.status === 'loading') {
     return (
-      <Card className="w-full">
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="mt-4 text-sm text-muted-foreground">{t('verifyEmail.verifying')}</p>
-        </CardContent>
-      </Card>
+      <AuthCard>
+        <AuthHeading
+          title={t('verifyEmail.title')}
+          description={emailEnabled ? t('verifyEmail.description') : t('verifyEmail.noMailNote')}
+        />
+        <div className="flex items-center gap-2.5 py-4 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+          <span>{t('verifyEmail.verifying')}</span>
+        </div>
+        <AuthNote>{t('note')}</AuthNote>
+      </AuthCard>
     );
   }
 
   if (state.status === 'success') {
     return (
-      <Card className="w-full">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-2">
-            <div className="rounded-full bg-success/15 dark:bg-success/20 p-3">
-              <CheckCircle2 className="h-6 w-6 text-success dark:text-success" />
-            </div>
-          </div>
-          <CardTitle className="text-2xl">{t('verifyEmail.verified')}</CardTitle>
-          <CardDescription>{t('verifyEmail.verifiedDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-center text-muted-foreground">{t('verifyEmail.canLogin')}</p>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-4">
-          <Button className="w-full" onClick={() => router.push('/auth/login')}>
-            {t('verifyEmail.goToLogin')}
-          </Button>
-        </CardFooter>
-      </Card>
+      <AuthCard>
+        <AuthHeading title={t('verifyEmail.verified')} />
+        <AuthStatus tone="success">{t('verifyEmail.verifiedDescription')}</AuthStatus>
+        <p className="text-sm text-muted-foreground">{t('verifyEmail.canLogin')}</p>
+        <Button className="w-full" onClick={() => router.push(`/${locale}/auth/login`)}>
+          {t('verifyEmail.goToLogin')}
+        </Button>
+        <AuthNote>{t('note')}</AuthNote>
+      </AuthCard>
     );
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader className="space-y-1 text-center">
-        <div className="flex justify-center mb-2">
-          <div className="rounded-full bg-destructive/15 p-3">
-            <XCircle className="h-6 w-6 text-destructive" />
-          </div>
-        </div>
-        <CardTitle className="text-2xl">{t('verifyEmail.failedTitle')}</CardTitle>
-        <CardDescription>{state.error || t('verifyEmail.failedDescription')}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-sm text-center text-muted-foreground">{t('verifyEmail.linkExpired')}</p>
-      </CardContent>
-      <CardFooter className="flex flex-col gap-4">
-        <Button className="w-full" variant="outline" onClick={() => router.push('/auth/register')}>
+    <AuthCard>
+      <AuthHeading title={t('verifyEmail.failedTitle')} />
+      <AuthStatus tone="destructive">{state.error || t('verifyEmail.failedDescription')}</AuthStatus>
+      <p className="text-sm text-muted-foreground">
+        {emailEnabled ? t('verifyEmail.linkExpired') : t('verifyEmail.noMailNote')}
+      </p>
+      {emailEnabled && (
+        <Button
+          className="w-full"
+          variant="outline"
+          onClick={() => router.push(`/${locale}/auth/register`)}
+        >
           {t('verifyEmail.requestNew')}
         </Button>
-        <div className="text-sm text-center text-muted-foreground">
-          <Link
-            href="/auth/login"
-            className="inline-flex items-center gap-1 text-primary hover:underline"
-          >
-            <ArrowLeft className="h-3 w-3" />
-            {t('verifyEmail.backToLogin')}
-          </Link>
-        </div>
-      </CardFooter>
-    </Card>
+      )}
+      <AuthLinks>
+        <Link
+          href={`/${locale}/auth/login`}
+          className="inline-flex items-center gap-1 font-medium text-foreground underline underline-offset-4 hover:text-primary"
+        >
+          <ArrowLeft className="h-3 w-3" aria-hidden="true" />
+          {t('verifyEmail.backToLogin')}
+        </Link>
+      </AuthLinks>
+      <AuthNote>{t('note')}</AuthNote>
+    </AuthCard>
   );
 }
 
@@ -151,12 +145,12 @@ export default function VerifyEmailPage() {
   return (
     <Suspense
       fallback={
-        <Card className="w-full">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="mt-4 text-sm text-muted-foreground">{t('verifyEmail.loading')}</p>
-          </CardContent>
-        </Card>
+        <AuthCard>
+          <div className="flex items-center gap-2.5 py-4 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            <span>{t('verifyEmail.loading')}</span>
+          </div>
+        </AuthCard>
       }
     >
       <VerifyEmailContent />

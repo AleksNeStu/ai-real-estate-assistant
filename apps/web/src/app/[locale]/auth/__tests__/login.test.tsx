@@ -64,7 +64,10 @@ describe('LoginPage', () => {
 
   it('renders login form correctly', () => {
     render(<LoginPage />);
-    expect(screen.getByText('Welcome back')).toBeInTheDocument();
+    // The heading is the screen's title - the card renders one H1 and the
+    // submit button carries the same wording, so the heading is asked for by
+    // its role.
+    expect(screen.getByRole('heading', { name: 'Sign in' })).toBeInTheDocument();
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
     expect(screen.getByLabelText('Password')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();

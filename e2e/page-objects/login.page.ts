@@ -39,17 +39,11 @@ export class LoginPage {
       .locator('.bg-destructive\\/15, .text-destructive')
       .filter({ has: page.locator('svg, span, p') })
       .first();
-    // Forgot password link - handle multiple languages (EN/PL/RU) - it's a small link next to Password label
-    // Use regex for case-insensitive matching
-    this.forgotPasswordLink = page
-      .locator('a.text-xs')
-      .filter({ hasText: /forgot|zapomniał|забыл/i })
-      .first();
-    // Register/sign up link - handle multiple languages - it's in the card footer with underline class
-    this.registerLink = page
-      .locator('a.underline')
-      .filter({ hasText: /sign up|create account|zarejestruj|зарегистрироваться/i })
-      .first();
+    // The two links of the card are found by their test id, not by their
+    // wording: the card names them differently in every locale, and the top
+    // bar carries links of its own to the same two routes.
+    this.forgotPasswordLink = page.getByTestId('auth-forgot-password');
+    this.registerLink = page.getByTestId('auth-register-link');
   }
 
   /**

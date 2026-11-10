@@ -252,6 +252,7 @@
       "submit": "Wyślij link resetujący",
       "backToLogin": "Wróć do logowania",
       "noMailNote": "Ta instalacja nie wysyła e-maili: link do resetu hasła trafia do logu API zamiast do skrzynki.",
+      "demoNote": "W trybie demo link trafia do logu API zamiast do skrzynki.",
       "resetSentNoMail": "Ta instalacja nie wysyła e-maili: link do resetu hasła trafia do logu API zamiast do skrzynki.",
       "checkEmail": "Sprawdź swoją skrzynkę",
       "resetSent": "Wysłaliśmy link do resetowania hasła na Twój adres email.",

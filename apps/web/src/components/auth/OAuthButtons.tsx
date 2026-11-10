@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { AuthDivider } from '@/components/auth/auth-shell';
 import { oauthLogin } from '@/lib/auth';
 import { getCapabilities } from '@/lib/api';
 
@@ -17,13 +18,18 @@ interface OAuthButtonsProps {
 }
 
 /**
- * The Google and Apple sign-in buttons.
+ * The Google and Apple sign-in buttons, and the divider under them.
  *
  * The buttons used to be rendered unconditionally: a visitor on a deployment
  * without OAuth clicked Google, got a 403 and a toast carrying the raw API
  * string "Google OAuth is not enabled". The backend knows which providers are
  * configured, so the buttons are rendered only for those, and a failed call
  * reports a sentence instead of the API detail.
+ *
+ * The divider is part of this component on purpose. The divider says "or with
+ * e-mail", so it may only appear when there is something above it - when no
+ * provider is configured the component renders nothing at all, divider
+ * included, and the e-mail form stands on its own.
  */
 export function OAuthButtons({ isLoading = false, className }: OAuthButtonsProps) {
   const [isRedirecting, setIsRedirecting] = useState<OAuthProvider | null>(null);
@@ -73,17 +79,7 @@ export function OAuthButtons({ isLoading = false, className }: OAuthButtonsProps
 
   return (
     <div className={className}>
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            {t('login.orContinueWith')}
-          </span>
-        </div>
-      </div>
-      <div className="flex gap-2 mt-4">
+      <div className="flex flex-col gap-2">
         {showGoogle && (
           <Button
             type="button"
@@ -146,6 +142,9 @@ export function OAuthButtons({ isLoading = false, className }: OAuthButtonsProps
             Apple
           </Button>
         )}
+      </div>
+      <div className="mt-4">
+        <AuthDivider label={t('login.orWithEmail')} />
       </div>
     </div>
   );

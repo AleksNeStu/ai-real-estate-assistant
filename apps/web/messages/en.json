@@ -119,6 +119,7 @@
       "submit": "Send reset link",
       "backToLogin": "Back to sign in",
       "noMailNote": "This deployment sends no e-mail: the reset link is printed in the API log instead of being mailed.",
+      "demoNote": "In demo mode the link is printed in the API log instead of being mailed.",
       "resetSentNoMail": "This deployment sends no e-mail: the reset link is printed in the API log instead of being mailed.",
       "checkEmail": "Check your email",
       "resetSent": "We've sent a password reset link to your email address.",

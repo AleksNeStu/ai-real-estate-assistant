@@ -2,10 +2,10 @@
 
 import { Suspense, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, XCircle, CheckCircle2 } from 'lucide-react';
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+
+import { AuthCard, AuthHeading, AuthNote, AuthStatus } from '@/components/auth/auth-shell';
 
 function OAuthCallbackContent() {
   const t = useTranslations('auth');
@@ -42,32 +42,14 @@ function OAuthCallbackContent() {
   }, [error, router]);
 
   return (
-    <Card className="w-full">
-      <CardHeader className="space-y-1 text-center">
-        <div className="flex justify-center mb-2">
-          {status === 'success' && (
-            <div className="rounded-full bg-success/15 dark:bg-success/20 p-3">
-              <CheckCircle2 className="h-6 w-6 text-success dark:text-success" />
-            </div>
-          )}
-          {status === 'error' && (
-            <div className="rounded-full bg-destructive/15 p-3">
-              <XCircle className="h-6 w-6 text-destructive" />
-            </div>
-          )}
-        </div>
-        <CardTitle className="text-2xl">
-          {status === 'success' && t('oauth.welcome')}
-          {status === 'error' && t('oauth.failed')}
-        </CardTitle>
-        <CardDescription>{message}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {status === 'error' && (
-          <p className="text-sm text-center text-muted-foreground">{t('oauth.redirecting')}</p>
-        )}
-      </CardContent>
-    </Card>
+    <AuthCard>
+      <AuthHeading title={t('oauth.signingIn')} description={t('oauth.pleaseWait')} />
+      <AuthStatus tone={status === 'success' ? 'success' : 'destructive'}>{message}</AuthStatus>
+      {status === 'error' && (
+        <p className="text-sm text-muted-foreground">{t('oauth.redirecting')}</p>
+      )}
+      <AuthNote>{t('note')}</AuthNote>
+    </AuthCard>
   );
 }
 
@@ -81,24 +63,18 @@ function OAuthCallbackContent() {
 export default function OAuthCallbackPage() {
   const t = useTranslations('auth');
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <Suspense
-        fallback={
-          <Card className="w-full">
-            <CardHeader className="space-y-1 text-center">
-              <div className="flex justify-center mb-2">
-                <div className="rounded-full bg-primary/10 p-3">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                </div>
-              </div>
-              <CardTitle className="text-2xl">{t('oauth.signingIn')}</CardTitle>
-              <CardDescription>{t('oauth.pleaseWait')}</CardDescription>
-            </CardHeader>
-          </Card>
-        }
-      >
-        <OAuthCallbackContent />
-      </Suspense>
-    </div>
+    <Suspense
+      fallback={
+        <AuthCard>
+          <AuthHeading title={t('oauth.signingIn')} description={t('oauth.pleaseWait')} />
+          <div className="flex items-center gap-2.5 py-4 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            <span>{t('oauth.pleaseWait')}</span>
+          </div>
+        </AuthCard>
+      }
+    >
+      <OAuthCallbackContent />
+    </Suspense>
   );
 }

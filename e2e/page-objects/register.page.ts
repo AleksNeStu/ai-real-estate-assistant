@@ -54,12 +54,10 @@ export class RegisterPage {
       .filter({ has: page.locator('svg, span, p') })
       .first();
     this.successMessage = page.locator('[data-testid="success-message"], .success-message');
-    // The link to the login - the navigation carries a link of its own, so the
-    // one of the card is picked by its underlined class.
-    this.loginLink = page
-      .locator('a.underline')
-      .filter({ hasText: /sign in|log in|zaloguj|зарегистрироваться/i })
-      .first();
+    // The link to the login - found by its test id, not by its wording: the
+    // card names it differently in every locale, and the top bar carries a
+    // link of its own to the same route.
+    this.loginLink = page.getByTestId('auth-login-link');
   }
 
   /**
