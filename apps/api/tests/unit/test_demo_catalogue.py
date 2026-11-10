@@ -8,6 +8,7 @@ reached the vector store either, so a visitor saw 250 cards that all said
 """
 
 import pytest
+from sqlalchemy import select
 
 from alembic.demo_data_generator import (
     CITY_PRICE_PER_SQM,
@@ -148,3 +149,43 @@ def test_the_listing_validates(index):
     prop = Property.model_validate(build_demo_listing(index))
     assert prop.city
     assert prop.price and prop.price > 0
+
+
+@pytest.mark.asyncio
+async def test_the_seeded_accounts_carry_the_deployments_password(db_session, monkeypatch):
+    """The seeded accounts are signable when the deployment says how.
+
+    The accounts are named after the role they carry (demo.admin2@...),
+    so they are worth signing into - and the password is the deployment's
+    own, never the repository's.
+    """
+    from alembic.demo_data_generator import ComprehensiveDemoDataGenerator
+    from core.password import verify_password
+    from db.models import User
+
+    monkeypatch.setenv("DEMO_USER_PASSWORD", "the-deployment-password")
+    generator = ComprehensiveDemoDataGenerator(db_session)
+    await generator._generate_users(4)
+
+    users = (await db_session.execute(select(User))).scalars().all()
+    assert len(users) == 4
+    for user in users:
+        assert user.role in ("user", "admin", "agent", "premium_user")
+        assert user.hashed_password
+        assert verify_password("the-deployment-password", user.hashed_password)
+
+
+@pytest.mark.asyncio
+async def test_the_seeded_accounts_carry_no_password_without_one(db_session, monkeypatch):
+    """Without the deployment's password the accounts carry none at all."""
+    from alembic.demo_data_generator import ComprehensiveDemoDataGenerator
+    from db.models import User
+
+    monkeypatch.delenv("DEMO_USER_PASSWORD", raising=False)
+    generator = ComprehensiveDemoDataGenerator(db_session)
+    await generator._generate_users(2)
+
+    users = (await db_session.execute(select(User))).scalars().all()
+    assert len(users) == 2
+    for user in users:
+        assert user.hashed_password is None

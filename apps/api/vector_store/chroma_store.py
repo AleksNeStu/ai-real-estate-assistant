@@ -301,6 +301,12 @@ class ChromaPropertyStore:
                 else str(prop.listing_type)
             ),
             "source_url": prop.source_url or "",
+            # The source and the moment the listing arrived are what the
+            # deployment's own panel counts: without them the catalogue can
+            # only say how much it holds, not where it came from or how fresh
+            # it is.
+            "source_platform": getattr(prop, "source_platform", None) or "",
+            "scraped_at": getattr(prop, "scraped_at", None) or "",
             "lat": _nf(getattr(prop, "latitude", None)),
             "lon": _nf(getattr(prop, "longitude", None)),
             "year_built": _ni(getattr(prop, "year_built", None)),

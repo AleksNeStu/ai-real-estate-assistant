@@ -8,13 +8,16 @@ alerting, and operational insights.
 import logging
 import time
 from datetime import datetime
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.dependencies import get_vector_store
 from api.deps.auth import AuthCredentials, get_auth_credentials, require_permission
 from api.rbac import Permission
+from api.routers.catalogue import count_catalogue
 from config.settings import get_settings
 from db.database import get_db
 from vector_store.knowledge_store import KnowledgeStore
@@ -193,6 +196,7 @@ async def metrics(
 @router.get("/monitoring/overview", tags=["Monitoring"])
 async def monitoring_overview(
     db: AsyncSession = Depends(get_db),
+    store: Optional[Any] = Depends(get_vector_store),
     credentials: AuthCredentials = Depends(get_auth_credentials),
 ):
     """
@@ -202,27 +206,16 @@ async def monitoring_overview(
     """
     settings = get_settings()
 
-    # Database stats
+    # The catalogue's own numbers. The listings live in the vector store -
+    # there is no properties table - so the panel asks the catalogue, the
+    # same way the landing does, and the two can never disagree.
     try:
-        # Total properties
-        total_props = await db.execute(text("SELECT COUNT(*) FROM properties"))
-        total_properties = total_props.scalar()
-
-        # Properties created in last 24h
-        recent_props = await db.execute(
-            text("SELECT COUNT(*) FROM properties WHERE created_at > NOW() - INTERVAL '24 hours'")
-        )
-        recent_properties_count = recent_props.scalar()
-
-        # Properties by source
-        by_source = await db.execute(
-            text(
-                "SELECT source, COUNT(*) as count FROM properties GROUP BY source ORDER BY count DESC LIMIT 5"
-            )
-        )
-        properties_by_source = dict(by_source.fetchall())
+        counts = count_catalogue(store)
+        total_properties = counts.total
+        recent_properties_count = counts.recent_24h
+        properties_by_source = dict(counts.sources.most_common(5))
     except Exception as e:
-        logger.error("Failed to fetch database stats: %s", e)
+        logger.error("Failed to fetch catalogue stats: %s", e)
         total_properties = 0
         recent_properties_count = 0
         properties_by_source = {}

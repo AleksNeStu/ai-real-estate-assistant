@@ -11,6 +11,8 @@ fallback, for a deployment that has a catalogue file but no vector store yet.
 """
 
 from collections import Counter
+from dataclasses import dataclass, field
+from datetime import UTC, datetime, timedelta
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends
@@ -30,18 +32,45 @@ router = APIRouter(prefix="/catalogue", tags=["Catalogue"])
 _COUNT_SAMPLE_LIMIT = 20000
 
 
-def _count_from_vector_store(store: Any) -> tuple[int, Counter[str], set[str]]:
-    """The total, the cities and the currencies of the vector store."""
-    if store is None or not hasattr(store, "vector_store"):
-        return 0, Counter(), set()
+@dataclass
+class CatalogueCounts:
+    """What the catalogue holds.
 
-    vector_store = getattr(store, "vector_store", None)
-    if vector_store is None:
-        return 0, Counter(), set()
+    The numbers every surface that talks about the catalogue reads from one
+    place: the landing, and the deployment's own panel.
+    """
 
-    collection = getattr(vector_store, "_collection", None)
+    total: int = 0
+    cities: Counter[str] = field(default_factory=Counter)
+    currencies: set[str] = field(default_factory=set)
+    sources: Counter[str] = field(default_factory=Counter)
+    recent_24h: int = 0
+
+
+def _parse_timestamp(value: Any) -> Optional[datetime]:
+    """Read a timestamp out of the catalogue's metadata, whatever it holds."""
+    if isinstance(value, datetime):
+        return value if value.tzinfo else value.replace(tzinfo=UTC)
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.strip())
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
+
+
+def count_catalogue(store: Any) -> CatalogueCounts:
+    """What the catalogue holds: the total, the cities, the sources, the age.
+
+    The numbers come from the vector store - the store the search answers
+    with - so the landing and the deployment's own panel can never disagree
+    about the catalogue.
+    """
+    vector_store = getattr(store, "vector_store", None) if store is not None else None
+    collection = getattr(vector_store, "_collection", None) if vector_store else None
     if collection is None:
-        return 0, Counter(), set()
+        return CatalogueCounts()
 
     total = int(collection.count())
     raw = collection.get(include=["metadatas"], limit=_COUNT_SAMPLE_LIMIT) or {}
@@ -49,6 +78,10 @@ def _count_from_vector_store(store: Any) -> tuple[int, Counter[str], set[str]]:
 
     cities: Counter[str] = Counter()
     currencies: set[str] = set()
+    sources: Counter[str] = Counter()
+    recent_24h = 0
+    cutoff = datetime.now(UTC) - timedelta(hours=24)
+
     for metadata in metadatas:
         if not metadata:
             continue
@@ -58,8 +91,20 @@ def _count_from_vector_store(store: Any) -> tuple[int, Counter[str], set[str]]:
         currency = metadata.get("currency")
         if currency:
             currencies.add(str(currency))
+        source = metadata.get("source_platform")
+        if source:
+            sources[str(source)] += 1
+        scraped_at = _parse_timestamp(metadata.get("scraped_at"))
+        if scraped_at and scraped_at >= cutoff:
+            recent_24h += 1
 
-    return total, cities, currencies
+    return CatalogueCounts(
+        total=total,
+        cities=cities,
+        currencies=currencies,
+        sources=sources,
+        recent_24h=recent_24h,
+    )
 
 
 def _count_from_cache() -> tuple[int, Counter[str], set[str]]:
@@ -67,7 +112,8 @@ def _count_from_cache() -> tuple[int, Counter[str], set[str]]:
     collection = load_collection()
     properties = list(collection.properties) if collection else []
     cities: Counter[str] = Counter(prop.city for prop in properties if prop.city)
-    currencies = {str(prop.currency) for prop in properties if prop.currency}
+    currencies: set[str] = set(str(prop.currency) for prop in properties if prop.currency)
+
     return len(properties), cities, currencies
 
 
@@ -86,7 +132,8 @@ async def catalogue_stats(
     store: Optional[Any] = Depends(get_vector_store),
 ) -> CatalogueStatsResponse:
     """The numbers the landing shows."""
-    total, cities, currencies = _count_from_vector_store(store)
+    counts = count_catalogue(store)
+    total, cities, currencies = counts.total, counts.cities, counts.currencies
     if total == 0:
         total, cities, currencies = _count_from_cache()
 

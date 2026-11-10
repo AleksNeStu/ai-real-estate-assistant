@@ -28,6 +28,7 @@ from datetime import UTC, datetime, timedelta
 # Database imports
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.password import hash_password
 from core.security_utils import sanitize_for_log
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -485,7 +486,11 @@ def build_demo_listing(index: int) -> dict:
         "distance_to_school": random.randint(150, 1800),
         "latitude": latitude,
         "longitude": longitude,
-        "created_at": (datetime.now(UTC) - timedelta(days=random.randint(1, 180))).isoformat(),
+        # The moment the listing was scraped, not a moment the model does
+        # not carry: the deployment's own panel counts how fresh the
+        # catalogue is from it.
+        "scraped_at": (datetime.now(UTC) - timedelta(days=random.randint(1, 180))).isoformat(),
+        "source_platform": "demo-seed",
     }
 
 
@@ -602,12 +607,20 @@ class ComprehensiveDemoDataGenerator:
         """Generate demo users."""
         users = []
 
+        # The accounts are signable when the deployment says how. The
+        # password is the deployment's own - it lives in its environment and
+        # never in the repository - and without it the accounts carry no
+        # password at all, exactly as before.
+        demo_password = os.getenv("DEMO_USER_PASSWORD")
+        hashed_password = hash_password(demo_password) if demo_password else None
+
         for i in range(count):
             role = USER_ROLES[i % len(USER_ROLES)]
             user = User(
                 id=str(uuid.uuid4()),
                 email=f"demo.{role}{i + 1}@realestate.demo",
                 role=role,
+                hashed_password=hashed_password,
                 is_active=True,
                 is_verified=True,
                 created_at=datetime.now(UTC) - timedelta(days=random.randint(1, 365)),
