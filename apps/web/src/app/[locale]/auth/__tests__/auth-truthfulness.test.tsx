@@ -14,7 +14,10 @@ import { verifyEmail } from '@/lib/auth';
  * mailed, and the page says so.
  */
 
-jest.mock('@/lib/api', () => ({
+// The hook reads the capabilities from the module itself, so the mock has to
+// sit there: mocking the barrel above it leaves the real request running and
+// the page with a payload that carries no mail state at all.
+jest.mock('@/lib/api/capabilities', () => ({
   getCapabilities: jest.fn(),
 }));
 

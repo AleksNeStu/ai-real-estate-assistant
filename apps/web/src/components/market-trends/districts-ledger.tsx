@@ -85,7 +85,10 @@ export function DistrictsLedger({ indicators, currency, className }: DistrictsLe
   );
 
   return (
-    <div className={['grid gap-4 sm:grid-cols-2', className].filter(Boolean).join(' ')}>
+    // One column. The ledger sits in the narrow sidebar of the page, and two
+    // columns there squeeze the district name out of existence - it was
+    // truncated to zero width and the district became unreadable.
+    <div className={['grid gap-4', className].filter(Boolean).join(' ')}>
       {hottest.length > 0
         ? renderList(t('areas.hottest'), t('areas.hottestHint'), hottest, 'success')
         : null}

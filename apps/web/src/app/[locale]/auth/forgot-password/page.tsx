@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
   // The deployment that cannot send mail cannot promise a mail. The
   // capabilities endpoint knows, so the line under the heading follows it
   // instead of the build flag.
-  const emailEnabled = capabilities?.email.enabled ?? true;
+  const emailEnabled = capabilities?.email?.enabled ?? true;
   const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
   // In demo mode the mail never leaves the API: the console mail provider
   // prints it, link and all, into the API log. A deployment without a mail

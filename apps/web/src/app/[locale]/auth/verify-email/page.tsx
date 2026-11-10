@@ -39,7 +39,7 @@ function VerifyEmailContent() {
   // The deployment that cannot send mail cannot promise a mail. The
   // capabilities endpoint knows, so the heading follows it: the page says
   // the link was sent only when a mail was actually sent.
-  const emailEnabled = capabilities?.email.enabled ?? true;
+  const emailEnabled = capabilities?.email?.enabled ?? true;
 
   // Get token and derive initial validation state
   const token = searchParams.get('token');
