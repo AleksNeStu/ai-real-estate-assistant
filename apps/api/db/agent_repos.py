@@ -5,6 +5,7 @@ Provides repositories for AgentProfile, AgentListing,
 AgentInquiry, and ViewingAppointment models.
 """
 
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import Optional
 
@@ -18,6 +19,23 @@ from db.models import (
     AgentProfile,
     ViewingAppointment,
 )
+
+
+def active_listings_count():
+    """The number of an agent's active listings, as a correlated subquery.
+
+    The number the directory shows in its Listings column and the order the
+    directory sorts by are the same number, so both read this one expression:
+    the active listings of the agent the row is about. A correlated count is
+    one pass over the listings table, not one query per agent.
+    """
+    return (
+        select(func.count(AgentListing.id))
+        .where(AgentListing.agent_id == AgentProfile.id)
+        .where(AgentListing.is_active == True)  # noqa: E712
+        .correlate(AgentProfile)
+        .scalar_subquery()
+    )
 
 
 class AgentProfileRepository:
@@ -135,7 +153,12 @@ class AgentProfileRepository:
             query = query.where(AgentProfile.languages.contains([language]))
 
         # Apply sorting
-        sort_column = getattr(AgentProfile, sort_by, AgentProfile.average_rating)
+        if sort_by == "listings":
+            # Sorting by listings means sorting by the number of an agent's
+            # active listings - the same number the directory shows.
+            sort_column = active_listings_count()
+        else:
+            sort_column = getattr(AgentProfile, sort_by, AgentProfile.average_rating)
         if sort_order == "desc":
             query = query.order_by(sort_column.desc())
         else:
@@ -292,6 +315,33 @@ class AgentListingRepository:
             )
         result = await self.session.execute(query)
         return result.scalar() or 0
+
+    async def count_by_agents(
+        self,
+        agent_ids: Sequence[str],
+        active_only: bool = True,
+    ) -> dict[str, int]:
+        """Count the listings of many agents in one query.
+
+        The directory needs the number of listings for every row it shows,
+        and one count per row is one query per row. This counts them all at
+        once, so the page costs one query.
+
+        An agent with no listing is not in the result: the caller decides
+        what a missing agent means - the directory reads it as zero.
+        """
+        if not agent_ids:
+            return {}
+        query = select(AgentListing.agent_id, func.count(AgentListing.id)).where(
+            AgentListing.agent_id.in_(agent_ids)
+        )
+        if active_only:
+            query = query.where(
+                AgentListing.is_active == True  # noqa: E712
+            )
+        query = query.group_by(AgentListing.agent_id)
+        result = await self.session.execute(query)
+        return {row[0]: row[1] for row in result.all()}
 
     async def set_primary(self, listing: AgentListing) -> None:
         """Set a listing as primary (unsets others for same property)."""

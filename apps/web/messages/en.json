@@ -2128,7 +2128,8 @@
         "agency": "Agency",
         "areas": "Service areas",
         "rating": "Rating",
-        "reviews": "Reviews"
+        "reviews": "Reviews",
+        "listings": "Listings"
       }
     }
   },

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 
 import AgentsPage from '../page';
 import * as api from '@/lib/api';
@@ -20,6 +20,7 @@ const mockAgents: AgentProfile[] = [
     total_reviews: 45,
     total_sales: 120,
     total_rentals: 30,
+    listings_count: 14,
     is_verified: true,
     is_active: true,
     specialties: ['Residential', 'Luxury'],
@@ -37,6 +38,7 @@ const mockAgents: AgentProfile[] = [
     total_reviews: 30,
     total_sales: 80,
     total_rentals: 50,
+    listings_count: 0,
     is_verified: false,
     is_active: true,
     specialties: ['Commercial'],
@@ -95,6 +97,57 @@ describe('AgentsPage', () => {
     });
 
     expect(screen.getByRole('button', { name: 'Residential' })).toBeInTheDocument();
+  });
+
+  it('shows the number of listings every agent has', async () => {
+    render(<AgentsPage />);
+
+    await waitFor(() => {
+      expect(screen.getAllByTestId('agent-row')).toHaveLength(2);
+    });
+
+    const rows = screen.getAllByTestId('agent-row');
+    expect(within(rows[0]).getByText('14')).toBeInTheDocument();
+    // An agent with no listings has none - the column says zero, not a dash.
+    expect(within(rows[1]).getByText('0')).toBeInTheDocument();
+  });
+
+  it('names the Listings column after the Reviews column', async () => {
+    render(<AgentsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Listings')).toBeInTheDocument();
+    });
+
+    const headerCells = Array.from(screen.getByText('Listings').parentElement?.children ?? []);
+    expect(headerCells.map((cell) => cell.textContent)).toEqual([
+      '',
+      'Agent',
+      'Agency',
+      'Service areas',
+      'Rating',
+      'Reviews',
+      'Listings',
+      '',
+    ]);
+  });
+
+  it('says nothing where the count is unknown rather than claiming zero', async () => {
+    (api.getAgents as jest.Mock).mockResolvedValue({
+      items: [{ ...mockAgents[0], listings_count: undefined }],
+      total: 1,
+      page: 1,
+      page_size: 100,
+      total_pages: 1,
+    });
+
+    render(<AgentsPage />);
+
+    await waitFor(() => {
+      expect(screen.getAllByTestId('agent-row')).toHaveLength(1);
+    });
+
+    expect(within(screen.getByTestId('agent-row')).getByText('—')).toBeInTheDocument();
   });
 
   it('shows the empty state when no agent is left', async () => {

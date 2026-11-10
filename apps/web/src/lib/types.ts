@@ -1568,6 +1568,14 @@ export interface AgentProfile {
   total_reviews: number;
   total_sales: number;
   total_rentals: number;
+  /**
+   * The number of that agent's active listings in the catalogue.
+   *
+   * The API counts them for the list endpoint; `undefined` means the answer
+   * did not come with the response, and the directory says so instead of
+   * inventing a zero.
+   */
+  listings_count?: number;
   is_verified: boolean;
   is_active: boolean;
   profile_image_url?: string;

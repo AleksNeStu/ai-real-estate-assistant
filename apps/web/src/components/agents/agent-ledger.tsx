@@ -11,8 +11,14 @@ import type { AgentProfile } from '@/lib/types';
  *
  * A catalogue of agents is a list, not a set of objects, so the prototype
  * draws it as rows under an ink rule: the agent on the left, the agency and
- * the areas it covers in the middle, the rating and the number of reviews in
- * mono on the right, and the way in at the end of the row.
+ * the areas it covers in the middle, the rating, the number of reviews and
+ * the number of listings in mono on the right, and the way in at the end of
+ * the row.
+ *
+ * The number of listings is the count the API carries - the number of that
+ * agent's active listings in the catalogue, and the same number the sort
+ * orders the catalogue by. Where the response does not carry it, the cell
+ * says nothing rather than claiming zero.
  *
  * The card that used to draw them is still there for the surfaces that want
  * an object - this row is the list.
@@ -46,7 +52,7 @@ export function AgentLedger({ agents, locale, className }: AgentLedgerProps) {
         className={[
           'hidden gap-3.5 border-b border-foreground px-6 py-2.5',
           'text-[12px] text-muted-foreground',
-          'md:grid md:grid-cols-[40px_1.4fr_1.1fr_1.4fr_72px_72px_120px]',
+          'md:grid md:grid-cols-[40px_1.4fr_1.1fr_1.4fr_72px_72px_72px_120px]',
         ].join(' ')}
       >
         <span />
@@ -55,6 +61,7 @@ export function AgentLedger({ agents, locale, className }: AgentLedgerProps) {
         <span>{t('directory.columns.areas')}</span>
         <span className="text-right">{t('directory.columns.rating')}</span>
         <span className="text-right">{t('directory.columns.reviews')}</span>
+        <span className="text-right">{t('directory.columns.listings')}</span>
         <span />
       </div>
 
@@ -75,7 +82,7 @@ export function AgentLedger({ agents, locale, className }: AgentLedgerProps) {
             className={[
               'grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1',
               'border-b border-border px-6 py-3 transition-colors hover:bg-muted',
-              'md:grid-cols-[40px_1.4fr_1.1fr_1.4fr_72px_72px_120px] md:gap-3.5 md:py-2.5',
+              'md:grid-cols-[40px_1.4fr_1.1fr_1.4fr_72px_72px_72px_120px] md:gap-3.5 md:py-2.5',
             ].join(' ')}
           >
             <span
@@ -123,7 +130,11 @@ export function AgentLedger({ agents, locale, className }: AgentLedgerProps) {
               {agent.total_reviews}
             </span>
 
-            <span className="text-right text-[13px] font-medium text-foreground">
+            <span className="text-right font-mono text-[13px] text-muted-foreground">
+              {agent.listings_count ?? '—'}
+            </span>
+
+            <span className="col-span-2 text-right text-[13px] font-medium text-foreground md:col-span-1">
               {t('viewProfile')} →
             </span>
           </Link>

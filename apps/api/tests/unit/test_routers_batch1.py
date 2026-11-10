@@ -244,10 +244,16 @@ class TestAgentsListAgents:
         mock_session = AsyncMock(spec=AsyncSession)
         mock_profile = _make_mock_agent_profile()
 
-        with patch("api.routers.agents.AgentProfileRepository") as MockRepo:
+        with (
+            patch("api.routers.agents.AgentProfileRepository") as MockRepo,
+            patch("api.routers.agents.AgentListingRepository") as MockListingRepo,
+        ):
             mock_repo = MockRepo.return_value
             mock_repo.get_list = AsyncMock(return_value=[mock_profile])
             mock_repo.count = AsyncMock(return_value=1)
+            MockListingRepo.return_value.count_by_agents = AsyncMock(
+                return_value={"agent-profile-1": 3}
+            )
 
             app_with_agents_router.dependency_overrides[get_db] = lambda: mock_session
 
@@ -260,6 +266,7 @@ class TestAgentsListAgents:
             assert data["total"] == 1
             assert len(data["items"]) == 1
             assert data["page"] == 1
+            assert data["items"][0]["listings_count"] == 3
             app_with_agents_router.dependency_overrides.clear()
 
     @pytest.mark.asyncio

@@ -1477,6 +1477,10 @@ class AgentProfileResponse(BaseModel):
     total_reviews: int
     total_sales: int
     total_rentals: int
+    # The number of that agent's active listings in the catalogue. It is the
+    # count the directory shows and the count the directory sorts by, so the
+    # two can never disagree. None means the endpoint did not count them.
+    listings_count: Optional[int] = None
     # Status
     is_verified: bool
     is_active: bool

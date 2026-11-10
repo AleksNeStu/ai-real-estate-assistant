@@ -43,6 +43,7 @@ router = APIRouter(prefix="/agents", tags=["Agents"])
 async def _build_agent_response(
     profile: Any,
     user: Any = None,
+    listings_count: Optional[int] = None,
 ) -> AgentProfileResponse:
     """Build agent response with user info.
 
@@ -50,6 +51,10 @@ async def _build_agent_response(
     query raises MissingGreenlet in an async session, and the deployed demo
     answered 500 for the agent detail because of it. The repository eager-loads
     the relationship, and the endpoints that already hold the user pass it in.
+
+    `listings_count` is the number of that agent's active listings in the
+    catalogue - the number the directory shows and sorts by. It is passed in
+    because counting it is the repository's job, not this function's.
     """
     user_data = None
     if profile.user_id:
@@ -80,6 +85,7 @@ async def _build_agent_response(
         total_reviews=profile.total_reviews,
         total_sales=profile.total_sales,
         total_rentals=profile.total_rentals,
+        listings_count=listings_count,
         is_verified=profile.is_verified,
         is_active=profile.is_active,
         profile_image_url=profile.profile_image_url,
@@ -160,10 +166,21 @@ async def list_agents(
         language=language,
     )
 
+    # The number of listings each agent has, counted for the whole page in
+    # one query. An agent with no listing reads as zero - the catalogue is
+    # empty for them, and zero is the truth about it.
+    listing_repo = AgentListingRepository(session)
+    listings_counts = await listing_repo.count_by_agents([agent.id for agent in agents])
+
     # Build response items
     items = []
     for agent in agents:
-        items.append(await _build_agent_response(agent))
+        items.append(
+            await _build_agent_response(
+                agent,
+                listings_count=listings_counts.get(agent.id, 0),
+            )
+        )
 
     total_pages = (total + page_size - 1) // page_size
 
