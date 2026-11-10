@@ -218,8 +218,8 @@
     "settings": "Ustawienia",
     "user": "Użytkownik",
     "login": {
-      "title": "Witaj ponownie",
-      "description": "Wprowadź swój email, aby zalogować się do konta",
+      "title": "Zaloguj się",
+      "description": "Do ulubionych, zapisanych wyszukiwań, dokumentów i Twoich zgłoszeń.",
       "emailLabel": "E-mail",
       "emailPlaceholder": "nazwa@przyklad.pl",
       "passwordLabel": "Hasło",
@@ -227,6 +227,7 @@
       "noAccount": "Nie masz konta?",
       "submit": "Zaloguj się",
       "signUp": "Zarejestruj się",
+      "orWithEmail": "lub e-mailem",
       "orContinueWith": "Lub kontynuuj przez",
       "or": "lub",
       "continueAsGuest": "Wypróbuj bez konta",
@@ -234,33 +235,35 @@
     },
     "register": {
       "title": "Utwórz konto",
-      "description": "Wprowadź swoje dane, aby rozpocząć",
+      "description": "Za darmo na demo i na własnej instalacji.",
       "fullNameLabel": "Imię i nazwisko",
       "emailLabel": "E-mail",
       "passwordLabel": "Hasło",
       "confirmPasswordLabel": "Potwierdź hasło",
-      "haveAccount": "Masz już konto?",
+      "haveAccount": "Mam już konto",
       "submit": "Utwórz konto",
       "consentLabel": "Akceptuję regulamin i politykę prywatności oraz wyrażam zgodę na przetwarzanie moich danych.",
       "consentRequired": "Aby założyć konto, zaakceptuj regulamin."
     },
     "forgotPassword": {
-      "title": "Zapomniałeś hasła?",
-      "description": "Wprowadź swój email, a wyślemy Ci link do resetowania",
+      "title": "Zresetuj hasło",
+      "description": "Wyślemy link na Twój e-mail.",
       "emailLabel": "E-mail",
       "submit": "Wyślij link resetujący",
       "backToLogin": "Wróć do logowania",
+      "noMailNote": "W trybie demo ta instalacja nie wysyła poczty: link trafia do logu API zamiast do skrzynki.",
       "checkEmail": "Sprawdź swoją skrzynkę",
       "resetSent": "Wysłaliśmy link do resetowania hasła na Twój adres email.",
       "checkInbox": "Sprawdź skrzynkę odbiorczą, aby znaleźć link resetujący.",
       "resend": "Wyślij ponownie"
     },
     "resetPassword": {
-      "title": "Resetuj hasło",
-      "description": "Wprowadź nowe hasło",
+      "title": "Wybierz nowe hasło",
+      "description": "Link z Twojego e-maila jest ważny 60 minut.",
       "newPasswordLabel": "Nowe hasło",
-      "confirmPasswordLabel": "Potwierdź nowe hasło",
-      "submit": "Resetuj hasło",
+      "confirmPasswordLabel": "Powtórz hasło",
+      "submit": "Ustaw hasło",
+      "successTitle": "Hasło ustawione",
       "success": "Hasło zostało zresetowane",
       "invalidToken": "Nieprawidłowy lub brakujący token resetowania",
       "passwordHint": "Min. 8 znaków, wielka i mała litera, cyfra",
@@ -269,23 +272,24 @@
       "goToLogin": "Przejdź do logowania"
     },
     "verifyEmail": {
-      "title": "Zweryfikuj swój email",
-      "description": "Wysłaliśmy link weryfikacyjny na Twój email",
+      "title": "Zweryfikuj swój e-mail",
+      "description": "Wysłaliśmy link weryfikacyjny na Twój e-mail",
+      "noMailNote": "Ta instalacja nie wysyła e-maili, więc link weryfikacyjny nie może tutaj dotrzeć.",
       "checkInbox": "Sprawdź swoją skrzynkę i kliknij link weryfikacyjny.",
       "resend": "Wyślij ponownie email weryfikacyjny",
       "verified": "Email został zweryfikowany",
-      "loading": "Ładowanie...",
-      "backToLogin": "Powrót do logowania",
-      "canLogin": "Możesz się teraz zalogować na swoje konto.",
-      "failed": "Nie udało się zweryfikować adresu e-mail",
-      "failedDescription": "Nie udało się zweryfikować Twojego adresu e-mail",
-      "failedTitle": "Weryfikacja nie powiodła się",
-      "goToLogin": "Przejdź do logowania",
       "invalidToken": "Nieprawidłowy lub brakujący token weryfikacyjny",
+      "failed": "Nie udało się zweryfikować adresu e-mail",
+      "verifying": "Weryfikowanie adresu e-mail...",
+      "verifiedDescription": "Twój adres e-mail został zweryfikowany",
+      "canLogin": "Możesz się teraz zalogować na swoje konto.",
+      "goToLogin": "Przejdź do logowania",
+      "failedTitle": "Weryfikacja nie powiodła się",
+      "failedDescription": "Nie udało się zweryfikować Twojego adresu e-mail",
       "linkExpired": "Link weryfikacyjny mógł wygasnąć lub być nieprawidłowy.",
       "requestNew": "Poproś o nowy e-mail weryfikacyjny",
-      "verifiedDescription": "Twój adres e-mail został zweryfikowany",
-      "verifying": "Weryfikowanie adresu e-mail..."
+      "backToLogin": "Powrót do logowania",
+      "loading": "Ładowanie..."
     },
     "errors": {
       "invalidCredentials": "Nieprawidłowy email lub hasło",
@@ -311,12 +315,14 @@
       "success": "Pomyślnie zalogowano!",
       "welcome": "Witaj!",
       "redirecting": "Przekierowanie na stronę logowania...",
-      "signingIn": "Logowanie...",
+      "signingIn": "Logujemy Cię",
+      "returning": "Wracamy od dostawcy logowania.",
       "pleaseWait": "Proszę czekać..."
     },
     "demo": {
       "exploreDemoFirst": "Najpierw wypróbuj demo"
-    }
+    },
+    "note": "Konta są częścią tego repozytorium open source. Na demo trzymają tylko dane demo; na Twojej własnej instalacji nic nie kosztują i zostają w Twojej bazie."
   },
   "cma": {
     "steps": {
@@ -2720,7 +2726,10 @@
         "save": "Zapisz",
         "saved": "E-mail zapisany.",
         "cleared": "E-mail usunięty.",
-        "invalidEmail": "Podaj poprawny adres e-mail."
+        "invalidEmail": "Podaj poprawny adres e-mail.",
+        "methodsLabel": "Metody logowania",
+        "methodsDesc": "Sposoby, w jakie to wdrożenie dopuszcza. Same metody są po stronie logowania.",
+        "methodPassword": "E-mail i hasło"
       },
       "models": {
         "loadFailed": "Nie udało się wczytać katalogu modeli. Spróbuj ponownie.",

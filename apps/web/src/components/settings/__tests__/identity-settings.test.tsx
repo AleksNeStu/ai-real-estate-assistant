@@ -1,6 +1,15 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { IdentitySettings } from "../identity-settings";
 
+jest.mock("@/hooks/useCapabilities", () => ({
+  useCapabilities: () => ({
+    capabilities: {
+      auth: { jwt_enabled: true, demo_user_bypass: false, oauth: { google: true, apple: false } },
+    },
+    loading: false,
+  }),
+}));
+
 describe("IdentitySettings", () => {
   beforeEach(() => {
     window.localStorage.clear();
@@ -35,6 +44,13 @@ describe("IdentitySettings", () => {
 
     expect(window.localStorage.getItem("userEmail")).toBeNull();
     expect(screen.getByText("Please enter a valid email address.")).toBeInTheDocument();
+  });
+
+  it("states the sign-in methods the deployment carries", async () => {
+    render(<IdentitySettings />);
+    expect(await screen.findByText("E-mail + password")).toBeInTheDocument();
+    expect(screen.getByText("Google")).toBeInTheDocument();
+    expect(screen.queryByText("Apple")).not.toBeInTheDocument();
   });
 
   it("clears email when input is empty", async () => {

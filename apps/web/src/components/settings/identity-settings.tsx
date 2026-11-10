@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { MonoAnnotation } from '@/components/ui/mono-annotation';
+import { useCapabilities } from '@/hooks/useCapabilities';
 import { SettingsPanel, SettingsRow } from '@/components/settings/settings-panel';
 import { Input } from '@/components/ui/input';
 
@@ -24,6 +25,7 @@ function isValidEmail(value: string): boolean {
  */
 export function IdentitySettings({ onChange }: { onChange?: (userEmail: string | null) => void }) {
   const t = useTranslations('pages.settings.identity');
+  const { capabilities } = useCapabilities();
   const [email, setEmail] = useState(() => {
     if (typeof window === 'undefined') return '';
     return window.localStorage.getItem(USER_EMAIL_STORAGE_KEY) || '';
@@ -84,6 +86,23 @@ export function IdentitySettings({ onChange }: { onChange?: (userEmail: string |
           aria-invalid={!valid}
           className="max-w-[360px]"
         />
+      </SettingsRow>
+
+      <SettingsRow
+        label={t('methodsLabel')}
+        description={t('methodsDesc')}
+      >
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          {capabilities?.auth.jwt_enabled ? (
+            <MonoAnnotation className="text-foreground">{t('methodPassword')}</MonoAnnotation>
+          ) : null}
+          {capabilities?.auth.oauth.google ? (
+            <MonoAnnotation className="text-foreground">Google</MonoAnnotation>
+          ) : null}
+          {capabilities?.auth.oauth.apple ? (
+            <MonoAnnotation className="text-foreground">Apple</MonoAnnotation>
+          ) : null}
+        </div>
       </SettingsRow>
     </SettingsPanel>
   );

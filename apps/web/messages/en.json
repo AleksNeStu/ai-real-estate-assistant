@@ -85,15 +85,16 @@
     "user": "User",
     "userMenu": "User menu",
     "login": {
-      "title": "Welcome back",
-      "description": "Enter your email to sign in to your account",
+      "title": "Sign in",
+      "description": "To your favorites, saved searches, documents and your leads.",
       "emailLabel": "Email",
       "emailPlaceholder": "name@example.com",
       "passwordLabel": "Password",
       "forgotPassword": "Forgot password?",
       "noAccount": "Don't have an account?",
-      "submit": "Sign In",
-      "signUp": "Sign up",
+      "submit": "Sign in",
+      "signUp": "Create an account",
+      "orWithEmail": "or with e-mail",
       "orContinueWith": "Or continue with",
       "or": "or",
       "continueAsGuest": "Try without an account",
@@ -101,33 +102,35 @@
     },
     "register": {
       "title": "Create an account",
-      "description": "Enter your details to get started",
+      "description": "Free on the demo and on your own deployment.",
       "fullNameLabel": "Full Name",
       "emailLabel": "Email",
       "passwordLabel": "Password",
       "confirmPasswordLabel": "Confirm Password",
-      "haveAccount": "Already have an account?",
+      "haveAccount": "I have an account",
       "consentLabel": "I agree to the terms of use and the privacy policy, and consent to the processing of my data.",
       "consentRequired": "Please accept the terms to create an account.",
-      "submit": "Create Account"
+      "submit": "Create account"
     },
     "forgotPassword": {
-      "title": "Forgot password?",
-      "description": "Enter your email and we'll send you a reset link",
+      "title": "Reset your password",
+      "description": "We will send a link to your e-mail.",
       "emailLabel": "Email",
-      "submit": "Send Reset Link",
-      "backToLogin": "Back to login",
+      "submit": "Send reset link",
+      "backToLogin": "Back to sign in",
+      "noMailNote": "In demo mode this deployment sends no mail: the link is printed in the API log instead of being mailed.",
       "checkEmail": "Check your email",
       "resetSent": "We've sent a password reset link to your email address.",
       "checkInbox": "Please check your inbox for the reset link.",
       "resend": "Resend email"
     },
     "resetPassword": {
-      "title": "Reset password",
-      "description": "Enter your new password",
-      "newPasswordLabel": "New Password",
-      "confirmPasswordLabel": "Confirm New Password",
-      "submit": "Reset Password",
+      "title": "Choose a new password",
+      "description": "The link from your e-mail is valid for 60 minutes.",
+      "newPasswordLabel": "New password",
+      "confirmPasswordLabel": "Repeat password",
+      "submit": "Set password",
+      "successTitle": "Password set",
       "success": "Password reset successfully",
       "invalidToken": "Invalid or missing reset token",
       "passwordHint": "Min. 8 chars, uppercase, lowercase, digit",
@@ -137,7 +140,8 @@
     },
     "verifyEmail": {
       "title": "Verify your email",
-      "description": "We've sent a verification link to your email",
+      "description": "We've sent a verification link to your e-mail",
+      "noMailNote": "This deployment sends no e-mail, so no confirmation link can arrive here.",
       "checkInbox": "Please check your inbox and click the verification link.",
       "resend": "Resend verification email",
       "verified": "Email verified successfully",
@@ -146,7 +150,7 @@
       "verifying": "Verifying your email...",
       "verifiedDescription": "Your email has been verified successfully",
       "canLogin": "You can now log in to your account.",
-      "goToLogin": "Go to login",
+      "goToLogin": "Go to sign in",
       "failedTitle": "Verification failed",
       "failedDescription": "Failed to verify your email",
       "linkExpired": "The verification link may be expired or invalid.",
@@ -176,12 +180,14 @@
       "success": "Successfully signed in!",
       "welcome": "Welcome!",
       "redirecting": "Redirecting to login page...",
-      "signingIn": "Signing in...",
+      "signingIn": "Signing you in",
+      "returning": "Returning from the provider.",
       "pleaseWait": "Please wait..."
     },
     "demo": {
       "exploreDemoFirst": "Explore demo first"
-    }
+    },
+    "note": "Accounts are part of this open-source repository. On the demo they hold demo data only; on your own deployment they cost nothing and live in your database."
   },
   "property": {
     "card": {
@@ -2720,7 +2726,10 @@
         "save": "Save",
         "saved": "Email saved.",
         "cleared": "Email cleared.",
-        "invalidEmail": "Please enter a valid email address."
+        "invalidEmail": "Please enter a valid email address.",
+        "methodsLabel": "Sign-in methods",
+        "methodsDesc": "The ways this deployment lets you in. The methods themselves live on the auth side.",
+        "methodPassword": "E-mail + password"
       },
       "models": {
         "loadFailed": "Failed to load model catalog. Please try again.",
