@@ -370,7 +370,6 @@ class TestBulkAssign:
             )
             assert resp.status_code == 403
 
-    @pytest.mark.xfail(reason="Route shadowing: /{lead_id}/assign catches /bulk/assign")
     @pytest.mark.asyncio
     async def test_bulk_assign_all_fail(self, auth_admin, mock_db):
         with patch("api.routers.leads.AgentAssignmentRepository") as mock_assign_cls:
@@ -394,7 +393,6 @@ class TestBulkAssign:
                 assert resp.status_code == 200
                 assert resp.json()["failed_count"] == 1
 
-    @pytest.mark.xfail(reason="Route shadowing: /{lead_id}/assign catches /bulk/assign")
     @pytest.mark.asyncio
     async def test_bulk_assign_multiple_fail(self, auth_admin, mock_db):
         with patch("api.routers.leads.AgentAssignmentRepository") as mock_assign_cls:

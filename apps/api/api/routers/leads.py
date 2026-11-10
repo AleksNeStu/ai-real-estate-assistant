@@ -871,48 +871,10 @@ async def update_lead_status(
 # =============================================================================
 
 
-@router.post(
-    "/{lead_id}/assign",
-    response_model=AgentAssignmentResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Assign agent to lead",
-    description="Assign an agent to a lead. Admin only.",
-)
-async def assign_agent(
-    lead_id: str,
-    body: AgentAssignmentCreate,
-    user: User = Depends(get_current_active_user),
-    session: AsyncSession = Depends(get_db),
-) -> AgentAssignmentResponse:
-    """Assign an agent to a lead."""
-    if user.role not in ("admin", "superuser", "agent"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admins and agents can assign leads",
-        )
-
-    lead_repo = LeadRepository(session)
-    assignment_repo = AgentAssignmentRepository(session)
-
-    # Verify lead exists
-    lead = await lead_repo.get_by_id(lead_id)
-    if not lead:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Lead not found",
-        )
-
-    assignment = await assignment_repo.assign_lead_to_agent(
-        lead_id=lead_id,
-        agent_id=body.agent_id,
-        assigned_by=user.id,
-        notes=body.notes,
-        is_primary=body.is_primary,
-    )
-
-    return AgentAssignmentResponse.model_validate(assignment)
-
-
+# The bulk routes are declared before the parameterised ones on purpose: a
+# path whose first segment is a parameter catches every route of the same
+# shape that comes after it, so POST /leads/bulk/assign was read as an
+# assignment for a lead called "bulk".
 @router.post(
     "/bulk/assign",
     response_model=BulkOperationResponse,
@@ -955,6 +917,48 @@ async def bulk_assign_leads(
         failed_ids=failed_ids if failed_ids else None,
         message=f"Assigned {success_count} leads to agent",
     )
+
+
+@router.post(
+    "/{lead_id}/assign",
+    response_model=AgentAssignmentResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Assign agent to lead",
+    description="Assign an agent to a lead. Admin only.",
+)
+async def assign_agent(
+    lead_id: str,
+    body: AgentAssignmentCreate,
+    user: User = Depends(get_current_active_user),
+    session: AsyncSession = Depends(get_db),
+) -> AgentAssignmentResponse:
+    """Assign an agent to a lead."""
+    if user.role not in ("admin", "superuser", "agent"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins and agents can assign leads",
+        )
+
+    lead_repo = LeadRepository(session)
+    assignment_repo = AgentAssignmentRepository(session)
+
+    # Verify lead exists
+    lead = await lead_repo.get_by_id(lead_id)
+    if not lead:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lead not found",
+        )
+
+    assignment = await assignment_repo.assign_lead_to_agent(
+        lead_id=lead_id,
+        agent_id=body.agent_id,
+        assigned_by=user.id,
+        notes=body.notes,
+        is_primary=body.is_primary,
+    )
+
+    return AgentAssignmentResponse.model_validate(assignment)
 
 
 @router.post(
