@@ -2,20 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  Download,
-  Upload,
-  Loader2,
-  AlertCircle,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Trash2,
-  RefreshCw,
-  Filter,
-  FileSpreadsheet,
-  X,
-} from 'lucide-react';
+import { Loader2, Upload, Download, X, CheckCircle2 } from 'lucide-react';
+
+import { JobLedger } from '@/components/admin/job-ledger';
+import { Button } from '@/components/ui/button';
+import { MonoAnnotation } from '@/components/ui/mono-annotation';
+import { SectionHeader } from '@/components/ui/page-header';
+import { EmptyState, ErrorState, LoadingState } from '@/components/ui/states';
 import {
   listBulkJobs,
   createBulkImportJob,
@@ -25,52 +18,51 @@ import {
   ApiError,
 } from '@/lib/api';
 import type { BulkJobResponse, BulkJobType, BulkJobStatus, BulkJobSourceType } from '@/lib/types';
-import { PageHeader } from '@/components/ui/page-header';
-import { EmptyState } from '@/components/ui/states';
 
-interface ErrorState {
+interface ErrorStateValue {
   message: string;
   requestId?: string;
 }
-
-type TabType = 'jobs' | 'import' | 'export';
 
 const JOB_STATUSES: BulkJobStatus[] = ['pending', 'running', 'completed', 'failed', 'cancelled'];
 const JOB_TYPES: BulkJobType[] = ['import', 'export'];
 const EXPORT_FORMATS = ['csv', 'json', 'xlsx', 'parquet', 'md', 'pdf'];
 
+/**
+ * The bulk jobs tab.
+ *
+ * The jobs are a list, so the tab is a ledger: the jobs, their progress,
+ * their status, and the two things an administrator can do with them. The
+ * import and the export forms open above the ledger, one at a time.
+ */
 export default function BulkJobsPage() {
   const t = useTranslations('pages.admin.bulkJobs');
+  const tLedger = useTranslations('pages.admin.bulkJobs.ledger');
   const tCommon = useTranslations('common');
-  // Jobs state
+
   const [jobs, setJobs] = useState<BulkJobResponse[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [totalJobs, setTotalJobs] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
 
-  // UI state
-  const [activeTab, setActiveTab] = useState<TabType>('jobs');
-  const [error, setError] = useState<ErrorState | null>(null);
+  const [panel, setPanel] = useState<'import' | 'export' | null>(null);
+  const [error, setError] = useState<ErrorStateValue | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Filter state
   const [filterJobType, setFilterJobType] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
 
-  // Import form state
   const [importSourceType, setImportSourceType] = useState<BulkJobSourceType>('url');
   const [importUrl, setImportUrl] = useState('');
   const [importSourceName, setImportSourceName] = useState('');
   const [importing, setImporting] = useState(false);
 
-  // Export form state
   const [exportFormat, setExportFormat] = useState('csv');
   const [exportQuery, setExportQuery] = useState('');
   const [exportLimit, setExportLimit] = useState(100);
   const [exporting, setExporting] = useState(false);
 
-  // Load jobs
   const loadJobs = useCallback(async () => {
     setLoadingJobs(true);
     try {
@@ -94,23 +86,19 @@ export default function BulkJobsPage() {
   }, [filterJobType, filterStatus, page, pageSize, t]);
 
   useEffect(() => {
-    if (activeTab === 'jobs') {
-      loadJobs();
-    }
-  }, [activeTab, loadJobs]);
+    loadJobs();
+  }, [loadJobs]);
 
-  // Auto-refresh jobs every 5 seconds if there are running jobs
+  // A job that is still running changes on its own, so the ledger refreshes
+  // while there is something to refresh.
   useEffect(() => {
-    if (activeTab !== 'jobs') return;
-
     const hasRunningJobs = jobs.some((job) => job.status === 'running' || job.status === 'pending');
     if (!hasRunningJobs) return;
 
     const interval = setInterval(loadJobs, 5000);
     return () => clearInterval(interval);
-  }, [activeTab, jobs, loadJobs]);
+  }, [jobs, loadJobs]);
 
-  // Handle import
   const handleImport = async () => {
     if (importSourceType === 'url' && !importUrl) {
       setError({ message: t('errors.urlRequired') });
@@ -134,7 +122,8 @@ export default function BulkJobsPage() {
       setSuccess(t('success.importCreated'));
       setImportUrl('');
       setImportSourceName('');
-      setActiveTab('jobs');
+      setPanel(null);
+      loadJobs();
     } catch (err) {
       if (err instanceof ApiError) {
         setError({ message: err.message, requestId: err.request_id });
@@ -146,7 +135,6 @@ export default function BulkJobsPage() {
     }
   };
 
-  // Handle export
   const handleExport = async () => {
     if (!exportQuery) {
       setError({ message: t('errors.queryRequired') });
@@ -169,7 +157,8 @@ export default function BulkJobsPage() {
 
       setSuccess(t('success.exportCreated'));
       setExportQuery('');
-      setActiveTab('jobs');
+      setPanel(null);
+      loadJobs();
     } catch (err) {
       if (err instanceof ApiError) {
         setError({ message: err.message, requestId: err.request_id });
@@ -181,10 +170,9 @@ export default function BulkJobsPage() {
     }
   };
 
-  // Handle cancel job
-  const handleCancelJob = async (jobId: string) => {
+  const handleCancelJob = async (job: BulkJobResponse) => {
     try {
-      await cancelBulkJob(jobId);
+      await cancelBulkJob(job.id);
       loadJobs();
     } catch (err) {
       if (err instanceof ApiError) {
@@ -195,12 +183,11 @@ export default function BulkJobsPage() {
     }
   };
 
-  // Handle delete job
-  const handleDeleteJob = async (jobId: string) => {
+  const handleDeleteJob = async (job: BulkJobResponse) => {
     if (!confirm(t('confirm.deleteJob'))) return;
 
     try {
-      await deleteBulkJob(jobId);
+      await deleteBulkJob(job.id);
       loadJobs();
     } catch (err) {
       if (err instanceof ApiError) {
@@ -211,512 +198,306 @@ export default function BulkJobsPage() {
     }
   };
 
-  // Get status icon and color
-  const getStatusDisplay = (status: BulkJobStatus) => {
-    switch (status) {
-      case 'pending':
-        return {
-          icon: Clock,
-          color: 'text-warning bg-warning/10 dark:bg-warning/30',
-          label: t('status.pending'),
-        };
-      case 'running':
-        return {
-          icon: Loader2,
-          color: 'text-info bg-info/10 dark:bg-info/30 animate-spin',
-          label: t('status.running'),
-        };
-      case 'completed':
-        return {
-          icon: CheckCircle2,
-          color: 'text-success bg-success/10 dark:bg-success/30',
-          label: t('status.completed'),
-        };
-      case 'failed':
-        return {
-          icon: XCircle,
-          color: 'text-destructive bg-destructive/10 dark:bg-destructive/30',
-          label: t('status.failed'),
-        };
-      case 'cancelled':
-        return {
-          icon: XCircle,
-          color: 'text-muted-foreground bg-muted dark:bg-muted',
-          label: t('status.cancelled'),
-        };
-      default:
-        return { icon: Clock, color: 'text-muted-foreground bg-muted', label: status };
-    }
-  };
-
-  // Format date
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleString();
-  };
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <PageHeader title={t('title')} description={t('description')} />
-      </div>
+    <>
+      <SectionHeader
+        title={tLedger('title')}
+        description={t('description')}
+        actions={
+          <>
+            <Button
+              size="sm"
+              onClick={() => setPanel(panel === 'import' ? null : 'import')}
+              aria-pressed={panel === 'import'}
+            >
+              <Upload className="mr-2 size-4" aria-hidden="true" />
+              {tLedger('actions.import')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPanel(panel === 'export' ? null : 'export')}
+              aria-pressed={panel === 'export'}
+            >
+              <Download className="mr-2 size-4" aria-hidden="true" />
+              {tLedger('actions.export')}
+            </Button>
+          </>
+        }
+      />
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6 border-b">
-        <button
-          type="button"
-          onClick={() => setActiveTab('jobs')}
-          className={`px-4 py-2 border-b-2 transition-colors ${
-            activeTab === 'jobs'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <RefreshCw className="w-4 h-4 inline-block mr-2" />
-          {t('tabs.jobs')}
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('import')}
-          className={`px-4 py-2 border-b-2 transition-colors ${
-            activeTab === 'import'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <Upload className="w-4 h-4 inline-block mr-2" />
-          {t('tabs.import')}
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('export')}
-          className={`px-4 py-2 border-b-2 transition-colors ${
-            activeTab === 'export'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <Download className="w-4 h-4 inline-block mr-2" />
-          {t('tabs.export')}
-        </button>
-      </div>
+      {error ? (
+        <ErrorState
+          title={tCommon('error')}
+          description={
+            error.requestId ? `${error.message} · ${t('requestId', { id: error.requestId })}` : error.message
+          }
+          action={
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              className="text-muted-foreground transition-colors hover:text-foreground"
+              aria-label={tCommon('close')}
+            >
+              <X className="size-4" aria-hidden="true" />
+            </button>
+          }
+        />
+      ) : null}
 
-      {/* Error Display */}
-      {error && (
-        <div className="flex items-start gap-3 p-4 bg-destructive/10 text-destructive rounded mb-4">
-          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="font-medium">{tCommon('error')}</p>
-            <p className="text-sm">{error.message}</p>
-            {error.requestId && (
-              <p className="text-xs mt-1">{t('requestId', { id: error.requestId })}</p>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => setError(null)}
-            className="text-destructive/50 hover:text-destructive"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
-      {/* Success Display */}
-      {success && (
-        <div className="flex items-start gap-3 p-4 bg-success/10 text-success dark:bg-success/30 dark:text-success rounded mb-4">
-          <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="font-medium">{tCommon('success')}</p>
-            <p className="text-sm">{success}</p>
-          </div>
+      {success ? (
+        <div className="flex items-start gap-3 border-t border-success py-3">
+          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
+          <p className="m-0 text-app text-foreground">{success}</p>
           <button
             type="button"
             onClick={() => setSuccess(null)}
-            className="text-success/50 hover:text-success text-success/50"
+            className="ml-auto text-muted-foreground transition-colors hover:text-foreground"
+            aria-label={tCommon('close')}
           >
-            <X className="w-4 h-4" />
+            <X className="size-4" aria-hidden="true" />
           </button>
         </div>
-      )}
+      ) : null}
 
-      {/* Jobs Tab */}
-      {activeTab === 'jobs' && (
-        <div className="space-y-4">
-          {/* Filters */}
-          <div className="flex flex-wrap gap-4 p-4 bg-muted/50 rounded-lg">
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">{t('filters.label')}</span>
-            </div>
-            <select
-              value={filterJobType}
-              onChange={(e) => {
-                setFilterJobType(e.target.value);
-                setPage(1);
-              }}
-              className="border rounded px-2 py-1 text-sm bg-background"
-            >
-              <option value="">{t('filters.allTypes')}</option>
-              {JOB_TYPES.map((type) => (
-                <option key={type} value={type}>
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
-                </option>
-              ))}
-            </select>
-            <select
-              value={filterStatus}
-              onChange={(e) => {
-                setFilterStatus(e.target.value);
-                setPage(1);
-              }}
-              className="border rounded px-2 py-1 text-sm bg-background"
-            >
-              <option value="">{t('filters.allStatuses')}</option>
-              {JOB_STATUSES.map((status) => (
-                <option key={status} value={status}>
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={() => {
-                setFilterJobType('');
-                setFilterStatus('');
-                setPage(1);
-              }}
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              {tCommon('clear')}
-            </button>
+      {panel === 'import' ? (
+        <section className="flex flex-col gap-4 rounded-lg border border-border p-4">
+          <h2 className="m-0 text-app font-semibold text-foreground">{t('import.title')}</h2>
+
+          <div className="flex flex-wrap gap-2">
+            {(['url', 'file_upload', 'portal_api'] as BulkJobSourceType[]).map((type) => (
+              <button
+                type="button"
+                key={type}
+                onClick={() => setImportSourceType(type)}
+                aria-pressed={importSourceType === type}
+                className={`h-[34px] rounded-md border px-3 text-[13px] font-medium transition-colors ${
+                  importSourceType === type
+                    ? 'border-foreground bg-foreground text-background'
+                    : 'border-border bg-transparent text-foreground hover:bg-muted'
+                }`}
+              >
+                {type === 'url' && t('import.typeUrl')}
+                {type === 'file_upload' && t('import.typeFile')}
+                {type === 'portal_api' && t('import.typePortal')}
+              </button>
+            ))}
           </div>
 
-          {/* Jobs List */}
-          {loadingJobs ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+          {importSourceType === 'url' ? (
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="importUrls" className="text-app font-medium text-foreground">
+                {t('import.fileUrls')}
+              </label>
+              <textarea
+                id="importUrls"
+                value={importUrl}
+                onChange={(e) => setImportUrl(e.target.value)}
+                className="min-h-[100px] w-full rounded-md border border-border bg-background px-3 py-2 text-app"
+                placeholder={t('import.fileUrlsPlaceholder')}
+                disabled={importing}
+              />
+              <MonoAnnotation>{t('import.supports')}</MonoAnnotation>
             </div>
-          ) : jobs.length === 0 ? (
-            <EmptyState
-              icon={FileSpreadsheet}
-              title={t('empty.title')}
-              description={t('empty.description')}
+          ) : null}
+
+          {importSourceType === 'file_upload' ? (
+            <div className="rounded-lg border border-dashed border-border p-6 text-center">
+              <p className="m-0 text-app text-foreground">{t('import.fileUploadAvailable')}</p>
+              <MonoAnnotation className="mt-1 block">{t('import.fileUploadEndpoint')}</MonoAnnotation>
+            </div>
+          ) : null}
+
+          {importSourceType === 'portal_api' ? (
+            <div className="rounded-lg border border-border p-6 text-center">
+              <p className="m-0 text-app text-foreground">{t('import.portalConfigured')}</p>
+              <MonoAnnotation className="mt-1 block">{t('import.portalHint')}</MonoAnnotation>
+            </div>
+          ) : null}
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="importSourceName" className="text-app font-medium text-foreground">
+              {t('import.sourceName')}
+            </label>
+            <input
+              id="importSourceName"
+              type="text"
+              value={importSourceName}
+              onChange={(e) => setImportSourceName(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-app"
+              placeholder={t('import.sourceNamePlaceholder')}
+              disabled={importing}
             />
-          ) : (
-            <div className="space-y-3">
-              {jobs.map((job) => {
-                const statusDisplay = getStatusDisplay(job.status);
-                const StatusIcon = statusDisplay.icon;
-                return (
-                  <div
-                    key={job.id}
-                    className="border rounded-lg p-4 hover:bg-muted/30 transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                              job.job_type === 'import'
-                                ? 'bg-info/20 text-info'
-                                : 'bg-critical/20 text-critical'
-                            }`}
-                          >
-                            {job.job_type === 'import' ? (
-                              <Upload className="w-3 h-3" />
-                            ) : (
-                              <Download className="w-3 h-3" />
-                            )}
-                            {job.job_type.toUpperCase()}
-                          </span>
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusDisplay.color}`}
-                          >
-                            <StatusIcon className="w-3 h-3" />
-                            {statusDisplay.label}
-                          </span>
-                          <span className="text-xs text-muted-foreground">{job.source_type}</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-2">ID: {job.id}</p>
-                        <div className="grid grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">{t('job.progress')}</span>{' '}
-                            <span className="font-medium">{job.progress_percent.toFixed(1)}%</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">{t('job.processed')}</span>{' '}
-                            <span className="font-medium">
-                              {job.records_processed}/{job.records_total}
-                            </span>
-                          </div>
-                          {job.records_failed > 0 && (
-                            <div>
-                              <span className="text-muted-foreground">{t('job.failed')}</span>{' '}
-                              <span className="font-medium text-destructive">
-                                {job.records_failed}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        {job.error_message && (
-                          <p className="text-sm text-destructive mt-2">{job.error_message}</p>
-                        )}
-                        <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-                          <span>{t('job.created', { date: formatDate(job.created_at) })}</span>
-                          {job.completed_at && (
-                            <span>
-                              {t('job.completed', { date: formatDate(job.completed_at) })}
-                            </span>
-                          )}
-                          {job.expires_at && (
-                            <span>{t('job.expires', { date: formatDate(job.expires_at) })}</span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        {job.status === 'running' && (
-                          <button
-                            type="button"
-                            onClick={() => handleCancelJob(job.id)}
-                            className="p-2 text-warning hover:bg-warning/10 rounded"
-                            title={t('job.cancelTitle')}
-                          >
-                            <XCircle className="w-4 h-4" />
-                          </button>
-                        )}
-                        {job.result_url && (
-                          <a
-                            href={job.result_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-2 text-primary hover:bg-primary/10 rounded"
-                            title={t('job.downloadTitle')}
-                          >
-                            <Download className="w-4 h-4" />
-                          </a>
-                        )}
-                        {(job.status === 'completed' ||
-                          job.status === 'failed' ||
-                          job.status === 'cancelled') && (
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteJob(job.id)}
-                            className="p-2 text-destructive hover:bg-destructive/10 rounded"
-                            title={t('job.deleteTitle')}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    {/* Progress bar */}
-                    {(job.status === 'running' || job.status === 'pending') && (
-                      <div className="mt-3">
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div
-                            className="bg-primary h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${job.progress_percent}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Pagination */}
-          {totalJobs > pageSize && (
-            <div className="flex justify-center gap-2 mt-6">
-              <button
-                type="button"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
-                {tCommon('previous')}
-              </button>
-              <span className="px-3 py-1">
-                {t('pagination.page', { page, total: Math.ceil(totalJobs / pageSize) })}
-              </span>
-              <button
-                type="button"
-                onClick={() => setPage((p) => p + 1)}
-                disabled={page >= Math.ceil(totalJobs / pageSize)}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
-                {tCommon('next')}
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Import Tab */}
-      {activeTab === 'import' && (
-        <div className="max-w-2xl mx-auto space-y-6">
-          <div className="border rounded-lg p-6">
-            <h2 className="text-lg font-semibold mb-4">{t('import.title')}</h2>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">{t('import.sourceType')}</label>
-                <div className="flex gap-2">
-                  {['url', 'file_upload', 'portal_api'].map((type) => (
-                    <button
-                      type="button"
-                      key={type}
-                      onClick={() => setImportSourceType(type as BulkJobSourceType)}
-                      className={`px-4 py-2 rounded border ${
-                        importSourceType === type
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-background hover:bg-muted'
-                      }`}
-                    >
-                      {type === 'url' && t('import.typeUrl')}
-                      {type === 'file_upload' && t('import.typeFile')}
-                      {type === 'portal_api' && t('import.typePortal')}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {importSourceType === 'url' && (
-                <div>
-                  <label className="block text-sm font-medium mb-2">{t('import.fileUrls')}</label>
-                  <textarea
-                    value={importUrl}
-                    onChange={(e) => setImportUrl(e.target.value)}
-                    className="w-full border rounded p-2 min-h-[100px]"
-                    placeholder={t('import.fileUrlsPlaceholder')}
-                    disabled={importing}
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">{t('import.supports')}</p>
-                </div>
-              )}
-
-              {importSourceType === 'file_upload' && (
-                <div className="p-8 border-2 border-dashed rounded-lg text-center text-muted-foreground">
-                  <Upload className="w-8 h-8 mx-auto mb-2" />
-                  <p>{t('import.fileUploadAvailable')}</p>
-                  <p className="text-sm">{t('import.fileUploadEndpoint')}</p>
-                </div>
-              )}
-
-              {importSourceType === 'portal_api' && (
-                <div className="p-8 border rounded-lg text-center text-muted-foreground">
-                  <p>{t('import.portalConfigured')}</p>
-                  <p className="text-sm mt-1">{t('import.portalHint')}</p>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium mb-2">{t('import.sourceName')}</label>
-                <input
-                  type="text"
-                  value={importSourceName}
-                  onChange={(e) => setImportSourceName(e.target.value)}
-                  className="w-full border rounded p-2"
-                  placeholder={t('import.sourceNamePlaceholder')}
-                  disabled={importing}
-                />
-              </div>
-
-              <button
-                type="button"
-                onClick={handleImport}
-                disabled={importing || (importSourceType === 'url' && !importUrl)}
-                className="w-full py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
-              >
-                {importing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    {t('import.creating')}
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4" />
-                    {t('import.start')}
-                  </>
-                )}
-              </button>
-            </div>
           </div>
-        </div>
-      )}
 
-      {/* Export Tab */}
-      {activeTab === 'export' && (
-        <div className="max-w-2xl mx-auto space-y-6">
-          <div className="border rounded-lg p-6">
-            <h2 className="text-lg font-semibold mb-4">{t('export.title')}</h2>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">{t('export.format')}</label>
-                <select
-                  value={exportFormat}
-                  onChange={(e) => setExportFormat(e.target.value)}
-                  className="w-full border rounded p-2"
-                  disabled={exporting}
-                >
-                  {EXPORT_FORMATS.map((format) => (
-                    <option key={format} value={format}>
-                      {format.toUpperCase()}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">{t('export.query')}</label>
-                <textarea
-                  value={exportQuery}
-                  onChange={(e) => setExportQuery(e.target.value)}
-                  className="w-full border rounded p-2 min-h-[100px]"
-                  placeholder={t('export.queryPlaceholder')}
-                  disabled={exporting}
-                />
-                <p className="text-xs text-muted-foreground mt-1">{t('export.queryHint')}</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">{t('export.maxResults')}</label>
-                <input
-                  type="number"
-                  value={exportLimit}
-                  onChange={(e) => setExportLimit(parseInt(e.target.value) || 100)}
-                  className="w-full border rounded p-2"
-                  min={1}
-                  max={10000}
-                  disabled={exporting}
-                />
-              </div>
-
-              <button
-                type="button"
-                onClick={handleExport}
-                disabled={exporting || !exportQuery}
-                className="w-full py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
-              >
-                {exporting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    {t('export.creating')}
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4" />
-                    {t('export.start')}
-                  </>
-                )}
-              </button>
-            </div>
+          <div>
+            <Button onClick={handleImport} disabled={importing || (importSourceType === 'url' && !importUrl)}>
+              {importing ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />
+                  {t('import.creating')}
+                </>
+              ) : (
+                <>
+                  <Upload className="mr-2 size-4" aria-hidden="true" />
+                  {t('import.start')}
+                </>
+              )}
+            </Button>
           </div>
-        </div>
+        </section>
+      ) : null}
+
+      {panel === 'export' ? (
+        <section className="flex flex-col gap-4 rounded-lg border border-border p-4">
+          <h2 className="m-0 text-app font-semibold text-foreground">{t('export.title')}</h2>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="exportFormat" className="text-app font-medium text-foreground">
+              {t('export.format')}
+            </label>
+            <select
+              id="exportFormat"
+              value={exportFormat}
+              onChange={(e) => setExportFormat(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-app"
+              disabled={exporting}
+            >
+              {EXPORT_FORMATS.map((format) => (
+                <option key={format} value={format}>
+                  {format.toUpperCase()}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="exportQuery" className="text-app font-medium text-foreground">
+              {t('export.query')}
+            </label>
+            <textarea
+              id="exportQuery"
+              value={exportQuery}
+              onChange={(e) => setExportQuery(e.target.value)}
+              className="min-h-[100px] w-full rounded-md border border-border bg-background px-3 py-2 text-app"
+              placeholder={t('export.queryPlaceholder')}
+              disabled={exporting}
+            />
+            <MonoAnnotation>{t('export.queryHint')}</MonoAnnotation>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="exportLimit" className="text-app font-medium text-foreground">
+              {t('export.maxResults')}
+            </label>
+            <input
+              id="exportLimit"
+              type="number"
+              value={exportLimit}
+              onChange={(e) => setExportLimit(parseInt(e.target.value) || 100)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-app"
+              min={1}
+              max={10000}
+              disabled={exporting}
+            />
+          </div>
+
+          <div>
+            <Button onClick={handleExport} disabled={exporting || !exportQuery}>
+              {exporting ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />
+                  {t('export.creating')}
+                </>
+              ) : (
+                <>
+                  <Download className="mr-2 size-4" aria-hidden="true" />
+                  {t('export.start')}
+                </>
+              )}
+            </Button>
+          </div>
+        </section>
+      ) : null}
+
+      <div className="flex flex-wrap items-center gap-3">
+        <MonoAnnotation>{t('filters.label')}</MonoAnnotation>
+        <select
+          aria-label={t('filters.allTypes')}
+          value={filterJobType}
+          onChange={(e) => {
+            setFilterJobType(e.target.value);
+            setPage(1);
+          }}
+          className="h-[30px] rounded-md border border-border bg-background px-2 text-[13px]"
+        >
+          <option value="">{t('filters.allTypes')}</option>
+          {JOB_TYPES.map((type) => (
+            <option key={type} value={type}>
+              {type.charAt(0).toUpperCase() + type.slice(1)}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label={t('filters.allStatuses')}
+          value={filterStatus}
+          onChange={(e) => {
+            setFilterStatus(e.target.value);
+            setPage(1);
+          }}
+          className="h-[30px] rounded-md border border-border bg-background px-2 text-[13px]"
+        >
+          <option value="">{t('filters.allStatuses')}</option>
+          {JOB_STATUSES.map((status) => (
+            <option key={status} value={status}>
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </option>
+          ))}
+        </select>
+        {filterJobType || filterStatus ? (
+          <button
+            type="button"
+            onClick={() => {
+              setFilterJobType('');
+              setFilterStatus('');
+              setPage(1);
+            }}
+            className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {tCommon('clear')}
+          </button>
+        ) : null}
+      </div>
+
+      {loadingJobs ? (
+        <LoadingState rows={4} />
+      ) : jobs.length === 0 ? (
+        <EmptyState title={t('empty.title')} description={t('empty.description')} />
+      ) : (
+        <JobLedger jobs={jobs} onCancel={handleCancelJob} onDelete={handleDeleteJob} />
       )}
-    </div>
+
+      {totalJobs > pageSize ? (
+        <div className="flex items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="rounded-md border border-border px-3 py-1 text-[13px] transition-colors hover:bg-muted disabled:opacity-50"
+          >
+            {tCommon('previous')}
+          </button>
+          <MonoAnnotation>{t('pagination.page', { page, total: Math.ceil(totalJobs / pageSize) })}</MonoAnnotation>
+          <button
+            type="button"
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page >= Math.ceil(totalJobs / pageSize)}
+            className="rounded-md border border-border px-3 py-1 text-[13px] transition-colors hover:bg-muted disabled:opacity-50"
+          >
+            {tCommon('next')}
+          </button>
+        </div>
+      ) : null}
+    </>
   );
 }

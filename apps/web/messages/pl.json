@@ -3103,6 +3103,42 @@
         "totalLeads": "Wszystkich leadów",
         "totalRevenue": "Łączny przychód",
         "chartTitle": "{period}: transakcji {count}"
+      },
+      "board": {
+        "title": "Analityka agentów",
+        "description": "{agents} agentów · ostatnie {period}",
+        "dealsPerMonth": "Transakcje w miesiącu, zespół",
+        "months": "{count} miesięcy",
+        "kpis": {
+          "leads": "Leady",
+          "response": "Pierwszy kontakt",
+          "responseHint": "średnio do pierwszego kontaktu",
+          "leadToQualified": "Lead → zakwalifikowany",
+          "leadToQualifiedHint": "{rate}% zakwalifikowany → transakcja",
+          "dealsClosed": "Zamknięte transakcje",
+          "dealsGoal": "{current} z {target}",
+          "pipeline": "Wartość portfela"
+        },
+        "team": {
+          "agent": "Agent",
+          "leads": "Leady",
+          "conversion": "Konwersja",
+          "deals": "Transakcje",
+          "goal": "Cel",
+          "you": "Ty",
+          "unknown": "—",
+          "empty": "Zespół nie ma jeszcze wierszy."
+        },
+        "coaching": {
+          "topPerformer": "Najlepszy agent",
+          "topPerformerBody": "{metric} transakcji · miejsce {rank}",
+          "needsSupport": "Potrzebuje wsparcia",
+          "needsSupportBody": "{days} dni bez transakcji · {leads} leadów · {conversion}% konwersji",
+          "insights": "Uwagi trenera",
+          "empty": "Brak uwag trenera.",
+          "none": "Ten widok nie jest dostępny dla Twojego konta.",
+          "disclaimer": "Wygenerowane z liczb zespołu · sprawdź, zanim zadziałasz"
+        }
       }
     },
     "admin": {
@@ -3181,6 +3217,37 @@
           "ready": "Gotowe",
           "not_ready": "Niegotowe",
           "degraded": "Pogorszone"
+        },
+        "panels": {
+          "title": "Monitoring",
+          "deploymentTitle": "Wdrożenie",
+          "health": "Zdrowie",
+          "readiness": "Gotowość",
+          "latency": "Opóżznienie bazy",
+          "latencyHint": "jeden odczyt, w milisekundach",
+          "cacheHitRate": "Trafienia cache",
+          "hitsMisses": "{hits} trafień, {misses} pudet",
+          "noCacheData": "Brak danych cache",
+          "vectorIndex": "Indeks wektorowy",
+          "chunks": "{count} fragmentów",
+          "requestsTitle": "Żądania na minutę · 24 h",
+          "requestsCaption": "brak szeregu w API",
+          "requestsEmpty": "To wdrożenie nie udostępnia szeregu Żądań, więc nie ma tu jeszcze nic do narysowania.",
+          "alertsTitle": "Alerty",
+          "alertsEmpty": "Brak alertów — każdy próg mieści się w swoim limicie.",
+          "service": "Usługa",
+          "version": "Wersja",
+          "commit": "Commit",
+          "uptime": "Czas działania",
+          "database": "Baza danych",
+          "redis": "Redis",
+          "llm": "Dostawca LLM",
+          "environment": "Środowisko",
+          "provider": "Dostawca",
+          "sourceColumns": {
+            "source": "źródło",
+            "listings": "Oferty"
+          }
         }
       },
       "connectors": {
@@ -3249,6 +3316,35 @@
         },
         "errors": {
           "load": "Nie udało się wczytać konektorów"
+        },
+        "ledger": {
+          "title": "Konektory MCP",
+          "empty": "W tym wdrożeniu nie zarejestrowano konektorów.",
+          "columns": {
+            "connector": "Konektor",
+            "purpose": "Do czego służy",
+            "health": "Stan",
+            "state": "Konfiguracja",
+            "actions": "Akcje"
+          },
+          "health": {
+            "healthy": "zdrowy",
+            "unhealthy": "niezdrowy",
+            "error": "błąd",
+            "notChecked": "nie sprawdzony"
+          },
+          "state": {
+            "enabled": "Włączony",
+            "disabled": "Wyłączony",
+            "notConfigured": "Nie skonfigurowany",
+            "needsKey": "Potrzebuje klucza"
+          },
+          "needsKeyNote": "dodaj klucz w .env, aby go włączyć",
+          "responseTime": "{value} ms",
+          "checking": "Sprawdzanie…",
+          "actions": {
+            "check": "Sprawdź"
+          }
         }
       },
       "dataSources": {
@@ -3397,7 +3493,38 @@
         },
         "delete": "Usuń",
         "enabled": "Włączone",
-        "requestId": "Identyfikator żądania: {id}"
+        "requestId": "Identyfikator żądania: {id}",
+        "ledger": {
+          "title": "źródła danych",
+          "note": "Każdy kraj działa z Twoimi własnymi źródłami. Kanały dostawców wymagają Twojego klucza; Polska jest pierwszym wspieranym dostawcą.",
+          "never": "nigdy",
+          "syncing": "Synchronizacja…",
+          "columns": {
+            "source": "źródło",
+            "kind": "Rodzaj",
+            "listings": "Oferty",
+            "lastSync": "Ostatnia synchronizacja",
+            "actions": "Akcje"
+          },
+          "actions": {
+            "sync": "Synchronizuj",
+            "edit": "Edytuj",
+            "delete": "Usuń"
+          },
+          "portals": {
+            "title": "Portale",
+            "none": "To wdrożenie nie ma adapterów portali.",
+            "configured": "Skonfigurowany",
+            "notConfigured": "Nie skonfigurowany",
+            "needsKey": "Wymaga klucza",
+            "never": "nigdy nie pobrano",
+            "columns": {
+              "portal": "Portal",
+              "state": "Stan",
+              "fetched": "Oferty"
+            }
+          }
+        }
       },
       "bulkJobs": {
         "title": "Zadania masowego importu i eksportu",
@@ -3481,6 +3608,37 @@
           "maxResults": "Maksymalna liczba wyników",
           "creating": "Tworzenie zadania eksportu...",
           "start": "Uruchom zadanie eksportu"
+        },
+        "ledger": {
+          "title": "Zadania zbiorcze",
+          "empty": "Brak zadań — zaimportuj lub wyeksportuj, aby utworzyć.",
+          "columns": {
+            "job": "Zadanie",
+            "type": "Typ",
+            "progress": "Postęp",
+            "status": "Status",
+            "actions": "Akcje"
+          },
+          "records": "{processed} / {total}",
+          "failedRecords": "{count} błędnych",
+          "created": "utworzone {date}",
+          "actions": {
+            "cancel": "Anuluj",
+            "delete": "Usuń",
+            "download": "Pobierz",
+            "import": "Importuj CSV / XLSX",
+            "export": "Eksportuj oferty"
+          }
+        }
+      },
+      "shell": {
+        "title": "Administracja",
+        "description": "Jedno wdrożenie: zadania, które się wykonują, konektory, które odpowiadają, źródła, które zasilają katalog, i stan stosu.",
+        "tabs": {
+          "bulkJobs": "Zadania zbiorcze",
+          "connectors": "Konektory",
+          "dataSources": "źródła danych",
+          "monitoring": "Monitoring"
         }
       }
     },

@@ -1,456 +1,91 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import {
-  Activity,
-  ArrowDown,
-  ArrowUp,
-  Award,
-  Briefcase,
-  DollarSign,
-  Target,
-  TrendingUp,
-  Users,
-  Clock,
-  Star,
-  Lightbulb,
-  AlertCircle,
-  CheckCircle,
-} from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AgentCoaching, type CoachingNote } from '@/components/agents/analytics/agent-coaching';
+import { AgentKpiStrip, type AgentKpi } from '@/components/agents/analytics/agent-kpi-strip';
+import { AgentTeamLedger, type TeamRow } from '@/components/agents/analytics/agent-team-ledger';
+import { AgentTrendChart } from '@/components/agents/analytics/agent-trend-chart';
+import { AccountGate } from '@/components/shell/gate';
+import { MonoAnnotation } from '@/components/ui/mono-annotation';
 import { PageHeader } from '@/components/ui/page-header';
+import { ErrorState } from '@/components/ui/states';
 import {
   getAgentMetrics,
-  getTeamComparison,
-  getPerformanceTrends,
+  getAgentsNeedingSupport,
   getCoachingInsights,
   getGoalProgress,
+  getPerformanceTrends,
+  getTeamComparison,
+  getTopPerformers,
 } from '@/lib/api';
 import type {
   AgentMetrics,
-  TeamComparison,
-  PerformanceTrendPoint,
+  AgentNeedingSupport,
   CoachingInsight,
   GoalProgress,
+  PerformanceTrendPoint,
+  TeamComparison,
+  TopPerformerEntry,
 } from '@/lib/types';
 
-// Color coding for percentages
-const getChangeColor = (value: number | null): string => {
-  if (value === null) return 'text-muted-foreground';
-  return value >= 0 ? 'text-success' : 'text-destructive';
-};
+/**
+ * The agent analytics.
+ *
+ * One agent's work, and the team's: the numbers that judge the work, the
+ * table that puts the agents beside each other, the months of deals, and
+ * the notes that say what to do about it.
+ *
+ * The period tabs drive every number on the page. The team views - the
+ * leaderboard and the agents who need support - are an administrator's
+ * view, so they are fetched on their own: an agent who is not one still
+ * gets their own numbers, without a wall of errors.
+ */
 
-const getChangeIcon = (value: number | null) => {
-  if (value === null) return null;
-  return value >= 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />;
-};
+/** The periods the page speaks about. */
+const PERIODS = [
+  { key: '30d', days: 30, interval: 'day' as const, periods: 30, label: '30 d' },
+  { key: '90d', days: 90, interval: 'week' as const, periods: 13, label: '90 d' },
+  { key: '12mo', days: 365, interval: 'month' as const, periods: 12, label: '12 mo' },
+];
 
-// Metric Card Component
-function MetricCard({
-  title,
-  value,
-  subtitle,
-  icon: Icon,
-  change,
-  format = 'number',
-}: {
-  title: string;
-  value: number | string;
-  subtitle?: string;
-  icon: React.ElementType;
-  change?: number | null;
-  format?: 'number' | 'currency' | 'percent' | 'days';
-}) {
-  const locale = useLocale();
-  const formattedValue = (() => {
-    if (typeof value === 'string') return value;
-    switch (format) {
-      case 'currency':
-        return new Intl.NumberFormat(locale, {
-          style: 'currency',
-          currency: 'EUR',
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 0,
-        }).format(value);
-      case 'percent':
-        return `${value.toFixed(1)}%`;
-      case 'days':
-        return new Intl.NumberFormat(locale, {
-          style: 'unit',
-          unit: 'day',
-          maximumFractionDigits: 1,
-        }).format(value);
-      default:
-        return new Intl.NumberFormat(locale).format(value);
-    }
-  })();
-
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{formattedValue}</div>
-        {(subtitle || change !== undefined) && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            {change !== null && change !== undefined && (
-              <span className={`flex items-center ${getChangeColor(change)}`}>
-                {getChangeIcon(change)}
-                {Math.abs(change).toFixed(1)}%
-              </span>
-            )}
-            {subtitle && <span>{subtitle}</span>}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
+/** The window the API is asked about, in days, counted back from today. */
+function periodBounds(days: number): { period_start: string; period_end: string } {
+  const end = new Date();
+  const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
+  return { period_start: start.toISOString(), period_end: end.toISOString() };
 }
 
-// Team Comparison Card
-function TeamComparisonCard({ comparison }: { comparison: TeamComparison | null }) {
-  const t = useTranslations('pages.agentAnalytics.team');
-
-  if (!comparison) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('title')}</CardTitle>
-          <CardDescription>{t('loading')}</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
-  const ranks = [
-    { labelKey: 'deals', rank: comparison.rank_by_deals, total: comparison.total_agents },
-    { labelKey: 'revenue', rank: comparison.rank_by_revenue, total: comparison.total_agents },
-    { labelKey: 'conversion', rank: comparison.rank_by_conversion, total: comparison.total_agents },
-  ];
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Award className="h-5 w-5" />
-          {t('title')}
-        </CardTitle>
-        <CardDescription>{t('vsAverage', { count: comparison.total_agents })}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-3 gap-4">
-          {ranks.map((item) => (
-            <div key={item.labelKey} className="text-center">
-              <div className="text-2xl font-bold">#{item.rank}</div>
-              <div className="text-xs text-muted-foreground">
-                {t('rankOf', { total: item.total, label: t(`labels.${item.labelKey}`) })}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="space-y-3 pt-4 border-t">
-          <ComparisonRow
-            label={t('labels.deals')}
-            vsAvg={comparison.deals_vs_avg_percent}
-            avg={comparison.team_avg_deals}
-            format="number"
-          />
-          <ComparisonRow
-            label={t('labels.revenue')}
-            vsAvg={comparison.revenue_vs_avg_percent}
-            avg={comparison.team_avg_revenue}
-            format="currency"
-          />
-          <ComparisonRow
-            label={t('labels.conversion')}
-            vsAvg={comparison.conversion_vs_avg_percent}
-            avg={comparison.team_avg_conversion}
-            format="percent"
-          />
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function ComparisonRow({
-  label,
-  vsAvg,
-  avg,
-  format,
-}: {
-  label: string;
-  vsAvg: number;
-  avg: number;
-  format: 'number' | 'currency' | 'percent';
-}) {
-  const locale = useLocale();
-  const t = useTranslations('pages.agentAnalytics.team');
-  const formattedAvg = (() => {
-    switch (format) {
-      case 'currency':
-        return new Intl.NumberFormat(locale, {
-          style: 'currency',
-          currency: 'EUR',
-          minimumFractionDigits: 0,
-        }).format(avg);
-      case 'percent':
-        return `${avg.toFixed(1)}%`;
-      default:
-        return avg.toFixed(1);
-    }
-  })();
-
-  return (
-    <div className="flex items-center justify-between text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <div className="flex items-center gap-2">
-        <span className="text-xs">{t('teamAvg', { value: formattedAvg })}</span>
-        <span className={`flex items-center ${getChangeColor(vsAvg)}`}>
-          {getChangeIcon(vsAvg)}
-          {Math.abs(vsAvg).toFixed(0)}%
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// Coaching Insights Panel
-function CoachingInsightsPanel({ insights }: { insights: CoachingInsight[] }) {
-  const t = useTranslations('pages.agentAnalytics.insights');
-  const categoryConfig = {
-    strength: { icon: Star, color: 'text-warning', bg: 'bg-warning/10', label: t('strength') },
-    improvement: {
-      icon: AlertCircle,
-      color: 'text-destructive',
-      bg: 'bg-destructive/10',
-      label: t('improvement'),
-    },
-    opportunity: {
-      icon: Lightbulb,
-      color: 'text-info',
-      bg: 'bg-info/10',
-      label: t('opportunity'),
-    },
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Lightbulb className="h-5 w-5" />
-          {t('title')}
-        </CardTitle>
-        <CardDescription>{t('description')}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {insights.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('empty')}</p>
-        ) : (
-          <div className="space-y-3">
-            {insights.slice(0, 5).map((insight, index) => {
-              const config = categoryConfig[insight.category as keyof typeof categoryConfig];
-              const Icon = config.icon;
-              return (
-                <div key={index} className={`p-3 rounded-lg ${config.bg} border`}>
-                  <div className="flex items-start gap-3">
-                    <Icon className={`h-5 w-5 mt-0.5 ${config.color}`} />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm">{insight.title}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {config.label}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">{insight.description}</p>
-                      <p className="text-sm font-medium mt-2 text-primary">
-                        → {insight.actionable_recommendation}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-// Goal Progress Card
-function GoalProgressCard({ goals }: { goals: GoalProgress[] }) {
-  const t = useTranslations('pages.agentAnalytics.goals');
-
-  if (goals.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            {t('title')}
-          </CardTitle>
-          <CardDescription>{t('emptyTitle')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">{t('emptyDescription')}</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Target className="h-5 w-5" />
-          {t('progressTitle')}
-        </CardTitle>
-        <CardDescription>{t('progressDescription')}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {goals.map((goal) => (
-          <div key={goal.id} className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium capitalize">{goal.goal_type}</span>
-                {goal.is_achieved && <CheckCircle className="h-4 w-4 text-success" />}
-              </div>
-              <span className="text-sm text-muted-foreground">
-                {goal.progress_percent.toFixed(0)}%
-              </span>
-            </div>
-            <Progress value={goal.progress_percent} className="h-2" />
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>
-                {goal.current_value} / {goal.target_value}
-              </span>
-              <span>
-                {goal.days_remaining > 0
-                  ? t('daysLeft', { count: goal.days_remaining })
-                  : t('periodEnded')}
-              </span>
-            </div>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-  );
-}
-
-// Performance Trends Chart (simplified without recharts for now)
-function PerformanceTrendsCard({ trends }: { trends: PerformanceTrendPoint[] }) {
-  const locale = useLocale();
-  const t = useTranslations('pages.agentAnalytics.trends');
-
-  if (trends.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            {t('title')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">{t('loading')}</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const maxDeals = Math.max(...trends.map((t) => t.deals_closed), 1);
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5" />
-          {t('title')}
-        </CardTitle>
-        <CardDescription>{t('lastMonths', { count: trends.length })}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {/* Simple bar chart for deals */}
-          <div>
-            <div className="text-sm font-medium mb-2">{t('dealsClosed')}</div>
-            <div className="flex items-end gap-1 h-24">
-              {trends.map((trend, index) => (
-                <div
-                  key={index}
-                  className="flex-1 bg-primary/20 hover:bg-primary/40 rounded-t transition-colors"
-                  style={{
-                    height: `${(trend.deals_closed / maxDeals) * 100}%`,
-                    minHeight: trend.deals_closed > 0 ? '4px' : '0',
-                  }}
-                  title={t('chartTitle', { period: trend.period, count: trend.deals_closed })}
-                />
-              ))}
-            </div>
-            <div className="flex justify-between text-xs text-muted-foreground mt-1">
-              <span>{trends[0]?.period}</span>
-              <span>{trends[trends.length - 1]?.period}</span>
-            </div>
-          </div>
-
-          {/* Summary stats */}
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-            <div className="text-center">
-              <div className="text-lg font-bold">{trends.reduce((sum, t) => sum + t.leads, 0)}</div>
-              <div className="text-xs text-muted-foreground">{t('totalLeads')}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold">
-                {trends.reduce((sum, t) => sum + t.deals_closed, 0)}
-              </div>
-              <div className="text-xs text-muted-foreground">{t('dealsClosed')}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold">
-                {new Intl.NumberFormat(locale, {
-                  style: 'currency',
-                  currency: 'EUR',
-                  notation: 'compact',
-                }).format(trends.reduce((sum, t) => sum + t.revenue, 0))}
-              </div>
-              <div className="text-xs text-muted-foreground">{t('totalRevenue')}</div>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// Main Page Component
 export default function AgentAnalyticsPage() {
   const t = useTranslations('pages.agentAnalytics');
+  const tBoard = useTranslations('pages.agentAnalytics.board');
+  const tCommon = useTranslations('common');
+  const locale = useLocale();
+
+  const [periodKey, setPeriodKey] = useState(PERIODS[1].key);
   const [metrics, setMetrics] = useState<AgentMetrics | null>(null);
   const [comparison, setComparison] = useState<TeamComparison | null>(null);
   const [trends, setTrends] = useState<PerformanceTrendPoint[]>([]);
   const [insights, setInsights] = useState<CoachingInsight[]>([]);
   const [goals, setGoals] = useState<GoalProgress[]>([]);
+  const [performers, setPerformers] = useState<TopPerformerEntry[]>([]);
+  const [support, setSupport] = useState<AgentNeedingSupport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
+  const period = PERIODS.find((entry) => entry.key === periodKey) ?? PERIODS[1];
+
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
+      const bounds = periodBounds(period.days);
       const [metricsData, comparisonData, trendsData, insightsData, goalsData] = await Promise.all([
-        getAgentMetrics(),
-        getTeamComparison(),
-        getPerformanceTrends({ interval: 'month', periods: 12 }),
+        getAgentMetrics(bounds),
+        getTeamComparison(bounds),
+        getPerformanceTrends({ interval: period.interval, periods: period.periods }),
         getCoachingInsights(),
         getGoalProgress(),
       ]);
@@ -460,172 +95,256 @@ export default function AgentAnalyticsPage() {
       setTrends(trendsData.trends);
       setInsights(insightsData.insights);
       setGoals(goalsData.goals);
+
+      // The team views are an administrator's view. They are fetched on their
+      // own so that an agent without them still gets their own numbers.
+      Promise.all([
+        getTopPerformers({ metric: 'deals', limit: 5, period_days: period.days }),
+        getAgentsNeedingSupport({ threshold_days: 30 }),
+      ])
+        .then(([top, needing]) => {
+          setPerformers(top.performers ?? []);
+          setSupport(needing.agents ?? []);
+        })
+        .catch(() => {
+          setPerformers([]);
+          setSupport([]);
+        });
     } catch (err) {
       console.error(t('errors.fetch'), err);
       setError(t('errors.load'));
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [period, t]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    loadData();
+  }, [loadData]);
 
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8 space-y-6">
-        <p className="text-muted-foreground">{t('loading')}</p>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
-              <CardContent className="pt-6">
-                <div className="h-16 bg-muted animate-pulse rounded" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const kpis = useMemo<AgentKpi[]>(() => {
+    if (!metrics) return [];
+    const goal = goals.find((entry) => entry.goal_type === 'deals');
+    const hours = metrics.avg_time_to_first_contact_hours;
+
+    return [
+      {
+        key: 'leads',
+        value: metrics.total_leads,
+        label: tBoard('kpis.leads'),
+        hint: t('metrics.newThisWeek', { count: metrics.new_leads_week }),
+      },
+      {
+        key: 'response',
+        value:
+          hours === null || hours === undefined
+            ? '—'
+            : hours < 1
+              ? `${Math.round(hours * 60)} min`
+              : `${hours.toFixed(1)} h`,
+        label: tBoard('kpis.response'),
+        hint: tBoard('kpis.responseHint'),
+      },
+      {
+        key: 'conversion',
+        value: `${metrics.lead_to_qualified_rate.toFixed(1)}%`,
+        label: tBoard('kpis.leadToQualified'),
+        hint: tBoard('kpis.leadToQualifiedHint', {
+          rate: metrics.qualified_to_deal_rate.toFixed(1),
+        }),
+      },
+      {
+        key: 'deals',
+        value: metrics.closed_deals,
+        label: tBoard('kpis.dealsClosed'),
+        hint: goal
+          ? tBoard('kpis.dealsGoal', { current: goal.current_value, target: goal.target_value })
+          : t('metrics.closed', { count: metrics.total_deals }),
+      },
+      {
+        key: 'pipeline',
+        value: new Intl.NumberFormat(locale, {
+          style: 'currency',
+          currency: 'EUR',
+          notation: 'compact',
+          maximumFractionDigits: 1,
+        }).format(metrics.total_deal_value),
+        label: tBoard('kpis.pipeline'),
+        hint: t('metrics.activeDeals'),
+      },
+    ];
+  }, [goals, locale, metrics, t, tBoard]);
+
+  const teamRows = useMemo<TeamRow[]>(() => {
+    const rows: TeamRow[] = [];
+
+    if (metrics && comparison) {
+      const goal = goals.find((entry) => entry.goal_type === 'deals');
+      rows.push({
+        name: comparison.agent_name || tBoard('team.you'),
+        leads: metrics.total_leads,
+        conversion: Number(metrics.overall_conversion_rate.toFixed(1)),
+        deals: metrics.closed_deals,
+        goal: goal
+          ? { percent: goal.progress_percent, achieved: goal.is_achieved }
+          : null,
+        isCurrent: true,
+      });
+    }
+
+    for (const performer of performers) {
+      rows.push({
+        name: performer.agent_name,
+        leads: null,
+        conversion: null,
+        deals: performer.metric_value,
+        goal: null,
+      });
+    }
+
+    for (const agent of support) {
+      rows.push({
+        name: agent.agent_name,
+        leads: agent.total_leads,
+        conversion: Number(agent.conversion_rate.toFixed(1)),
+        deals: null,
+        goal: null,
+      });
+    }
+
+    // One row per agent: the leaderboard and the support list may name the
+    // same person, and the row with more of the numbers wins.
+    const seen = new Map<string, TeamRow>();
+    for (const row of rows) {
+      const existing = seen.get(row.name);
+      if (!existing) {
+        seen.set(row.name, row);
+        continue;
+      }
+      seen.set(row.name, {
+        ...existing,
+        leads: existing.leads ?? row.leads,
+        conversion: existing.conversion ?? row.conversion,
+        deals: existing.deals ?? row.deals,
+        goal: existing.goal ?? row.goal,
+      });
+    }
+    return [...seen.values()];
+  }, [comparison, goals, metrics, performers, support, tBoard]);
+
+  const notes = useMemo<CoachingNote[]>(
+    () =>
+      insights.slice(0, 5).map((insight) => ({
+        category: insight.category,
+        title: insight.title,
+        description: insight.description,
+        recommendation: insight.actionable_recommendation,
+      })),
+    [insights]
+  );
+
+  const trendPoints = useMemo(
+    () => trends.map((trend) => ({ period: trend.period, value: trend.deals_closed })),
+    [trends]
+  );
 
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-destructive">
-              <AlertCircle className="h-5 w-5" />
-              <span>{error}</span>
-            </div>
-          </CardContent>
-        </Card>
+        <ErrorState
+          title={tCommon('error')}
+          description={error}
+          onRetry={loadData}
+          retryLabel={tCommon('retry')}
+        />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      {/* Header */}
-      <PageHeader title={t('title')} description={t('pageDescription')} />
+    <AccountGate route="agent-analytics">
+      <div className="flex flex-col gap-5 px-6 py-6">
+        <PageHeader
+          title={tBoard('title')}
+          description={
+            comparison
+              ? tBoard('description', {
+                  agents: comparison.total_agents,
+                  period: period.label,
+                })
+              : tBoard('description', { agents: 0, period: period.label })
+          }
+          actions={
+            <div className="flex overflow-hidden rounded-md border border-border">
+              {PERIODS.map((entry) => {
+                const active = entry.key === periodKey;
+                return (
+                  <button
+                    key={entry.key}
+                    type="button"
+                    onClick={() => setPeriodKey(entry.key)}
+                    aria-pressed={active}
+                    data-testid={`agent-period-${entry.key}`}
+                    className="h-8 border-0 border-r border-border px-3 text-[13px] font-medium transition-colors last:border-r-0"
+                    style={{
+                      backgroundColor: active ? 'hsl(var(--foreground))' : 'transparent',
+                      color: active ? 'hsl(var(--background))' : 'hsl(var(--foreground))',
+                    }}
+                  >
+                    {entry.label}
+                  </button>
+                );
+              })}
+            </div>
+          }
+        />
 
-      {/* Overview Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <MetricCard
-          title={t('metrics.totalLeads')}
-          value={metrics?.total_leads ?? 0}
-          subtitle={t('metrics.newThisWeek', { count: metrics?.new_leads_week ?? 0 })}
-          icon={Users}
-        />
-        <MetricCard
-          title={t('metrics.activeDeals')}
-          value={metrics?.active_deals ?? 0}
-          subtitle={t('metrics.closed', { count: metrics?.closed_deals ?? 0 })}
-          icon={Briefcase}
-        />
-        <MetricCard
-          title={t('metrics.conversionRate')}
-          value={metrics?.overall_conversion_rate ?? 0}
-          format="percent"
-          subtitle={t('metrics.overall')}
-          icon={Target}
-        />
-        <MetricCard
-          title={t('metrics.totalRevenue')}
-          value={metrics?.total_deal_value ?? 0}
-          format="currency"
-          change={metrics?.revenue_change_percent}
-          icon={DollarSign}
-        />
-      </div>
+        {loading ? (
+          <MonoAnnotation>{t('loading')}</MonoAnnotation>
+        ) : (
+          <AgentKpiStrip kpis={kpis} />
+        )}
 
-      {/* Secondary Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <MetricCard
-          title={t('metrics.highValueLeads')}
-          value={metrics?.high_value_leads ?? 0}
-          subtitle={t('metrics.scoreAtLeast')}
-          icon={Star}
-        />
-        <MetricCard
-          title={t('metrics.avgTimeToClose')}
-          value={metrics?.avg_time_to_close_days ?? '-'}
-          format="days"
-          icon={Clock}
-        />
-        <MetricCard
-          title={t('metrics.avgDealValue')}
-          value={metrics?.avg_deal_value ?? 0}
-          format="currency"
-          icon={Activity}
-        />
-        <MetricCard
-          title={t('metrics.pendingCommission')}
-          value={metrics?.pending_commission ?? 0}
-          format="currency"
-          icon={DollarSign}
-        />
-      </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+          <div className="flex flex-col gap-5">
+            <section className="flex flex-col gap-2">
+              <span className="text-[15px] font-semibold text-foreground">
+                {t('team.title')}
+              </span>
+              <AgentTeamLedger rows={teamRows} goalLabel={tBoard('team.goal')} />
+            </section>
 
-      {/* Tabs for detailed views */}
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">{t('tabs.overview')}</TabsTrigger>
-          <TabsTrigger value="insights">{t('tabs.insights')}</TabsTrigger>
-          <TabsTrigger value="goals">{t('tabs.goals')}</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 lg:grid-cols-2">
-            <PerformanceTrendsCard trends={trends} />
-            <TeamComparisonCard comparison={comparison} />
+            <AgentTrendChart
+              points={trendPoints}
+              title={tBoard('dealsPerMonth')}
+              caption={tBoard('months', { count: trendPoints.length })}
+            />
           </div>
 
-          {/* Strengths */}
-          {(metrics?.top_property_types?.length ?? 0) > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('strengths.title')}</CardTitle>
-                <CardDescription>{t('strengths.description')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">{t('strengths.propertyTypes')}</h4>
-                    <div className="space-y-2">
-                      {metrics?.top_property_types?.slice(0, 3).map((pt, i) => (
-                        <div key={i} className="flex items-center justify-between text-sm">
-                          <span>{pt.type}</span>
-                          <Badge variant="secondary">{pt.percentage}%</Badge>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">{t('strengths.locations')}</h4>
-                    <div className="space-y-2">
-                      {metrics?.top_locations?.slice(0, 3).map((loc, i) => (
-                        <div key={i} className="flex items-center justify-between text-sm">
-                          <span>{loc.location}</span>
-                          <Badge variant="secondary">{loc.percentage}%</Badge>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        <TabsContent value="insights">
-          <CoachingInsightsPanel insights={insights} />
-        </TabsContent>
-
-        <TabsContent value="goals">
-          <GoalProgressCard goals={goals} />
-        </TabsContent>
-      </Tabs>
-    </div>
+          <AgentCoaching
+            topPerformer={
+              performers[0]
+                ? {
+                    name: performers[0].agent_name,
+                    metricValue: performers[0].metric_value,
+                    rank: performers[0].rank,
+                  }
+                : null
+            }
+            needsSupport={
+              support[0]
+                ? {
+                    name: support[0].agent_name,
+                    daysWithoutDeal: support[0].days_without_deal,
+                    totalLeads: support[0].total_leads,
+                    conversionRate: Number(support[0].conversion_rate.toFixed(1)),
+                  }
+                : null
+            }
+            notes={notes}
+          />
+        </div>
+      </div>
+    </AccountGate>
   );
 }

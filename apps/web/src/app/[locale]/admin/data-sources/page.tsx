@@ -6,15 +6,22 @@ import {
   FileUp,
   Loader2,
   Upload,
-  AlertCircle,
-  FileSpreadsheet,
+  X,
   CheckCircle2,
   Table,
-  Database,
   Globe,
   Filter,
-  X,
 } from 'lucide-react';
+
+import { PortalLedger, SourceLedger } from '@/components/admin/source-ledger';
+import {
+  DeleteConfirmDialog,
+  EditDataSourceDialog,
+} from '@/components/admin/data-sources';
+import { Button } from '@/components/ui/button';
+import { MonoAnnotation } from '@/components/ui/mono-annotation';
+import { SectionHeader } from '@/components/ui/page-header';
+import { ErrorState, LoadingState } from '@/components/ui/states';
 import {
   listDataSources,
   syncDataSource,
@@ -28,15 +35,9 @@ import {
   getExcelSheetsUpload,
   ApiError,
 } from '@/lib/api';
-import {
-  DataSourceList,
-  DeleteConfirmDialog,
-  EditDataSourceDialog,
-} from '@/components/admin/data-sources';
 import type { DataSource, DataSourceUpdate, IngestResponse, PortalAdapterInfo } from '@/lib/types';
-import { PageHeader } from '@/components/ui/page-header';
 
-interface ErrorState {
+interface ErrorStateValue {
   message: string;
   requestId?: string;
 }
@@ -46,45 +47,45 @@ interface SheetInfo {
   rowCount: number;
 }
 
-type TabType = 'sources' | 'import';
-
+/**
+ * The data sources tab.
+ *
+ * The sources are a list, so the tab is a ledger: every row is a source with
+ * its kind, its listings and its last sync. The portals get their own ledger
+ * below it - a portal that is not configured is a different thing from a
+ * source, and the two are read separately.
+ */
 export default function DataSourcesPage() {
   const t = useTranslations('pages.admin.dataSources');
+  const tLedger = useTranslations('pages.admin.dataSources.ledger');
   const tCommon = useTranslations('common');
-  // Data sources state
+
   const [sources, setSources] = useState<DataSource[]>([]);
   const [loadingSources, setLoadingSources] = useState(true);
   const [syncingIds, setSyncingIds] = useState<Set<string>>(new Set());
 
-  // UI state
-  const [activeTab, setActiveTab] = useState<TabType>('sources');
-  const [error, setError] = useState<ErrorState | null>(null);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [error, setError] = useState<ErrorStateValue | null>(null);
   const [result, setResult] = useState<IngestResponse | null>(null);
 
-  // Delete dialog state
   const [deleteSource, setDeleteSource] = useState<DataSource | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Edit dialog state
   const [editSource, setEditSource] = useState<DataSource | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Import state
   const [importMode, setImportMode] = useState<'url' | 'file' | 'portal'>('url');
   const [fileUrl, setFileUrl] = useState<string>('');
   const [sourceName, setSourceName] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
-  // Excel sheets state
   const [loadingSheets, setLoadingSheets] = useState(false);
   const [sheets, setSheets] = useState<SheetInfo[]>([]);
   const [selectedSheet, setSelectedSheet] = useState<string>('');
   const [headerRow, setHeaderRow] = useState<number>(0);
 
-  // File upload state
   const [uploadFile, setUploadFile] = useState<File | null>(null);
 
-  // Portal state
   const [portals, setPortals] = useState<PortalAdapterInfo[]>([]);
   const [loadingPortals, setLoadingPortals] = useState(true);
   const [selectedPortal, setSelectedPortal] = useState<string>('');
@@ -97,7 +98,11 @@ export default function DataSourcesPage() {
   const [portalListingType, setPortalListingType] = useState<string>('rent');
   const [portalLimit, setPortalLimit] = useState<number>(50);
 
-  // Load data sources
+  // The reference point for "how long ago". It is measured in an effect, not
+  // during render: the clock is impure, and a relative time computed against
+  // an unmetered clock is a wrong number.
+  const [now, setNow] = useState<number | null>(null);
+
   const loadDataSources = useCallback(async () => {
     try {
       setLoadingSources(true);
@@ -110,7 +115,6 @@ export default function DataSourcesPage() {
     }
   }, []);
 
-  // Load available portals
   useEffect(() => {
     listPortals()
       .then((data) => {
@@ -127,12 +131,18 @@ export default function DataSourcesPage() {
       });
   }, []);
 
-  // Load sources on mount
   useEffect(() => {
     loadDataSources();
   }, [loadDataSources]);
 
-  const extractErrorState = (err: unknown): ErrorState => {
+  useEffect(() => {
+    const update = () => setNow(Date.now());
+    update();
+    const interval = setInterval(update, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const extractErrorState = (err: unknown): ErrorStateValue => {
     let message = t('errors.unknown');
     let requestId: string | undefined = undefined;
 
@@ -148,14 +158,12 @@ export default function DataSourcesPage() {
     return { message, requestId };
   };
 
-  // Handle sync
   const handleSync = async (id: string) => {
     setSyncingIds((prev) => new Set(prev).add(id));
     setError(null);
 
     try {
       await syncDataSource(id);
-      // Refresh the list after sync starts
       setTimeout(() => {
         loadDataSources();
       }, 1000);
@@ -168,11 +176,6 @@ export default function DataSourcesPage() {
         return next;
       });
     }
-  };
-
-  // Handle edit
-  const handleEdit = (source: DataSource) => {
-    setEditSource(source);
   };
 
   const handleSaveEdit = async (id: string, data: DataSourceUpdate) => {
@@ -189,11 +192,9 @@ export default function DataSourcesPage() {
     }
   };
 
-  // Handle delete
   const handleDeleteConfirm = async (id: string) => {
     setIsDeleting(true);
     setError(null);
-
     try {
       await deleteDataSource(id, true);
       setDeleteSource(null);
@@ -205,7 +206,6 @@ export default function DataSourcesPage() {
     }
   };
 
-  // File helpers
   const isExcelFile = (url: string): boolean => {
     const lowerUrl = url.toLowerCase();
     return lowerUrl.endsWith('.xlsx') || lowerUrl.endsWith('.xls') || lowerUrl.endsWith('.ods');
@@ -217,7 +217,6 @@ export default function DataSourcesPage() {
     return name.endsWith('.xlsx') || name.endsWith('.xls') || name.endsWith('.ods');
   };
 
-  // Load sheets handlers
   const onLoadSheets = async () => {
     const url = fileUrl.trim();
     if (!url) {
@@ -236,11 +235,9 @@ export default function DataSourcesPage() {
 
     try {
       const res = await getExcelSheets({ file_url: url });
-      const sheetInfo: SheetInfo[] = res.sheet_names.map((name) => ({
-        name,
-        rowCount: res.row_count[name] || 0,
-      }));
-      setSheets(sheetInfo);
+      setSheets(
+        res.sheet_names.map((name) => ({ name, rowCount: res.row_count[name] || 0 }))
+      );
       if (res.default_sheet) {
         setSelectedSheet(res.default_sheet);
       }
@@ -268,11 +265,9 @@ export default function DataSourcesPage() {
 
     try {
       const res = await getExcelSheetsUpload(uploadFile);
-      const sheetInfo: SheetInfo[] = res.sheet_names.map((name) => ({
-        name,
-        rowCount: res.row_count[name] || 0,
-      }));
-      setSheets(sheetInfo);
+      setSheets(
+        res.sheet_names.map((name) => ({ name, rowCount: res.row_count[name] || 0 }))
+      );
       if (res.default_sheet) {
         setSelectedSheet(res.default_sheet);
       }
@@ -283,7 +278,6 @@ export default function DataSourcesPage() {
     }
   };
 
-  // Ingest handlers
   const onIngest = async () => {
     if (importMode === 'file') {
       if (!uploadFile) {
@@ -383,298 +377,261 @@ export default function DataSourcesPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <PageHeader className="mb-8" title={t('title')} description={t('description')} />
+    <>
+      <SectionHeader
+        title={tLedger('title')}
+        description={t('description')}
+        actions={
+          <Button size="sm" onClick={() => setPanelOpen((open) => !open)} aria-pressed={panelOpen}>
+            <Upload className="mr-2 size-4" aria-hidden="true" />
+            {t('tabs.import')}
+          </Button>
+        }
+      />
 
-      {/* Tab Navigation */}
-      <div className="flex gap-4 border-b-2 mb-6">
-        <button
-          type="button"
-          className={`pb-3 px-4 font-medium transition-colors ${
-            activeTab === 'sources'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-          onClick={() => setActiveTab('sources')}
-        >
-          <Database className="w-4 h-4 inline mr-2" />
-          {t('tabs.sources', { count: sources.length })}
-        </button>
-        <button
-          type="button"
-          className={`pb-3 px-4 font-medium transition-colors ${
-            activeTab === 'import'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-          onClick={() => setActiveTab('import')}
-        >
-          <Upload className="w-4 h-4 inline mr-2" />
-          {t('tabs.import')}
-        </button>
-      </div>
-
-      {/* Sources Tab */}
-      {activeTab === 'sources' && (
-        <DataSourceList
-          sources={sources}
-          onAddNew={() => setActiveTab('import')}
-          onSync={handleSync}
-          onEdit={handleEdit}
-          onDelete={setDeleteSource}
-          syncingIds={syncingIds}
-          isLoading={loadingSources}
+      {error ? (
+        <ErrorState
+          title={tCommon('error')}
+          description={
+            error.requestId ? `${error.message} · ${t('requestId', { id: error.requestId })}` : error.message
+          }
+          action={
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              className="text-muted-foreground transition-colors hover:text-foreground"
+              aria-label={tCommon('close')}
+            >
+              <X className="size-4" aria-hidden="true" />
+            </button>
+          }
         />
-      )}
+      ) : null}
 
-      {/* Import Tab */}
-      {activeTab === 'import' && (
-        <section className="space-y-6">
-          {/* Import Mode Toggle */}
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                importMode === 'url'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-              }`}
-              onClick={() => {
-                setImportMode('url');
-                setSheets([]);
-                setSelectedSheet('');
-              }}
-            >
-              <Globe className="w-4 h-4 inline mr-2" />
-              {t('importMode.url')}
-            </button>
-            <button
-              type="button"
-              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                importMode === 'file'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-              }`}
-              onClick={() => {
-                setImportMode('file');
-                setSheets([]);
-                setSelectedSheet('');
-              }}
-            >
-              <Upload className="w-4 h-4 inline mr-2" />
-              {t('importMode.file')}
-            </button>
-            <button
-              type="button"
-              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                importMode === 'portal'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-              }`}
-              onClick={() => {
-                setImportMode('portal');
-                setSheets([]);
-                setSelectedSheet('');
-              }}
-            >
-              <Globe className="w-4 h-4 inline mr-2" />
-              {t('importMode.portal')}
-            </button>
+      {result ? (
+        <div className="flex items-start gap-3 border-t border-success py-3">
+          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
+          <div className="min-w-0 flex-1">
+            <p className="m-0 text-app text-foreground">{result.message}</p>
+            <MonoAnnotation className="mt-0.5 block">
+              {t('result.propertiesProcessed', { count: result.properties_processed })}
+            </MonoAnnotation>
+            {result.source_name ? (
+              <MonoAnnotation className="mt-0.5 block">
+                {t('result.sourceName', { name: result.source_name })}
+              </MonoAnnotation>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            onClick={() => setResult(null)}
+            className="text-muted-foreground transition-colors hover:text-foreground"
+            aria-label={tCommon('close')}
+          >
+            <X className="size-4" aria-hidden="true" />
+          </button>
+        </div>
+      ) : null}
+
+      {panelOpen ? (
+        <section className="flex flex-col gap-4 rounded-lg border border-border p-4">
+          <div className="flex flex-wrap gap-2">
+            {(['url', 'file', 'portal'] as const).map((mode) => (
+              <button
+                type="button"
+                key={mode}
+                onClick={() => {
+                  setImportMode(mode);
+                  setSheets([]);
+                  setSelectedSheet('');
+                }}
+                aria-pressed={importMode === mode}
+                className={`h-[34px] rounded-md border px-3 text-[13px] font-medium transition-colors ${
+                  importMode === mode
+                    ? 'border-foreground bg-foreground text-background'
+                    : 'border-border bg-transparent text-foreground hover:bg-muted'
+                }`}
+              >
+                {t(`importMode.${mode}`)}
+              </button>
+            ))}
           </div>
 
-          {/* URL/File Import */}
-          {(importMode === 'url' || importMode === 'file') && (
-            <div className="border rounded-lg p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <FileUp className="w-5 h-5" />
-                <h2 className="text-xl font-semibold">{t('import.title')}</h2>
-              </div>
+          {importMode === 'url' || importMode === 'file' ? (
+            <div className="flex flex-col gap-4">
+              <h2 className="m-0 flex items-center gap-2 text-app font-semibold text-foreground">
+                <FileUp className="size-4" aria-hidden="true" />
+                {t('import.title')}
+              </h2>
 
-              <div className="space-y-4">
-                {importMode === 'url' && (
-                  <div>
-                    <label htmlFor="fileUrl" className="block text-sm font-medium mb-2">
-                      {t('import.fileUrl')}
-                    </label>
-                    <input
-                      id="fileUrl"
-                      className="border p-2 w-full rounded"
-                      type="text"
-                      placeholder="https://example.com/data.xlsx"
-                      value={fileUrl}
-                      onChange={(e) => setFileUrl(e.target.value)}
-                      disabled={loading}
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">{t('import.fileUrlHint')}</p>
-                  </div>
-                )}
-
-                {importMode === 'file' && (
-                  <div>
-                    <label htmlFor="fileUpload" className="block text-sm font-medium mb-2">
-                      {t('import.selectFile')}
-                    </label>
-                    <input
-                      id="fileUpload"
-                      className="border p-2 w-full rounded"
-                      type="file"
-                      accept=".xlsx,.xls,.ods,.csv"
-                      onChange={(e) => {
-                        setUploadFile(e.target.files?.[0] || null);
-                        setSheets([]);
-                        setSelectedSheet('');
-                      }}
-                      disabled={loading}
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">{t('import.fileHint')}</p>
-                    {uploadFile && (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        {t('import.selected')} <strong>{uploadFile.name}</strong> (
-                        {t('import.fileSize', {
-                          size: (uploadFile.size / 1024 / 1024).toFixed(2),
-                        })}
-                        )
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                <div>
-                  <label htmlFor="sourceName" className="block text-sm font-medium mb-2">
-                    {t('import.sourceName')}
+              {importMode === 'url' ? (
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="fileUrl" className="text-app font-medium text-foreground">
+                    {t('import.fileUrl')}
                   </label>
                   <input
-                    id="sourceName"
-                    className="border p-2 w-full rounded"
+                    id="fileUrl"
+                    className="rounded-md border border-border bg-background px-3 py-2 text-app"
                     type="text"
-                    placeholder={t('import.sourceNamePlaceholder')}
-                    value={sourceName}
-                    onChange={(e) => setSourceName(e.target.value)}
+                    placeholder="https://example.com/data.xlsx"
+                    value={fileUrl}
+                    onChange={(e) => setFileUrl(e.target.value)}
                     disabled={loading}
                   />
+                  <MonoAnnotation>{t('import.fileUrlHint')}</MonoAnnotation>
                 </div>
+              ) : (
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="fileUpload" className="text-app font-medium text-foreground">
+                    {t('import.selectFile')}
+                  </label>
+                  <input
+                    id="fileUpload"
+                    className="rounded-md border border-border bg-background px-3 py-2 text-app"
+                    type="file"
+                    accept=".xlsx,.xls,.ods,.csv"
+                    onChange={(e) => {
+                      setUploadFile(e.target.files?.[0] || null);
+                      setSheets([]);
+                      setSelectedSheet('');
+                    }}
+                    disabled={loading}
+                  />
+                  <MonoAnnotation>{t('import.fileHint')}</MonoAnnotation>
+                  {uploadFile ? (
+                    <MonoAnnotation className="mt-1 block">
+                      {t('import.selected')} {uploadFile.name} (
+                      {t('import.fileSize', {
+                        size: (uploadFile.size / 1024 / 1024).toFixed(2),
+                      })}
+                      )
+                    </MonoAnnotation>
+                  ) : null}
+                </div>
+              )}
 
-                {/* Excel Options */}
-                {((importMode === 'url' && isExcelFile(fileUrl)) ||
-                  (importMode === 'file' && isExcelFileObj(uploadFile))) && (
-                  <div className="border-t pt-4 mt-4">
-                    <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                      <FileSpreadsheet className="w-4 h-4" />
-                      {t('import.excelOptions')}
-                    </h3>
-                    <div className="grid gap-4">
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 disabled:opacity-50 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
-                          onClick={importMode === 'url' ? onLoadSheets : onLoadSheetsUpload}
-                          disabled={loadingSheets || loading}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="sourceName" className="text-app font-medium text-foreground">
+                  {t('import.sourceName')}
+                </label>
+                <input
+                  id="sourceName"
+                  type="text"
+                  placeholder={t('import.sourceNamePlaceholder')}
+                  value={sourceName}
+                  onChange={(e) => setSourceName(e.target.value)}
+                  disabled={loading}
+                  className="rounded-md border border-border bg-background px-3 py-2 text-app"
+                />
+              </div>
+
+              {((importMode === 'url' && isExcelFile(fileUrl)) ||
+                (importMode === 'file' && isExcelFileObj(uploadFile))) && (
+                <div className="flex flex-col gap-4 border-t border-border pt-4">
+                  <h3 className="m-0 flex items-center gap-2 text-app font-semibold text-foreground">
+                    <Table className="size-4" aria-hidden="true" />
+                    {t('import.excelOptions')}
+                  </h3>
+
+                  <div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={importMode === 'url' ? onLoadSheets : onLoadSheetsUpload}
+                      disabled={loadingSheets || loading}
+                    >
+                      {loadingSheets ? (
+                        <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />
+                      ) : (
+                        <Table className="mr-2 size-4" aria-hidden="true" />
+                      )}
+                      {t('import.loadSheets')}
+                    </Button>
+                  </div>
+
+                  {sheets.length > 0 ? (
+                    <>
+                      <div className="flex flex-col gap-1.5">
+                        <label htmlFor="sheetSelect" className="text-app font-medium text-foreground">
+                          {t('import.selectSheet')}
+                        </label>
+                        <select
+                          id="sheetSelect"
+                          className="rounded-md border border-border bg-background px-3 py-2 text-app"
+                          value={selectedSheet}
+                          onChange={(e) => setSelectedSheet(e.target.value)}
+                          disabled={loading}
                         >
-                          {loadingSheets ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin inline" />
-                              {tCommon('loading')}
-                            </>
-                          ) : (
-                            <>
-                              <Table className="w-4 h-4 mr-2 inline" />
-                              {t('import.loadSheets')}
-                            </>
-                          )}
-                        </button>
+                          {sheets.map((sheet) => (
+                            <option key={sheet.name} value={sheet.name}>
+                              {t('import.sheetOption', {
+                                name: sheet.name,
+                                count: sheet.rowCount,
+                              })}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
-                      {sheets.length > 0 && (
-                        <>
-                          <div>
-                            <label htmlFor="sheetSelect" className="block text-sm font-medium mb-2">
-                              {t('import.selectSheet')}
-                            </label>
-                            <select
-                              id="sheetSelect"
-                              className="border p-2 w-full rounded"
-                              value={selectedSheet}
-                              onChange={(e) => setSelectedSheet(e.target.value)}
-                              disabled={loading}
-                            >
-                              {sheets.map((sheet) => (
-                                <option key={sheet.name} value={sheet.name}>
-                                  {t('import.sheetOption', {
-                                    name: sheet.name,
-                                    count: sheet.rowCount,
-                                  })}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label htmlFor="headerRow" className="text-app font-medium text-foreground">
+                          {t('import.headerRow')}
+                        </label>
+                        <input
+                          id="headerRow"
+                          className="rounded-md border border-border bg-background px-3 py-2 text-app"
+                          type="number"
+                          min="0"
+                          value={headerRow}
+                          onChange={(e) => setHeaderRow(parseInt(e.target.value) || 0)}
+                          disabled={loading}
+                        />
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+              )}
 
-                          <div>
-                            <label htmlFor="headerRow" className="block text-sm font-medium mb-2">
-                              {t('import.headerRow')}
-                            </label>
-                            <input
-                              id="headerRow"
-                              className="border p-2 w-full rounded"
-                              type="number"
-                              min="0"
-                              value={headerRow}
-                              onChange={(e) => setHeaderRow(parseInt(e.target.value) || 0)}
-                              disabled={loading}
-                            />
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  type="button"
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
-                  onClick={onIngest}
-                  disabled={loading}
-                >
+              <div>
+                <Button onClick={onIngest} disabled={loading}>
                   {loading ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />
                       {t('import.importing')}
                     </>
                   ) : (
                     <>
-                      <Upload className="w-4 h-4" />
+                      <Upload className="mr-2 size-4" aria-hidden="true" />
                       {t('import.action')}
                     </>
                   )}
-                </button>
+                </Button>
               </div>
             </div>
-          )}
+          ) : null}
 
-          {/* Portal Import */}
-          {importMode === 'portal' && (
-            <div className="border rounded-lg p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Globe className="w-5 h-5" />
-                <h2 className="text-xl font-semibold">{t('portal.title')}</h2>
-              </div>
+          {importMode === 'portal' ? (
+            <div className="flex flex-col gap-4">
+              <h2 className="m-0 flex items-center gap-2 text-app font-semibold text-foreground">
+                <Globe className="size-4" aria-hidden="true" />
+                {t('portal.title')}
+              </h2>
 
               {loadingPortals ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin mr-2" />
-                  {t('portal.loading')}
+                  <Loader2 className="size-5 animate-spin" aria-hidden="true" />
                 </div>
               ) : portals.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">{t('portal.none')}</div>
+                <p className="m-0 text-app text-muted-foreground">{t('portal.none')}</p>
               ) : (
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="portalSelect" className="block text-sm font-medium mb-2">
+                <>
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="portalSelect" className="text-app font-medium text-foreground">
                       {t('portal.label')}
                     </label>
                     <select
                       id="portalSelect"
-                      className="border p-2 w-full rounded"
+                      className="rounded-md border border-border bg-background px-3 py-2 text-app"
                       value={selectedPortal}
                       onChange={(e) => setSelectedPortal(e.target.value)}
                       disabled={loading}
@@ -688,35 +645,34 @@ export default function DataSourcesPage() {
                     </select>
                   </div>
 
-                  <div>
-                    <label htmlFor="portalCity" className="block text-sm font-medium mb-2">
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="portalCity" className="text-app font-medium text-foreground">
                       {t('portal.city')}
                     </label>
                     <input
                       id="portalCity"
-                      className="border p-2 w-full rounded"
                       type="text"
                       placeholder={t('portal.cityPlaceholder')}
                       value={portalCity}
                       onChange={(e) => setPortalCity(e.target.value)}
                       disabled={loading}
+                      className="rounded-md border border-border bg-background px-3 py-2 text-app"
                     />
                   </div>
 
-                  <div className="border-t pt-4 mt-4">
-                    <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                      <Filter className="w-4 h-4" />
+                  <div className="flex flex-col gap-4 border-t border-border pt-4">
+                    <h3 className="m-0 flex items-center gap-2 text-app font-semibold text-foreground">
+                      <Filter className="size-4" aria-hidden="true" />
                       {t('portal.filters')}
                     </h3>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="minPrice" className="block text-sm font-medium mb-2">
+                      <div className="flex flex-col gap-1.5">
+                        <label htmlFor="minPrice" className="text-app font-medium text-foreground">
                           {t('portal.minPrice')}
                         </label>
                         <input
                           id="minPrice"
-                          className="border p-2 w-full rounded"
                           type="number"
                           min="0"
                           step="100"
@@ -724,16 +680,16 @@ export default function DataSourcesPage() {
                           value={portalMinPrice}
                           onChange={(e) => setPortalMinPrice(e.target.value)}
                           disabled={loading}
+                          className="rounded-md border border-border bg-background px-3 py-2 text-app"
                         />
                       </div>
 
-                      <div>
-                        <label htmlFor="maxPrice" className="block text-sm font-medium mb-2">
+                      <div className="flex flex-col gap-1.5">
+                        <label htmlFor="maxPrice" className="text-app font-medium text-foreground">
                           {t('portal.maxPrice')}
                         </label>
                         <input
                           id="maxPrice"
-                          className="border p-2 w-full rounded"
                           type="number"
                           min="0"
                           step="100"
@@ -741,16 +697,16 @@ export default function DataSourcesPage() {
                           value={portalMaxPrice}
                           onChange={(e) => setPortalMaxPrice(e.target.value)}
                           disabled={loading}
+                          className="rounded-md border border-border bg-background px-3 py-2 text-app"
                         />
                       </div>
 
-                      <div>
-                        <label htmlFor="minRooms" className="block text-sm font-medium mb-2">
+                      <div className="flex flex-col gap-1.5">
+                        <label htmlFor="minRooms" className="text-app font-medium text-foreground">
                           {t('portal.minRooms')}
                         </label>
                         <input
                           id="minRooms"
-                          className="border p-2 w-full rounded"
                           type="number"
                           min="0"
                           step="0.5"
@@ -758,16 +714,16 @@ export default function DataSourcesPage() {
                           value={portalMinRooms}
                           onChange={(e) => setPortalMinRooms(e.target.value)}
                           disabled={loading}
+                          className="rounded-md border border-border bg-background px-3 py-2 text-app"
                         />
                       </div>
 
-                      <div>
-                        <label htmlFor="maxRooms" className="block text-sm font-medium mb-2">
+                      <div className="flex flex-col gap-1.5">
+                        <label htmlFor="maxRooms" className="text-app font-medium text-foreground">
                           {t('portal.maxRooms')}
                         </label>
                         <input
                           id="maxRooms"
-                          className="border p-2 w-full rounded"
                           type="number"
                           min="0"
                           step="0.5"
@@ -775,19 +731,20 @@ export default function DataSourcesPage() {
                           value={portalMaxRooms}
                           onChange={(e) => setPortalMaxRooms(e.target.value)}
                           disabled={loading}
+                          className="rounded-md border border-border bg-background px-3 py-2 text-app"
                         />
                       </div>
 
-                      <div>
-                        <label htmlFor="propertyType" className="block text-sm font-medium mb-2">
+                      <div className="flex flex-col gap-1.5">
+                        <label htmlFor="propertyType" className="text-app font-medium text-foreground">
                           {t('portal.propertyType')}
                         </label>
                         <select
                           id="propertyType"
-                          className="border p-2 w-full rounded"
                           value={portalPropertyType}
                           onChange={(e) => setPortalPropertyType(e.target.value)}
                           disabled={loading}
+                          className="rounded-md border border-border bg-background px-3 py-2 text-app"
                         >
                           <option value="">{t('portal.propertyTypeAny')}</option>
                           <option value="apartment">{t('portal.propertyTypeApartment')}</option>
@@ -796,16 +753,16 @@ export default function DataSourcesPage() {
                         </select>
                       </div>
 
-                      <div>
-                        <label htmlFor="listingType" className="block text-sm font-medium mb-2">
+                      <div className="flex flex-col gap-1.5">
+                        <label htmlFor="listingType" className="text-app font-medium text-foreground">
                           {t('portal.listingType')}
                         </label>
                         <select
                           id="listingType"
-                          className="border p-2 w-full rounded"
                           value={portalListingType}
                           onChange={(e) => setPortalListingType(e.target.value)}
                           disabled={loading}
+                          className="rounded-md border border-border bg-background px-3 py-2 text-app"
                         >
                           <option value="rent">{t('portal.listingTypeRent')}</option>
                           <option value="sale">{t('portal.listingTypeSale')}</option>
@@ -813,124 +770,80 @@ export default function DataSourcesPage() {
                       </div>
                     </div>
 
-                    <div className="mt-4">
-                      <label htmlFor="limit" className="block text-sm font-medium mb-2">
+                    <div className="flex flex-col gap-1.5">
+                      <label htmlFor="limit" className="text-app font-medium text-foreground">
                         {t('portal.maxResults')}
                       </label>
                       <input
                         id="limit"
-                        className="border p-2 w-full rounded"
                         type="number"
                         min="1"
                         max="500"
                         value={portalLimit}
                         onChange={(e) => setPortalLimit(parseInt(e.target.value) || 50)}
                         disabled={loading}
+                        className="rounded-md border border-border bg-background px-3 py-2 text-app"
                       />
                     </div>
                   </div>
 
-                  <div>
-                    <label htmlFor="portalSourceName" className="block text-sm font-medium mb-2">
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="portalSourceName" className="text-app font-medium text-foreground">
                       {t('import.sourceName')}
                     </label>
                     <input
                       id="portalSourceName"
-                      className="border p-2 w-full rounded"
                       type="text"
                       placeholder={t('portal.sourceNamePlaceholder')}
                       value={sourceName}
                       onChange={(e) => setSourceName(e.target.value)}
                       disabled={loading}
+                      className="rounded-md border border-border bg-background px-3 py-2 text-app"
                     />
                   </div>
 
-                  <button
-                    type="button"
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
-                    onClick={onFetchFromPortal}
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        {t('portal.fetching')}
-                      </>
-                    ) : (
-                      <>
-                        <Globe className="w-4 h-4" />
-                        {t('portal.action')}
-                      </>
-                    )}
-                  </button>
-                </div>
+                  <div>
+                    <Button onClick={onFetchFromPortal} disabled={loading}>
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />
+                          {t('portal.fetching')}
+                        </>
+                      ) : (
+                        <>
+                          <Globe className="mr-2 size-4" aria-hidden="true" />
+                          {t('portal.action')}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </>
               )}
             </div>
-          )}
+          ) : null}
         </section>
+      ) : null}
+
+      {loadingSources ? (
+        <LoadingState rows={3} />
+      ) : (
+        <SourceLedger
+          sources={sources}
+          now={now}
+          syncingIds={syncingIds}
+          onSync={(source) => handleSync(source.id)}
+          onEdit={setEditSource}
+          onDelete={setDeleteSource}
+        />
       )}
 
-      {/* Error Display */}
-      {error && (
-        <div className="flex items-start gap-3 p-4 bg-destructive/10 text-destructive rounded mt-4">
-          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="font-medium">{tCommon('error')}</p>
-            <p className="text-sm">{error.message}</p>
-            {error.requestId && (
-              <p className="text-xs mt-1">{t('requestId', { id: error.requestId })}</p>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => setError(null)}
-            className="text-destructive/50 hover:text-destructive"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+      <p className="m-0 max-w-[640px] text-annot text-muted-foreground">{tLedger('note')}</p>
 
-      {/* Success Display */}
-      {result && (
-        <div className="flex items-start gap-3 p-4 bg-success/10 text-success dark:bg-success/30 dark:text-success rounded mt-4">
-          <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="font-medium">{t('result.title')}</p>
-            <p className="text-sm">{result.message}</p>
-            <p className="text-xs mt-1">
-              {t('result.propertiesProcessed', { count: result.properties_processed })}
-            </p>
-            {result.source_type && (
-              <p className="text-xs">{t('result.sourceType', { type: result.source_type })}</p>
-            )}
-            {result.source_name && (
-              <p className="text-xs">{t('result.sourceName', { name: result.source_name })}</p>
-            )}
-            {result.errors.length > 0 && (
-              <details className="mt-2">
-                <summary className="text-xs cursor-pointer">
-                  {t('result.warnings', { count: result.errors.length })}
-                </summary>
-                <ul className="text-xs mt-1 list-disc list-inside">
-                  {result.errors.map((err, i) => (
-                    <li key={i}>{err}</li>
-                  ))}
-                </ul>
-              </details>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => setResult(null)}
-            className="text-success/50 hover:text-success dark:text-success/50 dark:hover:text-success"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+      <section className="flex flex-col gap-2">
+        <h2 className="m-0 text-app font-semibold text-foreground">{tLedger('portals.title')}</h2>
+        <PortalLedger adapters={portals} sources={sources} />
+      </section>
 
-      {/* Delete Confirmation Dialog */}
       <DeleteConfirmDialog
         source={deleteSource}
         isOpen={!!deleteSource}
@@ -939,7 +852,6 @@ export default function DataSourcesPage() {
         isDeleting={isDeleting}
       />
 
-      {/* Edit Dialog */}
       <EditDataSourceDialog
         key={editSource?.id}
         source={editSource}
@@ -948,6 +860,6 @@ export default function DataSourcesPage() {
         onSave={handleSaveEdit}
         isSaving={isSaving}
       />
-    </div>
+    </>
   );
 }

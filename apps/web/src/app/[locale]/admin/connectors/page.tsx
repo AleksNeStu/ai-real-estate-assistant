@@ -2,22 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  Activity,
-  AlertCircle,
-  CheckCircle2,
-  Database,
-  Loader2,
-  Pause,
-  Play,
-  RefreshCw,
-  X,
-  Zap,
-  AlertTriangle,
-  Clock,
-  Gauge,
-  ArrowRight,
-} from 'lucide-react';
+import { Loader2, X, Activity, RefreshCw } from 'lucide-react';
+
+import { ConnectorLedger } from '@/components/admin/connector-ledger';
+import { Button } from '@/components/ui/button';
+import { MonoAnnotation } from '@/components/ui/mono-annotation';
+import { SectionHeader } from '@/components/ui/page-header';
+import { EmptyState, ErrorState, LoadingState } from '@/components/ui/states';
 import {
   listMCPConnectors,
   getMCPConnector,
@@ -31,15 +22,13 @@ import type {
   MCPConnectorHealthResponse,
   MCPHealthResponse,
 } from '@/lib/types';
-import { PageHeader } from '@/components/ui/page-header';
-import { EmptyState } from '@/components/ui/states';
 
-interface ErrorState {
+interface ErrorStateValue {
   message: string;
   requestId?: string;
 }
 
-function extractErrorState(err: unknown, fallbackMessage: string): ErrorState {
+function extractErrorState(err: unknown, fallbackMessage: string): ErrorStateValue {
   let message = fallbackMessage;
   let requestId: string | undefined = undefined;
 
@@ -55,107 +44,33 @@ function extractErrorState(err: unknown, fallbackMessage: string): ErrorState {
   return { message, requestId };
 }
 
-// Known connector statuses that have a translated label.
-const CONNECTOR_STATUS_KEYS = ['active', 'disabled', 'error', 'not_instantiated', 'unknown'];
-const CONNECTOR_HEALTH_KEYS = ['healthy', 'unhealthy', 'degraded', 'error'];
-
-// Status badge component
-function StatusBadge({ status }: { status: string }) {
-  const t = useTranslations('pages.admin.connectors.status');
-  const statusConfig: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
-    active: {
-      bg: 'bg-success/20 dark:bg-success/30',
-      text: 'text-success dark:text-success',
-      icon: <CheckCircle2 className="w-3 h-3" />,
-    },
-    disabled: {
-      bg: 'bg-muted dark:bg-muted',
-      text: 'text-muted-foreground dark:text-muted-foreground',
-      icon: <Pause className="w-3 h-3" />,
-    },
-    error: {
-      bg: 'bg-destructive/20 dark:bg-destructive/30',
-      text: 'text-destructive dark:text-destructive',
-      icon: <AlertCircle className="w-3 h-3" />,
-    },
-    not_instantiated: {
-      bg: 'bg-warning/20 dark:bg-warning/30',
-      text: 'text-warning dark:text-warning',
-      icon: <Clock className="w-3 h-3" />,
-    },
-    unknown: {
-      bg: 'bg-muted dark:bg-muted',
-      text: 'text-muted-foreground dark:text-muted-foreground',
-      icon: <AlertTriangle className="w-3 h-3" />,
-    },
-  };
-
-  const config = statusConfig[status] || statusConfig.unknown;
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
-    >
-      {config.icon}
-      {CONNECTOR_STATUS_KEYS.includes(status) ? t(status) : status}
-    </span>
-  );
-}
-
-// Health status badge
-function HealthBadge({ status }: { status: string }) {
-  const t = useTranslations('pages.admin.connectors.health');
-  const config: Record<string, { bg: string; text: string }> = {
-    healthy: { bg: 'bg-success/20 dark:bg-success/30', text: 'text-success dark:text-success' },
-    unhealthy: {
-      bg: 'bg-destructive/20 dark:bg-destructive/30',
-      text: 'text-destructive dark:text-destructive',
-    },
-    degraded: { bg: 'bg-warning/20 dark:bg-warning/30', text: 'text-warning dark:text-warning' },
-    error: {
-      bg: 'bg-destructive/20 dark:bg-destructive/30',
-      text: 'text-destructive dark:text-destructive',
-    },
-  };
-
-  const { bg, text } = config[status] || config.error;
-
-  return (
-    <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${bg} ${text}`}
-    >
-      {CONNECTOR_HEALTH_KEYS.includes(status) ? t(status) : status}
-    </span>
-  );
-}
-
+/**
+ * The connectors tab.
+ *
+ * The connectors are a list, so the tab is a ledger: every row is a
+ * connector with its health and its state, and the health check is the one
+ * action the tab offers. The detail of a connector opens beside the ledger.
+ */
 export default function ConnectorsPage() {
   const t = useTranslations('pages.admin.connectors');
+  const tLedger = useTranslations('pages.admin.connectors.ledger');
   const tCommon = useTranslations('common');
   const tError = useTranslations('error');
-  // Connectors list state
+
   const [connectors, setConnectors] = useState<MCPConnectorInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [edition, setEdition] = useState<string>('community');
 
-  // Selected connector detail
-  const [selectedConnector, setSelectedConnector] = useState<MCPConnectorDetailResponse | null>(
-    null
-  );
+  const [selectedConnector, setSelectedConnector] = useState<MCPConnectorDetailResponse | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
 
-  // Health check state
-  const [healthResults, setHealthResults] = useState<Record<string, MCPConnectorHealthResponse>>(
-    {}
-  );
+  const [healthResults, setHealthResults] = useState<Record<string, MCPConnectorHealthResponse>>({});
   const [checkingHealth, setCheckingHealth] = useState<Set<string>>(new Set());
   const [overallHealth, setOverallHealth] = useState<MCPHealthResponse | null>(null);
   const [checkingAllHealth, setCheckingAllHealth] = useState(false);
 
-  // UI state
-  const [error, setError] = useState<ErrorState | null>(null);
+  const [error, setError] = useState<ErrorStateValue | null>(null);
 
-  // Load connectors
   const loadConnectors = useCallback(async () => {
     try {
       setLoading(true);
@@ -170,12 +85,10 @@ export default function ConnectorsPage() {
     }
   }, [t, tError]);
 
-  // Load connectors on mount
   useEffect(() => {
     loadConnectors();
   }, [loadConnectors]);
 
-  // Load connector detail
   const loadConnectorDetail = async (name: string) => {
     try {
       setLoadingDetail(true);
@@ -188,7 +101,6 @@ export default function ConnectorsPage() {
     }
   };
 
-  // Health check single connector
   const handleHealthCheck = async (name: string) => {
     setCheckingHealth((prev) => new Set(prev).add(name));
 
@@ -216,13 +128,28 @@ export default function ConnectorsPage() {
     }
   };
 
-  // Health check all connectors
   const handleHealthCheckAll = async () => {
     setCheckingAllHealth(true);
 
     try {
       const result = await healthCheckAllMCPConnectors();
       setOverallHealth(result);
+      setHealthResults((prev) => {
+        const next = { ...prev };
+        for (const [name, value] of Object.entries(result.results ?? {})) {
+          const existing = next[name];
+          next[name] = {
+            name,
+            status: value.success ? 'healthy' : 'unhealthy',
+            success: value.success,
+            errors: value.errors ?? [],
+            warnings: [],
+            timestamp: result.timestamp,
+            response_time_ms: existing?.response_time_ms,
+          };
+        }
+        return next;
+      });
     } catch (e) {
       setError(extractErrorState(e, tError('generic')));
     } finally {
@@ -231,343 +158,203 @@ export default function ConnectorsPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <PageHeader
-        className="mb-8"
-        title={t('title')}
+    <>
+      <SectionHeader
+        title={tLedger('title')}
         description={t('description')}
         actions={
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 flex items-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
+          <>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={loadConnectors}
               disabled={loading}
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`mr-2 size-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
               {tCommon('refresh')}
-            </button>
-            <button
-              type="button"
-              className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 flex items-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
-              onClick={handleHealthCheckAll}
-              disabled={checkingAllHealth}
-            >
+            </Button>
+            <Button size="sm" onClick={handleHealthCheckAll} disabled={checkingAllHealth}>
               {checkingAllHealth ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />
               ) : (
-                <Activity className="w-4 h-4" />
+                <Activity className="mr-2 size-4" aria-hidden="true" />
               )}
               {t('healthCheckAll')}
-            </button>
-          </div>
+            </Button>
+          </>
         }
-      >
-        <span className="text-xs text-muted-foreground">{t('edition', { edition })}</span>
-      </PageHeader>
+      />
 
-      {/* Overall Health Status */}
-      {overallHealth && (
-        <div className="mb-6 p-4 border rounded-lg">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold">{t('overall.title')}</h3>
-            <HealthBadge status={overallHealth.status} />
-          </div>
-          <div className="grid grid-cols-3 gap-4 text-sm">
-            <div>
-              <span className="text-muted-foreground">{t('overall.connectorsChecked')}</span>{' '}
-              {overallHealth.connectors_checked}
-            </div>
-            <div>
-              <span className="text-muted-foreground">{t('overall.edition')}</span>{' '}
-              {overallHealth.edition}
-            </div>
-            <div>
-              <span className="text-muted-foreground">{t('overall.timestamp')}</span>{' '}
-              {new Date(overallHealth.timestamp).toLocaleTimeString()}
-            </div>
-          </div>
-        </div>
-      )}
+      <MonoAnnotation>{t('edition', { edition })}</MonoAnnotation>
 
-      {/* Error Display */}
-      {error && (
-        <div className="flex items-start gap-3 p-4 bg-destructive/10 text-destructive rounded mb-4">
-          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="font-medium">{tCommon('error')}</p>
-            <p className="text-sm">{error.message}</p>
-            {error.requestId && (
-              <p className="text-xs mt-1">{t('requestId', { id: error.requestId })}</p>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => setError(null)}
-            className="text-destructive/50 hover:text-destructive"
-          >
-            <X className="w-4 h-4" />
-          </button>
+      {overallHealth ? (
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-border pb-4">
+          <MonoAnnotation tone={overallHealth.status === 'healthy' ? 'success' : 'warning'}>
+            {tLedger(`health.${overallHealth.status === 'healthy' ? 'healthy' : 'unhealthy'}`)}
+          </MonoAnnotation>
+          <MonoAnnotation>
+            {t('overall.connectorsChecked')} {overallHealth.connectors_checked}
+          </MonoAnnotation>
+          <MonoAnnotation>{t('overall.edition')} {overallHealth.edition}</MonoAnnotation>
+          <MonoAnnotation>
+            {t('overall.timestamp')} {new Date(overallHealth.timestamp).toLocaleTimeString()}
+          </MonoAnnotation>
         </div>
-      )}
+      ) : null}
 
-      {/* Connectors Grid */}
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin mr-2" />
-          {t('loading')}
-        </div>
-      ) : connectors.length === 0 ? (
-        <EmptyState icon={Database} title={t('empty.title')} />
-      ) : (
-        <div className="grid gap-4">
-          {connectors.map((connector) => (
-            <div
-              key={connector.name}
-              className="border rounded-lg p-4 hover:border-primary/50 transition-colors cursor-pointer"
-              onClick={() => loadConnectorDetail(connector.name)}
+      {error ? (
+        <ErrorState
+          title={tCommon('error')}
+          description={
+            error.requestId ? `${error.message} · ${t('requestId', { id: error.requestId })}` : error.message
+          }
+          action={
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              className="text-muted-foreground transition-colors hover:text-foreground"
+              aria-label={tCommon('close')}
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="font-semibold">{connector.display_name}</h3>
-                    <StatusBadge status={connector.status} />
-                    {connector.accessible_in_ce && (
-                      <span className="text-xs bg-info/20 dark:bg-info/30 text-info dark:text-info px-2 py-0.5 rounded">
-                        CE
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">{connector.description}</p>
-                  <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Database className="w-3 h-3" />
-                      {connector.registered ? t('badge.registered') : t('badge.notRegistered')}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Play className="w-3 h-3" />
-                      {connector.has_instance ? t('badge.instantiated') : t('badge.noInstance')}
-                    </span>
-                    {connector.requires_api_key && (
-                      <span className="flex items-center gap-1">
-                        <Zap className="w-3 h-3" />
-                        {t('badge.apiKeyRequired')}
-                      </span>
-                    )}
-                    {connector.supports_streaming && (
-                      <span className="flex items-center gap-1">
-                        <Activity className="w-3 h-3" />
-                        {t('badge.streaming')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {healthResults[connector.name] && (
-                    <HealthBadge status={healthResults[connector.name].status} />
-                  )}
-                  <button
-                    type="button"
-                    className="p-2 hover:bg-secondary rounded focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleHealthCheck(connector.name);
-                    }}
-                    disabled={checkingHealth.has(connector.name)}
-                  >
-                    {checkingHealth.has(connector.name) ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Activity className="w-4 h-4" />
-                    )}
-                  </button>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                </div>
-              </div>
+              <X className="size-4" aria-hidden="true" />
+            </button>
+          }
+        />
+      ) : null}
 
-              {/* Health Check Results */}
-              {healthResults[connector.name] && (
-                <div className="mt-4 pt-4 border-t text-sm">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <span className="text-muted-foreground">{t('results.responseTime')}</span>{' '}
-                      {healthResults[connector.name].response_time_ms?.toFixed(2) || 'N/A'}ms
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">{t('results.success')}</span>{' '}
-                      {healthResults[connector.name].success ? t('results.yes') : t('results.no')}
-                    </div>
-                  </div>
-                  {healthResults[connector.name].errors.length > 0 && (
-                    <div className="mt-2">
-                      <span className="text-destructive font-medium">{t('results.errors')}</span>
-                      <ul className="list-disc list-inside text-xs mt-1">
-                        {healthResults[connector.name].errors.map((err, i) => (
-                          <li key={i}>{err}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+      {loading ? (
+        <LoadingState rows={4} />
+      ) : connectors.length === 0 ? (
+        <EmptyState title={t('empty.title')} />
+      ) : (
+        <ConnectorLedger
+          connectors={connectors}
+          health={healthResults}
+          checking={checkingHealth}
+          onCheck={(connector) => handleHealthCheck(connector.name)}
+          onOpen={(connector) => loadConnectorDetail(connector.name)}
+        />
       )}
 
-      {/* Connector Detail Modal */}
-      {selectedConnector && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background rounded-lg max-w-2xl w-full max-h-[80vh] overflow-auto">
-            <div className="sticky top-0 bg-background border-b p-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold">{selectedConnector.display_name}</h2>
+      {selectedConnector ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="connector-detail-title"
+        >
+          <div className="max-h-[80vh] w-full max-w-2xl overflow-auto rounded-lg bg-background">
+            <div className="sticky top-0 flex items-center justify-between border-b border-border bg-background p-4">
+              <h2 id="connector-detail-title" className="m-0 text-app font-semibold text-foreground">
+                {selectedConnector.display_name}
+              </h2>
               <button
                 type="button"
-                className="p-2 hover:bg-secondary rounded focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
+                className="text-muted-foreground transition-colors hover:text-foreground"
                 onClick={() => setSelectedConnector(null)}
+                aria-label={tCommon('close')}
               >
-                <X className="w-5 h-5" />
+                <X className="size-4" aria-hidden="true" />
               </button>
             </div>
 
             {loadingDetail ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin" />
+                <Loader2 className="size-6 animate-spin" aria-hidden="true" />
               </div>
             ) : (
-              <div className="p-4 space-y-6">
-                {/* Basic Info */}
-                <div>
-                  <h3 className="font-semibold mb-2">{t('detail.basicInfo')}</h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">{t('detail.name')}</span>{' '}
-                      {selectedConnector.name}
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">{t('detail.edition')}</span>{' '}
-                      {selectedConnector.edition}
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">{t('detail.status')}</span>{' '}
-                      <StatusBadge status={selectedConnector.status} />
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">{t('detail.minEdition')}</span>{' '}
-                      {selectedConnector.min_edition}
-                    </div>
+              <div className="flex flex-col gap-6 p-4">
+                <div className="flex flex-col gap-2">
+                  <h3 className="m-0 text-app font-semibold text-foreground">
+                    {t('detail.basicInfo')}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4 text-app">
+                    <DetailRow label={t('detail.name')} value={selectedConnector.name} />
+                    <DetailRow label={t('detail.edition')} value={selectedConnector.edition} />
+                    <DetailRow label={t('detail.status')} value={selectedConnector.status} />
+                    <DetailRow label={t('detail.minEdition')} value={selectedConnector.min_edition} />
                   </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {selectedConnector.description}
-                  </p>
-                  {selectedConnector.error_message && (
-                    <div className="mt-2 p-2 bg-destructive/20 dark:bg-destructive/30 text-destructive dark:text-destructive rounded text-sm">
+                  <p className="m-0 text-app text-muted-foreground">{selectedConnector.description}</p>
+                  {selectedConnector.error_message ? (
+                    <p className="m-0 text-app text-destructive">
                       {t('detail.error', { message: selectedConnector.error_message })}
+                    </p>
+                  ) : null}
+                </div>
+
+                {selectedConnector.rate_limit ? (
+                  <div className="flex flex-col gap-2">
+                    <h3 className="m-0 text-app font-semibold text-foreground">{t('detail.rateLimit')}</h3>
+                    <div className="grid grid-cols-2 gap-4 text-app">
+                      <DetailRow
+                        label={t('detail.requestsPerMin')}
+                        value={String(selectedConnector.rate_limit.requests_per_minute)}
+                      />
+                      <DetailRow
+                        label={t('detail.burstSize')}
+                        value={String(selectedConnector.rate_limit.burst_size)}
+                      />
+                      <DetailRow
+                        label={t('detail.currentRequests')}
+                        value={String(selectedConnector.rate_limit.current_requests)}
+                      />
+                      <DetailRow
+                        label={t('detail.remaining')}
+                        value={String(selectedConnector.rate_limit.remaining)}
+                      />
                     </div>
-                  )}
-                </div>
-
-                {/* Capabilities */}
-                <div>
-                  <h3 className="font-semibold mb-2">{t('detail.capabilities')}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedConnector.requires_api_key && (
-                      <span className="px-2 py-1 bg-warning/20 dark:bg-warning/30 text-warning dark:text-warning rounded text-xs">
-                        {t('badge.apiKeyRequired')}
-                      </span>
-                    )}
-                    {selectedConnector.supports_streaming && (
-                      <span className="px-2 py-1 bg-info/20 dark:bg-info/30 text-info dark:text-info rounded text-xs">
-                        {t('badge.streaming')}
-                      </span>
-                    )}
-                    {selectedConnector.accessible_in_ce && (
-                      <span className="px-2 py-1 bg-success/20 dark:bg-success/30 text-success dark:text-success rounded text-xs">
-                        {t('badge.ceAccessible')}
-                      </span>
-                    )}
-                    {selectedConnector.enabled ? (
-                      <span className="px-2 py-1 bg-success/20 dark:bg-success/30 text-success dark:text-success rounded text-xs">
-                        {t('badge.enabled')}
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground rounded text-xs">
-                        {t('badge.disabled')}
-                      </span>
-                    )}
                   </div>
-                </div>
+                ) : null}
 
-                {/* Rate Limit */}
-                {selectedConnector.rate_limit && (
-                  <div>
-                    <h3 className="font-semibold mb-2 flex items-center gap-2">
-                      <Gauge className="w-4 h-4" />
-                      {t('detail.rateLimit')}
+                {selectedConnector.instance_status ? (
+                  <div className="flex flex-col gap-2">
+                    <h3 className="m-0 text-app font-semibold text-foreground">
+                      {t('detail.instanceStatus')}
                     </h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">{t('detail.requestsPerMin')}</span>{' '}
-                        {selectedConnector.rate_limit.requests_per_minute}
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">{t('detail.burstSize')}</span>{' '}
-                        {selectedConnector.rate_limit.burst_size}
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">{t('detail.currentRequests')}</span>{' '}
-                        {selectedConnector.rate_limit.current_requests}
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">{t('detail.remaining')}</span>{' '}
-                        {selectedConnector.rate_limit.remaining}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Instance Status */}
-                {selectedConnector.instance_status && (
-                  <div>
-                    <h3 className="font-semibold mb-2">{t('detail.instanceStatus')}</h3>
-                    <pre className="text-xs bg-muted p-2 rounded overflow-auto">
+                    <pre className="m-0 overflow-auto rounded-md bg-muted p-2 font-mono text-[12px]">
                       {JSON.stringify(selectedConnector.instance_status, null, 2)}
                     </pre>
                   </div>
-                )}
+                ) : null}
 
-                {/* Config (sanitized) */}
-                {selectedConnector.config && (
-                  <div>
-                    <h3 className="font-semibold mb-2">{t('detail.configuration')}</h3>
-                    <pre className="text-xs bg-muted p-2 rounded overflow-auto">
+                {selectedConnector.config ? (
+                  <div className="flex flex-col gap-2">
+                    <h3 className="m-0 text-app font-semibold text-foreground">
+                      {t('detail.configuration')}
+                    </h3>
+                    <pre className="m-0 overflow-auto rounded-md bg-muted p-2 font-mono text-[12px]">
                       {JSON.stringify(selectedConnector.config, null, 2)}
                     </pre>
                   </div>
-                )}
+                ) : null}
 
-                {/* Health Check Actions */}
-                <div className="flex gap-2 pt-4 border-t">
-                  <button
-                    type="button"
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 flex items-center gap-2 focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
+                <div className="flex gap-2 border-t border-border pt-4">
+                  <Button
                     onClick={() => handleHealthCheck(selectedConnector.name)}
                     disabled={checkingHealth.has(selectedConnector.name)}
                   >
                     {checkingHealth.has(selectedConnector.name) ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />
                     ) : (
-                      <Activity className="w-4 h-4" />
+                      <Activity className="mr-2 size-4" aria-hidden="true" />
                     )}
                     {t('healthCheck')}
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
           </div>
         </div>
-      )}
+      ) : null}
+    </>
+  );
+}
+
+/** One labelled value of the connector's detail. */
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between gap-3">
+      <span className="text-muted-foreground">{label}</span>
+      <MonoAnnotation className="truncate">{value}</MonoAnnotation>
     </div>
   );
 }

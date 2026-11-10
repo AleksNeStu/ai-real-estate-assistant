@@ -3103,6 +3103,42 @@
         "totalLeads": "Total Leads",
         "totalRevenue": "Total Revenue",
         "chartTitle": "{period}: {count} deals"
+      },
+      "board": {
+        "title": "Agent analytics",
+        "description": "{agents} agents · last {period}",
+        "dealsPerMonth": "Deals per month, team",
+        "months": "{count} months",
+        "kpis": {
+          "leads": "Leads",
+          "response": "First response",
+          "responseHint": "average to first contact",
+          "leadToQualified": "Lead → qualified",
+          "leadToQualifiedHint": "{rate}% qualified → deal",
+          "dealsClosed": "Deals closed",
+          "dealsGoal": "{current} of {target}",
+          "pipeline": "Pipeline value"
+        },
+        "team": {
+          "agent": "Agent",
+          "leads": "Leads",
+          "conversion": "Conversion",
+          "deals": "Deals",
+          "goal": "Goal",
+          "you": "you",
+          "unknown": "—",
+          "empty": "The team has no rows yet."
+        },
+        "coaching": {
+          "topPerformer": "Top performer",
+          "topPerformerBody": "{metric} deals · rank {rank}",
+          "needsSupport": "Needs support",
+          "needsSupportBody": "{days} days without a deal · {leads} leads · {conversion}% conversion",
+          "insights": "Coaching insights",
+          "empty": "No coaching notes yet.",
+          "none": "This view is not available for your account.",
+          "disclaimer": "AI-generated from the team's numbers · verify before acting"
+        }
       }
     },
     "admin": {
@@ -3181,6 +3217,37 @@
           "ready": "Ready",
           "not_ready": "Not ready",
           "degraded": "Degraded"
+        },
+        "panels": {
+          "title": "Monitoring",
+          "deploymentTitle": "The deployment",
+          "health": "Health",
+          "readiness": "Readiness",
+          "latency": "Database latency",
+          "latencyHint": "one read, in milliseconds",
+          "cacheHitRate": "Cache hit rate",
+          "hitsMisses": "{hits} hits, {misses} misses",
+          "noCacheData": "No cache data",
+          "vectorIndex": "Vector index",
+          "chunks": "{count} chunks",
+          "requestsTitle": "Requests per minute · 24 h",
+          "requestsCaption": "no series in the API yet",
+          "requestsEmpty": "This deployment does not expose a request series, so there is nothing to draw here yet.",
+          "alertsTitle": "Alerts",
+          "alertsEmpty": "No alerts — every threshold is inside its bound.",
+          "service": "Service",
+          "version": "Version",
+          "commit": "Commit",
+          "uptime": "Uptime",
+          "database": "Database",
+          "redis": "Redis",
+          "llm": "LLM provider",
+          "environment": "Environment",
+          "provider": "Provider",
+          "sourceColumns": {
+            "source": "Source",
+            "listings": "Listings"
+          }
         }
       },
       "connectors": {
@@ -3249,6 +3316,35 @@
         },
         "errors": {
           "load": "Failed to load connectors"
+        },
+        "ledger": {
+          "title": "MCP connectors",
+          "empty": "No connectors are registered in this deployment.",
+          "columns": {
+            "connector": "Connector",
+            "purpose": "What it does",
+            "health": "Health",
+            "state": "State",
+            "actions": "Actions"
+          },
+          "health": {
+            "healthy": "healthy",
+            "unhealthy": "unhealthy",
+            "error": "error",
+            "notChecked": "not checked"
+          },
+          "state": {
+            "enabled": "Enabled",
+            "disabled": "Disabled",
+            "notConfigured": "Not configured",
+            "needsKey": "Needs a key"
+          },
+          "needsKeyNote": "add the key in .env to turn it on",
+          "responseTime": "{value} ms",
+          "checking": "Checking…",
+          "actions": {
+            "check": "Check"
+          }
         }
       },
       "dataSources": {
@@ -3397,7 +3493,38 @@
         },
         "delete": "Delete",
         "enabled": "Enabled",
-        "requestId": "Request ID: {id}"
+        "requestId": "Request ID: {id}",
+        "ledger": {
+          "title": "Data sources",
+          "note": "Any country works with your own sources. Provider feeds need your key; Poland is the first supported provider.",
+          "never": "never",
+          "syncing": "Syncing…",
+          "columns": {
+            "source": "Source",
+            "kind": "Kind",
+            "listings": "Listings",
+            "lastSync": "Last sync",
+            "actions": "Actions"
+          },
+          "actions": {
+            "sync": "Sync",
+            "edit": "Edit",
+            "delete": "Delete"
+          },
+          "portals": {
+            "title": "Portals",
+            "none": "This deployment has no portal adapters.",
+            "configured": "Configured",
+            "notConfigured": "Not configured",
+            "needsKey": "Needs a key",
+            "never": "never fetched",
+            "columns": {
+              "portal": "Portal",
+              "state": "State",
+              "fetched": "Listings"
+            }
+          }
+        }
       },
       "bulkJobs": {
         "title": "Bulk Import/Export Jobs",
@@ -3481,6 +3608,37 @@
           "maxResults": "Max Results",
           "creating": "Creating Export Job...",
           "start": "Start Export Job"
+        },
+        "ledger": {
+          "title": "Bulk jobs",
+          "empty": "No jobs yet — import or export to make one.",
+          "columns": {
+            "job": "Job",
+            "type": "Type",
+            "progress": "Progress",
+            "status": "Status",
+            "actions": "Actions"
+          },
+          "records": "{processed} / {total}",
+          "failedRecords": "{count} failed",
+          "created": "created {date}",
+          "actions": {
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "download": "Download",
+            "import": "Import CSV / XLSX",
+            "export": "Export listings"
+          }
+        }
+      },
+      "shell": {
+        "title": "Admin",
+        "description": "One deployment: the jobs that run, the connectors that answer, the sources that feed the catalogue, and the state of the stack.",
+        "tabs": {
+          "bulkJobs": "Bulk jobs",
+          "connectors": "Connectors",
+          "dataSources": "Data sources",
+          "monitoring": "Monitoring"
         }
       }
     },
