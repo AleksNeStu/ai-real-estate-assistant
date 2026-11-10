@@ -139,13 +139,22 @@ async function visit(page, route, expectation) {
     }
 
     if (expectation === "gate") {
-      const gate = page.locator('a[href="/auth/login"]').first();
+      // The gate's two ways in are links to the sign-in and the register
+      // screen. They carry the locale and the route the visitor asked for,
+      // so the link is matched by its path, not by an exact address.
+      const gate = page.locator('a[href*="/auth/login"], a[href*="/auth/register"]').first();
       const visible = await gate.isVisible().catch(() => false);
       if (!visible) reasons.push("the gate did not appear");
     }
 
     if (expectation === "catalogue") {
-      const stats = apiCalls.find((call) => call.path.includes("/catalogue/stats"));
+      // The landing reads the catalogue after it is painted, so the call is
+      // waited for rather than looked for in the first second.
+      let stats = apiCalls.find((call) => call.path.includes("/catalogue/stats"));
+      for (let waited = 0; !stats && waited < 8000; waited += 500) {
+        await page.waitForTimeout(500);
+        stats = apiCalls.find((call) => call.path.includes("/catalogue/stats"));
+      }
       if (!stats) reasons.push("the landing did not read the catalogue");
       else if (stats.status !== 200) reasons.push(`the catalogue answered ${stats.status}`);
     }
