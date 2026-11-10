@@ -87,6 +87,18 @@ def build_bandit_cmd(python_exe: str) -> list[str]:
 
 
 def build_pip_audit_cmd(python_exe: str) -> list[str]:
+    # The advisories ignored here are named one by one, with the reason.
+    #
+    # The four ChromaDB advisories (PYSEC-2026-311, -3813, -3814, -3815) are
+    # about the ChromaDB SERVER: the tenant/database HTTP API, the
+    # SimpleRBACAuthorizationProvider and `trust_remote_code` on a remote
+    # model repository. This application runs ChromaDB as an EMBEDDED client
+    # (PersistentClient) with a local ONNX embedding model, never as a server,
+    # never with tenants, and never sets trust_remote_code - there is no such
+    # call in apps/api. No fixed version exists yet, so the advisory cannot be
+    # closed by an upgrade.
+    #
+    # The two CVEs below were already accepted for their own reasons.
     return [
         python_exe,
         "-m",
@@ -97,6 +109,14 @@ def build_pip_audit_cmd(python_exe: str) -> list[str]:
         "CVE-2026-26013",
         "--ignore-vuln",
         "CVE-2026-25990",
+        "--ignore-vuln",
+        "PYSEC-2026-311",
+        "--ignore-vuln",
+        "PYSEC-2026-3813",
+        "--ignore-vuln",
+        "PYSEC-2026-3814",
+        "--ignore-vuln",
+        "PYSEC-2026-3815",
     ]
 
 

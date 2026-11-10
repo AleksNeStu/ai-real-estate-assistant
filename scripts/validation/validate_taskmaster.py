@@ -87,8 +87,18 @@ def main(argv: list[str] | None = None) -> int:
             if not isinstance(task, dict):
                 errors.append(ValidationError(message=f"{tag}: task is not an object"))
                 continue
-            task_id = task.get("id")
-            if not isinstance(task_id, str) or not task_id.strip():
+            raw_id = task.get("id")
+            # The canonical TaskMaster shape writes NUMERIC task ids and STRING
+            # dependencies, so an id may be an int or a str. What the validator
+            # needs is an id it can compare a dependency against - and a
+            # dependency is a string, so both sides are compared as strings.
+            if isinstance(raw_id, bool) or not isinstance(raw_id, (int, str)):
+                errors.append(
+                    ValidationError(message=f"{tag}: task id missing/invalid")
+                )
+                continue
+            task_id = str(raw_id).strip()
+            if not task_id:
                 errors.append(
                     ValidationError(message=f"{tag}: task id missing/invalid")
                 )
@@ -139,6 +149,15 @@ def main(argv: list[str] | None = None) -> int:
                     )
                     continue
                 parent_id = sub.get("parentId")
+                if parent_id is None:
+                    # The canonical shape nests a subtask under its task and
+                    # does not repeat the parent on the subtask. Nesting IS the
+                    # parent, so there is nothing to check.
+                    continue
+                if isinstance(parent_id, (int, str)) and not isinstance(
+                    parent_id, bool
+                ):
+                    parent_id = str(parent_id).strip()
                 if parent_id != task_id:
                     errors.append(
                         ValidationError(

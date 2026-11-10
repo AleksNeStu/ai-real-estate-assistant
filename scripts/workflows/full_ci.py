@@ -287,13 +287,17 @@ def main(argv: list[str] | None = None) -> int:
         if not _is_tool_available(["docker", "info"]):
             return "skipped", "docker daemon not running"
         log_file = logs_dir / "compose_smoke.log"
+        # The smoke script lives under scripts/docker/ - that is where the
+        # Makefile's smoke-test target and the CI workflow call it from
+        # (scripts/ci/compose_smoke.py does not exist, so the step failed with
+        # "can't open file"). The timeout matches the workflow's.
         rc = _run(
             [
                 sys.executable,
-                "scripts/ci/compose_smoke.py",
+                "scripts/docker/compose_smoke.py",
                 "--ci",
                 "--timeout-seconds",
-                "420",
+                "600",
             ],
             cwd=root,
             log_file=log_file,
