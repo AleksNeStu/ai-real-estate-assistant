@@ -49,7 +49,16 @@ env:
 
 jobs:
   ci-check:
-    if: github.repository_owner == 'AleksNeStu'
+    # A workflow_run fires when the CI run COMPLETES - and a completed run can
+    # be CANCELLED (a newer push cancels the older CI run) or FAILED. The
+    # deploy must not follow such a run: the gate below would read the
+    # cancelled jobs, and the failed attempt would then be a red check on the
+    # commit, which the deployments API refuses for every later attempt.
+    # So the whole chain is skipped instead - a skipped run is not a failure.
+    if: >-
+      github.repository_owner == 'AleksNeStu' &&
+      (github.event_name != 'workflow_run' ||
+       github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     steps:
       - name: Validate triggering CI run
