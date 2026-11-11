@@ -211,6 +211,16 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
 
 ## What's new
 
+**`v5.3.0`** — a property has a page of its own.
+
+- **The property page** — the search answered with listings and the card
+  showed them, but a reader who picked one had nowhere to go. The page shows
+  the listing itself: the price, the numbers, the description, the amenities,
+  the AI one-liner of its neighbourhood, and the comparable listings of the
+  same city and type. It is public — a visitor who clicks a listing is nobody
+  until they sign in, so the data it reads does not ask for a session. The
+  title of a search result and a marker on the map both open it.
+
 **`v5.1.20`** — the model thinks as hard as the deployment asks it to.
 
 - **The cheapest way to answer** — M3.1 Flash always reasons, and it reasons at
@@ -274,7 +284,7 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
 - **335 dependency alerts closed** — every critical and high advisory resolved,
   the floors pinned in both the lock file and the project file.
 
-Full notes: [v5.1.10 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.10) ·
+Full notes: [v5.3.0 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.0) ·
 [changelog](CHANGELOG.md).
 
 ## What it does
