@@ -261,7 +261,9 @@ def main(argv: list[str] | None = None) -> int:
         rc1 = _run(["npm", "--prefix", "apps/web", "ci"], cwd=root, log_file=log_file)
         if rc1 != 0:
             time.sleep(15)
-            rc1 = _run(["npm", "--prefix", "apps/web", "ci"], cwd=root, log_file=log_file)
+            rc1 = _run(
+                ["npm", "--prefix", "apps/web", "ci"], cwd=root, log_file=log_file
+            )
         used_fallback = False
         if rc1 != 0:
             rc1_fallback = _run(
