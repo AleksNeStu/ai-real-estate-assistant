@@ -37,28 +37,22 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'pages' });
-  const title = t('home.title' as never);
-  const description = t('home.description' as never);
   const url = absoluteUrl(`/${locale}`);
 
+  // The title and the description are NOT declared here: the layout already
+  // carries them, one pair per language, and it is the layer that knows the
+  // product's name in every language the site ships. Only the canonical and
+  // the cluster are the page's own - the layout cannot declare them, because
+  // a layout is inherited by every route below it and does not know which
+  // route it is rendering.
   return {
-    title,
-    description,
     alternates: {
       canonical: url,
       languages: languageAlternates('/'),
     },
     openGraph: {
-      title,
-      description,
       url,
       type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
     },
   };
 }

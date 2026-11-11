@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.3] - 2026-11-12
+
+### Fixed
+- **The landing page published its title as the text "home.title"** — the home
+  page asked the catalogue for a copy it does not carry, and the catalogue's
+  fallback answers with the key itself, so nothing crashed: the page simply
+  said its own name wrong. The chat route had the same shape of mistake and
+  the same answer. The home page takes its title from the layout, which knows
+  the product's name in every language, and the chat route reads its own
+  namespace. A test now says of every public route that its copy is there.
+
 ## [5.3.2] - 2026-11-11
 
 ### Fixed
@@ -1277,6 +1288,7 @@ First production release of AI Real Estate Assistant.
 - SQLite database for property listings
 
 [Unreleased]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases
+[5.3.3]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.3
 [5.3.2]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.2
 [5.3.1]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.1
 [5.3.0]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.0

@@ -17,7 +17,8 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return routeMetadata(locale, '/chat', 'chat', 'chat');
+  // The chat namespace carries its own title and description.
+  return routeMetadata(locale, '/chat', '', 'chat');
 }
 
 export default function ChatLayout({ children }: { children: ReactNode }) {

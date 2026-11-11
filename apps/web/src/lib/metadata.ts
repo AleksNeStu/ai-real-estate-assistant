@@ -101,8 +101,12 @@ export async function routeMetadata(
   namespace: string = 'pages',
 ): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace });
-  const title = t(`${pageKey}.title` as never);
-  const description = t(`${pageKey}.description` as never);
+  // An empty page key means the namespace carries the copy itself - the chat
+  // route reads `chat.title`, not `chat.chat.title`.
+  const title = pageKey ? t(`${pageKey}.title` as never) : t('title' as never);
+  const description = pageKey
+    ? t(`${pageKey}.description` as never)
+    : t('description' as never);
   const url = absoluteUrl(`/${locale}${path === '/' ? '' : path}`);
 
   return {
