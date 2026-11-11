@@ -2312,6 +2312,11 @@
     "studioLink": "Visit nestlab.tech",
     "demoNotice": "This demo does not send e-mail: your address is recorded so an agent can follow up."
   },
+  "build": {
+    "builtAt": "built",
+    "deployRun": "deploy",
+    "commit": "commit"
+  },
   "pages": {
     "search": {
       "title": "Find Your Property",

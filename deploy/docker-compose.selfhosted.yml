@@ -71,6 +71,18 @@ services:
       - DB_MAX_OVERFLOW=5
       - POOL_MAX_WORKERS=4
       - CHROMA_INDEXING_WORKERS=2
+      # --- the deployment's own identity ---
+      # The privileged list and the build metadata are delivered by the
+      # deploy (see .github/workflows/deploy-selfhosted.yml) and read from
+      # the environment at request time. With none of them set the
+      # deployment simply has no privileged viewer and no build to show, and
+      # the interface shows its ordinary footer.
+      - ADMIN_EMAILS=${ADMIN_EMAILS:-}
+      - ADMIN_IPS=${ADMIN_IPS:-}
+      - BUILD_SHA=${BUILD_SHA:-}
+      - BUILD_AT=${BUILD_AT:-}
+      - DEPLOY_RUN_ID=${DEPLOY_RUN_ID:-}
+      - BUILD_REPO=${BUILD_REPO:-}
     volumes:
       # ./state -> the SQLite database and the audit log.
       # MUST be writable by the image's app user (uid/gid 999) - the container

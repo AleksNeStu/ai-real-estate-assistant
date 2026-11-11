@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { AlertCircle, CheckCircle2, Loader2, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { BuildMetadata } from '@/components/layout/build-metadata';
 import { getOrCreateVisitorId } from '@/lib/visitor-tracking';
 import { getCapabilities } from '@/lib/api';
 
@@ -171,6 +172,8 @@ export function SiteFooter() {
               {t('studioLink')}
             </a>
           </p>
+
+          <BuildMetadata />
         </div>
       </div>
     </footer>

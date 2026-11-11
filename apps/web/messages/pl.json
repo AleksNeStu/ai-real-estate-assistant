@@ -2312,6 +2312,11 @@
     "studioLink": "Odwiedz nestlab.tech",
     "demoNotice": "To demo nie wysyła e-maili: adres zapisujemy, aby agent mógł się z Wami skontaktować."
   },
+  "build": {
+    "builtAt": "zbudowano",
+    "deployRun": "wdrożenie",
+    "commit": "commit"
+  },
   "pages": {
     "search": {
       "title": "Znajdź nieruchomość",

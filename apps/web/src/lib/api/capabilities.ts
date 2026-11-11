@@ -37,6 +37,25 @@ export interface DeploymentCapabilities {
   observability: {
     error_tracking: boolean;
   };
+  /**
+   * The build this deployment is running.
+   *
+   * Present only for a caller on the deployment's privileged list - the
+   * backend publishes it to nobody else, so an ordinary visitor gets no
+   * `build` key at all and the interface has nothing to show.
+   */
+  build?: {
+    /** The commit the images were built from. */
+    sha?: string;
+    /** When the images were built. */
+    built_at?: string;
+    /** The run that rolled this build onto the server. */
+    deploy_run_id?: string;
+    /** Where the commit lives. */
+    commit_url?: string;
+    /** Where the deploy run lives. */
+    deploy_url?: string;
+  };
 }
 
 /**

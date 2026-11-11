@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { BuildMetadata } from '@/components/layout/build-metadata';
 import { LANDING_SLOTS, withSlot, withUtm } from '@/lib/utm';
 
 /**
@@ -118,6 +119,10 @@ export async function LandingFooter({ locale }: { locale: string }) {
       <div className="mx-auto flex max-w-[1248px] flex-col gap-1 border-t border-border px-6 pb-16 pt-3.5 text-[12px] text-muted-foreground sm:flex-row sm:justify-between">
         <span>{t('footer.bottom')}</span>
         <span className="font-mono">{t('footer.locales')}</span>
+      </div>
+
+      <div className="mx-auto max-w-[1248px] border-t border-border px-6 pb-16 pt-3.5">
+        <BuildMetadata />
       </div>
     </footer>
   );

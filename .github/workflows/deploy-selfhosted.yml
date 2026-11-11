@@ -112,6 +112,36 @@ jobs:
               -o StrictHostKeyChecking=yes \
               "$DEPLOY_USER@$DEPLOY_HOST" 'echo "ssh ok"'
 
+      - name: Deliver the privileged list and the deployment's identity
+        if: steps.target.outputs.configured == 'true'
+        env:
+          DEPLOY_RUN_ID: ${{ github.run_id }}
+          BUILD_REPO: ${{ github.repository }}
+          ADMIN_EMAILS: ${{ vars.ADMIN_EMAILS }}
+          ADMIN_IPS: ${{ vars.ADMIN_IPS }}
+        run: |
+          set -euo pipefail
+          # The privileged list and the deployment's identity travel to the
+          # server as a FILE, over stdin: `cat > build.env`. They are not
+          # credentials, but they are personal data, and a process list on the
+          # server is not the place for an e-mail address. The image's own
+          # labels - the commit and the build time - are added on the server
+          # in the next step, because the image is what knows them.
+          {
+            printf 'DEPLOY_RUN_ID=%s\n' "$DEPLOY_RUN_ID"
+            printf 'BUILD_REPO=%s\n' "$BUILD_REPO"
+            printf 'ADMIN_EMAILS=%s\n' "$ADMIN_EMAILS"
+            printf 'ADMIN_IPS=%s\n' "$ADMIN_IPS"
+          } > "$RUNNER_TEMP/build.env"
+
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_PORT" \
+              -o UserKnownHostsFile=~/.ssh/known_hosts \
+              -o StrictHostKeyChecking=yes \
+              "$DEPLOY_USER@$DEPLOY_HOST" \
+              "cat > '$DEPLOY_PATH/build.env'" < "$RUNNER_TEMP/build.env"
+
+          rm -f "$RUNNER_TEMP/build.env"
+
       - name: Roll the stack onto the new images
         if: steps.target.outputs.configured == 'true'
         env:
@@ -162,6 +192,24 @@ jobs:
             echo "the images for tag $IMAGE_TAG never became available" >&2
             exit 1
           fi
+
+          # The commit and the build time are the IMAGE's own labels, so they
+          # are true of the build being rolled out even when this roll is a
+          # manual one onto an older tag. The image is read by its reference -
+          # the one that was just pulled - and NOT through `docker compose
+          # images`, which would answer with the image of the container that
+          # is still running, and therefore with the PREVIOUS build.
+          BACKEND_REF=$(docker compose -f "$COMPOSE_FILE" config --images 2>/dev/null | grep '/backend:' | head -1 || true)
+          if [ -n "$BACKEND_REF" ]; then
+            printf 'BUILD_SHA=%s\n' "$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$BACKEND_REF" 2>/dev/null || true)" >> build.env
+            printf 'BUILD_AT=%s\n' "$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.created"}}' "$BACKEND_REF" 2>/dev/null || true)" >> build.env
+          fi
+
+          # The environment the containers read: the privileged list and the
+          # build metadata, both delivered by this deploy.
+          set -a
+          . ./build.env
+          set +a
 
           docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
 
