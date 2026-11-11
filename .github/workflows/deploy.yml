@@ -119,24 +119,35 @@ jobs:
           CI_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           THIS_RUN_ID: ${{ github.run_id }}
         run: |
+          set -uo pipefail
           # The commit carries more than one CI run (the push and the pull
           # request) and the Dependabot job. The deployments API refuses to
-          # create a record while any check on the commit is still running -
-          # it answers 409 "Commit status checks failed" - and the deploy
-          # workflow's OWN failed attempt then keeps every later attempt
-          # refused. So the commit waits here, and the checks of THIS run are
-          # left out of the wait (they are running by definition).
+          # create a record while any check on the commit is still running or
+          # red - it answers 409 "Commit status checks failed" - and the
+          # deploy workflow's OWN failed attempt then keeps every later
+          # attempt refused. So the commit waits here, and the checks of THIS
+          # run are left out of the wait (they are running by definition, and
+          # GitHub exempts them from the rule - a workflow that deploys its
+          # own commit could not create a record otherwise).
           for attempt in $(seq 1 40); do
-            STATE=$(gh api               -H "Accept: application/vnd.github+json"               "repos/${{ github.repository }}/commits/$CI_HEAD_SHA/check-runs"               | jq --arg run "$THIS_RUN_ID"                   '[.check_runs[] | select(.html_url | contains("/runs/" + $run + "/") | not)]
-                   | {pending: [.[] | select(.status != "completed") | .name],
-                      failed:  [.[] | select(.status == "completed" and .conclusion != "success" and .conclusion != "skipped") | .name]}')
-            PENDING=$(echo "$STATE" | jq -r '.pending | length')
-            FAILED=$(echo "$STATE" | jq -r '.failed | length')
+            RAW=$(gh api -H "Accept: application/vnd.github+json"               "repos/${{ github.repository }}/commits/$CI_HEAD_SHA/check-runs" 2>/dev/null || true)
+            if [ -z "$RAW" ]; then
+              # The checks of a fresh commit are not readable for a moment.
+              # That is not a failure - it is a wait.
+              echo "the check runs of $CI_HEAD_SHA are not readable yet (attempt $attempt/40), waiting 30s"
+              sleep 30
+              continue
+            fi
+            STATE=$(echo "$RAW" | jq --arg run "$THIS_RUN_ID"               '[.check_runs[] | select((.html_url // "") | contains("/runs/" + $run + "/") | not)]
+               | {pending: [.[] | select(.status != "completed") | .name],
+                  failed:  [.[] | select(.status == "completed" and (.conclusion != "success") and (.conclusion != "skipped")) | .name]}')
+            PENDING=$(echo "$STATE" | jq -r '.pending | length' 2>/dev/null || echo "")
+            FAILED=$(echo "$STATE" | jq -r '.failed | length' 2>/dev/null || echo "")
             if [ "$PENDING" = "0" ] && [ "$FAILED" = "0" ]; then
               echo "every other check on $CI_HEAD_SHA has settled"
               exit 0
             fi
-            if [ "$FAILED" != "0" ]; then
+            if [ -n "$FAILED" ] && [ "$FAILED" != "0" ]; then
               echo "ERROR: a check on $CI_HEAD_SHA failed: $(echo "$STATE" | jq -r '.failed | join(", ")')" >&2
               exit 1
             fi
