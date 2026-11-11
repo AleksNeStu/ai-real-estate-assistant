@@ -176,6 +176,61 @@ jobs:
           echo "value=$tag" >> "$GITHUB_OUTPUT"
           echo "Deploying image tag: $tag"
 
+      - name: Wait for the images to be published
+        if: steps.target.outputs.configured == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.sha }}
+          IMAGE_TAG: ${{ steps.tag.outputs.value }}
+        run: |
+          set -uo pipefail
+          # The images are published by the release workflow, which runs in
+          # PARALLEL with this one. The pull below can therefore fail for a
+          # while before the tag exists.
+          #
+          # A blind window is the wrong shape for that: a multi-architecture
+          # build of the frontend takes longer than twenty minutes, and this
+          # workflow used to give up at exactly twenty. The deploy then had
+          # to be repeated by hand, and a release that ends in a manual step
+          # is a release that can be forgotten.
+          #
+          # So the wait is for the PUBLISH's VERDICT, not for a span of
+          # time. The publish run for this commit is read from the API and
+          # waited for: green means the images exist and the pull below
+          # succeeds, red means the release itself failed and there is
+          # nothing to roll out.
+          #
+          # The window is still bounded - two hours - because a publish that
+          # never settles must not hold a runner forever.
+          PUBLISHED=0
+          for attempt in $(seq 1 240); do
+            RAW=$(gh api -H "Accept: application/vnd.github+json" \
+              "repos/${{ github.repository }}/actions/workflows/publish-ghcr.yml/runs?head_sha=$HEAD_SHA&per_page=20" 2>/dev/null || echo '{"workflow_runs":[]}')
+            RUNS=$(echo "$RAW" | jq -c '[.workflow_runs[]? | select(.event == "push")]' 2>/dev/null || echo '[]')
+            COUNT=$(echo "$RUNS" | jq 'length' 2>/dev/null || echo 0)
+            if [ "$COUNT" -gt 0 ]; then
+              DONE=$(echo "$RUNS" | jq '[.[] | select(.status == "completed")] | length' 2>/dev/null || echo 0)
+              if [ "$DONE" -gt 0 ]; then
+                OK=$(echo "$RUNS" | jq '[.[] | select(.conclusion == "success")] | length' 2>/dev/null || echo 0)
+                if [ "$OK" -gt 0 ]; then
+                  echo "the images for tag $IMAGE_TAG are published"
+                  PUBLISHED=1
+                  break
+                fi
+                echo "ERROR: the publish of $HEAD_SHA did not succeed ($(echo "$RUNS" | jq -r 'map(.conclusion) | join(",")')) - nothing is rolled out" >&2
+                exit 1
+              fi
+              echo "the publish of $HEAD_SHA is still running (attempt $attempt/240), waiting 30s"
+            else
+              echo "no publish run for $HEAD_SHA yet (attempt $attempt/240), waiting 30s"
+            fi
+            sleep 30
+          done
+          if [ "$PUBLISHED" -ne 1 ]; then
+            echo "ERROR: the publish of $HEAD_SHA did not settle in two hours - nothing is rolled out" >&2
+            exit 1
+          fi
+
       - name: Prepare the SSH key
         if: steps.target.outputs.configured == 'true'
         run: |
@@ -260,19 +315,20 @@ jobs:
           fi
 
           # The images are published by the release workflow, which runs in
-          # parallel with this one. The pull can therefore fail for a while
-          # before the tag exists - retry instead of failing the deploy. Only
-          # a failure a retry cannot fix stops at once: a file the deploy
-          # user may not read, a compose file that is not there. A tag that
-          # is not published YET says "failed to resolve reference" and is
-          # exactly what this loop waits for.
+          # parallel with this one. The step above waited for that publish to
+          # finish, so the tag exists by now - but the registry still needs a
+          # moment to serve it, so the pull retries. Only a failure a retry
+          # cannot fix stops at once: a file the deploy user may not read, a
+          # compose file that is not there. A tag that is not published YET
+          # says "failed to resolve reference" and is exactly what this loop
+          # waits for.
           #
-          # The window is 40 attempts of 30 seconds - twenty minutes. A
-          # multi-architecture image build of this project takes longer than
-          # ten minutes, and a first deploy that gives up mid-build is a
-          # deploy that has to be repeated by hand.
+          # The window is 20 attempts of 30 seconds - ten minutes. It is
+          # short on purpose: the publish is already green, so a tag that is
+          # still missing after ten minutes is a registry that is not serving
+          # it, and waiting longer only delays the report of that.
           pulled=0
-          for attempt in $(seq 1 40); do
+          for attempt in $(seq 1 20); do
             if docker compose -f "$COMPOSE_FILE" pull 2>&1 | tee /tmp/aire-pull.log; then
               pulled=1
               break
@@ -281,7 +337,7 @@ jobs:
               echo "the pull failed for a reason a retry cannot fix" >&2
               exit 1
             fi
-            echo "images not published yet (attempt $attempt/40), waiting 30s"
+            echo "the registry does not serve the image yet (attempt $attempt/20), waiting 30s"
             sleep 30
           done
           if [ "$pulled" -ne 1 ]; then
