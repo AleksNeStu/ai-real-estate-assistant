@@ -315,20 +315,35 @@ jobs:
           if [ "$DEPLOY_ENV" = "staging" ]; then
             AUTO_INACTIVE_FLAG="-F auto_inactive=false"
           fi
-          DEPLOY_ID=$(gh api \
-            --method POST \
-            -H "Accept: application/vnd.github+json" \
-            repos/${{ github.repository }}/deployments \
-            -f ref="$DEPLOY_SHA" \
-            -f environment="$DEPLOY_ENV" \
-            -f description="Backend deploy $SHORT_SHA" \
-            -F auto_merge=false \
-            $AUTO_INACTIVE_FLAG \
-            --jq '.id')
-          echo "id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
+          # The deployments API refuses a record while any check on the
+          # commit is running - and this workflow's OWN checks are running
+          # on this very commit. The record is the Environments widget; the
+          # deployment itself is Render's, and it does not depend on the
+          # record. So the record is tried, and the deployment continues
+          # without it when the API keeps refusing.
+          DEPLOY_ID=""
+          for attempt in $(seq 1 6); do
+            OUT=$(gh api \
+              --method POST \
+              -H "Accept: application/vnd.github+json" \
+              repos/${{ github.repository }}/deployments \
+              -f ref="$DEPLOY_SHA" \
+              -f environment="$DEPLOY_ENV" \
+              -f description="Backend deploy $SHORT_SHA" \
+              -F auto_merge=false \
+              $AUTO_INACTIVE_FLAG \
+              --jq '.id' 2>&1) && DEPLOY_ID="$OUT" && break
+            echo "the deployment record was refused (attempt $attempt/6): $OUT" >&2
+            sleep 15
+          done
+          if [ -z "$DEPLOY_ID" ]; then
+            echo "::warning::the GitHub deployment record could not be created for backend $SHORT_SHA; the deployment continues without it"
+          else
+            echo "id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
+            echo "Created GitHub deployment #$DEPLOY_ID in environment $DEPLOY_ENV (auto_inactive=${AUTO_INACTIVE_FLAG:-true})"
+          fi
           # Expose DEPLOY_ENV to subsequent steps.
           echo "DEPLOY_ENV=$DEPLOY_ENV" >> "$GITHUB_ENV"
-          echo "Created GitHub deployment #$DEPLOY_ID in environment $DEPLOY_ENV (auto_inactive=${AUTO_INACTIVE_FLAG:-true})"
 
       - name: Mark backend deployment in_progress
         if: always() && steps.gh_deploy.outputs.id != ''
@@ -592,20 +607,35 @@ jobs:
           if [ "$DEPLOY_ENV" = "staging" ]; then
             AUTO_INACTIVE_FLAG="-F auto_inactive=false"
           fi
-          DEPLOY_ID=$(gh api \
-            --method POST \
-            -H "Accept: application/vnd.github+json" \
-            repos/${{ github.repository }}/deployments \
-            -f ref="$DEPLOY_SHA" \
-            -f environment="$DEPLOY_ENV" \
-            -f description="Frontend deploy $SHORT_SHA" \
-            -F auto_merge=false \
-            $AUTO_INACTIVE_FLAG \
-            --jq '.id')
-          echo "id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
+          # The deployments API refuses a record while any check on the
+          # commit is running - and this workflow's OWN checks are running
+          # on this very commit. The record is the Environments widget; the
+          # deployment itself is Render's, and it does not depend on the
+          # record. So the record is tried, and the deployment continues
+          # without it when the API keeps refusing.
+          DEPLOY_ID=""
+          for attempt in $(seq 1 6); do
+            OUT=$(gh api \
+              --method POST \
+              -H "Accept: application/vnd.github+json" \
+              repos/${{ github.repository }}/deployments \
+              -f ref="$DEPLOY_SHA" \
+              -f environment="$DEPLOY_ENV" \
+              -f description="Frontend deploy $SHORT_SHA" \
+              -F auto_merge=false \
+              $AUTO_INACTIVE_FLAG \
+              --jq '.id' 2>&1) && DEPLOY_ID="$OUT" && break
+            echo "the deployment record was refused (attempt $attempt/6): $OUT" >&2
+            sleep 15
+          done
+          if [ -z "$DEPLOY_ID" ]; then
+            echo "::warning::the GitHub deployment record could not be created for frontend $SHORT_SHA; the deployment continues without it"
+          else
+            echo "id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
+            echo "Created GitHub deployment #$DEPLOY_ID in environment $DEPLOY_ENV (auto_inactive=${AUTO_INACTIVE_FLAG:-true})"
+          fi
           # Expose DEPLOY_ENV to subsequent steps.
           echo "DEPLOY_ENV=$DEPLOY_ENV" >> "$GITHUB_ENV"
-          echo "Created GitHub deployment #$DEPLOY_ID in environment $DEPLOY_ENV (auto_inactive=${AUTO_INACTIVE_FLAG:-true})"
 
       - name: Mark frontend deployment in_progress
         if: always() && steps.gh_deploy.outputs.id != ''
