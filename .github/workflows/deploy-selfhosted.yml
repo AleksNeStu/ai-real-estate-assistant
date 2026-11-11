@@ -55,6 +55,75 @@ permissions:
   packages: read
 
 jobs:
+  resolve:
+    # Which commit is this roll-out about?
+    #
+    # The trigger and the subject are not the same thing. On a tag push they
+    # coincide - GITHUB_REF_NAME is `v5.3.0` and the commit is the one that
+    # tag points at. On a manual roll-out they do NOT: the workflow runs on
+    # whatever branch it was dispatched from, so GITHUB_SHA is the tip of
+    # THAT branch, while the images being rolled out were built from the
+    # commit the NAMED tag points at. Reading the tip would gate the roll on
+    # the wrong commit's CI, and wait for a publish run that does not exist
+    # (the publish workflow starts on a tag, never on a branch).
+    #
+    # So the subject is resolved from the tag itself. An annotated tag is
+    # peeled to its commit; a lightweight tag is already the commit.
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      sha: ${{ steps.release.outputs.sha }}
+    steps:
+      - name: Resolve the tag to the commit behind it
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RAW_TAG: ${{ inputs.image_tag }}
+        run: |
+          set -euo pipefail
+          raw="$RAW_TAG"
+          if [ -z "$raw" ]; then
+            raw="${GITHUB_REF_NAME}"
+          fi
+          tag="${raw#v}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "resolving the tag v$tag to its commit"
+
+          SHA=""
+          for name in "v$tag" "$tag"; do
+            REF=$(gh api "repos/${{ github.repository }}/git/ref/tags/$name" --jq '.object.type + " " + .object.sha' 2>/dev/null || true)
+            # A missing ref answers with a JSON error, not with a type and a
+            # SHA. Only a well-formed answer is a reference.
+            case "$REF" in
+              commit\ *|tag\ *) ;;
+              *) continue ;;
+            esac
+            TYPE=${REF%% *}
+            OBJ=${REF##* }
+            if [ "$TYPE" = "tag" ]; then
+              # An annotated tag points at a tag object, which points at the
+              # commit. Peel it.
+              SHA=$(gh api "repos/${{ github.repository }}/git/tags/$OBJ" --jq '.object.sha' 2>/dev/null || true)
+            else
+              SHA="$OBJ"
+            fi
+            if [ -n "$SHA" ]; then
+              break
+            fi
+          done
+
+          if [ -z "$SHA" ]; then
+            # No tag to resolve: this is a roll-out of a tag that was never
+            # pushed, so the branch tip is the only thing left to name. The
+            # gate below then judges that commit, and the publish wait
+            # below reports that there is nothing to wait for.
+            SHA="${{ github.sha }}"
+            echo "the tag v$tag does not exist - falling back to this workflow's commit"
+          fi
+
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "the release for tag $tag is commit $SHA"
+
   ci-check:
     # THE GATE. A tag is a trigger, not a verdict: a `v*` tag starts the
     # publish and the roll even when the commit behind it never went through
@@ -76,12 +145,13 @@ jobs:
     #
     # The rule "CI green before a tag" was the operator's to keep by hand,
     # because the tag-driven workflows carried no gate of their own.
+    needs: resolve
     runs-on: ubuntu-latest
     steps:
       - name: The tagged commit must have passed CI
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HEAD_SHA: ${{ github.sha }}
+          HEAD_SHA: ${{ needs.resolve.outputs.sha }}
         run: |
           set -uo pipefail
           GRACE=10   # minutes a CI run is given to appear at all
@@ -139,7 +209,7 @@ jobs:
     # Only the owner of this repository deploys. Whether a target server is
     # configured at all is a SECRET question, and a secret cannot be read in
     # a job-level condition - the first step below settles it instead.
-    needs: ci-check
+    needs: [resolve, ci-check]
     if: github.repository_owner == 'AleksNeStu'
     runs-on: ubuntu-latest
     env:
@@ -168,11 +238,7 @@ jobs:
         if: steps.target.outputs.configured == 'true'
         run: |
           set -euo pipefail
-          raw="${{ inputs.image_tag }}"
-          if [ -z "$raw" ]; then
-            raw="${GITHUB_REF_NAME}"
-          fi
-          tag="${raw#v}"
+          tag="${{ needs.resolve.outputs.tag }}"
           echo "value=$tag" >> "$GITHUB_OUTPUT"
           echo "Deploying image tag: $tag"
 
@@ -180,7 +246,7 @@ jobs:
         if: steps.target.outputs.configured == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HEAD_SHA: ${{ github.sha }}
+          HEAD_SHA: ${{ needs.resolve.outputs.sha }}
           IMAGE_TAG: ${{ steps.tag.outputs.value }}
         run: |
           set -uo pipefail
