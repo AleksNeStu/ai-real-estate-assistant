@@ -13,6 +13,7 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.dependencies import get_vector_store
 from api.routers import properties
 from db.database import get_db
 
@@ -61,12 +62,15 @@ async def properties_client(
     """A client for the property endpoints, with a catalogue that holds one."""
     test_app = FastAPI()
     test_app.include_router(properties.router, prefix="/api/v1")
-    test_app.state.vector_store = mock_store
 
     async def override_get_db():
         yield db_session
 
     test_app.dependency_overrides[get_db] = override_get_db
+    # The store comes from the dependency, not from app.state: the app never
+    # puts a live store there, so a test that mocks app.state would pass
+    # against a store the deployment never hands out.
+    test_app.dependency_overrides[get_vector_store] = lambda: mock_store
 
     transport = ASGITransport(app=test_app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
@@ -136,6 +140,35 @@ class TestRelatedProperties:
         response = await properties_client.get("/api/v1/properties/does-not-exist/related")
 
         assert response.status_code == 404
+
+
+class TestWithoutACatalogue:
+    """What the page answers when the catalogue is not there."""
+
+    @pytest.mark.asyncio
+    async def test_a_missing_store_is_a_refusal(self, db_session: AsyncSession):
+        """No catalogue means 503, not a stack trace and not an empty page.
+
+        This is the shape the deployment actually takes when the embedding
+        model is unavailable: the page must say so instead of pretending
+        the listing does not exist.
+        """
+        test_app = FastAPI()
+        test_app.include_router(properties.router, prefix="/api/v1")
+
+        async def override_get_db():
+            yield db_session
+
+        test_app.dependency_overrides[get_db] = override_get_db
+        test_app.dependency_overrides[get_vector_store] = lambda: None
+
+        transport = ASGITransport(app=test_app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            response = await client.get("/api/v1/properties/prop-1")
+            related = await client.get("/api/v1/properties/prop-1/related")
+
+        assert response.status_code == 503
+        assert related.status_code == 503
 
 
 class TestPriceHistory:

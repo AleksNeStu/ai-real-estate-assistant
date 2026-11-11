@@ -13,27 +13,17 @@ The page is public: a visitor who clicks a listing on the search page is
 nobody until they sign in, so the data it needs is readable without a session.
 """
 
-from typing import Any
+from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.dependencies import get_vector_store
 from data.schemas import normalize_property_metadata
 from db.analytics_repos import PriceSnapshotRepository
 from db.database import get_db
 
 router = APIRouter(prefix="/properties", tags=["Properties"])
-
-
-def _vector_store(request: Request) -> Any:
-    """The vector store, or a refusal the caller can act on."""
-    store = getattr(request.app.state, "vector_store", None)
-    if store is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Vector store unavailable",
-        )
-    return store
 
 
 def _document_to_property(doc: Any) -> dict[str, Any]:
@@ -95,7 +85,7 @@ def _document_to_property(doc: Any) -> dict[str, Any]:
 )
 async def get_property(
     property_id: str,
-    _store: Any = Depends(_vector_store),
+    store: Optional[Any] = Depends(get_vector_store),
 ) -> dict[str, Any]:
     """The listing, or a refusal when the catalogue does not hold it."""
     cleaned = property_id.strip()
@@ -104,8 +94,13 @@ async def get_property(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="property_id is required",
         )
+    if not store:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Vector store unavailable",
+        )
 
-    docs = _store.get_properties_by_ids([cleaned])
+    docs = store.get_properties_by_ids([cleaned])
     if not docs:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -166,7 +161,7 @@ async def get_property_price_history(
 async def get_related_properties(
     property_id: str,
     limit: int = Query(default=6, ge=1, le=24),
-    _store: Any = Depends(_vector_store),
+    store: Optional[Any] = Depends(get_vector_store),
 ) -> dict[str, Any]:
     """The comparables, or an empty list when the catalogue holds none."""
     cleaned = property_id.strip()
@@ -175,8 +170,13 @@ async def get_related_properties(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="property_id is required",
         )
+    if not store:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Vector store unavailable",
+        )
 
-    docs = _store.get_properties_by_ids([cleaned])
+    docs = store.get_properties_by_ids([cleaned])
     if not docs:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -191,7 +191,7 @@ async def get_related_properties(
         return {"properties": [], "count": 0}
 
     try:
-        found = _store.search_by_metadata(city=city, k=max(limit * 3, 20))
+        found = store.search_by_metadata(city=city, k=max(limit * 3, 20))
     except Exception:
         return {"properties": [], "count": 0}
 
