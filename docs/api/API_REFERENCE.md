@@ -1796,7 +1796,7 @@ Cancel a running bulk job. Only jobs in 'pending' or 'running' status can be can
 
 **Tags**: Capabilities
 
-Reports the enabled authentication providers, whether e-mail is really sent, and whether error tracking is configured. The frontend uses it to hide features the deployment cannot serve.
+Reports the enabled authentication providers, whether e-mail is really sent, and whether error tracking is configured. The frontend uses it to hide features the deployment cannot serve. A caller on the deployment's privileged list also gets the build it is talking to.
 
 **Responses**
 
