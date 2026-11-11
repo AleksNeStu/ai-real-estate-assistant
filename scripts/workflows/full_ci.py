@@ -322,6 +322,9 @@ def main(argv: list[str] | None = None) -> int:
                 cmd.extend(["--backend-health-url", backend_url])
             if frontend_url:
                 cmd.extend(["--frontend-url", frontend_url])
+            verify_auth_url = os.environ.get("AIRE_SMOKE_VERIFY_AUTH_URL", "").strip()
+            if verify_auth_url:
+                cmd.extend(["--backend-verify-auth-url", verify_auth_url])
         rc = _run(
             cmd,
             cwd=root,
