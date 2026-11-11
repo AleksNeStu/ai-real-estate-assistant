@@ -85,6 +85,44 @@ def test_clear_resets_cache(monkeypatch, tmp_path):
     assert store.get_stats()["total_documents"] == 0
 
 
+def test_clear_removes_the_stale_index_directories(monkeypatch, tmp_path):
+    """A cleared collection leaves its index behind on disk - that is a trap.
+
+    ChromaDB's delete_collection drops the rows but keeps the collection's
+    HNSW directory in the persist directory. A later query can then meet a
+    segment that is gone and answer with an empty list while the catalogue
+    holds the documents. The store removes those directories with the
+    collection.
+    """
+    with patch.object(ChromaPropertyStore, "_create_embeddings", return_value=None):
+        store = ChromaPropertyStore(persist_directory=str(tmp_path))
+
+    # A collection id, and something that is not one.
+    stale = tmp_path / "68f35189-f923-46ac-83e3-ba41ee031dbc"
+    stale.mkdir()
+    (stale / "segment.bin").write_bytes(b"index")
+    other = tmp_path / "not-a-collection"
+    other.mkdir()
+
+    store.clear()
+
+    assert not stale.exists()
+    assert other.exists()
+
+
+def test_clear_keeps_the_persist_database(monkeypatch, tmp_path):
+    """The store's own database file is not an index and must survive."""
+    with patch.object(ChromaPropertyStore, "_create_embeddings", return_value=None):
+        store = ChromaPropertyStore(persist_directory=str(tmp_path))
+
+    database = tmp_path / "chroma.sqlite3"
+    database.write_bytes(b"sqlite")
+
+    store.clear()
+
+    assert database.exists()
+
+
 def test_search_concurrent_with_embedding(tmp_path, monkeypatch):
     """
     Test that search does not block while embeddings are being generated.

@@ -9,7 +9,9 @@ import logging
 import math
 import os
 import platform
+import shutil
 import threading
+import uuid
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
@@ -1178,13 +1180,48 @@ class ChromaPropertyStore:
                 docs = list(self._documents)
             return FallbackRetriever(docs=docs, kk=k)
 
+    def _remove_stale_index_directories(self) -> None:
+        """Remove the collection index directories the persist directory holds.
+
+        ChromaDB's ``delete_collection`` drops the collection's rows from its
+        SQLite file but leaves the collection's HNSW index directory on disk.
+        A later query can then meet a segment that is gone - "Error creating
+        hnsw segment reader: Nothing found on disk" - and the search answers
+        with an empty list instead of the documents that were just added.
+
+        The demo makes this visible: it clears the catalogue and regenerates it
+        on every start, so every restart left another index directory behind,
+        and the search of the live demo answered "no results" while the
+        catalogue held 250 listings.
+
+        Only directories named like a collection id are removed, so anything
+        else a deployment keeps in the persist directory stays untouched.
+        """
+        try:
+            if not self.persist_directory.exists():
+                return
+            for entry in self.persist_directory.iterdir():
+                if not entry.is_dir():
+                    continue
+                try:
+                    uuid.UUID(entry.name)
+                except ValueError:
+                    continue
+                shutil.rmtree(entry, ignore_errors=True)
+        except Exception as e:
+            logger.warning("Could not clean the persist directory: %s", sanitize_for_log(e))
+
     def clear(self) -> None:
         """Clear all documents from the vector store."""
         try:
             vector_store = self._get_vector_store()
-            if vector_store is not None:
-                with self._vector_lock:
+            with self._vector_lock:
+                if vector_store is not None:
                     vector_store.delete_collection()
+                # The stale index goes before the new collection is created:
+                # the new one gets a directory of its own.
+                self._remove_stale_index_directories()
+                if vector_store is not None:
                     new_store = self._initialize_vector_store()
                     self.vector_store = new_store
                     self._vector_store_local.store = new_store
