@@ -211,6 +211,14 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
 
 ## What's new
 
+**`v5.3.1`** — the property page answers.
+
+- **The page's data arrives** — the endpoints behind the property page asked
+  the application state for the catalogue, and the application never puts one
+  there, so every request answered `503` even with a full catalogue behind it.
+  The endpoints read the catalogue the way the rest of the API does, and the
+  page shows its listing.
+
 **`v5.3.0`** — a property has a page of its own.
 
 - **The property page** — the search answered with listings and the card
@@ -284,7 +292,7 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
 - **335 dependency alerts closed** — every critical and high advisory resolved,
   the floors pinned in both the lock file and the project file.
 
-Full notes: [v5.3.0 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.0) ·
+Full notes: [v5.3.1 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.1) ·
 [changelog](CHANGELOG.md).
 
 ## What it does

@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.1] - 2026-11-11
+
+### Fixed
+- **The property page answers** — the page's endpoints asked the application
+  state for the catalogue, and the application never puts one there: it sets
+  the state to `None` at startup and nothing replaces it. Every request to
+  `/api/v1/properties/{id}` answered `503` with a full catalogue behind it. The
+  endpoints take the catalogue through the dependency the deployment actually
+  hands out, and a test now covers the case where there is no catalogue at all.
+- **A manual roll-out judges the code it deploys** — the roll-out workflow ran
+  from whichever branch it was dispatched from, so it read the branch's tip
+  instead of the commit behind the named tag: the CI gate judged the wrong
+  commit and the wait for the published images looked for a run that only ever
+  starts on a tag. The tag is now resolved to its commit, and that commit is
+  what both steps read.
+
 ## [5.3.0] - 2026-11-11
 
 ### Added
@@ -1214,6 +1230,7 @@ First production release of AI Real Estate Assistant.
 - SQLite database for property listings
 
 [Unreleased]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases
+[5.3.1]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.1
 [5.3.0]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.0
 [5.1.7]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.7
 [5.1.6]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.6
