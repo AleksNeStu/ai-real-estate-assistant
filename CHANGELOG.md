@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **A cleared catalogue takes its index with it** — the search answered with an
+  empty list while the catalogue held 250 listings: ChromaDB's
+  `delete_collection` drops the collection's rows but keeps the collection's
+  HNSW index directory on disk, and a later query met a segment that was gone
+  ("Nothing found on disk") and reported no results instead of the documents
+  that had just been added. The store removes the collection's index
+  directories with the collection.
+
 ## [5.3.1] - 2026-11-11
 
 ### Fixed
