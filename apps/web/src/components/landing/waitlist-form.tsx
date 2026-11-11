@@ -80,7 +80,12 @@ export function WaitlistForm() {
   if (state === 'success') {
     return (
       <span className="text-[14px] text-success">
-        {canMail ? t('exits.hosted.waitlistSuccess') : t('exits.hosted.waitlistHint')}
+        {/* The promise has to match what the deployment can keep. The
+            success line used to answer with "One e-mail at launch" even when
+            no mail sender is configured - a promise the deployment cannot
+            keep, printed at the moment the visitor is most likely to believe
+            it. */}
+        {canMail ? t('exits.hosted.waitlistSuccess') : t('exits.hosted.waitlistNoteNoMail')}
       </span>
     );
   }

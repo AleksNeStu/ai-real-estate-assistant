@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.2] - 2026-11-11
+
 ### Fixed
 - **A cleared catalogue takes its index with it** — the search answered with an
   empty list while the catalogue held 250 listings: ChromaDB's
@@ -15,6 +17,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ("Nothing found on disk") and reported no results instead of the documents
   that had just been added. The store removes the collection's index
   directories with the collection.
+- **The waitlist stopped promising an e-mail it cannot send** — the success
+  line answered "One e-mail at launch" even on a deployment with no mail
+  sender configured. It now says what is true: the address is stored here and
+  no e-mail is sent from this deployment.
+- **The hreflang cluster pointed at the internal origin** — the middleware's
+  own `Link` header resolved its alternates against the request's host, so
+  behind the proxy a second cluster appeared on the origin's internal name,
+  and it pointed at the home pages of every locale rather than at the same
+  page. The header is off, and every public route declares its own cluster.
+
+### Added
+- **Every public route says what it is** — fourteen routes answered with the
+  same title and the same description. Each public route now declares its own
+  title, description and canonical, in the language of the route, from the
+  copy the message catalogue already carried.
+- **A listing is a page a crawler can read** — the page of a single property
+  was a client component that fetched after load, so it arrived as an empty
+  shell. It is read on the server now: the page carries the listing, its
+  title, its canonical and a `schema.org/Property` block with the address,
+  the position, the rooms and the offer.
+- **The catalogue can be enumerated** — `GET /api/v1/properties` answers with a
+  page of the listings, which is what a sitemap and an llms.txt are built from.
+- **The sitemap lists what there is to index** — one entry per page with its
+  translation cluster, the listing pages included, and the account areas
+  removed.
+- **llms.txt names the instance** — the document is served by a route now, so
+  it can name the live routes, the languages and the catalogue the deployment
+  holds, not only what the author knew when it was written.
+
+### Documentation
+- **The SEO / AEO / GEO audit of the public domain** —
+  `docs/reviews/2026-11-11-seo-geo-aeo-realty-kittray.md` measures the live
+  domain, names the gaps and states what is left open.
+- **The indexing switch, and the switch back** —
+  `docs/community/SEO_INDEXING_SETUP.md` now carries the procedure and the
+  one-command revert. The decision itself stays the operator's.
 
 ## [5.3.1] - 2026-11-11
 
@@ -1239,6 +1277,7 @@ First production release of AI Real Estate Assistant.
 - SQLite database for property listings
 
 [Unreleased]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases
+[5.3.2]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.2
 [5.3.1]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.1
 [5.3.0]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.0
 [5.1.7]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.7

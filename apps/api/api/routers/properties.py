@@ -76,6 +76,49 @@ def _document_to_property(doc: Any) -> dict[str, Any]:
 
 
 @router.get(
+    "",
+    summary="The catalogue",
+    description=(
+        "The listings this deployment holds, newest first. This is what a "
+        "sitemap and an llms.txt are built from: without it, the pages of the "
+        "listings cannot be enumerated by anything outside the process."
+    ),
+)
+async def list_properties(
+    limit: int = Query(default=50, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
+    city: Optional[str] = Query(default=None),
+    store: Optional[Any] = Depends(get_vector_store),
+) -> dict[str, Any]:
+    """The catalogue, as a page of listings.
+
+    The catalogue is public - a visitor who clicks a listing is nobody until
+    they sign in - so this reads without a session and asks for nothing.
+    """
+    if not store:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Vector store unavailable",
+        )
+
+    try:
+        found = store.search_by_metadata(city=city, k=offset + limit)
+    except Exception:
+        found = []
+
+    window = found[offset : offset + limit]
+    properties = [_document_to_property(doc) for doc in window]
+
+    return {
+        "properties": properties,
+        "count": len(properties),
+        "offset": offset,
+        "limit": limit,
+        "has_more": len(found) > offset + limit,
+    }
+
+
+@router.get(
     "/{property_id}",
     summary="One property",
     description=(

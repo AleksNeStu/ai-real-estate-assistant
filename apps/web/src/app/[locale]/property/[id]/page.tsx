@@ -1,303 +1,142 @@
-'use client';
+import type { Metadata } from 'next';
 
-import { useEffect, useState, use } from 'react';
-import Link from 'next/link';
-import { useLocale, useTranslations } from 'next-intl';
+import { fetchServerProperty, fetchServerRelated } from '@/lib/api/server';
+import { languageAlternates } from '@/lib/metadata';
+import { buildPropertyStructuredData } from '@/lib/structured-data';
+import { absoluteUrl } from '@/lib/site';
 
-import { ArrowLeft, MapPin } from 'lucide-react';
-
-import { Ledger, LedgerRow, MutedText, MonoAnnotation } from '@/components/ui/ledger';
-import { StatTile } from '@/components/ui/stat-tile';
-import { ErrorState, LoadingState } from '@/components/ui/states';
-
-import { HeartButton } from '@/components/property/heart-button';
-import { MortgageEstimate } from '@/components/property/MortgageEstimate';
-import { NeighborhoodSummary } from '@/components/property/NeighborhoodSummary';
-import { PropertyCard } from '@/components/property/property-card';
-
-import { getProperty, getRelatedProperties } from '@/lib/api';
-import { formatPrice } from '@/lib/format';
-import type { Property } from '@/lib/types';
+import PropertyView from './property-view';
 
 interface PropertyPageProps {
   params: Promise<{ locale: string; id: string }>;
 }
 
 /**
- * One property.
+ * The page of one listing.
  *
- * The search answers with listings and the card shows them, but a reader who
- * picks one needs more than a card: the price, the numbers of the listing, the
- * neighbourhood in words, and the other listings it competes with. That is
- * this page.
+ * WHY THE PAGE IS A SERVER COMPONENT
  *
- * The data is public - a visitor who clicks a listing is nobody until they
- * sign in - so the page reads without a session and asks for nothing.
+ * The listing page was a client component: it fetched the listing after the
+ * page had loaded. A crawler that does not run the JavaScript - and every
+ * answer engine that quotes a page - received an empty shell with the site's
+ * own title and no idea what the page was about. The page also had no
+ * canonical, no structured data and no entry in the sitemap, so the one page
+ * of the site that a buyer actually searches for ("two-room apartment in
+ * Kraków, Old Town") was the one page a search engine could not read.
+ *
+ * The listing is now read on the server and handed to the client view, which
+ * keeps everything the reader sees - the heart, the mortgage estimate, the
+ * comparables - exactly as it was. What is new is that the page now arrives
+ * with its content, its title and its structured data.
  */
-export default function PropertyPage({ params }: PropertyPageProps) {
-  const t = useTranslations();
-  const tDetails = useTranslations('property.details');
-  const tCard = useTranslations('property.card');
-  const tFeatures = useTranslations('property.details');
-  const locale = useLocale();
 
-  const resolvedParams = use(params);
-  const propertyId = resolvedParams.id;
-
-  const [property, setProperty] = useState<Property | null>(null);
-  const [related, setRelated] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!propertyId) return;
-    let cancelled = false;
-
-    const load = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const propertyData = await getProperty(propertyId);
-        if (cancelled) return;
-        setProperty(propertyData);
-
-        // The comparables are a bonus: a failure there must not empty the
-        // page, so it is swallowed and the section simply stays out.
-        try {
-          const relatedData = await getRelatedProperties(propertyId, 3);
-          if (!cancelled) setRelated(relatedData.properties || []);
-        } catch {
-          if (!cancelled) setRelated([]);
-        }
-      } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'loadError');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [propertyId]);
-
-  if (loading) {
-    return (
-      <main className="container mx-auto px-4 py-10">
-        <LoadingState />
-      </main>
-    );
-  }
-
-  if (error || !property) {
-    return (
-      <main className="container mx-auto px-4 py-10">
-        <ErrorState
-          title={tDetails('notFound')}
-          description={error ?? tDetails('loadError')}
-        />
-        <div className="mt-6">
-          <Link
-            href={`/${locale}/search`}
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground underline underline-offset-4"
-          >
-            <ArrowLeft className="h-4 w-4" aria-hidden />
-            {tDetails('backToSearch')}
-          </Link>
-        </div>
-      </main>
-    );
-  }
-
-  const title = property.title || tCard('untitled');
-  const price = formatPrice(property.price, property.currency || 'USD', locale);
-  const location = [
-    property.address,
-    property.neighborhood,
-    property.district,
-    property.city,
-    property.country,
-  ]
-    .filter(Boolean)
-    .join(', ');
-
+/**
+ * The title and the description of one listing.
+ *
+ * They are built from the listing itself - its name, its city, its price,
+ * its rooms - because that is what a searcher types. The catalogue's titles
+ * are sentences ("two-room apartment in Old Town"), which read as a title
+ * and as a query at the same time.
+ */
+function describe(property: {
+  title?: string;
+  city: string;
+  property_type?: string;
+  district?: string;
+  rooms?: number;
+  area_sqm?: number;
+  price?: number;
+  currency?: string;
+  description?: string;
+}): { title: string; description: string } {
+  const name = property.title || `${property.property_type ?? 'property'} in ${property.city}`;
+  const where = [property.district, property.city].filter(Boolean).join(', ');
   const facts = [
-    property.property_type ? { label: tDetails('propertyType'), value: property.property_type } : null,
-    property.listing_type ? { label: tDetails('listingType'), value: property.listing_type } : null,
-    property.rooms ? { label: tDetails('rooms'), value: String(property.rooms) } : null,
-    property.bathrooms ? { label: tDetails('bathrooms'), value: String(property.bathrooms) } : null,
-    property.area_sqm ? { label: tDetails('area'), value: `${property.area_sqm} m²` } : null,
-    property.floor !== undefined && property.floor !== null
-      ? { label: tDetails('floor'), value: String(property.floor) }
+    property.rooms ? `${property.rooms} room${property.rooms === 1 ? '' : 's'}` : null,
+    property.area_sqm ? `${property.area_sqm} m²` : null,
+    property.price
+      ? `${property.price.toLocaleString('en-US')} ${property.currency ?? 'PLN'}`
       : null,
-    property.total_floors
-      ? { label: tDetails('totalFloors'), value: String(property.total_floors) }
-      : null,
-    property.year_built ? { label: tDetails('yearBuilt'), value: String(property.year_built) } : null,
-    property.energy_rating
-      ? { label: tDetails('heating'), value: property.energy_rating }
-      : null,
-  ].filter((fact): fact is { label: string; value: string } => fact !== null);
+  ].filter(Boolean);
 
-  const features = [
-    property.has_parking ? tFeatures('parking') : null,
-    property.has_garden ? tFeatures('garden') : null,
-    property.has_pool ? tFeatures('pool') : null,
-    property.has_garage ? tFeatures('garage') : null,
-    property.has_bike_room ? tFeatures('bikeRoom') : null,
-    property.has_elevator ? tFeatures('elevator') : null,
-  ].filter((feature): feature is string => Boolean(feature));
+  const title = `${name} — ${where}`;
+  const description =
+    property.description?.trim() ||
+    `${name} in ${where}${facts.length ? `. ${facts.join(', ')}` : ''}. Search, compare and analyse listings with AI Real Estate Assistant.`;
+
+  return { title, description: description.slice(0, 300) };
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; id: string }>;
+}): Promise<Metadata> {
+  const { locale, id } = await params;
+  const property = await fetchServerProperty(id);
+  const url = absoluteUrl(`/${locale}/property/${id}`);
+
+  if (!property) {
+    // A listing that is not there is not a page anybody should index.
+    return {
+      title: 'Property not found',
+      robots: { index: false, follow: true },
+      alternates: { canonical: url, languages: languageAlternates(`/property/${id}`) },
+    };
+  }
+
+  const { title, description } = describe(property);
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url,
+      // The same listing, in every language the site carries.
+      languages: languageAlternates(`/property/${id}`),
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: 'website',
+      images: property.images?.[0] ? [{ url: property.images[0] }] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
+  };
+}
+
+export default async function PropertyPage({ params }: PropertyPageProps) {
+  const { locale, id } = await params;
+
+  const [property, related] = await Promise.all([
+    fetchServerProperty(id),
+    fetchServerRelated(id, 3),
+  ]);
+
+  const url = absoluteUrl(`/${locale}/property/${id}`);
 
   return (
-    <main className="container mx-auto px-4 py-10">
-      <div className="mb-6">
-        <Link
-          href={`/${locale}/search`}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground underline underline-offset-4"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden />
-          {t('nav.search')}
-        </Link>
-      </div>
-
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <div className="space-y-8">
-          <header className="space-y-3">
-            <h1 className="font-sans text-3xl font-semibold tracking-tight">{title}</h1>
-            {location ? (
-              <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4 shrink-0" aria-hidden />
-                {location}
-              </p>
-            ) : null}
-            <div className="flex flex-wrap items-end gap-6 pt-2">
-              <span className="font-mono text-3xl font-semibold tabular-nums tracking-tight">
-                {price || tCard('priceOnRequest')}
-              </span>
-              {property.price ? (
-                <MortgageEstimate
-                  price={property.price}
-                  currency={property.currency || 'USD'}
-                  locale={locale}
-                />
-              ) : null}
-              {property.id ? (
-                <div className="ml-auto">
-                  <HeartButton propertyId={property.id} />
-                </div>
-              ) : null}
-            </div>
-          </header>
-
-          {property.images?.[0] ? (
-            <div className="aspect-video w-full overflow-hidden rounded-lg bg-muted">
-              <img
-                src={property.images[0]}
-                alt={title}
-                className="size-full object-cover"
-                loading="lazy"
-              />
-            </div>
-          ) : null}
-
-          <NeighborhoodSummary
-            city={property.city}
-            neighborhood={property.neighborhood ?? property.district}
-            propertyType={property.property_type}
-            rooms={property.rooms}
-            area_sqm={property.area_sqm}
-            language={locale}
-          />
-
-          {property.description ? (
-            <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                {tDetails('description')}
-              </h2>
-              <p className="text-sm leading-relaxed text-foreground">{property.description}</p>
-            </section>
-          ) : null}
-
-          {facts.length > 0 ? (
-            <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                {tDetails('facts')}
-              </h2>
-              <Ledger>
-                {facts.map((fact) => (
-                  <LedgerRow key={fact.label}>
-                    <MutedText>{fact.label}</MutedText>
-                    <MonoAnnotation className="text-right">{fact.value}</MonoAnnotation>
-                  </LedgerRow>
-                ))}
-              </Ledger>
-            </section>
-          ) : null}
-
-          {features.length > 0 ? (
-            <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                {tDetails('amenities')}
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                {features.map((feature) => (
-                  <span
-                    key={feature}
-                    className="rounded-md border border-border px-2.5 py-1 font-mono text-[12px] text-muted-foreground"
-                  >
-                    {feature}
-                  </span>
-                ))}
-              </div>
-            </section>
-          ) : null}
-        </div>
-
-        <aside className="space-y-6">
-          <div className="flex flex-wrap gap-6">
-            {property.rooms ? (
-              <StatTile value={String(property.rooms)} label={tCard('bedsUnit')} />
-            ) : null}
-            {property.area_sqm ? (
-              <StatTile value={`${property.area_sqm} m²`} label={tDetails('area')} />
-            ) : null}
-            {property.price_per_sqm ? (
-              <StatTile
-                value={formatPrice(property.price_per_sqm, property.currency || 'USD', locale)}
-                hint="/m²"
-                label={tDetails('price')}
-              />
-            ) : null}
-          </div>
-
-          {property.source_url ? (
-            <a
-              href={property.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm underline underline-offset-4"
-            >
-              {property.source_platform || tDetails('location')}
-              <span aria-hidden>↗</span>
-            </a>
-          ) : null}
-        </aside>
-      </div>
-
-      {related.length > 0 ? (
-        <section className="mt-12 space-y-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            {tDetails('related')}
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {related.map((item) => (
-              <PropertyCard key={item.id} property={item} />
-            ))}
-          </div>
-        </section>
+    <>
+      {property ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(
+              buildPropertyStructuredData(property, { url, locale }),
+            ),
+          }}
+        />
       ) : null}
-    </main>
+      <PropertyView
+        propertyId={id}
+        initialProperty={property}
+        initialRelated={related}
+      />
+    </>
   );
 }

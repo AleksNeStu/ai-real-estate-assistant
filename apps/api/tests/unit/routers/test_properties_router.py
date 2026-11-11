@@ -184,3 +184,35 @@ class TestPriceHistory:
         assert data["property_id"] == "prop-1"
         assert "snapshots" in data
         assert "total" in data
+
+
+class TestTheCatalogue:
+    """The listing page of the catalogue."""
+
+    @pytest.mark.asyncio
+    async def test_lists_the_listings(self, properties_client: AsyncClient):
+        """The catalogue answers with the listings it holds."""
+        response = await properties_client.get("/api/v1/properties")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["count"] >= 1
+        assert data["properties"][0]["id"] == "prop-1"
+
+    @pytest.mark.asyncio
+    async def test_a_missing_catalogue_is_a_refusal(self, db_session: AsyncSession):
+        """No catalogue means 503 - the same answer the single listing gives."""
+        test_app = FastAPI()
+        test_app.include_router(properties.router, prefix="/api/v1")
+
+        async def override_get_db():
+            yield db_session
+
+        test_app.dependency_overrides[get_db] = override_get_db
+        test_app.dependency_overrides[get_vector_store] = lambda: None
+
+        transport = ASGITransport(app=test_app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            response = await client.get("/api/v1/properties")
+
+        assert response.status_code == 503

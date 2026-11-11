@@ -24,6 +24,7 @@
  */
 
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
 import { absoluteUrl } from '@/lib/site';
 
@@ -36,13 +37,20 @@ export const LOCALES = ['pl', 'en', 'ru', 'de', 'es', 'it', 'pt', 'tr', 'uk'] as
  * own canonical — a page-level `alternates` replaces the inherited one, so it
  * has to carry the languages too or the hreflang cluster disappears for that
  * page.
+ *
+ * @param path - the route path WITHOUT the locale prefix. A cluster must
+ *               point at the SAME page in every language: the search page
+ *               in Polish is /pl/search, not the Polish home page. Without
+ *               the path every page claimed the home pages as its
+ *               translations.
  */
-export function languageAlternates(): Record<string, string> {
+export function languageAlternates(path: string = ''): Record<string, string> {
+  const suffix = path === '/' ? '' : path.startsWith('/') ? path : `/${path}`;
   const languages: Record<string, string> = {};
   for (const locale of LOCALES) {
-    languages[locale] = absoluteUrl(`/${locale}`);
+    languages[locale] = absoluteUrl(`/${locale}${suffix}`);
   }
-  languages['x-default'] = absoluteUrl('/pl');
+  languages['x-default'] = absoluteUrl(`/pl${suffix}`);
   return languages;
 }
 
@@ -59,6 +67,61 @@ export function pageMetadata(locale: string, path: string): Metadata {
     alternates: {
       canonical: absoluteUrl(`/${locale}${suffix}`),
       languages: languageAlternates(),
+    },
+  };
+}
+
+/**
+ * The per-page metadata of a public route.
+ *
+ * WHY THE PAGES NEEDED IT
+ *
+ * Every public route inherited the layout's title and description, so
+ * fourteen of them answered with the same two strings: "AI Real Estate
+ * Assistant" and "Next-gen real estate search and analytics". A search engine
+ * sees fourteen pages that claim to be about the same thing, and it has no way
+ * to tell that /market-trends is about price history and /agents is about
+ * brokers. The copy was already there - the message catalogue carries a
+ * `pages` namespace with a title and a description per route, in nine
+ * languages - it was simply never wired into the metadata.
+ *
+ * The title and the description come from that catalogue, so a page speaks
+ * the language of its own route rather than a translated afterthought.
+ *
+ * @param locale    - the current locale
+ * @param path      - the route path WITHOUT the locale prefix, e.g. `/search`
+ * @param pageKey   - the key in the catalogue namespace
+ * @param namespace - the catalogue namespace the key lives in (`pages` by
+ *                    default; the chat route keeps its own)
+ */
+export async function routeMetadata(
+  locale: string,
+  path: string,
+  pageKey: string,
+  namespace: string = 'pages',
+): Promise<Metadata> {
+  const t = await getTranslations({ locale, namespace });
+  const title = t(`${pageKey}.title` as never);
+  const description = t(`${pageKey}.description` as never);
+  const url = absoluteUrl(`/${locale}${path === '/' ? '' : path}`);
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url,
+      languages: languageAlternates(),
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
     },
   };
 }

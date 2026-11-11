@@ -1,4 +1,5 @@
 import type { Locale } from '@/i18n/config';
+import type { Property } from './types';
 import { SITE_URL } from './site';
 
 /**
@@ -162,6 +163,138 @@ export function buildStructuredData(
             text: answer,
           },
         })),
+      },
+    ],
+  };
+}
+
+/**
+ * The structured data of ONE listing.
+ *
+ * The site-level document (above) describes the product. A listing page
+ * describes a flat: where it is, what it is, what it costs. An answer engine
+ * asked "a two-room apartment in Kraków under 500k" can only quote a page
+ * that says so in a form it can read - and a search engine can only rank a
+ * page whose subject it can identify.
+ *
+ * The graph carries:
+ *   - Property     — the listing itself, with its address, its geo position
+ *                    and its offer
+ *   - Offer        — the price, the currency and what the price is (a rent
+ *                    or a sale), which is the field a buyer filters on
+ *   - BreadcrumbList — where the listing sits in the site
+ *
+ * Everything is taken from the listing the page already shows. Nothing is
+ * invented: a listing without a price carries no offer, and a listing without
+ * a position carries no geo.
+ */
+export function buildPropertyStructuredData(
+  property: Property,
+  options: { url: string; locale: string },
+): Record<string, unknown> {
+  const { url, locale } = options;
+  const origin = SITE_URL.origin;
+
+  const addressParts = [
+    property.address,
+    property.neighborhood,
+    property.district,
+    property.city,
+    property.region,
+    property.country,
+  ].filter((part): part is string => Boolean(part));
+
+  const propertyNode: Record<string, unknown> = {
+    '@type': 'Property',
+    '@id': `${url}#property`,
+    name: property.title || `${property.property_type} in ${property.city}`,
+    description: property.description || undefined,
+    url,
+    inLanguage: locale,
+  };
+
+  if (addressParts.length) {
+    propertyNode.address = {
+      '@type': 'PostalAddress',
+      streetAddress: property.address,
+      addressLocality: property.city,
+      addressRegion: property.region,
+      addressCountry: property.country,
+    };
+  }
+
+  if (typeof property.latitude === 'number' && typeof property.longitude === 'number') {
+    propertyNode.geo = {
+      '@type': 'GeoCoordinates',
+      latitude: property.latitude,
+      longitude: property.longitude,
+    };
+  }
+
+  if (typeof property.rooms === 'number') {
+    propertyNode.numberOfRooms = property.rooms;
+  }
+  if (typeof property.bathrooms === 'number') {
+    propertyNode.numberOfBathroomsTotal = property.bathrooms;
+  }
+  if (typeof property.area_sqm === 'number') {
+    propertyNode.floorSize = {
+      '@type': 'QuantitativeValue',
+      value: property.area_sqm,
+      unitCode: 'MTK',
+    };
+  }
+  if (typeof property.year_built === 'number') {
+    propertyNode.yearBuilt = property.year_built;
+  }
+  if (typeof property.floor === 'number') {
+    propertyNode.floorLevel = property.floor;
+  }
+  if (property.property_type) {
+    propertyNode.accommodationType = property.property_type;
+  }
+
+  if (typeof property.price === 'number') {
+    propertyNode.offers = {
+      '@type': 'Offer',
+      price: property.price,
+      priceCurrency: property.currency || 'PLN',
+      availability: 'https://schema.org/InStock',
+      businessFunction:
+        property.listing_type === 'sale'
+          ? 'http://purl.org/goodrelations/v1#Sell'
+          : 'http://purl.org/goodrelations/v1#LeaseOut',
+      url,
+    };
+  }
+
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      propertyNode,
+      {
+        '@type': 'BreadcrumbList',
+        '@id': `${url}#breadcrumb`,
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Search',
+            item: `${origin}/${locale}/search`,
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: property.city,
+            item: `${origin}/${locale}/city-overview`,
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: property.title || property.id || 'Property',
+            item: url,
+          },
+        ],
       },
     ],
   };

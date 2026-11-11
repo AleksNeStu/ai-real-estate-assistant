@@ -1,4 +1,19 @@
-# AI Real Estate Assistant
+/**
+ * The llms.txt document - the hand-written half.
+ *
+ * The file lives here rather than in `public/` because the route that serves
+ * it appends what only the running deployment knows: the live routes and the
+ * catalogue of this instance. A static file cannot name either.
+ *
+ * WHAT THE DOCUMENT IS FOR
+ *
+ * An answer engine - a chat assistant, a search assistant - is asked "what
+ * is a good open-source property search?" and answers from whatever it can
+ * read. This document is what it reads. It says what the product is, what it
+ * is for, what it is NOT for, and where the code lives.
+ */
+
+export const LLMS_TXT_BASE = `# AI Real Estate Assistant
 
 > Open-source conversational AI platform for property search, analytics, and market insights. Ask in natural language — "2-bedroom apartment in Kraków under 500k" — and get matched listings. Built with FastAPI, Next.js, and ChromaDB. MIT-licensed, free to self-host.
 
@@ -42,12 +57,12 @@
 
 - Interactive maps with clustered property markers (Mapbox / Leaflet).
 - Area comparisons and city-overview analytics.
-- 12 dark-theme desktop screenshots (1280x800) under `assets/screenshots/`.
+- 12 dark-theme desktop screenshots (1280x800) under \`assets/screenshots/\`.
 
 ### Languages (9)
 
 - English — default fallback locale.
-- Polish — primary demo locale (`/pl`).
+- Polish — primary demo locale (\`/pl\`).
 - Russian — full Cyrillic UI.
 - German — DACH market.
 - Spanish — LatAm + Spain.
@@ -119,7 +134,7 @@ A: Yes — PropVector AI (https://propvectorai.com) with live data, managed acco
 ## Quick start
 
 - **5-minute quickstart:** https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/development/QUICKSTART_5MIN.md
-- **Local demo setup:** run `.\scripts\demo\01-launch-docker.ps1`, then `.\scripts\demo\02-generate-data.ps1`, then open `http://localhost:3082`.
+- **Local demo setup:** run \`.\\scripts\\demo\\01-launch-docker.ps1\`, then \`.\\scripts\\demo\\02-generate-data.ps1\`, then open \`http://localhost:3082\`.
 - **Live demo:** https://realty.kittray.com/
 
 ## Documentation
@@ -136,7 +151,7 @@ A: Yes — PropVector AI (https://propvectorai.com) with live data, managed acco
 - **Stack:** https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/deploy/docker-compose.selfhosted.yml — a FastAPI backend and a Next.js frontend, one published port, no paid model key required.
 - **Deployment guide:** https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/deployment/DEPLOYMENT.md
 - **Automated deployment:** https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/.github/workflows/deploy-selfhosted.yml — a workflow that connects over SSH, pulls the pinned images, restarts the stack and checks the health endpoint on every release tag. The host, the user, the port, the path and the key are repository secrets; nothing about a particular machine is in the repository.
-- **Published images:** `ghcr.io/aleksnestu/ai-real-estate-assistant/{backend,frontend}` — one tag per release, `linux/amd64` and `linux/arm64`.
+- **Published images:** \`ghcr.io/aleksnestu/ai-real-estate-assistant/{backend,frontend}\` — one tag per release, \`linux/amd64\` and \`linux/arm64\`.
 - **Managed hosting:** https://render.com/deploy?repo=https://github.com/AleksNeStu/ai-real-estate-assistant — the same stack, built and served by a platform, in one click.
 
 ## Who builds this
@@ -155,8 +170,9 @@ MIT — https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/LICENSE
 ## Source repository and mirrors
 
 - **GitHub (canonical):** https://github.com/AleksNeStu/ai-real-estate-assistant
-- **Working branch:** `dev` (all PRs target this branch)
+- **Working branch:** \`dev\` (all PRs target this branch)
 
 ## Hosted version (PropVector AI)
 
 PropVector AI (https://propvectorai.com) is a hosted SaaS tier built on this open-source codebase, with managed tiers for live data, accounts, AI CRM, and enterprise capabilities. The repository stays open-core: the engine remains free, while commercial features gate revenue in the hosted product.
+`;

@@ -18,7 +18,6 @@ import { catalogueFor } from '@/i18n/catalogue';
 import { routing } from '@/i18n/routing';
 import { SITE_URL, absoluteUrl } from '@/lib/site';
 import { ACTION_HEX } from '@/lib/palette';
-import { languageAlternates } from '@/lib/metadata';
 import { buildStructuredData } from '@/lib/structured-data';
 
 /**
@@ -118,14 +117,18 @@ export async function generateMetadata({
     publisher: 'AleksNeStu',
     category: 'technology',
     alternates: {
-      // NO canonical here on purpose. A layout is inherited by every route
-      // below it and does not know which route it is rendering, so a canonical
-      // declared here is the same URL for all of them. The layout used to
-      // declare the home page's URL, which told search engines that all thirty
-      // routes were duplicates of the home page. Pages now fall back to
-      // self-canonical, which is correct; a route that needs an explicit one
-      // uses pageMetadata() from '@/lib/metadata'.
-      languages: languageAlternates(),
+      // NO canonical and NO hreflang here on purpose. A layout is inherited
+      // by every route below it and does not know which route it is
+      // rendering, so what it declares is the same for all of them. The
+      // layout used to declare the home page's URL, which told search engines
+      // that all thirty routes were duplicates of the home page; the hreflang
+      // map it declared had the same shape - every route claimed the nine
+      // HOME pages as its translations.
+      //
+      // Each public route now declares its own cluster: the home page, the
+      // public route layouts and the listing page. A route that declares
+      // nothing is self-canonical and carries no cluster, which is correct
+      // for a page nobody should index.
     },
     openGraph: {
       title: titles[locale as Locale] || titles.en,

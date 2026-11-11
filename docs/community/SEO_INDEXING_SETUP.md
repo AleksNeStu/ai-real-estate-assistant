@@ -232,6 +232,62 @@ is still serving the override, not the product's own file.
 
 ---
 
+## 4a. The Switch — and the Switch Back
+
+The two knobs above are the whole switch, and both are runtime: no rebuild, no
+new image, no release. The procedure is written so that it can be undone by
+one command, because an indexing switch that cannot be undone is a switch
+nobody will ever pull.
+
+### The switch ON (the operator's decision)
+
+The demo deployment runs its stack from `/opt/app/aire-demo`, with the compose
+file that names the image and the environment.
+
+```bash
+# 1. The header: the guard only adds X-Robots-Tag when the variable is
+#    exactly "false". Unset it, or set it to "true".
+cd /opt/app/aire-demo
+sed -i 's/^      - SEARCH_INDEXING=false$/      - SEARCH_INDEXING=true/' docker-compose.yml
+
+# 2. The robots.txt: the Disallow-all override is a MOUNT over the product's
+#    own file. Drop the mount and the file comes back with the image.
+#    (The product's own file allows crawling, allows the AI crawlers
+#    explicitly, points at the sitemap and blocks the private paths.)
+
+# 3. Recreate the frontend so it picks the environment up.
+export AIRE_IMAGE_TAG=<the running tag>
+set -a && . "$HOME/.aire-build.env" && set +a
+docker compose up -d --force-recreate frontend
+```
+
+### The switch BACK — one command
+
+```bash
+cd /opt/app/aire-demo &&   sed -i 's/^      - SEARCH_INDEXING=true$/      - SEARCH_INDEXING=false/' docker-compose.yml &&   export AIRE_IMAGE_TAG=<the running tag> && set -a && . "$HOME/.aire-build.env" && set +a &&   docker compose up -d --force-recreate frontend
+```
+
+The `robots.txt` mount is not restored by that command, because it was never
+removed by the script: drop the mount by hand when switching on, and put it
+back by hand when switching off. The override file lives beside the compose
+file on the node.
+
+### How to tell which state the demo is in
+
+```bash
+curl -sI https://realty.kittray.com/en | grep -i x-robots-tag   # noindex, nofollow => OFF
+curl -s  https://realty.kittray.com/robots.txt | head -3        # "Disallow: /" => OFF
+curl -s  https://realty.kittray.com/sitemap.xml | grep -c "<url>" # the routes + the listings => ON
+```
+
+**What is prepared, and what the operator decides.** The on-site surface -
+per-route metadata, canonicals, the hreflang clusters, the `schema.org/Property`
+of a listing, the sitemap and the llms.txt - is in place (see
+`docs/reviews/2026-11-11-seo-geo-aeo-realty-kittray.md`). The decision to
+index the demo is the operator's: an agent publishes nothing under their name
+(Rule 306 gate 4), and a half-finished product in a search index is far harder
+to take out than to keep out.
+
 ## 5. Evidence Collection (Never Commit)
 
 Store all verification screenshots and export files in:

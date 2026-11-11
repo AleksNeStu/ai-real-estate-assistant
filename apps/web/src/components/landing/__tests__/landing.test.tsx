@@ -68,4 +68,32 @@ describe('the PropVector AI waitlist', () => {
       expect(typeof body.visitor_id).toBe('string');
     });
   });
+
+  it('does not promise an e-mail the deployment cannot send', async () => {
+    // A deployment with no mail sender configured: the capabilities say so.
+    mockFetch((url) =>
+      url.endsWith('/capabilities')
+        ? { lead_capture: { waitlist_enabled: false } }
+        : {},
+    );
+
+    render(<WaitlistForm />);
+
+    fireEvent.change(screen.getByLabelText('E-mail for the PropVector AI launch'), {
+      target: { value: 'a@b.co' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Notify me' }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          'Noted — the address is stored on this deployment; no e-mail is sent from here.',
+        ),
+      ).toBeInTheDocument();
+    });
+
+    // The promise is the thing that must not appear.
+    expect(screen.queryByText('One e-mail at launch. Never sold, never shared.')).toBeNull();
+    expect(screen.queryByText('Noted. One e-mail when PropVector AI launches.')).toBeNull();
+  });
 });

@@ -1,4 +1,8 @@
+import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+
+import { languageAlternates } from '@/lib/metadata';
+import { absoluteUrl } from '@/lib/site';
 
 import { CompareTable } from '@/components/landing/compare-table';
 import { DataCoverage } from '@/components/landing/data-coverage';
@@ -18,6 +22,47 @@ import { StudioStrip } from '@/components/landing/studio-strip';
  * account, so the deepest ask on the page is an e-mail address - and the
  * three ways forward are all open.
  */
+/**
+ * The metadata of the landing page.
+ *
+ * The landing is the one page every visitor arrives at, and the one page
+ * whose address has to be unambiguous: it is the root of the public domain,
+ * and it exists in nine languages. It declares its own canonical and its own
+ * hreflang cluster, because the layout - which every route inherits - cannot
+ * know which route it is rendering.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'pages' });
+  const title = t('home.title' as never);
+  const description = t('home.description' as never);
+  const url = absoluteUrl(`/${locale}`);
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url,
+      languages: languageAlternates('/'),
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
+  };
+}
+
 export default async function Home({
   params,
 }: {
