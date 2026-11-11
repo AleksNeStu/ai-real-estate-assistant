@@ -36,6 +36,34 @@ const ROUTES = [
  * The catalogue of this deployment: how many listings it holds, in which
  * cities, and a few of them by name.
  */
+/**
+ * The size of the catalogue, from the catalogue's own statistics.
+ *
+ * A page of five listings is not the size of a catalogue: the number
+ * the document states has to be the number the deployment holds.
+ */
+async function catalogueStats(): Promise<
+  { total: number; cities: { name: string; count: number }[] } | null
+> {
+  try {
+    const response = await fetch(`${serverApiUrl()}/catalogue/stats`, {
+      headers: { Accept: 'application/json' },
+      next: { revalidate: 3600 },
+    });
+    if (!response.ok) return null;
+    const data = (await response.json()) as {
+      total?: number;
+      cities?: { name: string; count: number }[];
+    };
+    return {
+      total: typeof data.total === 'number' ? data.total : 0,
+      cities: Array.isArray(data.cities) ? data.cities : [],
+    };
+  } catch {
+    return null;
+  }
+}
+
 async function catalogueSection(): Promise<string> {
   const empty = [
     '## The catalogue of this deployment',
@@ -66,11 +94,17 @@ async function catalogueSection(): Promise<string> {
     const properties = data?.properties ?? [];
     if (!properties.length) return empty;
 
+    const stats = await catalogueStats();
+    const total = stats?.total ?? properties.length;
+    const cities = stats?.cities ?? [];
+    const cityLine = cities.length
+      ? ` in ${cities.map((city) => `${city.name} (${city.count})`).join(', ')}`
+      : '';
     const lines = properties.map((property) => {
       const where = property.city ?? '';
       const price =
         typeof property.price === 'number'
-          ? ` — ${property.price.toLocaleString('en-US')} ${property.currency ?? ''}`.trim()
+          ? ` — ${property.price.toLocaleString('en-US')} ${property.currency ?? ''}`
           : '';
       const rooms = property.rooms ? `, ${property.rooms} rooms` : '';
       return `- [${property.title ?? property.id}](${absoluteUrl(`/pl/property/${property.id}`)}) — ${where}${rooms}${price}`;
@@ -79,7 +113,7 @@ async function catalogueSection(): Promise<string> {
     return [
       '## The catalogue of this deployment',
       '',
-      `This deployment holds ${data.has_more ? '500+' : properties.length} listings. A few of them:`,
+      `This deployment holds ${total} listings${cityLine}. A few of them:`,
       '',
       ...lines,
       '',

@@ -102,7 +102,11 @@ async def list_properties(
         )
 
     try:
-        found = store.search_by_metadata(city=city, k=offset + limit)
+        # One document more than the window asks for: without it the store
+        # cannot say whether there IS a next page, and the answer was always
+        # "no" - a client paging through the catalogue stopped at the first
+        # page.
+        found = store.search_by_metadata(city=city, k=offset + limit + 1)
     except Exception:
         found = []
 

@@ -200,6 +200,21 @@ class TestTheCatalogue:
         assert data["properties"][0]["id"] == "prop-1"
 
     @pytest.mark.asyncio
+    async def test_says_whether_there_is_a_next_page(self, properties_client: AsyncClient):
+        """The catalogue is paged, and the page says whether more follows.
+
+        The store is asked for one document more than the window needs: without
+        that extra document it cannot know, and the answer was always "no" -
+        so a client paging through the catalogue stopped at the first page.
+        """
+        response = await properties_client.get("/api/v1/properties?limit=1")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["count"] == 1
+        assert data["has_more"] is True
+
+    @pytest.mark.asyncio
     async def test_a_missing_catalogue_is_a_refusal(self, db_session: AsyncSession):
         """No catalogue means 503 - the same answer the single listing gives."""
         test_app = FastAPI()

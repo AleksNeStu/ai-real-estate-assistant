@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.4] - 2026-11-12
+
+### Fixed
+- **The catalogue said it held five listings when it holds 250** — the llms.txt
+  counted the handful of listings it lists below, and the catalogue's own
+  "is there a next page" answer was always "no", because the store was never
+  asked for one document more than the window needed. The document now states
+  the number the deployment holds, and the catalogue can be paged.
+
 ## [5.3.3] - 2026-11-12
 
 ### Fixed
@@ -1288,6 +1297,7 @@ First production release of AI Real Estate Assistant.
 - SQLite database for property listings
 
 [Unreleased]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases
+[5.3.4]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.4
 [5.3.3]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.3
 [5.3.2]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.2
 [5.3.1]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.1
