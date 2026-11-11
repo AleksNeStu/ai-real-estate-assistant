@@ -1,7 +1,7 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
 
-import PropertyPage from '../page';
+import PropertyView from '../property-view';
 import * as api from '@/lib/api';
 import type { Property } from '@/lib/types';
 
@@ -88,35 +88,20 @@ const mockRelated: Property[] = [
 ];
 
 /**
- * The params promise is created once and never replaced.
+ * The page, rendered.
  *
- * `use(params)` suspends on a promise it has not seen before, so a promise
- * built inside the render call would suspend on every render and the page
- * would never settle. The route hands the same promise down on every render,
- * and the test does the same.
+ * The route is a server component now: it reads the listing on the server
+ * and hands it to this view. The view is what the reader interacts with, and
+ * it still reads the listing itself when it arrives without one - which is
+ * what the tests below exercise.
  */
-const params = Promise.resolve({ locale: 'en', id: 'listing-1' });
-const missingParams = Promise.resolve({ locale: 'en', id: 'missing' });
-
-
-/**
- * The page inside a Suspense boundary.
- *
- * `use(params)` suspends on the params promise, and React 19 needs a boundary
- * to suspend into. The route gets one from the framework; the test has to
- * provide it.
- */
-async function renderPage(pageParams: Promise<{ locale: string; id: string }>) {
+async function renderPage(propertyId: string) {
   await act(async () => {
-    render(
-      <Suspense fallback={<div data-testid="page-suspense" />}>
-        <PropertyPage params={pageParams} />
-      </Suspense>
-    );
+    render(<PropertyView propertyId={propertyId} />);
   });
 }
 
-describe('PropertyPage', () => {
+describe('the listing page', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (api.getProperty as jest.Mock).mockResolvedValue(mockProperty);
@@ -127,7 +112,7 @@ describe('PropertyPage', () => {
   });
 
   it('renders the listing itself', async () => {
-    await renderPage(params);
+    await renderPage('listing-1');
 
     await waitFor(() => {
       expect(screen.getByText('Bright two-room apartment')).toBeInTheDocument();
@@ -137,7 +122,7 @@ describe('PropertyPage', () => {
   });
 
   it('renders the price and the numbers of the listing', async () => {
-    await renderPage(params);
+    await renderPage('listing-1');
 
     await waitFor(() => {
       expect(screen.getByText('Bright two-room apartment')).toBeInTheDocument();
@@ -151,7 +136,7 @@ describe('PropertyPage', () => {
   });
 
   it('renders the details the catalogue holds', async () => {
-    await renderPage(params);
+    await renderPage('listing-1');
 
     await waitFor(() => {
       expect(screen.getByText('Bright two-room apartment')).toBeInTheDocument();
@@ -163,7 +148,7 @@ describe('PropertyPage', () => {
   });
 
   it('renders the comparables', async () => {
-    await renderPage(params);
+    await renderPage('listing-1');
 
     await waitFor(() => {
       expect(screen.getByText('Similar flat nearby')).toBeInTheDocument();
@@ -173,7 +158,7 @@ describe('PropertyPage', () => {
   it('reports a listing the catalogue does not hold', async () => {
     (api.getProperty as jest.Mock).mockRejectedValue(new Error('Property not found'));
 
-    await renderPage(missingParams);
+    await renderPage('missing');
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toBeInTheDocument();
@@ -183,7 +168,7 @@ describe('PropertyPage', () => {
   it('keeps the page when the comparables cannot be read', async () => {
     (api.getRelatedProperties as jest.Mock).mockRejectedValue(new Error('boom'));
 
-    await renderPage(params);
+    await renderPage('listing-1');
 
     await waitFor(() => {
       expect(screen.getByText('Bright two-room apartment')).toBeInTheDocument();
