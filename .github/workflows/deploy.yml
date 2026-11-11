@@ -118,9 +118,9 @@ jobs:
           # refused. So the commit waits here, and the checks of THIS run are
           # left out of the wait (they are running by definition).
           for attempt in $(seq 1 40); do
-            STATE=$(gh api               -H "Accept: application/vnd.github+json"               "repos/${{ github.repository }}/commits/$CI_HEAD_SHA/check-runs"               --jq '[.check_runs[] | select(.html_url | contains("/runs/$THIS_RUN_ID/") | not)]
-                     | {pending: [.[] | select(.status != "completed") | .name],
-                        failed:  [.[] | select(.status == "completed" and .conclusion != "success" and .conclusion != "skipped") | .name]}')
+            STATE=$(gh api               -H "Accept: application/vnd.github+json"               "repos/${{ github.repository }}/commits/$CI_HEAD_SHA/check-runs"               | jq --arg run "$THIS_RUN_ID"                   '[.check_runs[] | select(.html_url | contains("/runs/" + $run + "/") | not)]
+                   | {pending: [.[] | select(.status != "completed") | .name],
+                      failed:  [.[] | select(.status == "completed" and .conclusion != "success" and .conclusion != "skipped") | .name]}')
             PENDING=$(echo "$STATE" | jq -r '.pending | length')
             FAILED=$(echo "$STATE" | jq -r '.failed | length')
             if [ "$PENDING" = "0" ] && [ "$FAILED" = "0" ]; then
