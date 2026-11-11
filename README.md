@@ -211,6 +211,21 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
 
 ## What's new
 
+**`v5.3.4`** — the pages say what they are.
+
+- **Every public route says what it is** — fourteen routes answered with the
+  same title and the same description. Each one now declares its own, in the
+  language of the route, with its own canonical address and its own cluster
+  of translations.
+- **A listing is a page a crawler can read** — the page of a single property
+  was rendered in the browser, so a crawler received an empty shell. It is
+  read on the server now: the page carries the listing, its title, its
+  address and a `schema.org/Property` block with its position, its rooms and
+  its offer.
+- **The catalogue can be enumerated, and it is** — `GET /api/v1/properties`
+  answers with a page of the listings, the sitemap carries all of them, and
+  the llms.txt names the routes, the languages and the size of the catalogue.
+
 **`v5.3.1`** — the property page answers.
 
 - **The page's data arrives** — the endpoints behind the property page asked
