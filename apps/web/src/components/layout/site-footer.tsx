@@ -173,7 +173,9 @@ export function SiteFooter() {
             </a>
           </p>
 
-          <BuildMetadata />
+          <div className="mt-3">
+            <BuildMetadata />
+          </div>
         </div>
       </div>
     </footer>
