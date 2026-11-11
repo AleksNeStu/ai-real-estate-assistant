@@ -84,6 +84,8 @@ const SCREENSHOTS = [
   { name: "agents", path: "/en/agents", desc: "Agent directory" },
   { name: "market-trends", path: "/en/market-trends", desc: "Market trends" },
   { name: "cma", path: "/en/cma", desc: "CMA tool" },
+  { name: "valuation", path: "/en/valuation", desc: "AI valuation forecast" },
+  { name: "showcase", path: "/en/showcase", desc: "Showcase of the work" },
   { name: "city-overview", path: "/en/city-overview", desc: "City overview" },
   { name: "knowledge", path: "/en/knowledge", desc: "Knowledge base" },
   { name: "favorites", path: "/en/favorites", desc: "Saved favorites" },

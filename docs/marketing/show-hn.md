@@ -91,13 +91,15 @@ Quick answers to the inevitable ones:
 
 ## Assets checklist before posting
 
-Checked on 2026-11-08:
+Checked on 2026-11-11:
 
 - [x] Live demo URL responds 200: `https://realty.kittray.com/`
 - [x] GitHub repo link works
 - [x] og:image renders: `https://realty.kittray.com/og-image.png` answers 200 with
       a PNG of 1200×630 (the card a Twitter validator asks for)
-- [ ] One good demo GIF or screenshot linked in post
+- [x] One good demo GIF or screenshot linked in post — the six-second dark demo
+      is at `assets/clips/demo-6s.gif` (and `assets/clips/demo-6s.mp4` for the
+      video), and the dark screenshot set is at `assets/screenshots/`
 - [x] Title under 80 chars — the title above is 75; the one it replaced was 94
 - [x] Body under 400 words — 287
 - [x] First comment drafted and ready to paste immediately — 200 words

@@ -9,17 +9,27 @@
 
 ## Asset checklist (upload to PH during submission)
 
-- [ ] Logo: 512×512 PNG (transparent background) and JPG (white background)
-- [ ] Screenshots: 4-6 (1280×800 minimum, PNG or JPG)
-  - [ ] Landing / hero
-  - [ ] AI chat with natural-language query
-  - [ ] Search results with filters
-  - [ ] Property detail page (v5.1 valuation + neighborhood one-liner)
-  - [ ] AI valuation page (multi-year forecast)
-  - [ ] Interactive map with clustered markers
-- [ ] og-image: 1200×630 (already created at `apps/web/public/og-image.png`)
-- [ ] Demo GIF (≤ 30s, optional but high-impact)
-- [ ] Maker profile: AleksNeStu GitHub profile pic + bio
+Checked on 2026-11-11:
+
+- [x] Logo: 512×512 PNG (transparent background) and JPG (white background) —
+      `assets/logo.png` and `assets/logo.jpg`
+- [x] Screenshots: 4-6 (1280×800 minimum, PNG or JPG) — the dark set is at
+      `assets/screenshots/`
+  - [x] Landing / hero — `assets/screenshots/home-dark.png`
+  - [x] AI chat with natural-language query — `assets/screenshots/chat-dark.png`
+  - [x] Search results with filters — `assets/screenshots/search-results-dark.png`
+  - [x] City overview — the map, the ledger of the cities, the selected one
+        (`assets/screenshots/city-overview-dark.png`). The application has NO
+        property detail route: a listing opens inside the search, as a card or
+        a drawer, so a "property detail page" screenshot would name a screen
+        that does not exist.
+  - [x] AI valuation page (multi-year forecast) —
+        `assets/screenshots/valuation-dark.png`
+  - [x] Interactive map with clustered markers — `assets/screenshots/search-dark.png`
+- [x] og-image: 1200×630 (already created at `apps/web/public/og-image.png`)
+- [x] Demo GIF (≤ 30s, optional but high-impact) — `assets/clips/demo-6s.gif`
+      (six seconds, dark)
+- [x] Maker profile: AleksNeStu GitHub profile pic + bio
 
 ---
 
