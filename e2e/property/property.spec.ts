@@ -90,7 +90,8 @@ test.describe('The Property page', () => {
     await page.goto(PROPERTY_ROUTE);
 
     await expect(page.getByRole('heading', { name: 'Bright two-room apartment' })).toBeVisible();
-    await expect(page.getByText(/Brzozowa 12/)).toBeVisible();
+    // The address is in the header and, again, on the comparable card below.
+    await expect(page.getByText(/Brzozowa 12/).first()).toBeVisible();
   });
 
   test('shows the price and the numbers of the listing', async ({ page }) => {
@@ -123,6 +124,8 @@ test.describe('The Property page', () => {
 
     await page.goto('/en/property/missing');
 
-    await expect(page.getByRole('alert')).toBeVisible();
+    // The Next route announcer also carries role="alert", so the refusal is
+    // named rather than taken by whichever alert comes first.
+    await expect(page.getByRole('alert').filter({ hasText: 'This listing is no longer' })).toBeVisible();
   });
 });
