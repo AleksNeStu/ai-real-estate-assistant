@@ -1,3 +1,5 @@
+import React from 'react';
+
 import * as serverApi from '@/lib/api/server';
 import { buildPropertyStructuredData } from '@/lib/structured-data';
 import type { Property } from '@/lib/types';
@@ -15,6 +17,32 @@ import { generateMetadata } from '../page';
 jest.mock('@/lib/api/server', () => ({
   fetchServerProperty: jest.fn(),
   fetchServerRelated: jest.fn(),
+}));
+
+// The metadata helper reads the message catalogue through next-intl, whose
+// server build is ESM and cannot be loaded by the test runtime. The catalogue
+// is not what this test is about.
+jest.mock('next-intl/server', () => ({
+  getTranslations: jest.fn(async () => ({
+    title: 'a title',
+    description: 'a description',
+  })),
+}));
+
+// The view reaches the i18n routing module through the heart button, and that
+// module is ESM too. The interactive parts of the page are covered by the
+// test beside this one.
+jest.mock('@/components/property/heart-button', () => ({
+  HeartButton: () => <div data-testid="heart-button" />,
+}));
+jest.mock('@/components/property/MortgageEstimate', () => ({
+  MortgageEstimate: () => <div data-testid="mortgage-estimate" />,
+}));
+jest.mock('@/components/property/NeighborhoodSummary', () => ({
+  NeighborhoodSummary: () => <div data-testid="neighborhood-summary" />,
+}));
+jest.mock('@/components/property/property-card', () => ({
+  PropertyCard: () => <div data-testid="property-card" />,
 }));
 
 const listing: Property = {
@@ -96,7 +124,7 @@ describe('the structured data of a listing', () => {
     const property = graph.find((node) => node['@type'] === 'Property');
     expect(property).toBeDefined();
 
-    const node = property as Record<string, any>;
+    const node = property as Record<string, unknown>;
     expect(node.name).toBe('Bright two-room apartment');
     expect(node.numberOfRooms).toBe(2);
     expect(node.geo).toMatchObject({ latitude: 50.0614, longitude: 19.9374 });
@@ -115,7 +143,7 @@ describe('the structured data of a listing', () => {
     );
 
     const graph = document['@graph'] as Record<string, unknown>[];
-    const property = graph.find((node) => node['@type'] === 'Property') as Record<string, any>;
+    const property = graph.find((node) => node['@type'] === 'Property') as Record<string, unknown>;
     expect(property.offers).toBeUndefined();
   });
 });
