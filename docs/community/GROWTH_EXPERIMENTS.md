@@ -71,7 +71,7 @@ architectural change). Both now say what is true.
 | Weekly metrics workflow | 2026-08-15 → now | Removed together with star-history; the weekly snapshot is collected by hand and committed | manual — see [`METRICS.md`](./METRICS.md) |
 | Indexing the demo | 2026-07-22 → now | robots.txt was flipped to index/follow for a star-attraction test; the demo now serves a Disallow-all robots.txt and `X-Robots-Tag: noindex, nofollow` | reversed — the product is not released in this state |
 | Pre-launch checks on the live demo | 2026-11-08 | Tour, try-these chips, lead capture with redaction, and og:image all verified against the running deployment | passed |
-| Dependency auto-merge | 2026-06 → 2026-11-11 | The workflow never merged anything: it waited 60 s for the PR's CI checks to appear and gave up before they existed. Fixed on 2026-11-11 (a longer discovery window, and every gate that has to be green is now waited for) | fixed — a safety net, not a silent failure |
+| Dependency auto-merge | 2026-06 → 2026-11-11 | The workflow never merged anything, for two reasons: it waited 60 s for the PR's CI checks to appear and gave up before they existed, and it ran on `pull_request_target` while the merge action reads the bump's type only on `pull_request` — so the update type arrived empty and the action refused with "Semver bump '' is invalid!". Both fixed on 2026-11-11; eight bumps merged the same day | fixed — a safety net, not a silent failure |
 
 ## What the traffic says
 
