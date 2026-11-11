@@ -75,6 +75,20 @@ Day +30          → Product Hunt (after audiences warmed up)
       `POST /api/v1/leads/visitor` answers 201, and the lead is listed in
       `/api/v1/leads` as `p***@invalid.example` with the name and the phone
       number masked as well.
+- [x] Live demo: the capture still works — re-checked 2026-11-11:
+      `POST /api/v1/leads/visitor` answers 201 and the row carries the
+      address, the source, the consent and both timestamps.
+- [ ] **The demo sends no e-mail, and that is what the form says.**
+      `GET /api/v1/capabilities` answers `email.enabled: false`,
+      `lead_capture.waitlist_enabled: false` — the deployment has no mail
+      sender, so the waitlist form says "noted, no e-mail" instead of
+      promising a subscription it cannot keep. The interest is recorded in the
+      database and is visible on the board (`/[locale]/leads`, signed-in);
+      **nobody is notified when it arrives.** The alert type for it
+      (`HIGH_VALUE_LEAD`) and its template exist, but nothing produces them,
+      and SMTP is unset on the node. Until that is wired, a launch has to be
+      followed by a human reading the board — the email cannot be the
+      mechanism that tells you a launch worked.
 - [x] og:image renders in Twitter Card Validator — checked 2026-11-08:
       `https://realty.kittray.com/og-image.png` answers 200 with a PNG of
       1200×630.
@@ -100,6 +114,13 @@ Day +30          → Product Hunt (after audiences warmed up)
       suites, 85.2% frontend lines), and "WCAG 2.1 AA audited" — `ACCESSIBILITY.md`
       records the audit and its three known map-component limitations, so the
       card no longer claims a blanket "AA compliant".
+- [ ] The privileged viewer can see which build the demo is running — the
+      commit, the build time and the deploy's run, in the footer
+      (TaskMaster #73). The list lives in the repository's `ADMIN_EMAILS` /
+      `ADMIN_IPS` variables and the deploy delivers it; with the demo rolled
+      onto a build that carries the metadata, a listed address sees the sha
+      and the run link at the bottom of every page. **Until the demo is
+      rolled onto a build that carries it, this box stays open.**
 
 ## The demo is deliberately not indexed
 
@@ -115,27 +136,35 @@ the release step in the deployment notes). If the demo is released,
 and `apps/web/src/lib/indexing.ts` only adds the header when it is exactly
 `false`), and the product's own `robots.txt` comes back with the image.
 
-## Where the audience actually comes from (measured 2026-11-08)
+## Where the audience actually comes from (measured 2026-11-11)
 
 | Metric | Value |
 |--------|-------|
-| Stars | 321 (+8 in the last 30 days — 0.27 a day) |
+| Stars | 322 (+8 in the last 30 days — 0.27 a day) |
 | Forks | 119 |
-| Unique visitors, last 14 days | 272 |
-| Views, last 14 days | 706 |
-| Top referrers | github.com (84 unique), aocr.org (81), Google (21) |
+| Unique visitors, last 14 days | 267 |
+| Views, last 14 days | 743 |
+| Top referrers | aocr.org (81 unique), github.com (73), Google (22) |
 
 The 10-stars-a-day target of the first wave is 37 times the current rate. At
-today's traffic — 272 unique visitors in a fortnight — reaching it means
+today's traffic — 267 unique visitors in a fortnight — reaching it means
 roughly 3,700 unique visitors a day at the same conversion, or a channel of a
 different kind (Hacker News, Product Hunt, a directory that converts). The
-full snapshot lives in `docs/community/metrics/2026-W45.md`.
+full snapshot lives in `docs/community/metrics/2026-W46.md`.
+
+**The organic column is noise.** The demo is deliberately `noindex`, so the
+Google traffic is a page that is not in the index. Releasing it is an operator
+decision (see `docs/community/SEO_INDEXING_SETUP.md`), and it is the one lever
+that does not depend on publishing anything.
 
 ## During-launch blockers (resolve during each post)
 
 - [ ] Stay online 2-3 hours after Show HN
 - [ ] Day-of PH launch: notify 5-10 colleagues for first-4-hour upvotes
 - [ ] After each approval: add directory link to README + tracking sheet
+- [ ] Before the first post: every draft points at the demo, so check that it
+      answers, that the landing renders, and that the build stamp in the
+      footer is the build you expect (TaskMaster #73)
 
 ---
 

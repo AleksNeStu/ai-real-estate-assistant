@@ -8,7 +8,7 @@
 
 ## Live public metadata
 
-Read via the GitHub REST API on 2026-11-08:
+Read via the GitHub REST API on 2026-11-11:
 
 | Field | Value |
 |-------|-------|
@@ -16,8 +16,8 @@ Read via the GitHub REST API on 2026-11-08:
 | **Homepage** | `https://realty.kittray.com` |
 | **Topics** (17) | `ai-assistant`, `artificial-intelligence`, `chatbot`, `chromadb`, `docker`, `fastapi`, `langchain`, `llm`, `nextjs`, `open-source`, `property-search`, `python`, `rag`, `real-estate`, `self-hosted`, `typescript`, `vector-search` |
 | **Default branch** | `dev` |
-| **Stars / Forks / Watchers** | 321 / 119 / 6 |
-| **Open issues / Open PRs** | 0 / 0 |
+| **Stars / Forks / Watchers** | 322 / 119 / 6 |
+| **Open issues / Open PRs** | 0 / 14 (13 Dependabot + PR #399, the `dev` → `main` promotion) |
 | **Contributors** | 6 (the owner, `dependabot[bot]`, `github-actions[bot]`, and three outside contributors: `stephenalexbrowne`, `Jwrede`, `KrabbiAI`) |
 
 ## How the metadata got here
@@ -71,23 +71,24 @@ architectural change). Both now say what is true.
 | Weekly metrics workflow | 2026-08-15 → now | Removed together with star-history; the weekly snapshot is collected by hand and committed | manual — see [`METRICS.md`](./METRICS.md) |
 | Indexing the demo | 2026-07-22 → now | robots.txt was flipped to index/follow for a star-attraction test; the demo now serves a Disallow-all robots.txt and `X-Robots-Tag: noindex, nofollow` | reversed — the product is not released in this state |
 | Pre-launch checks on the live demo | 2026-11-08 | Tour, try-these chips, lead capture with redaction, and og:image all verified against the running deployment | passed |
+| Dependency auto-merge | 2026-06 → 2026-11-11 | The workflow never merged anything: it waited 60 s for the PR's CI checks to appear and gave up before they existed. Fixed on 2026-11-11 (a longer discovery window, and every gate that has to be green is now waited for) | fixed — a safety net, not a silent failure |
 
 ## What the traffic says
 
-Fourteen days to 2026-11-08: 706 views, 272 unique visitors, +8 stars in thirty
+Fourteen days to 2026-11-11: 743 views, 267 unique visitors, +8 stars in thirty
 days — 0.27 a day.
 
 | Referrer | Unique visitors | Reading |
 |----------|-----------------|---------|
-| github.com | 84 | The repository's own traffic — people who already found it |
+| github.com | 73 | The repository's own traffic — people who already found it |
 | aocr.org | 81 | Noise: a radiology college's site, not an open-source directory |
-| Google | 21 | Organic, on a demo that is deliberately `noindex` |
+| Google | 22 | Organic, on a demo that is deliberately `noindex` |
 
 The first wave of TaskMaster #14 targets 10 stars a day — about 37 times the
 current rate. At today's conversion that means roughly 3,700 unique visitors a
 day, or a channel of a different kind (Hacker News, Product Hunt, a directory
 that actually converts). The full snapshot is in
-[`metrics/2026-W45.md`](./metrics/2026-W45.md).
+[`metrics/2026-W46.md`](./metrics/2026-W46.md).
 
 ## What is deliberately not done here
 

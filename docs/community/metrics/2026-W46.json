@@ -1,0 +1,86 @@
+{
+  "collected_at": "2026-11-11T03:45:00.000Z",
+  "repository": "AleksNeStu/ai-real-estate-assistant",
+  "week": "2026-W46",
+  "repo_stats": {
+    "stars": 322,
+    "forks": 119,
+    "watchers": 6,
+    "open_issues": 0,
+    "license": "MIT",
+    "default_branch": "dev",
+    "language": "Python"
+  },
+  "issue_stats": {
+    "open_by_label": {
+      "bug": 0,
+      "enhancement": 0,
+      "good first issue": 0,
+      "help wanted": 0,
+      "question": 0
+    },
+    "total_open": 0
+  },
+  "pr_stats": {
+    "open_prs": 14,
+    "total_merged": null
+  },
+  "contributors": {
+    "total": 6
+  },
+  "star_growth": {
+    "new_stars_1d": 1,
+    "new_stars_7d": 1,
+    "new_stars_30d": 8,
+    "baseline_2026_07_20": 284
+  },
+  "traffic": {
+    "window_days": 14,
+    "views": 743,
+    "unique_visitors": 267,
+    "clones": 7102,
+    "unique_cloners": 573,
+    "referrers": [
+      {
+        "referrer": "github.com",
+        "count": 111,
+        "uniques": 73
+      },
+      {
+        "referrer": "aocr.org",
+        "count": 81,
+        "uniques": 81
+      },
+      {
+        "referrer": "Google",
+        "count": 34,
+        "uniques": 22
+      },
+      {
+        "referrer": "nestlab.tech",
+        "count": 4,
+        "uniques": 3
+      },
+      {
+        "referrer": "discuss.pytorch.kr",
+        "count": 3,
+        "uniques": 2
+      },
+      {
+        "referrer": "facebook.com",
+        "count": 2,
+        "uniques": 2
+      },
+      {
+        "referrer": "transformaciondigital.pe",
+        "count": 2,
+        "uniques": 1
+      },
+      {
+        "referrer": "Bing",
+        "count": 1,
+        "uniques": 1
+      }
+    ]
+  }
+}

@@ -28,7 +28,7 @@
     "format:web": "cd apps/web && npm run lint -- --fix",
     "ci:backend": "python scripts/ci/ci_parity.py",
     "ci:frontend": "cd apps/web && npm ci && npm run lint && npm run test -- --ci --coverage",
-    "ci:full": "python scripts/ci/ci_full.py",
+    "ci:full": "python scripts/workflows/full_ci.py",
     "prepare": "npx playwright install",
     "screenshots": "node scripts/capture_screenshots.mjs"
   },

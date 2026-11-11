@@ -270,7 +270,7 @@ ci:
 
 ## ci-quick: Run quick CI (skip slower scans)
 ci-quick:
-	$(PYTHON) $(SCRIPTS_DIR)/ci/ci_parity.py --quick
+	$(PYTHON) $(SCRIPTS_DIR)/ci/ci_parity.py --unit-only
 
 ## ============================================================================
 ## SPRAV - Pre-Release Acceptance Validation
