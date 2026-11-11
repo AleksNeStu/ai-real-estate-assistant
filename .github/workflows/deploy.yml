@@ -55,10 +55,17 @@ jobs:
     # cancelled jobs, and the failed attempt would then be a red check on the
     # commit, which the deployments API refuses for every later attempt.
     # So the whole chain is skipped instead - a skipped run is not a failure.
+    #
+    # The deploy follows the PUSH run of the CI only. A commit carries two CI
+    # runs - the push and the pull request - and two deploy runs on one
+    # commit fight each other: the deployments API refuses a record while any
+    # check on the commit is running, and each run's own check exempts only
+    # itself. One deploy run per commit is one wait and one record.
     if: >-
       github.repository_owner == 'AleksNeStu' &&
       (github.event_name != 'workflow_run' ||
-       github.event.workflow_run.conclusion == 'success')
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push'))
     runs-on: ubuntu-latest
     steps:
       - name: Validate triggering CI run
