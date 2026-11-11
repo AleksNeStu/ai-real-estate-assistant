@@ -236,6 +236,37 @@ with an exact address (`/auth/login`) while the gate links to the localised, red
 address, so every account route was reported as ungated; and the landing's catalogue call was
 looked for in the first second, while the landing reads the catalogue after it is painted.
 
+## What the green session added
+
+A green session on 2026-11-11 drained the ready queue and closed six more tasks, all of
+them verified in the running application and then in the deployed demo:
+
+| The task | What it changed | Where |
+|---|---|---|
+| #70 | The chat renders the model's answer as markdown — headings, bold, lists, code, links — instead of showing the markers. The renderer is in the repository (no new dependency) and the safety is by construction: the answer is parsed into a node tree, so raw HTML has no path to a tag, and a link's scheme is checked. | `apps/web/src/components/chat/markdown.ts`, `markdown-message.tsx` |
+| #71 | The tool calls travel as data: the tool's name, the arguments it was called with and what it answered ride in the stream's meta event. The client reads the fields; the parser over the stringified steps stays as the fallback. | `apps/api/utils/tool_calls.py`, `apps/api/api/routers/chat.py`, `apps/api/agents/hybrid_agent.py` |
+| #72 | The agent directory carries a listing count, and the count is the number of that agent's ACTIVE listings — the same number the profile route shows. The demo seed now links the agents to their listings, so the column is not a row of zeros. | `apps/api/db/schemas.py`, `apps/api/db/agent_repos.py`, `apps/api/alembic/demo_data_generator.py` |
+| #68 | The landing plays the six-second demo: a poster frame with one teal play button, the clip muted and looping, loaded on the click, and never loaded at all under `prefers-reduced-motion`. | `apps/web/src/components/landing/demo-clip.tsx` |
+| #67 | The design reference has its dark side — the values are the application's own tokens — and the reference's screenshots are published beside the live ones, labelled as the design. | `tmp/design/realt2/v2/theme.css` (local), `assets/design/*.png`, `scripts/design/check_design_reference.js` |
+| #69 | The launch asset set: the logo exported from the application's mark at 512×512 (PNG with a transparent background, JPG on white), the two screens the set was missing (`/en/valuation`, `/en/showcase`), the six-second GIF at 1.37 MB, and the two launch drafts pointing at files that exist. | `assets/logo.*`, `assets/screenshots/`, `assets/clips/demo-6s.gif`, `docs/marketing/` |
+
+Two defects the session found on the way, both fixed and verified:
+
+- The map's canvas was Leaflet's own light grey — a white rectangle in a dark page on a
+  deployment that loads no tiles. It follows the theme now.
+  `apps/web/src/app/globals.css`.
+- The local CI runner was red on three things that no authoritative pipeline enforced: a
+  validator that refused the canonical numeric task ids, a pip-audit failure on ChromaDB
+  advisories that concern the ChromaDB SERVER (this application is an embedded client and
+  no fixed version exists), and a smoke-test step pointing at a script that does not exist.
+  `scripts/validation/validate_taskmaster.py`, `scripts/ci/ci_parity.py`,
+  `scripts/workflows/full_ci.py`.
+
+The deployed demo runs the images `e1f554f`; the sweep of it is clean (30 routes, 30 ok,
+0 failed), and the chat scene of the mounted clip shows the answer rendered.
+
+---
+
 ## How to reproduce
 
 ```bash
