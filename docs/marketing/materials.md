@@ -71,6 +71,15 @@ Two traps, both of them paid for in a real published frame:
   dismisses the onboarding tour. Every statement carries its own guard, and the
   two init scripts stay separate.
 
+## The old set — retired
+
+`assets/screenshots/slideshow.gif` was the light-theme animation of the
+application from before the redesign (2026-06-17). It was **retired** on
+2026-11-11 rather than re-cut: nothing referenced it, it showed screens that
+no longer exist, and the light theme breaks the house style. The dark
+animation is `assets/clips/demo-6s.gif` — the six-second clip of the
+application as it runs.
+
 ## How the copy is written
 
 The rules of the design system apply to the materials as well:
