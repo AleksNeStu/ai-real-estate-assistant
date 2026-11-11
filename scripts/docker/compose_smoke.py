@@ -9,6 +9,7 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 from typing import Callable
 
 
@@ -20,6 +21,7 @@ def _project_root() -> Path:
 @dataclass(frozen=True)
 class SmokeConfig:
     compose_file: Path
+    compose_override: Optional[Path]
     backend_health_url: str
     backend_verify_auth_url: str
     frontend_url: str
@@ -31,8 +33,16 @@ class SmokeConfig:
     dry_run: bool
 
 
-def build_compose_base_command(compose_file: Path) -> list[str]:
-    return ["docker", "compose", "-f", str(compose_file)]
+def build_compose_base_command(
+    compose_file: Path, compose_override: Path | None = None
+) -> list[str]:
+    cmd = ["docker", "compose", "-f", str(compose_file)]
+    if compose_override is not None:
+        # A workstation that hosts several stacks needs its own host ports;
+        # the override is a local file that changes nothing inside the
+        # compose network.
+        cmd.extend(["-f", str(compose_override)])
+    return cmd
 
 
 def build_compose_up_command(base: list[str], *, build: bool) -> list[str]:
@@ -118,6 +128,11 @@ def parse_args(argv: list[str]) -> SmokeConfig:
     )
     default_compose = _project_root() / "deploy" / "compose" / "docker-compose.yml"
     parser.add_argument("--compose-file", default=str(default_compose))
+    parser.add_argument(
+        "--compose-override",
+        default="",
+        help="A second compose file, applied over the first one (local host ports).",
+    )
     parser.add_argument("--backend-health-url", default="http://localhost:8001/health")
     parser.add_argument(
         "--backend-verify-auth-url", default="http://localhost:8001/api/v1/verify-auth"
@@ -147,6 +162,7 @@ def parse_args(argv: list[str]) -> SmokeConfig:
 
     return SmokeConfig(
         compose_file=Path(ns.compose_file),
+        compose_override=Path(ns.compose_override) if ns.compose_override else None,
         backend_health_url=str(ns.backend_health_url),
         backend_verify_auth_url=str(ns.backend_verify_auth_url),
         frontend_url=str(ns.frontend_url),
@@ -166,7 +182,10 @@ def main(argv: list[str]) -> int:
     if not compose_file.exists():
         raise FileNotFoundError(f"Compose file not found: {compose_file}")
 
-    base = build_compose_base_command(compose_file)
+    override = cfg.compose_override
+    if override is not None and not override.exists():
+        raise FileNotFoundError(f"Compose override not found: {override}")
+    base = build_compose_base_command(compose_file, override)
     up_cmd = build_compose_up_command(base, build=cfg.build)
     down_cmd = build_compose_down_command(base)
 

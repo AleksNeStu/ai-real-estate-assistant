@@ -253,7 +253,15 @@ def main(argv: list[str] | None = None) -> int:
             )
 
         # Original implementation for non-Docker mode (monorepo: apps/web)
+        #
+        # `npm ci` on Windows fails with EBUSY when a running next/jest still
+        # holds the native .node binary open - a lock, not a broken
+        # dependency tree. One retry after a pause clears it; the Docker mode
+        # above has no locks at all.
         rc1 = _run(["npm", "--prefix", "apps/web", "ci"], cwd=root, log_file=log_file)
+        if rc1 != 0:
+            time.sleep(15)
+            rc1 = _run(["npm", "--prefix", "apps/web", "ci"], cwd=root, log_file=log_file)
         used_fallback = False
         if rc1 != 0:
             rc1_fallback = _run(
@@ -291,14 +299,29 @@ def main(argv: list[str] | None = None) -> int:
         # Makefile's smoke-test target and the CI workflow call it from
         # (scripts/ci/compose_smoke.py does not exist, so the step failed with
         # "can't open file"). The timeout matches the workflow's.
+        cmd = [
+            sys.executable,
+            "scripts/docker/compose_smoke.py",
+            "--ci",
+            "--timeout-seconds",
+            "600",
+        ]
+        # A workstation that hosts several stacks needs its own host ports;
+        # the override is named by the environment and changes nothing inside
+        # the compose network.
+        override = os.environ.get("AIRE_COMPOSE_OVERRIDE", "").strip()
+        if override:
+            cmd.extend(["--compose-override", override])
+            # The override publishes the stack on other host ports, so the
+            # checks follow it.
+            backend_url = os.environ.get("AIRE_SMOKE_BACKEND_URL", "").strip()
+            frontend_url = os.environ.get("AIRE_SMOKE_FRONTEND_URL", "").strip()
+            if backend_url:
+                cmd.extend(["--backend-health-url", backend_url])
+            if frontend_url:
+                cmd.extend(["--frontend-url", frontend_url])
         rc = _run(
-            [
-                sys.executable,
-                "scripts/docker/compose_smoke.py",
-                "--ci",
-                "--timeout-seconds",
-                "600",
-            ],
+            cmd,
             cwd=root,
             log_file=log_file,
         )

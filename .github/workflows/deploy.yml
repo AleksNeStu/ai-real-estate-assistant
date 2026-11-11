@@ -104,6 +104,39 @@ jobs:
           fi
           echo "CI passed for $CI_HEAD_BRANCH at $CI_HEAD_SHA (integration=$INTEGRATION frontend=$FRONTEND codeql=$CODEQL_PY)"
 
+      - name: Wait for the commit's other checks to settle
+        if: github.event_name == 'workflow_run'
+        env:
+          CI_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          THIS_RUN_ID: ${{ github.run_id }}
+        run: |
+          # The commit carries more than one CI run (the push and the pull
+          # request) and the Dependabot job. The deployments API refuses to
+          # create a record while any check on the commit is still running -
+          # it answers 409 "Commit status checks failed" - and the deploy
+          # workflow's OWN failed attempt then keeps every later attempt
+          # refused. So the commit waits here, and the checks of THIS run are
+          # left out of the wait (they are running by definition).
+          for attempt in $(seq 1 40); do
+            STATE=$(gh api               -H "Accept: application/vnd.github+json"               "repos/${{ github.repository }}/commits/$CI_HEAD_SHA/check-runs"               --jq '[.check_runs[] | select(.html_url | contains("/runs/$THIS_RUN_ID/") | not)]
+                     | {pending: [.[] | select(.status != "completed") | .name],
+                        failed:  [.[] | select(.status == "completed" and .conclusion != "success" and .conclusion != "skipped") | .name]}')
+            PENDING=$(echo "$STATE" | jq -r '.pending | length')
+            FAILED=$(echo "$STATE" | jq -r '.failed | length')
+            if [ "$PENDING" = "0" ] && [ "$FAILED" = "0" ]; then
+              echo "every other check on $CI_HEAD_SHA has settled"
+              exit 0
+            fi
+            if [ "$FAILED" != "0" ]; then
+              echo "ERROR: a check on $CI_HEAD_SHA failed: $(echo "$STATE" | jq -r '.failed | join(", ")')" >&2
+              exit 1
+            fi
+            echo "$PENDING check(s) still running (attempt $attempt/40), waiting 30s"
+            sleep 30
+          done
+          echo "ERROR: the checks on $CI_HEAD_SHA did not settle in 20 minutes" >&2
+          exit 1
+
       - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
