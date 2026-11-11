@@ -18,18 +18,25 @@ env:
 jobs:
   ci-check:
     # THE GATE. A tag is a trigger, not a verdict: a `v*` tag starts the
-    # publish even when the commit behind it never went through CI. This job
-    # is the gate - the tagged commit must carry a SUCCESSFUL CI run, or
-    # nothing is published.
+    # publish and the roll even when the commit behind it never went through
+    # CI. This job is the gate, and it answers one question: has THIS code
+    # passed CI?
+    #
+    # Three answers exist.
+    #
+    # 1. The commit has its own CI run. Its conclusion is the answer - green
+    #    passes, red blocks, and a run that is still running is waited for.
+    # 2. The commit has no CI run at all, because CI ignores the documentation
+    #    and this commit touched only the documentation. Then the verdict is
+    #    the one of the last commit whose CODE is the same: the trees are
+    #    compared, and an identical tree means identical code, so the earlier
+    #    verdict carries over.
+    # 3. The commit has no CI run and its code differs from the last commit
+    #    that passed. Nothing is published. This is the fail-closed case, and
+    #    it is the reason the gate exists.
     #
     # The rule "CI green before a tag" was the operator's to keep by hand,
-    # because the tag-driven workflows carried no gate of their own. Here it
-    # is the workflow's own job, and it fails closed: a commit with no CI run
-    # is not published.
-    #
-    # The commit is waited for, not merely read: a tag cut while the CI of
-    # that commit is still running must not publish a half-checked build, and
-    # must not fail either - it waits, up to thirty minutes.
+    # because the tag-driven workflows carried no gate of their own.
     runs-on: ubuntu-latest
     steps:
       - name: The tagged commit must have passed CI
@@ -38,6 +45,7 @@ jobs:
           HEAD_SHA: ${{ github.sha }}
         run: |
           set -uo pipefail
+          GRACE=10   # minutes a CI run is given to appear at all
           for attempt in $(seq 1 60); do
             RAW=$(gh api -H "Accept: application/vnd.github+json" \
               "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=$HEAD_SHA&per_page=20" 2>/dev/null || true)
@@ -51,15 +59,37 @@ jobs:
               if [ "$DONE" -gt 0 ]; then
                 OK=$(echo "$RUNS" | jq '[.[] | select(.conclusion == "success")] | length' 2>/dev/null || echo 0)
                 if [ "$OK" -gt 0 ]; then
-                  echo "CI passed for $HEAD_SHA - the images may be published"
+                  echo "CI passed for $HEAD_SHA - the publish may continue"
                   exit 0
                 fi
                 echo "ERROR: the CI of $HEAD_SHA did not succeed ($(echo "$RUNS" | jq -r 'map(.conclusion) | join(",")')) - nothing is published" >&2
                 exit 1
               fi
               echo "the CI of $HEAD_SHA is still running (attempt $attempt/60), waiting 30s"
-            else
+            elif [ "$attempt" -lt "$GRACE" ]; then
+              # No run yet. A run that is about to start is still this
+              # commit's own run, so it is given a grace period to appear.
               echo "no CI run for $HEAD_SHA yet (attempt $attempt/60), waiting 30s"
+            else
+              # No run, and none is coming: CI ignores the documentation, so
+              # this commit changed nothing CI runs on. The verdict is the one
+              # of the last commit whose code is the same - the trees are
+              # compared.
+              TREE=$(gh api "repos/${{ github.repository }}/git/commits/$HEAD_SHA" --jq .tree.sha 2>/dev/null || echo "")
+              LAST=$(gh api -H "Accept: application/vnd.github+json" \
+                "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?status=success&event=push&per_page=20" \
+                | jq -r '[.workflow_runs[]? | select(.event == "push" and .conclusion == "success")] | sort_by(.run_number) | reverse | .[0].head_sha' 2>/dev/null || echo "")
+              if [ -n "$TREE" ] && [ -n "$LAST" ]; then
+                LAST_TREE=$(gh api "repos/${{ github.repository }}/git/commits/$LAST" --jq .tree.sha 2>/dev/null || echo "")
+                if [ -n "$LAST_TREE" ] && [ "$TREE" = "$LAST_TREE" ]; then
+                  echo "no CI run for $HEAD_SHA, but its code is identical to $LAST, which passed CI - the publish may continue"
+                  exit 0
+                fi
+                echo "ERROR: no CI run for $HEAD_SHA, and its code differs from the last commit that passed CI ($LAST) - nothing is published" >&2
+                exit 1
+              fi
+              echo "ERROR: no CI run for $HEAD_SHA and no CI verdict to inherit - nothing is published" >&2
+              exit 1
             fi
             sleep 30
           done
