@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { divIcon, type LatLngBoundsExpression } from 'leaflet';
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { MapTileTheme } from '@/components/ui/map-tile-theme';
@@ -153,6 +154,14 @@ export default function PropertyMap({
                           ? formatPrice(p.price, p.currency, locale)
                           : t('card.priceOnRequest')}
                       </div>
+                      {p.id ? (
+                        <Link
+                          href={`/${locale}/property/${p.id}`}
+                          className="mt-1 inline-block text-sm underline underline-offset-4"
+                        >
+                          {t('card.viewDetails')}
+                        </Link>
+                      ) : null}
                     </div>
                   </Popup>
                 </Marker>
