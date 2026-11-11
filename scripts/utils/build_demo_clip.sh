@@ -31,7 +31,7 @@ $F -loop 1 -i "$FRAMES/1-landing.png" -loop 1 -i "$FRAMES/2-search.png" -loop 1 
  -map "[y]" -t 6 -r 30 -c:v libx264 -preset slow -crf 24 -pix_fmt yuv420p -movflags +faststart "$OUT/demo-6s.mp4"
 
 # The GIF is what a forum post inlines - lean enough for a phone.
-$F -i "$OUT/demo-6s.mp4" -vf "fps=10,scale=560:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=48:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=3:diff_mode=rectangle" -loop 0 "$OUT/demo-6s.gif"
+$F -i "$OUT/demo-6s.mp4" -vf "fps=8,scale=480:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=32:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=3:diff_mode=rectangle" -loop 0 "$OUT/demo-6s.gif"
 
 # The poster is the frame the landing shows before the play button, and the
 # still that represents the clip where motion is not possible - the first

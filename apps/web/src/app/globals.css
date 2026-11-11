@@ -221,6 +221,19 @@
   }
 }
 
+/* The canvas behind the map's tiles follows the theme.
+   The tiles are raster and light by nature, and the tile pane is filtered
+   for the dark theme - but the pane BEHIND the tiles is Leaflet's own, and
+   it is light. A deployment without internet loads no tiles at all, and the
+   map would be a white rectangle in a dark page. */
+.leaflet-container {
+  background-color: hsl(var(--muted));
+}
+
+.dark .leaflet-container {
+  background-color: hsl(var(--background));
+}
+
 /* Map marker animations */
 .mapbox-marker-cluster {
   transition:
