@@ -73,6 +73,13 @@ export interface ChatResponse {
   sources_truncated?: boolean;
   session_id?: string;
   intermediate_steps?: Array<Record<string, unknown>>;
+  /** The tool calls the agent made, as data. */
+  tool_calls?: Array<{
+    name: string;
+    args?: string;
+    result?: string;
+    sources?: Array<Record<string, unknown>>;
+  }>;
 }
 
 export interface RagUploadResponse {

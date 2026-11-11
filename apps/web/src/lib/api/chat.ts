@@ -31,6 +31,7 @@ export async function streamChatMessage(
     sourcesTruncated?: boolean;
     sessionId?: string;
     intermediateSteps?: ChatResponse['intermediate_steps'];
+    toolCalls?: ChatResponse['tool_calls'];
   }) => void,
   options?: {
     /** Enable heartbeat monitoring (default: true) */
@@ -161,6 +162,7 @@ export async function streamChatMessage(
             const sessionId = (parsed as { session_id?: unknown }).session_id;
             const intermediateSteps = (parsed as { intermediate_steps?: unknown })
               .intermediate_steps;
+            const toolCalls = (parsed as { tool_calls?: unknown }).tool_calls;
             onMeta({
               sources: Array.isArray(sources) ? (sources as ChatResponse['sources']) : undefined,
               sourcesTruncated:
@@ -168,6 +170,9 @@ export async function streamChatMessage(
               sessionId: typeof sessionId === 'string' && sessionId.trim() ? sessionId : undefined,
               intermediateSteps: Array.isArray(intermediateSteps)
                 ? (intermediateSteps as ChatResponse['intermediate_steps'])
+                : undefined,
+              toolCalls: Array.isArray(toolCalls)
+                ? (toolCalls as ChatResponse['tool_calls'])
                 : undefined,
             });
           }

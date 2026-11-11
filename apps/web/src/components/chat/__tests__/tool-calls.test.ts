@@ -1,4 +1,4 @@
-import { parseToolCall, parseToolCalls } from '../tool-calls';
+import { parseStructuredToolCalls, parseToolCall, parseToolCalls } from '../tool-calls';
 
 describe('parseToolCall', () => {
   it('reads the name, the arguments and the answer out of an agent step', () => {
@@ -45,5 +45,37 @@ describe('parseToolCalls', () => {
   it('reads nothing out of a trace that is not a list', () => {
     expect(parseToolCalls(undefined)).toEqual([]);
     expect(parseToolCalls('not a list')).toEqual([]);
+  });
+});
+
+describe('parseStructuredToolCalls', () => {
+  it('reads the calls the backend sends as data', () => {
+    const calls = parseStructuredToolCalls([
+      {
+        name: 'search_properties',
+        args: '{"query": "Kraków", "rooms": 2}',
+        result: '38 matches',
+      },
+    ]);
+
+    expect(calls).toEqual([
+      {
+        name: 'search_properties',
+        args: '{"query": "Kraków", "rooms": 2}',
+        result: '38 matches',
+      },
+    ]);
+  });
+
+  it('drops an entry that carries no tool name', () => {
+    expect(
+      parseStructuredToolCalls([{ args: '{}' }, { name: '   ' }, { name: 'mortgage_calculator' }])
+    ).toEqual([{ name: 'mortgage_calculator', args: undefined, result: undefined }]);
+  });
+
+  it('reads nothing when the backend sent no calls', () => {
+    expect(parseStructuredToolCalls(undefined)).toEqual([]);
+    expect(parseStructuredToolCalls([])).toEqual([]);
+    expect(parseStructuredToolCalls('tool_calls')).toEqual([]);
   });
 });

@@ -12,7 +12,7 @@ import { MonoAnnotation } from '@/components/ui/mono-annotation';
 import { ToolCard } from '@/components/ui/tool-card';
 import { ContextPane } from '@/components/chat/context-pane';
 import { ToolResult } from '@/components/chat/tool-result';
-import { parseToolCalls, type ToolCall } from '@/components/chat/tool-calls';
+import { parseStructuredToolCalls, parseToolCalls, type ToolCall } from '@/components/chat/tool-calls';
 import { MarkdownMessage, PlainMessage } from '@/components/chat/markdown-message';
 
 interface Message {
@@ -169,13 +169,22 @@ export default function ChatPage() {
         () => {
           // requestId is available but not currently displayed
         },
-        ({ sources, sourcesTruncated, sessionId: returnedSessionId, intermediateSteps }) => {
+        ({
+          sources,
+          sourcesTruncated,
+          sessionId: returnedSessionId,
+          intermediateSteps,
+          toolCalls: structuredCalls,
+        }) => {
           if (returnedSessionId && !sessionId) setSessionId(returnedSessionId);
           setMessages((prev) => {
             const updated = [...prev];
             const lastIdx = updated.length - 1;
             if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
-              const toolCalls = parseToolCalls(intermediateSteps);
+              // The backend's structured calls win; the parser is the
+              // fallback for a path that does not send them yet.
+              const structured = parseStructuredToolCalls(structuredCalls);
+              const toolCalls = structured.length ? structured : parseToolCalls(intermediateSteps);
               updated[lastIdx] = {
                 ...updated[lastIdx],
                 sources: sources && sources.length ? sources : updated[lastIdx].sources,
@@ -222,12 +231,15 @@ export default function ChatPage() {
         () => {
           // requestId is available but not currently displayed
         },
-        ({ sources, sourcesTruncated, intermediateSteps }) => {
+        ({ sources, sourcesTruncated, intermediateSteps, toolCalls: structuredCalls }) => {
           setMessages((prev) => {
             const updated = [...prev];
             const lastIdx = updated.length - 1;
             if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
-              const toolCalls = parseToolCalls(intermediateSteps);
+              // The backend's structured calls win; the parser is the
+              // fallback for a path that does not send them yet.
+              const structured = parseStructuredToolCalls(structuredCalls);
+              const toolCalls = structured.length ? structured : parseToolCalls(intermediateSteps);
               updated[lastIdx] = {
                 ...updated[lastIdx],
                 sources: sources && sources.length ? sources : updated[lastIdx].sources,

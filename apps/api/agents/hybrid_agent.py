@@ -55,6 +55,7 @@ from agents.query_analyzer import (
 from agents.web_research_agent import WebResearchAgent, WebResearchConfig
 from ai.buffer_memory import ConversationBufferMemory
 from tools.property_tools import create_property_tools
+from utils.tool_calls import build_tool_call
 
 logger = logging.getLogger(__name__)
 
@@ -886,6 +887,20 @@ Thought: {agent_scratchpad}"""
 
         async for event in self.tool_agent.astream_events({"input": input_text}, version="v1"):
             kind = event["event"]
+            if kind == "on_tool_end":
+                # The call itself travels as data - the tool's name, the
+                # arguments it was called with and what it answered. The
+                # router collects these into the stream's meta event, so the
+                # client draws the card from the fields instead of parsing
+                # the agent's stringified step.
+                call = build_tool_call(
+                    event.get("name"),
+                    (event.get("data") or {}).get("input"),
+                    (event.get("data") or {}).get("output"),
+                )
+                if call:
+                    yield json.dumps({"tool_call": call})
+                continue
             if kind == "on_chat_model_stream":
                 content = event["data"]["chunk"].content
                 if content:

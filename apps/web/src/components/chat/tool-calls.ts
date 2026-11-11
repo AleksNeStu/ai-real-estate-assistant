@@ -7,6 +7,11 @@
  * agent's steps, which are dictionaries. Both are read here, once, so the
  * chat can draw a card per call and never has to know how the agent spells
  * a step.
+ *
+ * The backend now also sends the calls as DATA in the meta event - the
+ * tool's name, the arguments, the result. When it does, the chat reads the
+ * fields; the parser below stays as the fallback for a path that does not
+ * send them yet.
  */
 
 export interface ToolCall {
@@ -16,6 +21,31 @@ export interface ToolCall {
   args?: string;
   /** What the tool answered. */
   result?: string;
+}
+
+/**
+ * The structured calls of a meta event.
+ *
+ * A call without a name is not a call - it is a note - and is dropped
+ * rather than guessed at.
+ */
+export function parseStructuredToolCalls(value: unknown): ToolCall[] {
+  if (!Array.isArray(value)) return [];
+
+  const calls: ToolCall[] = [];
+  for (const entry of value) {
+    if (!entry || typeof entry !== 'object') continue;
+    const record = entry as Record<string, unknown>;
+    const name = record.name;
+    if (typeof name !== 'string' || !name.trim()) continue;
+
+    calls.push({
+      name: name.trim(),
+      args: typeof record.args === 'string' ? record.args : undefined,
+      result: typeof record.result === 'string' ? record.result : undefined,
+    });
+  }
+  return calls;
 }
 
 const NAME_PATTERN = /tool='([^']*)'/;

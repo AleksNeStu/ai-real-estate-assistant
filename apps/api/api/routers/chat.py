@@ -35,8 +35,29 @@ from utils.streaming import (
     format_sse_heartbeat,
     should_send_heartbeat,
 )
+from utils.tool_calls import build_tool_calls_from_steps
 
 logger = logging.getLogger(__name__)
+
+
+def _tool_call_of(chunk: str) -> dict | None:
+    """The tool call a streamed chunk carries, if it carries one.
+
+    The agent reports the calls it made as data: a JSON object with a
+    `tool_call` key. Every other chunk is the answer's text and travels on
+    to the client untouched.
+    """
+    if "tool_call" not in chunk:
+        return None
+    try:
+        payload = json.loads(chunk)
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+    call = payload.get("tool_call")
+    return call if isinstance(call, dict) else None
+
 
 router = APIRouter(tags=["Chat"])
 
@@ -205,7 +226,11 @@ async def chat_endpoint(
                     "sources_truncated": False,
                     "session_id": session_id,
                     "request_id": request_id,
+                    "tool_calls": [],
                 }
+                # The tool calls the agent made, as data. They travel in the
+                # meta event, so the client reads one event and not two.
+                tool_calls: list[dict] = []
 
                 try:
                     # Add timeout protection for streaming
@@ -251,8 +276,21 @@ async def chat_endpoint(
                                 # Sanitize steps to redact sensitive data (API keys, tokens, passwords)
                                 safe_steps = sanitize_intermediate_steps(raw_steps)
                                 sources_payload["intermediate_steps"] = safe_steps
+                                # The calls also travel as data, so the client
+                                # draws the card from the fields instead of
+                                # parsing the step.
+                                sources_payload["tool_calls"] = build_tool_calls_from_steps(
+                                    raw_steps
+                                )
                         else:
                             async for chunk in agent.astream_query(sanitized_message):
+                                # The agent reports the tool calls it made as
+                                # data. They are collected here and travel in
+                                # the meta event - the client reads one event.
+                                call = _tool_call_of(chunk)
+                                if call is not None:
+                                    tool_calls.append(call)
+                                    continue
                                 # Check if heartbeat needed (Task #74)
                                 if should_send_heartbeat(last_heartbeat, heartbeat_config):
                                     yield format_sse_heartbeat()
@@ -281,6 +319,8 @@ async def chat_endpoint(
                                 except Exception:
                                     sources_payload["sources"] = []
                                     sources_payload["sources_truncated"] = False
+
+                        sources_payload["tool_calls"] = tool_calls
 
                         # Mark stream as completed and send metrics (Task #74)
                         stream_metrics.complete()
