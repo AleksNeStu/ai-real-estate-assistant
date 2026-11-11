@@ -1,6 +1,18 @@
 name: Dependabot Auto-Merge
 
-on: pull_request_target
+# `pull_request`, NOT `pull_request_target`.
+#
+# The merge action reads the bump's type from
+# `dependabot/fetch-metadata`, and that step only runs when the event IS
+# `pull_request` - on `pull_request_target` it is skipped, the update type
+# arrives empty and the action refuses with "Semver bump '' is invalid!"
+# without merging anything. So the trigger has to be the one the action
+# supports.
+#
+# The write permissions are safe on `pull_request`: GitHub withholds them from
+# pull requests that come from a fork, and the job below only ever runs for
+# `dependabot[bot]`, whose branches live in this repository.
+on: pull_request
 
 permissions:
   contents: write
