@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { searchProperties, exportPropertiesBySearch, ApiError } from '@/lib/api';
 import { SearchResultItem } from '@/lib/types';
-import { info, warn } from '@/lib/logger';
+import { warn } from '@/lib/logger';
 import { extractMapPoints, type PropertyMapPoint } from '@/components/search/property-map-utils';
 import type { PolygonCoordinates } from '@/components/search/geo-draw-control';
 import {
@@ -189,8 +189,10 @@ function SearchPageContent() {
 
   // Handle property marker click on map
   const handlePropertyClick = (point: PropertyMapPoint) => {
-    // For now, just log the click. Future enhancement: scroll to property in list
-    info(t('map.propertyClicked'), { id: point.id, title: point.title });
+    // A marker on the map is a listing, and a listing has a page of its own.
+    // The click opens it.
+    if (!point.id) return;
+    router.push(`/${locale}/property/${point.id}`);
   };
 
   const mapPoints = useMemo(() => extractMapPoints(results), [results]);

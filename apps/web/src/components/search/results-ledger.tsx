@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { HeartButton, ListingGenerator } from '@/components/property';
@@ -103,9 +104,18 @@ export function ResultsLedger({ results, query, className }: ResultsLedgerProps)
             className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 gap-y-2 border-b border-border px-6 py-4"
           >
             <div className="min-w-0">
-              <p className="truncate text-[15px] font-medium leading-5 text-foreground">
-                {title}
-              </p>
+              {property.id ? (
+                <Link
+                  href={`/${locale}/property/${property.id}`}
+                  className="block truncate text-[15px] font-medium leading-5 text-foreground underline-offset-4 hover:underline"
+                >
+                  {title}
+                </Link>
+              ) : (
+                <p className="truncate text-[15px] font-medium leading-5 text-foreground">
+                  {title}
+                </p>
+              )}
               <p className="mt-1 truncate text-[12px] leading-4 text-muted-foreground">
                 {location}
               </p>

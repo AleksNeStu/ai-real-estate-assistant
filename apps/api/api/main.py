@@ -67,6 +67,7 @@ from api.routers import (
     monitoring,  # Task #57: Production Monitoring Dashboard
     profile,  # Task #88: User Profile Management
     prompt_templates,
+    properties,  # One property, by its id - the data of the property page
     push,  # Task #63: Push Notifications
     ranking_config,  # Task #76: Ranking Configuration
     saved_searches,
@@ -604,6 +605,9 @@ app.include_router(saved_searches.router, prefix="/api/v1")
 app.include_router(filter_presets.router, prefix="/api/v1")
 # What the catalogue holds - the numbers the landing page shows
 app.include_router(catalogue.router, prefix="/api/v1")
+# One property, by its id - the data of the property page. Public: a visitor
+# who clicks a listing is nobody until they sign in.
+app.include_router(properties.router, prefix="/api/v1")
 # Outbound clicks: the browser reports them before it leaves the site
 app.include_router(analytics_outbound.router, prefix="/api/v1")
 # Task #38: Market analytics (price history, trends, indicators)

@@ -30,8 +30,13 @@ export interface Property {
   has_pool: boolean;
   has_garage: boolean;
   has_bike_room: boolean;
+  has_elevator?: boolean;
   amenities?: string[];
   images?: string[];
+  price_per_sqm?: number;
+  source_url?: string;
+  source_platform?: string;
+  scraped_at?: string;
 }
 
 export interface SearchResultItem {

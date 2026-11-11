@@ -79,6 +79,17 @@ export {
   submitFeedback,
 } from './search';
 
+// Properties: one property, its price history and its comparables
+export {
+  getProperty,
+  getPropertyPriceHistory,
+  getRelatedProperties,
+} from './properties';
+export type {
+  RelatedPropertiesResponse,
+  PropertyPriceHistoryResponse,
+} from './properties';
+
 // Admin: data ingestion, Excel, portals
 export {
   ingestData,

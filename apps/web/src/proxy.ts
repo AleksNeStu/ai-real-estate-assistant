@@ -67,6 +67,7 @@ async function handleRequest(request: NextRequest) {
   const demoRoutes = [
     '/',
     '/search',
+    '/property',
     '/city-overview',
     '/knowledge',
     '/analytics',

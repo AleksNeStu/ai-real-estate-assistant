@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **A property has a page** — the search answered with listings and the card
+  showed them, but a reader who picked one had nowhere to go: there was no
+  route for a single property. The page shows the listing itself (the price,
+  the numbers, the description, the amenities), the AI one-liner of its
+  neighbourhood, and the comparable listings of the same city and type. It is
+  public: a visitor who clicks a listing is nobody until they sign in, so the
+  data it reads does not ask for a session. The title of a result and a marker
+  on the map both open it.
+
 ### Fixed
 - **The release path has a CI gate** — a `v*` tag started the image publish and the
   server roll whether or not the commit behind it had ever passed CI. Both tag
