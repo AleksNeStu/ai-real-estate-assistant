@@ -184,7 +184,41 @@ state does not earn it yet. The measurement target stays the content wave's
 
 ---
 
-## 5. The live evidence of this audit
+## 5. The catalogue this deployment holds
+
+Read from the deployment itself (`GET /api/v1/catalogue/stats`, 2026-11-11):
+
+| | |
+|---|---|
+| listings | **250** |
+| agents | 15 |
+| cities | Wrocław 55 · Gdańsk 52 · Poznań 51 · Warsaw 47 · Kraków 45 |
+| currency | PLN |
+
+These are the numbers the sitemap and the llms.txt now carry, and they are the
+numbers a claim about the catalogue may be made from: the deployment says
+250, so the deployment says 250.
+
+## 6. How the funnel is measured
+
+The source is the deployment's own data, not an estimate:
+
+* **the catalogue** — `GET /api/v1/catalogue/stats` (public): the listings, the
+  cities, the agents.
+* **the leads** — `POST /api/v1/leads/visitor` writes a lead with its source
+  (`organic`, `referral`, `social`, …) and its consent; they are read in the
+  agent board, behind an account.
+* **the outbound clicks** — `POST /api/v1/analytics/outbound` (204) records
+  the tagged click of a landing link, with its UTM.
+* **the targets** — `docs/community/GROWTH_EXPERIMENTS.md`: the content wave's
+  10/20/50 stars per day.
+
+**The organic column reads zero today, and that is the switch, not a
+failure.** The demo is noindex and its robots.txt disallows everything, so no
+crawler can reach it. The first honest number after the operator flips the
+switch is the one this audit is preparing for.
+
+## 7. The live evidence of this audit
 
 * The live demo answered `build.sha = e4bafb25e` (`v5.3.1`) throughout.
 * A test lead was created by walking the public lead path: id
