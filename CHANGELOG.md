@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **The release path has a CI gate** — a `v*` tag started the image publish and the
+  server roll whether or not the commit behind it had ever passed CI. Both tag
+  workflows now wait for that commit's CI run and refuse to publish or to roll
+  without it; a tag cut while the CI is still running waits for it instead of
+  failing.
+- **The type check is a CI gate** — `tsc --noEmit` was never part of CI, so a type
+  error could reach a release. The frontend job runs it now (`npm run typecheck`),
+  and the tag path waits for that CI.
+- **The privileged list reaches the containers** — the deploy delivered the list
+  and the deployment's identity into the deployment directory, which the deploy
+  user may read but not write, and the step died there with "Permission denied".
+  The delivery lands in the deploy user's own home now, and the deployment's
+  compose carries the values into the backend's environment.
+
+## [5.2.0] - 2026-11-11
+
+### Changed
+- **The v2 design reaches every route** — the design system on the zinc base (the
+  tokens, the type scale, the teal action, the mono annotations, the ledgers) now
+  covers the landing, the chrome, the twelve public routes, the seven account
+  routes, the four admin tabs and the six auth screens. The landing carries the
+  live catalogue numbers and the waitlist capture, the sign-in is a real one with
+  the `DEMO_MODE` split and the GDPR consent stamp, and the acceptance record is
+  `docs/reviews/design-acceptance-2026-11-10.md`.
+- **The deployment's identity** — a privileged viewer sees which build they are
+  talking to: the build's date and time, the deploy's run id and the commit's sha,
+  all three clickable. The privileged list arrives through the environment
+  (`ADMIN_EMAILS`, `ADMIN_IPS`) and is never written into the source, a fixture, a
+  test, a snapshot or a document.
+
 ## [5.1.15] - 2026-11-08
 
 ### Changed

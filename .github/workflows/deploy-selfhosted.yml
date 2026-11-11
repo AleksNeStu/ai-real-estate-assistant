@@ -55,10 +55,57 @@ permissions:
   packages: read
 
 jobs:
+  ci-check:
+    # THE GATE. A tag is a trigger, not a verdict: a `v*` tag rolls the server
+    # even when the commit behind it never went through CI. This job is the
+    # gate - the tagged commit must carry a SUCCESSFUL CI run, or nothing is
+    # rolled. The rule "CI green before a tag" was the operator's to keep by
+    # hand, because this workflow carried no gate of its own. Here it is the
+    # workflow's own job, and it fails closed.
+    #
+    # The commit is waited for, not merely read: a tag cut while the CI of
+    # that commit is still running waits instead of failing.
+    runs-on: ubuntu-latest
+    steps:
+      - name: The tagged commit must have passed CI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -uo pipefail
+          for attempt in $(seq 1 60); do
+            RAW=$(gh api -H "Accept: application/vnd.github+json" \
+              "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=$HEAD_SHA&per_page=20" 2>/dev/null || true)
+            # The PUSH run is the one that proves the commit itself. A pull
+            # request run covers the same commit through a different event,
+            # and the release line follows the push.
+            RUNS=$(echo "$RAW" | jq -c '[.workflow_runs[]? | select(.event == "push")]' 2>/dev/null || echo '[]')
+            COUNT=$(echo "$RUNS" | jq 'length' 2>/dev/null || echo 0)
+            if [ "$COUNT" -gt 0 ]; then
+              DONE=$(echo "$RUNS" | jq '[.[] | select(.status == "completed")] | length' 2>/dev/null || echo 0)
+              if [ "$DONE" -gt 0 ]; then
+                OK=$(echo "$RUNS" | jq '[.[] | select(.conclusion == "success")] | length' 2>/dev/null || echo 0)
+                if [ "$OK" -gt 0 ]; then
+                  echo "CI passed for $HEAD_SHA - the stack may be rolled"
+                  exit 0
+                fi
+                echo "ERROR: the CI of $HEAD_SHA did not succeed ($(echo "$RUNS" | jq -r 'map(.conclusion) | join(",")')) - nothing is rolled" >&2
+                exit 1
+              fi
+              echo "the CI of $HEAD_SHA is still running (attempt $attempt/60), waiting 30s"
+            else
+              echo "no CI run for $HEAD_SHA yet (attempt $attempt/60), waiting 30s"
+            fi
+            sleep 30
+          done
+          echo "ERROR: the CI of $HEAD_SHA did not settle in 30 minutes - nothing is rolled" >&2
+          exit 1
+
   deploy:
     # Only the owner of this repository deploys. Whether a target server is
     # configured at all is a SECRET question, and a secret cannot be read in
     # a job-level condition - the first step below settles it instead.
+    needs: ci-check
     if: github.repository_owner == 'AleksNeStu'
     runs-on: ubuntu-latest
     env:
@@ -134,11 +181,18 @@ jobs:
             printf 'ADMIN_IPS=%s\n' "$ADMIN_IPS"
           } > "$RUNNER_TEMP/build.env"
 
+          # The file lands in the DEPLOY USER's own home, not in the
+          # deployment directory. The deployment directory is usually owned by
+          # another account - the deploy user reads the compose file and the
+          # .env next to it, but cannot write into the directory, and the
+          # delivery died there with "Permission denied". The home is the
+          # deploy user's own, and the file is mode 600: it carries an
+          # e-mail address and a list of addresses.
           ssh -i ~/.ssh/deploy_key -p "$DEPLOY_PORT" \
               -o UserKnownHostsFile=~/.ssh/known_hosts \
               -o StrictHostKeyChecking=yes \
               "$DEPLOY_USER@$DEPLOY_HOST" \
-              "cat > '$DEPLOY_PATH/build.env'" < "$RUNNER_TEMP/build.env"
+              "umask 077; cat > \"\$HOME/.aire-build.env\"" < "$RUNNER_TEMP/build.env"
 
           rm -f "$RUNNER_TEMP/build.env"
 
@@ -162,6 +216,14 @@ jobs:
           cd "$DEPLOY_PATH"
           export AIRE_IMAGE_TAG="$IMAGE_TAG"
           export AIRE_IMAGE_REPO="$IMAGE_REPO"
+
+          # The delivered file: the privileged list and the deployment's
+          # identity, written by the step above into the deploy user's home.
+          BUILD_ENV_FILE="$HOME/.aire-build.env"
+          if [ ! -f "$BUILD_ENV_FILE" ]; then
+            echo "the delivered file $BUILD_ENV_FILE is missing" >&2
+            exit 1
+          fi
 
           # The images are published by the release workflow, which runs in
           # parallel with this one. The pull can therefore fail for a while
@@ -201,14 +263,15 @@ jobs:
           # is still running, and therefore with the PREVIOUS build.
           BACKEND_REF=$(docker compose -f "$COMPOSE_FILE" config --images 2>/dev/null | grep '/backend:' | head -1 || true)
           if [ -n "$BACKEND_REF" ]; then
-            printf 'BUILD_SHA=%s\n' "$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$BACKEND_REF" 2>/dev/null || true)" >> build.env
-            printf 'BUILD_AT=%s\n' "$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.created"}}' "$BACKEND_REF" 2>/dev/null || true)" >> build.env
+            printf 'BUILD_SHA=%s\n' "$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$BACKEND_REF" 2>/dev/null || true)" >> "$BUILD_ENV_FILE"
+            printf 'BUILD_AT=%s\n' "$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.created"}}' "$BACKEND_REF" 2>/dev/null || true)" >> "$BUILD_ENV_FILE"
           fi
 
           # The environment the containers read: the privileged list and the
-          # build metadata, both delivered by this deploy.
+          # build metadata, both delivered by this deploy. The compose file
+          # interpolates them into the containers' environment.
           set -a
-          . ./build.env
+          . "$BUILD_ENV_FILE"
           set +a
 
           docker compose -f "$COMPOSE_FILE" up -d --remove-orphans

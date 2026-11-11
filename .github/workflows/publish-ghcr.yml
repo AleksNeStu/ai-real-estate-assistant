@@ -16,7 +16,58 @@ env:
   FRONTEND_IMAGE: ghcr.io/${{ github.repository }}/frontend
 
 jobs:
+  ci-check:
+    # THE GATE. A tag is a trigger, not a verdict: a `v*` tag starts the
+    # publish even when the commit behind it never went through CI. This job
+    # is the gate - the tagged commit must carry a SUCCESSFUL CI run, or
+    # nothing is published.
+    #
+    # The rule "CI green before a tag" was the operator's to keep by hand,
+    # because the tag-driven workflows carried no gate of their own. Here it
+    # is the workflow's own job, and it fails closed: a commit with no CI run
+    # is not published.
+    #
+    # The commit is waited for, not merely read: a tag cut while the CI of
+    # that commit is still running must not publish a half-checked build, and
+    # must not fail either - it waits, up to thirty minutes.
+    runs-on: ubuntu-latest
+    steps:
+      - name: The tagged commit must have passed CI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -uo pipefail
+          for attempt in $(seq 1 60); do
+            RAW=$(gh api -H "Accept: application/vnd.github+json" \
+              "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=$HEAD_SHA&per_page=20" 2>/dev/null || true)
+            # The PUSH run is the one that proves the commit itself. A pull
+            # request run covers the same commit through a different event,
+            # and the release line follows the push.
+            RUNS=$(echo "$RAW" | jq -c '[.workflow_runs[]? | select(.event == "push")]' 2>/dev/null || echo '[]')
+            COUNT=$(echo "$RUNS" | jq 'length' 2>/dev/null || echo 0)
+            if [ "$COUNT" -gt 0 ]; then
+              DONE=$(echo "$RUNS" | jq '[.[] | select(.status == "completed")] | length' 2>/dev/null || echo 0)
+              if [ "$DONE" -gt 0 ]; then
+                OK=$(echo "$RUNS" | jq '[.[] | select(.conclusion == "success")] | length' 2>/dev/null || echo 0)
+                if [ "$OK" -gt 0 ]; then
+                  echo "CI passed for $HEAD_SHA - the images may be published"
+                  exit 0
+                fi
+                echo "ERROR: the CI of $HEAD_SHA did not succeed ($(echo "$RUNS" | jq -r 'map(.conclusion) | join(",")')) - nothing is published" >&2
+                exit 1
+              fi
+              echo "the CI of $HEAD_SHA is still running (attempt $attempt/60), waiting 30s"
+            else
+              echo "no CI run for $HEAD_SHA yet (attempt $attempt/60), waiting 30s"
+            fi
+            sleep 30
+          done
+          echo "ERROR: the CI of $HEAD_SHA did not settle in 30 minutes - nothing is published" >&2
+          exit 1
+
   publish-backend:
+    needs: ci-check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -117,6 +168,7 @@ jobs:
           exit 1
 
   publish-frontend:
+    needs: ci-check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

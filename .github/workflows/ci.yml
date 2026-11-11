@@ -194,6 +194,13 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # The type check is a gate, not a report. It was never part of CI, so
+      # a type error could reach a release - and the release path publishes
+      # on a tag without asking anything of the commit. Now the commit's CI
+      # carries the type check, and the tag path gates on that CI.
+      - name: Type check (tsc)
+        run: npm run typecheck
+
   security-sast:
     runs-on: ubuntu-latest
     needs: [backend-lint]
