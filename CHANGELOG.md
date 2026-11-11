@@ -34,9 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `docs/reviews/design-acceptance-2026-11-10.md`.
 - **The deployment's identity** — a privileged viewer sees which build they are
   talking to: the build's date and time, the deploy's run id and the commit's sha,
-  all three clickable. The privileged list arrives through the environment
-  (`ADMIN_EMAILS`, `ADMIN_IPS`) and is never written into the source, a fixture, a
-  test, a snapshot or a document.
+  all three clickable. The privileged list arrives through the environment — the
+  deploy delivers it and the application reads it — and is never written into the
+  source, a fixture, a test, a snapshot or a document.
 
 ## [5.1.15] - 2026-11-08
 
