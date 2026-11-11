@@ -474,25 +474,28 @@ jobs:
       - name: Install Playwright browsers
         run: |
           set -uo pipefail
-          # The browser and its system packages come from two different
-          # places: the Playwright CDN and the Ubuntu archives. The archives
-          # are fetched over DNS, and a runner whose resolver cannot reach
-          # azure.archive.ubuntu.com fails the whole install with "Temporary
-          # failure resolving" - after apt has retried for ten minutes on its
-          # own. That is the runner's network, not the project, so the
-          # install is retried here: three attempts, a minute apart, and the
-          # apt retry count raised so a single dropped packet is not a lost
-          # package.
+          # The browser binary comes from the Playwright CDN, and the root
+          # "prepare" script (npx playwright install) already fetched it
+          # during npm ci. What this step used to add was the SYSTEM
+          # packages, fetched over apt from the Ubuntu archives - and a
+          # runner whose resolver cannot reach azure.archive.ubuntu.com
+          # spent the whole twenty-five minutes of the job failing there,
+          # twice, before the job timed out. That is the runner's network,
+          # not the project.
+          #
+          # The runner image already carries the libraries chromium needs
+          # (it ships Chrome); a missing one fails loudly in the test run
+          # itself, naming it. What is left is the CDN, and a dropped
+          # connection there is worth a second try.
           for attempt in 1 2 3; do
-            if sudo apt-get -o Acquire::Retries=5 update && \
-               npx playwright install --with-deps chromium; then
-              echo "the browser and its packages are installed"
+            if npx playwright install chromium; then
+              echo "the browser is in place"
               exit 0
             fi
-            echo "the install failed (attempt $attempt/3) - the runner's resolver is flaky, retrying in 60s" >&2
-            sleep 60
+            echo "the download failed (attempt $attempt/3), retrying in 30s" >&2
+            sleep 30
           done
-          echo "ERROR: the browser could not be installed after three attempts" >&2
+          echo "ERROR: the browser could not be downloaded after three attempts" >&2
           exit 1
 
       - name: Run E2E tests
