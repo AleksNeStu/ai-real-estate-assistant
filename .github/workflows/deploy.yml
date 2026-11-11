@@ -118,17 +118,28 @@ jobs:
         env:
           CI_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           THIS_RUN_ID: ${{ github.run_id }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -uo pipefail
           # The commit carries more than one CI run (the push and the pull
           # request) and the Dependabot job. The deployments API refuses to
           # create a record while any check on the commit is still running or
-          # red - it answers 409 "Commit status checks failed" - and the
-          # deploy workflow's OWN failed attempt then keeps every later
-          # attempt refused. So the commit waits here, and the checks of THIS
-          # run are left out of the wait (they are running by definition, and
-          # GitHub exempts them from the rule - a workflow that deploys its
-          # own commit could not create a record otherwise).
+          # red - it answers 409 "Commit status checks failed". So the commit
+          # waits here for every OTHER check to settle.
+          #
+          # "Other" leaves out this workflow's own runs: the current attempt
+          # (it is running by definition, and GitHub exempts it - a workflow
+          # that deploys its own commit could not create a record otherwise)
+          # AND its earlier attempts on the same commit. A failed attempt of
+          # this workflow leaves a red `ci-check` on the commit, and every
+          # later attempt would read it as "a check failed" and refuse: the
+          # deploy could never recover from its own first failure.
+          #
+          # `gh` needs a token. Without one it fails, the check runs are not
+          # readable, and the wait would spin for twenty minutes before
+          # giving up - a missing token wearing the mask of a slow commit.
+          OWN_RUNS=$(gh api -H "Accept: application/vnd.github+json"               "repos/${{ github.repository }}/actions/workflows/deploy.yml/runs?head_sha=$CI_HEAD_SHA&per_page=100" 2>/dev/null               | jq -r '[.workflow_runs[].id] | unique | join("|")' 2>/dev/null || echo "")
+          echo "excluding this workflow's own runs from the wait: $THIS_RUN_ID | $OWN_RUNS"
           for attempt in $(seq 1 40); do
             RAW=$(gh api -H "Accept: application/vnd.github+json"               "repos/${{ github.repository }}/commits/$CI_HEAD_SHA/check-runs" 2>/dev/null || true)
             if [ -z "$RAW" ]; then
@@ -138,7 +149,7 @@ jobs:
               sleep 30
               continue
             fi
-            STATE=$(echo "$RAW" | jq --arg run "$THIS_RUN_ID"               '[.check_runs[] | select((.html_url // "") | contains("/runs/" + $run + "/") | not)]
+            STATE=$(echo "$RAW" | jq --arg run "$THIS_RUN_ID" --arg own "$OWN_RUNS"               '[.check_runs[] | select((.html_url // "") | test("/runs/(" + $run + "|" + $own + ")/") | not)]
                | {pending: [.[] | select(.status != "completed") | .name],
                   failed:  [.[] | select(.status == "completed" and (.conclusion != "success") and (.conclusion != "skipped")) | .name]}')
             PENDING=$(echo "$STATE" | jq -r '.pending | length' 2>/dev/null || echo "")
@@ -167,29 +178,42 @@ jobs:
         with:
           script: |
             const branch = context.ref.replace('refs/heads/', '');
-            const isStaging = branch === 'dev';
 
+            // The environment the deploy will actually write to is the one the
+            // INPUT asks for, with the branch as the fallback - and the gate
+            // below has to judge the same environment. Judging the branch
+            // alone let a dispatch from `dev` with `environment=production`
+            // through the lenient staging rules and into production.
+            const requested = (context.payload.inputs && context.payload.inputs.environment) || '';
+            const resolved = requested || (branch === 'dev' ? 'staging' : 'production');
+            const isStaging = resolved === 'staging';
+
+            // The CI run that matters is the one for the COMMIT being
+            // deployed, not the last run on the branch. The branch's last run
+            // can be an older commit - the deploy would then ship a commit
+            // whose CI never ran.
             const runs = await github.rest.actions.listWorkflowRuns({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'ci.yml',
               branch: branch,
+              head_sha: context.sha,
               status: 'completed',
               per_page: 1
             });
 
             if (!runs.data.workflow_runs.length) {
               if (isStaging) {
-                core.warning('No CI runs found for ' + branch + '. Proceeding for staging deployment.');
+                core.warning('No CI run found for ' + context.sha + ' on ' + branch + '. Proceeding for staging deployment.');
               } else {
-                core.setFailed('No CI runs found for ' + branch + '. Deploy blocked.');
+                core.setFailed('No CI run found for ' + context.sha + ' on ' + branch + '. Deploy blocked.');
               }
               return;
             }
 
             const run = runs.data.workflow_runs[0];
             if (run.conclusion === 'success') {
-              core.info('CI passed on ' + branch + '. Proceeding with deployment.');
+              core.info('CI passed for ' + context.sha + ' on ' + branch + '. Proceeding with deployment.');
               return;
             }
 
@@ -214,7 +238,7 @@ jobs:
                 core.setFailed('Critical CI jobs failed on ' + branch + ': ' + failedNames + '. Deploy blocked.');
               }
             } else {
-              core.setFailed('Last CI run on ' + branch + ' did not succeed. Deploy blocked.');
+              core.setFailed('CI run for ' + context.sha + ' did not succeed. Deploy blocked.');
             }
 
   validate:

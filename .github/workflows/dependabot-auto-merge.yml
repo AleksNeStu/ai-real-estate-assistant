@@ -18,7 +18,8 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           check-regexp: 'backend-tests \(unit.*'
           wait-interval: 30
-          wait-timeout: 1800
+          checks-discovery-timeout: 600
+          running-workflow-name: Dependabot Auto-Merge
         continue-on-error: false
       - name: Wait for backend-tests (integration)
         uses: lewagon/wait-on-check-action@v1.9.1
@@ -27,7 +28,28 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           check-regexp: 'backend-tests \(integration.*'
           wait-interval: 30
-          wait-timeout: 1800
+          checks-discovery-timeout: 600
+          running-workflow-name: Dependabot Auto-Merge
+        continue-on-error: false
+      - name: Wait for frontend-build
+        uses: lewagon/wait-on-check-action@v1.9.1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-name: frontend-build
+          wait-interval: 30
+          checks-discovery-timeout: 600
+          running-workflow-name: Dependabot Auto-Merge
+        continue-on-error: false
+      - name: Wait for frontend-tests
+        uses: lewagon/wait-on-check-action@v1.9.1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-name: frontend-tests
+          wait-interval: 30
+          checks-discovery-timeout: 600
+          running-workflow-name: Dependabot Auto-Merge
         continue-on-error: false
       - name: Wait for security-deps
         uses: lewagon/wait-on-check-action@v1.9.1
@@ -36,8 +58,20 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           check-name: security-deps
           wait-interval: 30
-          wait-timeout: 1800
+          checks-discovery-timeout: 600
+          running-workflow-name: Dependabot Auto-Merge
         continue-on-error: false
+      # `target` is a SEMVER target, not a branch name: it merges every update
+      # up to that version and skips the ones above it. `minor` therefore keeps
+      # a major bump (eslint 9 -> 10) out of the automatic merge - the frozen
+      # public repository does not take a major dependency bump without a
+      # security reason. The wait above is what used to stop the merge from
+      # happening at all: the action gave up after its default 60 seconds of
+      # discovery, before the PR's own CI run had created its check runs. The
+      # discovery window is now long enough for the checks that sit BEHIND a
+      # `needs:` chain to appear, and every gate that has to be green before a
+      # dependency lands is waited for - the backend suites, the frontend
+      # suite, the frontend lint and the dependency scan.
       - uses: fastify/github-action-merge-dependabot@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
