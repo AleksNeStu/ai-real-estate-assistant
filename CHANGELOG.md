@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.5] - 2026-11-12
+
+### Fixed
+- **The home page did not link the privacy policy or the terms** — the two
+  documents existed and the consent screen of the Google sign-in points at
+  both, but the page a reader lands on carried no link to either. Google's
+  brand verification asks the home page to link them, so the footer carries a
+  fourth column with the privacy policy and the terms of service now, in
+  every language the interface speaks.
+
 ## [5.3.4] - 2026-11-12
 
 ### Added

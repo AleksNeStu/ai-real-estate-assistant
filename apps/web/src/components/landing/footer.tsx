@@ -79,15 +79,21 @@ export async function LandingFooter({ locale }: { locale: string }) {
     },
   ];
 
+  const legal = [
+    { label: t('footer.privacy'), href: withSlot(`/${locale}/privacy`, 'footer') },
+    { label: t('footer.terms'), href: withSlot(`/${locale}/terms`, 'footer') },
+  ];
+
   const columns = [
     { title: t('footer.product'), links: product },
     { title: t('footer.openSource'), links: openSource },
     { title: t('footer.studio'), links: studio },
+    { title: t('footer.legal'), links: legal },
   ];
 
   return (
     <footer className="border-t border-border">
-      <div className="mx-auto grid max-w-[1248px] grid-cols-1 gap-10 px-6 pb-8 pt-12 text-[14px] leading-[22px] md:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,1fr))]">
+      <div className="mx-auto grid max-w-[1248px] grid-cols-1 gap-10 px-6 pb-8 pt-12 text-[14px] leading-[22px] md:grid-cols-[minmax(0,1.5fr)_repeat(4,minmax(0,1fr))]">
         <div className="flex flex-col gap-3">
           <span className="font-semibold">{t('footer.brand')}</span>
           <span className="max-w-[320px] text-muted-foreground">{t('footer.tagline')}</span>
