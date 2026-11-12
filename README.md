@@ -211,8 +211,14 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
 
 ## What's new
 
-**`v5.3.4`** — the pages say what they are.
+**`v5.3.4`** — the demo can be signed into, and the pages say what they are.
 
+- **The demo signs in with Google** — the deployment hands the browser to
+  Google and takes the account back: the state, the PKCE verifier and the
+  session live in httpOnly cookies, the account is created or linked by
+  e-mail, and the flow ends on the interface's own page. The button appears
+  only where a deployment carries a client. The privacy policy and the terms
+  of use are pages of the deployment now, and they say what a sign-in stores.
 - **Every public route says what it is** — fourteen routes answered with the
   same title and the same description. Each one now declares its own, in the
   language of the route, with its own canonical address and its own cluster
