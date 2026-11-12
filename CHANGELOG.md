@@ -9,12 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.3.4] - 2026-11-12
 
+### Added
+- **The demo can be signed into with Google** — the deployment answers
+  `GET /api/v1/auth/oauth/google` with an authorization URL and finishes the
+  exchange on its own callback: the state, the PKCE verifier and the session
+  all live in httpOnly cookies, the account is created or linked by e-mail,
+  and the browser ends on the interface's own callback page. The button
+  appears only when the deployment carries a client — the capabilities
+  endpoint says so, and the interface renders nothing when it does not.
+- **The deployment says what it stores** — the privacy policy and the terms
+  of use are pages of the deployment now (`/privacy`, `/terms`), and they say
+  which fields a sign-in stores, where they are stored, who can read them and
+  how long they are kept. The consent screen of the sign-in asks for both.
+
 ### Fixed
 - **The catalogue said it held five listings when it holds 250** — the llms.txt
   counted the handful of listings it lists below, and the catalogue's own
   "is there a next page" answer was always "no", because the store was never
   asked for one document more than the window needed. The document now states
   the number the deployment holds, and the catalogue can be paged.
+- **The sign-in ended on a JSON page** — the callback answered with the tokens
+  in a body, which put them into the page the visitor was looking at and into
+  the browser's history. It sets the session cookies and sends the browser to
+  the frontend's callback page instead; the JSON body stays for a deployment
+  with no frontend URL.
 
 ## [5.3.3] - 2026-11-12
 

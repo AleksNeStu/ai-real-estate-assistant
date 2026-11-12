@@ -25,6 +25,7 @@ from fastapi import (
     Response,
     status,
 )
+from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.audit import AuditEvent, AuditEventType, AuditLevel, get_audit_logger
@@ -903,7 +904,12 @@ async def google_oauth_start(
     "/oauth/callback",
     response_model=TokenResponse,
     summary="OAuth callback",
-    description="Handle OAuth callback from providers.",
+    description=(
+        "Handle OAuth callback from providers. Sets the session cookies and "
+        "redirects to the frontend's callback page; answers with the tokens "
+        "as JSON when no frontend URL is configured."
+    ),
+    dependencies=[auth_rate_limit(max_requests=10, window_seconds=60)],
 )
 async def oauth_callback(
     request: Request,
@@ -939,10 +945,6 @@ async def oauth_callback(
 
     # Get code verifier
     code_verifier = request.cookies.get("oauth_code_verifier")
-
-    # Clear OAuth cookies
-    response.delete_cookie(key="oauth_state")
-    response.delete_cookie(key="oauth_code_verifier")
 
     # Use Google provider
     if not settings.google_client_id or not settings.google_client_secret:
@@ -1053,7 +1055,32 @@ async def oauth_callback(
         ip_address=ip_address,
     )
 
-    # Set cookies
+    # The response the visitor gets back.
+    #
+    # WHY A REDIRECT AND NOT THE JSON BODY
+    #
+    # The tokens belong in httpOnly cookies, and that is where they are set.
+    # A JSON body would put them into the page the visitor is looking at, and
+    # into the browser's history - the flow ends on the interface instead,
+    # where the callback page reads the cookies, shows the outcome and sends
+    # the visitor on. The JSON body stays for the deployments that have no
+    # FRONTEND_URL (a local run, a script) and for the API's own clients.
+    frontend_url = getattr(settings, "frontend_url", None)
+    if isinstance(frontend_url, str) and frontend_url.startswith("http"):
+        redirect = RedirectResponse(
+            f"{frontend_url.rstrip('/')}/auth/oauth/callback",
+            status_code=status.HTTP_302_FOUND,
+        )
+        # The one-time values of the flow are cleared, and the session is
+        # set, on the response that is actually sent.
+        redirect.delete_cookie(key="oauth_state")
+        redirect.delete_cookie(key="oauth_code_verifier")
+        _set_auth_cookies(redirect, access_token, refresh_token_value)
+        return redirect  # type: ignore[return-value]
+
+    # No frontend URL: the tokens are the answer.
+    response.delete_cookie(key="oauth_state")
+    response.delete_cookie(key="oauth_code_verifier")
     _set_auth_cookies(response, access_token, refresh_token_value)
 
     return TokenResponse(

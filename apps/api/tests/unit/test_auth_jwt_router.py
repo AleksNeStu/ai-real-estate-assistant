@@ -1221,6 +1221,74 @@ class TestOAuthCallback:
             assert data["access_token"] == "access-tok"
 
     @pytest.mark.asyncio
+    async def test_callback_redirects_to_the_frontend_when_one_is_configured(self, auth_client):
+        """A deployment with a frontend URL ends the flow on the interface.
+
+        The tokens belong in httpOnly cookies, and that is where they are set.
+        A JSON body would put them into the page the visitor is looking at, so
+        the callback sends the browser to the frontend's own callback page
+        instead.
+        """
+        mock_user = _make_mock_user()
+        mock_user_info = MagicMock()
+        mock_user_info.provider = "google"
+        mock_user_info.provider_user_id = "google-123"
+        mock_user_info.email = "test@example.com"
+        mock_user_info.name = "Test User"
+        mock_user_info.email_verified = True
+
+        mock_oauth_account = MagicMock()
+        mock_oauth_account.user_id = "user-123"
+
+        with (
+            patch("api.routers.auth_jwt.get_settings") as mock_settings,
+            patch("core.oauth.GoogleOAuthProvider") as mock_provider_cls,
+            patch("api.routers.auth_jwt.UserRepository") as mock_user_cls,
+            patch("api.routers.auth_jwt.OAuthAccountRepository") as mock_oauth_cls,
+            patch("api.routers.auth_jwt.create_access_token", return_value="access-tok"),
+            patch("api.routers.auth_jwt.generate_refresh_token", return_value="refresh-tok"),
+            patch("api.routers.auth_jwt.get_access_token_expire_minutes", return_value=15),
+            patch("api.routers.auth_jwt.get_refresh_token_expire_days", return_value=7),
+            patch("api.routers.auth_jwt.RefreshTokenRepository") as mock_refresh_cls,
+        ):
+            mock_settings_obj = MagicMock()
+            mock_settings_obj.google_client_id = "test-id"
+            mock_settings_obj.google_client_secret = "test-secret"
+            mock_settings_obj.google_redirect_uri = "http://localhost/callback"
+            mock_settings_obj.environment = "development"
+            mock_settings_obj.frontend_url = "https://realty.kittray.com"
+            mock_settings.return_value = mock_settings_obj
+
+            mock_provider = MagicMock()
+            mock_provider_cls.return_value = mock_provider
+            mock_provider.verify_and_get_user = AsyncMock(return_value=mock_user_info)
+
+            mock_oauth_repo = MagicMock()
+            mock_oauth_cls.return_value = mock_oauth_repo
+            mock_oauth_repo.get_by_provider = AsyncMock(return_value=mock_oauth_account)
+
+            mock_user_repo = MagicMock()
+            mock_user_cls.return_value = mock_user_repo
+            mock_user_repo.get_by_id = AsyncMock(return_value=mock_user)
+            mock_user_repo.update_last_login = AsyncMock()
+
+            mock_refresh_repo = MagicMock()
+            mock_refresh_cls.return_value = mock_refresh_repo
+            mock_refresh_repo.create = AsyncMock()
+
+            response = await auth_client.get(
+                "/api/v1/auth/oauth/callback?code=valid-code&state=test-state",
+                cookies={
+                    "oauth_state": "test-state",
+                    "oauth_code_verifier": "test-verifier",
+                },
+            )
+            assert response.status_code == status.HTTP_302_FOUND
+            assert response.headers["location"] == "https://realty.kittray.com/auth/oauth/callback"
+            # The session is in the cookies of the redirect, not in a body.
+            assert "access_token=access-tok" in response.headers.get("set-cookie", "")
+
+    @pytest.mark.asyncio
     async def test_callback_success_new_oauth_user(self, auth_client):
         """OAuth callback creating a new user via OAuth."""
         mock_new_user = _make_mock_user(id="new-user-1")
