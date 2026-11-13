@@ -16,7 +16,7 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, backref, mapped_column, relationship
 
 from db.database import Base
 
@@ -1999,6 +1999,62 @@ class UserPreferenceProfile(Base):
 
     def __repr__(self) -> str:
         return f"<UserPreferenceProfile(user_id={self.user_id[:8]}..., views={self.view_count}, favorites={self.favorite_count})>"
+
+
+# =============================================================================
+# Buyer Memory Models (Task #76)
+# =============================================================================
+
+
+class BuyerMemoryFact(Base):
+    """One durable fact the assistant learned about a buyer (Task #76).
+
+    The facts a buyer states and never repeats: the budget, the areas they ruled
+    out, what they liked about a specific listing. Without them the assistant
+    forgets every turn the moment the session ends.
+
+    Kinds: budget | ruled_out_area | liked | disliked | requirement | note
+    Sources: chat | manual | derived
+    """
+
+    __tablename__ = "buyer_memory_facts"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    # The fact itself
+    kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)  # in the buyer's own words
+    listing_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    confidence: Mapped[float] = mapped_column(Float, default=1.0, nullable=False)
+    source: Mapped[str] = mapped_column(String(32), default="chat", nullable=False)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+    expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    # passive_deletes on the backref: the facts are removed by the database's
+    # ON DELETE CASCADE, so the ORM must not try to null out a non-nullable FK.
+    user: Mapped["User"] = relationship(
+        "User", backref=backref("buyer_memories", passive_deletes=True)
+    )
+
+    def __repr__(self) -> str:
+        return f"<BuyerMemoryFact(user_id={self.user_id[:8]}..., kind={self.kind})>"
 
 
 # =============================================================================
