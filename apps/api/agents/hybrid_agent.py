@@ -35,7 +35,7 @@ except ImportError:
     )
     from langchain_classic.chains import ConversationalRetrievalChain  # type: ignore[no-redef]
 
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, PromptTemplate
 from langchain_core.tools import BaseTool
 
 from agents.classification_metrics import (
@@ -43,7 +43,7 @@ from agents.classification_metrics import (
     init_metrics_db,
     log_classification_metrics,
 )
-from agents.intent_prompts import get_system_prompt_for_intent
+from agents.intent_prompts import BUYER_MEMORY_MAX_CHARS, get_system_prompt_for_intent
 from agents.query_analyzer import (
     Complexity,
     QueryAnalysis,
@@ -140,6 +140,93 @@ class HybridPropertyAgent:
             return_source_documents=True,
             verbose=self.verbose,
         )
+
+    @staticmethod
+    def _join_prompt_sections(*sections: Optional[str]) -> str:
+        """
+        Join prompt sections with a blank line between them.
+
+        An empty section is dropped, so a buyer with no memory gets exactly
+        the prompt that was built before the memory existed.
+        """
+        return "\n\n".join(section for section in sections if section)
+
+    @staticmethod
+    def _memory_section(buyer_memory: Optional[str]) -> str:
+        """
+        The buyer's memory block, capped so it can never crowd the listings.
+
+        Args:
+            buyer_memory: The already-assembled block, or nothing.
+
+        Returns:
+            The block, or an empty string when there is no memory.
+        """
+        if not buyer_memory:
+            return ""
+        block = buyer_memory[:BUYER_MEMORY_MAX_CHARS]
+        if len(buyer_memory) > BUYER_MEMORY_MAX_CHARS:
+            # Never leave half a fact behind.
+            cut = block.rfind("\n")
+            if cut > 0:
+                block = block[:cut]
+        return block
+
+    def _rag_chain_for(self, buyer_memory: Optional[str]):
+        """
+        The RAG chain to answer with, carrying the buyer's memory.
+
+        The chain owns its own prompt, so the memory is added to the combine
+        step - a copy of the chain whose answer prompt carries the block. The
+        retrieved documents are untouched.
+
+        Args:
+            buyer_memory: The already-assembled block, or nothing.
+
+        Returns:
+            The chain to use. Without memory it is the chain itself, unchanged.
+        """
+        block = self._memory_section(buyer_memory)
+        if not block:
+            return self.rag_chain
+
+        combine = getattr(self.rag_chain, "combine_docs_chain", None)
+        llm_chain = getattr(combine, "llm_chain", None)
+        prompt = getattr(llm_chain, "prompt", None)
+        if llm_chain is None or prompt is None:
+            logger.warning("RAG chain does not expose its prompt - memory not carried")
+            return self.rag_chain
+
+        new_prompt = self._prompt_with_memory(prompt, block)
+        new_combine = combine.copy(
+            update={"llm_chain": llm_chain.copy(update={"prompt": new_prompt})}
+        )
+        return self.rag_chain.copy(update={"combine_docs_chain": new_combine})
+
+    @staticmethod
+    def _prompt_with_memory(prompt, memory: str):
+        """
+        A copy of the chain's prompt with the buyer's memory added to it.
+
+        Args:
+            prompt: The prompt the chain owns.
+            memory: The buyer's memory block.
+
+        Returns:
+            The prompt to use. The original is never modified.
+        """
+        if isinstance(prompt, ChatPromptTemplate):
+            return ChatPromptTemplate.from_messages([*prompt.messages, ("system", memory)])
+        if isinstance(prompt, PromptTemplate):
+            # The memory becomes part of the template, so its braces are escaped.
+            safe_memory = memory.replace("{", "{{").replace("}", "}}")
+            return PromptTemplate(
+                template=f"{safe_memory}\n\n{prompt.template}",
+                input_variables=list(prompt.input_variables),
+                partial_variables=dict(prompt.partial_variables),
+            )
+        logger.warning("Unsupported prompt type for the buyer memory - memory not carried")
+        return prompt
 
     def _create_tool_agent(self, intent: Optional[QueryIntent] = None) -> AgentExecutor:
         """Create tool-based agent for complex queries.
@@ -396,6 +483,7 @@ Thought: {agent_scratchpad}"""
         return_analysis: bool = False,
         session_id: Optional[str] = None,
         session_history: Optional[List[Any]] = None,
+        buyer_memory: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Process a query using the hybrid approach.
@@ -405,6 +493,9 @@ Thought: {agent_scratchpad}"""
             return_analysis: Whether to include query analysis in response
             session_id: Optional session ID for metrics tracking
             session_history: Optional list of recent chat messages for context
+            buyer_memory: Optional block of what the buyer has already told
+                us, already assembled by the caller. Without it the prompt is
+                exactly the one this agent built before the memory existed.
 
         Returns:
             Dictionary with answer, sources, and optional analysis
@@ -471,12 +562,12 @@ Thought: {agent_scratchpad}"""
         route_taken = self._determine_route(analysis)
 
         if route_taken == "rag":
-            result = self._process_with_rag(query, analysis)
+            result = self._process_with_rag(query, analysis, buyer_memory=buyer_memory)
         elif route_taken == "agent":
-            result = self._process_with_agent(query, analysis)
+            result = self._process_with_agent(query, analysis, buyer_memory=buyer_memory)
         else:
             # Medium complexity or confidence - try RAG first, agent if needed
-            result = self._process_hybrid(query, analysis)
+            result = self._process_hybrid(query, analysis, buyer_memory=buyer_memory)
 
         # Add analysis to result if requested
         if return_analysis:
@@ -625,10 +716,17 @@ Thought: {agent_scratchpad}"""
         docs = await self.retriever.ainvoke(query)  # type: ignore[attr-defined]
         return docs[:k]  # type: ignore[no-any-return]
 
-    def _process_with_rag(self, query: str, analysis: QueryAnalysis) -> Dict[str, Any]:
+    def _process_with_rag(
+        self,
+        query: str,
+        analysis: QueryAnalysis,
+        buyer_memory: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """Process simple query with RAG only."""
         if self.verbose:
             logger.info("Processing with RAG only")
+
+        memory_block = self._memory_section(buyer_memory)
 
         try:
             # If we have filters, we should use them for better retrieval
@@ -640,10 +738,10 @@ Thought: {agent_scratchpad}"""
 
                 # Simple generation without history rephrasing for now
                 # (Or we could implement rephrasing if needed)
-                prompt = (
-                    f"Answer the question based only on the following context:\n\n"
-                    f"{context_text}\n\n"
-                    f"Question: {query}"
+                prompt = self._join_prompt_sections(
+                    f"Answer the question based only on the following context:\n\n{context_text}",
+                    memory_block,
+                    f"Question: {query}",
                 )
 
                 response_msg = self.llm.invoke(prompt)
@@ -659,7 +757,7 @@ Thought: {agent_scratchpad}"""
                 }
 
             # Standard RAG chain
-            response = self.rag_chain({"question": query})
+            response = self._rag_chain_for(memory_block)({"question": query})
             source_documents = response.get("source_documents", [])
             if not source_documents and analysis.intent in {
                 QueryIntent.SIMPLE_RETRIEVAL,
@@ -728,13 +826,20 @@ Thought: {agent_scratchpad}"""
             "intermediate_steps": intermediate_steps,
         }
 
-    def _process_with_agent(self, query: str, analysis: QueryAnalysis) -> Dict[str, Any]:
+    def _process_with_agent(
+        self,
+        query: str,
+        analysis: QueryAnalysis,
+        buyer_memory: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """Process complex query with tool agent.
 
         Uses intent-specific agent prompts for better responses.
         """
         if self.verbose:
             logger.info("Processing with tool agent (intent: %s)", analysis.intent.value)
+
+        memory_block = self._memory_section(buyer_memory)
 
         try:
             # First, get relevant context from RAG if needed
@@ -755,7 +860,13 @@ Thought: {agent_scratchpad}"""
                         for i, doc in enumerate(context_docs)
                     ]
                 )
-                enhanced_query = f"{query}\n\nRelevant properties:\n{context_text}"
+                enhanced_query = self._join_prompt_sections(
+                    memory_block,
+                    query,
+                    f"Relevant properties:\n{context_text}",
+                )
+            elif memory_block:
+                enhanced_query = self._join_prompt_sections(memory_block, query)
 
             # Get intent-specific agent
             agent = self._get_tool_agent_for_intent(analysis.intent)
@@ -779,14 +890,24 @@ Thought: {agent_scratchpad}"""
                 "error": str(e),
             }
 
-    def _process_hybrid(self, query: str, analysis: QueryAnalysis) -> Dict[str, Any]:
+    def _process_hybrid(
+        self,
+        query: str,
+        analysis: QueryAnalysis,
+        buyer_memory: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """Process with hybrid approach - RAG + agent capabilities."""
         if self.verbose:
             logger.info("Processing with hybrid approach")
 
+        memory_block = self._memory_section(buyer_memory)
+
         try:
             # Start with RAG for property retrieval (using filtered search if applicable)
-            rag_response = self._process_with_rag(query, analysis)
+            if memory_block:
+                rag_response = self._process_with_rag(query, analysis, buyer_memory=memory_block)
+            else:
+                rag_response = self._process_with_rag(query, analysis)
 
             # Check if RAG answer is sufficient
             answer = rag_response["answer"]
@@ -795,10 +916,10 @@ Thought: {agent_scratchpad}"""
             # If query needs computation or deeper analysis, enhance with agent
             if analysis.requires_computation or analysis.complexity == Complexity.COMPLEX:
                 # Use agent to enhance the answer
-                enhanced_query = (
-                    f"Based on this information about properties:\n\n"
-                    f"{answer}\n\n"
-                    f"Now answer this: {query}"
+                enhanced_query = self._join_prompt_sections(
+                    memory_block,
+                    f"Based on this information about properties:\n\n{answer}",
+                    f"Now answer this: {query}",
                 )
 
                 agent_response = self.tool_agent.invoke({"input": enhanced_query})
@@ -815,15 +936,27 @@ Thought: {agent_scratchpad}"""
         except Exception as e:
             # Fallback to RAG-only
             logger.warning("Hybrid processing failed, falling back to RAG-only: %s", e)
+            if memory_block:
+                return self._process_with_rag(query, analysis, buyer_memory=memory_block)
             return self._process_with_rag(query, analysis)
 
-    async def astream_query(self, query: str) -> AsyncIterator[str]:
+    async def astream_query(
+        self,
+        query: str,
+        buyer_memory: Optional[str] = None,
+    ) -> AsyncIterator[str]:
         """
         Process a query using the hybrid approach and stream the response.
+
+        Args:
+            query: The user's question.
+            buyer_memory: Optional block of what the buyer has already told
+                us, already assembled by the caller.
 
         Yields:
             JSON string chunks containing 'content' or 'error'.
         """
+        memory_block = self._memory_section(buyer_memory)
         try:
             guard = self._domain_guard(query)
             if guard:
@@ -832,19 +965,33 @@ Thought: {agent_scratchpad}"""
                     yield json.dumps({"content": content})
                     return
             analysis = self.analyzer.analyze(query)
+            # Without memory the helpers are called exactly as they were before
+            # it existed.
             if analysis.should_use_rag_only():
-                async for chunk in self._astream_with_rag(query, analysis):
+                if memory_block:
+                    stream = self._astream_with_rag(query, analysis, buyer_memory=memory_block)
+                else:
+                    stream = self._astream_with_rag(query, analysis)
+                async for chunk in stream:
                     yield chunk
             elif analysis.should_use_agent():
-                async for chunk in self._astream_with_agent(query, analysis):
+                if memory_block:
+                    stream = self._astream_with_agent(query, analysis, buyer_memory=memory_block)
+                else:
+                    stream = self._astream_with_agent(query, analysis)
+                async for chunk in stream:
                     yield chunk
             else:
-                async for chunk in self._astream_hybrid(query, analysis):
+                if memory_block:
+                    stream = self._astream_hybrid(query, analysis, buyer_memory=memory_block)
+                else:
+                    stream = self._astream_hybrid(query, analysis)
+                async for chunk in stream:
                     yield chunk
         except Exception as e:
             logger.error("Streaming failed: %s", sanitize_for_log(e))
             try:
-                result = self.process_query(query)
+                result = self.process_query(query, buyer_memory=memory_block)
                 answer = result.get("answer", "")
                 if answer:
                     yield json.dumps({"content": answer})
@@ -853,9 +1000,15 @@ Thought: {agent_scratchpad}"""
                 logger.error("Streaming fallback failed: %s", sanitize_for_log(fallback_error))
             yield json.dumps({"error": str(e)})
 
-    async def _astream_with_rag(self, query: str, analysis: QueryAnalysis) -> AsyncIterator[str]:
+    async def _astream_with_rag(
+        self,
+        query: str,
+        analysis: QueryAnalysis,
+        buyer_memory: Optional[str] = None,
+    ) -> AsyncIterator[str]:
         """Stream RAG response."""
-        async for event in self.rag_chain.astream_events({"question": query}, version="v1"):
+        chain = self._rag_chain_for(self._memory_section(buyer_memory))
+        async for event in chain.astream_events({"question": query}, version="v1"):
             kind = event["event"]
             if kind == "on_chat_model_stream":
                 content = event["data"]["chunk"].content
@@ -863,14 +1016,24 @@ Thought: {agent_scratchpad}"""
                     yield json.dumps({"content": content})
 
     async def _astream_with_agent(
-        self, query: str, analysis: QueryAnalysis, rag_context: str = ""
+        self,
+        query: str,
+        analysis: QueryAnalysis,
+        rag_context: str = "",
+        buyer_memory: Optional[str] = None,
     ) -> AsyncIterator[str]:
         """Stream Agent response."""
 
+        memory_block = self._memory_section(buyer_memory)
+
         # Prepare input
-        input_text = query
+        input_text = self._join_prompt_sections(memory_block, query)
         if rag_context:
-            input_text = f"Based on this information about properties:\n\n{rag_context}\n\nNow answer this: {query}"
+            input_text = self._join_prompt_sections(
+                memory_block,
+                f"Based on this information about properties:\n\n{rag_context}",
+                f"Now answer this: {query}",
+            )
         elif analysis.intent not in [QueryIntent.CALCULATION, QueryIntent.GENERAL_QUESTION]:
             try:
                 context_docs = await self._aretrieve_documents(query, analysis, k=3)
@@ -881,7 +1044,11 @@ Thought: {agent_scratchpad}"""
                             for i, doc in enumerate(context_docs)
                         ]
                     )
-                    input_text = f"{query}\n\nRelevant properties:\n{context_text}"
+                    input_text = self._join_prompt_sections(
+                        memory_block,
+                        query,
+                        f"Relevant properties:\n{context_text}",
+                    )
             except Exception as e:
                 logger.warning("Retrieval failed in stream: %s", sanitize_for_log(e))
 
@@ -906,13 +1073,25 @@ Thought: {agent_scratchpad}"""
                 if content:
                     yield json.dumps({"content": content})
 
-    async def _astream_hybrid(self, query: str, analysis: QueryAnalysis) -> AsyncIterator[str]:
+    async def _astream_hybrid(
+        self,
+        query: str,
+        analysis: QueryAnalysis,
+        buyer_memory: Optional[str] = None,
+    ) -> AsyncIterator[str]:
         """Stream Hybrid response."""
-        rag_response = await self.rag_chain.ainvoke({"question": query})
+        memory_block = self._memory_section(buyer_memory)
+        rag_response = await self._rag_chain_for(memory_block).ainvoke({"question": query})
         answer = rag_response["answer"]
 
         if analysis.requires_computation or analysis.complexity == Complexity.COMPLEX:
-            async for chunk in self._astream_with_agent(query, analysis, rag_context=answer):
+            if memory_block:
+                chunks = self._astream_with_agent(
+                    query, analysis, rag_context=answer, buyer_memory=memory_block
+                )
+            else:
+                chunks = self._astream_with_agent(query, analysis, rag_context=answer)
+            async for chunk in chunks:
                 yield chunk
         else:
             yield json.dumps({"content": answer})

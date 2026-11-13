@@ -5,7 +5,7 @@ This module provides tailored system prompts based on the detected
 query intent, optimized for each type of user interaction.
 """
 
-from typing import Dict
+from typing import Any, Dict, Iterable, Optional
 
 from agents.query_analyzer import QueryIntent
 
@@ -88,3 +88,67 @@ def get_system_prompt_for_intent(intent: QueryIntent) -> str:
         System prompt string optimized for that intent
     """
     return INTENT_SYSTEM_PROMPTS.get(intent, INTENT_SYSTEM_PROMPTS[QueryIntent.GENERAL])
+
+
+# The buyer's memory block: what this buyer has already told us.
+#
+# The wording lives here, next to the other prompts, so the agent stays a
+# consumer of the block and never owns a sentence of it.
+BUYER_MEMORY_HEADER = "What the buyer has already told us:"
+
+# The caps. The memory is about the buyer, not about the listings, so it is
+# never allowed to crowd the retrieved documents.
+BUYER_MEMORY_MAX_FACTS = 10
+BUYER_MEMORY_MAX_CHARS = 2000
+
+
+def build_buyer_memory_block(facts: Optional[Iterable[Any]]) -> str:
+    """
+    Assemble the buyer's memory into a prompt block.
+
+    A fact is anything carrying a `kind` and a `content` - a
+    BuyerMemoryFact, or anything shaped like one.
+
+    Args:
+        facts: The buyer's facts, newest and most relevant first.
+
+    Returns:
+        The block, holding at most BUYER_MEMORY_MAX_FACTS facts and at most
+        BUYER_MEMORY_MAX_CHARS characters. An empty string when the buyer has
+        told us nothing - the caller then builds exactly the prompt it built
+        before the memory existed.
+    """
+    if not facts:
+        return ""
+
+    lines: list[str] = []
+    for fact in facts:
+        if len(lines) >= BUYER_MEMORY_MAX_FACTS:
+            break
+        kind = str(getattr(fact, "kind", "") or "").strip()
+        content = str(getattr(fact, "content", "") or "").strip()
+        if not content:
+            continue
+        lines.append(f"- {kind}: {content}" if kind else f"- {content}")
+
+    if not lines:
+        return ""
+
+    # A fact is never cut in half: when the block no longer fits, the next
+    # fact is left out instead.
+    kept: list[str] = []
+    for line in lines:
+        candidate = BUYER_MEMORY_HEADER + "\n" + "\n".join([*kept, line])
+        if len(candidate) > BUYER_MEMORY_MAX_CHARS:
+            break
+        kept.append(line)
+
+    if not kept:
+        # A single fact larger than the cap - take what fits of it.
+        first = lines[0]
+        room = BUYER_MEMORY_MAX_CHARS - len(BUYER_MEMORY_HEADER) - 1
+        if room <= 0:
+            return ""
+        kept = [first[:room].rstrip()]
+
+    return BUYER_MEMORY_HEADER + "\n" + "\n".join(kept)
