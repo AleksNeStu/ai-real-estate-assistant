@@ -70,6 +70,19 @@ export const PRIVACY: LegalDocument = {
       ],
     },
     {
+      heading: 'The buyer memory',
+      paragraphs: [
+        'When you are signed in, the assistant can keep a memory of what you have told it about your search: a budget, areas you ruled out, a feature you need, a listing you liked. It exists so you do not have to repeat yourself on every visit.',
+        'The memory belongs to your signed-in account. It is not attached to visitors who are not signed in, and it is not shared between accounts.',
+        'The memory is read back into the answers the assistant gives you, and it is used to rank the listings you are shown.',
+        'The memory stays in the same database as the rest of your account data, on the operator’s own infrastructure. No third party receives it, and no new sub-processor is involved.',
+      ],
+      points: [
+        'How long it is kept: a fact is kept for a year after it is recorded, and then it expires and is removed.',
+        'How to delete it: you can delete the whole memory yourself, from your profile, and deleting your account removes it with the account.',
+      ],
+    },
+    {
       heading: 'Where it is stored',
       paragraphs: [
         'In a database on the server that runs the deployment, on the operator’s own infrastructure. The session cookies are httpOnly: the JavaScript of a page cannot read them.',
@@ -141,6 +154,13 @@ export const TERMS: LegalDocument = {
       heading: 'Accounts',
       paragraphs: [
         'One account per person. The operator may close an account that is used to abuse the deployment or to attack it or other people’s accounts.',
+      ],
+    },
+    {
+      heading: 'The buyer memory',
+      paragraphs: [
+        'If you sign in, the assistant may keep a memory of what you have told it about your search - a budget, areas you ruled out, a feature you need - and use it to answer you and to rank the listings you are shown. It belongs to your account, it is kept for a year, and you can delete it from your profile or by deleting your account.',
+        'The memory is a convenience, not a contract. It does not change what a listing is, what it costs, or what the assistant can be asked to do, and it is not a profile that is sold, shared or used to train a model.',
       ],
     },
     {

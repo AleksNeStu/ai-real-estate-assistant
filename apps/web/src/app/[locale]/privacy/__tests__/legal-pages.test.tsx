@@ -55,6 +55,29 @@ describe('the privacy policy', () => {
     expect(PRIVACY.title.length).toBeGreaterThan(0);
     expect(PRIVACY.description.length).toBeGreaterThan(0);
   });
+
+  it('names the buyer memory', () => {
+    const headings = PRIVACY.sections.map((section) => section.heading);
+
+    expect(headings).toEqual(
+      expect.arrayContaining([expect.stringMatching(/buyer memory/i)]),
+    );
+  });
+
+  it('says what the buyer memory is, where it belongs and how long it is kept', () => {
+    const section = PRIVACY.sections.find(
+      (candidate) => /buyer memory/i.test(candidate.heading),
+    );
+
+    expect(section).toBeDefined();
+    const text = [...(section?.paragraphs ?? []), ...(section?.points ?? [])]
+      .join(' ')
+      .toLowerCase();
+    expect(text).toContain('signed in');
+    expect(text).toContain('read back');
+    expect(text).toContain('delete');
+    expect(text).toContain('kept');
+  });
 });
 
 describe('the terms of use', () => {
