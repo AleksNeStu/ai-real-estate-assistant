@@ -12,16 +12,21 @@ from fastapi.responses import StreamingResponse
 from langchain_core.language_models import BaseChatModel
 
 from agents.hybrid_agent import create_hybrid_agent
+from agents.intent_prompts import build_buyer_memory_block
+from agents.memory_extractor import extract_buyer_facts
 from ai.memory import (
     get_context_manager,
     get_optimized_memory,
     init_context_manager,
 )
 from api.chat_sources import serialize_chat_sources, serialize_web_sources
-from api.dependencies import get_llm, get_vector_store
+from api.dependencies import get_buyer_memory_service, get_llm, get_vector_store
+from api.deps.auth import get_optional_user
 from api.models import ChatRequest, ChatResponse
 from config.settings import get_settings
 from core.circuit_breaker import ServiceDegradedError
+from db.models import User
+from services.buyer_memory_service import BuyerMemoryService
 from utils.free_tier import client_ip, get_free_tier_rate_limiter, get_llm_for_free_user
 from utils.sanitization import (
     sanitize_chat_message,
@@ -168,12 +173,150 @@ def _build_agent_and_process(
     return agent, sanitized_message, session_id
 
 
+# ---------------------------------------------------------------------------
+# The buyer's memory (Task #79)
+#
+# The chat path both READS the memory (the answer uses what the buyer has
+# already told us) and WRITES it (the turn teaches the memory). An anonymous
+# visitor has no account and therefore no memory: their prompt is exactly the
+# prompt of before the memory existed.
+#
+# The failure policy is the contract: neither the read nor the write may ever
+# fail the answer. A broken recall answers without the memory; a broken
+# extraction loses the facts of the turn and is logged.
+# ---------------------------------------------------------------------------
+
+
+async def _recall_buyer_memory(
+    memory_service: BuyerMemoryService,
+    user: Optional[User],
+    query: str,
+) -> str:
+    """The block of what this buyer has already told us - or nothing.
+
+    A failure to recall never fails the answer: the turn is answered without
+    the memory, exactly as it was answered before the memory existed.
+    """
+    if user is None:
+        return ""
+
+    try:
+        facts = await memory_service.recall_for_user(user.id, query=query)
+        if not facts:
+            return ""
+        return build_buyer_memory_block(facts)
+    except Exception as exc:
+        logger.warning("Buyer memory read failed, answering without it: %s", exc)
+        return ""
+
+
+async def _write_buyer_memory(
+    memory_service: BuyerMemoryService,
+    user: Optional[User],
+    messages: list[dict[str, str]],
+    answer: Any,
+    listings: list[dict[str, Any]],
+    llm: Optional[BaseChatModel],
+) -> None:
+    """Teach the buyer's memory what this turn taught us.
+
+    The same model that answered the turn reads it - one provider, never a
+    second one. A failure here never fails the answer: the facts of the turn
+    are lost and the turn is answered normally.
+    """
+    if user is None:
+        return
+    if llm is None:
+        logger.debug("Buyer memory extraction skipped: the chat path has no LLM")
+        return
+
+    try:
+        facts = await extract_buyer_facts(
+            messages=messages,
+            answer=answer,
+            listings=listings,
+            llm=llm,
+        )
+        for fact in facts:
+            await memory_service.record_fact(
+                user_id=user.id,
+                kind=fact.kind,
+                content=fact.content,
+                listing_id=fact.listing_id,
+                confidence=fact.confidence,
+                source="chat",
+            )
+        logger.debug("Buyer memory: %d durable facts recorded", len(facts))
+    except Exception as exc:
+        logger.warning("Buyer memory write failed, the answer is unaffected: %s", exc)
+
+
+def _listing_payloads(sources: Any) -> list[dict[str, Any]]:
+    """The listings of a turn, in the shape the extractor reads them in."""
+    payloads: list[dict[str, Any]] = []
+    for source in sources or []:
+        if not isinstance(source, dict):
+            continue
+        metadata = source.get("metadata")
+        if isinstance(metadata, dict) and metadata.get("id"):
+            payloads.append(metadata)
+    return payloads
+
+
+def _turn_listings(result: dict) -> list[dict[str, Any]]:
+    """The listings this turn showed - the documents and the web sources."""
+    payloads: list[dict[str, Any]] = []
+
+    for document in result.get("source_documents") or []:
+        metadata = getattr(document, "metadata", None)
+        if isinstance(metadata, dict) and metadata.get("id"):
+            payloads.append(metadata)
+
+    payloads.extend(_listing_payloads(result.get("sources")))
+    return payloads
+
+
+def _supports_buyer_memory(agent: Any, method: str) -> bool:
+    """Whether the agent's method takes the buyer's memory.
+
+    The agent that answers the turn is the one that owns the wording of the
+    prompt, so the router only hands it the block - and only when it takes
+    one. An agent that does not is called exactly as it was called before.
+    """
+    handler = getattr(agent, method, None)
+    if handler is None:
+        return False
+    try:
+        parameters = inspect.signature(handler).parameters
+    except (TypeError, ValueError):
+        return False
+    if "buyer_memory" in parameters:
+        return True
+    return any(p.kind == inspect.Parameter.VAR_KEYWORD for p in parameters.values())
+
+
+async def _process_with_memory(agent: Any, message: str, memory_block: str) -> dict:
+    """Ask the agent, with the memory when there is one."""
+    if memory_block and _supports_buyer_memory(agent, "process_query"):
+        return await asyncio.to_thread(agent.process_query, message, buyer_memory=memory_block)
+    return await asyncio.to_thread(agent.process_query, message)
+
+
+def _astream_with_memory(agent: Any, message: str, memory_block: str) -> Any:
+    """Stream the agent's answer, with the memory when there is one."""
+    if memory_block and _supports_buyer_memory(agent, "astream_query"):
+        return agent.astream_query(message, buyer_memory=memory_block)
+    return agent.astream_query(message)
+
+
 @router.post("/chat", response_model=ChatResponse, tags=["Chat"])
 async def chat_endpoint(
     request: ChatRequest,
     req: Request,
     llm: Annotated[BaseChatModel, Depends(get_llm)],
     store: Annotated[Optional[Any], Depends(get_vector_store)],
+    memory_service: Annotated[BuyerMemoryService, Depends(get_buyer_memory_service)],
+    user: Annotated[Optional[User], Depends(get_optional_user)],
 ):
     """
     Process a chat message using the hybrid agent with session persistence.
@@ -185,8 +328,13 @@ async def chat_endpoint(
     if _request_is_anonymous(req):
         await _check_free_tier_rate_limit(req)
 
+    # An anonymous visitor has no account: no memory is read and none is
+    # written, and the prompt is exactly the prompt of before the memory.
+    memory_user = None if user is None or _request_is_anonymous(req) else user
+
     try:
         agent, sanitized_message, session_id = _build_agent_and_process(request, req, llm, store)
+        memory_block = await _recall_buyer_memory(memory_service, memory_user, sanitized_message)
         sources_max_items = max(0, int(settings.chat_sources_max_items))
         sources_max_content_chars = max(0, int(settings.chat_source_content_max_chars))
         sources_max_total_bytes = max(0, int(settings.chat_sources_max_total_bytes))
@@ -231,12 +379,17 @@ async def chat_endpoint(
                 # The tool calls the agent made, as data. They travel in the
                 # meta event, so the client reads one event and not two.
                 tool_calls: list[dict] = []
+                # The answer of this turn, as it is streamed, so the turn can
+                # teach the buyer's memory what it taught us.
+                answer_parts: list[str] = []
 
                 try:
                     # Add timeout protection for streaming
                     with anyio.fail_after(settings.stream_timeout_seconds):
                         if requires_web:
-                            result = await asyncio.to_thread(agent.process_query, sanitized_message)
+                            result = await _process_with_memory(
+                                agent, sanitized_message, memory_block
+                            )
                             raw_answer = result.get("answer", "")
                             answer_text = (
                                 raw_answer if isinstance(raw_answer, str) else str(raw_answer)
@@ -245,6 +398,7 @@ async def chat_endpoint(
                                 # Record metrics for web path
                                 chunk_bytes = len(answer_text.encode("utf-8"))
                                 stream_metrics.record_chunk(chunk_bytes)
+                                answer_parts.append(answer_text)
                                 yield f"data: {json.dumps({'content': answer_text}, ensure_ascii=False, default=str)}\n\n"
 
                             raw_sources = (
@@ -283,7 +437,9 @@ async def chat_endpoint(
                                     raw_steps
                                 )
                         else:
-                            async for chunk in agent.astream_query(sanitized_message):
+                            async for chunk in _astream_with_memory(
+                                agent, sanitized_message, memory_block
+                            ):
                                 # The agent reports the tool calls it made as
                                 # data. They are collected here and travel in
                                 # the meta event - the client reads one event.
@@ -303,6 +459,8 @@ async def chat_endpoint(
                                     else len(chunk)
                                 )
                                 stream_metrics.record_chunk(chunk_bytes)
+                                if isinstance(chunk, str):
+                                    answer_parts.append(chunk)
                                 yield f"data: {chunk}\n\n"
 
                             if hasattr(agent, "get_sources_for_query"):
@@ -321,6 +479,17 @@ async def chat_endpoint(
                                     sources_payload["sources_truncated"] = False
 
                         sources_payload["tool_calls"] = tool_calls
+
+                        # The turn is answered: what it taught us is written
+                        # to the buyer's memory.
+                        await _write_buyer_memory(
+                            memory_service,
+                            memory_user,
+                            [{"role": "user", "content": sanitized_message}],
+                            "".join(answer_parts),
+                            _listing_payloads(sources_payload.get("sources")),
+                            llm,
+                        )
 
                         # Mark stream as completed and send metrics (Task #74)
                         stream_metrics.complete()
@@ -367,7 +536,7 @@ async def chat_endpoint(
                 },
             )
 
-        result = await asyncio.to_thread(agent.process_query, sanitized_message)
+        result = await _process_with_memory(agent, sanitized_message, memory_block)
 
         answer = result.get("answer", "")
         if "sources" in result and isinstance(result.get("sources"), list):
@@ -410,6 +579,17 @@ async def chat_endpoint(
 
             citation_stats = CitationStats(**raw_citation_stats)
 
+        # The turn is answered: what it taught us is written to the buyer's
+        # memory. A failure here never fails the answer.
+        await _write_buyer_memory(
+            memory_service,
+            memory_user,
+            [{"role": "user", "content": sanitized_message}],
+            answer,
+            _turn_listings(result),
+            llm,
+        )
+
         return ChatResponse(
             response=answer,
             sources=sources,
@@ -445,6 +625,8 @@ async def chat_free_endpoint(
     request: ChatRequest,
     req: Request,
     store: Annotated[Optional[Any], Depends(get_vector_store)],
+    memory_service: Annotated[BuyerMemoryService, Depends(get_buyer_memory_service)],
+    user: Annotated[Optional[User], Depends(get_optional_user)],
 ):
     """
     Free tier chat — no API key required.
@@ -471,16 +653,21 @@ async def chat_free_endpoint(
             detail="No free LLM providers available. Please try again later.",
         )
 
+    # An anonymous visitor has no account: no memory is read and none is
+    # written, and the prompt is exactly the prompt of before the memory.
+    memory_user = None if user is None or _request_is_anonymous(req) else user
+
     # Rate limit already checked above
     try:
         agent, sanitized_message, session_id = _build_agent_and_process(
             request, req, free_llm, store
         )
+        memory_block = await _recall_buyer_memory(memory_service, memory_user, sanitized_message)
         sources_max_items = max(0, int(settings.chat_sources_max_items))
         sources_max_content_chars = max(0, int(settings.chat_source_content_max_chars))
         sources_max_total_bytes = max(0, int(settings.chat_sources_max_total_bytes))
 
-        result = await asyncio.to_thread(agent.process_query, sanitized_message)
+        result = await _process_with_memory(agent, sanitized_message, memory_block)
 
         answer = result.get("answer", "")
         sources, sources_truncated = serialize_chat_sources(
@@ -488,6 +675,17 @@ async def chat_free_endpoint(
             max_items=sources_max_items,
             max_content_chars=sources_max_content_chars,
             max_total_bytes=sources_max_total_bytes,
+        )
+
+        # The turn is answered: what it taught us is written to the buyer's
+        # memory. A failure here never fails the answer.
+        await _write_buyer_memory(
+            memory_service,
+            memory_user,
+            [{"role": "user", "content": sanitized_message}],
+            answer,
+            _turn_listings(result),
+            free_llm,
         )
 
         return ChatResponse(
