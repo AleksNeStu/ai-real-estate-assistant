@@ -58,6 +58,15 @@ class FakeAgent:
         return {"answer": self.answer, "source_documents": []}
 
 
+class StreamingFakeAgent(FakeAgent):
+    """The agent on the streaming path, which yields JSON envelopes."""
+
+    async def astream_query(self, message, **kwargs):
+        self.calls.append({"message": message, "kwargs": kwargs})
+        for piece in ("Here are ", "three flats in Warsaw."):
+            yield json.dumps({"content": piece})
+
+
 class MockHistory(BaseChatMessageHistory):
     """A session history that needs no Redis."""
 
@@ -253,3 +262,35 @@ class TestTheReadPath:
 
         call = agent_patch.calls[0]
         assert call["kwargs"].get("buyer_memory") is None
+
+
+class TestTheStreamingPath:
+    """The streamed answer reaches the extractor as prose.
+
+    The agent streams JSON envelopes (``{"content": "..."}``). The extractor
+    reads the ANSWER, so handing it the envelopes would make it reason over
+    JSON fragments.
+    """
+
+    async def test_the_extraction_reads_the_prose_and_not_the_envelopes(
+        self, chat_client, model, buyer_headers
+    ):
+        agent = StreamingFakeAgent()
+
+        with patch("api.routers.chat.create_hybrid_agent", lambda **_: agent):
+            with patch("ai.memory.get_session_history", lambda _session_id: MockHistory()):
+                response = await chat_client.post(
+                    "/api/v1/chat",
+                    json={
+                        "message": "I do not want Krakow, and my budget is 400k PLN.",
+                        "stream": True,
+                    },
+                    headers=buyer_headers,
+                )
+
+        assert response.status_code == 200
+
+        assert len(model.calls) == 1
+        prompt = model.calls[0]
+        assert "Here are three flats in Warsaw." in prompt
+        assert '{"content"' not in prompt

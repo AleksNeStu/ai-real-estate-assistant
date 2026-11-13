@@ -64,6 +64,30 @@ def _tool_call_of(chunk: str) -> dict | None:
     return call if isinstance(call, dict) else None
 
 
+def _answer_text_of(chunk: str) -> str:
+    """The prose a streamed chunk carries, if it carries any.
+
+    The agent streams JSON envelopes (``{"content": "..."}``), and the buyer
+    memory extractor reads prose: handing it the envelopes would make it
+    reason over JSON fragments instead of over the answer.
+
+    Args:
+        chunk: One streamed chunk.
+
+    Returns:
+        The answer's text. A chunk that is not an envelope travels as it is.
+    """
+    try:
+        payload = json.loads(chunk)
+    except (TypeError, ValueError):
+        return chunk
+    if isinstance(payload, dict):
+        content = payload.get("content")
+        if isinstance(content, str):
+            return content
+    return chunk
+
+
 router = APIRouter(tags=["Chat"])
 
 
@@ -460,7 +484,7 @@ async def chat_endpoint(
                                 )
                                 stream_metrics.record_chunk(chunk_bytes)
                                 if isinstance(chunk, str):
-                                    answer_parts.append(chunk)
+                                    answer_parts.append(_answer_text_of(chunk))
                                 yield f"data: {chunk}\n\n"
 
                             if hasattr(agent, "get_sources_for_query"):
