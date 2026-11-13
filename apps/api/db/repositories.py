@@ -14,6 +14,7 @@ decomposed into domain-focused modules:
                            ViewingAppointment
   - db.document_repos   -> Document, DocumentTemplate, SignatureRequest,
                            SignedDocument
+  - db.buyer_memory_repo -> BuyerMemoryFact
 """
 
 from db.agent_repos import (  # noqa: F401
@@ -27,6 +28,9 @@ from db.analytics_repos import (  # noqa: F401
     AuditLogRepository,
     CMAReportRepository,
     PriceSnapshotRepository,
+)
+from db.buyer_memory_repo import (  # noqa: F401
+    BuyerMemoryRepository,
 )
 from db.document_repos import (  # noqa: F401
     DocumentRepository,
@@ -90,4 +94,6 @@ __all__ = [
     "EmailVerificationTokenRepository",
     "PushSubscriptionRepository",
     "NotificationPreferenceRepository",
+    # Buyer Memory
+    "BuyerMemoryRepository",
 ]

@@ -18,8 +18,10 @@ from agents.services.legal_check import BasicLegalCheckService, LegalCheckServic
 from agents.services.valuation import SimpleValuationProvider, ValuationProvider
 from api.models import RagQaRequest
 from config.settings import settings
+from db.database import get_db
 from db.models import User
 from models.provider_factory import ModelProviderFactory
+from services.buyer_memory_service import BuyerMemoryService
 from services.model_preference_service import SYSTEM_DEFAULTS, ModelPreferenceService
 from utils.circuit import get_circuit_breaker_manager
 
@@ -786,3 +788,14 @@ def get_agent(
 
     retriever = store.get_retriever()
     return create_hybrid_agent(llm=llm, retriever=retriever)
+
+
+def get_buyer_memory_service(
+    session: Annotated[AsyncSession, Depends(get_db)],
+) -> BuyerMemoryService:
+    """
+    Get a buyer memory service instance.
+
+    The service owns every read and write of the buyer's durable facts.
+    """
+    return BuyerMemoryService(session)
