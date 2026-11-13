@@ -27,6 +27,7 @@ from config.settings import get_settings
 from core.circuit_breaker import ServiceDegradedError
 from db.models import User
 from services.buyer_memory_service import BuyerMemoryService
+from services.personalization_service import DeclaredPreferences
 from utils.free_tier import client_ip, get_free_tier_rate_limiter, get_llm_for_free_user
 from utils.sanitization import (
     sanitize_chat_message,
@@ -211,27 +212,42 @@ def _build_agent_and_process(
 # ---------------------------------------------------------------------------
 
 
-async def _recall_buyer_memory(
+async def _recall_buyer_facts(
     memory_service: BuyerMemoryService,
     user: Optional[User],
     query: str,
-) -> str:
-    """The block of what this buyer has already told us - or nothing.
+) -> list:
+    """What this buyer has already told us - the facts, or nothing.
 
     A failure to recall never fails the answer: the turn is answered without
     the memory, exactly as it was answered before the memory existed.
     """
     if user is None:
-        return ""
+        return []
 
     try:
-        facts = await memory_service.recall_for_user(user.id, query=query)
-        if not facts:
-            return ""
-        return build_buyer_memory_block(facts)
+        return list(await memory_service.recall_for_user(user.id, query=query))
     except Exception as exc:
         logger.warning("Buyer memory read failed, answering without it: %s", exc)
-        return ""
+        return []
+
+
+def _without_excluded(sources: Any, declared: Optional[DeclaredPreferences]) -> list:
+    """The sources the buyer does not want to see.
+
+    An area they ruled out and a listing they disliked are FILTERS: they are
+    not shown at all, not shown lower down.
+    """
+    if declared is None or not sources:
+        return list(sources or [])
+
+    kept = []
+    for source in sources:
+        metadata = source.get("metadata") if isinstance(source, dict) else None
+        if isinstance(metadata, dict) and declared.excludes_property(metadata):
+            continue
+        kept.append(source)
+    return kept
 
 
 async def _write_buyer_memory(
@@ -375,7 +391,9 @@ async def chat_endpoint(
 
     try:
         agent, sanitized_message, session_id = _build_agent_and_process(request, req, llm, store)
-        memory_block = await _recall_buyer_memory(memory_service, memory_user, sanitized_message)
+        buyer_facts = await _recall_buyer_facts(memory_service, memory_user, sanitized_message)
+        memory_block = build_buyer_memory_block(buyer_facts)
+        declared = DeclaredPreferences.from_facts(buyer_facts)
         sources_max_items = max(0, int(settings.chat_sources_max_items))
         sources_max_content_chars = max(0, int(settings.chat_source_content_max_chars))
         sources_max_total_bytes = max(0, int(settings.chat_sources_max_total_bytes))
@@ -519,6 +537,12 @@ async def chat_endpoint(
                                     sources_payload["sources"] = []
                                     sources_payload["sources_truncated"] = False
 
+                        # The listings the buyer ruled out - or disliked -
+                        # are not shown at all.
+                        sources_payload["sources"] = _without_excluded(
+                            sources_payload.get("sources"), declared
+                        )
+
                         sources_payload["tool_calls"] = tool_calls
 
                         # The turn is answered: what it taught us is written
@@ -637,7 +661,7 @@ async def chat_endpoint(
 
         return ChatResponse(
             response=answer,
-            sources=sources,
+            sources=_without_excluded(sources, declared),
             sources_truncated=sources_truncated,
             session_id=session_id,
             intermediate_steps=intermediate_steps,
@@ -707,7 +731,9 @@ async def chat_free_endpoint(
         agent, sanitized_message, session_id = _build_agent_and_process(
             request, req, free_llm, store
         )
-        memory_block = await _recall_buyer_memory(memory_service, memory_user, sanitized_message)
+        buyer_facts = await _recall_buyer_facts(memory_service, memory_user, sanitized_message)
+        memory_block = build_buyer_memory_block(buyer_facts)
+        declared = DeclaredPreferences.from_facts(buyer_facts)
         sources_max_items = max(0, int(settings.chat_sources_max_items))
         sources_max_content_chars = max(0, int(settings.chat_source_content_max_chars))
         sources_max_total_bytes = max(0, int(settings.chat_sources_max_total_bytes))
@@ -735,7 +761,7 @@ async def chat_free_endpoint(
 
         return ChatResponse(
             response=answer,
-            sources=sources,
+            sources=_without_excluded(sources, declared),
             sources_truncated=sources_truncated,
             session_id=session_id,
         )

@@ -7,8 +7,10 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import get_vector_store
+from api.deps.auth import get_optional_user
 from api.models import (
     RankingExplanation,
     SearchRequest,
@@ -18,6 +20,9 @@ from api.models import (
 from core.circuit_breaker import ServiceDegradedError, get_breaker
 from core.security_utils import sanitize_for_log
 from data.schemas import Property, normalize_property_metadata
+from db.database import get_db
+from db.models import User
+from services.personalization_service import PersonalizationService
 from services.ranking_explainer import create_ranking_explainer
 from utils.sanitization import sanitize_search_query
 from vector_store.chroma_store import ChromaPropertyStore
@@ -126,17 +131,28 @@ async def search_properties(
     request_body: SearchRequest,
     http_request: Request,
     store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
+    user: Annotated[Optional[User], Depends(get_optional_user)],
+    session: Annotated[AsyncSession, Depends(get_db)],
 ):
     """
     Search for properties using semantic search and metadata filters.
     Results are cached for 5 minutes (TTL 300s).
+
+    A signed-in buyer gets their own results: what they stated (a budget, an
+    area they ruled out, a listing they disliked) steers the order, and an
+    area they ruled out is not returned at all.
     """
+    # The cache key. A signed-in buyer's results are THEIR results: they are
+    # cached under their own key, never under the shared one.
+    body_hash = hashlib.sha256(
+        json.dumps(request_body.model_dump(), sort_keys=True, default=str).encode()
+    ).hexdigest()[:16]
+    if user is not None:
+        body_hash = f"{body_hash}:{user.id}"
+
     # Check response cache (Task #55)
     cache = getattr(http_request.app.state, "response_cache", None)
     if cache:
-        body_hash = hashlib.sha256(
-            json.dumps(request_body.model_dump(), sort_keys=True, default=str).encode()
-        ).hexdigest()[:16]
         cached = await cache.get(http_request, body_hash=body_hash)
         if cached:
             response_data = cached.data
@@ -199,6 +215,20 @@ async def search_properties(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail=f"Search is temporarily degraded: {e}. Please retry in a moment.",
             ) from e
+
+        # The buyer's own words steer their results: a stated budget narrows
+        # the price range, an area they ruled out is not returned at all, and
+        # a listing they liked weighs more than the rest. An anonymous
+        # visitor gets the catalogue as it is.
+        if user is not None:
+            try:
+                results = await PersonalizationService(session).apply_personalization_to_results(
+                    results, user.id
+                )
+            except Exception as e:  # noqa: BLE001 - the search must not fail
+                logger.warning(
+                    "Personalization failed, returning the plain results: %s", sanitize_for_log(e)
+                )
 
         # Generate explanations if requested
         explanations = []

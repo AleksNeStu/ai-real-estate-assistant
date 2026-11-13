@@ -21,7 +21,7 @@ from api.main import app
 from config.settings import get_settings
 from core.jwt import create_access_token
 from db.database import get_db
-from db.models import User
+from db.models import BuyerMemoryFact, User
 from services.buyer_memory_service import BuyerMemoryService
 
 # The facts the stub model reads out of the turn.
@@ -53,10 +53,11 @@ class FakeAgent:
     def __init__(self, answer: str = "Here are three flats in Warsaw.") -> None:
         self.answer = answer
         self.calls: list[dict] = []
+        self.source_documents: list = []
 
     def process_query(self, message, **kwargs):
         self.calls.append({"message": message, "kwargs": kwargs})
-        return {"answer": self.answer, "source_documents": []}
+        return {"answer": self.answer, "source_documents": list(self.source_documents)}
 
 
 class StreamingFakeAgent(FakeAgent):
@@ -339,3 +340,46 @@ class TestTheStreamingPath:
         recalled = await service.recall_for_user(buyer)
         assert [fact.content for fact in recalled] == ["the balcony flat"]
         assert recalled[0].listing_id == "listing-1"
+
+
+class TestTheBuyersMemoryInTheCitations:
+    """The listings the buyer ruled out are not shown to them."""
+
+    async def test_a_ruled_out_area_is_not_in_the_citations(
+        self, chat_client, db_session, buyer, buyer_headers
+    ):
+        db_session.add(
+            BuyerMemoryFact(
+                user_id=buyer,
+                kind="ruled_out_area",
+                content="Krakow",
+                confidence=1.0,
+                source="chat",
+            )
+        )
+        await db_session.commit()
+
+        agent = FakeAgent()
+        agent.source_documents = [
+            SimpleNamespace(
+                metadata={"id": "listing-1", "city": "Krakow", "title": "Flat on Orla"},
+                page_content="A flat in Krakow.",
+            ),
+            SimpleNamespace(
+                metadata={"id": "listing-2", "city": "Warsaw", "title": "Flat on Sienna"},
+                page_content="A flat in Warsaw.",
+            ),
+        ]
+
+        with patch("api.routers.chat.create_hybrid_agent", lambda **_: agent):
+            with patch("ai.memory.get_session_history", lambda _session_id: MockHistory()):
+                response = await chat_client.post(
+                    "/api/v1/chat",
+                    json={"message": "Show me something."},
+                    headers=buyer_headers,
+                )
+
+        assert response.status_code == 200
+        cities = [source["metadata"]["city"] for source in response.json().get("sources", [])]
+        assert "Krakow" not in cities
+        assert "Warsaw" in cities
