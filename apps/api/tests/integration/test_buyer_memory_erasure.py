@@ -111,6 +111,55 @@ async def _client(session: AsyncSession, user: User):
         yield client
 
 
+@asynccontextmanager
+async def _unauthenticated_client(session: AsyncSession):
+    """A client with the REAL authentication dependency - no override.
+
+    The demo bypass is switched off, so an anonymous request is a genuine 401
+    and the assertion means something.
+    """
+    from fastapi import FastAPI
+
+    from api.routers import settings as settings_router
+    from config.settings import get_settings
+
+    settings = get_settings()
+    previous_bypass = settings.demo_user_bypass
+    previous_sessions = dict(settings_router._DEMO_MODE_SESSIONS)
+    settings.demo_user_bypass = False
+    settings_router._DEMO_MODE_SESSIONS.clear()
+
+    test_app = FastAPI()
+    test_app.include_router(buyer_memory.router, prefix="/api/v1")
+
+    async def override_get_db():
+        yield session
+
+    test_app.dependency_overrides[get_db] = override_get_db
+
+    transport = ASGITransport(app=test_app)
+    try:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            yield client
+    finally:
+        settings.demo_user_bypass = previous_bypass
+        settings_router._DEMO_MODE_SESSIONS.clear()
+        settings_router._DEMO_MODE_SESSIONS.update(previous_sessions)
+
+
+class TestBuyerMemoryAuthentication:
+    """The endpoints are behind the JWT - an anonymous caller gets nothing."""
+
+    @pytest.mark.asyncio
+    async def test_an_unauthenticated_request_gets_401(self, fk_session: AsyncSession):
+        async with _unauthenticated_client(fk_session) as client:
+            listing = await client.get("/api/v1/me/buyer-memory")
+            deletion = await client.delete("/api/v1/me/buyer-memory")
+
+        assert listing.status_code == 401
+        assert deletion.status_code == 401
+
+
 class TestBuyerMemoryErasure:
     """The DELETE removes the caller's facts and nobody else's."""
 

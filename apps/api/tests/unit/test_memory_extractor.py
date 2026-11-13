@@ -90,12 +90,29 @@ class TestExtraction:
         assert facts == []
 
     @pytest.mark.asyncio
-    async def test_non_numeric_confidence_falls_back_to_one(self):
-        llm = make_llm('[{"kind": "note", "content": "buying alone", "confidence": "high"}]')
+    async def test_a_numeric_string_confidence_is_parsed(self):
+        llm = make_llm('[{"kind": "note", "content": "buying alone", "confidence": "0.8"}]')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert facts == [Fact(kind="note", content="buying alone", confidence=0.8)]
+
+    @pytest.mark.asyncio
+    async def test_a_missing_confidence_is_full_confidence(self):
+        llm = make_llm('[{"kind": "note", "content": "buying alone"}]')
 
         facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
 
         assert facts == [Fact(kind="note", content="buying alone", confidence=1.0)]
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("raw", ["null", "true", '"high"', "{}", "[]"])
+    async def test_a_malformed_confidence_drops_the_fact(self, raw):
+        llm = make_llm(f'[{{"kind": "note", "content": "buying alone", "confidence": {raw}}}]')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert facts == []
 
     @pytest.mark.asyncio
     async def test_a_failing_model_call_yields_no_facts(self):
@@ -126,12 +143,12 @@ class TestTheNoiseGuards:
         assert [fact.kind for fact in facts] == ["requirement"]
 
     @pytest.mark.asyncio
-    async def test_a_negated_value_becomes_a_ruled_out_area(self):
+    async def test_a_negated_requirement_keeps_its_kind(self):
         llm = make_llm('[{"kind": "requirement", "content": "I don\'t want Krakow"}]')
 
         facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
 
-        assert facts == [Fact(kind="ruled_out_area", content="Krakow")]
+        assert facts == [Fact(kind="requirement", content="I don't want Krakow")]
 
     @pytest.mark.asyncio
     async def test_a_ruled_out_area_loses_its_negation(self):
@@ -225,3 +242,171 @@ class TestTheKindSet:
         from services.buyer_memory_service import VALID_KINDS
 
         assert memory_extractor.FACT_KINDS == VALID_KINDS
+
+
+class TestTheAmounts:
+    """A thousands separator is not a decimal point."""
+
+    @pytest.mark.parametrize(
+        ("raw", "expected"),
+        [
+            ("500,000", 500000.0),
+            ("1.500.000", 1500000.0),
+            ("500.000", 500000.0),
+            ("500,50", 500.5),
+            ("500.5", 500.5),
+            ("500", 500.0),
+            ("1,5", 1.5),
+        ],
+    )
+    def test_every_spelling_is_read_as_one_number(self, raw, expected):
+        assert memory_extractor._parse_amount(raw) == expected
+
+    @pytest.mark.asyncio
+    async def test_a_thousands_separator_keeps_the_budget_whole(self):
+        llm = make_llm('[{"kind": "budget", "content": "up to 500,000 PLN"}]')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert len(facts) == 1
+        assert facts[0].budget_min == 500000.0
+        assert facts[0].budget_max == 500000.0
+
+    @pytest.mark.asyncio
+    async def test_a_grouped_amount_keeps_the_budget_whole(self):
+        llm = make_llm('[{"kind": "budget", "content": "up to 1.500.000 PLN"}]')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert len(facts) == 1
+        assert facts[0].budget_min == 1500000.0
+
+
+class TestTheNegation:
+    """A negation is not a place name."""
+
+    @pytest.mark.asyncio
+    async def test_a_negated_budget_is_never_reclassified(self):
+        llm = make_llm('[{"kind": "budget", "content": "I do not want to spend more than 500k"}]')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert len(facts) == 1
+        assert facts[0].kind == "budget"
+        assert facts[0].budget_max == 500000.0
+
+    @pytest.mark.asyncio
+    async def test_a_negated_requirement_is_never_reclassified(self):
+        llm = make_llm('[{"kind": "requirement", "content": "no parking"}]')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert facts == [Fact(kind="requirement", content="no parking")]
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "content",
+        [
+            "never mind",
+            "avoidance of fees",
+        ],
+    )
+    async def test_a_note_that_is_not_a_place_stays_a_note(self, content):
+        llm = make_llm(f'[{{"kind": "note", "content": "{content}"}}]')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert facts == [Fact(kind="note", content=content)]
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        ("content", "expected"),
+        [
+            ("I don't want Krakow", "Krakow"),
+            ("no Krakow", "Krakow"),
+            ("I don't like Kraków", "Kraków"),
+        ],
+    )
+    async def test_a_note_that_reads_like_a_place_becomes_a_ruled_out_area(self, content, expected):
+        llm = make_llm(f'[{{"kind": "note", "content": "{content}"}}]')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert facts == [Fact(kind="ruled_out_area", content=expected)]
+
+
+class TestTheFailurePaths:
+    """A malformed answer yields zero facts and never an exception."""
+
+    @pytest.mark.asyncio
+    async def test_trailing_text_after_the_array_yields_no_facts(self):
+        llm = make_llm('[{"kind": "note", "content": "buying alone"}] and that is all')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert facts == []
+
+    @pytest.mark.asyncio
+    async def test_prose_with_a_json_fragment_yields_no_facts(self):
+        llm = make_llm('Here you go: [{"kind": "note", "content": "buying alone"}]')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert facts == []
+
+    @pytest.mark.asyncio
+    async def test_a_model_that_returns_nothing_yields_no_facts(self):
+        llm = MagicMock()
+        llm.invoke.return_value = None
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert facts == []
+
+    @pytest.mark.asyncio
+    async def test_a_model_that_returns_an_object_without_content_yields_no_facts(self):
+        class Bare:
+            pass
+
+        llm = MagicMock()
+        llm.invoke.return_value = Bare()
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert facts == []
+
+
+class TestTheListingIds:
+    """The ids are compared as strings, so a numeric id is a valid id."""
+
+    NUMERIC_LISTINGS = [
+        {
+            "id": 123,
+            "title": "Flat on Orla",
+            "city": "Krakow",
+            "price": 390000,
+            "currency": "PLN",
+        }
+    ]
+
+    @pytest.mark.asyncio
+    async def test_a_numeric_listing_id_is_kept(self):
+        llm = make_llm('[{"kind": "liked", "content": "the balcony flat", "listing_id": 123}]')
+
+        facts = await extract_buyer_facts(
+            MESSAGES, "Here are three flats.", self.NUMERIC_LISTINGS, llm=llm
+        )
+
+        assert facts == [
+            Fact(kind="liked", content="the balcony flat", listing_id="123", confidence=1.0)
+        ]
+
+    @pytest.mark.asyncio
+    async def test_a_numeric_listing_id_that_was_not_shown_is_dropped(self):
+        llm = make_llm('[{"kind": "liked", "content": "the balcony flat", "listing_id": 999}]')
+
+        facts = await extract_buyer_facts(
+            MESSAGES, "Here are three flats.", self.NUMERIC_LISTINGS, llm=llm
+        )
+
+        assert facts == []

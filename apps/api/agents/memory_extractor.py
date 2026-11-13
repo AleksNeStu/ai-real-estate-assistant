@@ -28,6 +28,7 @@ The returned facts are plain dataclasses. The write path
 import asyncio
 import json
 import logging
+import math
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -103,7 +104,8 @@ RULES
    PLN" becomes 300000-450000 PLN.
 5. "not X" ("I don't want Krakow", "no Krakow", "avoid Krakow") is kind
    "ruled_out_area" and carries the negated value alone ("Krakow"). It is never
-   a preference FOR that value.
+   a preference FOR that value. A negated BUDGET ("I do not want to spend more
+   than 500k") and a negated REQUIREMENT ("no parking") keep their own kind.
 6. The kind set is closed - use one of: budget, ruled_out_area, liked, disliked,
    requirement, note. "liked" and "disliked" are about one listing and carry its
    listing id.
@@ -321,16 +323,41 @@ _CURRENCY_CODES = {
 }
 
 
-def _strip_negation(content: str) -> Optional[str]:
-    """Strip a leading negation from a content, or None when there is none."""
+def _strip_negation(content: str) -> Optional[tuple[str, bool]]:
+    """Split a leading negation off a content.
+
+    Returns (remainder, is_weak) or None when the content carries no negation.
+    A weak negation is the short generic one ("no ", "not "); it only reclassifies
+    a fact when what remains is a single word.
+    """
     lowered = content.lower()
     for phrase in _NEGATION_PHRASES:
         if lowered.startswith(phrase):
-            return content[len(phrase) :].strip(" .,:;-—")
+            return content[len(phrase) :].strip(" .,:;-—"), False
     for phrase in _WEAK_NEGATIONS:
         if lowered.startswith(phrase):
-            return content[len(phrase) :].strip(" .,:;-—")
+            return content[len(phrase) :].strip(" .,:;-—"), True
     return None
+
+
+# How many words a place name may have. "New York", "Krakow" and "Zakopane
+# district" read as places; a phrase like "ance of fees" does not.
+_PLACE_MAX_WORDS = 3
+
+
+def _looks_like_a_place(text: str) -> bool:
+    """Whether a text reads like a place name.
+
+    A place name starts with an uppercase letter, carries no digit and is short.
+    A model that lowercases everything is then left with the fact unclassified,
+    which is the conservative outcome: the ranking must not filter on a place
+    we could not read.
+    """
+    if not text or not text[0].isupper():
+        return False
+    if any(char.isdigit() for char in text):
+        return False
+    return len(text.split()) <= _PLACE_MAX_WORDS
 
 
 def _is_one_off_reference(content: str) -> bool:
@@ -338,22 +365,46 @@ def _is_one_off_reference(content: str) -> bool:
     return bool(_ORDINAL_REFERENCE_RE.search(content) or _ONE_OFF_REFERENCE_RE.search(content))
 
 
+_NUMBER_GROUP_RE = re.compile(r"[,.]")
+
+
+def _parse_number(text: str) -> Optional[float]:
+    """Read a number whose separators may be thousands separators or a decimal point.
+
+    A separator followed by exactly three digits is a thousands separator
+    ("500,000" is 500000); any other separator is a decimal point ("500,50" is
+    500.5). When several separators appear, the digits are grouped from the
+    right in threes ("1.500.000" is 1500000).
+    """
+    groups = [group for group in _NUMBER_GROUP_RE.split(text) if group]
+    if not groups:
+        return None
+    if len(groups) == 1:
+        try:
+            return float(groups[0])
+        except (TypeError, ValueError):
+            return None
+
+    tail = groups[-1]
+    head = groups[:-1]
+    # Every group between the first and the last is a thousands group; the
+    # first one may be shorter ("1.500.000").
+    if len(tail) == 3 and all(len(group) == 3 for group in head[1:]):
+        try:
+            return float("".join(groups))
+        except (TypeError, ValueError):
+            return None
+    # The last separator is the decimal point.
+    try:
+        return float("".join(head) + "." + tail)
+    except (TypeError, ValueError):
+        return None
+
+
 def _parse_amount(raw: str) -> Optional[float]:
     """Read a number that may carry a k/m suffix and European separators."""
     text = raw.replace(" ", "").replace(" ", "")
-    if "," in text and "." in text:
-        # Two separators: the last one is the decimal point.
-        text = text.replace(",", "")
-    elif "," in text:
-        head, _, tail = text.partition(",")
-        text = head + ("" if len(tail) == 3 else "." + tail)
-    elif "." in text:
-        head, _, tail = text.partition(".")
-        text = head + ("" if len(tail) == 3 else "." + tail)
-    try:
-        return float(text)
-    except (TypeError, ValueError):
-        return None
+    return _parse_number(text)
 
 
 def _parse_budget(content: str) -> tuple[Optional[float], Optional[float]]:
@@ -406,19 +457,48 @@ def _normalise_budget(fact: Fact) -> Fact:
     )
 
 
+def _with_content(fact: Fact, content: str) -> Fact:
+    """The same fact with another content."""
+    return Fact(
+        kind=fact.kind,
+        content=content,
+        listing_id=fact.listing_id,
+        confidence=fact.confidence,
+        budget_min=fact.budget_min,
+        budget_max=fact.budget_max,
+    )
+
+
 def _apply_negation(fact: Fact) -> Optional[Fact]:
     """Turn a negated content into a ruled-out area, or None when it is not one.
 
     "I don't want Krakow" is a ruled-out area carrying "Krakow" - never a
-    preference for Krakow.
+    preference for Krakow. A negated budget or requirement keeps its own kind:
+    "I do not want to spend more than 500k" is a budget, not an area.
     """
-    remainder = _strip_negation(fact.content)
-    if remainder is None:
+    split = _strip_negation(fact.content)
+    if split is None:
         return fact
+    remainder, weak = split
     if not remainder:
         return None
 
+    if fact.kind in ("budget", "requirement"):
+        # A negated budget or a negated requirement is never an area.
+        return fact
+
     if fact.kind == "ruled_out_area":
+        # The model already classified it; only the negation is stripped.
+        return _with_content(fact, remainder)
+
+    if fact.kind == "note":
+        # Only a note that reads like a PLACE NAME becomes a ruled-out area.
+        if not _looks_like_a_place(remainder):
+            return fact
+        # A weak negation only reclassifies when what remains is one word, so
+        # that "no deposit needed" stays a note.
+        if weak and len(remainder.split()) != 1:
+            return fact
         return Fact(
             kind="ruled_out_area",
             content=remainder,
@@ -428,21 +508,8 @@ def _apply_negation(fact: Fact) -> Optional[Fact]:
             budget_max=fact.budget_max,
         )
 
-    # A weak negation only reclassifies when what remains is one word, so that
-    # "no deposit needed" stays a requirement.
-    lowered = fact.content.lower()
-    weak = any(lowered.startswith(phrase) for phrase in _WEAK_NEGATIONS)
-    if weak and len(remainder.split()) > 1:
-        return fact
-
-    return Fact(
-        kind="ruled_out_area",
-        content=remainder,
-        listing_id=fact.listing_id,
-        confidence=fact.confidence,
-        budget_min=fact.budget_min,
-        budget_max=fact.budget_max,
-    )
+    # liked and disliked keep their kind and only lose the negation.
+    return _with_content(fact, remainder)
 
 
 def _known_listing_ids(listings: Sequence[Any]) -> set[str]:
@@ -456,6 +523,57 @@ def _known_listing_ids(listings: Sequence[Any]) -> set[str]:
         if listing_id:
             known.add(str(listing_id))
     return known
+
+
+def _read_confidence(item: dict) -> Optional[float]:
+    """Read the confidence of a payload element, or None when it is malformed.
+
+    A missing confidence is 1.0 - the model said nothing about it. A numeric
+    one is clamped to [0, 1]. A numeric string ("0.8") is parsed. Anything else
+    (null, a bool, "high", a dict) is a malformed confidence: the fact is
+    dropped rather than promoted to certainty.
+    """
+    if "confidence" not in item:
+        return 1.0
+
+    raw = item["confidence"]
+    if isinstance(raw, bool):
+        return None
+    if isinstance(raw, (int, float)):
+        value = float(raw)
+    elif isinstance(raw, str):
+        try:
+            value = float(raw.strip())
+        except (TypeError, ValueError):
+            return None
+    else:
+        return None
+
+    if not math.isfinite(value):
+        return None
+    return min(max(value, 0.0), 1.0)
+
+
+def _read_listing_id(item: dict) -> tuple[Optional[str], bool]:
+    """Read the listing id of a payload element.
+
+    Returns (listing_id, ok). The ids are compared as strings, so a numeric
+    id is read as its string form rather than dropped as malformed.
+    """
+    raw = item.get("listing_id")
+    if raw is None:
+        return None, True
+    if isinstance(raw, bool):
+        return None, False
+    if isinstance(raw, int):
+        return str(raw), True
+    if isinstance(raw, float):
+        if not math.isfinite(raw) or not raw.is_integer():
+            return None, False
+        return str(int(raw)), True
+    if not isinstance(raw, str) or not raw.strip():
+        return None, False
+    return raw.strip(), True
 
 
 def _build_fact(item: Any, known_ids: set[str]) -> Optional[Fact]:
@@ -475,23 +593,18 @@ def _build_fact(item: Any, known_ids: set[str]) -> Optional[Fact]:
         return None
     content = content.strip()
 
-    listing_id = item.get("listing_id")
-    if listing_id is not None:
-        if not isinstance(listing_id, str) or not listing_id.strip():
-            logger.warning("Buyer memory extraction: dropping a fact with a malformed listing id")
-            return None
-        listing_id = listing_id.strip()
-        if known_ids and listing_id not in known_ids:
-            logger.warning("Buyer memory extraction: dropping a fact about an unknown listing")
-            return None
-    else:
-        listing_id = None
+    listing_id, ok = _read_listing_id(item)
+    if not ok:
+        logger.warning("Buyer memory extraction: dropping a fact with a malformed listing id")
+        return None
+    if listing_id is not None and known_ids and listing_id not in known_ids:
+        logger.warning("Buyer memory extraction: dropping a fact about an unknown listing")
+        return None
 
-    confidence = item.get("confidence", 1.0)
-    if isinstance(confidence, bool) or not isinstance(confidence, (int, float)):
-        logger.warning("Buyer memory extraction: a fact has a non-numeric confidence, using 1.0")
-        confidence = 1.0
-    confidence = min(max(float(confidence), 0.0), 1.0)
+    confidence = _read_confidence(item)
+    if confidence is None:
+        logger.warning("Buyer memory extraction: dropping a fact with a malformed confidence")
+        return None
 
     fact = Fact(
         kind=kind,
