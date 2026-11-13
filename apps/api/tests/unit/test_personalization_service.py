@@ -42,9 +42,9 @@ def _make_memory(*facts):
     return memory
 
 
-def _fact(kind, content):
+def _fact(kind, content, listing_id=None):
     """Create a fact the way the buyer-memory service hands them over."""
-    return SimpleNamespace(kind=kind, content=content, listing_id=None, confidence=1.0)
+    return SimpleNamespace(kind=kind, content=content, listing_id=listing_id, confidence=1.0)
 
 
 class TestUserPreferencesFromModel:
@@ -954,3 +954,124 @@ class TestDeclaredFactsSteerTheRanking:
         output = await service.apply_personalization_to_results(results, "user-001")
 
         assert output == results
+
+
+class TestTheDislikedAndLikedListings:
+    """A like and a dislike that name a LISTING."""
+
+    @pytest.mark.asyncio
+    async def test_a_disliked_listing_is_removed(self):
+        """A listing the buyer disliked is not returned at all."""
+        profile = _make_profile(view_count=5, favorite_count=3)
+        mock_session = AsyncMock()
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = profile
+        mock_session.execute.return_value = mock_result
+
+        service = PersonalizationService(
+            mock_session,
+            memory_service=_make_memory(_fact("disliked", "the flat with the lift", "p9")),
+        )
+
+        disliked = MagicMock()
+        disliked.metadata = {"id": "p9", "city": "Kraków"}
+        other = MagicMock()
+        other.metadata = {"id": "p1", "city": "Kraków"}
+
+        output = await service.apply_personalization_to_results(
+            [(disliked, 0.9), (other, 0.8)], "user-001"
+        )
+
+        assert disliked not in [doc for doc, _ in output]
+        assert other in [doc for doc, _ in output]
+
+    @pytest.mark.asyncio
+    async def test_a_liked_listing_weighs_that_listing_and_not_every_flat(self):
+        """A like that names a listing does not widen into a feature class."""
+        profile = _make_profile(view_count=5, favorite_count=3)
+        mock_session = AsyncMock()
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = profile
+        mock_session.execute.return_value = mock_result
+
+        service = PersonalizationService(
+            mock_session,
+            memory_service=_make_memory(_fact("liked", "the balcony flat", "p9")),
+        )
+
+        liked = MagicMock()
+        liked.metadata = {
+            "id": "p9",
+            "city": "Kraków",
+            "property_type": "flat",
+            "amenities": ["balcony"],
+        }
+        other_flat = MagicMock()
+        other_flat.metadata = {
+            "id": "p1",
+            "city": "Kraków",
+            "property_type": "flat",
+            "amenities": ["balcony"],
+        }
+
+        output = await service.apply_personalization_to_results(
+            [(other_flat, 0.8), (liked, 0.8)], "user-001"
+        )
+
+        # The liked listing comes first - and the other flat, which is the
+        # same kind of flat with the same balcony, is not lifted with it.
+        assert [doc for doc, _ in output] == [liked, other_flat]
+        other_score = next(score for doc, score in output if doc == other_flat)
+        assert other_score == pytest.approx(0.8)
+
+    def test_a_liked_feature_still_matches_by_its_words(self):
+        """A like that names a FEATURE (no listing id) keeps the token match."""
+        declared = DeclaredPreferences.from_facts([_fact("liked", "flats with a balcony")])
+
+        assert declared.liked_features
+        assert not declared.liked_listing_ids
+        assert declared.liked_boost({"property_type": "flat", "amenities": ["balcony"]})[2] > 0
+
+
+class TestTheCurrency:
+    """The catalogue is priced in PLN; a budget in another currency is ignored."""
+
+    def test_a_budget_in_the_catalogue_currency_is_used(self):
+        declared = DeclaredPreferences.from_facts([_fact("budget", "up to 500000 PLN")])
+
+        assert declared.price_max == 500000
+        assert declared.price_currency == "PLN"
+
+    def test_a_budget_without_a_currency_is_the_catalogue_currency(self):
+        declared = DeclaredPreferences.from_facts([_fact("budget", "up to 500000")])
+
+        assert declared.price_max == 500000
+        assert declared.price_currency == "PLN"
+
+    def test_a_budget_in_another_currency_is_ignored(self):
+        """It cannot be compared with the catalogue's prices - and it is not guessed."""
+        declared = DeclaredPreferences.from_facts([_fact("budget", "up to 500000 EUR")])
+
+        assert declared.price_min is None
+        assert declared.price_max is None
+        assert not declared.is_active
+
+    @pytest.mark.asyncio
+    async def test_a_budget_in_another_currency_does_not_move_the_prices(self):
+        profile = _make_profile(view_count=5, favorite_count=3)
+        mock_session = AsyncMock()
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = profile
+        mock_session.execute.return_value = mock_result
+
+        service = PersonalizationService(
+            mock_session, memory_service=_make_memory(_fact("budget", "up to 500000 EUR"))
+        )
+
+        doc = MagicMock()
+        doc.metadata = {"id": "p1", "city": "Kraków", "price": 900000, "currency": "PLN"}
+
+        output = await service.apply_personalization_to_results([(doc, 0.9)], "user-001")
+
+        # No budget, no price boost: the listing is where the search put it.
+        assert output[0][1] == pytest.approx(0.9)

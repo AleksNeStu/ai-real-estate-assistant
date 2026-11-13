@@ -35,6 +35,28 @@ _CURRENCY_RE = re.compile(
     re.IGNORECASE,
 )
 
+# The currency the catalogue is priced in. A budget in another currency
+# cannot be compared with the catalogue's prices, and there is no rate
+# source here - so such a budget is IGNORED, never converted by a guess.
+CATALOGUE_CURRENCY = "PLN"
+
+_CURRENCY_CODES = {
+    "pln": "PLN",
+    "zł": "PLN",
+    "zl": "PLN",
+    "zloty": "PLN",
+    "zlotych": "PLN",
+    "eur": "EUR",
+    "euro": "EUR",
+    "€": "EUR",
+    "usd": "USD",
+    "$": "USD",
+    "gbp": "GBP",
+    "£": "GBP",
+    "chf": "CHF",
+    "kd": "PLN",
+}
+
 # "500 000" is one amount, not two. Only a group of exactly three digits is a
 # thousands separator ("500 000"), a longer group is two separate numbers.
 _DIGIT_GAP_RE = re.compile(r"(?<=\d)[\s  ](?=\d{3}(?!\d))")
@@ -124,6 +146,10 @@ _RULE_OUT_NEGATIONS = frozenset(
 DECLARED_LIKE_CITY_BOOST = 0.2
 DECLARED_LIKE_TYPE_BOOST = 0.2
 DECLARED_LIKE_AMENITY_BOOST = 0.1
+
+# The weight a liked LISTING adds - the listing itself, and not every flat
+# of its kind.
+DECLARED_LIKE_LISTING_BOOST = 0.3
 
 
 def _normalise_text(text: str) -> str:
@@ -231,6 +257,23 @@ def _is_range_fragment(fragment: str) -> bool:
     return bool(re.search(r"\b(?:to|and|or|od|do)\b", fragment))
 
 
+def _currency_of(content: str) -> Optional[str]:
+    """
+    The currency a budget names, if it names one.
+
+    Args:
+        content: The buyer's own words ("up to 500k EUR").
+
+    Returns:
+        The currency code, or None when the content names none - in which
+        case the catalogue's own currency is meant.
+    """
+    match = _CURRENCY_RE.search(content or "")
+    if not match:
+        return None
+    return _CURRENCY_CODES.get(match.group(0).casefold())
+
+
 def _budget_side(text: str, position: int) -> str:
     """Tell whether the amount before ``position`` is a floor or a ceiling."""
     window = text[max(0, position - 80) : position]
@@ -318,12 +361,25 @@ class DeclaredPreferences:
     price_min: Optional[float] = None
     price_max: Optional[float] = None
 
+    # The currency the buyer stated the budget in. None means the
+    # catalogue's own currency.
+    price_currency: Optional[str] = None
+
     # The token sequences of the areas the buyer ruled out, in the order the
     # buyer wrote them.
     ruled_out_areas: list[tuple[str, ...]] = field(default_factory=list)
 
-    # The token sets of the features the buyer liked.
+    # The token sets of the features the buyer liked - a liked fact that
+    # names a FEATURE, not a listing.
     liked_features: list[frozenset[str]] = field(default_factory=list)
+
+    # The ids of the listings the buyer liked. A like that names a listing
+    # weighs that listing and not every flat of its kind.
+    liked_listing_ids: set[str] = field(default_factory=set)
+
+    # The ids of the listings the buyer disliked. A dislike removes the
+    # listing outright, like a ruled-out area removes an area.
+    disliked_listing_ids: set[str] = field(default_factory=set)
 
     @property
     def is_active(self) -> bool:
@@ -333,6 +389,8 @@ class DeclaredPreferences:
             or self.price_max is not None
             or self.ruled_out_areas
             or self.liked_features
+            or self.liked_listing_ids
+            or self.disliked_listing_ids
         )
 
     @classmethod
@@ -354,8 +412,21 @@ class DeclaredPreferences:
         for fact in facts or []:
             kind = getattr(fact, "kind", "")
             content = getattr(fact, "content", "") or ""
+            listing_id = str(getattr(fact, "listing_id", "") or "")
 
             if kind == "budget":
+                currency = _currency_of(content)
+                if currency and currency != CATALOGUE_CURRENCY:
+                    # The catalogue is priced in PLN. A budget in another
+                    # currency cannot be compared with its prices, and there
+                    # is no rate here - so the fact is ignored, not converted
+                    # by a guess.
+                    logger.info(
+                        "Buyer memory: a budget in %s is ignored, the catalogue is in %s",
+                        currency,
+                        CATALOGUE_CURRENCY,
+                    )
+                    continue
                 minimum, maximum = _parse_budget(content)
                 if minimum is not None:
                     declared.price_min = (
@@ -365,28 +436,51 @@ class DeclaredPreferences:
                     declared.price_max = (
                         maximum if declared.price_max is None else min(declared.price_max, maximum)
                     )
+                if declared.price_min is not None or declared.price_max is not None:
+                    declared.price_currency = currency or CATALOGUE_CURRENCY
             elif kind == "ruled_out_area":
                 tokens = _place_sequence(content)
                 if tokens:
                     declared.ruled_out_areas.append(tokens)
             elif kind == "liked":
-                tokens = _text_tokens(content)
-                if tokens:
-                    declared.liked_features.append(frozenset(tokens))
+                if listing_id:
+                    # A like that names a listing weighs that listing and
+                    # not every flat of its kind.
+                    declared.liked_listing_ids.add(listing_id)
+                else:
+                    tokens = _text_tokens(content)
+                    if tokens:
+                        declared.liked_features.append(frozenset(tokens))
+            elif kind == "disliked":
+                if listing_id:
+                    # A dislike removes the listing outright.
+                    declared.disliked_listing_ids.add(listing_id)
+                else:
+                    logger.info(
+                        "Buyer memory: a disliked fact without a listing is ignored: %s",
+                        sanitize_for_log(content),
+                    )
 
         return declared
 
     def excludes_property(self, property_data: dict[str, Any]) -> bool:
         """
-        Tell whether the buyer ruled this property's area out.
+        Tell whether the buyer does not want to see this property.
 
         A ruled-out area is a FILTER, not a weight: it removes the area
-        outright, where a weight could be outvoted by other signals.
+        outright, where a weight could be outvoted by other signals. A
+        listing the buyer DISLIKED is the same kind of signal, and it names
+        the listing itself.
 
         The place the buyer named must appear in the property's place as a
         CONTIGUOUS run of words, not as a bag of words: "Nowe Miasto" does
         not rule out the district "Miasto", it rules out "Nowe Miasto".
         """
+        if self.disliked_listing_ids:
+            listing_id = str(property_data.get("id", "") or "")
+            if listing_id and listing_id in self.disliked_listing_ids:
+                return True
+
         if not self.ruled_out_areas:
             return False
 
@@ -398,6 +492,13 @@ class DeclaredPreferences:
             if tokens and any(_contains_sequence(tokens, area) for area in self.ruled_out_areas):
                 return True
         return False
+
+    def is_liked_listing(self, property_data: dict[str, Any]) -> bool:
+        """Whether this property is the listing the buyer said they liked."""
+        if not self.liked_listing_ids:
+            return False
+        listing_id = str(property_data.get("id", "") or "")
+        return bool(listing_id) and listing_id in self.liked_listing_ids
 
     def liked_boost(self, property_data: dict[str, Any]) -> tuple[float, float, float]:
         """
@@ -502,6 +603,7 @@ class PersonalizationBoost:
     amenity_boost: float = 0.0
     semantic_boost: float = 0.0
     declared_boost: float = 0.0
+    listing_boost: float = 0.0
 
 
 class PersonalizationService:
@@ -739,6 +841,19 @@ class PersonalizationService:
         declared_min = declared.price_min
         declared_max = declared.price_max
 
+        # A budget in another currency than the property's price cannot be
+        # compared with it. The catalogue is priced in one currency, so this
+        # only bites in a mixed catalogue - and then the stated budget does
+        # not apply to that property at all.
+        property_currency = str(property_data.get("currency") or "").strip().upper()
+        if (
+            (declared_min is not None or declared_max is not None)
+            and declared.price_currency
+            and property_currency
+        ):
+            if declared.price_currency != property_currency:
+                declared_min = declared_max = None
+
         if declared_min is None and declared_max is None:
             # Nothing was stated - the behavioural range is all there is.
             price_min, price_max = behavioural_min, behavioural_max
@@ -816,12 +931,15 @@ class PersonalizationService:
             boost.amenity_boost = min(0.3, amenity_match * 0.1)
 
         # A declared like weighs like a favourite: it adds weight, it never
-        # removes anything.
+        # removes anything. A like that names a LISTING weighs that listing
+        # - not every flat of its kind.
         like_city, like_type, like_amenity = declared.liked_boost(property_data)
         boost.city_boost += like_city
         boost.type_boost += like_type
         boost.amenity_boost = min(0.3, boost.amenity_boost + like_amenity)
         boost.declared_boost = like_city + like_type + like_amenity
+        if declared.is_liked_listing(property_data):
+            boost.listing_boost = DECLARED_LIKE_LISTING_BOOST
 
         # Calculate total boost with weight
         raw_boost = (
@@ -830,6 +948,7 @@ class PersonalizationService:
             + boost.rooms_boost
             + boost.type_boost
             + boost.amenity_boost
+            + boost.listing_boost
         )
 
         # Apply personalization weight
