@@ -301,9 +301,25 @@ _ONE_OFF_REFERENCE_RE = re.compile(
 )
 
 _AMOUNT_RE = re.compile(
-    r"(?<![\w.])(\d{1,3}(?:[ ,.]\d{3})+|\d+(?:[.,]\d+)?)\s*(k|m)?(?![a-zA-Z])",
+    r"(?<![\w.])(\d{1,3}(?:[ ,.]\d{3})+|\d+(?:[.,]\d+)?)"
+    r"\s*(thousand|million|mln|mld|tyś|tys|k|m)?(?![a-zA-Z])",
     re.IGNORECASE,
 )
+
+# The scale of an amount. The ranking reads the same words, so the two
+# parsers must agree on them - a budget the extractor cannot read is a
+# budget the ranking never sees.
+_AMOUNT_SCALES = {
+    "k": 1e3,
+    "tys": 1e3,
+    "tyś": 1e3,
+    "thousand": 1e3,
+    "m": 1e6,
+    "ml": 1e6,
+    "mln": 1e6,
+    "mld": 1e6,
+    "million": 1e6,
+}
 _CURRENCY_RE = re.compile(
     r"\b(pln|zloty|zł|eur|euro|usd|dollar|gbp)\b|€|\$|£",
     re.IGNORECASE,
@@ -484,10 +500,9 @@ def _parse_budget(content: str) -> tuple[Optional[float], Optional[float]]:
         if value is None:
             continue
         suffix = (match.group(2) or "").lower()
-        if suffix == "k":
-            value *= 1_000
-        elif suffix == "m":
-            value *= 1_000_000
+        scale = _AMOUNT_SCALES.get(suffix)
+        if scale is not None:
+            value *= scale
         amounts.append((match.start(), value))
 
     if not amounts:
@@ -521,6 +536,11 @@ def _normalise_budget(fact: Fact) -> Fact:
     """
     minimum, maximum = _parse_budget(fact.content)
     if minimum is None and maximum is None:
+        return fact
+    if (minimum is not None and minimum < 1000) or (maximum is not None and maximum < 1000):
+        # Below a thousand this is not a price - it is a room count, a year
+        # or a house number. The ranking ignores it too; the buyer's own
+        # words are kept.
         return fact
     currency = _budget_currency(fact.content)
 

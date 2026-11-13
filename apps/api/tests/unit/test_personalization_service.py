@@ -1126,3 +1126,68 @@ class TestTheOrderTheBuyerAskedFor:
         )
 
         assert [doc for doc, _ in output] == [other]
+
+
+class TestTheCurrencyOfARow:
+    """A row's currency is read the way the budget's currency is read."""
+
+    @pytest.mark.asyncio
+    async def test_a_row_in_zloty_keeps_the_budget(self):
+        """ "zł" IS the złoty - the same currency as PLN."""
+        profile = _make_profile(view_count=5, favorite_count=3)
+        mock_session = AsyncMock()
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = profile
+        mock_session.execute.return_value = mock_result
+
+        service = PersonalizationService(
+            mock_session, memory_service=_make_memory(_fact("budget", "up to 500000 PLN"))
+        )
+
+        doc = MagicMock()
+        doc.metadata = {"id": "p1", "city": "Kraków", "price": 400000, "currency": "zł"}
+
+        output = await service.apply_personalization_to_results([(doc, 0.9)], "user-001")
+
+        # The budget applies: the listing is inside it.
+        assert output[0][1] > 0.9
+
+    @pytest.mark.asyncio
+    async def test_a_row_without_a_currency_keeps_the_budget(self):
+        """A gap in the catalogue's data is not a reason to drop the budget."""
+        profile = _make_profile(view_count=5, favorite_count=3)
+        mock_session = AsyncMock()
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = profile
+        mock_session.execute.return_value = mock_result
+
+        service = PersonalizationService(
+            mock_session, memory_service=_make_memory(_fact("budget", "up to 500000 PLN"))
+        )
+
+        doc = MagicMock()
+        doc.metadata = {"id": "p1", "city": "Kraków", "price": 400000}
+
+        output = await service.apply_personalization_to_results([(doc, 0.9)], "user-001")
+
+        assert output[0][1] > 0.9
+
+    @pytest.mark.asyncio
+    async def test_a_row_in_another_currency_loses_the_budget(self):
+        """An EUR price cannot be compared with a PLN budget."""
+        profile = _make_profile(view_count=5, favorite_count=3)
+        mock_session = AsyncMock()
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = profile
+        mock_session.execute.return_value = mock_result
+
+        service = PersonalizationService(
+            mock_session, memory_service=_make_memory(_fact("budget", "up to 500000 PLN"))
+        )
+
+        doc = MagicMock()
+        doc.metadata = {"id": "p1", "city": "Kraków", "price": 400000, "currency": "EUR"}
+
+        output = await service.apply_personalization_to_results([(doc, 0.9)], "user-001")
+
+        assert output[0][1] == pytest.approx(0.9)

@@ -16,6 +16,7 @@ from api.models import (
     SearchRequest,
     SearchResponse,
     SearchResultItem,
+    SortField,
 )
 from core.circuit_breaker import ServiceDegradedError, get_breaker
 from core.security_utils import sanitize_for_log
@@ -142,17 +143,17 @@ async def search_properties(
     area they ruled out, a listing they disliked) steers the order, and an
     area they ruled out is not returned at all.
     """
-    # The cache key. A signed-in buyer's results are THEIR results: they are
-    # cached under their own key, never under the shared one.
+    # The cache key. A signed-in buyer's results are THEIR results, and they
+    # depend on a memory that changes: a rule the buyer states in the chat
+    # must not wait for the cache to expire. So a signed-in search is not
+    # cached at all - the cache serves the anonymous traffic.
     body_hash = hashlib.sha256(
         json.dumps(request_body.model_dump(), sort_keys=True, default=str).encode()
     ).hexdigest()[:16]
-    if user is not None:
-        body_hash = f"{body_hash}:{user.id}"
 
     # Check response cache (Task #55)
     cache = getattr(http_request.app.state, "response_cache", None)
-    if cache:
+    if cache and user is None:
         cached = await cache.get(http_request, body_hash=body_hash)
         if cached:
             response_data = cached.data
@@ -227,8 +228,12 @@ async def search_properties(
                     user.id,
                     # A buyer who asked for "cheapest first" gets the cheapest
                     # first: their own rules still remove what they ruled out,
-                    # but they do not overrule the sort they asked for.
-                    keep_order=bool(request_body.sort_by),
+                    # but they do not overrule the sort they asked for. The
+                    # DEFAULT sort is relevance - and relevance is exactly
+                    # what the buyer's own rules are allowed to steer.
+                    keep_order=bool(
+                        request_body.sort_by and request_body.sort_by != SortField.RELEVANCE
+                    ),
                 )
             except Exception as e:  # noqa: BLE001 - the search must not fail
                 logger.warning(
@@ -302,8 +307,9 @@ async def search_properties(
 
         response = SearchResponse(results=items, count=len(items))
 
-        # Store in cache (Task #55)
-        if cache:
+        # Store in cache (Task #55). A signed-in buyer's results are not
+        # cached: they depend on a memory that changes.
+        if cache and user is None:
             await cache.set(
                 http_request,
                 data=response.model_dump(mode="json"),

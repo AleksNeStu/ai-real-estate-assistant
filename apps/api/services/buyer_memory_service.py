@@ -30,7 +30,7 @@ VALID_SOURCES = frozenset({"chat", "manual", "derived"})
 # The kinds that STEER the search: a budget narrows the price range and a
 # ruled-out area removes a place. They are kept whatever the relevance of the
 # query, because they are the buyer's own constraint and not a remark.
-STEERING_KINDS = frozenset({"budget", "ruled_out_area"})
+STEERING_KINDS = frozenset({"budget", "ruled_out_area", "disliked"})
 
 _WHITESPACE = re.compile(r"\s+")
 _TOKEN = re.compile(r"[\w']+", re.UNICODE)

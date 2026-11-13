@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 # Currency words and symbols carry no amount - they only get in the way.
 _CURRENCY_RE = re.compile(
-    r"(zł|zlotych|zloty|zl|pln|eur|euro|usd|gbp|chf|kd|\$|€|£)",
+    r"\b(zł|zlotych|zloty|zl|pln|eur|euro|usd|dollar|gbp|chf)\b|\$|€|£",
     re.IGNORECASE,
 )
 
@@ -54,7 +54,6 @@ _CURRENCY_CODES = {
     "gbp": "GBP",
     "£": "GBP",
     "chf": "CHF",
-    "kd": "PLN",
 }
 
 # "500 000" is one amount, not two. Only a group of exactly three digits is a
@@ -274,6 +273,29 @@ def _currency_of(content: str) -> Optional[str]:
     return _CURRENCY_CODES.get(match.group(0).casefold())
 
 
+def _currency_code(value: Any) -> Optional[str]:
+    """
+    The currency of a price, read the way a budget's currency is read.
+
+    "PLN", "pln" and "zł" are the same currency. A row that states no
+    currency - or an unknown one - returns None: the buyer's budget still
+    applies to it, because a gap in the catalogue's data is not a reason to
+    drop what the buyer said.
+    """
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    code = _CURRENCY_CODES.get(text.casefold())
+    if code is not None:
+        return code
+    upper = text.upper()
+    if upper in set(_CURRENCY_CODES.values()):
+        return upper
+    return None
+
+
 def _budget_side(text: str, position: int) -> str:
     """Tell whether the amount before ``position`` is a floor or a ceiling."""
     window = text[max(0, position - 80) : position]
@@ -484,7 +506,7 @@ class DeclaredPreferences:
         if not self.ruled_out_areas:
             return False
 
-        for key in ("city", "district", "area", "neighborhood"):
+        for key in ("city", "district", "region", "area", "neighborhood"):
             place = _place_name(property_data.get(key))
             if not place:
                 continue
@@ -844,8 +866,10 @@ class PersonalizationService:
         # A budget in another currency than the property's price cannot be
         # compared with it. The catalogue is priced in one currency, so this
         # only bites in a mixed catalogue - and then the stated budget does
-        # not apply to that property at all.
-        property_currency = str(property_data.get("currency") or "").strip().upper()
+        # not apply to that property at all. A row that states NO currency
+        # keeps the budget: a gap in the catalogue's data is not a reason to
+        # drop what the buyer said.
+        property_currency = _currency_code(property_data.get("currency"))
         if (
             (declared_min is not None or declared_max is not None)
             and declared.price_currency

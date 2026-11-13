@@ -6,7 +6,7 @@ endpoint, with a stubbed catalogue and the real database, and say what the
 buyer sees.
 """
 
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -188,3 +188,63 @@ class TestTheBuyersMemoryInTheSearch:
 
         assert response.status_code == 200
         assert response.json()["count"] == 2
+
+
+class TestTheOrderTheBuyerSees:
+    """The buyer's own rules change the order - not only the scores."""
+
+    @pytest.mark.asyncio
+    async def test_a_liked_listing_comes_first(
+        self, search_client, db_session: AsyncSession, buyer: str
+    ):
+        """The router re-ranks: the liked listing overtakes the other."""
+        app.state.response_cache = None
+        db_session.add(
+            BuyerMemoryFact(
+                user_id=buyer,
+                kind="liked",
+                content="the flat on Orla",
+                listing_id="p1",
+                confidence=1.0,
+                source="chat",
+            )
+        )
+        await db_session.commit()
+
+        # The catalogue brings the other flat first, and only a little ahead.
+        app.state.response_cache = None
+        store = app.dependency_overrides[get_vector_store]()
+        store.hybrid_search.return_value = [
+            (_document("p2", "Warszawa", 450000.0), 0.85),
+            (_document("p1", "Kraków", 400000.0), 0.84),
+        ]
+
+        response = await search_client.post(
+            "/api/v1/search", json={"query": "flats"}, headers=_headers(buyer)
+        )
+
+        assert response.status_code == 200
+        ids = [item["property"]["id"] for item in response.json()["results"]]
+        assert ids[0] == "p1"
+
+    @pytest.mark.asyncio
+    async def test_a_signed_in_search_is_not_cached(
+        self, search_client, db_session: AsyncSession, buyer: str
+    ):
+        """A rule the buyer has just stated must not wait for the cache.
+
+        The cached answer knows nothing about the memory, so a signed-in
+        buyer's search is not cached at all.
+        """
+        cache = MagicMock()
+        cache.get = AsyncMock(return_value=None)
+        cache.set = AsyncMock()
+        app.state.response_cache = cache
+
+        response = await search_client.post(
+            "/api/v1/search", json={"query": "flats"}, headers=_headers(buyer)
+        )
+
+        assert response.status_code == 200
+        cache.get.assert_not_called()
+        cache.set.assert_not_called()

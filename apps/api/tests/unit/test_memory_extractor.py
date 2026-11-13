@@ -495,3 +495,42 @@ class TestTheListingIds:
         facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", (), llm=llm)
 
         assert facts == []
+
+
+class TestTheScaleWords:
+    """The scale words the ranking reads are read here too.
+
+    A budget the extractor cannot read is a budget the ranking never sees:
+    "300 thousand" used to be stored as "300", which the ranking ignores.
+    """
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        ("content", "expected"),
+        [
+            ("300 thousand PLN", 300000.0),
+            ("500 tys PLN", 500000.0),
+            ("1.5 million PLN", 1500000.0),
+            ("2 mln PLN", 2000000.0),
+            ("500k PLN", 500000.0),
+        ],
+    )
+    async def test_the_scale_is_read(self, content, expected):
+        llm = make_llm(f'[{{"kind": "budget", "content": "{content}"}}]')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert len(facts) == 1
+        assert facts[0].budget_max == expected
+        assert facts[0].content == f"{int(expected)} PLN"
+
+    @pytest.mark.asyncio
+    async def test_a_number_that_is_not_a_price_is_left_alone(self):
+        """Three rooms is not a budget, and it is not turned into one."""
+        llm = make_llm('[{"kind": "budget", "content": "3 rooms"}]')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert facts[0].content == "3 rooms"
+        assert facts[0].budget_min is None
+        assert facts[0].budget_max is None
