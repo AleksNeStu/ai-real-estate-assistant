@@ -79,7 +79,7 @@ export const PRIVACY: LegalDocument = {
       ],
       points: [
         'How long it is kept: a fact is kept for a year after it is recorded, and then it expires and is removed.',
-        'How to delete it: you can delete the whole memory yourself, from your profile, and deleting your account removes it with the account.',
+        'How to delete it: the signed-in account can delete the whole memory at any time, through the account endpoint /api/v1/me/buyer-memory, and deleting your account removes it with the account.',
       ],
     },
     {
@@ -159,7 +159,7 @@ export const TERMS: LegalDocument = {
     {
       heading: 'The buyer memory',
       paragraphs: [
-        'If you sign in, the assistant may keep a memory of what you have told it about your search - a budget, areas you ruled out, a feature you need - and use it to answer you and to rank the listings you are shown. It belongs to your account, it is kept for a year, and you can delete it from your profile or by deleting your account.',
+        'If you sign in, the assistant may keep a memory of what you have told it about your search - a budget, areas you ruled out, a feature you need - and use it to answer you and to rank the listings you are shown. It belongs to your account, it is kept for a year, and you can delete it at any time through your account - the endpoint /api/v1/me/buyer-memory - or by deleting your account.',
         'The memory is a convenience, not a contract. It does not change what a listing is, what it costs, or what the assistant can be asked to do, and it is not a profile that is sold, shared or used to train a model.',
       ],
     },
