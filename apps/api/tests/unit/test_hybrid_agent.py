@@ -213,6 +213,40 @@ class TestHybridPropertyAgent:
             stream_calls.assert_called_once()
 
     @pytest.mark.asyncio
+    async def test_a_turn_does_not_inherit_the_previous_turn_s_documents(self, agent):
+        """Every turn starts from a clean slate.
+
+        The documents of the previous turn are not the documents of this one.
+        An agent that lived longer than one request would otherwise validate a
+        fact against a listing the buyer was not shown this turn.
+        """
+        agent.last_source_documents = ["the previous turn's document"]
+
+        analysis = QueryAnalysis(
+            query="q",
+            intent=QueryIntent.SIMPLE_RETRIEVAL,
+            complexity=Complexity.SIMPLE,
+            tools_needed=[Tool.RAG_RETRIEVAL],
+            extracted_filters={},
+        )
+        agent.analyzer.analyze = MagicMock(return_value=analysis)
+
+        async def fake_stream(_query, _analysis):
+            yield '{"content": "RAG"}'
+
+        with patch.object(agent, "_astream_with_rag", new=fake_stream):
+            _ = [chunk async for chunk in agent.astream_query("q")]
+
+        assert agent.last_source_documents == []
+
+    def test_a_query_starts_without_the_previous_turn_s_documents(self, agent):
+        agent.last_source_documents = ["the previous turn's document"]
+
+        agent.process_query("q")
+
+        assert agent.last_source_documents == []
+
+    @pytest.mark.asyncio
     async def test_astream_query_fallbacks_to_sync_result(self, agent):
         analysis = QueryAnalysis(
             query="q",

@@ -512,6 +512,10 @@ Thought: {agent_scratchpad}"""
         """
         start_time = time.time()
 
+        # Every turn starts from a clean slate: the documents of the PREVIOUS
+        # turn are not the documents of this one.
+        self.last_source_documents = []
+
         guard = self._domain_guard(query)
         if guard:
             if return_analysis:
@@ -967,6 +971,9 @@ Thought: {agent_scratchpad}"""
             JSON string chunks containing 'content' or 'error'.
         """
         memory_block = self._memory_section(buyer_memory)
+        # Every turn starts from a clean slate: the documents of the PREVIOUS
+        # turn are not the documents of this one.
+        self.last_source_documents = []
         try:
             guard = self._domain_guard(query)
             if guard:
