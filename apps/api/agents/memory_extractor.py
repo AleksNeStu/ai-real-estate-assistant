@@ -25,6 +25,7 @@ The returned facts are plain dataclasses. The write path
 (``services.buyer_memory_service.py``) owns persisting them.
 """
 
+import asyncio
 import json
 import logging
 import re
@@ -185,10 +186,13 @@ def _message_text(message: Any) -> str:
 def _listing_line(listing: Any) -> str:
     """Render one listing as a single line the model can map a reference onto."""
     if isinstance(listing, dict):
-        get = listing.get
+
+        def get(key: str, default: Any = None) -> Any:
+            return listing.get(key, default)
+
     else:
 
-        def get(key, default=None):
+        def get(key: str, default: Any = None) -> Any:
             return getattr(listing, key, default)
 
     listing_id = get("id") or get("listing_id")
@@ -546,7 +550,10 @@ async def extract_buyer_facts(
     prompt = build_extraction_prompt(messages, answer, listings)
 
     try:
-        response = llm.invoke(prompt)
+        # The model call is blocking, and this function is async. The house
+        # pattern (api/routers/chat.py) runs a blocking call in a thread, so
+        # the event loop is not stalled while the provider thinks.
+        response = await asyncio.to_thread(llm.invoke, prompt)
     except Exception as exc:
         logger.warning("Buyer memory extraction: the model call failed (%s)", exc)
         return []
