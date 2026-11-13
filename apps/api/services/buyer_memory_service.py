@@ -27,6 +27,11 @@ VALID_KINDS = frozenset({"budget", "ruled_out_area", "liked", "disliked", "requi
 # The closed set of sources a fact can come from.
 VALID_SOURCES = frozenset({"chat", "manual", "derived"})
 
+# The kinds that STEER the search: a budget narrows the price range and a
+# ruled-out area removes a place. They are kept whatever the relevance of the
+# query, because they are the buyer's own constraint and not a remark.
+STEERING_KINDS = frozenset({"budget", "ruled_out_area"})
+
 _WHITESPACE = re.compile(r"\s+")
 _TOKEN = re.compile(r"[\w']+", re.UNICODE)
 
@@ -153,7 +158,24 @@ class BuyerMemoryService:
             query_tokens = _tokens(query)
             unique.sort(key=lambda f: -len(query_tokens & _tokens(f.content)))
 
-        return unique[:limit]
+        selected = unique[:limit]
+
+        # The facts that STEER the search survive the limit whatever the
+        # relevance: a budget or a ruled-out area that shares no word with
+        # the question is still the buyer's own constraint, and dropping it
+        # because the prompt was full would silently change the answer.
+        if len(unique) > limit:
+            kept_ids = {fact.id for fact in selected if fact.kind in STEERING_KINDS}
+            missing = [
+                fact for fact in unique if fact.kind in STEERING_KINDS and fact.id not in kept_ids
+            ]
+            if missing:
+                steering = [fact for fact in selected if fact.kind in STEERING_KINDS]
+                others = [fact for fact in selected if fact.kind not in STEERING_KINDS]
+                room = max(0, limit - len(steering) - len(missing))
+                selected = steering + missing[: max(0, limit - len(steering))] + others[:room]
+
+        return selected
 
     async def delete_for_user(self, user_id: str) -> int:
         """

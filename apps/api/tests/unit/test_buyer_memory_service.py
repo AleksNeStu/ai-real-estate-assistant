@@ -112,6 +112,33 @@ class TestRecallForUser:
 
         assert recalled[0].content == "needs a balcony"
 
+    @pytest.mark.asyncio
+    async def test_a_budget_survives_a_full_prompt(self, service, buyer):
+        """The buyer's own constraint is not dropped because the prompt is full.
+
+        A budget shares no word with a typical question, so a relevance-only
+        ranking pushed it out of the limit - and the answer was then given
+        without the budget the buyer had stated.
+        """
+        await service.record_fact(user_id=buyer, kind="budget", content="at least 300000 PLN")
+        for i in range(15):
+            await service.record_fact(user_id=buyer, kind="note", content=f"note {i}")
+
+        recalled = await service.recall_for_user(user_id=buyer, query="flats in Krakow", limit=10)
+
+        assert len(recalled) == 10
+        assert "at least 300000 PLN" in {fact.content for fact in recalled}
+
+    @pytest.mark.asyncio
+    async def test_a_ruled_out_area_survives_a_full_prompt(self, service, buyer):
+        await service.record_fact(user_id=buyer, kind="ruled_out_area", content="Krakow")
+        for i in range(15):
+            await service.record_fact(user_id=buyer, kind="note", content=f"note {i}")
+
+        recalled = await service.recall_for_user(user_id=buyer, query="flats in Gdansk", limit=10)
+
+        assert "Krakow" in {fact.content for fact in recalled}
+
 
 class TestRecordFact:
     """What the buyer said."""
