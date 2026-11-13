@@ -78,6 +78,27 @@ describe('the privacy policy', () => {
     expect(text).toContain('delete');
     expect(text).toContain('kept');
   });
+
+  it('does not claim a use the deployment does not perform', () => {
+    // The memory is read back into the answers. It is NOT used to rank the
+    // listings yet - the search path does not call the personalization
+    // service - and a policy must not promise what the product does not do.
+    // When the ranking is wired, this test and the text move together.
+    const section = PRIVACY.sections.find(
+      (candidate) => /buyer memory/i.test(candidate.heading),
+    );
+    const privacyText = [...(section?.paragraphs ?? []), ...(section?.points ?? [])]
+      .join(' ')
+      .toLowerCase();
+
+    const termsSection = TERMS.sections.find((candidate) => /buyer memory/i.test(candidate.heading));
+    const termsText = [...(termsSection?.paragraphs ?? []), ...(termsSection?.points ?? [])]
+      .join(' ')
+      .toLowerCase();
+
+    expect(privacyText).not.toContain('rank');
+    expect(termsText).not.toContain('rank');
+  });
 });
 
 describe('the terms of use', () => {

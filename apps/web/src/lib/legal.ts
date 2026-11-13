@@ -74,7 +74,7 @@ export const PRIVACY: LegalDocument = {
       paragraphs: [
         'When you are signed in, the assistant can keep a memory of what you have told it about your search: a budget, areas you ruled out, a feature you need, a listing you liked. It exists so you do not have to repeat yourself on every visit.',
         'The memory belongs to your signed-in account. It is not attached to visitors who are not signed in, and it is not shared between accounts.',
-        'The memory is read back into the answers the assistant gives you, and it is used to rank the listings you are shown.',
+        'The memory is read back into the answers the assistant gives you, so that you do not have to repeat what you said.',
         'The memory stays in the same database as the rest of your account data, on the operator’s own infrastructure. No third party receives it, and no new sub-processor is involved.',
       ],
       points: [
@@ -159,7 +159,7 @@ export const TERMS: LegalDocument = {
     {
       heading: 'The buyer memory',
       paragraphs: [
-        'If you sign in, the assistant may keep a memory of what you have told it about your search - a budget, areas you ruled out, a feature you need - and use it to answer you and to rank the listings you are shown. It belongs to your account, it is kept for a year, and you can delete it at any time through your account - the endpoint /api/v1/me/buyer-memory - or by deleting your account.',
+        'If you sign in, the assistant may keep a memory of what you have told it about your search - a budget, areas you ruled out, a feature you need - and use it to answer you. It belongs to your account, it is kept for a year, and you can delete it at any time through your account - the endpoint /api/v1/me/buyer-memory - or by deleting your account.',
         'The memory is a convenience, not a contract. It does not change what a listing is, what it costs, or what the assistant can be asked to do, and it is not a profile that is sold, shared or used to train a model.',
       ],
     },
