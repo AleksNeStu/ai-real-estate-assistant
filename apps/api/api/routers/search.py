@@ -223,7 +223,12 @@ async def search_properties(
         if user is not None:
             try:
                 results = await PersonalizationService(session).apply_personalization_to_results(
-                    results, user.id
+                    results,
+                    user.id,
+                    # A buyer who asked for "cheapest first" gets the cheapest
+                    # first: their own rules still remove what they ruled out,
+                    # but they do not overrule the sort they asked for.
+                    keep_order=bool(request_body.sort_by),
                 )
             except Exception as e:  # noqa: BLE001 - the search must not fail
                 logger.warning(

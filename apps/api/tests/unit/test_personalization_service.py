@@ -1075,3 +1075,54 @@ class TestTheCurrency:
 
         # No budget, no price boost: the listing is where the search put it.
         assert output[0][1] == pytest.approx(0.9)
+
+
+class TestTheOrderTheBuyerAskedFor:
+    """An explicit sort is the buyer's order too."""
+
+    @pytest.mark.asyncio
+    async def test_an_explicit_sort_is_kept(self):
+        """The results keep the order the caller brought."""
+        profile = _make_profile(view_count=5, favorite_count=3)
+        mock_session = AsyncMock()
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = profile
+        mock_session.execute.return_value = mock_result
+
+        service = PersonalizationService(
+            mock_session, memory_service=_make_memory(_fact("budget", "up to 500000"))
+        )
+
+        cheap = MagicMock()
+        cheap.metadata = {"id": "p1", "city": "Kraków", "price": 300000}
+        dear = MagicMock()
+        dear.metadata = {"id": "p2", "city": "Kraków", "price": 900000}
+
+        output = await service.apply_personalization_to_results(
+            [(cheap, 0.9), (dear, 0.8)], "user-001", keep_order=True
+        )
+
+        assert [doc for doc, _ in output] == [cheap, dear]
+
+    @pytest.mark.asyncio
+    async def test_the_order_is_kept_and_the_ruled_out_area_is_still_removed(self):
+        profile = _make_profile(view_count=5, favorite_count=3)
+        mock_session = AsyncMock()
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = profile
+        mock_session.execute.return_value = mock_result
+
+        service = PersonalizationService(
+            mock_session, memory_service=_make_memory(_fact("ruled_out_area", "Kraków"))
+        )
+
+        cheap = MagicMock()
+        cheap.metadata = {"id": "p1", "city": "Kraków", "price": 300000}
+        other = MagicMock()
+        other.metadata = {"id": "p2", "city": "Warszawa", "price": 400000}
+
+        output = await service.apply_personalization_to_results(
+            [(cheap, 0.9), (other, 0.8)], "user-001", keep_order=True
+        )
+
+        assert [doc for doc, _ in output] == [other]

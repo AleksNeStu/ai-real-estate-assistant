@@ -1002,6 +1002,7 @@ class PersonalizationService:
         results: list[tuple[Any, float]],
         user_id: str,
         personalization_weight: float = 0.2,
+        keep_order: bool = False,
     ) -> list[tuple[Any, float]]:
         """
         Apply personalization boosts to search results.
@@ -1010,6 +1011,10 @@ class PersonalizationService:
             results: List of (document, score) tuples.
             user_id: The user ID.
             personalization_weight: Weight for personalization (0-0.5).
+            keep_order: Keep the order the caller brought. A buyer who asked
+                for "cheapest first" gets the cheapest first - the buyer's
+                own rules still remove what they ruled out, but they do not
+                overrule the sort they asked for.
 
         Returns:
             Re-ranked results with personalization applied. A result in an
@@ -1042,8 +1047,9 @@ class PersonalizationService:
             new_score = score * (1.0 + boost.total_boost)
             personalized.append((doc, new_score))
 
-        # Re-sort by new scores
-        personalized.sort(key=lambda x: x[1], reverse=True)
+        # Re-sort by new scores - unless the caller asked for an order.
+        if not keep_order:
+            personalized.sort(key=lambda x: x[1], reverse=True)
 
         return personalized
 

@@ -79,11 +79,11 @@ describe('the privacy policy', () => {
     expect(text).toContain('kept');
   });
 
-  it('does not claim a use the deployment does not perform', () => {
-    // The memory is read back into the answers. It is NOT used to rank the
-    // listings yet - the search path does not call the personalization
-    // service - and a policy must not promise what the product does not do.
-    // When the ranking is wired, this test and the text move together.
+  it('says what the memory steers, and only what it steers', () => {
+    // The memory is read back into the answers AND it steers what the buyer
+    // is shown: the search applies it, a ruled-out area is not returned.
+    // A policy must not promise what the product does not do - and it must
+    // not hide what it does.
     const section = PRIVACY.sections.find(
       (candidate) => /buyer memory/i.test(candidate.heading),
     );
@@ -96,8 +96,10 @@ describe('the privacy policy', () => {
       .join(' ')
       .toLowerCase();
 
-    expect(privacyText).not.toContain('rank');
-    expect(termsText).not.toContain('rank');
+    for (const text of [privacyText, termsText]) {
+      expect(text).toContain('steers what you are shown');
+      expect(text).toContain('not returned at all');
+    }
   });
 });
 
