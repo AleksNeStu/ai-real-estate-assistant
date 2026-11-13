@@ -6,18 +6,22 @@ about them, and they can delete it. Both live here, behind the JWT.
 The ownership rule is the point of this module: the user id comes from the
 authenticated user and from nowhere else. No request body, no query parameter
 and no path segment can name another buyer's facts.
+
+The endpoints ask for a REAL token, not the demo bypass. In a demo deployment
+the bypass answers an anonymous request with a synthetic, SHARED demo user -
+and a memory is by definition personal, so a shared bucket must not be
+listable or erasable by whoever walks in. An anonymous request is a 401.
 """
 
 from datetime import datetime
-from typing import Optional
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.deps.auth import get_current_active_user
+from api.deps.auth import AuthCredentials, get_auth_credentials
 from db.database import get_db
-from db.models import User
 from services.buyer_memory_service import BuyerMemoryService
 
 router = APIRouter(prefix="/me/buyer-memory", tags=["Buyer Memory"])
@@ -62,8 +66,8 @@ class BuyerMemoryDeleteResponse(BaseModel):
     description="Everything the platform stored about the authenticated buyer.",
 )
 async def list_buyer_memory(
-    user: User = Depends(get_current_active_user),
-    session: AsyncSession = Depends(get_db),
+    credentials: Annotated[AuthCredentials, Depends(get_auth_credentials)],
+    session: Annotated[AsyncSession, Depends(get_db)],
 ) -> BuyerMemoryListResponse:
     """Show the caller everything stored about them.
 
@@ -71,7 +75,7 @@ async def list_buyer_memory(
     the scheduler removes the row itself.
     """
     service = BuyerMemoryService(session)
-    facts = await service.recall_for_user(user.id, limit=MAX_LISTED_FACTS)
+    facts = await service.recall_for_user(credentials.user.id, limit=MAX_LISTED_FACTS)
     return BuyerMemoryListResponse(
         facts=[BuyerMemoryFactResponse.model_validate(fact) for fact in facts],
         count=len(facts),
@@ -85,8 +89,8 @@ async def list_buyer_memory(
     description="Remove every stored fact of the authenticated buyer, and only theirs.",
 )
 async def delete_buyer_memory(
-    user: User = Depends(get_current_active_user),
-    session: AsyncSession = Depends(get_db),
+    credentials: Annotated[AuthCredentials, Depends(get_auth_credentials)],
+    session: Annotated[AsyncSession, Depends(get_db)],
 ) -> BuyerMemoryDeleteResponse:
     """Erase the caller's memory.
 
@@ -94,5 +98,5 @@ async def delete_buyer_memory(
     widen that scope.
     """
     service = BuyerMemoryService(session)
-    deleted = await service.delete_for_user(user.id)
+    deleted = await service.delete_for_user(credentials.user.id)
     return BuyerMemoryDeleteResponse(deleted=deleted)

@@ -16,7 +16,7 @@ from sqlalchemy import event, func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
-from api.deps.auth import get_current_active_user
+from api.deps.auth import AuthCredentials, get_auth_credentials
 from api.routers import buyer_memory
 from db.database import Base, get_db
 from db.models import BuyerMemoryFact, User
@@ -100,11 +100,11 @@ async def _client(session: AsyncSession, user: User):
     async def override_get_db():
         yield session
 
-    async def override_get_current_user():
-        return user
+    async def override_get_auth_credentials():
+        return AuthCredentials(user, {"roles": ["user"]})
 
     test_app.dependency_overrides[get_db] = override_get_db
-    test_app.dependency_overrides[get_current_active_user] = override_get_current_user
+    test_app.dependency_overrides[get_auth_credentials] = override_get_auth_credentials
 
     transport = ASGITransport(app=test_app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
@@ -115,8 +115,11 @@ async def _client(session: AsyncSession, user: User):
 async def _unauthenticated_client(session: AsyncSession):
     """A client with the REAL authentication dependency - no override.
 
-    The demo bypass is switched off, so an anonymous request is a genuine 401
-    and the assertion means something.
+    The demo bypass is deliberately LEFT ON: the self-hosted demo stack sets
+    DEMO_MODE without DEMO_USER_BYPASS, so the bypass follows it and the
+    synthetic demo user answers an anonymous request everywhere else. A
+    personal memory must not be listable or erasable by whoever walks in, so
+    the endpoints ask for a real token - and this client proves it.
     """
     from fastapi import FastAPI
 
@@ -126,7 +129,7 @@ async def _unauthenticated_client(session: AsyncSession):
     settings = get_settings()
     previous_bypass = settings.demo_user_bypass
     previous_sessions = dict(settings_router._DEMO_MODE_SESSIONS)
-    settings.demo_user_bypass = False
+    settings.demo_user_bypass = True
     settings_router._DEMO_MODE_SESSIONS.clear()
 
     test_app = FastAPI()
@@ -148,7 +151,7 @@ async def _unauthenticated_client(session: AsyncSession):
 
 
 class TestBuyerMemoryAuthentication:
-    """The endpoints are behind the JWT - an anonymous caller gets nothing."""
+    """The endpoints are behind a real token - an anonymous caller gets nothing."""
 
     @pytest.mark.asyncio
     async def test_an_unauthenticated_request_gets_401(self, fk_session: AsyncSession):
