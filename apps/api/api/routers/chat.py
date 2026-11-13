@@ -300,6 +300,23 @@ def _turn_listings(result: dict) -> list[dict[str, Any]]:
     return payloads
 
 
+def _agent_listings(agent: Any) -> list[dict[str, Any]]:
+    """The listings the agent's answer was built from.
+
+    The streaming path yields strings only, so the agent keeps the documents
+    it retrieved: without them the caller would have to run a SECOND
+    retrieval to learn what the answer was made of - and a second retrieval
+    is a different answer (a different query, a different k). The listing a
+    buyer read in the prose must be a listing the buyer can speak about.
+    """
+    payloads: list[dict[str, Any]] = []
+    for document in getattr(agent, "last_source_documents", None) or []:
+        metadata = getattr(document, "metadata", None)
+        if isinstance(metadata, dict) and metadata.get("id"):
+            payloads.append(metadata)
+    return payloads
+
+
 def _supports_buyer_memory(agent: Any, method: str) -> bool:
     """Whether the agent's method takes the buyer's memory.
 
@@ -511,7 +528,11 @@ async def chat_endpoint(
                             memory_user,
                             [{"role": "user", "content": sanitized_message}],
                             "".join(answer_parts),
-                            _listing_payloads(sources_payload.get("sources")),
+                            # The documents the answer was built from, and the
+                            # citations - the same shape the non-streaming
+                            # path validates against.
+                            _agent_listings(agent)
+                            + _listing_payloads(sources_payload.get("sources")),
                             llm,
                         )
 

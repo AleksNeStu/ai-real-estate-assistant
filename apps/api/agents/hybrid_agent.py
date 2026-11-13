@@ -128,6 +128,12 @@ class HybridPropertyAgent:
         # Initialize RAG chain
         self.rag_chain = self._create_rag_chain()
 
+        # The documents the LAST answer was built from. The streaming paths
+        # yield strings only, so without this the caller would have to run a
+        # SECOND retrieval to learn what the answer was made of - and a second
+        # retrieval is a different answer (a different query, a different k).
+        self.last_source_documents: list[Any] = []
+
         # Initialize default tool agent
         self.tool_agent = self._create_tool_agent()
 
@@ -1014,6 +1020,15 @@ Thought: {agent_scratchpad}"""
         chain = self._rag_chain_for(self._memory_section(buyer_memory))
         async for event in chain.astream_events({"question": query}, version="v1"):
             kind = event["event"]
+            if kind == "on_chain_end":
+                # The chain's own output carries the documents the answer was
+                # built from. The nested chains end first, so the last write
+                # is the outer chain - and only an output that HAS documents
+                # overwrites what is already known.
+                output = event["data"].get("output")
+                if isinstance(output, dict) and output.get("source_documents"):
+                    self.last_source_documents = list(output["source_documents"])
+                continue
             if kind == "on_chat_model_stream":
                 content = event["data"]["chunk"].content
                 if content:
@@ -1042,6 +1057,11 @@ Thought: {agent_scratchpad}"""
             try:
                 context_docs = await self._aretrieve_documents(query, analysis, k=3)
                 if context_docs:
+                    # The properties the answer is built from. The caller needs
+                    # to know them: a fact about a listing the buyer read in the
+                    # prose must not be dropped because the listing is not in
+                    # the citations.
+                    self.last_source_documents = list(context_docs)
                     context_text = "\n\n".join(
                         [
                             f"Property {i + 1}: {doc.page_content[:200]}..."
@@ -1087,6 +1107,8 @@ Thought: {agent_scratchpad}"""
         memory_block = self._memory_section(buyer_memory)
         rag_response = await self._rag_chain_for(memory_block).ainvoke({"question": query})
         answer = rag_response["answer"]
+        if rag_response.get("source_documents"):
+            self.last_source_documents = list(rag_response["source_documents"])
 
         if analysis.requires_computation or analysis.complexity == Complexity.COMPLEX:
             if memory_block:

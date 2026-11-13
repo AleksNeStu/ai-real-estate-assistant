@@ -7,6 +7,7 @@ and no answer is produced by a real model.
 """
 
 import json
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -60,6 +61,13 @@ class FakeAgent:
 
 class StreamingFakeAgent(FakeAgent):
     """The agent on the streaming path, which yields JSON envelopes."""
+
+    def __init__(self, answer: str = "Here are three flats in Warsaw.", documents=()) -> None:
+        super().__init__(answer)
+        # The real agent keeps the documents its answer was built from; the
+        # streaming generator yields strings only, so this is the only way the
+        # caller learns what the buyer was shown.
+        self.last_source_documents = list(documents)
 
     async def astream_query(self, message, **kwargs):
         self.calls.append({"message": message, "kwargs": kwargs})
@@ -294,3 +302,40 @@ class TestTheStreamingPath:
         prompt = model.calls[0]
         assert "Here are three flats in Warsaw." in prompt
         assert '{"content"' not in prompt
+
+    async def test_a_listing_the_answer_used_is_kept(
+        self, chat_client, db_session, buyer, buyer_headers
+    ):
+        """A listing the buyer read in the prose can be spoken about.
+
+        The streaming path used to validate a listing fact against the
+        citations alone - a second, independent retrieval - so a fact about
+        the listing the answer was built from was dropped as "unknown
+        listing" while the same fact survived on the non-streaming path.
+        """
+        document = SimpleNamespace(metadata={"id": "listing-1", "title": "Flat on Orla"})
+        agent = StreamingFakeAgent(documents=[document])
+        liking_model = StubModel(
+            json.dumps(
+                [{"kind": "liked", "content": "the balcony flat", "listing_id": "listing-1"}]
+            )
+        )
+        app.dependency_overrides[get_llm] = lambda: liking_model
+
+        with patch("api.routers.chat.create_hybrid_agent", lambda **_: agent):
+            with patch("ai.memory.get_session_history", lambda _session_id: MockHistory()):
+                response = await chat_client.post(
+                    "/api/v1/chat",
+                    json={
+                        "message": "I like the flat on Orla.",
+                        "stream": True,
+                    },
+                    headers=buyer_headers,
+                )
+
+        assert response.status_code == 200
+
+        service = BuyerMemoryService(db_session)
+        recalled = await service.recall_for_user(buyer)
+        assert [fact.content for fact in recalled] == ["the balcony flat"]
+        assert recalled[0].listing_id == "listing-1"
