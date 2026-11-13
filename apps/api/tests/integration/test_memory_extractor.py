@@ -13,6 +13,7 @@ from agents.memory_extractor import extract_buyer_facts
 from api.dependencies import get_buyer_memory_service
 from db.models import User
 from services.buyer_memory_service import BuyerMemoryService
+from services.personalization_service import PersonalizationService
 
 MESSAGES = [{"role": "user", "content": "I do not want Krakow, and my budget is 400k PLN."}]
 
@@ -96,6 +97,56 @@ class TestExtractionIntoTheDatabase:
 
         assert facts == []
         assert await service.recall_for_user(buyer) == []
+
+
+class TestTheBudgetReachesTheRanking:
+    """The extracted budget arrives in the ranking as the buyer said it.
+
+    The content of a stored fact is the only channel the ranking has, so the
+    side of the budget ("at least" / "up to") has to survive the extraction,
+    the storage and the read back. When it did not, the ranking read a floor
+    as a ceiling and enforced the buyer's own words backwards.
+    """
+
+    @pytest.mark.asyncio
+    async def test_a_stated_floor_reaches_the_ranking_as_a_floor(self, service, buyer, db_session):
+        model = StubModel('[{"kind": "budget", "content": "at least 300k PLN"}]')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are some flats.", (), llm=model)
+        assert len(facts) == 1
+
+        await service.record_fact(
+            user_id=buyer,
+            kind=facts[0].kind,
+            content=facts[0].content,
+            source="chat",
+        )
+
+        declared = await PersonalizationService(db_session, service).get_declared_preferences(buyer)
+
+        assert declared.price_min == 300000.0
+        assert declared.price_max is None
+
+    @pytest.mark.asyncio
+    async def test_a_stated_ceiling_reaches_the_ranking_as_a_ceiling(
+        self, service, buyer, db_session
+    ):
+        model = StubModel('[{"kind": "budget", "content": "up to 300k PLN"}]')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are some flats.", (), llm=model)
+        assert len(facts) == 1
+
+        await service.record_fact(
+            user_id=buyer,
+            kind=facts[0].kind,
+            content=facts[0].content,
+            source="chat",
+        )
+
+        declared = await PersonalizationService(db_session, service).get_declared_preferences(buyer)
+
+        assert declared.price_max == 300000.0
+        assert declared.price_min is None
 
     @pytest.mark.asyncio
     async def test_the_prompt_carries_the_turn_and_the_listings(self):

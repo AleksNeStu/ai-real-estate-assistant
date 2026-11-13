@@ -407,9 +407,78 @@ def _parse_amount(raw: str) -> Optional[float]:
     return _parse_number(text)
 
 
+# The side a budget amount sits on: a FLOOR ("at least 300k") or a CEILING
+# ("up to 500k"). A budget with no marker is a ceiling.
+#
+# The marker that comes LAST before the amount decides, and on a tie the
+# longer one wins - so the negated forms written in full ("don't want to
+# spend more than") beat the bare "more than" inside them. This is the same
+# rule the ranking applies to a budget fact, and the two must agree.
+_BUDGET_SIDE_MARKERS: tuple[tuple[re.Pattern[str], str], ...] = (
+    (
+        re.compile(
+            r"\b(?:do\s+not|don['’]?t|dont|never)\s+want\s+"
+            r"(?:to\s+(?:spend|pay|go)\s+)?(?:more|over|above)(?:\s+than)?\b",
+            re.IGNORECASE,
+        ),
+        "max",
+    ),
+    (re.compile(r"\b(?:no|not)\s+more\s+than\b", re.IGNORECASE), "max"),
+    (re.compile(r"\bno\s+more\b", re.IGNORECASE), "max"),
+    (re.compile(r"\bless\s+than\b", re.IGNORECASE), "max"),
+    (re.compile(r"\bat\s+most\b", re.IGNORECASE), "max"),
+    (re.compile(r"\bup\s+to\b", re.IGNORECASE), "max"),
+    (re.compile(r"\bmaximum\b", re.IGNORECASE), "max"),
+    (re.compile(r"\bunder\b", re.IGNORECASE), "max"),
+    (re.compile(r"\bbelow\b", re.IGNORECASE), "max"),
+    (re.compile(r"\b(?:no|not)\s+less\s+than\b", re.IGNORECASE), "min"),
+    (re.compile(r"\bat\s+least\b", re.IGNORECASE), "min"),
+    (re.compile(r"\bminimum\b", re.IGNORECASE), "min"),
+    (re.compile(r"\bstarting\s+from\b", re.IGNORECASE), "min"),
+    (re.compile(r"\bmore\s+than\b", re.IGNORECASE), "min"),
+    (re.compile(r"\bover\b", re.IGNORECASE), "min"),
+    (re.compile(r"\babove\b", re.IGNORECASE), "min"),
+    (re.compile(r"\bfrom\b", re.IGNORECASE), "min"),
+)
+
+
+def _budget_side(content: str, position: int) -> str:
+    """Whether the amount at ``position`` is a floor or a ceiling.
+
+    Args:
+        content: The buyer's own words.
+        position: Where the amount starts in that text.
+
+    Returns:
+        "min" for a floor ("at least 300k"), "max" for a ceiling. A budget
+        with no marker is a ceiling.
+    """
+    window = content[max(0, position - 80) : position]
+    best_end = -1
+    best_length = -1
+    best_side = "max"
+
+    for pattern, side in _BUDGET_SIDE_MARKERS:
+        for match in pattern.finditer(window):
+            end = match.end()
+            length = len(match.group(0))
+            if end > best_end or (end == best_end and length > best_length):
+                best_end = end
+                best_length = length
+                best_side = side
+
+    return best_side
+
+
 def _parse_budget(content: str) -> tuple[Optional[float], Optional[float]]:
-    """Read the min and max of a budget range out of its content."""
-    amounts: list[float] = []
+    """Read the min and max of a budget out of its content.
+
+    A budget with no marker is a CEILING ("my budget is 500k") - the same rule
+    the ranking reads a bare number by. The two must agree: when the extractor
+    stored a floor as a bare number, the ranking enforced the buyer's own
+    words backwards.
+    """
+    amounts: list[tuple[int, float]] = []
     for match in _AMOUNT_RE.finditer(content):
         value = _parse_amount(match.group(1))
         if value is None:
@@ -419,13 +488,17 @@ def _parse_budget(content: str) -> tuple[Optional[float], Optional[float]]:
             value *= 1_000
         elif suffix == "m":
             value *= 1_000_000
-        amounts.append(value)
+        amounts.append((match.start(), value))
 
     if not amounts:
         return None, None
     if len(amounts) == 1:
-        return amounts[0], amounts[0]
-    return min(amounts), max(amounts)
+        position, value = amounts[0]
+        if _budget_side(content, position) == "min":
+            return value, None
+        return None, value
+    values = [value for _, value in amounts]
+    return min(values), max(values)
 
 
 def _budget_currency(content: str) -> Optional[str]:
@@ -437,16 +510,29 @@ def _budget_currency(content: str) -> Optional[str]:
 
 
 def _normalise_budget(fact: Fact) -> Fact:
-    """Normalise a budget fact into a min/max range."""
+    """Normalise a budget fact into a min/max range.
+
+    The SIDE of the budget survives the normalisation, because the content is
+    the only channel the stored fact has to the ranking: "at least 300k"
+    becomes "at least 300000 PLN" (a floor), "up to 300k" becomes
+    "300000 PLN" (a ceiling) and a range becomes "300000-450000 PLN". Without
+    that, a floor and a ceiling of the same amount would collapse into one
+    string and the ranking would enforce the buyer's own words backwards.
+    """
     minimum, maximum = _parse_budget(fact.content)
-    if minimum is None or maximum is None:
+    if minimum is None and maximum is None:
         return fact
     currency = _budget_currency(fact.content)
-    low = int(minimum)
-    high = int(maximum)
-    content = f"{low}-{high}" if low != high else str(low)
+
+    if minimum is not None and maximum is not None:
+        content = f"{int(minimum)}-{int(maximum)}"
+    elif minimum is not None:
+        content = f"at least {int(minimum)}"
+    else:
+        content = str(int(maximum or 0))
     if currency:
         content = f"{content} {currency}"
+
     return Fact(
         kind=fact.kind,
         content=content,
@@ -597,7 +683,10 @@ def _build_fact(item: Any, known_ids: set[str]) -> Optional[Fact]:
     if not ok:
         logger.warning("Buyer memory extraction: dropping a fact with a malformed listing id")
         return None
-    if listing_id is not None and known_ids and listing_id not in known_ids:
+    if listing_id is not None and listing_id not in known_ids:
+        # A fact about a listing that was not shown is noise - and when NO
+        # listing was shown, every id is such a fact. The guard used to be
+        # skipped on an empty set, which let a model name any id at all.
         logger.warning("Buyer memory extraction: dropping a fact about an unknown listing")
         return None
 

@@ -269,8 +269,8 @@ class TestTheAmounts:
         facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
 
         assert len(facts) == 1
-        assert facts[0].budget_min == 500000.0
         assert facts[0].budget_max == 500000.0
+        assert facts[0].budget_min is None
 
     @pytest.mark.asyncio
     async def test_a_grouped_amount_keeps_the_budget_whole(self):
@@ -279,7 +279,77 @@ class TestTheAmounts:
         facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
 
         assert len(facts) == 1
-        assert facts[0].budget_min == 1500000.0
+        assert facts[0].budget_max == 1500000.0
+
+
+class TestTheSideOfTheBudget:
+    """A floor stays a floor and a ceiling stays a ceiling.
+
+    The content is the only channel a stored fact has to the ranking, so the
+    side of the budget has to survive the normalisation. When it did not, the
+    ranking read "at least 300k" as a ceiling and enforced the buyer's own
+    words backwards.
+    """
+
+    @pytest.mark.asyncio
+    async def test_a_floor_stays_a_floor(self):
+        llm = make_llm('[{"kind": "budget", "content": "at least 300k PLN"}]')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert len(facts) == 1
+        assert facts[0].budget_min == 300000.0
+        assert facts[0].budget_max is None
+        assert facts[0].content == "at least 300000 PLN"
+
+    @pytest.mark.asyncio
+    async def test_a_ceiling_stays_a_ceiling(self):
+        llm = make_llm('[{"kind": "budget", "content": "up to 300k PLN"}]')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert len(facts) == 1
+        assert facts[0].budget_max == 300000.0
+        assert facts[0].budget_min is None
+        assert facts[0].content == "300000 PLN"
+
+    @pytest.mark.asyncio
+    async def test_a_negated_more_than_is_a_ceiling(self):
+        llm = make_llm('[{"kind": "budget", "content": "I do not want to spend more than 500k"}]')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert len(facts) == 1
+        assert facts[0].budget_max == 500000.0
+        assert facts[0].budget_min is None
+
+    @pytest.mark.asyncio
+    async def test_a_range_carries_both_bounds(self):
+        llm = make_llm('[{"kind": "budget", "content": "between 300k and 450k PLN"}]')
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", LISTINGS, llm=llm)
+
+        assert len(facts) == 1
+        assert facts[0].budget_min == 300000.0
+        assert facts[0].budget_max == 450000.0
+        assert facts[0].content == "300000-450000 PLN"
+
+    @pytest.mark.asyncio
+    async def test_a_floor_and_a_ceiling_of_the_same_amount_are_two_facts(self):
+        floor = await extract_buyer_facts(
+            MESSAGES,
+            "Here are three flats.",
+            LISTINGS,
+            llm=make_llm('[{"kind": "budget", "content": "at least 300k PLN"}]'),
+        )
+        ceiling = await extract_buyer_facts(
+            MESSAGES,
+            "Here are three flats.",
+            LISTINGS,
+            llm=make_llm('[{"kind": "budget", "content": "up to 300k PLN"}]'),
+        )
+
+        assert floor[0].content != ceiling[0].content
 
 
 class TestTheNegation:
@@ -408,5 +478,20 @@ class TestTheListingIds:
         facts = await extract_buyer_facts(
             MESSAGES, "Here are three flats.", self.NUMERIC_LISTINGS, llm=llm
         )
+
+        assert facts == []
+
+    @pytest.mark.asyncio
+    async def test_a_listing_fact_is_dropped_when_no_listing_was_shown(self):
+        """No listing shown means every id is unknown.
+
+        The guard used to be skipped on an empty set, so a model could name
+        any id at all and the fact was stored.
+        """
+        llm = make_llm(
+            '[{"kind": "liked", "content": "the balcony flat", "listing_id": "totally-made-up-id"}]'
+        )
+
+        facts = await extract_buyer_facts(MESSAGES, "Here are three flats.", (), llm=llm)
 
         assert facts == []
