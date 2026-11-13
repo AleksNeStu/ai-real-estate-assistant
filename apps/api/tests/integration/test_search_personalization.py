@@ -81,7 +81,7 @@ def _headers(buyer_id: str | None = None) -> dict[str, str]:
     """The API key, and the buyer's token when there is a buyer."""
     from config.settings import get_settings
 
-    headers = {"X-API-Key": get_settings().api_access_key}
+    headers = {"X-API-Key": get_settings().api_access_key or ""}
     if buyer_id is not None:
         token = create_access_token(subject=buyer_id, roles=["user"])
         headers["Authorization"] = f"Bearer {token}"

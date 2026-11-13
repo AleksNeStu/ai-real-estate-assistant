@@ -199,7 +199,7 @@ class HybridPropertyAgent:
         combine = getattr(self.rag_chain, "combine_docs_chain", None)
         llm_chain = getattr(combine, "llm_chain", None)
         prompt = getattr(llm_chain, "prompt", None)
-        if llm_chain is None or prompt is None:
+        if combine is None or llm_chain is None or prompt is None:
             logger.warning("RAG chain does not expose its prompt - memory not carried")
             return self.rag_chain
 

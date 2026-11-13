@@ -105,7 +105,7 @@ def buyer_headers(buyer: str) -> dict[str, str]:
     settings = get_settings()
     return {
         "Authorization": f"Bearer {token}",
-        "X-API-Key": settings.api_access_key,
+        "X-API-Key": settings.api_access_key or "",
     }
 
 
@@ -113,7 +113,7 @@ def buyer_headers(buyer: str) -> dict[str, str]:
 def anonymous_headers() -> dict[str, str]:
     """The headers of a visitor who did not sign in."""
     settings = get_settings()
-    return {"X-API-Key": settings.api_access_key}
+    return {"X-API-Key": settings.api_access_key or ""}
 
 
 @pytest.fixture

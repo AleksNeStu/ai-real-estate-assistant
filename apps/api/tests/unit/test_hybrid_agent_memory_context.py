@@ -28,7 +28,7 @@ from agents.query_analyzer import Complexity, QueryAnalysis, QueryIntent
 try:
     from langchain.chains import ConversationalRetrievalChain
 except ImportError:  # pragma: no cover - the langchain 1.x layout
-    from langchain_classic.chains import ConversationalRetrievalChain
+    from langchain_classic.chains import ConversationalRetrievalChain  # type: ignore[no-redef]
 
 
 class RecordingChatModel(GenericFakeChatModel):

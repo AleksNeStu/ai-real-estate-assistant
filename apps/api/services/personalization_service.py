@@ -470,9 +470,9 @@ class DeclaredPreferences:
                     # not every flat of its kind.
                     declared.liked_listing_ids.add(listing_id)
                 else:
-                    tokens = _text_tokens(content)
-                    if tokens:
-                        declared.liked_features.append(frozenset(tokens))
+                    feature_tokens = _text_tokens(content)
+                    if feature_tokens:
+                        declared.liked_features.append(frozenset(feature_tokens))
             elif kind == "disliked":
                 if listing_id:
                     # A dislike removes the listing outright.
@@ -883,18 +883,23 @@ class PersonalizationService:
             price_min, price_max = behavioural_min, behavioural_max
             strict_min = strict_max = False
         else:
-            strict_min = declared_min is not None
-            strict_max = declared_max is not None
-            price_max = declared_max
-            if price_max is None and behavioural_max is not None:
+            # At least one bound was stated. The stated floor and the stated
+            # ceiling are read once, narrowed, and the behavioural bounds
+            # fill in only where the buyer said nothing.
+            stated_min = declared_min
+            stated_max = declared_max
+            strict_min = stated_min is not None
+            strict_max = stated_max is not None
+            price_max = stated_max
+            if price_max is None and behavioural_max is not None and stated_min is not None:
                 # The behavioural ceiling only survives when it does not
                 # contradict the stated floor.
-                price_max = behavioural_max if behavioural_max >= declared_min else None
-            price_min = declared_min
-            if price_min is None and behavioural_min is not None:
+                price_max = behavioural_max if behavioural_max >= stated_min else None
+            price_min = stated_min
+            if price_min is None and behavioural_min is not None and stated_max is not None:
                 # The behavioural floor only survives when it does not
                 # contradict the stated ceiling.
-                price_min = behavioural_min if behavioural_min <= declared_max else None
+                price_min = behavioural_min if behavioural_min <= stated_max else None
             if price_min is not None and price_max is not None and price_min > price_max:
                 # A contradictory pair of stated bounds: keep the ceiling,
                 # which is the one the buyer refuses to cross.

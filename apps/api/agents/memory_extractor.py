@@ -730,9 +730,10 @@ def _build_fact(item: Any, known_ids: set[str]) -> Optional[Fact]:
         logger.warning("Buyer memory extraction: dropping a one-off reference")
         return None
 
-    fact = _apply_negation(fact)
-    if fact is None:
+    negated = _apply_negation(fact)
+    if negated is None:
         return None
+    fact = negated
 
     if fact.kind == "budget":
         fact = _normalise_budget(fact)
