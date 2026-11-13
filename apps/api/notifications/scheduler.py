@@ -10,7 +10,7 @@ Handles:
 import asyncio
 import logging
 import threading
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Dict, List, Optional, cast
 
 from analytics import MarketInsights
@@ -75,6 +75,10 @@ class NotificationScheduler:
         self._anomaly_check_interval_seconds: float = 3600.0  # 1 hour default
         self._last_anomaly_check: Optional[datetime] = None
 
+        # Buyer memory retention (Task #82: the buyer's memory expires)
+        self._buyer_memory_purge_interval_seconds: int = 3600  # 1 hour default
+        self._last_buyer_memory_purge: Optional[datetime] = None
+
     def start(self) -> None:
         """Start the scheduler thread."""
         if self._thread and self._thread.is_alive():
@@ -113,6 +117,7 @@ class NotificationScheduler:
             "queued_alerts_deferred": 0,
             "price_snapshots": 0,
             "anomaly_alerts": 0,
+            "buyer_memory_purged": 0,
         }
         errors: List[str] = []
 
@@ -142,6 +147,10 @@ class NotificationScheduler:
             # 4. Anomaly Detection (hourly) - Task #53
             anomaly_stats = self._run_anomaly_detection(check_time)
             stats["anomaly_alerts"] = anomaly_stats.get("alerts_sent", 0)
+
+            # 5. Buyer memory retention (hourly) - Task #82
+            purge_stats = self._run_buyer_memory_purge(check_time)
+            stats["buyer_memory_purged"] = purge_stats.get("purged", 0)
 
         except Exception as e:
             logger.error("Scheduler run error: %s", sanitize_for_log(e))
@@ -611,6 +620,71 @@ class NotificationScheduler:
         except Exception as e:
             logger.error("Anomaly detection async failed: %s", sanitize_for_log(e))
             return {"alerts_sent": 0, "error": str(e)}
+
+    # -------------------------------------------------------------------------
+    # Buyer Memory Retention (Task #82: the buyer's memory expires)
+    # -------------------------------------------------------------------------
+
+    def _run_buyer_memory_purge(self, now: datetime) -> Dict[str, Any]:
+        """
+        Synchronous wrapper for the buyer memory purge.
+
+        A stored fact does not live forever: once its retention expired, the
+        row goes. The purge is global - it is a retention job, not a user's
+        request - and it touches only rows whose retention is over.
+
+        Args:
+            now: Current timestamp
+
+        Returns:
+            Stats dictionary with the purge results
+        """
+        # Check if we should run (hourly interval)
+        if self._last_buyer_memory_purge is not None:
+            elapsed = (now - self._last_buyer_memory_purge).total_seconds()
+            if elapsed < self._buyer_memory_purge_interval_seconds:
+                return {"purged": 0, "skipped": 0, "reason": "interval_not_elapsed"}
+
+        try:
+            # Run async purge in new event loop
+            loop = asyncio.new_event_loop()
+            try:
+                asyncio.set_event_loop(loop)
+                stats = loop.run_until_complete(self._purge_buyer_memory_async())
+                self._last_buyer_memory_purge = now
+                return stats
+            finally:
+                loop.close()
+        except Exception as e:
+            logger.error("Buyer memory purge failed: %s", sanitize_for_log(e))
+            return {"purged": 0, "error": str(e)}
+
+    async def _purge_buyer_memory_async(self) -> Dict[str, Any]:
+        """
+        Async implementation of the buyer memory purge.
+
+        Returns:
+            Stats dictionary with the purge results
+        """
+        try:
+            from db.database import get_db_context
+            from services.buyer_memory_service import BuyerMemoryService
+
+            # The expiry is judged in UTC: SQLite keeps no timezone on the
+            # column, so the stored wall clock is the UTC one.
+            cutoff = datetime.now(UTC)
+
+            async with get_db_context() as session:
+                service = BuyerMemoryService(session)
+                purged = await service.purge_expired(cutoff)
+
+            if purged:
+                logger.info("Purged %s expired buyer memory facts", sanitize_for_log(purged))
+            return {"purged": purged}
+
+        except Exception as e:
+            logger.error("Buyer memory purge async failed: %s", sanitize_for_log(e))
+            return {"purged": 0, "error": str(e)}
 
     # -------------------------------------------------------------------------
     # DB Search Sync Methods

@@ -45,6 +45,7 @@ from api.routers import (
     auth,
     auth_jwt,  # JWT authentication endpoints
     bulk_jobs,  # Task #80: Import/Export Data API
+    buyer_memory,  # Task #82: the buyer's memory can be seen and deleted
     capabilities,  # Task #34: what this deployment can actually do
     catalogue,  # What the catalogue holds
     chat,
@@ -630,6 +631,8 @@ app.include_router(user_activity.router, prefix="/api/v1")
 app.include_router(model_preferences.router, prefix="/api/v1")
 # Task #88: User Profile Management
 app.include_router(profile.router, prefix="/api/v1")
+# Task #82: The buyer's memory can be seen and deleted
+app.include_router(buyer_memory.router, prefix="/api/v1")
 
 # JWT Auth Router (conditionally enabled -- only the JWT login/logout
 # routes themselves are gated. All other user-scoped routers are
