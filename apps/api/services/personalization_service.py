@@ -40,8 +40,10 @@ _CURRENCY_RE = re.compile(
 _DIGIT_GAP_RE = re.compile(r"(?<=\d)[\s  ](?=\d{3}(?!\d))")
 
 # An amount and its scale: 500, 500k, 1.5m, 300 tys, 2 mln.
+# The number may carry several separators ("1.500.000") - they are read as
+# European thousands separators, never as decimal points.
 _AMOUNT_RE = re.compile(
-    r"(\d+(?:[.,]\d+)?)\s*(thousand|million|mln|mld|tyś|tys|ml|k|m)?",
+    r"(\d+(?:[.,]\d+)*)\s*(thousand|million|mln|mld|tyś|tys|ml|k|m)?",
     re.IGNORECASE,
 )
 
@@ -60,38 +62,63 @@ _AMOUNT_SCALES = {
 # A range connector between two amounts: "200k - 400k", "200k do 400k".
 _RANGE_JOIN_RE = re.compile(r"[-–—~]")
 
-# A keyword that makes the amount a FLOOR rather than a ceiling.
-_MIN_PHRASES = (
-    "budgetfloor",
-    "at least",
-    "not less",
-    "more than",
-    "over",
-    "above",
-    "minimum",
-    "co najmniej",
-    "od ",
-    "powyzej",
-)
-
-# A keyword that makes the amount a CEILING.
-_MAX_PHRASES = (
-    "budgetceiling",
-    "at most",
-    "less than",
-    "under",
-    "below",
-    "maximum",
-    "maksymalnie",
-    "ponizej",
-    "nie wiecej",
-    "budzet",
-    "budget",
+# A budget phrase and the side it puts the amount on.
+#
+# The marker that comes LAST before the amount decides. A negation makes a
+# "more than" a CEILING: "I don't want to spend more than 500k" is the exact
+# opposite of "more than 500k", and reading it as a floor inverts the buyer's
+# words. The negated forms are written out in full so that they win over the
+# bare "more than" they contain.
+_BUDGET_SIDE_MARKERS: tuple[tuple[re.Pattern[str], str], ...] = (
+    # --- CEILINGS ---------------------------------------------------------
+    # A negated "more than" - the buyer refuses to go above the amount.
+    (
+        re.compile(
+            r"\b(?:do\s+not|don['’]?t|dont|never)\s+want\s+"
+            r"(?:to\s+(?:spend|pay|go)\s+)?(?:more|over|above)(?:\s+than)?\b"
+        ),
+        "max",
+    ),
+    (re.compile(r"\bnot\s+more\s+than\b"), "max"),
+    (re.compile(r"\bno\s+more\s+than\b"), "max"),
+    (re.compile(r"\bless\s+than\b"), "max"),
+    (re.compile(r"\bat\s+most\b"), "max"),
+    (re.compile(r"\bup\s+to\b"), "max"),
+    (re.compile(r"\bmaximum\b"), "max"),
+    (re.compile(r"\bunder\b"), "max"),
+    (re.compile(r"\bbelow\b"), "max"),
+    (re.compile(r"\bmaksymalnie\b"), "max"),
+    (re.compile(r"\bponizej\b"), "max"),
+    (re.compile(r"\bno\s+more\b"), "max"),
+    (re.compile(r"\bbudgetceiling\b"), "max"),
+    # A plain budget with no keyword is a ceiling: "my budget is 500k".
+    (re.compile(r"\bbudget\b"), "max"),
+    (re.compile(r"\bbudzet\b"), "max"),
+    # --- FLOORS -----------------------------------------------------------
+    (re.compile(r"\bnot\s+less\s+than\b"), "min"),
+    (re.compile(r"\bno\s+less\s+than\b"), "min"),
+    (re.compile(r"\bat\s+least\b"), "min"),
+    (re.compile(r"\bminimum\b"), "min"),
+    (re.compile(r"\bstarting\s+from\b"), "min"),
+    (re.compile(r"\bmore\s+than\b"), "min"),
+    (re.compile(r"\bover\b"), "min"),
+    (re.compile(r"\babove\b"), "min"),
+    (re.compile(r"\bfrom\b"), "min"),
+    (re.compile(r"\bco\s+najmniej\b"), "min"),
+    (re.compile(r"\bpowyzej\b"), "min"),
+    (re.compile(r"\bod\b"), "min"),
+    (re.compile(r"\bbudgetfloor\b"), "min"),
 )
 
 # "no more than" / "not less than" carry a negation that would otherwise be
 # read as the opposite keyword ("more than" inside "no more than").
 _NEGATED_BUDGET_RE = re.compile(r"\b(?:no|not)\s+(more|less)\s+than\b")
+
+# A ruled-out area may be written as a negation ("no Kraków"). The negation
+# is not part of the place name, so it is stripped before the place is matched.
+_RULE_OUT_NEGATIONS = frozenset(
+    {"no", "not", "without", "avoid", "skip", "exclude", "nie", "bez", "omit"}
+)
 
 # How much a DECLARED like adds - a liked feature weighs like a favourite.
 DECLARED_LIKE_CITY_BOOST = 0.2
@@ -106,15 +133,20 @@ def _normalise_text(text: str) -> str:
     return without_marks.casefold()
 
 
-def _text_tokens(text: str) -> set[str]:
-    """Split a text into lowercase word tokens, accents dropped.
+def _token_sequence(text: str) -> list[str]:
+    """Split a text into lowercase word tokens IN ORDER, accents dropped.
 
     A trailing plural "s" is dropped, so "apartments" and "apartment" are the
     same token. Both sides of every comparison go through this, so the
     comparison stays consistent.
     """
-    tokens = set(re.findall(r"[a-z0-9]+", _normalise_text(text)))
-    return {t[:-1] if len(t) > 3 and t.endswith("s") else t for t in tokens}
+    tokens = re.findall(r"[a-z0-9]+", _normalise_text(text))
+    return [t[:-1] if len(t) > 3 and t.endswith("s") else t for t in tokens]
+
+
+def _text_tokens(text: str) -> set[str]:
+    """The tokens of a text, as a set - order is not kept."""
+    return set(_token_sequence(text))
 
 
 def _place_name(value: Any) -> str:
@@ -122,21 +154,60 @@ def _place_name(value: Any) -> str:
     return str(value or "").split(",")[0].strip()
 
 
+def _place_sequence(content: str) -> tuple[str, ...]:
+    """
+    The words of a place the buyer named, in order.
+
+    A leading negation ("no Kraków") is not part of the place name and is
+    dropped - the buyer ruled the place out, whatever the phrasing.
+    """
+    tokens = _token_sequence(content)
+    while tokens and tokens[0] in _RULE_OUT_NEGATIONS:
+        tokens = tokens[1:]
+    return tuple(tokens)
+
+
+def _contains_sequence(tokens: list[str], sequence: tuple[str, ...]) -> bool:
+    """Tell whether ``sequence`` appears in ``tokens`` as a contiguous run."""
+    if not sequence or len(sequence) > len(tokens):
+        return False
+    first = sequence[0]
+    for start in range(len(tokens) - len(sequence) + 1):
+        if tokens[start] == first and tuple(tokens[start : start + len(sequence)]) == sequence:
+            return True
+    return False
+
+
 def _scale_amount(number: str, suffix: Optional[str]) -> Optional[float]:
-    """Turn "1,5" and "k" into 1500000.0. Returns None when it cannot."""
-    text = number
-    for separator in (",", "."):
-        if separator in text and text.count(separator) == 1:
-            head, _, tail = text.partition(separator)
-            if len(tail) == 3 and tail.isdigit():
-                # "500,000" is five hundred thousand, not five hundred.
-                text = head + tail
-            else:
-                text = text.replace(separator, ".")
-            break
+    """
+    Read an amount out of a number written by a buyer.
+
+    European thousands separators are understood: "1.500.000" is one million
+    five hundred thousand, not one thousand five hundred. A separator that is
+    followed by exactly three digits is a thousands separator; anything else
+    is a decimal point. A number that cannot be read unambiguously (a date
+    like "12.05.2024") is NOT guessed at - it returns None.
+
+    Returns:
+        The amount, or None when the number cannot be read.
+    """
+    parts = re.split(r"[.,]", number.strip())
+    if len(parts) == 1:
+        digits = parts[0]
+    else:
+        tails = parts[1:]
+        if all(len(tail) == 3 and tail.isdigit() for tail in tails):
+            # "1.500.000" and "500.000" - thousands separators.
+            digits = "".join(parts)
+        elif len(parts) == 2:
+            # "500,50" and "500.50" - a decimal point.
+            digits = parts[0] + "." + tails[0]
+        else:
+            # "12.05.2024" - a date, or anything else ambiguous.
+            return None
 
     try:
-        amount = float(text)
+        amount = float(digits)
     except ValueError:
         return None
 
@@ -162,21 +233,21 @@ def _is_range_fragment(fragment: str) -> bool:
 
 def _budget_side(text: str, position: int) -> str:
     """Tell whether the amount before ``position`` is a floor or a ceiling."""
-    window = text[max(0, position - 40) : position]
-    best_position = -1
+    window = text[max(0, position - 80) : position]
+    best_end = -1
+    best_length = -1
     best_side = "max"
 
-    for phrase in _MIN_PHRASES:
-        index = window.rfind(phrase)
-        if index > best_position:
-            best_position = index
-            best_side = "min"
-
-    for phrase in _MAX_PHRASES:
-        index = window.rfind(phrase)
-        if index > best_position:
-            best_position = index
-            best_side = "max"
+    for pattern, side in _BUDGET_SIDE_MARKERS:
+        for match in pattern.finditer(window):
+            end = match.end()
+            length = len(match.group(0))
+            # The marker that comes last wins; on a tie the longer one wins,
+            # so "don't want to spend more than" beats the "more than" in it.
+            if end > best_end or (end == best_end and length > best_length):
+                best_end = end
+                best_length = length
+                best_side = side
 
     # A budget with no keyword is a ceiling: "my budget is 500k".
     return best_side
@@ -247,8 +318,9 @@ class DeclaredPreferences:
     price_min: Optional[float] = None
     price_max: Optional[float] = None
 
-    # The token sets of the areas the buyer ruled out.
-    ruled_out_areas: list[frozenset[str]] = field(default_factory=list)
+    # The token sequences of the areas the buyer ruled out, in the order the
+    # buyer wrote them.
+    ruled_out_areas: list[tuple[str, ...]] = field(default_factory=list)
 
     # The token sets of the features the buyer liked.
     liked_features: list[frozenset[str]] = field(default_factory=list)
@@ -294,9 +366,9 @@ class DeclaredPreferences:
                         maximum if declared.price_max is None else min(declared.price_max, maximum)
                     )
             elif kind == "ruled_out_area":
-                tokens = _text_tokens(content)
+                tokens = _place_sequence(content)
                 if tokens:
-                    declared.ruled_out_areas.append(frozenset(tokens))
+                    declared.ruled_out_areas.append(tokens)
             elif kind == "liked":
                 tokens = _text_tokens(content)
                 if tokens:
@@ -310,16 +382,20 @@ class DeclaredPreferences:
 
         A ruled-out area is a FILTER, not a weight: it removes the area
         outright, where a weight could be outvoted by other signals.
+
+        The place the buyer named must appear in the property's place as a
+        CONTIGUOUS run of words, not as a bag of words: "Nowe Miasto" does
+        not rule out the district "Miasto", it rules out "Nowe Miasto".
         """
         if not self.ruled_out_areas:
             return False
 
-        for key in ("city", "district", "area"):
+        for key in ("city", "district", "area", "neighborhood"):
             place = _place_name(property_data.get(key))
             if not place:
                 continue
-            tokens = _text_tokens(place)
-            if tokens and any(tokens <= area for area in self.ruled_out_areas):
+            tokens = _token_sequence(place)
+            if tokens and any(_contains_sequence(tokens, area) for area in self.ruled_out_areas):
                 return True
         return False
 
@@ -651,36 +727,77 @@ class PersonalizationService:
         if city and city in preferences.preferred_cities:
             boost.city_boost = preferences.preferred_cities[city] * 0.3
 
-        # Price range boost. A stated budget narrows the range and beats a
-        # wider behavioural one - the buyer said it, so it wins.
+        # Price range boost. A stated budget is the buyer's own words: it
+        # wins outright. It is never diluted by the behavioural range, and it
+        # never collapses into an empty range - a buyer who says "up to 500k"
+        # gets that ceiling enforced, whatever they clicked before.
         price = property_data.get("price")
         price_float = self._as_float(price)
         behavioural_min = preferences.preferred_price_min or None
         behavioural_max = preferences.preferred_price_max or None
-        price_min = declared.price_min if declared.price_min is not None else behavioural_min
-        price_max = declared.price_max if declared.price_max is not None else behavioural_max
 
-        if price and price_float is not None and price_min is not None and price_max is not None:
-            if price_min <= price_float <= price_max:
-                boost.price_boost = 0.2
-            else:
-                # Penalize if too far outside range
-                range_center = (price_min + price_max) / 2
-                range_size = (price_max - price_min) / 2
-                if range_size > 0:
-                    deviation = abs(price_float - range_center) / range_size
-                    boost.price_boost = max(-0.3, 0.2 - deviation * 0.2)
-        elif price and price_float is not None and (price_min is not None or price_max is not None):
-            # A one-sided stated budget ("up to 500k") still tells us where the
-            # ceiling is.
-            if price_min is not None and price_float < price_min:
-                deviation = (price_min - price_float) / max(price_min, 1.0)
-                boost.price_boost = max(-0.3, 0.2 - deviation * 0.2)
-            elif price_max is not None and price_float > price_max:
-                deviation = (price_float - price_max) / max(price_max, 1.0)
-                boost.price_boost = max(-0.3, 0.2 - deviation * 0.2)
-            else:
-                boost.price_boost = 0.2
+        declared_min = declared.price_min
+        declared_max = declared.price_max
+
+        if declared_min is None and declared_max is None:
+            # Nothing was stated - the behavioural range is all there is.
+            price_min, price_max = behavioural_min, behavioural_max
+            strict_min = strict_max = False
+        else:
+            strict_min = declared_min is not None
+            strict_max = declared_max is not None
+            price_max = declared_max
+            if price_max is None and behavioural_max is not None:
+                # The behavioural ceiling only survives when it does not
+                # contradict the stated floor.
+                price_max = behavioural_max if behavioural_max >= declared_min else None
+            price_min = declared_min
+            if price_min is None and behavioural_min is not None:
+                # The behavioural floor only survives when it does not
+                # contradict the stated ceiling.
+                price_min = behavioural_min if behavioural_min <= declared_max else None
+            if price_min is not None and price_max is not None and price_min > price_max:
+                # A contradictory pair of stated bounds: keep the ceiling,
+                # which is the one the buyer refuses to cross.
+                price_min = None
+
+        if price and price_float is not None and (price_min is not None or price_max is not None):
+            if price_min is not None and price_max is not None:
+                if price_min <= price_float <= price_max:
+                    boost.price_boost = 0.2
+                else:
+                    # Penalize if too far outside range
+                    range_center = (price_min + price_max) / 2
+                    range_size = (price_max - price_min) / 2
+                    if range_size > 0:
+                        deviation = abs(price_float - range_center) / range_size
+                        boost.price_boost = max(-0.3, 0.2 - deviation * 0.2)
+                    elif strict_min or strict_max:
+                        # A stated single price: anything else is out.
+                        deviation = abs(price_float - price_min) / max(price_min, 1.0)
+                        boost.price_boost = max(-0.3, -0.3 * deviation)
+            elif price_max is not None:
+                # A one-sided ceiling ("up to 500k") still tells us where the
+                # ceiling is.
+                if price_float > price_max:
+                    deviation = (price_float - price_max) / max(price_max, 1.0)
+                    if strict_max:
+                        # A stated ceiling is enforced: above it the boost is
+                        # negative, not merely smaller.
+                        boost.price_boost = max(-0.3, -0.3 * deviation)
+                    else:
+                        boost.price_boost = max(-0.3, 0.2 - deviation * 0.2)
+                else:
+                    boost.price_boost = 0.2
+            elif price_min is not None:
+                if price_float < price_min:
+                    deviation = (price_min - price_float) / max(price_min, 1.0)
+                    if strict_min:
+                        boost.price_boost = max(-0.3, -0.3 * deviation)
+                    else:
+                        boost.price_boost = max(-0.3, 0.2 - deviation * 0.2)
+                else:
+                    boost.price_boost = 0.2
 
         # Rooms boost
         rooms = property_data.get("rooms")

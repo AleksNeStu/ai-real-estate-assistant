@@ -9,6 +9,8 @@ from services.personalization_service import (
     DeclaredPreferences,
     PersonalizationService,
     UserPreferences,
+    _parse_budget,
+    _scale_amount,
 )
 
 
@@ -553,6 +555,177 @@ class TestDeclaredPreferencesParsing:
 
         assert declared.price_max == 400000
 
+    def test_a_negated_budget_is_a_ceiling(self):
+        """'I don't want to spend more than 500k' is a ceiling, not a floor."""
+        declared = DeclaredPreferences.from_facts(
+            [_fact("budget", "I don't want to spend more than 500k")]
+        )
+
+        assert declared.price_max == 500000
+        assert declared.price_min is None
+
+    def test_do_not_want_to_spend_more_than_is_a_ceiling(self):
+        """'do not want to spend more than 500k' is a ceiling."""
+        declared = DeclaredPreferences.from_facts(
+            [_fact("budget", "do not want to spend more than 500k")]
+        )
+
+        assert declared.price_max == 500000
+        assert declared.price_min is None
+
+    def test_no_more_than_is_a_ceiling(self):
+        """'no more than 500k' is a ceiling."""
+        declared = DeclaredPreferences.from_facts([_fact("budget", "no more than 500k")])
+
+        assert declared.price_max == 500000
+        assert declared.price_min is None
+
+    def test_not_more_than_is_a_ceiling(self):
+        """'not more than 500k' is a ceiling."""
+        declared = DeclaredPreferences.from_facts([_fact("budget", "not more than 500k")])
+
+        assert declared.price_max == 500000
+        assert declared.price_min is None
+
+    def test_less_than_is_a_ceiling(self):
+        """'less than 500k' is a ceiling."""
+        declared = DeclaredPreferences.from_facts([_fact("budget", "less than 500k")])
+
+        assert declared.price_max == 500000
+        assert declared.price_min is None
+
+    def test_at_most_is_a_ceiling(self):
+        """'at most 500k' is a ceiling."""
+        declared = DeclaredPreferences.from_facts([_fact("budget", "at most 500k")])
+
+        assert declared.price_max == 500000
+        assert declared.price_min is None
+
+    def test_more_than_is_a_floor(self):
+        """'more than 500k' is a floor."""
+        declared = DeclaredPreferences.from_facts([_fact("budget", "more than 500k")])
+
+        assert declared.price_min == 500000
+        assert declared.price_max is None
+
+    def test_minimum_is_a_floor(self):
+        """'minimum 300k' is a floor."""
+        declared = DeclaredPreferences.from_facts([_fact("budget", "minimum 300k")])
+
+        assert declared.price_min == 300000
+        assert declared.price_max is None
+
+    def test_starting_from_is_a_floor(self):
+        """'starting from 300k' is a floor."""
+        declared = DeclaredPreferences.from_facts([_fact("budget", "starting from 300k")])
+
+        assert declared.price_min == 300000
+        assert declared.price_max is None
+
+    def test_between_is_a_floor_and_a_ceiling(self):
+        """'between 300k and 450k' is both."""
+        declared = DeclaredPreferences.from_facts([_fact("budget", "between 300k and 450k")])
+
+        assert declared.price_min == 300000
+        assert declared.price_max == 450000
+
+
+class TestAmountReading:
+    """Tests for the reader that turns written numbers into amounts."""
+
+    def test_reads_european_thousands_separators(self):
+        """'1.500.000' is one and a half million, not one thousand five hundred."""
+        assert _scale_amount("1.500.000", None) == 1500000.0
+
+    def test_reads_a_single_thousands_separator(self):
+        """'500.000' is five hundred thousand."""
+        assert _scale_amount("500.000", None) == 500000.0
+
+    def test_reads_a_space_separated_amount(self):
+        """'1 500 000' is one and a half million."""
+        assert _parse_budget("1 500 000") == (None, 1500000.0)
+
+    def test_reads_a_decimal_comma(self):
+        """'500,50' is five hundred and a half."""
+        assert _scale_amount("500,50", None) == 500.5
+
+    def test_reads_a_decimal_point(self):
+        """'500.50' is five hundred and a half."""
+        assert _scale_amount("500.50", None) == 500.5
+
+    def test_reads_a_comma_thousands_separator(self):
+        """'500,000' is five hundred thousand."""
+        assert _scale_amount("500,000", None) == 500000.0
+
+    def test_a_european_amount_in_a_fact_is_read_as_a_ceiling(self):
+        """'1.500.000 PLN' is a budget of 1.5 million, not of 1500."""
+        declared = DeclaredPreferences.from_facts([_fact("budget", "1.500.000 PLN")])
+
+        assert declared.price_max == 1500000.0
+        assert declared.price_min is None
+
+    def test_an_unreadable_amount_yields_no_budget(self):
+        """A number that cannot be read unambiguously is ignored, not guessed."""
+        declared = DeclaredPreferences.from_facts([_fact("budget", "12.05.2024")])
+
+        assert declared.price_min is None
+        assert declared.price_max is None
+        assert declared.is_active is False
+
+    def test_a_bare_number_is_still_ignored(self):
+        """A room count is not a price."""
+        assert _parse_budget("500") == (None, None)
+
+
+class TestRuledOutAreaMatching:
+    """Tests for how a ruled-out area is matched against a property."""
+
+    def _declared(self, content):
+        return DeclaredPreferences.from_facts([_fact("ruled_out_area", content)])
+
+    def test_a_multi_word_area_does_not_rule_out_a_partial_match(self):
+        """'Nowe Miasto' does not rule out the district 'Miasto'."""
+        declared = self._declared("Nowe Miasto")
+
+        assert declared.excludes_property({"district": "Miasto"}) is False
+
+    def test_a_multi_word_area_rules_out_the_same_area(self):
+        """'Nowe Miasto' rules out the district 'Nowe Miasto'."""
+        declared = self._declared("Nowe Miasto")
+
+        assert declared.excludes_property({"district": "Nowe Miasto"}) is True
+
+    def test_a_city_does_not_rule_out_another_district(self):
+        """'Kraków' does not rule out the district 'Nowa Huta'."""
+        declared = self._declared("Kraków")
+
+        assert declared.excludes_property({"district": "Nowa Huta"}) is False
+
+    def test_a_city_rules_out_the_same_city(self):
+        """'Kraków' rules out the city 'Kraków'."""
+        declared = self._declared("Kraków")
+
+        assert declared.excludes_property({"city": "Kraków"}) is True
+
+    def test_a_city_rules_out_a_district_that_contains_it(self):
+        """'Kraków' rules out the district 'Kraków Stare Miasto'."""
+        declared = self._declared("Kraków")
+
+        assert declared.excludes_property({"district": "Kraków Stare Miasto"}) is True
+
+    def test_the_neighborhood_is_checked(self):
+        """The neighborhood is a place too - the Chroma metadata carries it."""
+        declared = self._declared("Nowe Miasto")
+
+        assert declared.excludes_property({"neighborhood": "Nowe Miasto"}) is True
+        assert declared.excludes_property({"neighborhood": "Stary Rynek"}) is False
+
+    def test_a_negated_area_is_still_ruled_out(self):
+        """'no Kraków' rules out Kraków - the negation is not the place."""
+        declared = self._declared("no Kraków")
+
+        assert declared.excludes_property({"city": "Kraków"}) is True
+
 
 class TestDeclaredFactsSteerTheRanking:
     """Tests for the declared facts reaching the ranking."""
@@ -632,8 +805,80 @@ class TestDeclaredFactsSteerTheRanking:
         stated = service.calculate_personalization_boost(prop, prefs, 0.2, declared)
 
         # 600k is outside the stated budget, so the boost turns negative.
-        assert stated.price_boost < 0
+        # (Changed from "boost < 0" to the exact value: the stated budget is
+        # enforced, and the exact number pins the enforcement.)
+        assert stated.price_boost == pytest.approx(-0.1)
         assert stated.price_boost != behavioural.price_boost
+
+    def test_a_stated_ceiling_wins_over_a_conflicting_behavioural_range(self):
+        """
+        A stated budget beats a behavioural one that contradicts it.
+
+        The buyer looked at a 600k flat and then said "up to 500k". The
+        stated ceiling wins: the 400k listing is inside it, the 600k and the
+        900k listings are above it and are pushed down.
+        """
+        service = PersonalizationService(AsyncMock())
+
+        prefs = UserPreferences(
+            user_id="u1",
+            view_count=10,
+            favorite_count=5,
+            preferred_price_min=600000,
+            preferred_price_max=650000,
+        )
+        declared = DeclaredPreferences.from_facts([_fact("budget", "up to 500k")])
+
+        below = service.calculate_personalization_boost(
+            {"id": "p1", "price": 400000}, prefs, 0.2, declared
+        )
+        at_the_behavioural_floor = service.calculate_personalization_boost(
+            {"id": "p2", "price": 600000}, prefs, 0.2, declared
+        )
+        above = service.calculate_personalization_boost(
+            {"id": "p3", "price": 900000}, prefs, 0.2, declared
+        )
+
+        # Inside the stated ceiling: not penalised.
+        assert below.price_boost == pytest.approx(0.2)
+        # Above the stated ceiling: penalised, and not the zero the old
+        # code produced for every property.
+        assert at_the_behavioural_floor.price_boost == pytest.approx(-0.06)
+        assert above.price_boost == pytest.approx(-0.24)
+
+        # The stated budget beats the behavioural one everywhere.
+        behavioural_below = service.calculate_personalization_boost(
+            {"id": "p1", "price": 400000}, prefs
+        )
+        behavioural_at_floor = service.calculate_personalization_boost(
+            {"id": "p2", "price": 600000}, prefs
+        )
+        assert below.price_boost > behavioural_below.price_boost
+        assert at_the_behavioural_floor.price_boost < behavioural_at_floor.price_boost
+
+    def test_a_stated_floor_wins_over_a_conflicting_behavioural_range(self):
+        """A stated floor above the behavioural range is enforced too."""
+        service = PersonalizationService(AsyncMock())
+
+        prefs = UserPreferences(
+            user_id="u1",
+            view_count=10,
+            favorite_count=5,
+            preferred_price_min=300000,
+            preferred_price_max=400000,
+        )
+        declared = DeclaredPreferences.from_facts([_fact("budget", "at least 700k")])
+
+        below = service.calculate_personalization_boost(
+            {"id": "p1", "price": 600000}, prefs, 0.2, declared
+        )
+        above = service.calculate_personalization_boost(
+            {"id": "p2", "price": 800000}, prefs, 0.2, declared
+        )
+
+        # Below the stated floor: penalised (the old code penalised nothing).
+        assert below.price_boost < 0
+        assert above.price_boost == pytest.approx(0.2)
 
     def test_a_stated_budget_applies_without_a_click_history(self):
         """A buyer who said what they want does not need a click history."""
