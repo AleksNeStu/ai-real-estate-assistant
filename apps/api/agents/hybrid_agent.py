@@ -215,11 +215,15 @@ class HybridPropertyAgent:
         Returns:
             The prompt to use. The original is never modified.
         """
+        # The memory is DATA, never a template. Its braces are escaped so a
+        # stored fact like "note: flat {2 bedrooms}" cannot be read as a
+        # template variable - which would raise at format time and take the
+        # whole answer down with it.
+        safe_memory = memory.replace("{", "{{").replace("}", "}}")
         if isinstance(prompt, ChatPromptTemplate):
-            return ChatPromptTemplate.from_messages([*prompt.messages, ("system", memory)])
+            return ChatPromptTemplate.from_messages([*prompt.messages, ("system", safe_memory)])
         if isinstance(prompt, PromptTemplate):
             # The memory becomes part of the template, so its braces are escaped.
-            safe_memory = memory.replace("{", "{{").replace("}", "}}")
             return PromptTemplate(
                 template=f"{safe_memory}\n\n{prompt.template}",
                 input_variables=list(prompt.input_variables),
