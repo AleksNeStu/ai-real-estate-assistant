@@ -407,3 +407,13 @@ def test_get_ab_testing_service_factory(db_session: AsyncSession):
 
     assert isinstance(service, ABTestingService)
     assert service.session == db_session
+
+
+@pytest.fixture(autouse=True)
+async def _the_test_users_exist(create_test_users):
+    """The users the assignments belong to have to be real rows.
+
+    The deployment enforces foreign keys, and an assignment belongs to a user
+    - so the user has to exist for the assignment to be writable at all.
+    """
+    await create_test_users("user-123")

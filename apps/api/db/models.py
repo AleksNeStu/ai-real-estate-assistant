@@ -742,8 +742,13 @@ class Deal(Base):
     property_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     # Agent reference
-    agent_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=False, index=True
+    #
+    # The rule says "the deal stays, the agent link goes" - which only works
+    # if the column can hold a null. It could not, so the rule could never be
+    # carried out: with foreign keys enforced the parent's delete was refused
+    # with "NOT NULL constraint failed". A deal outlives its agent.
+    agent_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
     )
 
     # Deal details
@@ -814,8 +819,8 @@ class Commission(Base):
     deal_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("deals.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    agent_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=False, index=True
+    agent_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
     )
 
     # Commission details

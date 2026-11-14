@@ -383,3 +383,13 @@ class TestCollectionsRouterConfiguration:
             elif route.path == "/collections/{collection_id}":
                 # This route handles GET, PUT, DELETE
                 assert "GET" in route.methods or "PUT" in route.methods or "DELETE" in route.methods
+
+
+@pytest.fixture(autouse=True)
+async def _the_test_user_exists(create_test_users):
+    """The user the tests authenticate as has to be a real row.
+
+    The deployment enforces foreign keys, and a collection belongs to a user
+    - so the user has to exist for the collection to be writable at all.
+    """
+    await create_test_users("test-user-123")

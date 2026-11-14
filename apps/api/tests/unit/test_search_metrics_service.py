@@ -9,7 +9,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.models import RankingConfig, SearchEvent
+from db.models import ABExperiment, RankingConfig, SearchEvent
 from services.search_metrics_service import (
     InteractionData,
     SearchMetricsService,
@@ -110,6 +110,7 @@ async def test_record_search_event_with_user(
 async def test_record_search_event_with_experiment(
     search_metrics_service: SearchMetricsService,
     ranking_config: RankingConfig,
+    experiment: ABExperiment,
 ):
     """Test recording a search event with experiment ID."""
     event = await search_metrics_service.record_search_event(
@@ -608,3 +609,46 @@ def test_get_search_metrics_service_factory(db_session: AsyncSession):
 
     assert isinstance(service, SearchMetricsService)
     assert service.session == db_session
+
+
+@pytest.fixture(autouse=True)
+async def _the_test_users_exist(create_test_users):
+    """The users the events belong to have to be real rows.
+
+    The deployment enforces foreign keys, and a search event belongs to a user
+    - so the user has to exist for the event to be writable at all.
+    """
+    await create_test_users("user-123")
+
+
+@pytest.fixture
+async def experiment(db_session: AsyncSession) -> ABExperiment:
+    """An A/B experiment the search events can point at.
+
+    The deployment enforces foreign keys, and a search event may name the
+    experiment it ran under - so the experiment has to exist for the event to
+    be writable at all.
+    """
+    from datetime import UTC, datetime
+
+    config = RankingConfig(
+        name="metrics_experiment_config",
+        description="Config for the experiment test",
+        alpha=0.7,
+        boost_exact_match=1.5,
+        is_active=False,
+    )
+    db_session.add(config)
+    await db_session.flush()
+
+    exp = ABExperiment(
+        id="exp-123",
+        name="metrics_experiment",
+        control_config_id=str(config.id),
+        treatment_config_id=str(config.id),
+        start_date=datetime.now(UTC),
+    )
+    db_session.add(exp)
+    await db_session.commit()
+    await db_session.refresh(exp)
+    return exp

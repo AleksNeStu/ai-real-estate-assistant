@@ -468,3 +468,13 @@ class TestSavedSearchesRouterConfiguration:
                 assert "POST" in route.methods
             elif route.path == "/saved-searches/{search_id}/use":
                 assert "POST" in route.methods
+
+
+@pytest.fixture(autouse=True)
+async def _the_test_user_exists(create_test_users):
+    """The user the tests authenticate as has to be a real row.
+
+    The deployment enforces foreign keys, and a saved search belongs to a user
+    - so the user has to exist for the search to be writable at all.
+    """
+    await create_test_users("test-user-123")

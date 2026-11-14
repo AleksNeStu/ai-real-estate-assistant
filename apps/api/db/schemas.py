@@ -1152,7 +1152,8 @@ class CommissionResponse(BaseModel):
 
     id: str
     deal_id: str
-    agent_id: str
+    # The agent link is dropped when the agent's account goes, so it can be null.
+    agent_id: Optional[str] = None
     commission_type: str
     commission_rate: float
     commission_amount: float

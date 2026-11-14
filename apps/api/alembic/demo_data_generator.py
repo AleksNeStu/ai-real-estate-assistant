@@ -635,10 +635,20 @@ class ComprehensiveDemoDataGenerator:
 
         for i in range(count):
             role = USER_ROLES[i % len(USER_ROLES)]
+            # The first account is the one the demo's bypass hands out.
+            #
+            # Without a token the deployment answers with a synthetic user
+            # whose id is "demo-user-id" - and every write an anonymous
+            # visitor makes carries that id. The deployment enforces foreign
+            # keys, so the id has to be a real row: a synthetic id that
+            # points at nothing would make every one of those writes fail.
+            is_bypass_user = i == 0
             user = User(
-                id=str(uuid.uuid4()),
-                email=f"demo.{role}{i + 1}@realestate.demo",
-                role=role,
+                id="demo-user-id" if is_bypass_user else str(uuid.uuid4()),
+                email="demo@example.com"
+                if is_bypass_user
+                else f"demo.{role}{i + 1}@realestate.demo",
+                role="admin" if is_bypass_user else role,
                 hashed_password=hashed_password,
                 is_active=True,
                 is_verified=True,

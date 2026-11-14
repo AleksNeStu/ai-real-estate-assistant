@@ -221,3 +221,13 @@ class TestAuditSchemas:
             broken_entries=[],
         )
         assert resp.valid is True
+
+
+@pytest.fixture(autouse=True)
+async def _the_test_actors_exist(create_test_users):
+    """The actors the entries name have to be real rows.
+
+    The deployment enforces foreign keys, and an audit entry names the actor
+    that wrote it - so the actor has to exist for the entry to be writable.
+    """
+    await create_test_users("u1", "u2", "user-1")

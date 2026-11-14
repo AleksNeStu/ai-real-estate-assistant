@@ -200,11 +200,22 @@ async def test_the_seeded_agents_carry_their_listings(db_session):
     listings would show an empty column in the demo.
     """
     from alembic.demo_data_generator import ComprehensiveDemoDataGenerator
-    from db.models import AgentListing
+    from db.models import AgentListing, AgentProfile, User
 
     generator = ComprehensiveDemoDataGenerator(db_session)
     generator.agent_ids = ["agent-1", "agent-2", "agent-3"]
     generator.property_ids = [f"property-{i}" for i in range(20)]
+
+    # A listing belongs to an agent, and an agent belongs to a user - so both
+    # have to be real rows. The deployment enforces that, and a test that
+    # writes a listing for an agent that was never created is writing a row
+    # the database refuses.
+    for i in range(len(generator.agent_ids)):
+        db_session.add(User(id=f"user-{i}", email=f"user-{i}@example.com", is_active=True))
+    await db_session.flush()
+    for i, agent_id in enumerate(generator.agent_ids):
+        db_session.add(AgentProfile(id=agent_id, user_id=f"user-{i}"))
+    await db_session.flush()
 
     created = await generator._generate_agent_listings()
 

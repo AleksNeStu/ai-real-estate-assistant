@@ -492,3 +492,13 @@ class TestActivityTrendPoint:
         assert trend.property_views == 0
         assert trend.tool_uses == 0
         assert trend.exports == 0
+
+
+@pytest.fixture(autouse=True)
+async def _the_test_users_exist(create_test_users):
+    """The users the activity belongs to have to be real rows.
+
+    The deployment enforces foreign keys, and an activity event belongs to a
+    user - so the user has to exist for the event to be writable at all.
+    """
+    await create_test_users("user-456", "user-a", "user-b")

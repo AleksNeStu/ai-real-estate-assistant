@@ -11,11 +11,12 @@ from httpx import ASGITransport, AsyncClient
 from api.deps.auth import get_current_active_user
 from api.routers import collections
 from db.database import get_db
+from db.models import User
 from db.schemas import UserResponse
 
 
 @pytest.fixture
-def test_app(db_session):
+async def test_app(db_session):
     """Create test app with collections router and mocked dependencies."""
     app = FastAPI()
     app.include_router(collections.router, prefix="/api/v1")
@@ -33,6 +34,13 @@ def test_app(db_session):
 
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_current_active_user] = override_get_current_user
+
+    # The deployment enforces foreign keys, and a row that belongs to a user
+    # needs that user to exist. The tests authenticate as one, so it is
+    # created here rather than left pointing at nothing.
+    db_session.add(User(id="test-user-123", email="test@example.com", is_active=True))
+    await db_session.flush()
+
     return app
 
 

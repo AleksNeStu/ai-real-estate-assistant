@@ -851,3 +851,13 @@ class TestFavoritesWorkflow:
         # Second delete should be 404
         resp2 = await favorites_client.delete("/favorites/by-property/wf-del-prop")
         assert resp2.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.fixture(autouse=True)
+async def _the_test_user_exists(create_test_users):
+    """The user the tests authenticate as has to be a real row.
+
+    The deployment enforces foreign keys, and a favourite belongs to a user -
+    so the user has to exist for the favourite to be writable at all.
+    """
+    await create_test_users("test-user-123")

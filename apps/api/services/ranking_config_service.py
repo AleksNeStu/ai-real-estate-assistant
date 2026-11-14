@@ -13,6 +13,7 @@ from typing import Any, Optional
 from fastapi import Depends
 from pydantic import BaseModel, Field
 from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.security_utils import sanitize_for_log
@@ -437,8 +438,20 @@ class RankingConfigService:
         if config.is_active:
             raise ValueError("Cannot delete the active ranking configuration")
 
-        await self.session.delete(config)
-        await self.session.commit()
+        try:
+            await self.session.delete(config)
+            await self.session.commit()
+        except IntegrityError:
+            # An A/B experiment or a search event still points at this
+            # configuration, and the schema refuses the delete while they do
+            # (ON DELETE RESTRICT). That refusal used to be invisible - the
+            # rows were orphaned and the delete "succeeded". Now it is the
+            # answer, so it is reported as one.
+            await self.session.rollback()
+            raise ValueError(
+                "Cannot delete a ranking configuration that an experiment or a "
+                "search event still points at"
+            ) from None
 
         # Invalidate cache
         self._invalidate_cache()

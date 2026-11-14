@@ -69,7 +69,33 @@ def get_engine():
             pool_recycle=settings.db_pool_recycle_seconds,
             pool_pre_ping=True,
         )
+        if db_url.startswith("sqlite"):
+            enable_sqlite_foreign_keys(_engine)
     return _engine
+
+
+def enable_sqlite_foreign_keys(engine) -> None:
+    """Make SQLite enforce the foreign keys the schema declares.
+
+    SQLite does not enforce them by default, and the difference is not
+    academic: without the pragma an ON DELETE CASCADE never runs, so a child
+    row outlives the parent it points at. The demo's re-seed deletes every
+    user on startup, and the oauth_accounts links survived them - which left
+    a sign-in that could never finish, for every account, forever.
+
+    The pragma is per connection, so it has to be set on every new one.
+    Postgres and every other server-side database enforce foreign keys
+    already; this brings SQLite in line with them.
+    """
+    from sqlalchemy import event
+
+    @event.listens_for(engine.sync_engine, "connect")
+    def _set_pragma(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        try:
+            cursor.execute("PRAGMA foreign_keys=ON")
+        finally:
+            cursor.close()
 
 
 def get_session_factory():

@@ -174,3 +174,13 @@ async def test_the_comparables_endpoint_shows_them_by_default(client):
     response = await client.post(f"/api/v1/cma/comparables/{SUBJECT_ID}")
     assert response.status_code == 200, response.text
     assert len(response.json()) == 3
+
+
+@pytest.fixture(autouse=True)
+async def _the_test_user_exists(create_test_users):
+    """The user the report belongs to has to be a real row.
+
+    The deployment enforces foreign keys, and a report belongs to a user - so
+    the user has to exist for the report to be writable at all.
+    """
+    await create_test_users("test-user-123")

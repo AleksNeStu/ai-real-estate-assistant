@@ -27,7 +27,7 @@ from sqlalchemy.ext.asyncio import (
 from agents.query_analyzer import QueryAnalyzer
 from core.jwt import create_access_token
 from data.schemas import Property, PropertyCollection, PropertyType
-from db.database import Base
+from db.database import Base, enable_sqlite_foreign_keys
 from db.models import (
     DataSourceDB,  # noqa: F401 - Import to register model with Base (Task #79)
     DataSourceSyncHistory,  # noqa: F401 - Import to register model with Base (Task #79)
@@ -264,6 +264,11 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
         echo=False,
         connect_args={"check_same_thread": False},
     )
+    # The tests run against the schema the deployments enforce: SQLite only
+    # enforces foreign keys when it is told to, and the deployments are told
+    # to. A test that could pass against an unenforced schema is a test that
+    # does not know whether the cascade ran.
+    enable_sqlite_foreign_keys(engine)
 
     # Create all tables
     async with engine.begin() as conn:
@@ -365,3 +370,29 @@ def user_activity_service(db_session):
     from services.user_activity_service import UserActivityService
 
     return UserActivityService(db_session, retention_days=30)
+
+
+@pytest.fixture
+async def create_test_users(db_session):
+    """Create real user rows for the tests that need them.
+
+    The deployment enforces foreign keys, so a test that writes a child row
+    for a user that was never created is writing a row the database refuses.
+    The production path always has the user - a token is checked against the
+    users table before it is honoured - so the tests make the same assumption
+    true instead of relying on the database not looking.
+    """
+    from db.models import User
+
+    async def _create(*user_ids: str) -> None:
+        for user_id in user_ids:
+            db_session.add(
+                User(
+                    id=user_id,
+                    email=f"{user_id}@example.com",
+                    is_active=True,
+                )
+            )
+        await db_session.flush()
+
+    return _create
