@@ -11,11 +11,7 @@ from unittest.mock import patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    async_sessionmaker,
-    create_async_engine,
-)
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 # CRITICAL: Set test env before any app imports
 os.environ["ENVIRONMENT"] = "test"
@@ -28,7 +24,7 @@ os.environ["JWT_ALGORITHM"] = "HS256"
 
 from api.routers import auth_jwt
 from core.password import hash_password
-from db.database import Base, get_db
+from db.database import Base, create_engine, get_db
 from db.models import User
 
 # Patch get_jwt_secret to always return the test secret
@@ -51,7 +47,7 @@ def _clear_rate_limits():
 @pytest.fixture(scope="function")
 async def db_engine():
     """Create a test database engine."""
-    engine = create_async_engine(
+    engine = create_engine(
         TEST_DATABASE_URL,
         echo=False,
         connect_args={"check_same_thread": False},

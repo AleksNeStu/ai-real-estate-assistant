@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from sqlalchemy import MetaData
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 
 from config.settings import get_settings
@@ -59,7 +59,7 @@ def get_engine():
         if db_url.startswith("sqlite"):
             connect_args = {"check_same_thread": False}
 
-        _engine = create_async_engine(
+        _engine = create_engine(
             db_url,
             echo=False,  # Set to True for SQL debugging
             connect_args=connect_args,
@@ -69,9 +69,26 @@ def get_engine():
             pool_recycle=settings.db_pool_recycle_seconds,
             pool_pre_ping=True,
         )
-        if db_url.startswith("sqlite"):
-            enable_sqlite_foreign_keys(_engine)
     return _engine
+
+
+def create_engine(db_url: str, **kwargs) -> AsyncEngine:
+    """Build an engine for the application schema.
+
+    Every engine the application opens goes through here, so the schema's
+    rules are the database's rules. An engine built anywhere else enforces
+    them only by accident - and the accident is invisible until a child row
+    outlives the parent it points at.
+
+    The import is inside the function on purpose: the module attribute is
+    then the one place an engine comes from, and a test that patches it
+    patches the real seam.
+    """
+    from sqlalchemy.ext.asyncio import create_async_engine
+
+    engine = create_async_engine(db_url, **kwargs)
+    enable_sqlite_foreign_keys(engine)
+    return engine
 
 
 def enable_sqlite_foreign_keys(engine) -> None:
@@ -89,6 +106,9 @@ def enable_sqlite_foreign_keys(engine) -> None:
     """
     from sqlalchemy import event
 
+    if not _is_sqlite(engine):
+        return
+
     @event.listens_for(engine.sync_engine, "connect")
     def _set_pragma(dbapi_connection, connection_record):
         cursor = dbapi_connection.cursor()
@@ -96,6 +116,20 @@ def enable_sqlite_foreign_keys(engine) -> None:
             cursor.execute("PRAGMA foreign_keys=ON")
         finally:
             cursor.close()
+
+
+def _is_sqlite(engine) -> bool:
+    """Whether this engine talks to SQLite.
+
+    The answer comes from the engine, not from the URL that was asked for,
+    so it follows the engine that was actually built. A mock engine - a
+    test's stand-in - is not SQLite, and says so.
+    """
+    url = getattr(engine, "url", None)
+    backend_name = getattr(url, "get_backend_name", None)
+    if backend_name is None:
+        return False
+    return backend_name() == "sqlite"
 
 
 def get_session_factory():

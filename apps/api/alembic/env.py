@@ -78,6 +78,13 @@ async def run_async_migrations() -> None:
 
     In this scenario we need to create an Engine
     and associate a connection with the context.
+
+    The migration engine deliberately does NOT enforce foreign keys, even on
+    SQLite. A migration rebuilds a table - create the new one, copy the rows,
+    drop the old one, rename - and on SQLite a DROP TABLE under enforced
+    foreign keys fires ON DELETE CASCADE, which takes the child rows with
+    it. Enforcing them here would make a migration silently delete data it
+    was asked to move. The runtime engine enforces them; this one must not.
     """
     configuration = config.get_section(config.config_ini_section, {})
     configuration["sqlalchemy.url"] = get_url()

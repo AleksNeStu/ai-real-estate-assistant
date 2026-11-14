@@ -4,10 +4,10 @@ from collections.abc import AsyncGenerator
 
 import pytest
 from sqlalchemy import DateTime, Float, String, Text, event, func, select
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from db.database import Base
+from db.database import Base, create_engine
 from db.models import BuyerMemoryFact, User
 
 
@@ -18,7 +18,7 @@ async def fk_session() -> AsyncGenerator[AsyncSession, None]:
     SQLite ignores ON DELETE CASCADE unless PRAGMA foreign_keys=ON is set per
     connection, and the shared `db_session` fixture does not set it.
     """
-    engine = create_async_engine(
+    engine = create_engine(
         "sqlite+aiosqlite:///:memory:",
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,

@@ -187,16 +187,12 @@ def _make_test_db_ctx():
     import asyncio
     from contextlib import asynccontextmanager
 
-    from sqlalchemy.ext.asyncio import (
-        AsyncSession,
-        async_sessionmaker,
-        create_async_engine,
-    )
+    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-    from db.database import Base
+    from db.database import Base, create_engine
     from db.repositories import UserRepository
 
-    engine = create_async_engine(
+    engine = create_engine(
         "sqlite+aiosqlite:///:memory:",
         echo=False,
         connect_args={"check_same_thread": False},

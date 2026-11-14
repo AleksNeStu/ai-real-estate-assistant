@@ -18,16 +18,12 @@ from collections.abc import AsyncGenerator
 import pytest
 from httpx import ASGITransport, AsyncClient
 from langchain_core.documents import Document
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    async_sessionmaker,
-    create_async_engine,
-)
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from agents.query_analyzer import QueryAnalyzer
 from core.jwt import create_access_token
 from data.schemas import Property, PropertyCollection, PropertyType
-from db.database import Base, enable_sqlite_foreign_keys
+from db.database import Base, create_engine
 from db.models import (
     DataSourceDB,  # noqa: F401 - Import to register model with Base (Task #79)
     DataSourceSyncHistory,  # noqa: F401 - Import to register model with Base (Task #79)
@@ -259,7 +255,7 @@ def reset_api_rate_limiter() -> None:
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
     """Create a fresh database session for each test."""
     # Create test engine
-    engine = create_async_engine(
+    engine = create_engine(
         TEST_DATABASE_URL,
         echo=False,
         connect_args={"check_same_thread": False},
@@ -267,8 +263,8 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
     # The tests run against the schema the deployments enforce: SQLite only
     # enforces foreign keys when it is told to, and the deployments are told
     # to. A test that could pass against an unenforced schema is a test that
-    # does not know whether the cascade ran.
-    enable_sqlite_foreign_keys(engine)
+    # does not know whether the cascade ran. The factory is the same one the
+    # application uses, so the rule cannot drift between them.
 
     # Create all tables
     async with engine.begin() as conn:

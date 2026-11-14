@@ -57,11 +57,24 @@ class ClassificationMetrics:
         }
 
 
+def _connect(db_path: Path) -> sqlite3.Connection:
+    """Open the metrics database with the schema's foreign keys enforced.
+
+    SQLite does not enforce foreign keys unless it is told to, and the
+    pragma is per connection - so it has to be set on every one of them.
+    This database declares no relations today; the rule is uniform so that
+    adding one later does not silently come unenforced.
+    """
+    conn = sqlite3.connect(db_path)
+    conn.execute("PRAGMA foreign_keys=ON")
+    return conn
+
+
 def init_metrics_db(db_path: Path = METRICS_DB_PATH) -> None:
     """Initialize the metrics database."""
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
-    conn = sqlite3.connect(db_path)
+    conn = _connect(db_path)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS classification_metrics (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -97,7 +110,7 @@ def log_classification_metrics(
     metrics: ClassificationMetrics, db_path: Path = METRICS_DB_PATH
 ) -> None:
     """Log classification metrics to the database."""
-    conn = sqlite3.connect(db_path)
+    conn = _connect(db_path)
     conn.execute(
         """
         INSERT INTO classification_metrics (
@@ -135,7 +148,7 @@ def get_classification_counts_by_intent(
     """Get classification counts grouped by intent for the last N days."""
     cutoff = datetime.now() - timedelta(days=days)
 
-    conn = sqlite3.connect(db_path)
+    conn = _connect(db_path)
     cursor = conn.execute(
         """
         SELECT primary_intent, COUNT(*) as count
@@ -159,7 +172,7 @@ def get_avg_confidence_by_intent(
     """Get average confidence grouped by intent for the last N days."""
     cutoff = datetime.now() - timedelta(days=days)
 
-    conn = sqlite3.connect(db_path)
+    conn = _connect(db_path)
     cursor = conn.execute(
         """
         SELECT primary_intent, AVG(confidence) as avg_confidence
@@ -184,7 +197,7 @@ def get_low_confidence_count(
     """Get count of classifications below confidence threshold."""
     cutoff = datetime.now() - timedelta(days=days)
 
-    conn = sqlite3.connect(db_path)
+    conn = _connect(db_path)
     cursor = conn.execute(
         """
         SELECT COUNT(*)
@@ -206,7 +219,7 @@ def cleanup_old_metrics(
     """Remove metrics older than retention period. Returns count deleted."""
     cutoff = datetime.now() - timedelta(days=retention_days)
 
-    conn = sqlite3.connect(db_path)
+    conn = _connect(db_path)
     cursor = conn.execute(
         "DELETE FROM classification_metrics WHERE timestamp < ?",
         (cutoff.isoformat(),),

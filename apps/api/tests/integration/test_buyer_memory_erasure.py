@@ -13,12 +13,12 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import event, func, select
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from api.deps.auth import AuthCredentials, get_auth_credentials
 from api.routers import buyer_memory
-from db.database import Base, get_db
+from db.database import Base, create_engine, get_db
 from db.models import BuyerMemoryFact, User
 from services.buyer_memory_service import BuyerMemoryService
 
@@ -30,7 +30,7 @@ async def fk_session() -> AsyncGenerator[AsyncSession, None]:
     SQLite ignores ON DELETE CASCADE unless PRAGMA foreign_keys=ON is set per
     connection, so the account-deletion cascade cannot be proved without it.
     """
-    engine = create_async_engine(
+    engine = create_engine(
         "sqlite+aiosqlite:///:memory:",
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,

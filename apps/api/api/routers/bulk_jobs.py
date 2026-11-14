@@ -24,7 +24,7 @@ from api.models import (
     BulkJobType,
 )
 from core.security_utils import sanitize_for_log
-from db.database import get_db
+from db.database import create_engine, get_db
 from db.models import BulkJob
 from utils.exporters import ExportFormat, PropertyExporter
 
@@ -71,9 +71,9 @@ async def _run_import_job(job_id: str, db_url: str) -> None:
         job_id: UUID of the job to execute
         db_url: Database URL for creating new session
     """
-    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+    from sqlalchemy.ext.asyncio import async_sessionmaker
 
-    engine = create_async_engine(db_url)
+    engine = create_engine(db_url)
     async_session = async_sessionmaker(engine, expire_on_commit=False)
 
     async with async_session() as db:
@@ -240,9 +240,9 @@ async def _run_export_job(job_id: str, db_url: str) -> None:
         job_id: UUID of the job to execute
         db_url: Database URL for creating new session
     """
-    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+    from sqlalchemy.ext.asyncio import async_sessionmaker
 
-    engine = create_async_engine(db_url)
+    engine = create_engine(db_url)
     async_session = async_sessionmaker(engine, expire_on_commit=False)
 
     async with async_session() as db:
