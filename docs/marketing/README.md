@@ -178,19 +178,20 @@ and `apps/web/src/lib/indexing.ts` only adds the header when it is exactly
 
 | Metric | Value |
 |--------|-------|
-| Stars | 323 (+8 in the last 30 days — 0.27 a day) |
+| Stars | 323 (+7 in the last 30 days — 0.23 a day) |
 | Forks | 119 |
 | Open pull requests | 0 |
 | Unique visitors, last 14 days | 267 |
 | Views, last 14 days | 743 |
 | Top referrers | aocr.org (81 unique), github.com (73), Google (22) |
 
-The 10-stars-a-day target of the first wave is 37 times the current rate. At
-today's traffic — 267 unique visitors in a fortnight — reaching it means
-roughly 3,700 unique visitors a day at the same conversion, or a channel of a
-different kind (Hacker News, Product Hunt, a directory that converts). The
-full snapshot lives in `docs/community/metrics/2026-W46.md`; the repository
-numbers were re-read on 2026-11-14, the traffic figures are from the W46
+The 10-stars-a-day target of the first wave is 43 times the current rate. At
+today's traffic — 267 unique visitors in a fortnight, 7 stars over 30 days,
+a 1.2 % conversion — reaching it means roughly 800 unique visitors a day at
+the same conversion, or a channel of a different kind (Hacker News, Product
+Hunt, a directory that converts). The full traffic snapshot lives in
+`docs/community/metrics/2026-W46.md`; the repository numbers were re-read
+from the stargazer edges on 2026-11-14, the traffic figures are from the W46
 collection.
 
 **The organic column is noise.** The demo is deliberately `noindex`, so the
