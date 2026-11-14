@@ -94,7 +94,8 @@ dependencies = [
     "tornado>=6.6",      # GHSA-mgf9-4pg-hj56 (gzip bomb) + GHSA-3x9g-8vmp-wqvf (auth-header leak) + CVE-2026-* multipart/cookie fixes + quadratic header parsing / chunked-body event-loop blocking
     # Pinned for HIGH/CRITICAL CVE coverage (Dependabot alerts #373, #371, #372, #368, #367)
     "anyio>=4.14.2",      # CVE-2026-63374 (critical, IDNA 2003 hostname spoofing) + CVE-2026-63349 + CVE-2026-64847
-    "soupsieve>=2.9.0",   # CVE-2026-85999 + CVE-2026-86000 (ReDoS in IDENTIFIER/VALUE + RE_WS_END)
+    "soupsieve>=4.0",     # GHSA-6655-6qjp-jx7x (high ReDoS in IDENTIFIER) + GHSA-mmhr-3c5m-f64f (high polynomial-time DoS)
+                          # + GHSA-7g44-g9rc-x53w (medium recursion DoS) - all fixed in 3.0.2 / 4.0.0
     # greenlet re-pinned: required by sqlalchemy[asyncio] >=2.1; uv re-resolution during
     # the anyio/soupsieve bump dropped it (orphaned transitive). Symptom: ImportError
     # at api.main.py:30 → get_vector_store → "SQLAlchemy asyncio module requires
