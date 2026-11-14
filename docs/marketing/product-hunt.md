@@ -9,7 +9,7 @@
 
 ## Asset checklist (upload to PH during submission)
 
-Checked on 2026-11-11:
+Checked on 2026-11-14:
 
 - [x] Logo: 512×512 PNG (transparent background) and JPG (white background) —
       `assets/logo.png` and `assets/logo.jpg`
@@ -27,6 +27,9 @@ Checked on 2026-11-11:
   - [x] AI valuation page (multi-year forecast) —
         `assets/screenshots/valuation-dark.png`
   - [x] Interactive map with clustered markers — `assets/screenshots/search-dark.png`
+  - [x] The sign-in screen — `assets/screenshots/login-dark.png` (and
+        `register-dark.png`) — the visual proof of the Google sign-in that
+        switches the buyer memory on
 - [x] og-image: 1200×630 (already created at `apps/web/public/og-image.png`)
 - [x] Demo GIF (≤ 30s, optional but high-impact) — `assets/clips/demo-6s.gif`
       (six seconds, dark)
@@ -47,23 +50,27 @@ Alternatives:
 
 Open-source conversational AI for property search. Ask in natural
 language, get matched listings, valuation forecasts, and neighborhood
-summaries. FastAPI + Next.js 16 + ChromaDB. 9 languages. MIT.
+summaries. It remembers your budget and what you ruled out. UI in 9
+languages (en/pl maintained). MIT.
 
 Alternatives (≤ 260 chars each):
 1. An open-source AI property search platform. Built with FastAPI +
-   Next.js 16 + ChromaDB. Multi-provider LLM fallback. 9 languages. MIT
-   license. Self-hostable.
+   Next.js 16 + ChromaDB. Multi-provider LLM fallback. UI in 9 languages
+   (en/pl maintained). MIT license. Self-hostable.
 2. The open-source, AI-first alternative to filter-first property
    portals. Natural language queries, hybrid retrieval, multi-year
-   price forecasts. FastAPI + Next.js 16 + ChromaDB. 9 languages. MIT.
+   price forecasts. UI in 9 languages (en/pl maintained). FastAPI +
+   Next.js 16 + ChromaDB. MIT.
 
 ---
 
 ## Links (PH takes one primary link; the repository is the secondary)
 
-- **Primary:** https://realty.kittray.com/
-- Live demo — no signup and no API key. The hosted instance runs in demo mode,
-  so a visitor can try search, chat and valuation for free.
+- **Primary:** https://realty.kittray.com/en
+- Live demo — no account and no API key to try search, chat and valuation.
+  The hosted instance answers with a real model the project pays for, so
+  exploring costs the visitor nothing. Sign in with Google to switch on the
+  buyer memory.
 - **Secondary:** https://github.com/AleksNeStu/ai-real-estate-assistant
 
 ---
@@ -93,12 +100,18 @@ get matched listings. Nothing did that. So I built it.
 
 **What's interesting technically:**
 
+- A buyer memory: every turn, the same model that answered it reads the
+  conversation back and writes down what it learned — a budget, an area
+  ruled out, a listing liked or disliked — into a per-buyer table. The next
+  search reads that table back. A ruled-out area and a disliked listing are
+  filters, not down-ranked results.
 - Hybrid semantic + keyword retrieval via ChromaDB with MMR reranking
 - Multi-provider LLM routing (17 providers: OpenAI, Anthropic, Google, Grok,
   DeepSeek, local Ollama among them) with automatic fallback chain
-- Environment-conditional lazy provider loading (stays under a
-  512 MB cap, eager load on VPS)
-- 9 languages with EU AI Act compliance labels built in
+- Environment-conditional lazy provider loading (a memory-capped host
+  imports one provider at startup, a VPS imports all 17)
+- UI in 9 languages — English and Polish maintained, the rest fall back to
+  English
 
 **What's NOT here:**
 
@@ -108,8 +121,10 @@ get matched listings. Nothing did that. So I built it.
 
 **Open-core model:**
 
-The engine is MIT-licensed and free. Live data, accounts, and AI CRM
-gate the hosted tier at [propvectorai.com](https://propvectorai.com).
+The engine is MIT-licensed and free. Live data feeds, running it for
+you, and the enterprise pieces gate the hosted tier at
+[propvectorai.com](https://propvectorai.com). Accounts, favourites and
+saved searches are in the repo — they need an account, not a payment.
 This repo is the marketing surface for developers.
 
 Happy to answer questions about the RAG pipeline, ChromaDB tuning, or
@@ -135,18 +150,19 @@ the multi-provider routing logic.
 
 **Comment: "Is the AI accurate?"**
 
-> The demo uses simulated AI responses for instant exploration. In
-> production deployments with real data and live LLM calls, accuracy
-> depends on (a) the source data quality and (b) the LLM provider
-> chosen for each task. Per-task priority cascade in
-> `apps/api/models/provider_factory.py` — premium models for property
-> valuation, cheap models for neighborhood summaries.
+> The demo answers with a real model the project pays for — MiniMax's
+> MiniMax-M3.1-Flash — and falls back to a local model if that one is
+> unreachable, so the answers are not canned. The catalogue is seeded demo
+> data, not live listings; in a deployment with your own data, accuracy
+> depends on (a) the source data quality and (b) the LLM provider chosen
+> for each task. Per-task priority cascade in
+> `apps/api/models/provider_factory.py`.
 
 **Comment: "Can I self-host this?"**
 
 > Yes — MIT license, Docker Compose, 5-minute quickstart.
 > https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/development/QUICKSTART_5MIN.md
-> Bring your own LLM API keys (any of the 16 supported providers or
+> Bring your own LLM API keys (any of the 17 supported providers or
 > local Ollama).
 
 **Comment: "Why not Pinecone / pgvector instead of ChromaDB?"**

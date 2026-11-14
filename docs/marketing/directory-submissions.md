@@ -24,12 +24,14 @@ Tagline (≤ 100 chars): Conversational AI for property search —
 open-source, self-hostable, MIT
 Category: Real Estate
 Pricing: Free (open-source) | Paid hosted tier (propvectorai.com)
-URL: https://realty.kittray.com/
+URL: https://realty.kittray.com/en
 GitHub: https://github.com/AleksNeStu/ai-real-estate-assistant
 Description: Open-source conversational AI for property search. Ask in
 natural language ("2-bedroom apartment in Kraków under 500k") and get
-matched listings. Built with FastAPI + Next.js 16 + ChromaDB. 17 LLM
-providers with automatic fallback chain. 9 languages. MIT-licensed.
+matched listings. It remembers your budget and what you ruled out.
+Built with FastAPI + Next.js 16 + ChromaDB. 17 LLM providers with
+automatic fallback chain. UI in 9 languages (en/pl maintained).
+MIT-licensed.
 ```
 
 ### FutureTools.io (futuretools.io)
@@ -44,14 +46,16 @@ providers with automatic fallback chain. 9 languages. MIT-licensed.
 
 ```
 Tool name: AI Real Estate Assistant
-URL: https://realty.kittray.com/
+URL: https://realty.kittray.com/en
 GitHub: https://github.com/AleksNeStu/ai-real-estate-assistant
 Category: AI Agents / Real Estate
 Pricing: Free (open-source) | Paid (hosted tier)
 Description: Open-source conversational AI for property search, analytics,
 and market insights. Natural language queries with automatic filter
-extraction. Hybrid semantic + keyword retrieval. Multi-provider LLM
-fallback. 9 languages. MIT-licensed.
+extraction. It remembers your budget and what you ruled out, and applies
+both to the next search. Hybrid semantic + keyword retrieval.
+Multi-provider LLM fallback. UI in 9 languages (en/pl maintained).
+MIT-licensed.
 ```
 
 ### AIcyclopedia (aicyclopedia.com)
@@ -66,10 +70,11 @@ fallback. 9 languages. MIT-licensed.
 
 ```
 Tool: AI Real Estate Assistant
-URL: https://realty.kittray.com/
+URL: https://realty.kittray.com/en
 Category: Real Estate / Property Tech
 Short description: Conversational AI property search with natural
-language queries. Open-source, MIT-licensed, self-hostable.
+language queries. It remembers your budget and what you ruled out.
+Open-source, MIT-licensed, self-hostable.
 Tags: real-estate, AI, open-source, FastAPI, Next.js, ChromaDB,
   multi-language, property-search
 ```
@@ -100,11 +105,12 @@ See `product-hunt.md` for full draft.
 
 ```
 Startup name: AI Real Estate Assistant
-URL: https://realty.kittray.com/
+URL: https://realty.kittray.com/en
 Tagline: Conversational AI property search — open-source, MIT-licensed
 Description: Open-source conversational AI platform for property
 search, analytics, and market insights. Built with FastAPI + Next.js
-16 + ChromaDB. Multi-provider LLM fallback chain. 9 languages.
+16 + ChromaDB. Multi-provider LLM fallback chain. It remembers your
+budget and what you ruled out. UI in 9 languages (en/pl maintained).
 Founders: AleksNeStu (solo developer)
 ```
 
@@ -126,7 +132,7 @@ See `show-hn.md` for full draft.
 
 - [awesome-open-source-ai](https://github.com/topics/awesome-list) — submit via PR
 - [awesome-real-estate](https://github.com/topics/awesome-list) — submit via PR
-- [FastAPI Awesome](https://github.com/tiangolo/awesome-fastapi) — submit via PR
+- [FastAPI Awesome](https://github.com/mjhea0/awesome-fastapi) — submit via PR
 - [Next.js Examples](https://github.com/vercel/next.js/tree/canary/examples) — submit via PR
 
 **Template for PR submission to awesome-* lists:**
@@ -138,8 +144,9 @@ See `show-hn.md` for full draft.
 is an open-source conversational AI platform for property search,
 analytics, and market insights. Built with FastAPI + Next.js 16 +
 ChromaDB. Multi-provider LLM routing with automatic fallback chain.
-9 languages with EU AI Act compliance labels. MIT-licensed.
-- Live demo: https://realty.kittray.com/
+It remembers your budget and what you ruled out. UI in 9 languages
+(en/pl maintained). MIT-licensed.
+- Live demo: https://realty.kittray.com/en
 - Architecture: https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/architecture/large-saas-overview.md
 ```
 

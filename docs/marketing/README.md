@@ -21,7 +21,7 @@
 | [show-hn.md](./show-hn.md) | Show HN post + first comment + day-of checklist | Hacker News | Tue/Wed 8-10am UTC |
 | [reddit-posts.md](./reddit-posts.md) | 4 calibrated posts (r/opensource, r/sideproject, r/programming, r/ChatGPT or r/LocalLLaMA) | Reddit | One subreddit every 3-5 days |
 | [product-hunt.md](./product-hunt.md) | Tagline, description, maker-comment, asset checklist, day-of checklist | Product Hunt | Tue/Wed 12:01am PT |
-| [youtube-script.md](./youtube-script.md) | 90s hero, 5min architecture deep-dive, 30s vertical; shot list | YouTube + TikTok + Shorts | Sequential over 30 days |
+| [youtube-script.md](./youtube-script.md) | 90s hero, 8min architecture deep-dive, 30s vertical; shot list | YouTube + TikTok + Shorts | Sequential over 30 days |
 | [directory-submissions.md](./directory-submissions.md) | Tier 1-4 directory list with copy templates, etiquette, tracking | There's An AI For That, FutureTools, AIcyclopedia, BetaList, awesome-* PRs | One per day |
 
 ---
@@ -36,7 +36,7 @@ Day +7           → AIcyclopedia
 Day +8           → r/opensource (Reddit)
 Day +10          → BetaList
 Day +12          → r/sideproject (Reddit)
-Day +14          → 5min YouTube architecture deep-dive
+Day +14          → 8min YouTube architecture deep-dive
 Day +16          → r/programming (Reddit)
 Day +20          → r/ChatGPT or r/LocalLLaMA
 Day +21          → 90s YouTube hero + TikTok + Shorts cross-post
@@ -78,6 +78,17 @@ Day +30          → Product Hunt (after audiences warmed up)
 - [x] Live demo: the capture still works — re-checked 2026-11-11:
       `POST /api/v1/leads/visitor` answers 201 and the row carries the
       address, the source, the consent and both timestamps.
+- [x] Live demo: the demo can be signed into with Google — checked
+      2026-11-14: `GET /api/v1/capabilities` answers `auth.jwt_enabled: true`
+      and `auth.oauth.google: true`, `/en/auth/login` renders the Google
+      button, and the anonymous path is still open (`demo_user_bypass:
+      false`, so an anonymous visitor is not handed a synthetic user).
+- [x] Live demo: the buyer memory is in the running build — the deployment
+      serves `9577cb0a52b7e851824fe837b2cea4de5a3ad34a`, and that commit
+      carries the memory commits (`apps/api/services/buyer_memory_service.py`,
+      the extractor, the steering and the filters). A signed-in buyer's
+      budget, ruled-out areas and disliked listings survive a turn and shape
+      the next one; an anonymous request reads and writes none.
 - [ ] **The demo sends no e-mail, and that is what the form says.**
       `GET /api/v1/capabilities` answers `email.enabled: false`,
       `lead_capture.waitlist_enabled: false` — the deployment has no mail
@@ -114,13 +125,40 @@ Day +30          → Product Hunt (after audiences warmed up)
       suites, 85.2% frontend lines), and "WCAG 2.1 AA audited" — `ACCESSIBILITY.md`
       records the audit and its three known map-component limitations, so the
       card no longer claims a blanket "AA compliant".
-- [ ] The privileged viewer can see which build the demo is running — the
+- [x] The privileged viewer can see which build the demo is running — the
       commit, the build time and the deploy's run, in the footer
       (TaskMaster #73). The list lives in the repository's `ADMIN_EMAILS` /
-      `ADMIN_IPS` variables and the deploy delivers it; with the demo rolled
-      onto a build that carries the metadata, a listed address sees the sha
-      and the run link at the bottom of every page. **Until the demo is
-      rolled onto a build that carries it, this box stays open.**
+      `ADMIN_IPS` variables and the deploy delivers it. Verified 2026-11-14:
+      the live deployment answers `GET /api/v1/capabilities` with the build
+      block — `sha 9577cb0a52b7e851824fe837b2cea4de5a3ad34a`, the build
+      time and the run — for a privileged caller, and without it for anyone
+      else. The demo runs that same commit, so the stamp is true of what the
+      visitor is talking to.
+
+## What changed since the drafts were written (2026-11-09 → 2026-11-14)
+
+The five drafts were written against the deployment of 2026-11-09 and are
+re-verified against the deployment of 2026-11-14. Three things moved, and
+every draft now carries the new truth:
+
+1. **The demo can be signed into with Google** (`v5.3.4`). The drafts used
+   to promise *"no signup"*; the honest claim is narrower — browsing needs
+   no account, and signing in switches on the buyer memory.
+2. **The buyer memory shipped** (`v5.3.x`, in `dev` and in the running
+   build). It was in none of the drafts. It is now the headline in all
+   five, because it is the thing a competitor's demo cannot copy in a
+   weekend.
+3. **The launch URL is `/en`.** The bare root 307-redirects to `/pl`, so an
+   English-language audience was landing on a Polish page. Every link in
+   every draft now carries the English path.
+
+Also corrected, because they would not survive a reader checking them:
+`v5.1.17` → the current `v5.3.5`; *"the demo uses simulated AI
+responses"* → the demo answers with a real provider; *"16 supported
+providers"* → 17; *"9 languages with EU AI Act compliance labels"* → nine
+locales ship, English and Polish are maintained, the rest fall back to
+English; and the *"~50k monthly demo visitors"* in the r/sideproject draft
+→ the measured 267 unique visitors in a fortnight.
 
 ## The demo is deliberately not indexed
 
@@ -136,12 +174,13 @@ the release step in the deployment notes). If the demo is released,
 and `apps/web/src/lib/indexing.ts` only adds the header when it is exactly
 `false`), and the product's own `robots.txt` comes back with the image.
 
-## Where the audience actually comes from (measured 2026-11-11)
+## Where the audience actually comes from (measured 2026-11-14)
 
 | Metric | Value |
 |--------|-------|
-| Stars | 322 (+8 in the last 30 days — 0.27 a day) |
+| Stars | 323 (+8 in the last 30 days — 0.27 a day) |
 | Forks | 119 |
+| Open pull requests | 0 |
 | Unique visitors, last 14 days | 267 |
 | Views, last 14 days | 743 |
 | Top referrers | aocr.org (81 unique), github.com (73), Google (22) |
@@ -150,7 +189,9 @@ The 10-stars-a-day target of the first wave is 37 times the current rate. At
 today's traffic — 267 unique visitors in a fortnight — reaching it means
 roughly 3,700 unique visitors a day at the same conversion, or a channel of a
 different kind (Hacker News, Product Hunt, a directory that converts). The
-full snapshot lives in `docs/community/metrics/2026-W46.md`.
+full snapshot lives in `docs/community/metrics/2026-W46.md`; the repository
+numbers were re-read on 2026-11-14, the traffic figures are from the W46
+collection.
 
 **The organic column is noise.** The demo is deliberately `noindex`, so the
 Google traffic is a page that is not in the index. Releasing it is an operator

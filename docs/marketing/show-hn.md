@@ -33,12 +33,17 @@ Per-task and per-user provider selection lives in
 
 What works today:
 - Conversational search with automatic filter extraction
+- A buyer memory: sign in once and the assistant keeps what you told it —
+  your budget, the areas you ruled out, the listings you liked and disliked —
+  and applies it to every later search. A ruled-out area and a disliked
+  listing are filters, not down-ranked results.
 - Financial tools: mortgage calculator, rent-vs-buy, ROI, TCO, CMA reports
 - AI property valuation with multi-year price forecast (1/3/5/10y)
 - AI neighborhood one-liner on property detail pages
 - Interactive maps with clustered markers (Mapbox / Leaflet)
-- 9 languages (English, Polish, Russian, German, Spanish, Italian,
-  Portuguese, Turkish, Ukrainian) with EU AI Act compliance labels
+- 9 interface languages (English, Polish, Russian, German, Spanish, Italian,
+  Portuguese, Turkish, Ukrainian), with English and Polish maintained and the
+  rest falling back to English
 
 Why I built it: I'm not trying to replace Zillow or Idealista. They're
 aggregators with live MLS feeds and millions of users — I'm a solo
@@ -46,12 +51,15 @@ developer. What I wanted was a developer-friendly reference stack for
 AI-first property UX, open-core, self-hostable, MIT-licensed, that
 someone could fork on a Friday and ship a custom property experience on
 Monday. The hosted SaaS tier (PropVector AI, propvectorai.com) covers
-live data feeds, accounts, and AI CRM for when you outgrow the demo.
+live data feeds, running it for you, and the enterprise pieces for when
+you outgrow the demo.
 
-Stack: FastAPI · Next.js 16 · React 19 · ChromaDB · PostgreSQL · Docker ·
-GitHub Actions · Uptime Kuma.
+Stack: FastAPI · Next.js 16 · React 19 · ChromaDB · PostgreSQL or SQLite ·
+Docker · GitHub Actions · Uptime Kuma.
 
-Live demo (no signup): https://realty.kittray.com/
+Live demo: https://realty.kittray.com/en
+Browsing needs no account — the free tier covers it. Sign in with Google to
+switch on the buyer memory.
 Source: https://github.com/AleksNeStu/ai-real-estate-assistant
 
 Happy to answer questions about the RAG pipeline, multi-provider
@@ -73,9 +81,21 @@ Quick answers to the inevitable ones:
 
 - **Multi-provider LLM routing isn't just a config flag — why bother?**
   Reliability. When one provider rate-limits or has an outage, the demo
-  keeps working. Per-task priority (chat → property valuation →
-  neighborhood one-liner) lets you send cheap tasks to cheaper models.
+  keeps working. The deployed chain is MiniMax → Ollama (local, on the
+  server) → OpenRouter's free models, and the default per-task model is a
+  free one, so a provider outage doesn't take the demo down with it.
   See `apps/api/models/provider_factory.py` for the priority cascade.
+
+- **Isn't this just a chatbot with a filter bolted on?**
+  The part that isn't: the buyer memory. Every turn, the same model that
+  answered it reads the conversation back and writes down the facts it
+  learned — a budget, an area ruled out, a listing liked or disliked — into
+  a per-buyer table. The next search reads that table back. A ruled-out area
+  and a disliked listing are *filters* (removed from the result set), not
+  down-ranked ones. It only applies to a signed-in buyer — an anonymous
+  request reads no memory and writes none, and is rate-limited instead.
+  See `apps/api/services/buyer_memory_service.py` and
+  `apps/api/api/routers/chat.py`.
 
 - **ChromaDB vs Pinecone vs pgvector?** ChromaDB is the right call for
   a single-developer project — embedded mode runs in-process for
@@ -91,18 +111,21 @@ Quick answers to the inevitable ones:
 
 ## Assets checklist before posting
 
-Checked on 2026-11-11:
+Re-verified on 2026-11-14 against the live deployment:
 
-- [x] Live demo URL responds 200: `https://realty.kittray.com/`
+- [x] Live demo URL responds 200: `https://realty.kittray.com/en` — the bare
+      root 307-redirects to `/pl`, so the English path is the one to publish
 - [x] GitHub repo link works
 - [x] og:image renders: `https://realty.kittray.com/og-image.png` answers 200 with
       a PNG of 1200×630 (the card a Twitter validator asks for)
 - [x] One good demo GIF or screenshot linked in post — the six-second dark demo
       is at `assets/clips/demo-6s.gif` (and `assets/clips/demo-6s.mp4` for the
       video), and the dark screenshot set is at `assets/screenshots/`
+- [x] The sign-in screen, for the buyer-memory claim —
+      `assets/screenshots/login-dark.png`
 - [x] Title under 80 chars — the title above is 75; the one it replaced was 94
-- [x] Body under 400 words — 287
-- [x] First comment drafted and ready to paste immediately — 200 words
+- [x] Body under 400 words — 366
+- [x] First comment drafted and ready to paste immediately — 320 words
 
 Everything below needs the operator: the posting, the account, the voice.
 
