@@ -26,9 +26,9 @@ ChromaDB, and returns matched listings.
 
 The codebase is FastAPI + Next.js 16 + ChromaDB with MMR reranking. It
 plugs into 17 LLM providers (OpenAI, Anthropic, Google, Grok, DeepSeek,
-OpenRouter, Groq, Mistral and local Ollama among them) with an automatic
-fallback chain so a single provider rate-limit doesn't kill the demo.
-Per-task and per-user provider selection lives in
+OpenRouter, Groq, Mistral, MiniMax and local Ollama among them) with an
+automatic fallback chain so a single provider rate-limit doesn't kill the
+demo. Per-task and per-user provider selection lives in
 `apps/api/models/provider_factory.py`.
 
 What works today:
@@ -124,7 +124,7 @@ Re-verified on 2026-11-14 against the live deployment:
 - [x] The sign-in screen, for the buyer-memory claim —
       `assets/screenshots/login-dark.png`
 - [x] Title under 80 chars — the title above is 75; the one it replaced was 94
-- [x] Body under 400 words — 366
+- [x] Body under 400 words — 367
 - [x] First comment drafted and ready to paste immediately — 320 words
 
 Everything below needs the operator: the posting, the account, the voice.

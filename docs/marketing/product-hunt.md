@@ -107,7 +107,7 @@ get matched listings. Nothing did that. So I built it.
   filters, not down-ranked results.
 - Hybrid semantic + keyword retrieval via ChromaDB with MMR reranking
 - Multi-provider LLM routing (17 providers: OpenAI, Anthropic, Google, Grok,
-  DeepSeek, local Ollama among them) with automatic fallback chain
+  DeepSeek, MiniMax, local Ollama among them) with automatic fallback chain
 - Environment-conditional lazy provider loading (a memory-capped host
   imports one provider at startup, a VPS imports all 17)
 - UI in 9 languages — English and Polish maintained, the rest fall back to

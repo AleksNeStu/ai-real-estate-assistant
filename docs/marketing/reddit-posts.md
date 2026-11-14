@@ -184,7 +184,7 @@ context?
 ## Post 4: r/ChatGPT or r/LocalLLaMA (LLM-architecture angle)
 
 **Title:** How we route 17 LLM providers (OpenAI, Anthropic, Google,
-Grok, DeepSeek, Ollama) in a self-hostable property search demo
+Grok, DeepSeek, MiniMax, Ollama) in a self-hostable property search demo
 
 **Body:**
 
