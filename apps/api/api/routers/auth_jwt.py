@@ -983,10 +983,29 @@ async def oauth_callback(
         # Existing user - get user
         user = await user_repo.get_by_id(oauth_account.user_id)
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="User not found for OAuth account",
+            # The link outlived the user it points at.
+            #
+            # The demo's re-seed deletes every user on startup, and SQLite does
+            # not enforce ON DELETE CASCADE, so the link survived its user. The
+            # sign-in then died here with a 500 and the account was locked out
+            # of its own login - forever, because nothing else ever removed the
+            # link. The link is still proof of who the caller is, so the user
+            # is provisioned again and the link is repointed at it.
+            email = user_info.email or oauth_account.provider_email
+            if not email:
+                email = f"{user_info.provider}_{user_info.provider_user_id}@oauth.local"
+            logger.warning(
+                "OAuth account %s pointed at a user that no longer exists - reprovisioning %s",
+                oauth_account.id,
+                email,
             )
+            user = await user_repo.create(
+                email=email,
+                full_name=user_info.name,
+                is_verified=user_info.email_verified,
+            )
+            oauth_account.user_id = user.id
+            await session.flush()
     else:
         # New OAuth user - check if email exists
         if user_info.email:

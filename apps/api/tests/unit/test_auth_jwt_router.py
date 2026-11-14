@@ -1289,6 +1289,83 @@ class TestOAuthCallback:
             assert "access_token=access-tok" in response.headers.get("set-cookie", "")
 
     @pytest.mark.asyncio
+    async def test_callback_reprovisions_a_user_the_oauth_link_outlived(self, auth_client):
+        """An OAuth link whose user is gone must not lock the account out.
+
+        The demo's re-seed deletes every user on startup and SQLite does not
+        enforce ON DELETE CASCADE, so a link can outlive the user it points
+        at. The sign-in used to die with a 500 there, and nothing ever
+        removed the link, so the account could never sign in again.
+        """
+        mock_user_info = MagicMock()
+        mock_user_info.provider = "google"
+        mock_user_info.provider_user_id = "google-123"
+        mock_user_info.email = "test@example.com"
+        mock_user_info.name = "Test User"
+        mock_user_info.email_verified = True
+
+        mock_oauth_account = MagicMock()
+        mock_oauth_account.id = "oauth-1"
+        mock_oauth_account.user_id = "user-that-no-longer-exists"
+        mock_oauth_account.provider_email = "test@example.com"
+
+        mock_new_user = _make_mock_user(id="reprovisioned-user")
+
+        with (
+            patch("api.routers.auth_jwt.get_settings") as mock_settings,
+            patch("core.oauth.GoogleOAuthProvider") as mock_provider_cls,
+            patch("api.routers.auth_jwt.UserRepository") as mock_user_cls,
+            patch("api.routers.auth_jwt.OAuthAccountRepository") as mock_oauth_cls,
+            patch("api.routers.auth_jwt.create_access_token", return_value="access-tok"),
+            patch("api.routers.auth_jwt.generate_refresh_token", return_value="refresh-tok"),
+            patch("api.routers.auth_jwt.get_access_token_expire_minutes", return_value=15),
+            patch("api.routers.auth_jwt.get_refresh_token_expire_days", return_value=7),
+            patch("api.routers.auth_jwt.RefreshTokenRepository") as mock_refresh_cls,
+        ):
+            mock_settings_obj = MagicMock()
+            mock_settings_obj.google_client_id = "test-id"
+            mock_settings_obj.google_client_secret = "test-secret"
+            mock_settings_obj.google_redirect_uri = "http://localhost/callback"
+            mock_settings_obj.environment = "development"
+            mock_settings_obj.frontend_url = "https://realty.kittray.com"
+            mock_settings.return_value = mock_settings_obj
+
+            mock_provider = MagicMock()
+            mock_provider_cls.return_value = mock_provider
+            mock_provider.verify_and_get_user = AsyncMock(return_value=mock_user_info)
+
+            mock_oauth_repo = MagicMock()
+            mock_oauth_cls.return_value = mock_oauth_repo
+            mock_oauth_repo.get_by_provider = AsyncMock(return_value=mock_oauth_account)
+
+            mock_user_repo = MagicMock()
+            mock_user_cls.return_value = mock_user_repo
+            # The user the link points at is gone.
+            mock_user_repo.get_by_id = AsyncMock(return_value=None)
+            mock_user_repo.create = AsyncMock(return_value=mock_new_user)
+            mock_user_repo.update_last_login = AsyncMock()
+
+            mock_refresh_repo = MagicMock()
+            mock_refresh_cls.return_value = mock_refresh_repo
+            mock_refresh_repo.create = AsyncMock()
+
+            response = await auth_client.get(
+                "/api/v1/auth/oauth/callback?code=valid-code&state=test-state",
+                cookies={
+                    "oauth_state": "test-state",
+                    "oauth_code_verifier": "test-verifier",
+                },
+            )
+            # The visitor is signed in, not locked out.
+            assert response.status_code == status.HTTP_302_FOUND
+            assert "access_token=access-tok" in response.headers.get("set-cookie", "")
+            # The user was provisioned again...
+            mock_user_repo.create.assert_called_once()
+            assert mock_user_repo.create.call_args.kwargs["email"] == "test@example.com"
+            # ...and the link was repointed at it.
+            assert mock_oauth_account.user_id == "reprovisioned-user"
+
+    @pytest.mark.asyncio
     async def test_callback_success_new_oauth_user(self, auth_client):
         """OAuth callback creating a new user via OAuth."""
         mock_new_user = _make_mock_user(id="new-user-1")
@@ -1549,53 +1626,6 @@ class TestOAuthCallback:
             # Verify user was created with generated email
             user_create_call = mock_user_repo.create.call_args
             assert "oauth.local" in user_create_call.kwargs.get("email", "")
-
-    @pytest.mark.asyncio
-    async def test_callback_oauth_account_user_not_found(self, auth_client):
-        """OAuth callback returns 500 when OAuth account exists but user is deleted."""
-        mock_user_info = MagicMock()
-        mock_user_info.provider = "google"
-        mock_user_info.provider_user_id = "google-123"
-        mock_user_info.email = "test@example.com"
-        mock_user_info.name = "Test User"
-        mock_user_info.email_verified = True
-
-        mock_oauth_account = MagicMock()
-        mock_oauth_account.user_id = "deleted-user"
-
-        with (
-            patch("api.routers.auth_jwt.get_settings") as mock_settings,
-            patch("core.oauth.GoogleOAuthProvider") as mock_provider_cls,
-            patch("api.routers.auth_jwt.UserRepository") as mock_user_cls,
-            patch("api.routers.auth_jwt.OAuthAccountRepository") as mock_oauth_cls,
-        ):
-            mock_settings_obj = MagicMock()
-            mock_settings_obj.google_client_id = "test-id"
-            mock_settings_obj.google_client_secret = "test-secret"
-            mock_settings_obj.google_redirect_uri = "http://localhost/callback"
-            mock_settings_obj.environment = "development"
-            mock_settings.return_value = mock_settings_obj
-
-            mock_provider = MagicMock()
-            mock_provider_cls.return_value = mock_provider
-            mock_provider.verify_and_get_user = AsyncMock(return_value=mock_user_info)
-
-            mock_oauth_repo = MagicMock()
-            mock_oauth_cls.return_value = mock_oauth_repo
-            mock_oauth_repo.get_by_provider = AsyncMock(return_value=mock_oauth_account)
-
-            mock_user_repo = MagicMock()
-            mock_user_cls.return_value = mock_user_repo
-            mock_user_repo.get_by_id = AsyncMock(return_value=None)
-
-            response = await auth_client.get(
-                "/api/v1/auth/oauth/callback?code=valid-code&state=test-state",
-                cookies={
-                    "oauth_state": "test-state",
-                    "oauth_code_verifier": "test-verifier",
-                },
-            )
-            assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
 class TestAppleOAuth:

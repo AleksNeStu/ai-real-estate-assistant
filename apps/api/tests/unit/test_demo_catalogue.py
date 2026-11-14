@@ -216,3 +216,38 @@ async def test_the_seeded_agents_carry_their_listings(db_session):
         assert own, f"{agent_id} has no listings"
         assert all(listing.is_active for listing in own)
         assert sum(1 for listing in own if listing.is_primary) == 1
+
+
+@pytest.mark.asyncio
+async def test_the_clear_takes_the_oauth_links_with_the_users(db_session):
+    """The links point at the users, so they go with them.
+
+    SQLite does not enforce ON DELETE CASCADE, so a link that outlives its
+    user is a link that points at nothing - and a sign-in that can never
+    finish. The demo's re-seed deletes every user on every startup, so the
+    links have to go with them.
+    """
+    from unittest.mock import patch
+
+    from alembic.demo_data_generator import ComprehensiveDemoDataGenerator
+    from db.models import OAuthAccount, User
+
+    generator = ComprehensiveDemoDataGenerator(db_session)
+    db_session.add(User(id="user-1", email="linker@example.com"))
+    await db_session.flush()
+    db_session.add(
+        OAuthAccount(
+            id="oauth-1",
+            user_id="user-1",
+            provider="google",
+            provider_user_id="google-1",
+            provider_email="linker@example.com",
+        )
+    )
+    await db_session.flush()
+
+    with patch("alembic.demo_data_generator.ChromaPropertyStore"):
+        await generator._clear_existing_data()
+
+    assert (await db_session.execute(select(User))).scalars().all() == []
+    assert (await db_session.execute(select(OAuthAccount))).scalars().all() == []

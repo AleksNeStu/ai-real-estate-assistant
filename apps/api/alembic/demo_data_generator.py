@@ -43,6 +43,7 @@ from db.models import (
     CMAReportDB,
     FavoriteDB,
     Lead,
+    OAuthAccount,
     SavedSearchDB,
     SearchEvent,
     SearchResultInteraction,
@@ -608,6 +609,12 @@ class ComprehensiveDemoDataGenerator:
         logger.info("Clearing search events and interactions...")
         await self.session.execute(delete(SearchResultInteraction))
         await self.session.execute(delete(SearchEvent))
+
+        logger.info("Clearing OAuth account links...")
+        # The links point at the users that are about to go, and SQLite does
+        # not enforce ON DELETE CASCADE, so they would survive them - leaving
+        # a link that points at nothing, and a sign-in that can never finish.
+        await self.session.execute(delete(OAuthAccount))
 
         logger.info("Clearing users...")
         await self.session.execute(delete(User))
