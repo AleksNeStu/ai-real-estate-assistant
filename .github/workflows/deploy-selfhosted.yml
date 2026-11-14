@@ -272,7 +272,12 @@ jobs:
           for attempt in $(seq 1 240); do
             RAW=$(gh api -H "Accept: application/vnd.github+json" \
               "repos/${{ github.repository }}/actions/workflows/publish-ghcr.yml/runs?head_sha=$HEAD_SHA&per_page=20" 2>/dev/null || echo '{"workflow_runs":[]}')
-            RUNS=$(echo "$RAW" | jq -c '[.workflow_runs[]? | select(.event == "push")]' 2>/dev/null || echo '[]')
+            # A publish is a publish, whatever started it: a tag push AND a
+            # manual dispatch of publish-ghcr.yml both produce the images for
+            # this commit. The filter used to accept the push only, so a
+            # dispatched publish stayed invisible here and the roll waited two
+            # hours for a verdict that had already been published.
+            RUNS=$(echo "$RAW" | jq -c '[.workflow_runs[]? | select(.event == "push" or .event == "workflow_dispatch")]' 2>/dev/null || echo '[]')
             COUNT=$(echo "$RUNS" | jq 'length' 2>/dev/null || echo 0)
             if [ "$COUNT" -gt 0 ]; then
               DONE=$(echo "$RUNS" | jq '[.[] | select(.status == "completed")] | length' 2>/dev/null || echo 0)
