@@ -7,6 +7,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.6] - 2026-11-15
+
+### Fixed
+- **The type check gated nothing** — the cleanup that took mypy from 410
+  errors to zero landed, but the gate did not: `ci.yml` never installed mypy
+  and never ran it, and the local CI-parity helper listed mypy as a soft
+  failure, so a green local gate said nothing about the types. The type check
+  now runs in the `backend-lint` job as a gate, against the version it was
+  verified on (`mypy==2.2.0`), and a mypy failure fails the local helper too.
+  Only the drift checks stay soft there.
+- **The circuit-breaker cooldown test measured the wall clock** — the breaker
+  compares the failure timestamp against `datetime.now()`, whose resolution on
+  Windows is 15.625 ms — coarser than the 10 ms cooldown the test configured.
+  Under the parallel unit suite the sampled delta landed below the threshold,
+  the breaker correctly stayed OPEN and the test failed. The test now moves the
+  failure timestamp back instead of waiting for it, the pattern the rest of the
+  suite already uses.
+- **Every query in the agent-performance report reused one result variable** —
+  five queries shared one variable, so the type checker bound the type of the
+  first query (`tuple[str, str, str]`) to every later `.scalar()` call: the
+  counts read as strings and the date read as a string too. Each query now has
+  its own result variable.
+
+### Changed
+- **The backend manifests are pinned** — `apps/api/requirements.txt` carried
+  ranges, so every environment resolved a different set: CI resolved sqlalchemy
+  2.1.8 while the local venv had 2.0.51, and the type check that CI now gates
+  on failed on code that was correct locally. Every entry is now an exact
+  version, and the security rationale each floor carried stays in the comments
+  next to it. The gate tooling (pytest, ruff, mypy) moved into a new
+  `apps/api/requirements-dev.txt`, pinned the same way, so it stays out of the
+  container image.
+- **The project is installed without its own dependency resolution** — CI
+  installed the project with `pip install -e .`, which re-resolved the floors
+  declared in `pyproject.toml` and could pull a different version in behind
+  the pins. The install is now `--no-deps`, so the manifests decide the
+  versions in every environment. The local venv and a clean install of the
+  manifests match exactly: 224 packages, 0 differing versions.
+- **The runtime manifest now carries the ten direct dependencies that only
+  `pyproject.toml` declared** — the container image installs
+  `requirements.txt` and nothing else, while CI installed that file *plus* the
+  project, so the two had different package sets. `bcrypt`, `defusedxml`,
+  `pywebpush`, `beautifulsoup4`, `lxml`, `redis`, `starlette`,
+  `langchain-classic`, `langsmith` and `tornado` are now in the manifest the
+  image installs.
+- **The install instructions use the pinned manifests** — the Makefile, the
+  quickstart, the backend README, the CI guide and both troubleshooting guides
+  install from the manifests instead of `pip install -e .[dev]`, and
+  `apps/api/uv.lock` is documented as what it now is: a file nothing installs
+  from.
+
+### Security
+- **The last reachable MEDIUM advisory is closed** — `basic-ftp` 5.3.1 →
+  6.2.4 (GHSA-5pm8-86m8-9m6r / CVE-2026-126345) through an npm override:
+  `get-uri`, its only parent, requires `basic-ftp ^5.3.1` in every published
+  version, so the advisory could not close itself. The package is dev-scope
+  and never reaches the shipped bundle or the container.
+- **The four chromadb advisories are dismissed as accepted risks** —
+  CVE-2026-45833, -45829, -45831 and -45830 have no upstream fix, and their
+  disposition is unchanged and documented in
+  `docs/operations/security/accepted-risks.md`: this application uses ChromaDB
+  as an embedded client, the HTTP API is never exposed, no tenants are used
+  and `trust_remote_code` is never set. **Open Dependabot alerts on the
+  default branch: 5 → 0.**
+
 ## [5.3.5] - 2026-11-12
 
 ### Fixed

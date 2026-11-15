@@ -153,7 +153,7 @@ every draft now carries the new truth:
    every draft now carries the English path.
 
 Also corrected, because they would not survive a reader checking them:
-`v5.1.17` → the current `v5.3.5`; *"the demo uses simulated AI
+`v5.1.17` → the current `v5.3.6`; *"the demo uses simulated AI
 responses"* → the demo answers with a real provider; *"16 supported
 providers"* → 17; *"9 languages with EU AI Act compliance labels"* → nine
 locales ship, English and Polish are maintained, the rest fall back to
