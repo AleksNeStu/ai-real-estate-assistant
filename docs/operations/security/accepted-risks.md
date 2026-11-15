@@ -53,10 +53,14 @@ that session, and each one resolved:
   upstream fix exists (`first_patched_version: null`; the auth-layer fix is pending in
   chroma-core/chroma #7602), and the reachability analysis rests on the deployment shape,
   not on the version. The CI pip-audit gate ignores the same four advisory ids.
-- **The manifest path changed** — the alerts now surface against `apps/api/requirements.txt`
-  (the runtime manifest that CI and the container image install) rather than against
-  `apps/api/requirements.txt` - the runtime manifest CI and the image install. The pin
-  itself did not move.
+- **The manifest path changed** — the alerts now surface against `apps/api/requirements.txt`,
+  the runtime manifest CI and the container image install, rather than against
+  `pyproject.toml` + `uv.lock`. The pin itself did not move.
+- **The same four advisories surfaced a second time against the lock** — Dependabot
+  re-evaluates the dependency graph when a manifest appears, so the compiled closure
+  `apps/api/requirements.lock.txt` (added later that day) produced the four alerts again
+  (numbers 654-657). They were dismissed again, with the same reason and the same
+  reachability argument: the file the alert points at changed, not the risk.
 
 As of 2026-11-06, **0 open Dependabot alerts** on `dev`. The 13 alerts open at the
 2026-09-12 session start (5 CRITICAL/HIGH + 4 HIGH + 2 MED + 2 LOW) all resolved by:
