@@ -35,7 +35,27 @@ this list and is tracked under the standard `pr-triage` flow.
 
 ---
 
-## Current state (2026-11-06, verified via `gh api` + `pip-audit` + OSV)
+## Current state (2026-11-15, verified via `gh api` + `pip-audit` + OSV)
+
+As of 2026-11-15, **0 open Dependabot alerts** on `dev`. Five were open at the start of
+that session, and each one resolved:
+
+- **1 alert FIXED, not dismissed** — `basic-ftp` CVE-2026-126345 (GHSA-5pm8-86m8-9m6r,
+  MEDIUM) in `apps/web/package-lock.json`. The fix (6.2.4) is not reachable through the
+  dependency chain: `get-uri`, its only parent, requires `basic-ftp ^5.3.1` in every
+  published version, 8.0.1 included. It was closed with an npm override — the same
+  mechanism this lockfile already uses for the MEDIUM advisories in `glob`, `minimatch`,
+  `qs` and `serialize-javascript`. The package is dev-scope (it reaches the proxy tooling
+  through `pac-proxy-agent` and never the shipped bundle or the container).
+- **4 alerts dismissed via API** — the chromadb advisories CVE-2026-45833 (#640),
+  CVE-2026-45829 (#653), CVE-2026-45831 (#639) and CVE-2026-45830 (#638), each with reason
+  `tolerable_risk`. Their disposition is unchanged and is documented in full below: no
+  upstream fix exists (`first_patched_version: null`; the auth-layer fix is pending in
+  chroma-core/chroma #7602), and the reachability analysis rests on the deployment shape,
+  not on the version. The CI pip-audit gate ignores the same four advisory ids.
+- **The manifest path changed** — the alerts now surface against `apps/api/requirements.txt`
+  (the runtime manifest that CI and the container image install) rather than against
+  `pyproject.toml` + `uv.lock`. The pin itself did not move.
 
 As of 2026-11-06, **0 open Dependabot alerts** on `dev`. The 13 alerts open at the
 2026-09-12 session start (5 CRITICAL/HIGH + 4 HIGH + 2 MED + 2 LOW) all resolved by:
@@ -88,9 +108,12 @@ changed on 2026-11-08. As of 2026-11-08:
 
 | GHSA | CVE | CVSSv4 | EPSS | First patched | Affected manifest paths | Alerts |
 |---|---|---|---|---|---|---|
-| GHSA-36p7-vc44-83pf | CVE-2026-45833 | **9.4** | 0.00342 | NONE | pyproject.toml + uv.lock | #320, #323 |
-| GHSA-xph7-9rjv-w5fr | CVE-2026-45831 | 8.8 | 0.00237 | NONE | pyproject.toml + uv.lock | #316, #322 |
-| GHSA-2wm9-hf6c-p5cr | CVE-2026-45830 | 8.8 | 0.00345 | NONE | pyproject.toml + uv.lock | #318, #321 |
+| GHSA-36p7-vc44-83pf | CVE-2026-45833 | **9.4** | 0.00342 | NONE | apps/api/requirements.txt | #640 |
+| GHSA-xph7-9rjv-w5fr | CVE-2026-45831 | 8.8 | 0.00237 | NONE | apps/api/requirements.txt | #639 |
+| GHSA-2wm9-hf6c-p5cr | CVE-2026-45830 | 8.8 | 0.00345 | NONE | apps/api/requirements.txt | #638 |
+
+CVE-2026-45829 (GHSA-f4j7-r4q5-qw2c) is the fourth one; it carries its own section below
+and its alert is #653.
 
 **Severity mix:** 2 CRITICAL (CVE-2026-45833 × 2 paths) + 4 HIGH (CVE-2026-45831 × 2 paths +
 CVE-2026-45830 × 2 paths).
@@ -322,6 +345,19 @@ the underlying vulnerable ranges).
 ---
 
 ## History
+
+- **2026-11-15** — Five alerts were open at the session start and the repository returned to
+  **0 open Dependabot alerts** on `dev`:
+  - `basic-ftp` CVE-2026-126345 (MEDIUM) was **fixed**, not dismissed: an npm override in
+    `apps/web/package.json` moves it to 6.2.4, because `get-uri` caps `basic-ftp` at
+    `^5.3.1` in every published version and the advisory would otherwise stay open forever.
+  - The four chromadb advisories were **dismissed** with reason `tolerable_risk` (alerts
+    #638, #639, #640, #653). Their disposition is unchanged and was already written here:
+    no upstream fix exists, and the reachability arguments rest on the deployment shape
+    (embedded ChromaDB client, no HTTP API, no tenants, `trust_remote_code` never set).
+  - The alerts now surface against `apps/api/requirements.txt` — the runtime manifest that
+    CI and the container image install — because that file carries the pins. The pin did
+    not move.
 
 - **2026-11-08** — The chromadb pin moved from `>=0.5,<0.6` to `>=1.3.5,<2.0.0` (locked
   1.5.9) and `langchain-chroma>=1.1.0,<2.0.0` was added to `pyproject.toml` next to it.
