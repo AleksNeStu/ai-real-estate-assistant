@@ -1,6 +1,7 @@
 """Integration tests for mcp_admin router."""
 
 import types
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -9,7 +10,9 @@ from httpx import ASGITransport, AsyncClient
 
 # --- Stub heavy imports before importing the router ---
 # The mcp_admin router imports from the `mcp` package which may not be available.
-_mcp_stub = types.ModuleType("mcp")
+# A stub module takes attributes the real module does not have, so it is
+# typed `Any` - mypy reads a module as the set of names it declares.
+_mcp_stub: Any = types.ModuleType("mcp")
 
 
 class _MCPEdition:
@@ -53,9 +56,9 @@ class _AllowlistConfig:
 
 
 class _MCPConnectorRegistry:
-    _instances = {}
-    _connectors = {}
-    _configs = {}
+    _instances: dict[str, Any] = {}
+    _connectors: dict[str, Any] = {}
+    _configs: dict[str, Any] = {}
 
     @classmethod
     def list_connectors(cls, include_non_accessible=False):

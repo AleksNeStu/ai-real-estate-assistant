@@ -2,6 +2,7 @@
 
 import sys
 from enum import Enum
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -26,7 +27,7 @@ for mod_name in [
 # utils.exporters must provide a real ExportFormat enum (Pydantic uses it in models)
 import types as _types  # noqa: E402
 
-_exporters = _types.ModuleType("utils.exporters")
+_exporters: Any = _types.ModuleType("utils.exporters")
 
 
 class _ExportFormat(str, Enum):

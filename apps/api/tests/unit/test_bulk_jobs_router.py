@@ -857,6 +857,7 @@ class TestRunImportJob:
         assert job.completed_at is not None
         assert job.expires_at is not None
         assert job.result_data is not None
+        assert job.result_data is not None
         assert job.result_data["source_type"] == "url"
 
     @pytest.mark.asyncio
@@ -888,6 +889,7 @@ class TestRunImportJob:
             await _run_import_job("run-unknown-001", "sqlite+aiosqlite:///:memory:")
 
         assert job.status == BulkJobStatus.FAILED.value
+        assert job.error_message is not None
         assert "Unknown source type" in job.error_message
 
     @pytest.mark.asyncio
@@ -927,7 +929,9 @@ class TestRunImportJob:
             await _run_import_job("run-exc-001", "sqlite+aiosqlite:///:memory:")
 
         assert job.status == BulkJobStatus.FAILED.value
+        assert job.error_message is not None
         assert "Crash" in job.error_message
+        assert job.error_details is not None
         assert job.error_details is not None
         assert job.error_details["exception_type"] == "RuntimeError"
 
@@ -1119,7 +1123,9 @@ class TestRunExportJob:
         assert job.records_total == 2
         assert job.records_processed == 2
         assert job.progress_percent == 100.0
+        assert job.result_data is not None
         assert job.result_data["format"] == "csv"
+        assert job.result_data is not None
         assert job.result_data["records_exported"] == 2
         assert job.completed_at is not None
         assert job.expires_at is not None
@@ -1209,6 +1215,7 @@ class TestRunExportJob:
             await _run_export_job("exp-nostore-001", "sqlite+aiosqlite:///:memory:")
 
         assert job.status == BulkJobStatus.FAILED.value
+        assert job.error_message is not None
         assert "not available" in job.error_message
 
     @pytest.mark.asyncio
@@ -1252,6 +1259,7 @@ class TestRunExportJob:
             await _run_export_job("exp-no-id-001", "sqlite+aiosqlite:///:memory:")
 
         assert job.status == BulkJobStatus.COMPLETED.value
+        assert job.result_data is not None
         assert job.result_data["records_exported"] == 1
 
     @pytest.mark.asyncio
@@ -1339,6 +1347,7 @@ class TestRunExportJob:
             await _run_export_job("exp-defmt-001", "sqlite+aiosqlite:///:memory:")
 
         assert job.status == BulkJobStatus.COMPLETED.value
+        assert job.result_data is not None
         assert job.result_data["format"] == "json"
 
     @pytest.mark.asyncio
@@ -1430,6 +1439,7 @@ class TestRunExportJob:
             await _run_export_job("exp-exc-001", "sqlite+aiosqlite:///:memory:")
 
         assert job.status == BulkJobStatus.FAILED.value
+        assert job.error_message is not None
         assert "Store error" in job.error_message
 
     @pytest.mark.asyncio

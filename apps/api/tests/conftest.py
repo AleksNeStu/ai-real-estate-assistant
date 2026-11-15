@@ -13,7 +13,7 @@ import importlib
 import importlib.util
 import sys
 import types
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Iterator
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -182,7 +182,7 @@ TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 
 @pytest.fixture(scope="function", autouse=True)
-def clear_lru_caches() -> None:
+def clear_lru_caches() -> Iterator[None]:
     """Clear all lru_cache instances before each test.
 
     Prevents test isolation issues when tests run in parallel.
@@ -205,7 +205,7 @@ def clear_lru_caches() -> None:
 
 
 @pytest.fixture(scope="function", autouse=True)
-def reset_free_tier_rate_limiter() -> None:
+def reset_free_tier_rate_limiter() -> Iterator[None]:
     """Start every test with an empty free-tier counter.
 
     The limiter counts anonymous chat requests per address, and in a test
@@ -223,7 +223,7 @@ def reset_free_tier_rate_limiter() -> None:
 
 
 @pytest.fixture(scope="function", autouse=True)
-def reset_api_rate_limiter() -> None:
+def reset_api_rate_limiter() -> Iterator[None]:
     """Start every test with an empty API counter and the deployment's rate.
 
     The middleware counts every request by address, and in a test process

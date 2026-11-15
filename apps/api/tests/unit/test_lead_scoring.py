@@ -13,6 +13,7 @@ from services.lead_scoring import (
 class TestSearchActivityScore:
     """Tests for _calculate_search_activity_score."""
 
+    @staticmethod
     def _make_engine():
         """Create engine with mocked session (only pure methods used)."""
         from unittest.mock import MagicMock
@@ -64,6 +65,7 @@ class TestSearchActivityScore:
 class TestEngagementScore:
     """Tests for _calculate_engagement_score."""
 
+    @staticmethod
     def _make_engine():
         from unittest.mock import MagicMock
 
@@ -104,6 +106,7 @@ class TestEngagementScore:
 class TestIntentScore:
     """Tests for _calculate_intent_score."""
 
+    @staticmethod
     def _make_engine():
         from unittest.mock import MagicMock
 
@@ -176,6 +179,7 @@ class TestIntentScore:
 class TestGenerateRecommendations:
     """Tests for _generate_recommendations."""
 
+    @staticmethod
     def _make_engine():
         from unittest.mock import MagicMock
 

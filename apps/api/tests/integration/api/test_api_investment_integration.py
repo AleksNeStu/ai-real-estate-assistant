@@ -2,6 +2,7 @@
 
 import sys
 import types
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -37,7 +38,7 @@ from tools.investment_tools import (  # noqa: E402
 
 # Only create a stub if the real module isn't already loaded
 if "tools.property_tools" not in sys.modules:
-    _pt = types.ModuleType("tools.property_tools")
+    _pt: Any = types.ModuleType("tools.property_tools")
     _pt.InvestmentCalculatorTool = _inv_tools.InvestmentCalculatorTool
     _pt.InvestmentAnalysisResult = InvestmentAnalysisResult
     _pt.AdvancedInvestmentTool = _inv_tools.AdvancedInvestmentTool

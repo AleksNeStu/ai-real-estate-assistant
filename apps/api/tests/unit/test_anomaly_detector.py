@@ -644,7 +644,7 @@ class TestDetectSeasonalAnomalies:
         property_id: str = "prop-001",
         base_price: float = 500_000.0,
         n_years: int = 3,
-    ) -> list[MagicMock]:
+    ) -> tuple[list[MagicMock], datetime]:
         """Create snapshots spanning multiple years for seasonal analysis."""
         snapshots = []
         now = datetime(2025, 6, 15)
@@ -670,7 +670,7 @@ class TestDetectSeasonalAnomalies:
         base_price: float = 500_000.0,
         spike_price: float = 900_000.0,
         n_years: int = 3,
-    ) -> list[MagicMock]:
+    ) -> tuple[list[MagicMock], datetime]:
         """Create snapshots where current period has a price spike vs history."""
         snapshots = []
         now = datetime(2025, 6, 15)

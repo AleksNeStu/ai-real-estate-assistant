@@ -255,6 +255,8 @@ class TestRefreshTokenRepository:
         await db_session.flush()
         found1 = await repo.get_by_token("t1")
         found2 = await repo.get_by_token("t2")
+        assert found1 is not None
+        assert found2 is not None
         assert found1.revoked_at is not None
         assert found2.revoked_at is not None
 
@@ -515,6 +517,8 @@ class TestEmailVerificationTokenRepository:
 
         found1 = await repo.get_by_token("v1")
         found2 = await repo.get_by_token("v2")
+        assert found1 is not None
+        assert found2 is not None
         assert found1.used_at is not None
         assert found2.used_at is not None
 
@@ -851,6 +855,7 @@ class TestNotificationPreferenceRepository:
         prefs = await repo.create(user_id=user.id)
         result = await repo.unsubscribe_type(prefs, "price_alerts")
         assert result.price_alerts_enabled is False
+        assert result.unsubscribed_types is not None
         assert "price_alerts" in result.unsubscribed_types
 
     async def test_unsubscribe_type_marketing(
@@ -860,6 +865,7 @@ class TestNotificationPreferenceRepository:
         assert prefs.marketing_emails is True
         result = await repo.unsubscribe_type(prefs, "marketing")
         assert result.marketing_emails is False
+        assert result.unsubscribed_types is not None
         assert "marketing" in result.unsubscribed_types
 
     async def test_unsubscribe_type_unknown_ignored(
@@ -876,6 +882,7 @@ class TestNotificationPreferenceRepository:
         prefs = await repo.create(user_id=user.id)
         await repo.unsubscribe_type(prefs, "price_alerts")
         await repo.unsubscribe_type(prefs, "price_alerts")
+        assert prefs.unsubscribed_types is not None
         assert prefs.unsubscribed_types.count("price_alerts") == 1
 
     # -- delete --

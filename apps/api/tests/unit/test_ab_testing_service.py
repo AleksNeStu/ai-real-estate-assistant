@@ -183,6 +183,8 @@ async def test_get_experiment_for_session_returns_existing(
     # Get again - should return same assignment
     second = await ab_testing_service.get_experiment_for_session(session_id)
 
+    assert first is not None
+    assert second is not None
     assert first.id == second.id
     assert first.variant == second.variant
 

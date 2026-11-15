@@ -14,6 +14,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
@@ -84,7 +85,8 @@ def baseline_schema() -> dict:
     """Load the committed baseline schema."""
     assert BASELINE_PATH.exists(), f"Baseline schema not found: {BASELINE_PATH}"
     with open(BASELINE_PATH) as f:
-        return json.load(f)
+        schema: dict[str, Any] = json.load(f)
+        return schema
 
 
 @pytest.fixture()
@@ -192,16 +194,19 @@ class TestBreakingChangeDetection:
 
     def _diff(self, baseline_paths: dict, current_paths: dict) -> list[str]:
         """Run diff_paths from the openapi_diff module."""
-        sys_path_backup = __import__("sys").path.copy()
+        sys_path_backup = sys.path.copy()
         try:
             import importlib.util
 
             spec = importlib.util.spec_from_file_location("openapi_diff", str(OPENAPI_DIFF_SCRIPT))
+            assert spec is not None
+            assert spec.loader is not None
             mod = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(mod)
-            return mod.diff_paths(baseline_paths, current_paths)
+            diff: list[str] = mod.diff_paths(baseline_paths, current_paths)
+            return diff
         finally:
-            __import__("sys").path = sys_path_backup
+            sys.path = sys_path_backup
 
     def test_removed_endpoint_detected(self, resolved_paths):
         baseline = resolved_paths

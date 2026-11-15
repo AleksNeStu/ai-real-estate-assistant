@@ -6,6 +6,8 @@ catalogue already answers, so the effort is a setting of the deployment -
 and a typo in it must not reach the API.
 """
 
+from typing import Any
+
 import pytest
 
 from models.providers.minimax import MiniMaxProvider
@@ -17,7 +19,9 @@ def provider(monkeypatch: pytest.MonkeyPatch) -> MiniMaxProvider:
     return MiniMaxProvider()
 
 
-def _effort(provider: MiniMaxProvider, monkeypatch: pytest.MonkeyPatch, value: str) -> str | None:
+def _effort(
+    provider: MiniMaxProvider, monkeypatch: pytest.MonkeyPatch, value: str | None
+) -> str | None:
     from config.settings import get_settings
 
     monkeypatch.setattr(get_settings(), "minimax_reasoning_effort", value, raising=False)
@@ -62,6 +66,6 @@ class TestTheEffortOfTheDeployment:
         from config.settings import get_settings
 
         monkeypatch.setattr(get_settings(), "minimax_reasoning_effort", "low", raising=False)
-        model = provider.create_model("MiniMax-M3.1-Flash", max_tokens=256)
+        model: Any = provider.create_model("MiniMax-M3.1-Flash", max_tokens=256)
         assert model.extra_body == {"reasoning": {"effort": "low"}}
         assert model.max_tokens == 256
