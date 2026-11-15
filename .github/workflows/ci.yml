@@ -110,12 +110,13 @@ jobs:
         uses: ./.github/actions/setup-python
         with:
           working-directory: apps/api
-          # mypy is pinned to the version the type check was verified
-          # against (apps/api/.venv). An unpinned install could resolve a
-          # different major and report a different set of errors than the
-          # local gate. It is installed here and NOT in requirements.txt,
-          # because that file ships into the runtime image.
-          install-extras: 'pytest ruff mypy==2.2.0'
+          # The gate tooling comes from requirements-dev.txt, where every
+          # version is pinned: a floating mypy resolves a different major and
+          # reports a different set of errors than the local gate, and a
+          # floating ruff changes what the lint rejects. The file is separate
+          # from requirements.txt because that one ships into the runtime
+          # image, and the image does not need a type checker.
+          dev-requirements-file: requirements-dev.txt
 
       - name: Lint (ruff)
         run: |
@@ -157,7 +158,11 @@ jobs:
         uses: ./.github/actions/setup-python
         with:
           working-directory: apps/api
-          install-extras: 'pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff httpx types-requests'
+          # The test tooling is pinned in requirements-dev.txt for the same
+          # reason as in the lint job: a floating plugin version can fail a
+          # suite that passed the day before. httpx and types-requests are
+          # part of the runtime manifest (requirements.txt).
+          dev-requirements-file: requirements-dev.txt
 
       - name: Run ${{ matrix.test-suite.name }} tests
         timeout-minutes: 15
@@ -226,7 +231,9 @@ jobs:
         uses: ./.github/actions/setup-python
         with:
           working-directory: apps/api
-          install-extras: 'bandit'
+          # bandit is pinned in requirements.txt; the explicit pin here keeps
+          # the tool itself from floating even if the manifest changes.
+          install-extras: 'bandit==1.9.4'
 
       - name: Run Bandit (exclude tests, fail on high severity)
         continue-on-error: true
@@ -294,7 +301,9 @@ jobs:
         uses: ./.github/actions/setup-python
         with:
           working-directory: apps/api
-          install-extras: 'pip-audit'
+          # pip-audit is pinned in requirements.txt; the explicit pin here
+          # keeps the auditor itself from floating.
+          install-extras: 'pip-audit==2.10.1'
 
       - name: Run pip-audit (fail on vulnerabilities)
         continue-on-error: true

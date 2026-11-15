@@ -203,8 +203,12 @@ setup:
 	$(PYTHON) $(SCRIPTS_DIR)/setup/bootstrap.py
 
 ## install: Install all dependencies
+## The backend manifests are pinned: the runtime manifest first, then the gate
+## tooling, then the project itself installed WITHOUT its own dependency
+## resolution, so the pins decide the versions in every environment.
 install:
-	cd apps/api && uv pip install -e .[dev]
+	cd apps/api && uv pip install -r requirements.txt -r requirements-dev.txt
+	cd apps/api && uv pip install --no-deps -e .
 	cd apps/web && npm install
 
 ## seed: Seed ChromaDB with sample property data (60 listings)

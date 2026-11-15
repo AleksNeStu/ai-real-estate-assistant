@@ -8,6 +8,24 @@ This document captures practical details for working on the FastAPI backend and 
   The pipeline runs ruff and the type check as gates, and reports the coverage thresholds rather than
   enforcing them; `scripts/ci/ci_parity.py` is the local helper that runs the full set.
 
+## Dependency versions (pinned)
+- `apps/api/requirements.txt` is the runtime manifest and `apps/api/requirements-dev.txt` is the gate
+  tooling (pytest, ruff, mypy). Every entry in both is an **exact version**, not a range.
+- Why: the ranges these files used to carry let each environment resolve a different set. CI resolved
+  sqlalchemy 2.1.8 while the local venv had 2.0.51, and the type check that CI now gates on failed
+  on code that was correct locally. A floating tool version changes a gate's verdict without a code
+  change - mypy 1.x and 2.x report different error sets on the same source.
+- The manifests are the single source of truth: the container image installs `requirements.txt` and
+  nothing else, and CI installs the project with `--no-deps`, so the floors declared in
+  `apps/api/pyproject.toml` cannot pull a different version in behind a pin.
+- `apps/api/uv.lock` is **not** used by CI, the image or the local gate - it does not carry the pins
+  and it does not cover ten packages `requirements.txt` does. Do not install from it.
+- To change a version: edit the pin, then prove it resolves (`make check-deps`), reinstall the local
+  venv from the manifests (`uv pip install -r requirements.txt -r requirements-dev.txt`), and run
+  `scripts/ci/ci_parity.py` before trusting a local result.
+- To compare a local venv with what CI installs: install the manifests into a clean venv and diff the
+  two `pip freeze` lists - they must match exactly.
+
 ## Backend (FastAPI)
 - Entry point: `api/main.py`
 - Routers: `api/routers/*` (chat, search, tools, settings, admin, auth)

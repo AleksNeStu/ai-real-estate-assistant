@@ -184,13 +184,15 @@ Detects placeholder secrets in deployment configurations.
 
 #### Backend Lint
 
-Fast Python linting (no tests).
+Fast Python linting and the type check (no tests).
 
 **Steps**:
-1. Install dependencies (uv with caching)
+1. Install dependencies (uv with caching; the versions come from the pinned
+   manifests `requirements.txt` and `requirements-dev.txt`)
 2. Lint (ruff check)
+3. Type check (mypy) — a gate, not a warning
 
-**Duration**: ~30-60 seconds
+**Duration**: ~1-3 minutes (the type check passes over 727 source files)
 
 ---
 
@@ -489,7 +491,8 @@ python scripts/workflows/full_ci.py
 pip install uv
 
 # Install dependencies
-uv pip install -e .[dev]
+uv pip install -r requirements.txt -r requirements-dev.txt
+uv pip install --no-deps -e .
 
 # Lint
 python -m ruff check .

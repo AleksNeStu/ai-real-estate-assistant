@@ -24,11 +24,19 @@ This is the FastAPI backend for the AI Real Estate Assistant.
 
 ```bash
 # From this directory (apps/api/)
-uv sync
+# The pinned manifests: runtime first, then the gate tooling (pytest, ruff,
+# mypy), then the project itself - installed WITHOUT its own dependency
+# resolution, so the pins in requirements.txt decide the versions.
+uv pip install -r requirements.txt -r requirements-dev.txt
+uv pip install --no-deps -e .
 
 # Or with pip
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-dev.txt
+pip install --no-deps -e .
 ```
+
+The manifests are the single source of truth for the installed versions;
+`uv.lock` is not used by CI, the container image or the local gate.
 
 ### Configure
 

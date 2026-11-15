@@ -13,7 +13,8 @@ Remove-Item -Recurse -Force .\.venv
 py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip setuptools wheel
-python -m pip install -e .[dev]
+python -m pip install -r requirements.txt -r requirements-dev.txt
+python -m pip install --no-deps -e .
 python -c "import numpy; print('NumPy OK')"
 ```
 

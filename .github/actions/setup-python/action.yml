@@ -11,6 +11,9 @@ inputs:
   requirements-file:
     description: 'Requirements file path relative to working directory'
     default: 'requirements.txt'
+  dev-requirements-file:
+    description: 'Extra requirements file (test/type tooling) relative to working directory'
+    default: ''
 
 runs:
   using: 'composite'
@@ -29,7 +32,7 @@ runs:
       uses: actions/cache@v5
       with:
         path: ~/.local/share/uv
-        key: ${{ runner.os }}-uv-${{ hashFiles('apps/api/requirements.txt', 'apps/api/pyproject.toml') }}
+        key: ${{ runner.os }}-uv-${{ hashFiles('apps/api/requirements.txt', 'apps/api/requirements-dev.txt', 'apps/api/pyproject.toml') }}
         restore-keys: |
           ${{ runner.os }}-uv-
 
@@ -38,7 +41,14 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         uv pip install --system -r ${{ inputs.requirements-file }}
-        uv pip install --system -e .
+        # The project itself is installed WITHOUT its declared dependencies.
+        # The runtime manifest above is the single source of truth: the floors
+        # in pyproject.toml must not pull a different version in behind the
+        # pins, which is how the image and CI ended up with different sets.
+        uv pip install --system --no-deps -e .
+        if [ -n "${{ inputs.dev-requirements-file }}" ]; then
+          uv pip install --system -r ${{ inputs.dev-requirements-file }}
+        fi
         if [ -n "${{ inputs.install-extras }}" ]; then
           uv pip install --system ${{ inputs.install-extras }}
         fi

@@ -1,0 +1,33 @@
+# Test and type-check tooling - PINNED.
+#
+# The runtime manifest is requirements.txt; this file is the tooling the CI
+# gates and the local CI-parity gate run with: the test runner and its
+# plugins, the linter and the type checker. It is a separate file on purpose:
+# requirements.txt ships into the container image, and the image does not
+# need a type checker.
+#
+# Every entry is an exact version for the same reason as in requirements.txt:
+# a floating tool version changes the verdict of a gate without a code
+# change. mypy 1.x and 2.x report different sets of errors on the same
+# source, and a new pytest can fail a suite that passed the day before.
+#
+# To change a version: edit the pin here, reinstall, and run the local gate
+# (scripts/ci/ci_parity.py) before trusting a local result.
+#
+#   cd apps/api && uv pip install -r requirements-dev.txt
+
+pytest==9.1.1
+pytest-asyncio==1.4.0
+pytest-cov==7.1.0
+pytest-xdist==3.8.0
+pytest-timeout==2.4.0
+ruff==0.15.21
+mypy==2.2.0
+mypy-extensions==1.1.0
+# The tooling's own dependencies, pinned for the same reason: a different
+# mypy helper or a different pytest plugin changes what a gate reports.
+ast-serialize==0.13.1
+librt==0.16.0
+coverage==7.17.3
+pluggy==1.7.0
+iniconfig==2.3.1

@@ -73,11 +73,12 @@ cd ..
 
 ### Python dependencies not installed?
 ```powershell
-# Using uv (recommended)
-uv pip install -e .[dev]
-
-# Or using pip
-pip install -e .[dev]
+cd apps/api
+# The pinned manifests: runtime first, then the gate tooling, then the
+# project itself - installed WITHOUT its own dependency resolution, so the
+# pins in requirements.txt decide the versions.
+uv pip install -r requirements.txt -r requirements-dev.txt
+uv pip install --no-deps -e .
 ```
 
 ---
