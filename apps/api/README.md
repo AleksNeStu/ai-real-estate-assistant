@@ -10,7 +10,7 @@ This is the FastAPI backend for the AI Real Estate Assistant.
 - **Vector Store**: ChromaDB
 - **LLM Integration**: LangChain (multi-provider: OpenAI, Anthropic, Google, Ollama, OpenCode)
 - **Auth**: API Key (header `X-API-Key`) + optional JWT (header `Authorization: Bearer`)
-- **Package Manager**: uv (`uv.lock` is committed)
+- **Package Manager**: uv (`requirements.lock.txt` is the compiled closure and is committed)
 - **Testing**: pytest + pytest-asyncio + pytest-xdist
 
 ## Getting Started
@@ -27,16 +27,24 @@ This is the FastAPI backend for the AI Real Estate Assistant.
 # The pinned manifests: runtime first, then the gate tooling (pytest, ruff,
 # mypy), then the project itself - installed WITHOUT its own dependency
 # resolution, so the pins in requirements.txt decide the versions.
-uv pip install -r requirements.txt -r requirements-dev.txt
+uv pip install -r requirements.lock.txt -r requirements-dev.txt
 uv pip install --no-deps -e .
 
 # Or with pip
-pip install -r requirements.txt -r requirements-dev.txt
+pip install -r requirements.lock.txt -r requirements-dev.txt
 pip install --no-deps -e .
 ```
 
-The manifests are the single source of truth for the installed versions;
-`uv.lock` is not used by CI, the container image or the local gate.
+Two files carry the versions, and they have different jobs.
+`requirements.txt` is the human source - the direct dependencies, each pinned to an
+exact version, with the reason for each floor in the comment next to it.
+`requirements.lock.txt` is that source compiled into the full closure (every
+transitive dependency pinned too, with the platform markers), and it is the file
+CI, the container image and the local venv install. Regenerate it with:
+
+```bash
+uv pip compile --universal requirements.txt -o requirements.lock.txt
+```
 
 ### Configure
 

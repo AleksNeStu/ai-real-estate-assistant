@@ -207,7 +207,7 @@ setup:
 ## tooling, then the project itself installed WITHOUT its own dependency
 ## resolution, so the pins decide the versions in every environment.
 install:
-	cd apps/api && uv pip install -r requirements.txt -r requirements-dev.txt
+	cd apps/api && uv pip install -r requirements.lock.txt -r requirements-dev.txt
 	cd apps/api && uv pip install --no-deps -e .
 	cd apps/web && npm install
 

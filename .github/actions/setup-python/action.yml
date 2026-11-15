@@ -10,7 +10,10 @@ inputs:
     default: ''
   requirements-file:
     description: 'Requirements file path relative to working directory'
-    default: 'requirements.txt'
+    # The compiled closure, not the manifest: requirements.txt is the human
+    # source the lock is generated from, and the lock is what every
+    # environment installs - so a transitive dependency cannot float.
+    default: 'requirements.lock.txt'
   dev-requirements-file:
     description: 'Extra requirements file (test/type tooling) relative to working directory'
     default: ''
@@ -32,7 +35,7 @@ runs:
       uses: actions/cache@v5
       with:
         path: ~/.local/share/uv
-        key: ${{ runner.os }}-uv-${{ hashFiles('apps/api/requirements.txt', 'apps/api/requirements-dev.txt', 'apps/api/pyproject.toml') }}
+        key: ${{ runner.os }}-uv-${{ hashFiles('apps/api/requirements.lock.txt', 'apps/api/requirements-dev.txt', 'apps/api/pyproject.toml') }}
         restore-keys: |
           ${{ runner.os }}-uv-
 

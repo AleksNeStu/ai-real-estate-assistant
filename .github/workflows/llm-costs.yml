@@ -6,6 +6,7 @@ on:
     paths-ignore:
       - '**.md'
       - 'apps/api/requirements.txt'
+      - 'apps/api/requirements.lock.txt'
       - 'apps/web/package-lock.json'
       - 'apps/web/package.json'
       - '.github/dependabot.yml'

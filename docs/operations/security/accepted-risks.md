@@ -55,7 +55,8 @@ that session, and each one resolved:
   not on the version. The CI pip-audit gate ignores the same four advisory ids.
 - **The manifest path changed** — the alerts now surface against `apps/api/requirements.txt`
   (the runtime manifest that CI and the container image install) rather than against
-  `pyproject.toml` + `uv.lock`. The pin itself did not move.
+  `apps/api/requirements.txt` - the runtime manifest CI and the image install. The pin
+  itself did not move.
 
 As of 2026-11-06, **0 open Dependabot alerts** on `dev`. The 13 alerts open at the
 2026-09-12 session start (5 CRITICAL/HIGH + 4 HIGH + 2 MED + 2 LOW) all resolved by:
@@ -85,7 +86,7 @@ one remaining accepted LOW (`deepmerge`) was dismissed via the API with reason
 
 The chromadb CVE analysis below remains accurate, but the pin it was written against
 changed on 2026-11-08. As of 2026-11-08:
-- The project pins `chromadb>=1.3.5,<2.0.0` (locked to 1.5.9 per `uv.lock`) together with
+- The project pins `chromadb>=1.3.5,<2.0.0` (locked to 1.5.9 per `requirements.txt`) together with
   `langchain-chroma>=1.1.0,<2.0.0`. The old `chromadb>=0.5,<0.6` pin is gone: it made
   `pip install -e .` downgrade chromadb underneath `langchain-chroma`, whose import then
   fails (`cannot import name 'Search'`), and `chroma_store.py` swallows that ImportError —
@@ -131,7 +132,7 @@ active exploitation.
 
 - **Vulnerable range:** `>= 0.4.17, <= 1.5.9` (project pins `chromadb>=1.3.5,<2.0.0` per
   `apps/api/pyproject.toml`)
-- **Manifest paths surfaced:** `apps/api/pyproject.toml`, `apps/api/uv.lock`
+- **Manifest paths surfaced:** `apps/api/requirements.txt` (the pin lives there), `apps/api/pyproject.toml`
 - **Upstream fix:** `first_patched_version: null`. HiddenLayer advisory
   (https://www.hiddenlayer.com/sai-security-advisory/2026-06-chromadb-5) notes the fix is
   pending in chroma-core/chroma PR #7602.

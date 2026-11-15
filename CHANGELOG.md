@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **The backend dependencies are locked, not only pinned** —
+  `apps/api/requirements.lock.txt` is the compiled closure: every transitive
+  dependency pinned too, with the platform markers, so CI, the container image
+  and the local venv install the same set on every platform. `requirements.txt`
+  stays the human source (the direct dependencies, each pinned to an exact
+  version, with the reason for each floor in the comment next to it), and
+  `requirements-dev.txt` stays the gate tooling. The image and CI install the
+  lock; the project itself is still installed `--no-deps`, so the floors in
+  `pyproject.toml` cannot pull a version in behind a pin. Regenerate it with
+  `uv pip compile --universal requirements.txt -o requirements.lock.txt`.
+- **One transitive dependency moved** — `google-api-core` 2.33.0 → 2.25.2, the
+  version the cross-platform resolution accepts for every Python version this
+  project supports. The Gemini path is imported lazily and the suite is green.
+- **`apps/api/uv.lock` is removed** — it carried the pins of an earlier
+  layout, it did not cover the ten packages the runtime manifest has, and
+  nothing installed from it. The compiled lock replaces it.
+
+
 ## [5.3.6] - 2026-11-15
 
 ### Fixed

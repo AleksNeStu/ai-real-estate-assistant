@@ -309,7 +309,7 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p ../../artifacts
-          python -m pip_audit -r requirements.txt -f json -o ../../artifacts/pip-audit.json
+          python -m pip_audit -r requirements.lock.txt -f json -o ../../artifacts/pip-audit.json
 
       - name: Upload pip-audit report
         if: always()

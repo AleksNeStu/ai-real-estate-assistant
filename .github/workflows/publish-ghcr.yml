@@ -115,7 +115,9 @@ jobs:
         run: |
           cd apps/api
           python -m pip install --upgrade pip
-          python -m pip install --dry-run -r requirements.txt
+          # The compiled closure, not the manifest: this is what the image
+          # installs, so this is what has to resolve.
+          python -m pip install --dry-run -r requirements.lock.txt
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4

@@ -104,7 +104,9 @@ def build_pip_audit_cmd(python_exe: str) -> list[str]:
         "-m",
         "pip_audit",
         "-r",
-        "requirements.txt",
+        # The compiled closure, not the manifest: this is what CI and the
+        # container image install, so it is what has to be free of advisories.
+        "requirements.lock.txt",
         "--ignore-vuln",
         "CVE-2026-26013",
         "--ignore-vuln",

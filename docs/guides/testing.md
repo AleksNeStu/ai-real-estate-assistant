@@ -241,7 +241,7 @@ local parity helper `scripts/ci/ci_parity.py` runs.
 pip install uv
 
 # Install dependencies
-uv pip install -r requirements.txt -r requirements-dev.txt
+uv pip install -r requirements.lock.txt -r requirements-dev.txt
 uv pip install --no-deps -e .
 
 # Lint

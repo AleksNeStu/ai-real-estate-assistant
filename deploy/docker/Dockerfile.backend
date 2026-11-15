@@ -11,9 +11,12 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 # Install uv for faster Python package management
 COPY --from=ghcr.io/astral-sh/uv:0.10.0 /uv /usr/local/bin/uv
-COPY apps/api/requirements.txt .
+# The compiled closure, not the manifest: requirements.txt is the human source
+# the lock is generated from, and installing the lock is what makes the image
+# reproducible - a transitive dependency cannot float between builds.
+COPY apps/api/requirements.lock.txt .
 # Use uv to install dependencies (much faster than pip)
-RUN uv pip install --system -r requirements.txt && \
+RUN uv pip install --system -r requirements.lock.txt && \
     uv cache clean
 COPY apps/api .
 # Create non-root user for security (Task #64)
