@@ -18,7 +18,10 @@ from sqlalchemy import select
 from data.schemas import Property
 from db.database import get_session_factory
 from db.models import (
+    CollectionDB,
+    FavoriteDB,
     NotificationPreferenceDB,
+    PriceSnapshot,
     SavedSearchDB,
     User,
 )
@@ -700,9 +703,7 @@ async def _seed_notification_preferences(session, users) -> None:
     for user_id in user_ids:
         try:
             existing = await session.execute(
-                select(NotificationPreferenceDB).where(
-                    NotificationPreferenceDB.user_id == user_id
-                )
+                select(NotificationPreferenceDB).where(NotificationPreferenceDB.user_id == user_id)
             )
             if existing.scalars().first():
                 logger.debug("Notification prefs for user %s already exist", user_id)
@@ -723,9 +724,7 @@ async def _seed_notification_preferences(session, users) -> None:
             session.add(prefs)
             await session.flush()
         except Exception as exc:
-            logger.warning(
-                "Could not seed notification prefs for user %s: %s", user_id, exc
-            )
+            logger.warning("Could not seed notification prefs for user %s: %s", user_id, exc)
             await session.rollback()
 
 
@@ -750,13 +749,13 @@ async def seed_all(clear: bool = False) -> None:
                 logger.info("Clearing relational seed data...")
                 from sqlalchemy import delete
 
-                for table in [
-                    "notification_preferences",
-                    "saved_searches",
-                    "favorites",
-                    "collections",
-                    "price_snapshots",
-                ]:
+                for table in (
+                    NotificationPreferenceDB,
+                    SavedSearchDB,
+                    FavoriteDB,
+                    CollectionDB,
+                    PriceSnapshot,
+                ):
                     await session.execute(delete(table))
                 # Delete seed users only (preserve real users)
                 await session.execute(

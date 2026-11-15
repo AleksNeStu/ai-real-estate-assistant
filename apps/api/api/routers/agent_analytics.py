@@ -412,8 +412,8 @@ async def list_my_deals(
     if status_filter:
         query = query.where(Deal.status == status_filter)
 
-    result = await session.execute(query)
-    deals = result.scalars().all()
+    deals_result = await session.execute(query)
+    deals = deals_result.scalars().all()
 
     return DealListResponse(
         items=[_deal_to_response(d) for d in deals],

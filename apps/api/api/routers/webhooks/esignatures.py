@@ -219,7 +219,7 @@ async def _download_and_store_signed_document(
         )
 
         storage = get_document_storage()
-        user_dir = storage.user_dir / signature_request.user_id
+        user_dir = storage._get_user_dir(signature_request.user_id)
 
         filename = (
             f"{signature_request.title}_signed_{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}.pdf"

@@ -17,7 +17,7 @@ from __future__ import annotations
 import json
 import logging
 import statistics
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.tools import BaseTool
@@ -294,14 +294,14 @@ class PriceForecastTool(BaseTool):
                 text = text[4:]
             text = text.strip()
         try:
-            return json.loads(text)
+            return cast(Dict[str, Any], json.loads(text))
         except json.JSONDecodeError:
             # try to find a JSON object within the text
             start = text.find("{")
             end = text.rfind("}")
             if start >= 0 and end > start:
                 try:
-                    return json.loads(text[start : end + 1])
+                    return cast(Dict[str, Any], json.loads(text[start : end + 1]))
                 except json.JSONDecodeError:
                     return {}
         return {}
@@ -360,11 +360,11 @@ class PriceForecastTool(BaseTool):
         """
         anchor = nbh_median_ppsm or median_ppsm
         try:
-            area = float(features.get("area_sqm")) if features.get("area_sqm") else None
+            area = float(features["area_sqm"]) if features.get("area_sqm") else None
         except (TypeError, ValueError):
             area = None
         try:
-            asking = float(features.get("price")) if features.get("price") else None
+            asking = float(features["price"]) if features.get("price") else None
         except (TypeError, ValueError):
             asking = None
 

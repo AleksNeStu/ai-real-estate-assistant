@@ -28,7 +28,6 @@ from db.schemas import (
     CMAReportResponse,
     CMAValuationResponse,
 )
-from vector_store.chroma_store import ChromaPropertyStore
 
 logger = logging.getLogger(__name__)
 
@@ -309,7 +308,12 @@ async def find_comparables(
     Returns list of comparable properties with similarity scores.
     """
     # Fetch subject property from vector store
-    store: ChromaPropertyStore = get_vector_store()
+    store = get_vector_store()
+    if store is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Vector store is not available",
+        )
     docs = store.get_properties_by_ids([property_id])
     if not docs:
         raise HTTPException(
@@ -389,7 +393,12 @@ async def generate_cma_report(
     """
     try:
         # Fetch subject property from vector store
-        store: ChromaPropertyStore = get_vector_store()
+        store = get_vector_store()
+        if store is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Vector store is not available",
+            )
         docs = store.get_properties_by_ids([request.subject_property_id])
         if not docs:
             raise HTTPException(

@@ -129,7 +129,7 @@ def _is_sqlite(engine) -> bool:
     backend_name = getattr(url, "get_backend_name", None)
     if backend_name is None:
         return False
-    return backend_name() == "sqlite"
+    return bool(backend_name() == "sqlite")
 
 
 def get_session_factory():

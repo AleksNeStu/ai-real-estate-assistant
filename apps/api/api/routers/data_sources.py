@@ -518,11 +518,10 @@ async def _test_url_source(config: dict[str, Any]) -> DataSourceTestResponse:
 
 async def _test_portal_source(config: dict[str, Any]) -> DataSourceTestResponse:
     """Test a portal API data source."""
-    from data.adapters import list_adapters
     from data.adapters.registry import AdapterRegistry
 
     portal_name = config.get("portal", "")
-    available_adapters = list_adapters()
+    available_adapters = AdapterRegistry.list_adapters()
 
     if portal_name not in available_adapters:
         return DataSourceTestResponse(
@@ -533,16 +532,13 @@ async def _test_portal_source(config: dict[str, Any]) -> DataSourceTestResponse:
 
     # Instantiate adapter and test connectivity
     try:
-        adapter_cls = AdapterRegistry.get_adapter(portal_name)
-        if not adapter_cls:
+        adapter = AdapterRegistry.get_adapter(portal_name, api_key=config.get("api_key"))
+        if not adapter:
             return DataSourceTestResponse(
                 success=False,
-                message=f"Adapter class not found for portal: {portal_name}",
+                message=f"Adapter not found for portal: {portal_name}",
                 details={"available_portals": available_adapters},
             )
-
-        api_key = config.get("api_key")
-        adapter = adapter_cls(api_key=api_key)
 
         # Use health check if available, otherwise check adapter attributes
         if hasattr(adapter, "health_check"):

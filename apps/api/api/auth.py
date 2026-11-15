@@ -1,5 +1,6 @@
 import hmac
 import logging
+from typing import Optional, cast
 
 from fastapi import HTTPException, Request, Security, status
 from fastapi.security.api_key import APIKeyHeader
@@ -160,4 +161,4 @@ async def get_optional_api_key(
         return None
 
     # Fall through to normal API key validation
-    return await get_api_key(request, api_key_header)
+    return cast(Optional[str], await get_api_key(request, api_key_header))

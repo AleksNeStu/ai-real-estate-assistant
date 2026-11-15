@@ -182,7 +182,7 @@ class EnrichmentCache:
             import redis
 
             self._redis_client = redis.from_url(
-                self._redis_url,
+                self._redis_url or "",
                 socket_timeout=2.0,
                 socket_connect_timeout=2.0,
             )

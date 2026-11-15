@@ -9,7 +9,7 @@ MiniMax → Ollama (local, on our own VPS) → OpenRouter free models.
 import asyncio
 import time
 from collections import defaultdict
-from typing import Optional
+from typing import Optional, cast
 
 from langchain_core.language_models import BaseChatModel
 from starlette.requests import Request
@@ -155,7 +155,7 @@ def _try_create_openrouter_free() -> Optional[BaseChatModel]:
         from models.provider_factory import ModelProviderFactory
 
         provider = ModelProviderFactory.get_provider("openrouter")
-        free_ids = provider.get_free_model_ids()
+        free_ids = cast(list[str], getattr(provider, "get_free_model_ids", lambda: [])())
         model_id = settings.free_tier_default_model
         if model_id not in free_ids and free_ids:
             model_id = free_ids[0]

@@ -85,7 +85,7 @@ async def get_anomaly_stats(
 ) -> AnomalyStatsResponse:
     """Get anomaly statistics summary."""
     anomaly_service = get_anomaly_service(db)
-    return await anomaly_service.get_anomaly_stats()
+    return AnomalyStatsResponse.model_validate(await anomaly_service.get_anomaly_stats())
 
 
 @router.get("/{anomaly_id}", response_model=AnomalyResponse)
@@ -99,7 +99,7 @@ async def get_anomaly(
     anomaly = await anomaly_service.get_anomaly_by_id(anomaly_id)
     if not anomaly:
         raise HTTPException(status_code=404, detail="Anomaly not found")
-    return anomaly
+    return AnomalyResponse.model_validate(anomaly)
 
 
 @router.post("/{anomaly_id}/dismiss")

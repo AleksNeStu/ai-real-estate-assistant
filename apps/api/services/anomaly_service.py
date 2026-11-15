@@ -9,7 +9,7 @@ This service provides high-level business logic for:
 
 import logging
 from datetime import UTC, datetime, timedelta
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from analytics.anomaly_detector import AnomalyDetector
 from core.security_utils import sanitize_for_log
@@ -82,7 +82,7 @@ class AnomalyService:
         """Analyze price anomalies for individual properties."""
         # Get all property IDs with recent snapshots
         # Group by property_id and get latest snapshots
-        anomalies = []
+        anomalies: list[dict[str, Any]] = []
 
         # Get all snapshots from the past 30 days
         cutoff_date = datetime.now(UTC) - timedelta(days=30)
@@ -227,7 +227,7 @@ class AnomalyService:
         anomaly = await self.anomaly_repo.get_by_id(anomaly_id)
         if not anomaly:
             return None
-        return anomaly.__dict__
+        return cast(dict[str, Any], anomaly.__dict__)
 
     async def dismiss_anomaly(self, anomaly_id: str, dismissed_by: Optional[str] = None) -> bool:
         """Dismiss an anomaly.

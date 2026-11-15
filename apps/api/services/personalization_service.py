@@ -754,9 +754,14 @@ class PersonalizationService:
         # Update city preference
         city = property_data.get("city")
         if city:
-            cities = profile.preferred_cities or {}
-            current_weight = cities.get(city, 0.0)
-            cities[city] = min(1.0, current_weight + weight * 0.1)  # Cap at 1.0
+            cities = [dict(item) for item in (profile.preferred_cities or [])]
+            for item in cities:
+                if item.get("city") == city:
+                    current_weight = float(item.get("weight", 0.0))
+                    item["weight"] = min(1.0, current_weight + weight * 0.1)  # Cap at 1.0
+                    break
+            else:
+                cities.append({"city": city, "weight": min(1.0, weight * 0.1)})
             profile.preferred_cities = cities
 
         # Update price range

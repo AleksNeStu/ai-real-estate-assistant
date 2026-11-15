@@ -317,7 +317,10 @@ async def login(
         )
         raise HTTPException(
             status_code=status.HTTP_423_LOCKED,
-            detail=f"Account is temporarily locked. Try again in {locked_for_seconds // 60} minutes.",
+            detail=(
+                "Account is temporarily locked. "
+                f"Try again in {(locked_for_seconds or 0) // 60} minutes."
+            ),
             headers={"Retry-After": str(locked_for_seconds)},
         )
 
@@ -374,7 +377,7 @@ async def login(
     )
 
     # Rehash password if needed (algorithm upgrade)
-    if needs_rehash(user.hashed_password):
+    if user.hashed_password and needs_rehash(user.hashed_password):
         await user_repo.set_password(user, hash_password(body.password))
 
     # Update last login
@@ -388,14 +391,14 @@ async def login(
     refresh_token = generate_refresh_token()
 
     # Store refresh token
-    user_agent, ip_address = _get_client_info(request)
+    client_agent, client_ip = _get_client_info(request)
     refresh_repo = RefreshTokenRepository(session)
     await refresh_repo.create(
         user_id=user.id,
         token=refresh_token,
         expires_days=get_refresh_token_expire_days(),
-        user_agent=user_agent,
-        ip_address=ip_address,
+        user_agent=client_agent,
+        ip_address=client_ip,
     )
 
     # Set cookies
@@ -852,7 +855,11 @@ async def google_oauth_start(
             detail="Google OAuth is not enabled",
         )
 
-    if not settings.google_client_id or not settings.google_client_secret:
+    if (
+        not settings.google_client_id
+        or not settings.google_client_secret
+        or not settings.google_redirect_uri
+    ):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Google OAuth is not configured",
@@ -947,7 +954,11 @@ async def oauth_callback(
     code_verifier = request.cookies.get("oauth_code_verifier")
 
     # Use Google provider
-    if not settings.google_client_id or not settings.google_client_secret:
+    if (
+        not settings.google_client_id
+        or not settings.google_client_secret
+        or not settings.google_redirect_uri
+    ):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Google OAuth is not configured",
@@ -1155,6 +1166,12 @@ async def apple_oauth_start(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Apple Sign-In private key not configured",
+        )
+
+    if not settings.google_redirect_uri:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Apple Sign-In redirect URI is not configured",
         )
 
     from core.oauth import AppleOAuthProvider

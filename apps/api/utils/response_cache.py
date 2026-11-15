@@ -496,6 +496,7 @@ def cached_response(
             # model} caused ResponseValidationError on cache hits because
             # the outer dict lacked the model's declared fields.
             if cache and request:
+                data: Any
                 if isinstance(result, (dict, list)):
                     data = result
                 elif hasattr(result, "model_dump"):

@@ -50,7 +50,8 @@ class DocumentStorageService:
                          DOCUMENT_STORAGE_PATH from settings or 'uploads/documents'.
         """
         self.storage_path = Path(
-            storage_path or getattr(settings, "DOCUMENT_STORAGE_PATH", "uploads/documents")
+            storage_path
+            or str(getattr(settings, "DOCUMENT_STORAGE_PATH", None) or "uploads/documents")
         )
         self.storage_path.mkdir(parents=True, exist_ok=True)
         logger.info(
@@ -152,7 +153,7 @@ class DocumentStorageService:
         """
         try:
             user_dir = self._get_user_dir(user_id)
-            unique_filename = self._generate_filename(file.filename)
+            unique_filename = self._generate_filename(file.filename or "document")
             file_path = user_dir / unique_filename
 
             # Read and save with size check

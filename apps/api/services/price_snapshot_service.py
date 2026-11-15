@@ -43,7 +43,7 @@ class PriceSnapshotService:
             - errors: List of error messages
             - properties_checked: Total properties processed
         """
-        stats = {
+        stats: dict[str, Any] = {
             "captured": 0,
             "skipped": 0,
             "errors": [],

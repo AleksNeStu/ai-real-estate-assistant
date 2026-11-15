@@ -52,7 +52,7 @@ async def readiness_check(
     Validates database, Redis (if configured), and LLM provider availability.
     Used by Kubernetes/Docker readiness probes and load balancers.
     """
-    checks = {
+    checks: dict[str, Any] = {
         "database": "unknown",
         "redis": "unknown",
         "llm": "unknown",

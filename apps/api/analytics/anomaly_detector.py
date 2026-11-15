@@ -127,7 +127,7 @@ class AnomalyDetector:
         dates = [s.recorded_at for s in snapshots]
 
         # Sort by date
-        sorted_indices = np.argsort(dates)
+        sorted_indices = np.argsort(np.array(dates))
         prices = prices[sorted_indices]
         dates = [dates[i] for i in sorted_indices]
 

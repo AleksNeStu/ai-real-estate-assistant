@@ -57,7 +57,7 @@ class PropertyReranker:
             self.boost_metadata_match = ranking_weights.boost_metadata_match
             self.boost_quality_signals = ranking_weights.boost_quality_signals
             self.diversity_penalty = ranking_weights.diversity_penalty
-            self._ranking_weights = ranking_weights
+            self._ranking_weights: Optional[RankingWeights] = ranking_weights
         else:
             # Fall back to individual parameters (backward compatible)
             self.boost_exact_matches = boost_exact_matches

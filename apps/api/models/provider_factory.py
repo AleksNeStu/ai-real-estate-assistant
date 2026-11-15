@@ -106,7 +106,7 @@ def _load_provider_class(name: str) -> Type[ModelProvider]:
         raise ValueError(f"Unknown provider '{name}'. Available providers: {available}")
     class_name = _PROVIDER_CLASS_NAMES[name]
     module = importlib.import_module(module_path)
-    cls = getattr(module, class_name)
+    cls: Type[ModelProvider] = getattr(module, class_name)
     _PROVIDERS[name] = cls
     return cls
 

@@ -5,7 +5,9 @@ from typing import Any, Dict, List, Optional, Sequence
 try:
     from langchain.chains import ConversationalRetrievalChain
 except ImportError:
-    from langchain_classic.chains import ConversationalRetrievalChain
+    from langchain_classic.chains import (  # type: ignore[no-redef]
+        ConversationalRetrievalChain,
+    )
 from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.language_models import BaseChatModel
 from langchain_core.retrievers import BaseRetriever

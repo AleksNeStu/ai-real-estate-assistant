@@ -24,6 +24,7 @@ import random
 import sys
 import uuid
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 # Database imports
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -57,7 +58,7 @@ from vector_store.chroma_store import ChromaPropertyStore
 # CONFIGURATION
 # =============================================================================
 
-CITIES = {
+CITIES: dict[str, dict[str, Any]] = {
     "Kraków": {
         "districts": ["Old Town", "Kazimierz", "Podgórze", "Bronowice", "Zwierzyniec"],
         "lat": 50.0647,
@@ -507,9 +508,9 @@ class ComprehensiveDemoDataGenerator:
     def __init__(self, session: AsyncSession):
         self.session = session
         self.settings = get_settings()
-        self.user_ids = []
-        self.property_ids = []
-        self.agent_ids = []
+        self.user_ids: list[str] = []
+        self.property_ids: list[str] = []
+        self.agent_ids: list[str] = []
 
     async def generate_all(self) -> dict:
         """Generate all comprehensive demo data."""

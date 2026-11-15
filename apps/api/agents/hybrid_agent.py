@@ -26,7 +26,7 @@ from langchain_core.retrievers import BaseRetriever
 from core.security_utils import sanitize_for_log
 
 try:
-    from langchain.agents import AgentExecutor, create_openai_tools_agent
+    from langchain.agents import AgentExecutor, create_openai_tools_agent  # type: ignore
     from langchain.chains import ConversationalRetrievalChain
 except ImportError:
     from langchain_classic.agents import (  # type: ignore[no-redef]
@@ -320,7 +320,7 @@ Context from property database will be provided when relevant."""
             from langchain_core.prompts import PromptTemplate
 
             try:
-                from langchain.agents import create_react_agent
+                from langchain.agents import create_react_agent  # type: ignore[attr-defined]
             except ImportError:
                 from langchain_classic.agents import create_react_agent  # type: ignore[no-redef]
 

@@ -6,7 +6,7 @@ database-backed tamper-evident audit log.
 """
 
 import logging
-from typing import Callable
+from typing import Awaitable, Callable
 
 from fastapi import FastAPI, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -37,8 +37,10 @@ class AuditMiddleware(BaseHTTPMiddleware):
     def __init__(self, app: FastAPI) -> None:
         super().__init__(app)
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        response = await call_next(request)
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        response: Response = await call_next(request)
 
         # Only audit mutating methods
         if request.method not in ("POST", "PUT", "PATCH", "DELETE"):
@@ -80,4 +82,4 @@ class AuditMiddleware(BaseHTTPMiddleware):
 
 def add_audit_middleware(app: FastAPI) -> None:
     """Register the audit middleware on the FastAPI app."""
-    app.add_middleware(AuditMiddleware)
+    app.add_middleware(AuditMiddleware)  # type: ignore[arg-type]

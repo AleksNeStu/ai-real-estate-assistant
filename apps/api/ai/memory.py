@@ -177,7 +177,7 @@ class OptimizedSessionHistory(BaseChatMessageHistory):
         self._messages = initial_messages or []
 
     @property
-    def messages(self) -> list:
+    def messages(self) -> list:  # type: ignore[override]
         """Get the optimized messages."""
         return self._messages
 
@@ -188,7 +188,7 @@ class OptimizedSessionHistory(BaseChatMessageHistory):
         # Also persist to underlying storage
         persistent_history = SQLChatMessageHistory(
             session_id=self.session_id,
-            connection_string=self.connection_string,
+            connection=self.connection_string,
         )
         persistent_history.add_message(message)
 
@@ -198,6 +198,6 @@ class OptimizedSessionHistory(BaseChatMessageHistory):
 
         persistent_history = SQLChatMessageHistory(
             session_id=self.session_id,
-            connection_string=self.connection_string,
+            connection=self.connection_string,
         )
         persistent_history.clear()

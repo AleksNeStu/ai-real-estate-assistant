@@ -127,6 +127,7 @@ def _redact_contact(
     address is masked. The phone is always masked: a phone number is never
     supplied by the caller on the public tracking endpoints.
     """
+    visible_email: Optional[str]
     if keep_email and email and email.strip().lower() == keep_email.strip().lower():
         visible_email = email
     else:
@@ -170,7 +171,7 @@ async def track_interaction(
     body: TrackInteractionRequest,
     request: Request,
     session: AsyncSession = Depends(get_db),
-    user: Optional = Depends(get_current_user_optional),
+    user: Optional[User] = Depends(get_current_user_optional),
 ) -> None:
     """Track a visitor interaction."""
     tracking_service = LeadTrackingService(session)

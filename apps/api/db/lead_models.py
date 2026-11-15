@@ -12,6 +12,7 @@ from sqlalchemy import DateTime, Float, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.database import Base
+from db.models import Lead  # noqa: F401
 
 
 class LeadPriorityScore(Base):

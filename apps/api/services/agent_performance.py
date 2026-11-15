@@ -12,7 +12,7 @@ This service provides:
 import logging
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from sqlalchemy import and_, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -796,7 +796,7 @@ class AgentPerformanceService:
                 )
             )
             result = await self.session.execute(leads_query)
-            leads_count = result.scalar() or 0
+            leads_count = cast(int, result.scalar() or 0)
 
             # Get closed deals for this period
             deals_query = select(
@@ -813,7 +813,7 @@ class AgentPerformanceService:
             result = await self.session.execute(deals_query)
             deals_row = result.fetchone()
 
-            deals_closed = deals_row.count if deals_row else 0  # type: ignore[misc]
+            deals_closed = cast(int, deals_row.count) if deals_row else 0
             revenue = float(deals_row.value) if deals_row else 0.0  # type: ignore[misc]
 
             # Calculate conversion rate
@@ -1218,7 +1218,7 @@ class AgentPerformanceService:
             return float(result.scalar() or 0)
 
         elif goal_type == "revenue":
-            query = select(func.sum(Deal.deal_value)).where(
+            query = select(func.sum(Deal.deal_value)).where(  # type: ignore[assignment]
                 and_(
                     Deal.agent_id == agent_id,
                     Deal.status == "closed",
@@ -1230,7 +1230,7 @@ class AgentPerformanceService:
             return float(result.scalar() or 0)
 
         elif goal_type == "gci":
-            query = select(func.sum(Commission.commission_amount)).where(
+            query = select(func.sum(Commission.commission_amount)).where(  # type: ignore[assignment]
                 and_(
                     Commission.agent_id == agent_id,
                     Commission.status.in_(["paid", "approved"]),

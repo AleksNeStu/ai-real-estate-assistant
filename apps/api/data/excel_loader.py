@@ -15,7 +15,7 @@ import logging
 import os
 import tempfile
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 from urllib.parse import urlparse
 
 import pandas as pd
@@ -226,7 +226,7 @@ class ExcelDataLoader:
     # Loading
     # ------------------------------------------------------------------
 
-    def _resolve_sheet(self) -> Optional[str]:
+    def _resolve_sheet(self) -> Optional[Union[str, int]]:
         """Return the pandas sheet_name argument."""
         if self.sheet_name:
             return self.sheet_name

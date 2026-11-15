@@ -180,7 +180,17 @@ async def compare_tco(input_data: TCOComparisonInput):
     - Priority-weighted recommendation based on user preferences
     """
     try:
-        return TCOComparisonTool.calculate(input_data)
+        return TCOComparisonTool.calculate(
+            input_data.scenario_a,
+            input_data.scenario_b,
+            scenario_a_name=input_data.scenario_a_name,
+            scenario_b_name=input_data.scenario_b_name,
+            comparison_years=input_data.comparison_years,
+            appreciation_rate=input_data.appreciation_rate,
+            priority_monthly_cashflow=input_data.priority_monthly_cashflow,
+            priority_long_term_equity=input_data.priority_long_term_equity,
+            priority_total_cost=input_data.priority_total_cost,
+        )
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
     except Exception as e:

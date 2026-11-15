@@ -121,9 +121,9 @@ class NegotiationTool(BaseTool):
         if not comp_prices:
             # Fallback: derive from target itself with conservative band
             if asking_price and asking_price > 0:
-                lower = round(asking_price * 0.90, -2)
-                mid = round(asking_price * 0.95, -2)
-                upper = round(asking_price * 0.98, -2)
+                lower: Optional[float] = round(asking_price * 0.90, -2)
+                mid: Optional[float] = round(asking_price * 0.95, -2)
+                upper: Optional[float] = round(asking_price * 0.98, -2)
             else:
                 lower = mid = upper = None
         else:
@@ -302,8 +302,8 @@ class NegotiationTool(BaseTool):
             if results:
                 target_md = results[0][0].metadata or {}
                 # The rest are comparables
-                comp_mds = [doc.metadata or {} for doc, _ in results[1:]]
-                return target_md, comp_mds
+                early_comps = [doc.metadata or {} for doc, _ in results[1:]]
+                return target_md, early_comps
 
         if target_md is None:
             return {"id": identifier}, []

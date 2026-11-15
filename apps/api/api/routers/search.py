@@ -2,7 +2,7 @@ import hashlib
 import json
 import logging
 import math
-from typing import Annotated, Optional
+from typing import Annotated, Optional, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
@@ -57,7 +57,7 @@ def _fields_that_failed(error: ValidationError) -> set[str]:
     return fields
 
 
-def _validate_polygon(polygon: list[list[list[float]]]) -> Optional[str]:
+def _validate_polygon(polygon: list[list[float]] | list[list[list[float]]]) -> Optional[str]:
     """
     Validate polygon for search operations.
     Returns error message if invalid, None if valid.
@@ -65,8 +65,12 @@ def _validate_polygon(polygon: list[list[list[float]]]) -> Optional[str]:
     if not polygon or len(polygon) == 0:
         return "Polygon coordinates are empty"
 
-    # Get the outer ring (first array)
-    outer_ring = polygon[0] if isinstance(polygon[0], list) else polygon
+    # Get the outer ring. The polygon arrives either as one ring of
+    # [lon, lat] pairs - what the search page sends - or as GeoJSON rings.
+    outer_ring = cast(
+        list[list[float]],
+        polygon[0] if polygon and polygon[0] and isinstance(polygon[0][0], list) else polygon,
+    )
     if not outer_ring or len(outer_ring) < 3:
         return "Polygon must have at least 3 vertices"
 

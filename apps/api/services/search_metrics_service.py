@@ -306,7 +306,7 @@ class SearchMetricsService:
 
         # Calculate MRR
         reciprocal_ranks = [1.0 / (row.first_click_pos + 1) for row in first_clicks]
-        return sum(reciprocal_ranks) / len(reciprocal_ranks)
+        return float(sum(reciprocal_ranks) / len(reciprocal_ranks))
 
     async def calculate_ndcg(
         self,

@@ -19,6 +19,7 @@ import random
 import sys
 import uuid
 from pathlib import Path
+from typing import cast
 
 # Fix Windows console encoding for Polish characters
 if sys.platform == "win32":
@@ -238,15 +239,15 @@ def generate_property(index: int) -> Property:
 
     # Price based on listing type and city
     if listing_type == ListingType.RENT:
-        price_per_sqm = random.uniform(*city["price_rent_sqm"])
+        price_per_sqm = random.uniform(*cast(list[float], city["price_rent_sqm"]))
         price = round(area * price_per_sqm, 0)
     else:
-        price_per_sqm = random.uniform(*city["price_sale_sqm"])
+        price_per_sqm = random.uniform(*cast(list[float], city["price_sale_sqm"]))
         price = round(area * price_per_sqm, 0)
 
     # Location
-    lat = round(random.uniform(*city["lat_range"]), 6)
-    lon = round(random.uniform(*city["lon_range"]), 6)
+    lat = round(random.uniform(*cast(list[float], city["lat_range"])), 6)
+    lon = round(random.uniform(*cast(list[float], city["lon_range"])), 6)
     street = random.choice(STREET_NAMES.get(city_name, ["Unknown"]))
     street_number = random.randint(1, 120)
 

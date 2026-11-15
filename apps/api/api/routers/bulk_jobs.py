@@ -203,6 +203,7 @@ async def _process_file_import(job: BulkJob, config: dict[str, Any], db: AsyncSe
 async def _process_portal_import(job: BulkJob, config: dict[str, Any], db: AsyncSession) -> None:
     """Process import from portal APIs (Overpass, etc.)."""
     from data.adapters import get_adapter
+    from data.adapters.base import PortalFilter
 
     portal = config.get("portal")
     city = config.get("city")
@@ -214,14 +215,18 @@ async def _process_portal_import(job: BulkJob, config: dict[str, Any], db: Async
 
     try:
         adapter = get_adapter(portal)
+        if adapter is None:
+            raise ValueError(f"unknown portal: {portal}")
         # Fetch data from portal
         # This is a simplified version - real implementation would
         # paginate through results
-        results = await adapter.fetch_properties(
+        portal_filters = PortalFilter(
             city=city,
             listing_type=filters.get("listing_type", "rent"),
             limit=limit,
         )
+        fetch_result = adapter.fetch(portal_filters)
+        results = fetch_result.properties
 
         job.records_total = len(results)
         job.records_processed = len(results)
@@ -365,7 +370,7 @@ async def create_import_job(
     from config.settings import get_settings
 
     settings = get_settings()
-    db_url = settings.database_url
+    db_url = settings.database_url or ""
 
     # Queue background task
     background_tasks.add_task(_run_import_job, job_id, db_url)
@@ -428,7 +433,7 @@ async def create_export_job(
     from config.settings import get_settings
 
     settings = get_settings()
-    db_url = settings.database_url
+    db_url = settings.database_url or ""
 
     # Queue background task
     background_tasks.add_task(_run_export_job, job_id, db_url)

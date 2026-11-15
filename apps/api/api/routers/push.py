@@ -107,7 +107,7 @@ async def subscribe_to_push(
         if not existing.is_active:
             existing = await repo.update(existing, is_active=True, device_name=device_name)
             logger.info("Re-activated push subscription %s for user %s", existing.id, user.id)
-        return existing
+        return PushSubscriptionResponse.model_validate(existing)
 
     # Create new subscription
     subscription = await repo.create(
@@ -120,7 +120,7 @@ async def subscribe_to_push(
     await db.commit()
 
     logger.info("Created push subscription %s for user %s", subscription.id, user.id)
-    return subscription
+    return PushSubscriptionResponse.model_validate(subscription)
 
 
 @router.delete("/unsubscribe", status_code=status.HTTP_204_NO_CONTENT)

@@ -4,7 +4,7 @@ import json
 import logging
 import os
 from datetime import UTC, datetime, timedelta
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel
@@ -389,7 +389,7 @@ async def _process_data_export(
                 raise ValueError(f"User {user_id} not found")
 
             # Gather all user data
-            export_data = {
+            export_data: dict[str, Any] = {
                 "user": {
                     "id": user.id,
                     "email": user.email,
