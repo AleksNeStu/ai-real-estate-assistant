@@ -1,6 +1,6 @@
 """Unit tests for utils/circuit.py."""
 
-import asyncio
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -253,8 +253,18 @@ class TestCircuitBreaker:
 
         assert cb.stats.current_state == CircuitState.OPEN
 
-        # Wait for timeout
-        await asyncio.sleep(0.02)
+        # The cooldown is measured against the WALL clock (datetime.now),
+        # whose resolution on Windows is 15.625 ms - coarser than the 10 ms
+        # cooldown this test configures. Sleeping for 20 ms therefore does
+        # NOT guarantee that the sampled delta reaches the timeout: under a
+        # loaded machine the wall clock can advance by less than that across
+        # the sleep, the breaker stays OPEN, and the call is rejected. The
+        # test failed that way under the parallel unit suite.
+        #
+        # The state under test is "the cooldown has passed", so the failure
+        # timestamp is moved back instead of waiting for it. Same pattern as
+        # tests/integration/test_multi_provider_fallback.py.
+        cb.stats.last_failure_time = datetime.now(tz=UTC) - timedelta(seconds=1)
 
         # Next call should go through (half-open -> success -> closed)
         async def recover():
