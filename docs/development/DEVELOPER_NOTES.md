@@ -4,9 +4,9 @@
 This document captures practical details for working on the FastAPI backend and Next.js frontend.
 
 ## Development Process
-- CI is expected to run on every PR and push; keep ruff and the test suites green before merging.
-  The pipeline does not run mypy and reports the coverage thresholds rather than enforcing them;
-  `scripts/ci/ci_parity.py` is the local helper that runs the full set.
+- CI is expected to run on every PR and push; keep ruff, mypy and the test suites green before merging.
+  The pipeline runs ruff and the type check as gates, and reports the coverage thresholds rather than
+  enforcing them; `scripts/ci/ci_parity.py` is the local helper that runs the full set.
 
 ## Backend (FastAPI)
 - Entry point: `api/main.py`
@@ -199,8 +199,10 @@ This document captures practical details for working on the FastAPI backend and 
   - Tests: the unit and integration suites, each with `--cov`, uploading a coverage artifact
   - Coverage: the line-rate of each suite is compared with its threshold (unit 85,
     integration 70) and reported as an annotation - the job is not failed by it
-  - `mypy` is not part of the pipeline; the local parity helper runs it together with
-    `scripts/ci/coverage_gate.py` (diff and critical coverage)
+  - Type check: `mypy` runs in the `backend-lint` job as a gate (`python -m mypy .` from `apps/api`,
+    against the version pinned in the workflow). The local parity helper runs the same command
+    together with `scripts/ci/coverage_gate.py` (diff and critical coverage), and a mypy failure
+    fails that helper too - only the drift checks are soft.
 - Frontend:
   - Lint: `npm run lint`
   - Tests + coverage: `npm run test -- --ci --coverage` (thresholds enforced in `jest.config.ts`)

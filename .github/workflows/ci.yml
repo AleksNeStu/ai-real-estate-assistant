@@ -99,7 +99,9 @@ jobs:
     defaults:
       run:
         working-directory: apps/api
-    timeout-minutes: 10
+    # The type check adds a full 727-file pass on top of ruff, so the job
+    # needs more room than the lint alone.
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -108,11 +110,23 @@ jobs:
         uses: ./.github/actions/setup-python
         with:
           working-directory: apps/api
-          install-extras: 'pytest ruff'
+          # mypy is pinned to the version the type check was verified
+          # against (apps/api/.venv). An unpinned install could resolve a
+          # different major and report a different set of errors than the
+          # local gate. It is installed here and NOT in requirements.txt,
+          # because that file ships into the runtime image.
+          install-extras: 'pytest ruff mypy==2.2.0'
 
       - name: Lint (ruff)
         run: |
           python -m ruff check .
+
+      # The type check is a GATE, not a warning. It reads [tool.mypy] from
+      # apps/api/pyproject.toml (pydantic plugin included) and is the same
+      # invocation the local CI-parity gate runs.
+      - name: Type check (mypy)
+        run: |
+          python -m mypy .
 
   # ===== STAGE 2: Backend Tests (Parallel Matrix) =====
 

@@ -246,11 +246,17 @@ def format_command(cmd: Sequence[str]) -> str:
 
 
 def run_command(cmd: Sequence[str]) -> None:
-    """Run a command, treating certain checks as soft failures (non-blocking)."""
+    """Run a command, treating the drift checks as soft failures (non-blocking).
+
+    mypy is NOT one of them: the type check is a gate. It was soft while the
+    codebase carried 410 errors, and it stayed soft after they were fixed -
+    so a green local gate said nothing about the types. The drift checks stay
+    soft because they compare generated artefacts against the source, and a
+    mismatch there is a regeneration job, not a defect.
+    """
     cmd_str = " ".join(cmd) if isinstance(cmd, list) else str(cmd)
     is_soft_failure = (
-        "mypy" in cmd_str
-        or "export_openapi.py" in cmd_str
+        "export_openapi.py" in cmd_str
         or "generate_api_reference.py" in cmd_str
         or "update_api_reference_full.py" in cmd_str
     )
@@ -258,8 +264,7 @@ def run_command(cmd: Sequence[str]) -> None:
         subprocess.run(list(cmd), check=True)
     except subprocess.CalledProcessError as e:
         if is_soft_failure:
-            cmd_name = "mypy" if "mypy" in cmd_str else "drift check"
-            print(f"WARNING: {cmd_name} failed (non-blocking): {e}")
+            print(f"WARNING: drift check failed (non-blocking): {e}")
             return
         raise
 
