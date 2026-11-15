@@ -1475,7 +1475,7 @@ Redirect to Apple for Sign In.
 
 **Tags**: JWT Auth
 
-Handle OAuth callback from providers.
+Handle OAuth callback from providers. Sets the session cookies and redirects to the frontend's callback page; answers with the tokens as JSON when no frontend URL is configured.
 
 **Parameters**
 
@@ -1831,6 +1831,7 @@ Process a chat message using the hybrid agent with session persistence. Requires
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
 | X-User-Email | header | string \| null | no |  |
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -1851,6 +1852,12 @@ Process a chat message using the hybrid agent with session persistence. Requires
 **Tags**: Chat (Free Tier), Chat
 
 Free tier chat — no API key required. Uses the free LLM provider cascade (OpenRouter free → Google Flash → Ollama) with hourly/daily rate limits per client IP.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -3707,6 +3714,48 @@ Health check for MCP connector system. Returns: - Overall status (healthy/degrad
 |---|---|---|
 | 200 | Successful Response | MCPHealthResponse |
 
+## GET /api/v1/me/buyer-memory
+
+**Summary**: List the buyer's stored facts
+
+**Tags**: Buyer Memory
+
+Everything the platform stored about the authenticated buyer.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | BuyerMemoryListResponse |
+| 422 | Validation Error | HTTPValidationError |
+
+## DELETE /api/v1/me/buyer-memory
+
+**Summary**: Delete the buyer's stored facts
+
+**Tags**: Buyer Memory
+
+Remove every stored fact of the authenticated buyer, and only theirs.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | BuyerMemoryDeleteResponse |
+| 422 | Validation Error | HTTPValidationError |
+
 ## GET /api/v1/model-preferences
 
 **Summary**: List user model preferences
@@ -4066,6 +4115,94 @@ Update privacy settings.
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | PromptTemplateApplyResponse |
+| 422 | Validation Error | HTTPValidationError |
+
+## GET /api/v1/properties
+
+**Summary**: The catalogue
+
+**Tags**: Properties
+
+The listings this deployment holds, newest first. This is what a sitemap and an llms.txt are built from: without it, the pages of the listings cannot be enumerated by anything outside the process.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| limit | query | integer | no |  |
+| offset | query | integer | no |  |
+| city | query | string \| null | no |  |
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | object |
+| 422 | Validation Error | HTTPValidationError |
+
+## GET /api/v1/properties/{property_id}
+
+**Summary**: One property
+
+**Tags**: Properties
+
+The listing itself, read from the catalogue the search answers with. This is the data of the property page.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| property_id | path | string | yes |  |
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | object |
+| 422 | Validation Error | HTTPValidationError |
+
+## GET /api/v1/properties/{property_id}/price-history
+
+**Summary**: The price history of one property
+
+**Tags**: Properties
+
+The recorded price points of the listing, newest first.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| property_id | path | string | yes |  |
+| limit | query | integer | no |  |
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | object |
+| 422 | Validation Error | HTTPValidationError |
+
+## GET /api/v1/properties/{property_id}/related
+
+**Summary**: Listings like this one
+
+**Tags**: Properties
+
+The other listings in the same city and of the same type - the comparables the page shows next to this one.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| property_id | path | string | yes |  |
+| limit | query | integer | no |  |
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | object |
 | 422 | Validation Error | HTTPValidationError |
 
 ## POST /api/v1/push/subscribe
@@ -4560,7 +4697,13 @@ Increment usage count when user applies a saved search.
 
 **Tags**: Search, Search
 
-Search for properties using semantic search and metadata filters. Results are cached for 5 minutes (TTL 300s).
+Search for properties using semantic search and metadata filters. Results are cached for 5 minutes (TTL 300s). A signed-in buyer gets their own results: what they stated (a budget, an area they ruled out, a listing they disliked) steers the order, and an area they ruled out is not returned at all.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 

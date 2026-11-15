@@ -15,7 +15,7 @@ repos:
         # The same clip is served to the web app from apps/web/public/clips,
         # and the design reference's screenshots live in assets/design - both
         # are published materials as well.
-        exclude: ^apps/api/docs/api/openapi\.json$|^assets/clips/|^apps/web/public/clips/|^assets/design/
+        exclude: ^docs/api/openapi\.json$|^assets/clips/|^apps/web/public/clips/|^assets/design/
       - id: check-illegal-windows-names
 
   - repo: https://github.com/astral-sh/ruff-pre-commit

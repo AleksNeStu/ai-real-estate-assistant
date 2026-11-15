@@ -17971,6 +17971,105 @@
         ],
         "title": "OutboundClickRequest",
         "description": "A click that leaves the site."
+      },
+      "BuyerMemoryDeleteResponse": {
+        "properties": {
+          "deleted": {
+            "type": "integer",
+            "title": "Deleted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "deleted"
+        ],
+        "title": "BuyerMemoryDeleteResponse",
+        "description": "What the erasure removed."
+      },
+      "BuyerMemoryFactResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "listing_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Listing Id"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "content",
+          "confidence",
+          "source",
+          "created_at"
+        ],
+        "title": "BuyerMemoryFactResponse",
+        "description": "One stored fact, as the data subject sees it."
+      },
+      "BuyerMemoryListResponse": {
+        "properties": {
+          "facts": {
+            "items": {
+              "$ref": "#/components/schemas/BuyerMemoryFactResponse"
+            },
+            "type": "array",
+            "title": "Facts"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facts",
+          "count"
+        ],
+        "title": "BuyerMemoryListResponse",
+        "description": "Everything the platform holds about the caller."
       }
     },
     "securitySchemes": {
@@ -21615,7 +21714,7 @@
     },
     "/api/v1/auth/oauth/callback": {
       "get": {
-        "description": "Handle OAuth callback from providers.",
+        "description": "Handle OAuth callback from providers. Sets the session cookies and redirects to the frontend's callback page; answers with the tokens as JSON when no frontend URL is configured.",
         "operationId": "oauth_callback_api_v1_auth_oauth_callback_get",
         "parameters": [
           {
@@ -22427,8 +22526,8 @@
         "operationId": "chat_endpoint_api_v1_chat_post",
         "parameters": [
           {
-            "in": "header",
             "name": "X-User-Email",
+            "in": "header",
             "required": false,
             "schema": {
               "anyOf": [
@@ -22440,6 +22539,22 @@
                 }
               ],
               "title": "X-User-Email"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -22478,6 +22593,9 @@
         "security": [
           {
             "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "summary": "Chat Endpoint",
@@ -22527,6 +22645,29 @@
         "tags": [
           "Chat (Free Tier)",
           "Chat"
+        ],
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -30092,7 +30233,7 @@
     },
     "/api/v1/search": {
       "post": {
-        "description": "Search for properties using semantic search and metadata filters.\nResults are cached for 5 minutes (TTL 300s).",
+        "description": "Search for properties using semantic search and metadata filters.\nResults are cached for 5 minutes (TTL 300s).\n\nA signed-in buyer gets their own results: what they stated (a budget, an\narea they ruled out, a listing they disliked) steers the order, and an\narea they ruled out is not returned at all.",
         "operationId": "search_properties_api_v1_search_post",
         "requestBody": {
           "content": {
@@ -30129,12 +30270,33 @@
         "security": [
           {
             "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "summary": "Search Properties",
         "tags": [
           "Search",
           "Search"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -33668,6 +33830,348 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/properties": {
+      "get": {
+        "tags": [
+          "Properties"
+        ],
+        "summary": "The catalogue",
+        "description": "The listings this deployment holds, newest first. This is what a sitemap and an llms.txt are built from: without it, the pages of the listings cannot be enumerated by anything outside the process.",
+        "operationId": "list_properties_api_v1_properties_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "City"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response List Properties Api V1 Properties Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{property_id}": {
+      "get": {
+        "tags": [
+          "Properties"
+        ],
+        "summary": "One property",
+        "description": "The listing itself, read from the catalogue the search answers with. This is the data of the property page.",
+        "operationId": "get_property_api_v1_properties__property_id__get",
+        "parameters": [
+          {
+            "name": "property_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Property Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Property Api V1 Properties  Property Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{property_id}/price-history": {
+      "get": {
+        "tags": [
+          "Properties"
+        ],
+        "summary": "The price history of one property",
+        "description": "The recorded price points of the listing, newest first.",
+        "operationId": "get_property_price_history_api_v1_properties__property_id__price_history_get",
+        "parameters": [
+          {
+            "name": "property_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Property Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Property Price History Api V1 Properties  Property Id  Price History Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{property_id}/related": {
+      "get": {
+        "tags": [
+          "Properties"
+        ],
+        "summary": "Listings like this one",
+        "description": "The other listings in the same city and of the same type - the comparables the page shows next to this one.",
+        "operationId": "get_related_properties_api_v1_properties__property_id__related_get",
+        "parameters": [
+          {
+            "name": "property_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Property Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 24,
+              "minimum": 1,
+              "default": 6,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Related Properties Api V1 Properties  Property Id  Related Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/buyer-memory": {
+      "get": {
+        "tags": [
+          "Buyer Memory"
+        ],
+        "summary": "List the buyer's stored facts",
+        "description": "Everything the platform stored about the authenticated buyer.",
+        "operationId": "list_buyer_memory_api_v1_me_buyer_memory_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuyerMemoryListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Buyer Memory"
+        ],
+        "summary": "Delete the buyer's stored facts",
+        "description": "Remove every stored fact of the authenticated buyer, and only theirs.",
+        "operationId": "delete_buyer_memory_api_v1_me_buyer_memory_delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuyerMemoryDeleteResponse"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
