@@ -189,17 +189,38 @@ class TestMCPStubAsync:
         assert "Test error" in result.errors
 
     @pytest.mark.asyncio
-    async def test_simulated_latency(self) -> None:
-        """Test simulated latency."""
+    async def test_simulated_latency(self, monkeypatch) -> None:
+        """Test simulated latency.
+
+        The stub ASKS for the latency with a sleep; the wall clock of the
+        machine is not asked to honour it. The event loop of Windows reads
+        its clock in 15.6 ms steps, so a 50 ms sleep can return a few
+        milliseconds early - the stub is right, the clock is coarse. The
+        assertion on the requested delay is the exact one; the floor on the
+        measured time is the platform's, not the stub's.
+        """
+        import asyncio
+        import time
+
         stub = ConcreteStub(latency_ms=50)
 
-        import time
+        requested: list[float] = []
+        real_sleep = asyncio.sleep
+
+        async def _record(delay: float, *args, **kwargs):
+            requested.append(delay)
+            return await real_sleep(delay, *args, **kwargs)
+
+        monkeypatch.setattr(asyncio, "sleep", _record)
 
         start = time.perf_counter()
         await stub.execute("test", {})
         elapsed_ms = (time.perf_counter() - start) * 1000
 
-        assert elapsed_ms >= 45  # Allow small margin
+        assert requested == [0.05]
+        # The floor is the latency minus the coarsest step of the platform
+        # clock (15.6 ms), so the assertion survives a loaded machine.
+        assert elapsed_ms >= 30
 
     @pytest.mark.asyncio
     async def test_stream(self) -> None:

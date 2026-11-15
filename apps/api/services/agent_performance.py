@@ -792,7 +792,7 @@ class AgentPerformanceService:
                 and_(
                     AgentAssignment.agent_id == agent_id,
                     AgentAssignment.assigned_at >= period_start,
-                    AgentAssignment.assigned_at < period_end,
+                    AgentAssignment.assigned_at <= period_end,
                 )
             )
             result = await self.session.execute(leads_query)
@@ -807,7 +807,7 @@ class AgentPerformanceService:
                     Deal.agent_id == agent_id,
                     Deal.status == "closed",
                     Deal.closed_at >= period_start,
-                    Deal.closed_at < period_end,
+                    Deal.closed_at <= period_end,
                 )
             )
             result = await self.session.execute(deals_query)

@@ -103,6 +103,41 @@ class TestUserActivityService:
         assert summary.total_favorites == 1
 
     @pytest.mark.asyncio
+    async def test_the_end_of_the_window_counts_the_event_on_it(self, activity_service, db_session):
+        """An event recorded on the very end of the window belongs to it.
+
+        The clock of the machine reads in milliseconds, so an event
+        recorded in the same millisecond as the request carries the very
+        timestamp the window ends on. A strict `<` drops it, and the
+        summary of "your activity" misses the thing you did a moment ago.
+        """
+        event = await activity_service.track_event("s1", "favorite_add", "engagement")
+        await db_session.flush()
+
+        summary = await activity_service.get_activity_summary(
+            period_start=event.event_timestamp - timedelta(days=30),
+            period_end=event.event_timestamp,
+        )
+
+        assert summary.total_favorites == 1
+
+    @pytest.mark.asyncio
+    async def test_the_export_counts_the_event_on_the_end_of_the_window(
+        self, activity_service, db_session
+    ):
+        """The export of the activity keeps the event on the end of the window."""
+        event = await activity_service.track_event("s1", "search_query", "search")
+        await db_session.flush()
+
+        csv_data = await activity_service.export_activity_csv(
+            period_start=event.event_timestamp - timedelta(days=30),
+            period_end=event.event_timestamp,
+        )
+
+        lines = csv_data.strip().split("\n")
+        assert len(lines) >= 2  # Header + the event on the end of the window
+
+    @pytest.mark.asyncio
     async def test_get_activity_summary_filters_by_date_range(self, activity_service, db_session):
         """Test that get_activity_summary can filter by date range.
 

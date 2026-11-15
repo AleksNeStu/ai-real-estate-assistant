@@ -166,6 +166,11 @@ class UserActivityService:
         if period_start is None:
             period_start = period_end - timedelta(days=30)
 
+        # The end of the window is INCLUSIVE. The clock of the machine reads
+        # in milliseconds, so an event recorded in the same millisecond as
+        # this request carries the very timestamp the window ends on, and a
+        # strict `<` drops it: the summary of "your activity" then misses
+        # the thing you did a moment ago.
         user_id_hash = hash_user_id(user_id) if user_id else None
 
         # The searches, the views and the clicks belong to the account that
@@ -179,7 +184,7 @@ class UserActivityService:
         search_query = select(func.count(SearchEvent.id)).where(
             and_(
                 SearchEvent.search_timestamp >= period_start,
-                SearchEvent.search_timestamp < period_end,
+                SearchEvent.search_timestamp <= period_end,
                 searches_of,
             )
         )
@@ -191,7 +196,7 @@ class UserActivityService:
         views_query = select(func.count(SearchResultInteraction.id)).where(
             and_(
                 SearchResultInteraction.interaction_timestamp >= period_start,
-                SearchResultInteraction.interaction_timestamp < period_end,
+                SearchResultInteraction.interaction_timestamp <= period_end,
                 SearchResultInteraction.viewed.is_(True),
                 interactions_of,
             )
@@ -203,7 +208,7 @@ class UserActivityService:
         clicks_query = select(func.count(SearchResultInteraction.id)).where(
             and_(
                 SearchResultInteraction.interaction_timestamp >= period_start,
-                SearchResultInteraction.interaction_timestamp < period_end,
+                SearchResultInteraction.interaction_timestamp <= period_end,
                 SearchResultInteraction.clicked.is_(True),
                 interactions_of,
             )
@@ -215,7 +220,7 @@ class UserActivityService:
         sessions_query = select(func.count(func.distinct(SearchEvent.session_id))).where(
             and_(
                 SearchEvent.search_timestamp >= period_start,
-                SearchEvent.search_timestamp < period_end,
+                SearchEvent.search_timestamp <= period_end,
                 searches_of,
             )
         )
@@ -226,7 +231,7 @@ class UserActivityService:
         avg_time_query = select(func.avg(SearchEvent.processing_time_ms)).where(
             and_(
                 SearchEvent.search_timestamp >= period_start,
-                SearchEvent.search_timestamp < period_end,
+                SearchEvent.search_timestamp <= period_end,
                 searches_of,
             )
         )
@@ -237,7 +242,7 @@ class UserActivityService:
         tool_uses_query = select(func.count(UserActivityEvent.id)).where(
             and_(
                 UserActivityEvent.event_timestamp >= period_start,
-                UserActivityEvent.event_timestamp < period_end,
+                UserActivityEvent.event_timestamp <= period_end,
                 UserActivityEvent.event_type == "tool_use",
             )
         )
@@ -250,7 +255,7 @@ class UserActivityService:
         exports_query = select(func.count(UserActivityEvent.id)).where(
             and_(
                 UserActivityEvent.event_timestamp >= period_start,
-                UserActivityEvent.event_timestamp < period_end,
+                UserActivityEvent.event_timestamp <= period_end,
                 UserActivityEvent.event_type == "export",
             )
         )
@@ -263,7 +268,7 @@ class UserActivityService:
         favorites_query = select(func.count(UserActivityEvent.id)).where(
             and_(
                 UserActivityEvent.event_timestamp >= period_start,
-                UserActivityEvent.event_timestamp < period_end,
+                UserActivityEvent.event_timestamp <= period_end,
                 UserActivityEvent.event_type.in_(["favorite_add", "favorite_remove"]),
             )
         )
@@ -324,7 +329,7 @@ class UserActivityService:
             .where(
                 and_(
                     UserActivityEvent.event_timestamp >= period_start,
-                    UserActivityEvent.event_timestamp < period_end,
+                    UserActivityEvent.event_timestamp <= period_end,
                     UserActivityEvent.event_type == "tool_use",
                 )
             )
@@ -368,7 +373,7 @@ class UserActivityService:
             .where(
                 and_(
                     SearchEvent.search_timestamp >= period_start,
-                    SearchEvent.search_timestamp < period_end,
+                    SearchEvent.search_timestamp <= period_end,
                     SearchEvent.filters["city"].is_not(None),
                     self._searches_of(user_id),
                 )
@@ -406,7 +411,7 @@ class UserActivityService:
             .where(
                 and_(
                     SearchEvent.search_timestamp >= period_start,
-                    SearchEvent.search_timestamp < period_end,
+                    SearchEvent.search_timestamp <= period_end,
                     self._searches_of(user_id),
                 )
             )
@@ -469,7 +474,7 @@ class UserActivityService:
             .where(
                 and_(
                     SearchEvent.search_timestamp >= period_start,
-                    SearchEvent.search_timestamp < period_end,
+                    SearchEvent.search_timestamp <= period_end,
                     self._searches_of(user_id),
                 )
             )
@@ -521,6 +526,11 @@ class UserActivityService:
         if period_start is None:
             period_start = period_end - timedelta(days=30)
 
+        # The end of the window is INCLUSIVE. The clock of the machine reads
+        # in milliseconds, so an event recorded in the same millisecond as
+        # this request carries the very timestamp the window ends on, and a
+        # strict `<` drops it: the summary of "your activity" then misses
+        # the thing you did a moment ago.
         user_id_hash = hash_user_id(user_id) if user_id else None
 
         output = StringIO()
@@ -544,7 +554,7 @@ class UserActivityService:
             .where(
                 and_(
                     UserActivityEvent.event_timestamp >= period_start,
-                    UserActivityEvent.event_timestamp < period_end,
+                    UserActivityEvent.event_timestamp <= period_end,
                 )
             )
             .order_by(UserActivityEvent.event_timestamp)
