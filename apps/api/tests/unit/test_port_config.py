@@ -15,6 +15,7 @@ Tests cover:
 import json
 import os
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 from config.port_config import (
@@ -210,7 +211,7 @@ class TestLoadRegistryPorts:
         """Empty allocations list returns empty dict."""
         docs_dir = tmp_path / "docs"
         docs_dir.mkdir()
-        registry = {"allocations": []}
+        registry: dict[str, Any] = {"allocations": []}
         (docs_dir / "PORT_REGISTRY.json").write_text(json.dumps(registry), encoding="utf-8")
 
         result = _load_registry_ports(tmp_path)

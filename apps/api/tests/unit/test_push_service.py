@@ -5,6 +5,7 @@ Task #58: Comprehensive Test Suite Update
 """
 
 import sys
+from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -21,7 +22,8 @@ if "pywebpush" not in sys.modules:
 
     _mock_pywebpush = MagicMock()
     sys.modules["pywebpush"] = _mock_pywebpush
-    sys.modules["pywebpush"].WebPushException = _MockWebPushException
+    mock_module = cast(Any, sys.modules["pywebpush"])
+    mock_module.WebPushException = _MockWebPushException
 
 from pywebpush import WebPushException
 

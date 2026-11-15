@@ -44,7 +44,7 @@ def _post_chat(agent: _CapturingAgent, message: str):
             response = client.post(
                 "/api/v1/chat",
                 json={"message": message},
-                headers={"X-API-Key": settings.api_access_key},
+                headers={"X-API-Key": settings.api_access_key or ""},
             )
     finally:
         app.dependency_overrides = {}

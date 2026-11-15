@@ -182,7 +182,7 @@ class TestUpdatePreferencesFromInteraction:
     async def test_updates_city_preference_on_view(self):
         """Adds city weight on view interaction."""
         profile = _make_profile(
-            preferred_cities={},
+            preferred_cities=[],
             preferred_rooms=[],
             preferred_property_types=[],
             amenity_weights={},
@@ -206,14 +206,15 @@ class TestUpdatePreferencesFromInteraction:
         )
 
         assert profile.view_count == 3
-        assert "Kraków" in profile.preferred_cities
+        # The column holds the entries the service reads them back from.
+        assert profile.preferred_cities == [{"city": "Kraków", "weight": 0.1}]
         mock_session.commit.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_favorite_gets_higher_weight(self):
         """Favorite interaction uses FAVORITE_WEIGHT (2.0)."""
         profile = _make_profile(
-            preferred_cities={},
+            preferred_cities=[],
             preferred_rooms=[],
             preferred_property_types=[],
             amenity_weights={},
@@ -236,7 +237,7 @@ class TestUpdatePreferencesFromInteraction:
 
         assert profile.favorite_count == 1
         # Weight should be FAVORITE_WEIGHT * 0.1 = 0.2
-        assert profile.preferred_cities["Warszawa"] == 0.2
+        assert profile.preferred_cities == [{"city": "Warszawa", "weight": 0.2}]
 
     @pytest.mark.asyncio
     async def test_updates_price_range(self):

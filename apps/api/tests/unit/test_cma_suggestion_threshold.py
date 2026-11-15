@@ -7,6 +7,7 @@ both now, and this test holds it.
 """
 
 from types import SimpleNamespace
+from typing import cast
 
 import pytest
 from fastapi import FastAPI
@@ -67,17 +68,20 @@ def _comparable(property_id: str) -> SimpleNamespace:
     (15) and shares only half of its amenities (5.6). That is 45.6 points: the
     wizard showed it, the stricter bar of the report threw it away.
     """
-    return _document(
-        property_id,
-        property_type="house",
-        price=480000,
-        area_sqm=72,
-        latitude=50.1200,
-        longitude=19.9390,
-        has_parking=True,
-        has_pool=True,
-        has_garage=True,
-        has_elevator=True,
+    return cast(
+        SimpleNamespace,
+        _document(
+            property_id,
+            property_type="house",
+            price=480000,
+            area_sqm=72,
+            latitude=50.1200,
+            longitude=19.9390,
+            has_parking=True,
+            has_pool=True,
+            has_garage=True,
+            has_elevator=True,
+        ),
     )
 
 

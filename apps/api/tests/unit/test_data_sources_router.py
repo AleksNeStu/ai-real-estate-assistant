@@ -1207,7 +1207,7 @@ async def test_portal_source_adapter_not_found() -> None:
         result = await data_sources._test_portal_source({"portal": "otodom"})
 
     assert result.success is False
-    assert "Adapter class not found" in result.message
+    assert "Adapter not found" in result.message
 
 
 @pytest.mark.asyncio
@@ -1216,20 +1216,19 @@ async def test_portal_source_health_check_pass() -> None:
     mock_adapter_instance = AsyncMock()
     mock_adapter_instance.health_check = AsyncMock(return_value=True)
 
-    mock_adapter_cls = MagicMock(return_value=mock_adapter_instance)
     mock_list_adapters = MagicMock(return_value=["otodom"])
 
     with (
-        patch("data.adapters.list_adapters", mock_list_adapters, create=True),
         patch("data.adapters.registry.AdapterRegistry") as mock_registry,
     ):
-        mock_registry.get_adapter.return_value = mock_adapter_cls
+        # The registry answers with the adapter itself.
+        mock_registry.get_adapter.return_value = mock_adapter_instance
         mock_registry.list_adapters = mock_list_adapters
         result = await data_sources._test_portal_source({"portal": "otodom", "api_key": "test-key"})
 
     assert result.success is True
     assert "connection successful" in result.message
-    mock_adapter_cls.assert_called_once_with(api_key="test-key")
+    mock_registry.get_adapter.assert_called_once_with("otodom", api_key="test-key")
 
 
 @pytest.mark.asyncio
@@ -1238,14 +1237,12 @@ async def test_portal_source_health_check_fail() -> None:
     mock_adapter_instance = AsyncMock()
     mock_adapter_instance.health_check = AsyncMock(return_value=False)
 
-    mock_adapter_cls = MagicMock(return_value=mock_adapter_instance)
     mock_list_adapters = MagicMock(return_value=["otodom"])
 
     with (
-        patch("data.adapters.list_adapters", mock_list_adapters, create=True),
         patch("data.adapters.registry.AdapterRegistry") as mock_registry,
     ):
-        mock_registry.get_adapter.return_value = mock_adapter_cls
+        mock_registry.get_adapter.return_value = mock_adapter_instance
         mock_registry.list_adapters = mock_list_adapters
         result = await data_sources._test_portal_source({"portal": "otodom"})
 
@@ -1258,14 +1255,12 @@ async def test_portal_source_no_health_check_method() -> None:
     """Test portal source when adapter has no health_check method."""
     mock_adapter_instance = MagicMock(spec=[])  # No health_check attribute
 
-    mock_adapter_cls = MagicMock(return_value=mock_adapter_instance)
     mock_list_adapters = MagicMock(return_value=["otodom"])
 
     with (
-        patch("data.adapters.list_adapters", mock_list_adapters, create=True),
         patch("data.adapters.registry.AdapterRegistry") as mock_registry,
     ):
-        mock_registry.get_adapter.return_value = mock_adapter_cls
+        mock_registry.get_adapter.return_value = mock_adapter_instance
         mock_registry.list_adapters = mock_list_adapters
         result = await data_sources._test_portal_source({"portal": "otodom"})
 

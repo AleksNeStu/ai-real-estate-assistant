@@ -358,8 +358,17 @@ def _setup_data_loaders_mock(csv_cls=None, excel_cls=None):
 
 def _setup_data_adapters_mock(get_adapter_fn=None):
     """Install mock data.adapters module into sys.modules for lazy import."""
+    import importlib
+
     adapters_mod = types.ModuleType("data.adapters")
+    # The stub stands in for the package, so it needs a path and the
+    # submodules the code imports from it.
+    adapters_mod.__path__ = []
     adapters_mod.get_adapter = get_adapter_fn or MagicMock()
+    for submodule in ("base", "registry"):
+        real = importlib.import_module(f"data.adapters.{submodule}")
+        setattr(adapters_mod, submodule, real)
+        sys.modules[f"data.adapters.{submodule}"] = real
     sys.modules["data.adapters"] = adapters_mod
     return adapters_mod
 
@@ -663,12 +672,12 @@ class TestProcessPortalImport:
         db_session.add(job)
         await db_session.flush()
 
-        mock_adapter = AsyncMock()
-        mock_adapter.fetch_properties.return_value = [
-            {"id": "p1"},
-            {"id": "p2"},
-            {"id": "p3"},
-        ]
+        # The adapter answers with a fetch result: it takes a PortalFilter
+        # and returns the properties it found.
+        mock_adapter = MagicMock()
+        mock_adapter.fetch.return_value = MagicMock(
+            properties=[{"id": "p1"}, {"id": "p2"}, {"id": "p3"}]
+        )
         mock_get_adapter = MagicMock(return_value=mock_adapter)
 
         _setup_data_adapters_mock(get_adapter_fn=mock_get_adapter)
@@ -686,9 +695,10 @@ class TestProcessPortalImport:
         assert job.records_total == 3
         assert job.records_processed == 3
         assert job.progress_percent == 100.0
-        mock_adapter.fetch_properties.assert_called_once_with(
-            city="Warsaw", listing_type="rent", limit=50
-        )
+        portal_filters = mock_adapter.fetch.call_args.args[0]
+        assert portal_filters.city == "Warsaw"
+        assert portal_filters.listing_type == "rent"
+        assert portal_filters.limit == 50
 
     @pytest.mark.asyncio
     async def test_missing_portal(self, db_session: AsyncSession):
@@ -717,8 +727,8 @@ class TestProcessPortalImport:
         db_session.add(job)
         await db_session.flush()
 
-        mock_adapter = AsyncMock()
-        mock_adapter.fetch_properties.return_value = []
+        mock_adapter = MagicMock()
+        mock_adapter.fetch.return_value = MagicMock(properties=[])
         mock_get_adapter = MagicMock(return_value=mock_adapter)
 
         _setup_data_adapters_mock(get_adapter_fn=mock_get_adapter)
@@ -728,9 +738,10 @@ class TestProcessPortalImport:
             db_session,
         )
 
-        mock_adapter.fetch_properties.assert_called_once_with(
-            city="Krakow", listing_type="rent", limit=50
-        )
+        portal_filters = mock_adapter.fetch.call_args.args[0]
+        assert portal_filters.city == "Krakow"
+        assert portal_filters.listing_type == "rent"
+        assert portal_filters.limit == 50
 
     @pytest.mark.asyncio
     async def test_adapter_exception_reraises(self, db_session: AsyncSession):
@@ -744,8 +755,8 @@ class TestProcessPortalImport:
         db_session.add(job)
         await db_session.flush()
 
-        mock_adapter = AsyncMock()
-        mock_adapter.fetch_properties.side_effect = ConnectionError("Timeout")
+        mock_adapter = MagicMock()
+        mock_adapter.fetch.side_effect = ConnectionError("Timeout")
         mock_get_adapter = MagicMock(return_value=mock_adapter)
 
         _setup_data_adapters_mock(get_adapter_fn=mock_get_adapter)
@@ -988,8 +999,8 @@ class TestRunImportJob:
 
         mock_factory = _make_mock_session_factory(actual_db)
 
-        mock_adapter = AsyncMock()
-        mock_adapter.fetch_properties.return_value = [{"id": "p1"}]
+        mock_adapter = MagicMock()
+        mock_adapter.fetch.return_value = MagicMock(properties=[{"id": "p1"}])
         mock_get_adapter = MagicMock(return_value=mock_adapter)
 
         _setup_data_adapters_mock(get_adapter_fn=mock_get_adapter)

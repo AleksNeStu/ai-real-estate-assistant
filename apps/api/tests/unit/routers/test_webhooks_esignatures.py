@@ -14,6 +14,7 @@ import hashlib
 import hmac
 import json
 from collections.abc import AsyncGenerator
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -85,7 +86,7 @@ def _make_webhook_payload(
     metadata: dict | None = None,
 ) -> dict:
     """Build a HelloSign webhook payload."""
-    payload = {
+    payload: dict[str, Any] = {
         "event": {"event_type": event_type},
         "signature_request": {
             "signature_request_id": envelope_id,

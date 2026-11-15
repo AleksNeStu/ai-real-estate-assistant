@@ -6,6 +6,7 @@ CMAReportRepository, AuditLogRepository.
 """
 
 from datetime import UTC, datetime, timedelta
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -125,7 +126,7 @@ def _make_cma_report(**overrides) -> MagicMock:
 
 
 def _make_audit_entry(**overrides) -> MagicMock:
-    defaults = dict(
+    defaults: dict[str, Any] = dict(
         id="entry-1",
         actor_id="user-1",
         actor_email="test@example.com",

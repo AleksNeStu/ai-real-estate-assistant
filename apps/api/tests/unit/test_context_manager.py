@@ -1099,7 +1099,8 @@ class TestPrioritizeMessages:
             result = context_manager.prioritize_messages(msgs, 50, "gpt-4")
 
         contents = [m.content for m in result]
-        assert contents == sorted(contents, key=lambda c: ["Sys", "Q1", "Q2", "Q3"].index(c))
+        order = ["Sys", "Q1", "Q2", "Q3"]
+        assert contents == sorted(contents, key=lambda c: order.index(str(c)))
 
     def test_respects_token_limit(self, context_manager: ContextManager) -> None:
         msgs: List[BaseMessage] = [HumanMessage(content=f"Msg {i}") for i in range(5)]

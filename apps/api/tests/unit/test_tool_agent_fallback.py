@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 try:
-    from langchain.agents import AgentExecutor
+    from langchain.agents import AgentExecutor  # type: ignore[attr-defined]
 except ImportError:
     from langchain_classic.agents import AgentExecutor  # type: ignore[no-redef]
 

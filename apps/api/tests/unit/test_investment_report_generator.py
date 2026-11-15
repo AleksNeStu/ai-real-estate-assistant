@@ -32,7 +32,7 @@ class _StubYearlyCashFlow:
 class _StubCashFlowProjection:
     property_price: float = 300_000.0
     projection_years: int = 5
-    yearly_breakdown: List[_StubYearlyCashFlow] = None
+    yearly_breakdown: Optional[List[_StubYearlyCashFlow]] = None
     total_cash_flow: float = 30_000.0
     total_principal_paid: float = 60_000.0
     final_equity: float = 140_000.0
