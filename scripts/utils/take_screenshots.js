@@ -12,6 +12,13 @@ const OUT_DIR = process.argv[4]
   ? path.resolve(process.argv[4])
   : path.join(__dirname, "..", "..", "docs", "screenshots");
 const NAME_SUFFIX = process.argv[5] || "";
+// The optional sixth argument captures only the named shots. Re-capturing the
+// whole set rewrites every PNG, and a one-line change to the route list
+// should not cost a diff of twenty-five binaries.
+const ONLY = (process.argv[6] || "")
+  .split(",")
+  .map((name) => name.trim())
+  .filter(Boolean);
 
 /**
  * The design reference is a set of local pages, not routes of the running
@@ -79,6 +86,10 @@ const SCREENSHOTS = [
   { name: "register", path: "/en/auth/register", desc: "Registration" },
   { name: "search", path: "/en/search", desc: "Property search" },
   { name: "search-results", path: "/en/search?q=apartment+krakow", desc: "Search results" },
+  // The catalogue is seeded data, so the id of one listing is stable. It is
+  // the Wrocław loft of the demo set - `GET /api/v1/properties` answers with
+  // it, and `/en/property/prop-0159` renders it.
+  { name: "property-detail", path: "/en/property/prop-0159", desc: "Property detail page", settle: true },
   { name: "chat", path: "/en/chat", desc: "AI chat" },
   { name: "analytics", path: "/en/analytics", desc: "Analytics tools" },
   { name: "agents", path: "/en/agents", desc: "Agent directory" },
@@ -154,6 +165,27 @@ async function captureScreenshots(browser, screenshots) {
         if (await btn.isVisible({ timeout: 1000 })) await btn.click();
       } catch {}
 
+      // A shot that carries a summary fetched after the page rendered has to
+      // wait for it, or the capture shows the loading skeleton where the
+      // text belongs.
+      if (shot.settle) {
+        try {
+          await page.waitForFunction(
+            () => {
+              const section = document.querySelector(
+                "[data-testid='neighborhood-summary']"
+              );
+              if (!section) return false;
+              const paragraph = section.querySelector("p");
+              return !!paragraph && (paragraph.textContent || "").trim().length > 0;
+            },
+            { timeout: 30000 }
+          );
+        } catch (err) {
+          console.warn(`  Summary did not settle: ${err.message}`);
+        }
+      }
+
       // For the AI chat route, type a question and wait for the assistant
       // response so the screenshot shows a real conversation, not the empty
       // welcome screen. Without this the chat panel always captures empty.
@@ -213,6 +245,13 @@ async function main() {
     server = await serveFolder(REFERENCE.folder);
     const origin = `http://127.0.0.1:${server.address().port}`;
     shots = REFERENCE.shots.map((s) => ({ ...s, url: `${origin}/${s.file}` }));
+  }
+
+  if (ONLY.length) {
+    shots = shots.filter((s) => ONLY.includes(s.name));
+    if (!shots.length) {
+      throw new Error(`No screenshot is named ${ONLY.join(", ")}`);
+    }
   }
 
   const browser = await chromium.launch({ headless: true });

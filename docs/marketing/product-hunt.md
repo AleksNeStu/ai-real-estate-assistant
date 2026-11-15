@@ -20,10 +20,10 @@ Checked on 2026-11-14:
   - [x] Search results with filters — `assets/screenshots/search-results-dark.png`
   - [x] City overview — the map, the ledger of the cities, the selected one
         (`assets/screenshots/city-overview-dark.png`)
-  - [ ] Property detail page — the listing on its own page, with the
+  - [x] Property detail page — the listing on its own page, with the
         neighbourhood one-liner, the price, the numbers and the comparable
-        listings (`/{locale}/property/{id}`). The route exists since v5.3.0;
-        the screenshot still has to be taken.
+        listings (`/{locale}/property/{id}`) —
+        `assets/screenshots/property-detail-dark.png`
   - [x] AI valuation page (multi-year forecast) —
         `assets/screenshots/valuation-dark.png`
   - [x] Interactive map with clustered markers — `assets/screenshots/search-dark.png`
