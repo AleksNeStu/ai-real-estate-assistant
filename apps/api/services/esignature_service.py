@@ -29,10 +29,10 @@ logger = logging.getLogger(__name__)
 class ESignatureService(Protocol):
     """Protocol for e-signature provider integration."""
 
-    def create_envelope(
+    async def create_envelope(
         self,
         document_path: Path,
-        signers: list[dict[str, str]],
+        signers: list[dict[str, Any]],
         title: str,
         subject: Optional[str] = None,
         message: Optional[str] = None,
@@ -56,7 +56,7 @@ class ESignatureService(Protocol):
         """
         ...
 
-    def get_envelope_status(self, envelope_id: str) -> dict[str, Any]:
+    async def get_envelope_status(self, envelope_id: str) -> dict[str, Any]:
         """
         Get the current status of an envelope.
 
@@ -68,7 +68,7 @@ class ESignatureService(Protocol):
         """
         ...
 
-    def download_signed_document(self, envelope_id: str) -> bytes:
+    async def download_signed_document(self, envelope_id: str) -> bytes:
         """
         Download the signed document.
 
@@ -80,7 +80,7 @@ class ESignatureService(Protocol):
         """
         ...
 
-    def cancel_envelope(self, envelope_id: str) -> bool:
+    async def cancel_envelope(self, envelope_id: str) -> bool:
         """
         Cancel a signature request.
 
@@ -92,7 +92,7 @@ class ESignatureService(Protocol):
         """
         ...
 
-    def send_reminder(self, envelope_id: str) -> bool:
+    async def send_reminder(self, envelope_id: str) -> bool:
         """
         Send a reminder email to pending signers.
 
@@ -189,7 +189,7 @@ class HelloSignService:
     async def create_envelope(
         self,
         document_path: Path,
-        signers: list[dict[str, str]],
+        signers: list[dict[str, Any]],
         title: str,
         subject: Optional[str] = None,
         message: Optional[str] = None,
@@ -469,7 +469,7 @@ def get_esignature_service() -> Optional[ESignatureService]:
 
     if _esignature_service is None:
         if settings.hellosign_api_key:
-            _esignature_service = HelloSignService(  # type: ignore[assignment]
+            _esignature_service = HelloSignService(
                 api_key=settings.hellosign_api_key,
                 test_mode=settings.environment == "development",
                 webhook_secret=settings.hellosign_webhook_secret,

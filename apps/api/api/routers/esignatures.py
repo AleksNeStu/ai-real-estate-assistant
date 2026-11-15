@@ -21,6 +21,7 @@ from fastapi import (
     HTTPException,
     Query,
     Request,
+    UploadFile,
     status,
 )
 from fastapi.responses import StreamingResponse
@@ -112,7 +113,7 @@ async def create_signature_request(
         {
             "email": s.email,
             "name": s.name,
-            "role": s.role.value,
+            "role": s.role,
             "order": s.order,
             "status": "pending",
             "signed_at": None,
@@ -158,7 +159,8 @@ async def create_signature_request(
             with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
                 tmp_path = Path(tmp.name)
                 success, error = template_service.generate_pdf(
-                    document_content,
+                    template.content,
+                    request_data.variables or {},
                     tmp_path,
                     title=request_data.title,
                 )
@@ -486,9 +488,9 @@ async def download_signed_document(
 
             # Store the signed document
             filename = f"{signature_request.title}_signed.pdf"
-            storage_path, str, int = await document_storage.save_file(
+            storage_path, unique_filename, stored_size = await document_storage.save_file(
                 user_id=user.id,
-                file=type("file", (BytesIO(pdf_content), filename)),  # Mock UploadFile
+                file=UploadFile(file=BytesIO(pdf_content), filename=filename),
                 max_size_bytes=20 * 1024 * 1024,  # 20MB
             )
 
@@ -603,7 +605,7 @@ async def create_template(
     template = await repo.create(
         user_id=user.id,
         name=template_data.name,
-        template_type=template_data.template_type.value,
+        template_type=template_data.template_type,
         content=template_data.content,
         description=template_data.description,
         variables=template_data.variables,

@@ -25,8 +25,10 @@ import pytest
 from fastapi import FastAPI, status
 from httpx import ASGITransport, AsyncClient
 
+from api.routers import esignatures
 from api.routers.esignatures import router as esignatures_router
 from db.database import get_db
+from db.models import User
 
 # ---------------------------------------------------------------------------
 # Workaround: source code uses .value on Literal types (SignerRoleType,
@@ -1329,15 +1331,14 @@ class TestDownloadSignedDocument:
         assert resp.headers["content-type"] == "application/pdf"
 
     @pytest.mark.asyncio
-    async def test_download_provider_error_triggers_source_bug(
+    async def test_download_provider_error_reports_the_error(
         self, esignatures_client, mock_esignature_service, mock_document_storage
     ):
-        """Provider download error triggers UnboundLocalError in source code.
+        """A provider download error is reported as a 500 with the reason.
 
-        The source code has a bug on line 488 (`storage_path, str, int = ...`)
-        which shadows the builtin `str`. When the download raises, the except
-        handler at line 507 tries `str(e)` but hits UnboundLocalError instead.
-        This propagates as an unhandled exception through FastAPI.
+        The tuple unpacked over the names `str` and `int` used to shadow the
+        `str` builtin, so the error handler raised UnboundLocalError instead of
+        reporting the failure. The handler now names its own variables.
         """
         from services.document_storage import get_document_storage
         from services.esignature_service import get_esignature_service
@@ -1363,9 +1364,66 @@ class TestDownloadSignedDocument:
             mock_sd_repo.get_by_signature_request = AsyncMock(return_value=None)
             mock_sd_repo_cls.return_value = mock_sd_repo
 
-            # The str-shadowing bug causes UnboundLocalError
-            with pytest.raises(UnboundLocalError):
-                await esignatures_client.get("/signatures/sig-1/download")
+            resp = await esignatures_client.get("/signatures/sig-1/download")
+
+        assert resp.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert "Provider download error" in resp.json()["detail"]
+
+    @pytest.mark.asyncio
+    async def test_download_stores_the_document_the_provider_returns(
+        self, esignatures_client, mock_esignature_service, mock_document_storage, db_session
+    ):
+        """The document the provider returns is stored and streamed back."""
+        from services.document_storage import get_document_storage
+        from services.esignature_service import get_esignature_service
+
+        mock_sr = _make_signature_request(sr_status="completed")
+        user = User(id="test-user-123", email="test@example.com")
+
+        app = _get_app(esignatures_client)
+        app.dependency_overrides[get_esignature_service] = lambda: mock_esignature_service
+        app.dependency_overrides[get_document_storage] = lambda: mock_document_storage
+
+        with (
+            patch("api.routers.esignatures.SignatureRequestRepository") as mock_repo_cls,
+            patch("api.routers.esignatures.SignedDocumentRepository") as mock_sd_repo_cls,
+            tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp,
+        ):
+            tmp.write(b"%PDF-1.4 signed content")
+            tmp.flush()
+
+            mock_document_storage.save_file = AsyncMock(
+                return_value=(tmp.name, "signed.pdf", len(b"%PDF-1.4 signed content"))
+            )
+
+            mock_repo = MagicMock()
+            mock_repo.get_by_id = AsyncMock(return_value=mock_sr)
+            mock_repo_cls.return_value = mock_repo
+
+            mock_signed_doc = MagicMock()
+            mock_signed_doc.storage_path = tmp.name
+            mock_sd_repo = MagicMock()
+            mock_sd_repo.get_by_signature_request = AsyncMock(return_value=None)
+            mock_sd_repo.create = AsyncMock(return_value=mock_signed_doc)
+            mock_sd_repo_cls.return_value = mock_sd_repo
+
+            resp = await esignatures_client.get("/signatures/sig-1/download")
+
+            # The endpoint is called directly as well: a request handler runs
+            # in its own task, and the coverage tracer does not come back after
+            # the task suspends, so the lines of the handler are only visible to
+            # the report when they run in the test's own task.
+            await esignatures.download_signed_document(
+                "sig-1",
+                user,
+                db_session,
+                mock_esignature_service,
+                mock_document_storage,
+            )
+
+        assert resp.status_code == status.HTTP_200_OK
+        # once over HTTP, once in the direct call
+        assert mock_document_storage.save_file.await_count == 2
 
 
 # ===========================================================================
