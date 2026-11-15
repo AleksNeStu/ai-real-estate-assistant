@@ -1052,8 +1052,13 @@ class AgentPerformanceService:
                     Deal.closed_at >= period_start,
                 )
             )
-            result = await self.session.execute(deals_query)
-            closed_count = result.scalar() or 0
+            # Each query gets its own result variable. One variable reused
+            # for all of them binds the type of the FIRST query to every
+            # later use, so the counts read as strings and the date reads
+            # as a string too - which the type check caught once sqlalchemy
+            # started typing select() precisely.
+            deals_result = await self.session.execute(deals_query)
+            closed_count = deals_result.scalar() or 0
 
             if closed_count == 0:
                 # Get last deal date
@@ -1063,8 +1068,8 @@ class AgentPerformanceService:
                         Deal.status == "closed",
                     )
                 )
-                result = await self.session.execute(last_deal_query)
-                last_deal_at = result.scalar()
+                last_deal_result = await self.session.execute(last_deal_query)
+                last_deal_at = last_deal_result.scalar()
 
                 # Calculate days without deal
                 if last_deal_at:
@@ -1079,8 +1084,8 @@ class AgentPerformanceService:
                         AgentAssignment.is_active.is_(True),
                     )
                 )
-                result = await self.session.execute(leads_query)
-                total_leads = result.scalar() or 0
+                leads_result = await self.session.execute(leads_query)
+                total_leads = leads_result.scalar() or 0
 
                 # Calculate conversion rate
                 conversion_rate = 0.0
@@ -1091,8 +1096,8 @@ class AgentPerformanceService:
                             Deal.status == "closed",
                         )
                     )
-                    result = await self.session.execute(total_closed_query)
-                    total_closed = result.scalar() or 0
+                    total_closed_result = await self.session.execute(total_closed_query)
+                    total_closed = total_closed_result.scalar() or 0
                     conversion_rate = round((total_closed / total_leads) * 100, 1)
 
                 # Generate suggested actions
