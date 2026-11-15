@@ -79,12 +79,12 @@ Day +30          → Product Hunt (after audiences warmed up)
       `POST /api/v1/leads/visitor` answers 201 and the row carries the
       address, the source, the consent and both timestamps.
 - [x] Live demo: the demo can be signed into with Google — checked
-      2026-11-14: `GET /api/v1/capabilities` answers `auth.jwt_enabled: true`
+      2026-11-16: `GET /api/v1/capabilities` answers `auth.jwt_enabled: true`
       and `auth.oauth.google: true`, `/en/auth/login` renders the Google
       button, and the anonymous path is still open (`demo_user_bypass:
       false`, so an anonymous visitor is not handed a synthetic user).
 - [x] Live demo: the buyer memory is in the running build — the deployment
-      serves `9577cb0a52b7e851824fe837b2cea4de5a3ad34a`, and that commit
+      serves `111441521c4f73eaabc2bf638d2f6e25136742f9`, and that commit
       carries the memory commits (`apps/api/services/buyer_memory_service.py`,
       the extractor, the steering and the filters). A signed-in buyer's
       budget, ruled-out areas and disliked listings survive a turn and shape
@@ -128,18 +128,18 @@ Day +30          → Product Hunt (after audiences warmed up)
 - [x] The privileged viewer can see which build the demo is running — the
       commit, the build time and the deploy's run, in the footer
       (TaskMaster #73). The list lives in the repository's `ADMIN_EMAILS` /
-      `ADMIN_IPS` variables and the deploy delivers it. Verified 2026-11-14:
+      `ADMIN_IPS` variables and the deploy delivers it. Verified 2026-11-16:
       the live deployment answers `GET /api/v1/capabilities` with the build
-      block — `sha 9577cb0a52b7e851824fe837b2cea4de5a3ad34a`, the build
+      block — `sha 111441521c4f73eaabc2bf638d2f6e25136742f9`, the build
       time and the run — for a privileged caller, and without it for anyone
       else. The demo runs that same commit, so the stamp is true of what the
       visitor is talking to.
 
-## What changed since the drafts were written (2026-11-09 → 2026-11-14)
+## What changed since the drafts were written (2026-11-09 → 2026-11-16)
 
 The five drafts were written against the deployment of 2026-11-09 and are
-re-verified against the deployment of 2026-11-14. Three things moved, and
-every draft now carries the new truth:
+re-verified against the deployment of 2026-11-16 (the v5.3.6 build, `sha
+111441521`). Three things moved, and every draft now carries the new truth:
 
 1. **The demo can be signed into with Google** (`v5.3.4`). The drafts used
    to promise *"no signup"*; the honest claim is narrower — browsing needs
@@ -158,7 +158,7 @@ responses"* → the demo answers with a real provider; *"16 supported
 providers"* → 17; *"9 languages with EU AI Act compliance labels"* → nine
 locales ship, English and Polish are maintained, the rest fall back to
 English; and the *"~50k monthly demo visitors"* in the r/sideproject draft
-→ the measured 267 unique visitors in a fortnight.
+→ the measured 262 unique visitors in a fortnight.
 
 ## The demo is deliberately not indexed
 
@@ -174,24 +174,24 @@ the release step in the deployment notes). If the demo is released,
 and `apps/web/src/lib/indexing.ts` only adds the header when it is exactly
 `false`), and the product's own `robots.txt` comes back with the image.
 
-## Where the audience actually comes from (measured 2026-11-14)
+## Where the audience actually comes from (measured 2026-11-15)
 
 | Metric | Value |
 |--------|-------|
 | Stars | 323 (+7 in the last 30 days — 0.23 a day) |
 | Forks | 119 |
 | Open pull requests | 0 |
-| Unique visitors, last 14 days | 267 |
-| Views, last 14 days | 743 |
-| Top referrers | aocr.org (81 unique), github.com (73), Google (22) |
+| Unique visitors, last 14 days | 262 |
+| Views, last 14 days | 786 |
+| Top referrers | github.com (81 unique), aocr.org (64), Google (20) |
 
 The 10-stars-a-day target of the first wave is 43 times the current rate. At
-today's traffic — 267 unique visitors in a fortnight, 7 stars over 30 days,
+today's traffic — 262 unique visitors in a fortnight, 7 stars over 30 days,
 a 1.2 % conversion — reaching it means roughly 800 unique visitors a day at
 the same conversion, or a channel of a different kind (Hacker News, Product
 Hunt, a directory that converts). The full traffic snapshot lives in
-`docs/community/metrics/2026-W46.md`; the repository numbers were re-read
-from the stargazer edges on 2026-11-14, the traffic figures are from the W46
+`docs/community/metrics/2026-W47.md`; the repository numbers were re-read
+from the stargazer edges on 2026-11-15, the traffic figures are from the W47
 collection.
 
 **The organic column is noise.** The demo is deliberately `noindex`, so the
@@ -207,6 +207,23 @@ that does not depend on publishing anything.
 - [ ] Before the first post: every draft points at the demo, so check that it
       answers, that the landing renders, and that the build stamp in the
       footer is the build you expect (TaskMaster #73)
+
+## Posting status — the last step is one account per channel (2026-11-16)
+
+Everything that does not need an account is done. The five drafts are written
+and re-verified against the running **v5.3.6** build, the numbers in them are
+measured, the assets are on disk, and every submission URL was opened in a
+real browser. What is left is the signed-in session per platform: each one
+belongs to the operator, and posting as the developer needs the developer's
+account.
+
+| Channel | The last step | What it needs |
+|---|---|---|
+| Hacker News | Paste the title and the body from [show-hn.md](./show-hn.md), then the first comment | A signed-in Hacker News account — `news.ycombinator.com/submit` answers *"You have to be logged in to submit"* |
+| Reddit (4 posts) | Paste one post per subreddit from [reddit-posts.md](./reddit-posts.md), one every 3-5 days | A signed-in Reddit account; each subreddit's own self-promotion rules apply |
+| Product Hunt | Paste the tagline, the description and the maker comment from [product-hunt.md](./product-hunt.md) | A Product Hunt maker account — `producthunt.com/posts/new` redirects to the login |
+| Directories | One submission per day from the templates in [directory-submissions.md](./directory-submissions.md) | An account on each directory; AIcyclopedia's submit path answers 403 from this network, the site's own links point there |
+| YouTube | Record the 90s hero from the shot list in [youtube-script.md](./youtube-script.md) | The channel itself |
 
 ---
 

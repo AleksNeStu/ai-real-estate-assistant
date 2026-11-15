@@ -6,6 +6,27 @@
 
 ---
 
+## The submission URLs, checked on 2026-11-16
+
+Every URL below was opened in a real browser (not with a command-line client,
+which several of them answer with a bot-protection status):
+
+| Directory | URL in this file | Where it lands | State |
+|---|---|---|---|
+| There's An AI For That | `theresanaiforthat.com/submit` | `/launch/` — "Launch Your AI Tool" | open |
+| FutureTools | `futuretools.io/submit-a-tool` | the submission form | open |
+| BetaList | `betalist.com/submit` | `/submissions/new` | open |
+| AIcyclopedia | `aicyclopedia.com/submit` | `/submit-your-ai-tool/` | **403 from this network** — the site's own navigation links to exactly this path, so the URL is right and the block is on our side of the fence (IP or region). If it refuses the operator's browser too, the tier-3 entry goes through the site's contact form instead. |
+| Product Hunt | `producthunt.com/posts/new` | `/login?origin=/posts/new` | open, needs a signed-in maker account |
+| Hacker News | `news.ycombinator.com/submit` | the login form | open, needs a signed-in account |
+| the demo | `realty.kittray.com/en` | the demo | 200 |
+| the repository | `github.com/AleksNeStu/ai-real-estate-assistant` | the repository | 200 |
+
+Every one of these needs a signed-in account, and each account belongs to the
+operator. The templates below are ready to paste.
+
+---
+
 ## Tier 1 — Submit first (high-impact, AI-focused)
 
 ### There's An AI For That (theresanaiforthat.com)

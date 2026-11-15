@@ -111,7 +111,8 @@ Quick answers to the inevitable ones:
 
 ## Assets checklist before posting
 
-Re-verified on 2026-11-14 against the live deployment:
+Re-verified on 2026-11-16 against the live deployment, which now runs the
+**v5.3.6** build (`build.sha = 111441521c4f73eaabc2bf638d2f6e25136742f9`):
 
 - [x] Live demo URL responds 200: `https://realty.kittray.com/en` — the bare
       root 307-redirects to `/pl`, so the English path is the one to publish
@@ -126,6 +127,16 @@ Re-verified on 2026-11-14 against the live deployment:
 - [x] Title under 80 chars — the title above is 75; the one it replaced was 94
 - [x] Body under 400 words — 367
 - [x] First comment drafted and ready to paste immediately — 320 words
+- [x] The claims the body makes, read off the running deployment
+      (`GET /api/v1/capabilities`): `auth.jwt_enabled: true`,
+      `auth.oauth.google: true`, `auth.demo_user_bypass: false` — so "browsing
+      needs no account, sign in with Google to switch on the buyer memory" is
+      the truth; the provider the demo answers with is `minimax` /
+      `MiniMax-M3.1-Flash`; the codebase carries 17 provider modules and nine
+      locales (`apps/web/src/i18n/config.ts`: pl, en, ru, de, es, it, pt, tr,
+      uk), English and Polish maintained and the rest frozen onto English
+- [x] The buyer memory is in the running build: `111441521` descends from the
+      commits that wrote `buyer_memory_service.py` and the `chat.py` filters
 
 Everything below needs the operator: the posting, the account, the voice.
 
