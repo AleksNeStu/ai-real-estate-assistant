@@ -353,6 +353,13 @@ def build_commands_with_repo_paths(
     for cmd in cmds:
         adjusted_cmd = list(cmd)
         for i, arg in enumerate(cmd):
+            # A glob is not a path. The exclude patterns of the coverage
+            # gate are globs ("scripts/*"), and prefixing one of them turns
+            # it into a pattern that matches nothing: the gate then counts
+            # the files it was told to ignore as uncovered, and the local
+            # run reports a coverage failure that the CI run does not.
+            if any(char in arg for char in "*?["):
+                continue
             # Adjust paths that start with scripts/
             if arg.startswith("scripts/"):
                 adjusted_cmd[i] = f"{prefix}{arg}"
