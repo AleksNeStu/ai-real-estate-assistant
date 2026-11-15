@@ -9,6 +9,7 @@ import sys
 import types
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -829,7 +830,7 @@ class TestRunImportJob:
         db_session.add(job)
         await db_session.flush()
 
-        actual_db = db_session
+        actual_db: Any = db_session
         mock_engine = _make_mock_engine()
 
         mock_result = _mock_db_execute_first_call_returns(job)
@@ -870,7 +871,7 @@ class TestRunImportJob:
         db_session.add(job)
         await db_session.flush()
 
-        actual_db = db_session
+        actual_db: Any = db_session
         mock_engine = _make_mock_engine()
 
         mock_result = _mock_db_execute_first_call_returns(job)
@@ -901,7 +902,7 @@ class TestRunImportJob:
         db_session.add(job)
         await db_session.flush()
 
-        actual_db = db_session
+        actual_db: Any = db_session
         mock_engine = _make_mock_engine()
 
         call_count = [0]
@@ -942,7 +943,7 @@ class TestRunImportJob:
         db_session.add(job)
         await db_session.flush()
 
-        actual_db = db_session
+        actual_db: Any = db_session
         mock_engine = _make_mock_engine()
 
         mock_result = _mock_db_execute_first_call_returns(job)
@@ -973,7 +974,7 @@ class TestRunImportJob:
         db_session.add(job)
         await db_session.flush()
 
-        actual_db = db_session
+        actual_db: Any = db_session
         mock_engine = _make_mock_engine()
 
         mock_result = _mock_db_execute_first_call_returns(job)
@@ -1010,7 +1011,7 @@ class TestRunImportJob:
         db_session.add(job)
         await db_session.flush()
 
-        actual_db = db_session
+        actual_db: Any = db_session
         mock_engine = _make_mock_engine()
 
         call_count = [0]
@@ -1084,7 +1085,7 @@ class TestRunExportJob:
         db_session.add(job)
         await db_session.flush()
 
-        actual_db = db_session
+        actual_db: Any = db_session
         mock_engine = _make_mock_engine()
 
         mock_result = _mock_db_execute_first_call_returns(job)
@@ -1139,7 +1140,7 @@ class TestRunExportJob:
         db_session.add(job)
         await db_session.flush()
 
-        actual_db = db_session
+        actual_db: Any = db_session
         mock_engine = _make_mock_engine()
 
         mock_result = _mock_db_execute_first_call_returns(job)
@@ -1183,7 +1184,7 @@ class TestRunExportJob:
         db_session.add(job)
         await db_session.flush()
 
-        actual_db = db_session
+        actual_db: Any = db_session
         mock_engine = _make_mock_engine()
 
         call_count = [0]
@@ -1222,7 +1223,7 @@ class TestRunExportJob:
         db_session.add(job)
         await db_session.flush()
 
-        actual_db = db_session
+        actual_db: Any = db_session
         mock_engine = _make_mock_engine()
 
         mock_result = _mock_db_execute_first_call_returns(job)
@@ -1265,7 +1266,7 @@ class TestRunExportJob:
         db_session.add(job)
         await db_session.flush()
 
-        actual_db = db_session
+        actual_db: Any = db_session
         mock_engine = _make_mock_engine()
 
         mock_result = _mock_db_execute_first_call_returns(job)
@@ -1308,7 +1309,7 @@ class TestRunExportJob:
         db_session.add(job)
         await db_session.flush()
 
-        actual_db = db_session
+        actual_db: Any = db_session
         mock_engine = _make_mock_engine()
 
         mock_result = _mock_db_execute_first_call_returns(job)
@@ -1357,7 +1358,7 @@ class TestRunExportJob:
         db_session.add(job)
         await db_session.flush()
 
-        actual_db = db_session
+        actual_db: Any = db_session
         mock_engine = _make_mock_engine()
 
         mock_result = _mock_db_execute_first_call_returns(job)
@@ -1402,7 +1403,7 @@ class TestRunExportJob:
         db_session.add(job)
         await db_session.flush()
 
-        actual_db = db_session
+        actual_db: Any = db_session
         mock_engine = _make_mock_engine()
 
         call_count = [0]
@@ -1443,7 +1444,7 @@ class TestRunExportJob:
         db_session.add(job)
         await db_session.flush()
 
-        actual_db = db_session
+        actual_db: Any = db_session
         mock_engine = _make_mock_engine()
 
         mock_result = _mock_db_execute_first_call_returns(job)

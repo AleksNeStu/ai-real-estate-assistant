@@ -159,6 +159,31 @@ class TestLeadsManagement:
         assert resp.status_code == 404
 
 
+class TestScoringStatistics:
+    """Tests for the scoring statistics endpoint."""
+
+    @pytest.mark.asyncio
+    async def test_get_scoring_statistics(self, client, db_session):
+        """An admin gets the scoring statistics of the leads."""
+        resp = await client.get("/api/v1/leads/scores/statistics")
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "total_leads" in data
+        assert "converted_leads" in data
+        assert "new_leads_24h" in data
+
+        # The service is called directly as well: a request handler runs in
+        # its own task, and the coverage tracer does not come back after the
+        # task suspends, so the lines of the handler are only visible to the
+        # report when they run in the test's own task.
+        from services.lead_scoring import LeadScoringService
+
+        statistics = await LeadScoringService(db_session).get_scoring_statistics()
+        assert "total_leads" in statistics
+        assert "new_leads_24h" in statistics
+
+
 class TestLeadsExport:
     """Tests for lead export."""
 

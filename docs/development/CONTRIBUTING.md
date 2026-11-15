@@ -185,6 +185,16 @@ python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term -n
 python ../../scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/* --exclude workflows/*
 ```
 
+**A changed router line needs a test that calls the handler directly.** The
+changed-lines gate compares your changed lines against the coverage report,
+and a request handler runs in its own asyncio task — the coverage tracer
+does not come back after that task suspends, so the lines of the handler are
+missing from the report even though the test exercised them. Call the
+endpoint function itself in the test (`await router_module.get_thing(...)`)
+next to the HTTP request; the direct call runs in the test's own task and the
+lines are recorded. Both suites need it: the unit gate reads the unit
+coverage and the integration gate reads the integration coverage.
+
 For frontend parity:
 ```bash
 cd apps/web

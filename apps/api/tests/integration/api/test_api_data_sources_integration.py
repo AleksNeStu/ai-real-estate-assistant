@@ -6,6 +6,7 @@ from httpx import ASGITransport, AsyncClient
 
 from api.routers import data_sources
 from db.database import get_db
+from db.models import DataSourceDB
 
 
 @pytest.fixture
@@ -77,3 +78,25 @@ class TestDataSourcesAPI:
         """Returns 404 for sync history of non-existent source."""
         resp = await client.get("/api/v1/data-sources/nonexistent-id/history")
         assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_get_sync_history_of_a_data_source(self, client, db_session):
+        """Returns the sync history of a data source - empty when it has none."""
+        db_session.add(DataSourceDB(id="src-history-1", name="History", source_type="file_upload"))
+        await db_session.flush()
+
+        resp = await client.get("/api/v1/data-sources/src-history-1/history")
+
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["source_id"] == "src-history-1"
+        assert body["total"] == 0
+        assert body["history"] == []
+
+        # The endpoint is called directly as well: a request handler runs in
+        # its own task, and the coverage tracer does not come back after the
+        # task suspends, so the lines of the handler are only visible to the
+        # report when they run in the test's own task.
+        direct = await data_sources.get_sync_history("src-history-1", db_session, 1, 20)
+        assert direct.source_id == "src-history-1"
+        assert direct.total == 0

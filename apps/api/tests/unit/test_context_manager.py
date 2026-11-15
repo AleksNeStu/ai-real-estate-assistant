@@ -13,7 +13,7 @@ Tests cover:
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, cast
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -197,7 +197,7 @@ class TestCountMessagesTokens:
         assert result == 7  # 3 tokens + 4 overhead
 
     def test_multiple_messages_with_overhead(self, token_counter: TokenCounter) -> None:
-        msgs = [
+        msgs: List[BaseMessage] = [
             SystemMessage(content="System"),
             HumanMessage(content="Hi"),
             AIMessage(content="Hello"),
@@ -207,14 +207,16 @@ class TestCountMessagesTokens:
         assert result == 27  # 3 * (5 + 4)
 
     def test_real_messages_positive_total(self, token_counter: TokenCounter) -> None:
-        messages = [
+        messages: List[BaseMessage] = [
             SystemMessage(content="You are a helpful assistant."),
             HumanMessage(content="Hello!"),
             AIMessage(content="Hi there! How can I help?"),
         ]
         total = token_counter.count_messages_tokens(messages, "gpt-4o")
         assert total > 0
-        individual = sum(token_counter.count_tokens(m.content, "gpt-4o") for m in messages)
+        individual = sum(
+            token_counter.count_tokens(cast(str, m.content), "gpt-4o") for m in messages
+        )
         overhead = len(messages) * 4
         assert total == individual + overhead
 
@@ -354,7 +356,7 @@ class TestCompressRepeatedContent:
     """Tests for ContextCompressor.compress_repeated_content."""
 
     def test_single_message_unchanged(self, compressor: ContextCompressor) -> None:
-        msgs = [HumanMessage(content="Hello")]
+        msgs: List[BaseMessage] = [HumanMessage(content="Hello")]
         result = compressor.compress_repeated_content(msgs)
         assert len(result) == 1
         assert result[0].content == "Hello"
@@ -363,7 +365,7 @@ class TestCompressRepeatedContent:
         assert compressor.compress_repeated_content([]) == []
 
     def test_duplicate_consecutive_removed(self, compressor: ContextCompressor) -> None:
-        msgs = [
+        msgs: List[BaseMessage] = [
             HumanMessage(content="Hello"),
             AIMessage(content="Hello"),
             HumanMessage(content="Hello"),
@@ -373,7 +375,7 @@ class TestCompressRepeatedContent:
         assert result[0].content == "Hello"
 
     def test_different_messages_kept(self, compressor: ContextCompressor) -> None:
-        msgs = [
+        msgs: List[BaseMessage] = [
             HumanMessage(content="Question 1"),
             AIMessage(content="Answer 1"),
             HumanMessage(content="Question 2"),
@@ -382,7 +384,7 @@ class TestCompressRepeatedContent:
         assert len(result) == 3
 
     def test_message_type_preserved_after_compression(self, compressor: ContextCompressor) -> None:
-        msgs = [
+        msgs: List[BaseMessage] = [
             SystemMessage(content="System"),
             HumanMessage(content="User"),
             AIMessage(content="AI"),
@@ -402,7 +404,7 @@ class TestCompressRepeatedContent:
             "Property 4: Apt D, $800k\n"
             "Property 5: Apt E, $900k"
         )
-        msgs = [AIMessage(content=content)]
+        msgs: List[BaseMessage] = [AIMessage(content=content)]
         result = compressor.compress_repeated_content(msgs)
         assert len(result) == 1
         # The regex pattern requires multiline property blocks to match.
@@ -416,7 +418,7 @@ class TestCompressRepeatedContent:
     def test_no_property_pattern_when_fewer_than_4(self, compressor: ContextCompressor) -> None:
         """Fewer than 4 repeated property patterns should not be compressed."""
         content = "Property 1: Apt A, $500k\nProperty 2: Apt B, $600k\nProperty 3: Apt C, $700k"
-        msgs = [AIMessage(content=content)]
+        msgs: List[BaseMessage] = [AIMessage(content=content)]
         result = compressor.compress_repeated_content(msgs)
         assert result[0].content == content
 
@@ -442,7 +444,7 @@ class TestCompressRepeatedContent:
 
     def test_non_consecutive_duplicates_kept(self, compressor: ContextCompressor) -> None:
         """Non-consecutive identical content is NOT removed by compress_repeated_content."""
-        msgs = [
+        msgs: List[BaseMessage] = [
             HumanMessage(content="A"),
             AIMessage(content="B"),
             HumanMessage(content="A"),  # same as first but not consecutive
@@ -497,12 +499,12 @@ class TestDeduplicateConsecutive:
         assert compressor.deduplicate_consecutive([]) == []
 
     def test_single_message(self, compressor: ContextCompressor) -> None:
-        msgs = [HumanMessage(content="Hello")]
+        msgs: List[BaseMessage] = [HumanMessage(content="Hello")]
         result = compressor.deduplicate_consecutive(msgs)
         assert len(result) == 1
 
     def test_removes_consecutive_duplicates(self, compressor: ContextCompressor) -> None:
-        msgs = [
+        msgs: List[BaseMessage] = [
             HumanMessage(content="A"),
             HumanMessage(content="A"),
             HumanMessage(content="B"),
@@ -510,11 +512,11 @@ class TestDeduplicateConsecutive:
             HumanMessage(content="C"),
         ]
         result = compressor.deduplicate_consecutive(msgs)
-        contents = [m.content for m in result]
+        contents = [cast(str, m.content) for m in result]
         assert contents == ["A", "B", "C"]
 
     def test_non_consecutive_duplicates_kept(self, compressor: ContextCompressor) -> None:
-        msgs = [
+        msgs: List[BaseMessage] = [
             HumanMessage(content="A"),
             HumanMessage(content="B"),
             HumanMessage(content="A"),
@@ -563,7 +565,7 @@ class TestSummarizeHistory:
         mock_response.content = "Summary of the conversation."
         mock_llm.invoke.return_value = mock_response
 
-        msgs = [
+        msgs: List[BaseMessage] = [
             HumanMessage(content="What apartments in Berlin?"),
             AIMessage(content="Here are some apartments..."),
         ]
@@ -585,7 +587,7 @@ class TestSummarizeHistory:
         mock_llm = MagicMock()
         mock_llm.invoke.side_effect = RuntimeError("LLM unavailable")
 
-        msgs = [
+        msgs: List[BaseMessage] = [
             HumanMessage(content="Q1"),
             AIMessage(content="A1"),
             HumanMessage(content="Q2"),
@@ -600,7 +602,7 @@ class TestSummarizeHistory:
         mock_llm = MagicMock()
         mock_llm.invoke.side_effect = Exception("API error")
 
-        msgs = [HumanMessage(content=f"Q{i}") for i in range(10)]
+        msgs: List[BaseMessage] = [HumanMessage(content=f"Q{i}") for i in range(10)]
         result = summarizer.summarize_history(msgs, mock_llm)
         assert "Earlier conversation:" in result
         assert "Recent messages:" in result
@@ -612,7 +614,7 @@ class TestSummarizeHistory:
         mock_response.content = "Summary"
         mock_llm.invoke.return_value = mock_response
 
-        msgs = [HumanMessage(content="Test message")]
+        msgs: List[BaseMessage] = [HumanMessage(content="Test message")]
         summarizer.summarize_history(msgs, mock_llm)
 
         call_args = mock_llm.invoke.call_args[0][0]
@@ -651,7 +653,7 @@ class TestFormatConversation:
     """Tests for ContextSummarizer._format_conversation."""
 
     def test_formats_messages(self, summarizer: ContextSummarizer) -> None:
-        msgs = [
+        msgs: List[BaseMessage] = [
             HumanMessage(content="Hello"),
             AIMessage(content="Hi"),
             SystemMessage(content="Be helpful"),
@@ -672,7 +674,7 @@ class TestFormatConversation:
         assert "CUSTOM: " in result
 
     def test_newline_separated(self, summarizer: ContextSummarizer) -> None:
-        msgs = [HumanMessage(content="A"), HumanMessage(content="B")]
+        msgs: List[BaseMessage] = [HumanMessage(content="A"), HumanMessage(content="B")]
         result = summarizer._format_conversation(msgs)
         lines = result.split("\n")
         assert len(lines) == 2
@@ -682,7 +684,7 @@ class TestFallbackSummary:
     """Tests for ContextSummarizer._fallback_summary."""
 
     def test_short_conversation_returns_full(self, summarizer: ContextSummarizer) -> None:
-        msgs = [
+        msgs: List[BaseMessage] = [
             HumanMessage(content="Q1"),
             AIMessage(content="A1"),
         ]
@@ -692,24 +694,24 @@ class TestFallbackSummary:
         assert "Earlier conversation:" not in result
 
     def test_long_conversation_truncates(self, summarizer: ContextSummarizer) -> None:
-        msgs = [HumanMessage(content=f"Msg {i}") for i in range(10)]
+        msgs: List[BaseMessage] = [HumanMessage(content=f"Msg {i}") for i in range(10)]
         result = summarizer._fallback_summary(msgs)
         assert "Earlier conversation:" in result
         assert "Recent messages:" in result
         assert "..." in result
 
     def test_exactly_four_messages_returns_full(self, summarizer: ContextSummarizer) -> None:
-        msgs = [HumanMessage(content=f"M{i}") for i in range(4)]
+        msgs: List[BaseMessage] = [HumanMessage(content=f"M{i}") for i in range(4)]
         result = summarizer._fallback_summary(msgs)
         assert "Earlier conversation:" not in result
 
     def test_five_messages_triggers_truncation(self, summarizer: ContextSummarizer) -> None:
-        msgs = [HumanMessage(content=f"M{i}") for i in range(5)]
+        msgs: List[BaseMessage] = [HumanMessage(content=f"M{i}") for i in range(5)]
         result = summarizer._fallback_summary(msgs)
         assert "Earlier conversation:" in result
 
     def test_fallback_contains_first_two_and_last_two(self, summarizer: ContextSummarizer) -> None:
-        msgs = [HumanMessage(content=f"Msg{i}") for i in range(6)]
+        msgs: List[BaseMessage] = [HumanMessage(content=f"Msg{i}") for i in range(6)]
         result = summarizer._fallback_summary(msgs)
         assert "Msg0" in result
         assert "Msg1" in result
@@ -807,7 +809,7 @@ class TestOptimizeContext:
         )
         cm = ContextManager(settings)
 
-        msgs = [
+        msgs: List[BaseMessage] = [
             SystemMessage(content="System"),
             HumanMessage(content="Q1"),
             AIMessage(content="A1"),
@@ -846,7 +848,7 @@ class TestOptimizeContext:
         )
         cm = ContextManager(settings)
 
-        msgs = [SystemMessage(content="System prompt")]
+        msgs: List[BaseMessage] = [SystemMessage(content="System prompt")]
         for i in range(20):
             msgs.append(HumanMessage(content=f"Question {i}: " + "x" * 100))
             msgs.append(AIMessage(content=f"Answer {i}: " + "y" * 100))
@@ -879,7 +881,7 @@ class TestOptimizeContext:
         )
         cm = ContextManager(settings)
 
-        msgs = [SystemMessage(content="System")]
+        msgs: List[BaseMessage] = [SystemMessage(content="System")]
         for i in range(10):
             msgs.append(HumanMessage(content=f"Q{i}: " + "a" * 200))
             msgs.append(AIMessage(content=f"A{i}: " + "b" * 200))
@@ -918,7 +920,7 @@ class TestOptimizeContext:
         )
         cm = ContextManager(settings)
 
-        msgs = [SystemMessage(content="System")]
+        msgs: List[BaseMessage] = [SystemMessage(content="System")]
         for i in range(5):
             msgs.append(HumanMessage(content=f"Q{i}: " + "a" * 200))
 
@@ -981,7 +983,7 @@ class TestOptimizeContext:
         settings = _make_settings(context_compression_enabled=False)
         cm = ContextManager(settings)
 
-        msgs = [HumanMessage(content="Test " * 5000)]
+        msgs: List[BaseMessage] = [HumanMessage(content="Test " * 5000)]
         with patch.object(cm.token_counter, "get_context_window_limit", return_value=50):
             result, metrics = cm.optimize_context("s1", msgs, "gpt-4")
 
@@ -990,7 +992,7 @@ class TestOptimizeContext:
 
     def test_metrics_provider_detected(self, context_manager: ContextManager) -> None:
         """Metrics should contain the correct provider."""
-        msgs = [HumanMessage(content="Test " * 5000)]
+        msgs: List[BaseMessage] = [HumanMessage(content="Test " * 5000)]
         with patch.object(
             context_manager.token_counter, "get_context_window_limit", return_value=10
         ):
@@ -1003,12 +1005,12 @@ class TestApplySlidingWindow:
     """Tests for ContextManager.apply_sliding_window."""
 
     def test_messages_within_window_unchanged(self, context_manager: ContextManager) -> None:
-        msgs = [HumanMessage(content="Hi"), AIMessage(content="Hello")]
+        msgs: List[BaseMessage] = [HumanMessage(content="Hi"), AIMessage(content="Hello")]
         result = context_manager.apply_sliding_window(msgs, 5)
         assert result == msgs
 
     def test_truncates_to_window_size(self, context_manager: ContextManager) -> None:
-        msgs = [HumanMessage(content=f"Msg {i}") for i in range(10)]
+        msgs: List[BaseMessage] = [HumanMessage(content=f"Msg {i}") for i in range(10)]
         result = context_manager.apply_sliding_window(msgs, 3)
         assert len(result) == 3
         assert result[0].content == "Msg 7"
@@ -1017,7 +1019,7 @@ class TestApplySlidingWindow:
 
     def test_preserves_system_messages(self, context_manager: ContextManager) -> None:
         system = SystemMessage(content="System")
-        msgs = [system] + [HumanMessage(content=f"Q{i}") for i in range(10)]
+        msgs: List[BaseMessage] = [system] + [HumanMessage(content=f"Q{i}") for i in range(10)]
         result = context_manager.apply_sliding_window(msgs, 3)
         assert len(result) == 4  # 1 system + 3 recent
         assert isinstance(result[0], SystemMessage)
@@ -1036,18 +1038,18 @@ class TestApplySlidingWindow:
         assert result == []
 
     def test_all_system_messages(self, context_manager: ContextManager) -> None:
-        msgs = [SystemMessage(content=f"Sys {i}") for i in range(5)]
+        msgs: List[BaseMessage] = [SystemMessage(content=f"Sys {i}") for i in range(5)]
         result = context_manager.apply_sliding_window(msgs, 2)
         assert len(result) == 5
 
     def test_exact_window_size(self, context_manager: ContextManager) -> None:
-        msgs = [HumanMessage(content=f"M{i}") for i in range(5)]
+        msgs: List[BaseMessage] = [HumanMessage(content=f"M{i}") for i in range(5)]
         result = context_manager.apply_sliding_window(msgs, 5)
         assert result == msgs
 
     def test_system_messages_in_result(self, context_manager: ContextManager) -> None:
         """System messages always come first in the result."""
-        msgs = [
+        msgs: List[BaseMessage] = [
             SystemMessage(content="Sys1"),
             HumanMessage(content="Q1"),
             SystemMessage(content="Sys2"),
@@ -1078,7 +1080,7 @@ class TestPrioritizeMessages:
         assert any(isinstance(m, SystemMessage) for m in result)
 
     def test_recent_messages_preferred(self, context_manager: ContextManager) -> None:
-        msgs = [HumanMessage(content=f"Old {i}") for i in range(10)]
+        msgs: List[BaseMessage] = [HumanMessage(content=f"Old {i}") for i in range(10)]
         with patch.object(context_manager.token_counter, "count_tokens", return_value=10):
             result = context_manager.prioritize_messages(msgs, 55, "gpt-4")
         assert len(result) == 5
@@ -1087,7 +1089,7 @@ class TestPrioritizeMessages:
         assert "Old 8" in contents
 
     def test_preserves_original_order(self, context_manager: ContextManager) -> None:
-        msgs = [
+        msgs: List[BaseMessage] = [
             SystemMessage(content="Sys"),
             HumanMessage(content="Q1"),
             HumanMessage(content="Q2"),
@@ -1100,14 +1102,14 @@ class TestPrioritizeMessages:
         assert contents == sorted(contents, key=lambda c: ["Sys", "Q1", "Q2", "Q3"].index(c))
 
     def test_respects_token_limit(self, context_manager: ContextManager) -> None:
-        msgs = [HumanMessage(content=f"Msg {i}") for i in range(5)]
+        msgs: List[BaseMessage] = [HumanMessage(content=f"Msg {i}") for i in range(5)]
         with patch.object(context_manager.token_counter, "count_tokens", return_value=100):
             result = context_manager.prioritize_messages(msgs, 150, "gpt-4")
         assert len(result) == 1
 
     def test_human_message_bonus(self, context_manager: ContextManager) -> None:
         """Human messages get a +0.1 bonus over AI messages at same recency."""
-        msgs = [
+        msgs: List[BaseMessage] = [
             AIMessage(content="A"),
             HumanMessage(content="H"),
         ]
@@ -1127,7 +1129,7 @@ class TestPrioritizeMessages:
 
     def test_all_messages_fit(self, context_manager: ContextManager) -> None:
         """When all messages fit, return all of them."""
-        msgs = [HumanMessage(content="Short")]
+        msgs: List[BaseMessage] = [HumanMessage(content="Short")]
         with patch.object(context_manager.token_counter, "count_tokens", return_value=5):
             result = context_manager.prioritize_messages(msgs, 100, "gpt-4")
         assert len(result) == 1
@@ -1425,7 +1427,7 @@ class TestOptimizeContextFullFlow:
         )
         cm = ContextManager(settings)
 
-        msgs = [SystemMessage(content="System prompt " + "s" * 50)]
+        msgs: List[BaseMessage] = [SystemMessage(content="System prompt " + "s" * 50)]
         for i in range(20):
             msgs.append(HumanMessage(content=f"Question {i} " + "q" * 100))
             msgs.append(AIMessage(content=f"Answer {i} " + "a" * 100))
@@ -1450,7 +1452,7 @@ class TestOptimizeContextFullFlow:
         )
         cm = ContextManager(settings)
 
-        messages = [SystemMessage(content="You are a real estate assistant.")]
+        messages: List[BaseMessage] = [SystemMessage(content="You are a real estate assistant.")]
         for i in range(100):
             messages.append(
                 HumanMessage(
@@ -1482,7 +1484,7 @@ class TestOptimizeContextFullFlow:
         cm = ContextManager(settings)
 
         system_msg = SystemMessage(content="Critical system instructions")
-        messages = [system_msg]
+        messages: List[BaseMessage] = [system_msg]
         for i in range(50):
             messages.append(HumanMessage(content="Query " + str(i) * 1000))
 

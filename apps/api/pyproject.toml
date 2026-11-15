@@ -167,6 +167,11 @@ python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
+# The Pydantic plugin is what teaches mypy that a field declared
+# `Optional[str] = Field(None, ...)` is optional. Without it mypy reads every
+# such field as a required constructor argument and reports a missing
+# argument at each call site - 152 of them, none of them real.
+plugins = ["pydantic.mypy"]
 
 [dependency-groups]
 dev = [

@@ -407,8 +407,11 @@ async def get_sync_history(
         .offset(offset)
         .limit(page_size)
     )
-    result = await db.execute(history_query)
-    history = result.scalars().all()
+    # Its own name: `result` already holds the data source, and reusing the
+    # name for a different row type is what made mypy read the history rows
+    # as data sources.
+    history_result = await db.execute(history_query)
+    history = history_result.scalars().all()
 
     from api.models import SyncHistoryItem
 

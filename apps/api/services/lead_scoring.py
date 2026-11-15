@@ -608,20 +608,13 @@ class LeadScoringService:
             avg_score = 0.0
 
         converted_leads = sum(1 for lead in leads if lead.status == "converted")
-        conversion_rate = (
-            round(converted_leads / total_leads * 100, 2) if total_leads else 0.0
-        )
+        conversion_rate = round(converted_leads / total_leads * 100, 2) if total_leads else 0.0
 
         # Use a timezone-naive cutoff to match the naive datetimes
         # stored in SQLite (DB columns are DateTime without timezone).
-        cutoff_24h = (
-            datetime.now(timezone.utc)
-            .replace(tzinfo=None)
-            - timedelta(hours=24)
-        )
-        new_leads_24h = sum(
-            1 for lead in leads
-            if lead.created_at and lead.created_at >= cutoff_24h
+        cutoff_24h = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=24)
+        new_leads_24h = len(
+            [lead for lead in leads if lead.created_at and lead.created_at >= cutoff_24h]
         )
 
         return {
@@ -1019,7 +1012,10 @@ class PrioritizedLeadScoringService:
         # Get all leads assigned to this agent
         leads = await lead_repo.get_list(agent_id=agent_id, limit=1000)
 
-        funnel = {
+        # The report holds values of different shapes - a count, a breakdown
+        # and a score - so the value type is `Any` rather than the join of
+        # the three, which would be `object` and unindexable.
+        funnel: dict[str, Any] = {
             "agent_id": agent_id,
             "total_leads": len(leads),
             "by_priority": {"hot": 0, "warm": 0, "cool": 0, "cold": 0},
