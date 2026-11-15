@@ -120,9 +120,18 @@ def build_pip_audit_cmd(python_exe: str) -> list[str]:
     ]
 
 
+# How many workers the local run uses on Windows. One per core is what
+# brings the MemoryError; the count is read from the ini otherwise.
+WINDOWS_WORKERS = "8"
+
+
 def build_unit_tests_cmd(python_exe: str) -> list[str]:
     # On Windows, pytest-xdist can cause MemoryError due to file locking
-    # Skip parallel execution on Windows (TASK-017: Production Deployment Optimization)
+    # (TASK-017: Production Deployment Optimization). The ini of the project
+    # asks for `-n auto` in its addopts, and one worker per core is what
+    # brings that MemoryError, so the count is capped here. The run cannot
+    # simply be serial: every test that builds the application waits for the
+    # Redis connection to time out, and there are thousands of them.
     is_windows = platform.system() == "Windows"
     cmd = [
         python_exe,
@@ -133,13 +142,12 @@ def build_unit_tests_cmd(python_exe: str) -> list[str]:
         "--cov-report=xml",
         "--cov-report=term",
     ]
-    if not is_windows:
-        cmd.extend(["-n", "auto"])
+    cmd.extend(["-n", WINDOWS_WORKERS] if is_windows else ["-n", "auto"])
     return cmd
 
 
 def build_integration_tests_cmd(python_exe: str) -> list[str]:
-    return [
+    cmd = [
         python_exe,
         "-m",
         "pytest",
@@ -148,6 +156,12 @@ def build_integration_tests_cmd(python_exe: str) -> list[str]:
         "--cov-report=xml",
         "--cov-report=term",
     ]
+    # The same reason as the unit suite: the ini asks for `-n auto`, and one
+    # worker per core is what brings the MemoryError on Windows.
+    cmd.extend(
+        ["-n", WINDOWS_WORKERS] if platform.system() == "Windows" else ["-n", "auto"]
+    )
+    return cmd
 
 
 def build_unit_diff_coverage_gate_cmd(

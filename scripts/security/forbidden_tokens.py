@@ -98,6 +98,11 @@ def main(argv: list[str] | None = None) -> int:
         ".git",
         ".history",
         ".venv",
+        # The repository root carries a virtualenv of its own, next to the
+        # one in apps/api. It is gitignored and it is not part of the
+        # product, so the scan does not walk into it - the walk itself takes
+        # the local CI gate past an hour.
+        "venv",
         "node_modules",
         ".pytest_cache",
         ".mypy_cache",
