@@ -28,6 +28,9 @@ const FORWARDED_REQUEST_HEADERS = [
   'user-agent',
   'x-user-email',
   'x-request-id',
+  // The double-submit half of the CSRF protection: the backend compares
+  // this header with the csrf_token cookie, and both have to reach it.
+  'x-csrf-token',
   // The address of the visitor. Without these the backend sees the proxy's
   // own address and counts every visitor of a public deployment as one
   // caller — a rate limit that then throttles the whole site after one

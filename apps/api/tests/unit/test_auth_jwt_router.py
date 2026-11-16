@@ -200,7 +200,12 @@ class TestSetAuthCookies:
             _set_auth_cookies(response, "access-tok", "refresh-tok", "csrf-tok")
         assert response.set_cookie.call_count == 3
 
-    def test_no_csrf_token(self):
+    def test_the_csrf_cookie_is_always_set(self):
+        # The cookie was only ever set when a caller passed a token - and no
+        # caller did - so it never existed, and the CSRF middleware rejected
+        # every state-changing request of a production deployment. It is
+        # generated here when the caller has none, and it stays readable by
+        # JavaScript: the browser sends it back as the header.
         response = MagicMock()
         with (
             patch("api.routers.auth_jwt.get_access_token_expire_minutes", return_value=15),
@@ -209,7 +214,16 @@ class TestSetAuthCookies:
         ):
             mock_settings.return_value.environment = "production"
             _set_auth_cookies(response, "access-tok", "refresh-tok")
-        assert response.set_cookie.call_count == 2
+
+        assert response.set_cookie.call_count == 3
+        csrf = [
+            call
+            for call in response.set_cookie.call_args_list
+            if call.kwargs.get("key") == "csrf_token"
+        ]
+        assert len(csrf) == 1
+        assert csrf[0].kwargs.get("httponly") is False
+        assert csrf[0].kwargs.get("value")
 
     def test_production_secure_cookies(self):
         response = MagicMock()

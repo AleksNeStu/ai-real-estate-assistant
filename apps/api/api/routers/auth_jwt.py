@@ -34,6 +34,7 @@ from config.settings import get_settings
 from core.email import get_email_service
 from core.jwt import (
     create_access_token,
+    generate_csrf_token,
     generate_refresh_token,
     get_access_token_expire_minutes,
     get_refresh_token_expire_days,
@@ -151,17 +152,25 @@ def _set_auth_cookies(
         samesite="strict",
     )
 
-    # CSRF token cookie (for double-submit pattern)
-    if csrf_token:
-        response.set_cookie(
-            key="csrf_token",
-            value=csrf_token,
-            max_age=access_max_age,
-            path="/",
-            httponly=False,  # Must be readable by JavaScript
-            secure=settings.environment.lower() == "production",
-            samesite="strict",
-        )
+    # CSRF token cookie (for double-submit pattern).
+    #
+    # The cookie is ALWAYS set, and it is generated here when the caller has
+    # none. It used to be set only when a caller passed a token - and no
+    # caller did - so the cookie never existed, while the CSRF middleware
+    # (which enforces only when ENVIRONMENT=production) rejected every
+    # state-changing request with "CSRF token missing". A deployment that
+    # set ENVIRONMENT=production was therefore a deployment whose login, its
+    # search and its chat all answered 403. The token is readable by
+    # JavaScript on purpose: the browser sends it back in the header.
+    response.set_cookie(
+        key="csrf_token",
+        value=csrf_token or generate_csrf_token(),
+        max_age=access_max_age,
+        path="/",
+        httponly=False,  # Must be readable by JavaScript
+        secure=settings.environment.lower() == "production",
+        samesite="strict",
+    )
 
 
 def _clear_auth_cookies(response: Response) -> None:

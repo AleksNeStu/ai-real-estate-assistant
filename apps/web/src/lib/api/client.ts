@@ -119,11 +119,32 @@ export function getUserEmail(): string | undefined {
   return email && email.trim() ? email.trim() : undefined;
 }
 
+/**
+ * The CSRF token the backend set at sign-in, read back from the cookie.
+ *
+ * The cookie is deliberately not httpOnly - the browser has to be able to
+ * read it and send it back as the `X-CSRF-Token` header, which is the
+ * double-submit pattern the backend enforces in production.
+ */
+export function getCsrfToken(): string | undefined {
+  if (typeof document === 'undefined') return undefined;
+  const match = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/);
+  const token = match?.[1];
+  return token ? decodeURIComponent(token) : undefined;
+}
+
 export function buildAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = {};
 
   const userEmail = getUserEmail();
   if (userEmail) headers['X-User-Email'] = userEmail;
+
+  // The CSRF double-submit: the backend compares this header with the
+  // csrf_token cookie it set at sign-in. Without the header, a deployment
+  // that runs with ENVIRONMENT=production answers every state-changing
+  // request with 403 - the login, the search, the chat.
+  const csrfToken = getCsrfToken();
+  if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
 
   return headers;
 }
