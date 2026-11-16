@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.8] - 2026-11-16
+
 ### Fixed
 - **The landing's map was a drawing of a map** — the hero instrument drew a
   lattice of its own with three price chips on it, so it could never show a

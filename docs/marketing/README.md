@@ -130,16 +130,15 @@ Day +30          → Product Hunt (after audiences warmed up)
       (TaskMaster #73). The list lives in the repository's `ADMIN_EMAILS` /
       `ADMIN_IPS` variables and the deploy delivers it. Verified 2026-11-16:
       the live deployment answers `GET /api/v1/capabilities` with the build
-      block — `sha 111441521c4f73eaabc2bf638d2f6e25136742f9`, the build
-      time and the run — for a privileged caller, and without it for anyone
-      else. The demo runs that same commit, so the stamp is true of what the
-      visitor is talking to.
+      block — the commit, the build time and the run — for a privileged
+      caller, and without it for anyone else. The demo runs that same
+      commit, so the stamp is true of what the visitor is talking to.
 
 ## What changed since the drafts were written (2026-11-09 → 2026-11-16)
 
 The five drafts were written against the deployment of 2026-11-09 and are
-re-verified against the deployment of 2026-11-16 (the v5.3.7 build, `sha
-3b296d66`). Three things moved, and every draft now carries the new truth:
+re-verified against the deployment of 2026-11-16 (the v5.3.8 build). Three
+things moved, and every draft now carries the new truth:
 
 1. **The demo can be signed into with Google** (`v5.3.4`). The drafts used
    to promise *"no signup"*; the honest claim is narrower — browsing needs
@@ -153,7 +152,7 @@ re-verified against the deployment of 2026-11-16 (the v5.3.7 build, `sha
    every draft now carries the English path.
 
 Also corrected, because they would not survive a reader checking them:
-`v5.1.17` → the current `v5.3.7`; *"the demo uses simulated AI
+`v5.1.17` → the current `v5.3.8`; *"the demo uses simulated AI
 responses"* → the demo answers with a real provider; *"16 supported
 providers"* → 17; *"9 languages with EU AI Act compliance labels"* → nine
 locales ship, English and Polish are maintained, the rest fall back to
