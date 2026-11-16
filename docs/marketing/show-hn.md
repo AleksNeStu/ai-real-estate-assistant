@@ -112,7 +112,7 @@ Quick answers to the inevitable ones:
 ## Assets checklist before posting
 
 Re-verified on 2026-11-16 against the live deployment, which now runs the
-**v5.3.6** build (`build.sha = 111441521c4f73eaabc2bf638d2f6e25136742f9`):
+**v5.3.7** build (`build.sha = 3b296d665d30c2fd4ebfa7b68c2a84a723d280347`):
 
 - [x] Live demo URL responds 200: `https://realty.kittray.com/en` — the bare
       root 307-redirects to `/pl`, so the English path is the one to publish

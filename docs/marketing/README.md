@@ -138,8 +138,8 @@ Day +30          → Product Hunt (after audiences warmed up)
 ## What changed since the drafts were written (2026-11-09 → 2026-11-16)
 
 The five drafts were written against the deployment of 2026-11-09 and are
-re-verified against the deployment of 2026-11-16 (the v5.3.7 build). Three
-things moved, and every draft now carries the new truth:
+re-verified against the deployment of 2026-11-16 (the v5.3.7 build, `sha
+3b296d66`). Three things moved, and every draft now carries the new truth:
 
 1. **The demo can be signed into with Google** (`v5.3.4`). The drafts used
    to promise *"no signup"*; the honest claim is narrower — browsing needs
