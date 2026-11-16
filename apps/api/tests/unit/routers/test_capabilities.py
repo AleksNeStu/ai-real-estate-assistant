@@ -23,8 +23,10 @@ def _settings(**overrides):
         "auth_oauth_apple_enabled": False,
         "google_client_id": None,
         "google_client_secret": None,
+        "google_redirect_uri": None,
         "apple_client_id": None,
         "apple_team_id": None,
+        "apple_private_key_path": None,
         "demo_mode": True,
         "default_provider": "zai",
         "sentry_dsn": None,
@@ -74,14 +76,82 @@ class TestBuildCapabilities:
             capabilities,
             "get_settings",
             return_value=_settings(
+                auth_jwt_enabled=True,
                 auth_oauth_google_enabled=True,
                 google_client_id="id",
                 google_client_secret="secret",  # pragma: allowlist secret
+                google_redirect_uri="https://example.test/api/v1/auth/oauth/callback",
             ),
         ):
             result = capabilities.build_capabilities(email_enabled=False)
 
         assert result["auth"]["oauth"]["google"] is True
+        assert result["auth"]["oauth"]["apple"] is False
+
+    def test_a_provider_without_a_redirect_uri_is_not_reported_as_available(self):
+        # The endpoint needs the redirect URI as well as the credentials:
+        # without it the click answers 500 ("Google OAuth is not
+        # configured"). The capability used to say "available" anyway, so the
+        # interface offered a button that could only fail.
+        with patch.object(
+            capabilities,
+            "get_settings",
+            return_value=_settings(
+                auth_jwt_enabled=True,
+                auth_oauth_google_enabled=True,
+                google_client_id="id",
+                google_client_secret="secret",  # pragma: allowlist secret
+                google_redirect_uri=None,
+            ),
+        ):
+            result = capabilities.build_capabilities(email_enabled=False)
+
+        assert result["auth"]["oauth"]["google"] is False
+
+    def test_a_provider_is_not_reported_as_available_without_jwt(self):
+        # The whole auth router - and with it the OAuth endpoints - is only
+        # mounted when JWT is enabled. Without it the click answers 404.
+        with patch.object(
+            capabilities,
+            "get_settings",
+            return_value=_settings(
+                auth_jwt_enabled=False,
+                auth_oauth_google_enabled=True,
+                google_client_id="id",
+                google_client_secret="secret",  # pragma: allowlist secret
+                google_redirect_uri="https://example.test/api/v1/auth/oauth/callback",
+            ),
+        ):
+            result = capabilities.build_capabilities(email_enabled=False)
+
+        assert result["auth"]["oauth"]["google"] is False
+
+    def test_apple_needs_its_key_and_the_same_redirect_uri(self):
+        # The Apple endpoint reads the private key from a file and reuses the
+        # redirect URI setting, so a deployment without either is not a
+        # deployment with a working Apple button.
+        configured = _settings(
+            auth_jwt_enabled=True,
+            auth_oauth_apple_enabled=True,
+            apple_client_id="id",
+            apple_team_id="team",
+            apple_private_key_path="/tmp/AppleAuthKey.p8",
+            google_redirect_uri="https://example.test/api/v1/auth/oauth/callback",
+        )
+        with patch.object(capabilities, "get_settings", return_value=configured):
+            result = capabilities.build_capabilities(email_enabled=False)
+        assert result["auth"]["oauth"]["apple"] is True
+
+        without_key = _settings(
+            auth_jwt_enabled=True,
+            auth_oauth_apple_enabled=True,
+            apple_client_id="id",
+            apple_team_id="team",
+            apple_private_key_path=None,
+            google_redirect_uri="https://example.test/api/v1/auth/oauth/callback",
+        )
+        with patch.object(capabilities, "get_settings", return_value=without_key):
+            result = capabilities.build_capabilities(email_enabled=False)
         assert result["auth"]["oauth"]["apple"] is False
 
     def test_a_dummy_mail_service_is_reported_as_disabled(self):

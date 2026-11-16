@@ -57,13 +57,27 @@ def build_capabilities(
     """Describe what this deployment can actually do."""
     settings = get_settings()
 
+    # The enablement rules below mirror the ones the OAuth endpoints
+    # themselves apply, so a capability never disagrees with the endpoint it
+    # describes. The Google endpoint needs the redirect URI as well as the
+    # credentials - without it the click answers 500 - and the whole
+    # auth router only exists when JWT is enabled, so without that the
+    # click answers 404. The Apple endpoint reads its private key from a
+    # file and reuses the same redirect URI setting.
     google = bool(
-        settings.auth_oauth_google_enabled
+        settings.auth_jwt_enabled
+        and settings.auth_oauth_google_enabled
         and settings.google_client_id
         and settings.google_client_secret
+        and settings.google_redirect_uri
     )
     apple = bool(
-        settings.auth_oauth_apple_enabled and settings.apple_client_id and settings.apple_team_id
+        settings.auth_jwt_enabled
+        and settings.auth_oauth_apple_enabled
+        and settings.apple_client_id
+        and settings.apple_team_id
+        and settings.apple_private_key_path
+        and settings.google_redirect_uri
     )
 
     capabilities = {
