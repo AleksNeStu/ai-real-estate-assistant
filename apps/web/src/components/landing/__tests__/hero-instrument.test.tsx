@@ -99,19 +99,28 @@ describe('the map of the hero instrument', () => {
 describe('the pin on the map', () => {
   // The currency format separates the code from the number with a
   // non-breaking space, so the assertions compare the readable form.
-  const pin = (price?: number, currency = 'PLN', locale = 'en-US') =>
-    formatMapPinPrice(price, currency, locale).replace(/ /g, ' ');
+  const pin = (price?: number, currency = 'PLN', locale = 'pl-PL') =>
+    formatMapPinPrice(price, currency, locale).replace(/[\s  ]/g, '');
 
   it('says the price the row underneath it says', () => {
     // The chip used to print thousands with no magnitude check: 322 000 zł
-    // became "322k" and 4 100 zł became "4k".
-    expect(pin(322000)).toBe('PLN 322K');
-    expect(pin(4100)).toBe('PLN 4.1K');
-    expect(pin(3000)).toBe('PLN 3K');
+    // became "322k" and 4 100 zł became "4k". Carrying the currency into the
+    // chip was not enough either — 2 100 zł still read as "2.1K", which is a
+    // DIFFERENT price from the one the row prints.
+    expect(pin(322000)).toBe('322000zł');
+    expect(pin(4100)).toBe('4100zł');
+    expect(pin(3000)).toBe('3000zł');
   });
 
-  it('speaks the visitor locale', () => {
-    expect(formatMapPinPrice(322000, 'PLN', 'pl')).toContain('tys.');
+  it('shortens only the prices that are too long for a chip', () => {
+    // The same rule the search map's popup uses: below a million the exact
+    // price, above it the compact one.
+    expect(pin(1200000)).toContain('mln');
+  });
+
+  it('speaks the same spelling as the row', () => {
+    expect(formatMapPinPrice(322000, 'PLN', 'pl-PL')).toContain('322');
+    expect(formatMapPinPrice(322000, 'PLN', 'pl-PL')).not.toContain('K');
   });
 
   it('never leaves the pin empty', () => {

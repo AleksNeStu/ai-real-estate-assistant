@@ -124,7 +124,6 @@ export function HeroInstrument({ query, locale }: { query: string; locale: strin
         {points.length > 0 && (
           <HeroMap
             points={points}
-            locale={locale}
             className="absolute inset-0 z-10 h-full w-full"
           />
         )}
