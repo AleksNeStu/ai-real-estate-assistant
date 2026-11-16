@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **The landing's map was a drawing of a map** — the hero instrument drew a
+  lattice of its own with three price chips on it, so it could never show a
+  map, while the README promised the landing carries "a parsed query, a map
+  and three priced rows". The panel is now the product's own map: Leaflet,
+  the OpenStreetMap raster tiles and the house tile theme, the same
+  primitive the search page uses. It needs no key, so a self-hoster gets a
+  working map out of the box. The chips also print the price the row
+  underneath them prints — 4 100 zł read as "4k" before.
+- **The exit strip's three controls were not the same control** — one was a
+  bare text link beside a 40 px button, one was a button whose label sat
+  at the top of its box, the padding was `px-3.5` against `px-4`, the
+  cards sat on two different surfaces, and none of them had a focus ring.
+  They now share one surface, one height, one padding, one focus ring and
+  one structure.
+- **The CSRF cookie never existed** — the middleware compares the
+  `X-CSRF-Token` header with the `csrf_token` cookie and enforces that when
+  `ENVIRONMENT=production`, but the cookie was only set when a caller
+  passed a token, and no caller did. A production deployment therefore
+  answered every state-changing request with 403: the login, the search,
+  the chat. The cookie is generated at sign-in, the browser sends it back,
+  and the proxy forwards the header.
+- **The Google button could only fail** — the capability report said the
+  provider was available when the flag and the credentials were set, while
+  the endpoint also needs the redirect URI (without it the click answers
+  500) and the whole auth router only exists when JWT is enabled (without
+  it the click answers 404). The report mirrors the endpoint again.
+- **The coverage gate could not fail** — the check ended in `|| echo`, and
+  the echo swallowed the exit code: the thresholds (85 / 70) were printed
+  and never applied. The floors are now the coverage this codebase reaches
+  — 85.5 % for the unit suite, 52.0 % for the integration suite — and the
+  check exits 1 when the coverage falls below them.
+
+### Changed
+- **Nine of the seventeen advertised providers had no variable in the
+  example configuration** — a self-hoster read the list in the README and
+  could not configure nine of them without reading `settings.py`. They are
+  documented now, together with the integrations that had none (web
+  search, metrics, the free tier, push, MCP, Apple sign-in, the front-end
+  URL). The frontend example file documented `NEXTAUTH_SECRET` and
+  `NEXTAUTH_URL` for a library the project does not install, and an
+  analytics id nothing reads — both are gone.
+- **The claims that had no test now have one** — the landing map, the
+  sitemap, the llms.txt, the robots.txt, the enumeration the sitemap is
+  built from, the provider catalogue, the CSRF double-submit, and all nine
+  languages in a browser: six of them had never been rendered outside a
+  JSON parser.
+
 ## [5.3.7] - 2026-11-16
 
 ### Changed
