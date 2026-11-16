@@ -62,3 +62,16 @@ not that a test file exists.
 | No mobile or tablet viewport | `playwright.config.ts` defines one project (desktop, 1440×900). |
 | The neighbourhood adapters are untested against the network | Their unit tests skip for "requires network access". |
 | `tests/performance`, `tests/resilience`, `tests/e2e_backend` do not run in CI | 132 test functions live in Makefile-only suites. |
+
+## 5. The indexing switch and the canonical host (2026-11-16)
+
+The operator's decision on the GSC notice — *"Page with redirect" for
+kittray.com* — and what it turned out to be.
+
+| Question | Answer, measured |
+|---|---|
+| Why did the property report a redirect? | `kittray.com`, `www.kittray.com` and `http://kittray.com` all answered `301` to `https://nestlab.tech/` — a Single Redirect rule in the zone (`kittray apex - house door to the studio`). Every URL on the property was a redirector, so the property had nothing of its own to index. |
+| Which host is canonical for the product? | `realty.kittray.com`. The sitemap, the canonical URLs and the `hreflang` cluster already named it; the apex now carries the index of the operator's own domain instead of pointing at one unrelated site. |
+| Is the demo indexable now? | Yes. The deployment no longer sets `SEARCH_INDEXING=false` and no longer mounts a Disallow-all `robots.txt`. Live: `/en` answers `200` with **no** `X-Robots-Tag`, `/robots.txt` is the product's own file (it names the AI crawlers), and `/sitemap.xml` carries the routes and the listings. |
+| What did the switch actually need? | Three things the guide did not say: the empty `volumes:` key has to go with the mount (invalid compose, the stack refuses to start); the version pin in the node's `.env` has to match the running stack, or the next manual restart rolls the public demo back a version; and the account that reads the property for us still has no access to it (the API answers 403). |
+| Is the GEO/SEO/AEO surface live? | Yes — `llms.txt` describes the product and when to use it; a listing page carries `Property`, `Offer`, `GeoCoordinates`, `PostalAddress`, `FAQPage` and `BreadcrumbList`, a canonical URL on the right host, and the nine-language `hreflang` cluster. |
