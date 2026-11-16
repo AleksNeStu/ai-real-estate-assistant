@@ -139,12 +139,17 @@ jobs:
       fail-fast: false
       matrix:
         test-suite:
+          # The floors are the coverage this codebase reaches today, measured
+          # on the suites themselves: 85.5% for the unit suite and 52.0% for
+          # the integration suite. The 85 / 70 that stood here were never
+          # applied - the check ended in an `|| echo` that swallowed the
+          # failure - so they were decoration. These are real.
           - name: unit
             path: tests/unit
-            coverage-min: 85
+            coverage-min: 84
           - name: integration
             path: tests/integration
-            coverage-min: 70
+            coverage-min: 50
 
     defaults:
       run:
@@ -182,7 +187,18 @@ jobs:
           COVERAGE=$(python -c "import xml.etree.ElementTree as ET; print(float(ET.parse('coverage.xml').getroot().attrib['line-rate']) * 100)")
           echo "Coverage: ${COVERAGE}%"
           THRESHOLD=${{ matrix.test-suite.coverage-min }}
-          python -c "import sys; sys.exit(0 if float('${COVERAGE}') >= ${THRESHOLD} else 1)" || echo "::error::Coverage ${COVERAGE}% below threshold ${THRESHOLD}%"
+          # The check has to be able to FAIL. It used to end in
+          # `|| echo "::error::..."`, and the echo swallowed the exit code of
+          # the python: the thresholds (85 / 70) were printed and never
+          # applied. The numbers below are the coverage this codebase
+          # actually reaches - measured, not wished for - and they are a
+          # ratchet: every release that raises the coverage raises them
+          # here. The per-change ratchet is scripts/ci/ci_parity.py, which
+          # holds the coverage of the files a change touches.
+          if ! python -c "import sys; sys.exit(0 if float('${COVERAGE}') >= ${THRESHOLD} else 1)"; then
+            echo "::error::Coverage ${COVERAGE}% below threshold ${THRESHOLD}%"
+            exit 1
+          fi
 
       - name: Upload coverage
         uses: actions/upload-artifact@v7
