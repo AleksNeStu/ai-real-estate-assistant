@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.9] - 2026-11-16
+
+### Fixed
+- **The map pin stated a rounded price** — the chip carried the currency
+  into the map ("PLN 2.1K"), but a 2 100 zł listing still read as 2.1K next
+  to a row that read "2 100 zł": a different price, on the same panel. The
+  chip now prints the price the row prints, in the row's spelling, and only
+  shortens it above a million — the rule the search map's popup already
+  follows.
+
 ## [5.3.8] - 2026-11-16
 
 ### Fixed
