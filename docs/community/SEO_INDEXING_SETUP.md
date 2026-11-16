@@ -4,13 +4,27 @@
 **Scope:** Public procedure only. No tokens, API keys, or credentials anywhere in this guide.
 **Evidence storage:** `docs/community/private-evidence/` (gitignored — never commit screenshots or exports).
 
-> **The demo is deliberately not indexed.** The product is unfinished, and the
-> operator does not want it released in this state. The demo deployment answers
-> `X-Robots-Tag: noindex, nofollow` on every page and serves a `robots.txt` that
-> disallows everything, so it is not in any search engine's index and cannot be
-> submitted. This guide describes the procedure for a FUTURE release on a
-> domain of its own — a `workers.dev` host cannot be verified as a search-console
-> property, because verification needs a DNS record on a domain you control.
+> **The demo IS indexed now (2026-11-16).** The operator lifted the
+> deliberate `noindex`: the deployment no longer sets `SEARCH_INDEXING=false`
+> and no longer mounts a Disallow-all `robots.txt` over the product's own
+> file, so the pages answer `200` with no `X-Robots-Tag`, and the product's
+> own robots.txt — which explicitly invites the AI crawlers — is what a
+> crawler reads. The switch and its undo are in §4.
+>
+> **The canonical host is `realty.kittray.com`.** The apex `kittray.com` is
+> the operator's own domain and carries the index of what is on it
+> (`kittray.com/` lists the subdomains); the product keeps its own address,
+> and its canonical URLs, sitemap and `hreflang` cluster all name it. A
+> `workers.dev` host cannot be verified as a search-console property, because
+> verification needs a DNS record on a domain you control — `kittray.com` is
+> that domain, so the property is the DOMAIN property
+> `sc-domain:kittray.com`, which covers `realty.kittray.com` as well.
+>
+> **One thing is still the operator's click:** the service account that reads
+> the property for us has no access to it yet (the API answers 403 "User does
+> not have sufficient permission"). Adding it as a user with FULL permission
+> is one step in the Search Console UI. Until then the numbers below are read
+> by hand in the UI.
 
 ---
 
@@ -185,15 +199,18 @@ There are two `robots.txt` files in play, and they say opposite things:
 | **The product's own** | `apps/web/public/robots.txt`, baked into the image | Allows crawling, allows the AI crawlers explicitly, points at the sitemap, blocks the private paths |
 | **The demo override** | a `robots.txt` mounted into the demo deployment | `User-agent: *` / `Disallow: /` — nothing is crawlable |
 
-The demo currently serves the **override**, and every page also answers
-`X-Robots-Tag: noindex, nofollow`. The override exists so the links in the
-marketing drafts do not release unfinished pages into a search index.
+The demo served the **override** until 2026-11-16, and every page also
+answered `X-Robots-Tag: noindex, nofollow`. The override existed so the links
+in the marketing drafts did not release unfinished pages into a search index.
+**Both mechanisms were switched off on 2026-11-16** (operator's decision), so
+the demo now serves the product's own robots.txt and answers `200` with no
+`X-Robots-Tag` on any page.
 
-Two things produce that state, and a release has to undo both:
+Two things produced that state, and the switch had to undo both:
 
-| Knob | Where | State today | On release |
-|------|-------|--------------|------------|
-| `SEARCH_INDEXING` | the deployment's runtime environment | `false` | unset (or `true`) — the guard in `apps/web/src/lib/indexing.ts` only adds `X-Robots-Tag` when it is exactly `false` |
+| Knob | Where | State until 2026-11-16 | State now |
+|------|-------|------------------------|-----------|
+| `SEARCH_INDEXING` | the deployment's runtime environment | `false` | unset — the guard in `apps/web/src/lib/indexing.ts` only adds `X-Robots-Tag` when it is exactly `false` |
 | `robots.txt` | mounted into the demo deployment | the Disallow-all override | the mount is dropped and the product's own file comes back with the image |
 
 For a future indexed release, this is the file that comes back with the image —
@@ -239,7 +256,7 @@ new image, no release. The procedure is written so that it can be undone by
 one command, because an indexing switch that cannot be undone is a switch
 nobody will ever pull.
 
-### The switch ON (the operator's decision)
+### The switch ON (the operator's decision) — DONE, 2026-11-16
 
 The demo deployment runs its stack from `/opt/app/aire-demo`, with the compose
 file that names the image and the environment.
@@ -260,6 +277,21 @@ export AIRE_IMAGE_TAG=<the running tag>
 set -a && . "$HOME/.aire-build.env" && set +a
 docker compose up -d --force-recreate frontend
 ```
+
+**What actually ran on 2026-11-16** (the operator's decision to lift the
+`noindex`), on the node, with a timestamped backup of every file it touched
+(`docker-compose.yml.bak.<ts>`, `.env.bak.<ts>`, `robots.txt.bak.<ts>`):
+
+1. the `SEARCH_INDEXING=false` line was deleted from the frontend service;
+2. the `./robots.txt:/app/apps/web/public/robots.txt:ro` mount was deleted,
+   and the `volumes:` key it left empty was removed with it — an empty
+   `volumes:` is invalid compose and the stack refuses to start;
+3. the override file itself was moved aside;
+4. the version pin in `.env` was corrected — it named `5.3.6` while the
+   running stack was `5.3.7`, so a `docker compose up` would have rolled the
+   public demo back a version. **A stale pin is not cosmetic: it is an older
+   build in public.** Check it after every release;
+5. the frontend was recreated on the running tag.
 
 ### The switch BACK — one command
 
