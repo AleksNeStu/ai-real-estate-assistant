@@ -208,22 +208,44 @@ that does not depend on publishing anything.
       answers, that the landing renders, and that the build stamp in the
       footer is the build you expect (TaskMaster #73)
 
-## Posting status — the last step is one account per channel (2026-11-16)
+## What went out on 2026-11-16, and what is still open
 
-Everything that does not need an account is done. The five drafts are written
-and re-verified against the running **v5.3.6** build, the numbers in them are
-measured, the assets are on disk, and every submission URL was opened in a
-real browser. What is left is the signed-in session per platform: each one
-belongs to the operator, and posting as the developer needs the developer's
-account.
+**Gone out**
 
-| Channel | The last step | What it needs |
-|---|---|---|
-| Hacker News | Paste the title and the body from [show-hn.md](./show-hn.md), then the first comment | A signed-in Hacker News account — `news.ycombinator.com/submit` answers *"You have to be logged in to submit"* |
-| Reddit (4 posts) | Paste one post per subreddit from [reddit-posts.md](./reddit-posts.md), one every 3-5 days | A signed-in Reddit account; each subreddit's own self-promotion rules apply |
-| Product Hunt | Paste the tagline, the description and the maker comment from [product-hunt.md](./product-hunt.md) | A Product Hunt maker account — `producthunt.com/posts/new` redirects to the login |
-| Directories | One submission per day from the templates in [directory-submissions.md](./directory-submissions.md) | An account on each directory; AIcyclopedia's submit path answers 403 from this network, the site's own links point there |
-| YouTube | Record the 90s hero from the shot list in [youtube-script.md](./youtube-script.md) | The channel itself |
+- **LinkedIn** — the release announcement is published on Aleksandr Nesterovich's
+  LinkedIn (the account the automation browser holds), carrying the demo and the
+  repository links and nothing but the verified facts.
+- **BetaList** — the submission is drafted through BetaList's own agent API
+  (`https://betalist.com/agent`), which needs no account: the icon and three dark
+  screenshots are attached and the API reports no warnings. It sits **unclaimed**,
+  and the claim link is in the repository's gitignored `.env.local`
+  (`BETALIST_CLAIM_URL`). The founder opens it, identifies with an e-mail, edits
+  the text, picks a plan and pays — the agent never pays (Rule 252).
+
+**Still open, and why**
+
+- **Hacker News — refused by the platform, not by the draft.** The account
+  `aleksnestu` exists (created for this launch; the credentials are in the
+  gitignored `.env.local`), but the submission came back with HN's own notice:
+  *"We're temporarily restricting Show HNs because of a massive influx, mostly by
+  users who aren't yet familiar with the site or its culture... Take some time to
+  get to know the community, become a good contributor, and then it will be fine
+  to post an occasional Show HN."* The post is ready; the window is closed to a
+  new account. The account stays for the day it opens.
+- **There's An AI For That, FutureTools, AIcyclopedia** — the forms are reachable
+  (the AI one at `/launch`, FutureTools at `/submit-a-tool`, AIcyclopedia at
+  `/submit-your-ai-tool`, which answers 403 from this network although the
+  site's own navigation links there), and the per-directory copy is in
+  [directory-submissions.md](./directory-submissions.md). FutureTools accepts a
+  submission without an account; the agent's pass did not get its React form to
+  accept the values, so that one is a human click.
+- **Reddit** — the four posts are written. Each subreddit's own rule expects the
+  account to have some history, and a brand-new account posting the project's own
+  launch is what the moderators remove. The posts wait for the operator's account.
+- **Product Hunt** — the tagline, the description and the maker comment are
+  ready; the launch needs a maker account and a Tue/Wed slot.
+- **YouTube** — the scripts and the shot list are ready; the recording needs a
+  channel.
 
 ---
 
