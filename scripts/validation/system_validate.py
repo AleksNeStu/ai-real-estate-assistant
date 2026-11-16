@@ -55,10 +55,36 @@ def main(argv: list[str] | None = None) -> int:
             return True, "production CORS wildcard rejected"
         return False, "expected production CORS wildcard rejection"
 
+    def collect_route_paths(app) -> set[str]:
+        """Every path the application serves, however FastAPI keeps it.
+
+        FastAPI 0.163 no longer flattens an included router into app.routes:
+        it keeps ONE object for it, and that object carries no `path` of its
+        own. Reading `route.path` for every route therefore raised
+        AttributeError on the pinned FastAPI, and this check - which no CI job
+        runs - failed for anyone who installed the locked requirements. The
+        included router's own routes live under `original_router`.
+        """
+        paths: set[str] = set()
+        for route in app.routes:
+            path = getattr(route, "path", None)
+            if path:
+                paths.add(path)
+                continue
+            original = getattr(route, "original_router", None)
+            if original is None:
+                continue
+            paths.update(
+                getattr(inner, "path")
+                for inner in getattr(original, "routes", [])
+                if getattr(inner, "path", None)
+            )
+        return paths
+
     def validate_app_routes():
         from api.main import app
 
-        paths = {route.path for route in app.routes}
+        paths = collect_route_paths(app)
         required = {"/health", "/api/v1/verify-auth", "/openapi.json"}
         missing = sorted(required - paths)
         if missing:
