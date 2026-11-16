@@ -67,6 +67,67 @@ test.describe('The Landing', () => {
     expect(posted.join(' ')).toContain('visitor@example.com');
   });
 
+  test('the hero puts the matches on a map', async ({ page }) => {
+    // The landing promises "a parsed query, a map and three priced rows".
+    // The panel used to draw a lattice of its own and could never show a
+    // map, so the promise and the rendering disagreed - and nothing in the
+    // suite noticed, because no test ever looked for a map here.
+    const tiles: string[] = [];
+    page.on('request', (request) => {
+      if (/tile\.openstreetmap\.org/.test(request.url())) tiles.push(request.url());
+    });
+
+    await page.goto('/en/');
+
+    await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('.leaflet-marker-icon')).toHaveCount(3, { timeout: 20000 });
+    await expect.poll(() => tiles.length, { timeout: 20000 }).toBeGreaterThan(0);
+  });
+
+  test('the three exits offer the same control', async ({ page }) => {
+    // The strip had three primary controls that were not the same control:
+    // one was a bare text link, one was a button whose label sat at the top
+    // of its box, and the padding and the focus ring differed between them.
+    // The three cards are the same card, so the controls are the same
+    // control - that is what this holds.
+    await page.goto('/en/');
+
+    // The strip, not the whole page: the footer carries links of its own.
+    const strip = page.locator('#open');
+    const fork = strip.getByRole('link', { name: 'Fork it on GitHub' });
+    const notify = strip.getByRole('button', { name: 'Notify me' });
+    const talk = strip.getByRole('link', { name: 'Talk to the studio' });
+
+    for (const control of [fork, notify, talk]) {
+      await expect(control).toBeVisible({ timeout: 15000 });
+    }
+
+    const heights = await Promise.all(
+      [fork, notify, talk].map(async (control) =>
+        Math.round((await control.boundingBox())?.height ?? 0)
+      )
+    );
+    expect(new Set(heights).size).toBe(1);
+
+    const surfaces = await Promise.all(
+      [fork, notify, talk].map((control) =>
+        control.evaluate((element) => getComputedStyle(element).backgroundColor)
+      )
+    );
+    expect(new Set(surfaces).size).toBe(1);
+
+    // The three secondary links are one size as well.
+    const links = [
+      strip.getByRole('link', { name: /Suggest something/ }),
+      strip.getByRole('link', { name: /propvectorai\.com/ }),
+      strip.getByRole('link', { name: /Commercial/ }),
+    ];
+    const sizes = await Promise.all(
+      links.map((link) => link.evaluate((element) => getComputedStyle(element).fontSize))
+    );
+    expect(new Set(sizes).size).toBe(1);
+  });
+
   test('the studio strip records the outbound click', async ({ page }) => {
     // The outbound link leaves the site; the request it fires on the way
     // out is the measurement.

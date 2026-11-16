@@ -22,8 +22,8 @@ export async function ExitCards() {
         <p className="text-muted-foreground">{t('exits.body')}</p>
       </div>
 
-      <div className="grid grid-cols-1 overflow-hidden rounded-[10px] border border-border lg:grid-cols-[1.15fr_1fr_1fr]">
-        <div className="flex flex-col gap-3.5 bg-muted p-6">
+      <div className="grid grid-cols-1 overflow-hidden rounded-lg border border-border bg-muted lg:grid-cols-[1.15fr_1fr_1fr]">
+        <div className="flex flex-col gap-3.5 p-6">
           <div className="flex items-baseline justify-between gap-3">
             <h3 className="text-h3 font-semibold">{t('exits.run.title')}</h3>
             <span className="font-mono text-[12px] font-medium text-success">
@@ -42,7 +42,7 @@ export async function ExitCards() {
 
           <p className="text-[14px] leading-[22px] text-muted-foreground">{t('exits.run.body')}</p>
 
-          <div className="mt-auto flex items-center gap-2">
+          <div className="mt-auto flex flex-col items-start gap-2">
             <a
               href={withUtm('https://github.com/AleksNeStu/ai-real-estate-assistant/fork', {
                 medium: 'landing',
@@ -51,7 +51,7 @@ export async function ExitCards() {
               })}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-10 items-center rounded-md bg-foreground px-4 text-[14px] font-medium text-background transition-colors hover:bg-foreground/90"
+              className="inline-flex h-10 items-center rounded-md bg-foreground px-4 text-[14px] font-medium text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {t('exits.run.ctaFork')}
             </a>
@@ -63,7 +63,7 @@ export async function ExitCards() {
               })}
               target="_blank"
               rel="noreferrer"
-              className="px-2 text-[14px] font-medium text-foreground hover:underline"
+              className="text-[13px] font-medium text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {t('exits.run.ctaSuggest')} →
             </a>
@@ -105,7 +105,7 @@ export async function ExitCards() {
               })}
               target="_blank"
               rel="noreferrer"
-              className="text-[13px] text-foreground hover:underline"
+              className="text-[13px] font-medium text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {t('exits.hosted.link')} ↗
             </a>
@@ -132,7 +132,7 @@ export async function ExitCards() {
               })}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-10 items-center rounded-md bg-foreground px-4 text-[14px] font-medium text-background transition-colors hover:bg-foreground/90"
+              className="inline-flex h-10 items-center rounded-md bg-foreground px-4 text-[14px] font-medium text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {t('exits.studio.ctaTalk')}
             </a>
@@ -144,7 +144,7 @@ export async function ExitCards() {
               })}
               target="_blank"
               rel="noreferrer"
-              className="text-[13px] text-foreground hover:underline"
+              className="text-[13px] font-medium text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {t('exits.studio.ctaDiscussion')} →
             </a>

@@ -92,6 +92,16 @@ export function WaitlistForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-1.5" noValidate>
+      {/* The note sits ABOVE the field, so the last row of the card is the
+          control itself - the three cards of the strip then end on the same
+          line, the way the other two end on their link. */}
+      <span className={`text-[12px] ${state === 'error' ? 'text-destructive' : 'text-muted-foreground'}`}>
+        {state === 'error'
+          ? t('exits.hosted.waitlistInvalid')
+          : canMail
+            ? t('exits.hosted.waitlistHint')
+            : t('exits.hosted.waitlistNoteNoMail')}
+      </span>
       <div className="flex gap-1.5">
         <label htmlFor="waitlist-email" className="sr-only">
           {t('exits.hosted.waitlistLabel')}
@@ -107,25 +117,18 @@ export function WaitlistForm() {
           placeholder={t('exits.hosted.waitlistPlaceholder')}
           aria-label={t('exits.hosted.waitlistLabel')}
           aria-invalid={state === 'error' ? 'true' : undefined}
-          className={`h-10 flex-1 rounded-md border bg-background px-2.5 text-[14px] text-foreground outline-none placeholder:text-muted-foreground ${
+          className={`h-10 flex-1 rounded-md border bg-background px-3 text-[14px] text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
             state === 'error' ? 'border-destructive' : 'border-border'
           }`}
         />
         <button
           type="submit"
           disabled={state === 'loading'}
-          className="h-10 rounded-md bg-foreground px-3.5 text-[14px] font-medium text-background transition-colors hover:bg-foreground/90 disabled:opacity-60"
+          className="inline-flex h-10 items-center rounded-md bg-foreground px-4 text-[14px] font-medium text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-60"
         >
           {t('exits.hosted.waitlistSubmit')}
         </button>
       </div>
-      <span className={`text-[12px] ${state === 'error' ? 'text-destructive' : 'text-muted-foreground'}`}>
-        {state === 'error'
-          ? t('exits.hosted.waitlistInvalid')
-          : canMail
-            ? t('exits.hosted.waitlistHint')
-            : t('exits.hosted.waitlistNoteNoMail')}
-      </span>
     </form>
   );
 }
