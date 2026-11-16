@@ -41,6 +41,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   check exits 1 when the coverage falls below them.
 
 ### Changed
+- **The demo is indexable now** — the deployment answered
+  `X-Robots-Tag: noindex, nofollow` on every page and served a robots.txt
+  that disallowed everything, so the product no search engine could find was
+  also the product the README sends people to. Both mechanisms were runtime
+  knobs, so the switch was two edits and one container recreate: no rebuild,
+  no new image, no release. The canonical host is
+  `https://realty.kittray.com` — the sitemap, the canonical URLs and the
+  `hreflang` cluster already named it — and the apex `kittray.com` carries
+  the index of the operator's own domain.
 - **Nine of the seventeen advertised providers had no variable in the
   example configuration** — a self-hoster read the list in the README and
   could not configure nine of them without reading `settings.py`. They are

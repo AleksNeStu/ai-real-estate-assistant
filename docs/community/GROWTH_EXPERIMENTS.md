@@ -69,7 +69,7 @@ architectural change). Both now say what is true.
 | Evergreen social preview (no star count on the card) | 2026-07-21 → now | The card carries no decaying number; the star count was replaced by test and coverage figures, which grow | keep — re-check the numbers at each release |
 | Hosted star-history chart | 2026-07 → 2026-08-15 | Removed: the PAT lacked the `Starring: Read` scope, and the workflow's orphan-branch pattern destroyed its own history | stopped — the README carries no star-history chart |
 | Weekly metrics workflow | 2026-08-15 → now | Removed together with star-history; the weekly snapshot is collected by hand and committed | manual — see [`METRICS.md`](./METRICS.md) |
-| Indexing the demo | 2026-07-22 → now | robots.txt was flipped to index/follow for a star-attraction test; the demo now serves a Disallow-all robots.txt and `X-Robots-Tag: noindex, nofollow` | reversed — the product is not released in this state |
+| Indexing the demo | 2026-07-22 → 2026-11-16 | robots.txt was flipped to index/follow for a star-attraction test, then reversed (the demo served a Disallow-all robots.txt and `X-Robots-Tag: noindex, nofollow`). On 2026-11-16 the operator lifted it for good: the product is the open-source funnel, and a demo no search engine can find is a demo nobody arrives at | done — the demo is indexable on its canonical host `realty.kittray.com` |
 | Pre-launch checks on the live demo | 2026-11-08 | Tour, try-these chips, lead capture with redaction, and og:image all verified against the running deployment | passed |
 | Dependency auto-merge | 2026-06 → 2026-11-11 | The workflow never merged anything, for two reasons: it waited 60 s for the PR's CI checks to appear and gave up before they existed, and it ran on `pull_request_target` while the merge action reads the bump's type only on `pull_request` — so the update type arrived empty and the action refused with "Semver bump '' is invalid!". Both fixed on 2026-11-11; eight bumps merged the same day | fixed — a safety net, not a silent failure |
 
@@ -97,9 +97,12 @@ that actually converts). The full snapshot is in
   the reply templates are in [`docs/marketing/`](../marketing/README.md).
 - **A metrics collection workflow.** That is new code in a repository frozen for
   demo purposes, so it is not taken; the weekly snapshot is collected by hand.
-- **Indexing the demo.** The product is unfinished, so the demo stays out of
-  the index: the deployment sets `SEARCH_INDEXING=false` (the guard in
-  `apps/web/src/lib/indexing.ts`) and mounts a Disallow-all `robots.txt` over
-  the product's own file. The release step — unset `SEARCH_INDEXING`, drop the
-  mount — is documented in [`SEO_INDEXING_SETUP.md`](./SEO_INDEXING_SETUP.md)
-  and in the deployment notes.
+- **Indexing the demo.** Done, on 2026-11-16: the deployment no longer sets
+  `SEARCH_INDEXING=false` (the guard in `apps/web/src/lib/indexing.ts`) and no
+  longer mounts a Disallow-all `robots.txt` over the product's own file, so
+  the pages are indexable and a crawler reads the product's own robots.txt —
+  the one that explicitly invites the AI crawlers. The canonical host is
+  `realty.kittray.com`; the apex `kittray.com` carries the index of the
+  domain. The procedure, and the one-command undo, are in
+  [`SEO_INDEXING_SETUP.md`](./SEO_INDEXING_SETUP.md) and in the deployment
+  notes.
