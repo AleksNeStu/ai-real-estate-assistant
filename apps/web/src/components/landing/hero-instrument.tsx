@@ -1,12 +1,24 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 
 import { buildHeaders, getApiUrl } from '@/lib/api/client';
 import { formatPrice } from '@/lib/format';
 import type { Property, SearchResponse } from '@/lib/types';
 import { LANDING_SLOTS, withSlot } from '@/lib/utm';
+
+/**
+ * The map is Leaflet, and Leaflet is a browser library: it is loaded only in
+ * the browser, after the page has painted. Until it arrives the lattice
+ * below is what the panel shows, so the panel is never empty.
+ */
+const HeroMap = dynamic(() => import('@/components/landing/hero-map'), {
+  ssr: false,
+  loading: () => null,
+});
+
 
 /**
  * The instrument of the hero: the demo, running.
@@ -71,25 +83,19 @@ export function HeroInstrument({ query, locale }: { query: string; locale: strin
     []
   );
 
-  const pins = useMemo(() => {
-    const points = state.results.filter((property) => property.latitude && property.longitude);
-    if (points.length === 0) return [];
-    const lats = points.map((property) => property.latitude as number);
-    const lons = points.map((property) => property.longitude as number);
-    const minLat = Math.min(...lats);
-    const maxLat = Math.max(...lats);
-    const minLon = Math.min(...lons);
-    const maxLon = Math.max(...lons);
-    const spanLat = Math.max(maxLat - minLat, 0.01);
-    const spanLon = Math.max(maxLon - minLon, 0.01);
-
-    return points.map((property) => ({
-      id: property.id ?? `${property.city}-${property.price}`,
-      price: property.price,
-      left: 8 + (((property.longitude as number) - minLon) / spanLon) * 84,
-      top: 8 + (1 - ((property.latitude as number) - minLat) / spanLat) * 84,
-    }));
-  }, [state.results]);
+  const points = useMemo(
+    () =>
+      state.results
+        .filter((property) => property.latitude && property.longitude)
+        .map((property) => ({
+          id: property.id ?? `${property.city}-${property.price}`,
+          lat: property.latitude as number,
+          lon: property.longitude as number,
+          price: property.price,
+          currency: property.currency ?? 'PLN',
+        })),
+    [state.results]
+  );
 
   return (
     <div className="flex flex-col overflow-hidden rounded-[10px] border border-border">
@@ -115,19 +121,13 @@ export function HeroInstrument({ query, locale }: { query: string; locale: strin
           <rect width="100%" height="100%" fill="url(#hero-grid)" />
         </svg>
 
-        {pins.map((pin, index) => (
-          <span
-            key={pin.id}
-            className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full border px-2 py-0.5 font-mono text-[11px] shadow-[0_2px_6px_rgb(9_9_11/0.3)] ${
-              index === 0
-                ? 'border-foreground bg-foreground text-background'
-                : 'border-border bg-background text-foreground'
-            }`}
-            style={{ left: `${pin.left}%`, top: `${pin.top}%` }}
-          >
-            {pin.price ? `${Math.round(pin.price / 1000)}k` : '—'}
-          </span>
-        ))}
+        {points.length > 0 && (
+          <HeroMap
+            points={points}
+            locale={locale}
+            className="absolute inset-0 z-10 h-full w-full"
+          />
+        )}
 
         {state.results.length === 0 && (
           <span className="absolute inset-0 flex items-center justify-center text-[12px] text-muted-foreground">

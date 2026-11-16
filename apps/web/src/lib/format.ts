@@ -78,3 +78,22 @@ export function formatCompactPrice(
     return `${new Intl.NumberFormat(resolved).format(value)} ${currency}`;
   }
 }
+
+/**
+ * The label of a map pin: the price, compact, in the visitor's locale.
+ *
+ * A pin is a small space, so the price is shortened - but it must stay the
+ * SAME price the row next to it shows. The landing's hero used to print the
+ * number in thousands with no magnitude check, so 322 000 zł read as "322k"
+ * and 4 100 zł read as "4k" while the row underneath said "4 100 zł". One
+ * price, one spelling: this is the compact currency format the map popups
+ * already use, and a missing price reads as a dash rather than as nothing.
+ */
+export function formatMapPinPrice(
+  value?: number | null,
+  currency = 'PLN',
+  locale = 'en-US'
+): string {
+  const compact = formatCompactPrice(value, currency, locale);
+  return compact || '—';
+}
