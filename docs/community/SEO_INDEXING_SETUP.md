@@ -40,43 +40,63 @@ All steps use the public UI of each tool. No API calls are required.
 
 ---
 
-## 1. Google Search Console — URL Prefix Property
+## 1. Google Search Console — the DOMAIN property
 
-### 1.1 Create or select the property
+### 1.1 The property that exists
+
+The domain `kittray.com` is delegated to Cloudflare and the **domain property
+`sc-domain:kittray.com`** is verified on it (the `google-site-verification`
+TXT records are on the zone). A domain property covers every subdomain, so it
+covers `realty.kittray.com` — the product — and the apex, which carries the
+index of the domain.
+
+**The property to work in is `sc-domain:kittray.com`.** Its "Page with
+redirect" report was the reason the apex existed only as a redirect to the
+studio; the apex is a page now, so that report has something real to say.
+
+A **URL-prefix** property (`https://realty.kittray.com/`) is the alternative if
+you want the product's coverage in isolation of the rest of the domain. It is
+not needed here.
+
+To add the property from scratch (a fork, a customer, a teammate):
 
 1. Go to [Google Search Console](https://search.google.com/search-console) and sign in with your Google account.
 2. Click **Add property**.
-3. Select **URL prefix** (not Domain — Domain requires DNS at the registrar level and covers all subdomains; URL Prefix is sufficient for a single deployment).
-4. Enter the exact URL:
+3. Select **Domain** (it needs a DNS record at the registrar level and covers
+   all subdomains).
+4. Enter the domain:
 
 ```
-https://realty.kittray.com/
+kittray.com
 ```
 
 Click **Continue**.
 
 ### 1.2 Verify ownership (DNS TXT — recommended)
 
-The demo uses a custom domain, so the **DNS TXT record** method is available and is the
-recommended path. Add a TXT record at your DNS provider:
+The domain uses Cloudflare, so the **DNS TXT record** method is available and is
+the recommended path. Add a TXT record at your DNS provider:
 
 | Type | Name | Value |
 |------|------|-------|
-| TXT | `realestate` | `google-site-verification=<paste token here>` |
+| TXT | `kittray.com` | `google-site-verification=<paste token here>` |
 
 The `<paste token here>` value is the long verification token Google shows on the GSC screen. Store it in your password manager or CI secret store — never commit it.
 
 ### 1.3 Submit the sitemap
 
-1. In GSC, select the newly verified property.
+1. In GSC, select the property.
 2. Navigate to **Sitemaps** in the left sidebar.
-3. In the **Add a sitemap** field, enter just the path:
+3. In the **Add a sitemap** field, enter the path:
 
 ```
-sitemap.xml
+https://realty.kittray.com/sitemap.xml
 ```
 
-GSC already knows the site URL from the property, so the full submitted URL will be `https://realty.kittray.com/sitemap.xml` (matches the `Sitemap:` directive in `public/robots.txt`).
+With a domain property GSC expects the **full URL** — the domain is not
+guessed from the path. The product's own robots.txt names the same sitemap,
+and the apex serves one of its own (`https://kittray.com/sitemap.xml`) that
+lists the hub and the product.
 
 4. Click **Submit**.
 
