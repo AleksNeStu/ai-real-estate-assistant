@@ -138,8 +138,8 @@ Day +30          → Product Hunt (after audiences warmed up)
 ## What changed since the drafts were written (2026-11-09 → 2026-11-16)
 
 The five drafts were written against the deployment of 2026-11-09 and are
-re-verified against the deployment of 2026-11-16 (the v5.3.6 build, `sha
-111441521`). Three things moved, and every draft now carries the new truth:
+re-verified against the deployment of 2026-11-16 (the v5.3.7 build). Three
+things moved, and every draft now carries the new truth:
 
 1. **The demo can be signed into with Google** (`v5.3.4`). The drafts used
    to promise *"no signup"*; the honest claim is narrower — browsing needs
@@ -153,7 +153,7 @@ re-verified against the deployment of 2026-11-16 (the v5.3.6 build, `sha
    every draft now carries the English path.
 
 Also corrected, because they would not survive a reader checking them:
-`v5.1.17` → the current `v5.3.6`; *"the demo uses simulated AI
+`v5.1.17` → the current `v5.3.7`; *"the demo uses simulated AI
 responses"* → the demo answers with a real provider; *"16 supported
 providers"* → 17; *"9 languages with EU AI Act compliance labels"* → nine
 locales ship, English and Polish are maintained, the rest fall back to

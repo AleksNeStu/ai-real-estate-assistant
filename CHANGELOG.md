@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.7] - 2026-11-16
+
 ### Changed
 - **The backend dependencies are locked, not only pinned** —
   `apps/api/requirements.lock.txt` is the compiled closure: every transitive
@@ -24,6 +26,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`apps/api/uv.lock` is removed** — it carried the pins of an earlier
   layout, it did not cover the ten packages the runtime manifest has, and
   nothing installed from it. The compiled lock replaces it.
+
+### Fixed
+- **The system validation crashed on the pinned FastAPI** — FastAPI 0.163 no
+  longer flattens an included router into `app.routes`: it keeps one object
+  for it, and that object carries no `path` of its own. The validation read
+  `route.path` for every route, so it raised `AttributeError` and the local
+  gate failed for anyone who installed the locked requirements. The included
+  router's routes live under `original_router`, and the check reads them from
+  there. No CI job runs that script, which is why the gate was green upstream.
 
 
 ## [5.3.6] - 2026-11-15
