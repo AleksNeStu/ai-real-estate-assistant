@@ -306,7 +306,7 @@ langchain-core==1.8.1
     #   langgraph-sdk
 langchain-google-genai==4.5.0
     # via -r requirements.txt
-langchain-ollama==0.3.10
+langchain-ollama==1.1.0
     # via -r requirements.txt
 langchain-openai==1.8.0
     # via -r requirements.txt

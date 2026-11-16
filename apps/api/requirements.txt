@@ -58,7 +58,7 @@ backoff==2.2.1
 # langchain_community.chat_models into the standalone
 # langchain-ollama package — see v5.0.7 release notes.
 langchain-community==0.4.2
-langchain-ollama==0.3.10
+langchain-ollama==1.1.0
 
 # LangChain core and providers (aligned to core 1.x)
 langchain==1.5.0
