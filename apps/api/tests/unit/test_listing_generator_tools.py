@@ -116,10 +116,14 @@ class TestPropertyDescriptionGeneratorTool:
         assert "Unsupported tone" in result
 
     def test_llm_not_available_returns_error(self, generator):
-        """Test that missing LLM produces an actionable error message."""
-        # In test env, no API key is set so _llm should be None
-        pytest.skip("LLM initialization behavior changed - _llm is always created")
-        assert generator._llm is None
+        """Test that missing LLM produces an actionable error message.
+
+        The test used to be skipped: the resolver always builds a model
+        (the demo model in a test environment), so the branch looked
+        unreachable. It is not - a deployment with no provider reaches it -
+        and the branch is the one that tells the operator what to configure.
+        """
+        generator._llm = None
         result = generator._run(
             property_data="A nice apartment",
             tone="professional",
@@ -278,8 +282,7 @@ class TestHeadlineGeneratorTool:
 
     def test_llm_not_available_returns_error(self, generator):
         """Test that missing LLM produces error."""
-        pytest.skip("LLM initialization behavior changed - _llm is always created")
-        assert generator._llm is None
+        generator._llm = None
         result = generator._run(property_data="A nice apartment", language="en")
         assert "Error" in result
         assert "LLM not available" in result
@@ -483,8 +486,7 @@ class TestSocialMediaContentGeneratorTool:
 
     def test_llm_not_available_returns_error(self, generator):
         """Test that missing LLM produces error."""
-        pytest.skip("LLM initialization behavior changed - _llm is always created")
-        assert generator._llm is None
+        generator._llm = None
         result = generator._run(property_data="Test", platform="facebook", language="en")
         assert "Error" in result
         assert "LLM not available" in result

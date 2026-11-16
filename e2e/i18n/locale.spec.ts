@@ -6,6 +6,38 @@
 
 import { test, expect } from '@playwright/test';
 
+/**
+ * The nine languages the product claims.
+ *
+ * The catalogues of all nine are checked for parity by a unit test, but a
+ * catalogue can be complete and still break at runtime: a missing ICU
+ * plural, a key the component reads in one place and not in another. Only
+ * English, Polish and Russian were ever rendered in a browser; the other
+ * six were never seen by anything but a JSON parser.
+ */
+const THE_NINE = ['pl', 'en', 'ru', 'de', 'es', 'it', 'pt', 'tr', 'uk'];
+
+test.describe('every language is a page', () => {
+  for (const locale of THE_NINE) {
+    test(`the landing renders in ${locale}`, async ({ page }) => {
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(String(error)));
+
+      await page.goto(`/${locale}/`);
+
+      await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
+      await expect(page.locator('html')).toHaveAttribute('lang', locale);
+
+      const heading = (await page.locator('h1').first().textContent()) ?? '';
+      expect(heading.trim().length).toBeGreaterThan(0);
+      // A key that the catalogue does not carry is printed as the key
+      // itself - "landing.hero.title" on the page.
+      expect(heading).not.toMatch(/^[a-z]+\.[a-zA-Z.]+$/);
+      expect(errors).toEqual([]);
+    });
+  }
+});
+
 test.describe('i18n Locale Routing', () => {
   test('should redirect root to the detected locale @smoke', async ({ page }) => {
     await page.goto('/');
