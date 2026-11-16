@@ -38,10 +38,13 @@ function FitBounds({ bounds }: { bounds: LatLngBoundsExpression | null }) {
 }
 
 /**
- * The pin's label: the price, in the compact currency form the map popups
- * use, in the visitor's own locale.
+ * The pin's label: the price, in the same spelling the row below prints it.
+ *
+ * The rows format the price with the Polish locale (the market's own
+ * spelling), so the chip does the same — a pin that reads "2 100 zł" next to
+ * a row that reads "2 100 zł" is one price, one spelling.
  */
-function pinLabel(price?: number, currency = 'PLN', locale = 'en-US'): string {
+function pinLabel(price?: number, currency = 'PLN', locale = 'pl-PL'): string {
   return formatMapPinPrice(price, currency, locale);
 }
 
@@ -50,8 +53,10 @@ function pinLabel(price?: number, currency = 'PLN', locale = 'en-US'): string {
  *
  * The chip used to print the number in thousands with no magnitude check, so
  * 322 000 zł read as "322k" and 4 100 zł read as "4k" next to a row that
- * said "4 100 zł". The compact currency format is the same one the map
- * popups use, so one number has one spelling across the page.
+ * said "4 100 zł". Carrying the currency into the chip was not enough: a
+ * 2 100 zł listing still read as "2.1K", which is a different price. The
+ * chip prints the price the row prints, and only shortens it when the number
+ * is genuinely too long — the same rule the search map's popup uses.
  */
 function pricePin(
   label: string,
@@ -71,11 +76,9 @@ function pricePin(
 
 export default function HeroMap({
   points,
-  locale,
   className,
 }: {
   points: HeroMapPoint[];
-  locale: string;
   className?: string;
 }) {
   const center = useMemo<[number, number]>(() => {
@@ -98,9 +101,9 @@ export default function HeroMap({
   const icons = useMemo(
     () =>
       points.map((point, index) =>
-        pricePin(pinLabel(point.price, point.currency ?? 'PLN', locale), index === 0)
+        pricePin(pinLabel(point.price, point.currency ?? 'PLN'), index === 0)
       ),
-    [points, locale]
+    [points]
   );
 
   return (

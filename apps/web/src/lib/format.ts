@@ -80,20 +80,25 @@ export function formatCompactPrice(
 }
 
 /**
- * The label of a map pin: the price, compact, in the visitor's locale.
+ * The label of a map pin: the price the row next to it shows.
  *
  * A pin is a small space, so the price is shortened - but it must stay the
- * SAME price the row next to it shows. The landing's hero used to print the
- * number in thousands with no magnitude check, so 322 000 zł read as "322k"
- * and 4 100 zł read as "4k" while the row underneath said "4 100 zł". One
- * price, one spelling: this is the compact currency format the map popups
- * already use, and a missing price reads as a dash rather than as nothing.
+ * SAME price, not a rounded one. The landing's hero used to print the number
+ * in thousands with no magnitude check, so 322 000 zł read as "322k" and
+ * 4 100 zł read as "4k" while the row underneath said "4 100 zł". The first
+ * fix carried the currency into the chip ("PLN 2.1K") - which still states a
+ * DIFFERENT price: a 2 100 zł listing reads as 2.1K.
+ *
+ * So the pin follows the map's own rule, the one the search popup already
+ * uses: the exact price, and the compact form only for the prices that are
+ * genuinely too long for a chip. One price, one spelling.
  */
 export function formatMapPinPrice(
   value?: number | null,
   currency = 'PLN',
-  locale = 'en-US'
+  locale = 'pl-PL'
 ): string {
-  const compact = formatCompactPrice(value, currency, locale);
-  return compact || '—';
+  if (value === null || value === undefined || Number.isNaN(value)) return '—';
+  if (value >= 1_000_000) return formatCompactPrice(value, currency, locale) || '—';
+  return formatPrice(value, currency, locale);
 }
