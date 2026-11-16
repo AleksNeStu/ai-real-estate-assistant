@@ -1,10 +1,11 @@
 import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 import * as serverApi from '@/lib/api/server';
 import { buildPropertyStructuredData } from '@/lib/structured-data';
 import type { Property } from '@/lib/types';
 
-import { generateMetadata } from '../page';
+import { generateMetadata, default as PropertyPage } from '../page';
 
 /**
  * The server side of the listing page.
@@ -114,6 +115,35 @@ describe('the metadata of a listing', () => {
 });
 
 describe('the structured data of a listing', () => {
+  it('is on the page the crawler reads', async () => {
+    // The builder is one half; the other half is that the page carries the
+    // block. Without the server-side fetch there is no listing and no block
+    // - so a deployment that cannot reach its own backend serves a listing
+    // page with no structured data at all.
+    jest.clearAllMocks();
+    (serverApi.fetchServerProperty as jest.Mock).mockResolvedValue(listing);
+    (serverApi.fetchServerRelated as jest.Mock).mockResolvedValue([]);
+
+    const rendered = await PropertyPage({
+      params: Promise.resolve({ locale: 'en', id: 'listing-1' }),
+    });
+
+    const html = renderToStaticMarkup(rendered);
+    expect(html).toContain('application/ld+json');
+
+    const block = html.match(
+      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/
+    );
+    expect(block).not.toBeNull();
+
+    const document = JSON.parse(block?.[1] ?? '{}') as {
+      '@graph': Record<string, unknown>[];
+    };
+    const property = document['@graph'].find((node) => node['@type'] === 'Property');
+    expect(property).toMatchObject({ numberOfRooms: 2 });
+    expect(JSON.stringify(property)).toContain('2800');
+  });
+
   it('describes the listing, its position and its offer', () => {
     const document = buildPropertyStructuredData(listing, {
       url: 'https://realty.kittray.com/en/property/listing-1',
