@@ -130,7 +130,38 @@ The account that carries it is the service account named in the note above —
 `sc-domain:kittray.com` reads back with the permission level
 `siteFullUser`.
 
-### 1.4 What to monitor after submission
+**The verification record stays.** The TXT record the property was verified
+with is what keeps the property verified — GSC's own words on the ownership
+page are *"To stay verified, don't remove the DNS record."* It is a
+`google-site-verification` value in the zone's DNS, and it is never a
+credential: it grants no access to anything, and the property's users are
+managed in the console, not by DNS.
+
+### 1.4 The first readings (2026-11-17)
+
+The property was verified and the sitemaps submitted on 2026-11-17, so the
+numbers start empty. What the API said the same day, through the service
+account:
+
+| Reading | Value |
+|---|---|
+| Clicks / impressions, 28 days | 0 / 0 — the property had no history before it was verified |
+| `inspect_url` on `https://realty.kittray.com/en` | **"URL is unknown to Google"**, with `crawlAllowed: true`, `indexingAllowed: true`, `canonicalMatch: true` |
+| Sitemaps | both listed; `isPending` until the first fetch |
+
+**"Unknown to Google" is the expected state, not an exclusion.** The URL was
+discovered that day; the exclusion reasons to worry about are *"blocked by
+robots.txt"* and *"marked as noindex"*, and neither applies — the robots.txt
+allows crawling and no page carries `X-Robots-Tag`. The first fetch takes
+days; the sitemap's `lastDownloaded` is the receipt.
+
+**The same property through the MCP.** The `cloud-gsc-suganthan-kittray`
+server (`suganthan-gsc-mcp@2.5.1`, one instance per property, the property
+read from `GSC_SITE_URL`) carries the same service account, so its 29 tools
+read the same property — `list_sitemaps`, `submit_sitemap`, `inspect_url`,
+`site_snapshot`, `advanced_search_analytics` and the rest.
+
+### 1.5 What to monitor after submission
 
 Once the sitemap is accepted, GSC will begin crawling submitted URLs. Check these sections weekly:
 
@@ -141,7 +172,7 @@ Once the sitemap is accepted, GSC will begin crawling submitted URLs. Check thes
 | **Enhancements** | **Core Web Vitals** — LCP, INP, CLS. |
 | **Links** | GSC lists external pages that link to your site. No action needed; for awareness only. |
 
-### 1.5 URL Inspection tool
+### 1.6 URL Inspection tool
 
 Paste any public URL from the site into the GSC search bar to see:
 
@@ -293,7 +324,7 @@ Disallow: /*/saved-searches/
 | Private path `Disallow` blocks | Prevents `/api/`, `/admin/`, auth flows, and user-specific pages from being crawled. |
 | **Explicit AI-bot `Allow` rules** | We want the demo to be discoverable and citable by AI assistants, so the major crawlers are allowed explicitly. |
 
-With that file in place, the GSC "Excluded" tab in section 1.4 should show **no**
+With that file in place, the GSC "Excluded" tab in section 1.5 should show **no**
 "Submitted URL blocked by robots.txt" entries — and if it does, the deployment
 is still serving the override, not the product's own file.
 
