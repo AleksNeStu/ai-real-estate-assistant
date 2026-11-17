@@ -258,7 +258,7 @@ The CI pipeline runs the following jobs:
 | security | SAST scanning | bandit, pip-audit |
 | semgrep | Security rules | `semgrep.yml` |
 | trivy | Container scan | Docker image vulnerability |
-| compose_smoke | Docker build test | Build + health check |
+| compose-stack | Docker build test | Build + health check + the e2e suite against the real backend |
 
 ### Backend commands
 

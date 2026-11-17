@@ -17,6 +17,13 @@ WORKDIR /app
 # a new container.
 ARG NEXT_PUBLIC_SITE_URL=""
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+# The same story for the security headers: Next writes the CSP into the build
+# manifest, so whether the deployment is served over HTTPS is a BUILD
+# decision. The default keeps the production behaviour (HSTS and
+# upgrade-insecure-requests); the e2e stack is served over plain HTTP and
+# builds with FORCE_HTTPS=false.
+ARG FORCE_HTTPS=true
+ENV FORCE_HTTPS=$FORCE_HTTPS
 # Copy node_modules from deps stage
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 # Copy frontend source from apps/web

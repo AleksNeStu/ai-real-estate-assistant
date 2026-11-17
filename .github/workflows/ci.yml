@@ -577,10 +577,17 @@ jobs:
 
   # ===== STAGE 5: Integration =====
 
-  compose_smoke:
-    runs-on: ubuntu-latest
+  # The stack job: it builds the Docker Compose stack, checks that it comes
+  # up, and runs the e2e suite against the REAL backend - the only job in the
+  # pipeline where the API is not mocked. A stack that does not come up fails
+  # the pipeline (no continue-on-error): a green pipeline has to mean that
+  # the product starts.
+  compose-stack:
+    # Pinned to ubuntu-24.04 for the same reason as the e2e job: the
+    # ubuntu-latest image has no chromium build for Playwright.
+    runs-on: ubuntu-24.04
     needs: [backend-tests, frontend-build]
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -590,8 +597,31 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Docker Compose smoke test (build + health checks)
-        continue-on-error: true
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.23.4'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: |
+          set -uo pipefail
+          for attempt in 1 2 3; do
+            if npx playwright install chromium; then
+              echo "the browser is in place"
+              exit 0
+            fi
+            echo "the download failed (attempt $attempt/3), retrying in 30s" >&2
+            sleep 30
+          done
+          echo "ERROR: the browser could not be downloaded after three attempts" >&2
+          exit 1
+
+      - name: Docker Compose stack (build + health checks)
         env:
           API_ACCESS_KEY: ci-test-key
           # The postgres service sits behind a profile and never starts here,
@@ -601,9 +631,9 @@ jobs:
           # The provider is mocked (the local MockLLM), so the pipeline needs
           # no paid API key and no answer leaves the runner.
           DEMO_MODE: 'true'
-          # The demo catalogue is seeded when the backend starts, and the map
-          # of the public demo draws it - so the stack needs it.
-          DEMO_DATA_MODE: 'true'
+          # The seeded catalogue is not needed for the protocol assertions,
+          # and the seeding competes for the runner's CPU with the e2e run.
+          DEMO_DATA_MODE: 'false'
           DEMO_LLM_MODE: 'true'
           DEMO_API_KEY_BYPASS: 'true' # pragma: allowlist secret - a flag, not a credential
           # The stack is served over plain HTTP, so the browser must not
@@ -614,32 +644,10 @@ jobs:
           docker compose version
           set -e
           for attempt in 1 2; do
-            python scripts/docker/compose_smoke.py --ci --timeout-seconds 600 && break
+            python scripts/docker/compose_smoke.py --ci --keep-up --timeout-seconds 600 && break
             if [ $attempt -eq 2 ]; then exit 1; fi
             echo "Compose smoke failed. Retrying..."
           done
-
-      - name: Wait for the demo catalogue
-        env:
-          API_ACCESS_KEY: ci-test-key
-        run: |
-          # The catalogue is seeded in the background when the backend starts,
-          # and the seeding embeds every listing. The e2e suite draws that
-          # catalogue on the map, so it waits for the listings to arrive
-          # instead of asserting against an empty map.
-          for attempt in $(seq 1 60); do
-            if curl -s -m 30 -X POST http://localhost:8082/api/v1/search \
-              -H 'Content-Type: application/json' \
-              -H "X-API-Key: ${API_ACCESS_KEY}" \
-              -d '{"query":"apartment in Krakow"}' | grep -q '"latitude"'; then
-              echo "the catalogue has listings"
-              exit 0
-            fi
-            echo "waiting for the demo catalogue ($attempt/60)"
-            sleep 10
-          done
-          echo "the demo catalogue never filled up" >&2
-          exit 1
 
       - name: E2E against the real stack
         env:
@@ -671,7 +679,7 @@ jobs:
     needs: [gitleaks, secret-validation, backend-lint, backend-tests,
             frontend-build, security-sast, frontend-tests,
             security-deps, codeql-python, codeql-javascript, container-scan,
-            lighthouse, e2e, compose_smoke]
+            lighthouse, e2e, compose-stack]
     permissions:
       contents: read
     steps:

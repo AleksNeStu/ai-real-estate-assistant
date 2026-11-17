@@ -263,3 +263,38 @@ def test_http_get_status_sends_headers():
             )
             == 200
         )
+
+
+def test_parse_args_defaults_probe_the_published_compose_ports(tmp_path):
+    """The smoke test has to probe the ports the compose file publishes.
+
+    The old defaults (8001/3001) are the ports of the local non-Docker
+    stack. The compose file publishes 8082 and 3082, so the smoke test was
+    waiting out its whole timeout for a host the stack never opens - in CI,
+    where nothing else listens, that is the difference between a green and a
+    red job.
+    """
+    compose_file = tmp_path / "docker-compose.yml"
+    compose_file.write_text("version: '3.8'\nservices: {}\n", encoding="utf-8")
+
+    cfg = parse_args(["--compose-file", str(compose_file)])
+
+    assert cfg.backend_health_url == "http://localhost:8082/health"
+    assert cfg.backend_verify_auth_url == "http://localhost:8082/api/v1/verify-auth"
+    assert cfg.frontend_url == "http://localhost:3082/"
+
+
+def test_parse_args_keep_up_leaves_the_stack_running(tmp_path):
+    """--keep-up keeps the stack up so the caller can run against it.
+
+    The CI job starts the stack, runs the e2e suite against it and tears it
+    down itself; the smoke script must not pull the stack down at the end of
+    the health checks.
+    """
+    compose_file = tmp_path / "docker-compose.yml"
+    compose_file.write_text("version: '3.8'\nservices: {}\n", encoding="utf-8")
+
+    cfg = parse_args(["--compose-file", str(compose_file), "--ci", "--keep-up"])
+
+    assert cfg.build is True
+    assert cfg.down is False

@@ -32,6 +32,13 @@ const nextConfig: NextConfig = {
   async headers() {
     const isProduction = process.env.NODE_ENV === 'production';
 
+    // `upgrade-insecure-requests` and HSTS only make sense on a deployment
+    // that is served over HTTPS: on a plain-HTTP deployment the browser
+    // upgrades every request to HTTPS, the connection fails, and the page
+    // loses its assets. The e2e stack is served over HTTP, so the switch is
+    // explicit - the default keeps the production behaviour.
+    const forceHttps = isProduction && process.env.FORCE_HTTPS !== 'false';
+
     // Content Security Policy
     // Development: More permissive for hot reload and inline scripts
     // Production: Strict policy allowing only trusted sources
@@ -65,7 +72,7 @@ const nextConfig: NextConfig = {
           'base-uri': ["'self'"],
           'form-action': ["'self'"],
           'frame-ancestors': ["'none'"],
-          'upgrade-insecure-requests': [],
+          ...(forceHttps ? { 'upgrade-insecure-requests': [] } : {}),
         }
       : {
           'default-src': ["'self'"],
@@ -120,7 +127,7 @@ const nextConfig: NextConfig = {
             value: cspHeaderValue,
           },
           // HSTS only in production when using HTTPS
-          ...(isProduction
+          ...(forceHttps
             ? [
                 {
                   key: 'Strict-Transport-Security',

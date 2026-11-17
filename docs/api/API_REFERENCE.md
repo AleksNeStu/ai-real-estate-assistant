@@ -211,7 +211,7 @@ Invoke-RestMethod `
 - One-command backend CI parity: `python scripts\ci\ci_parity.py` (or `--dry-run` to print commands only).
 - The RuleEngine is exercised by the pytest suites; run the same check locally with `python -m pytest -q tests\integration\test_rule_engine_clean.py`.
 - CI runs OpenAPI and API Reference drift checks to keep `docs/api/openapi.json` and endpoint docs in sync.
-- CI also runs a Docker Compose smoke test (build + health checks). It waits for `/health` and the frontend `/`, and also checks `/api/v1/verify-auth` when `API_ACCESS_KEY` is set. Local equivalent: `python scripts\ci\compose_smoke.py --ci`.
+- CI also runs a Docker Compose smoke test (build + health checks). It waits for `/health` and the frontend `/`, and also checks `/api/v1/verify-auth` when `API_ACCESS_KEY` is set. Local equivalent: `python scripts\docker\compose_smoke.py --ci`.
 - Some internal/legacy modules may require optional Python packages (for example `ai/agent.py` requires `langchain-experimental`); the API does not require these optional deps.
 - Coverage: the pipeline reports the line-rate of each suite on its coverage artifact and
   compares it with the threshold (unit 85, integration 70) as an annotation — the job is not
