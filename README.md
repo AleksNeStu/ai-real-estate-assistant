@@ -504,8 +504,9 @@ for teams that want the managed pieces instead of running the stack.
 
 Backend: pytest with xdist and a coverage gate that can fail — 84 % for the
 unit suite, 50 % for the integration suite, and the coverage of the files a
-change touches on top of that. Frontend: Jest, with a 50 % gate over the
-library, i18n, context and hook layers. Security: Gitleaks, Semgrep, Bandit,
+change touches on top of that. Frontend: Jest, with a coverage gate over the
+whole frontend — the library layers, the components and the pages — and a
+separate floor for each of them. Security: Gitleaks, Semgrep, Bandit,
 Trivy, CodeQL. Full details in the
 [testing guide](docs/testing/TESTING_GUIDE.md).
 

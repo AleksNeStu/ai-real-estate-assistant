@@ -1,0 +1,38 @@
+{
+  "./src/lib/": {
+    "branches": 85,
+    "functions": 86,
+    "lines": 85,
+    "statements": 85
+  },
+  "./src/components/": {
+    "branches": 71,
+    "functions": 60,
+    "lines": 52,
+    "statements": 52
+  },
+  "./src/app/": {
+    "branches": 67,
+    "functions": 44,
+    "lines": 57,
+    "statements": 57
+  },
+  "./src/contexts/": {
+    "branches": 72,
+    "functions": 23,
+    "lines": 66,
+    "statements": 66
+  },
+  "./src/hooks/": {
+    "branches": 82,
+    "functions": 61,
+    "lines": 83,
+    "statements": 83
+  },
+  "./src/i18n/": {
+    "branches": 83,
+    "functions": 56,
+    "lines": 60,
+    "statements": 60
+  }
+}
