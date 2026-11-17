@@ -622,6 +622,10 @@ jobs:
           exit 1
 
       - name: Prepare the stack's mounted directories
+        env:
+          # Compose interpolates the whole file, and the postgres service
+          # requires this variable - the service itself never starts here.
+          POSTGRES_PASSWORD: ci-profile-not-started # pragma: allowlist secret - a throwaway value for a service that never starts
         run: |
           # The backend runs as a non-root user and writes into the host
           # directories the compose file mounts: the audit log at import time,
