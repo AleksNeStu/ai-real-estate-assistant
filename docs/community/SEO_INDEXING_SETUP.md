@@ -20,11 +20,22 @@
 > that domain, so the property is the DOMAIN property
 > `sc-domain:kittray.com`, which covers `realty.kittray.com` as well.
 >
-> **One thing is still the operator's click:** the service account that reads
-> the property for us has no access to it yet (the API answers 403 "User does
-> not have sufficient permission"). Adding it as a user with FULL permission
-> is one step in the Search Console UI. Until then the numbers below are read
-> by hand in the UI.
+> **The property is verified and the account reads it (2026-11-17).** The
+> property `sc-domain:kittray.com` is verified by DNS, the service account
+> `gsc-nestlab-tech@nestlab-gmail-mcp.iam.gserviceaccount.com` holds **FULL**
+> permission on it (the API answers `200` and the account's permission level
+> reads `siteFullUser`), and both sitemaps are submitted —
+> `https://realty.kittray.com/sitemap.xml` and `https://kittray.com/sitemap.xml`.
+> The numbers below are read with that account, not by hand.
+>
+> **How it was done, for the next time.** The Search Console API has no
+> `users` resource — adding a user to a property is a console action. The
+> property's owner is `devs.scaler@gmail.com` (the account that holds the
+> `kittray.com` zone and its DNS), and the verification token was written to
+> the zone with that account's own Cloudflare API key rather than by
+> authorizing Google over the DNS account — no new third-party grant was
+> created for it. The procedure and the exact dialog controls are in the
+> private operations repository, under `infra/cloudflare/kittray-hub/`.
 
 ---
 
@@ -99,6 +110,25 @@ and the apex serves one of its own (`https://kittray.com/sitemap.xml`) that
 lists the hub and the product.
 
 4. Click **Submit**.
+
+**Done on 2026-11-17.** Both sitemaps are submitted to the property:
+
+| Sitemap | Submitted |
+|---|---|
+| `https://realty.kittray.com/sitemap.xml` | 2026-11-17T10:35:11Z |
+| `https://kittray.com/sitemap.xml` | 2026-11-17T10:35:11Z |
+
+**With the service account, the same thing is one API call** — the endpoint is
+`PUT webmasters/v3/sites/{siteUrl}/sitemaps/{sitemapUrl}` (the site URL is
+part of the path; the collection endpoint answers 404 for a POST):
+
+```bash
+PUT https://www.googleapis.com/webmasters/v3/sites/sc-domain:kittray.com/sitemaps/https%3A%2F%2Frealty.kittray.com%2Fsitemap.xml
+```
+
+The account that carries it is the service account named in the note above —
+`sc-domain:kittray.com` reads back with the permission level
+`siteFullUser`.
 
 ### 1.4 What to monitor after submission
 
