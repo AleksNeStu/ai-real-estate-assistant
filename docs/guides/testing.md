@@ -185,6 +185,35 @@ The CI pipeline enforces coverage gates:
      - `models/user_model_preferences.py`
      - `config/*.py`
 
+### Frontend Coverage Gates
+
+The Jest gate measures the whole frontend — the library layers, the components
+and the pages — and holds a floor for each part separately, so a drop in one
+is not hidden by a rise in another. The floors live in
+`apps/web/jest.coverage-thresholds.json` and are a ratchet: each one is the
+number the scope measured, minus the margin that platform variance needs, and
+a test (`apps/web/src/__tests__/coverage-gate.test.ts`) keeps every floor
+below the number that was measured.
+
+| Scope | Statements | Branches | Functions | Lines |
+|-------|-----------|----------|-----------|-------|
+| `./src/lib/` | 85 | 85 | 86 | 85 |
+| `./src/components/` | 52 | 71 | 60 | 52 |
+| `./src/app/` | 57 | 67 | 44 | 57 |
+| `./src/contexts/` | 66 | 72 | 23 | 66 |
+| `./src/hooks/` | 83 | 82 | 61 | 83 |
+| `./src/i18n/` | 60 | 83 | 56 | 60 |
+
+Measured on 2026-11-17 with Jest 1.65 and the whole frontend suite
+(1694 tests): `src/lib` 87.03 / 87.08 / 88.16 / 87.03, `src/components`
+54.46 / 73.66 / 62.89 / 54.46, `src/app` 59.76 / 69.21 / 46.53 / 59.76,
+`src/contexts` 68.23 / 74.07 / 25.00 / 68.23, `src/hooks` 85.65 / 84.44 /
+63.63 / 85.65, `src/i18n` 62.98 / 85.71 / 58.33 / 62.98.
+
+There is no global floor: the aggregate over every file is a number that
+moves when a file without a test is added, and it says nothing about which
+part moved. The six scopes above cover the whole tree.
+
 ### Checking Coverage Locally
 
 ```bash

@@ -32,7 +32,7 @@ const config = {
   ],
   collectCoverage: true,
   collectCoverageFrom: [
-    // Include lib files (utilities, API, streaming)
+    // The library layers (utilities, API, streaming)
     'src/lib/**/*.{js,jsx,ts,tsx}',
     'src/lib/streaming/**/*.{js,jsx,ts,tsx}',
     // Include i18n config
@@ -41,6 +41,11 @@ const config = {
     'src/contexts/**/*.{js,jsx,ts,tsx}',
     // Include hooks
     'src/hooks/**/*.{js,jsx,ts,tsx}',
+    // The components and the pages: they are most of the product, and a
+    // gate that cannot see them says nothing about the code the product is
+    // made of. A component without a test now costs the gate something.
+    'src/components/**/*.{js,jsx,ts,tsx}',
+    'src/app/**/*.{js,jsx,ts,tsx}',
     // Exclude type definitions
     '!src/**/*.d.ts',
     '!src/lib/types.ts',
@@ -49,14 +54,17 @@ const config = {
     '!src/**/*.test.{js,jsx,ts,tsx}',
     '!src/**/*.spec.{js,jsx,ts,tsx}',
   ],
-  coverageThreshold: {
-    global: {
-      branches: 50,
-      functions: 35,
-      lines: 50,
-      statements: 50,
-    },
-  },
+  // The floors live in their own file: the gate's configuration is read by
+  // the test that keeps the floors honest, and a JSON file can be read
+  // without evaluating the whole Next.js wrapper.
+  //
+  // There is one floor per part of the frontend and no global one. The
+  // aggregate over every file is a number that moves when a file that is
+  // not covered by any test is added, and it says nothing about which part
+  // moved. The parts say it: the library layers, the components, the pages,
+  // the contexts, the hooks and the i18n catalogue each hold their own
+  // floor, and together they cover the whole tree.
+  coverageThreshold: require('./jest.coverage-thresholds.json'),
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
