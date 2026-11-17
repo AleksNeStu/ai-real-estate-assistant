@@ -658,6 +658,11 @@ jobs:
           DEMO_DATA_MODE: 'true'
           DEMO_LLM_MODE: 'true'
           DEMO_API_KEY_BYPASS: 'true' # pragma: allowlist secret - a flag, not a credential
+          # The stack talks to itself: the browser's preflight is checked
+          # against the stack's own origins. Without the list the preflight is
+          # rejected ("Disallowed CORS origin"), and the suite that runs
+          # against the real stack asserts it.
+          CORS_ALLOW_ORIGINS: http://localhost:3082,http://localhost:8082
           # The stack is served over plain HTTP, so the browser must not
           # upgrade its requests to HTTPS.
           FORCE_HTTPS: 'false'
