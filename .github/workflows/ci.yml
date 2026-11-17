@@ -621,6 +621,24 @@ jobs:
           echo "ERROR: the browser could not be downloaded after three attempts" >&2
           exit 1
 
+      - name: Prepare the stack's mounted directories
+        run: |
+          # The backend runs as a non-root user and writes into the host
+          # directories the compose file mounts: the audit log at import time,
+          # the sessions and the preferences when they are used. On a runner
+          # those paths are not part of the checkout, so Docker creates them
+          # as root - and the container cannot write there, which killed the
+          # backend before it served anything ("Permission denied:
+          # 'data/audit/audit_<date>.csv'"). The paths are read from the
+          # compose file itself, so this list cannot drift from it.
+          docker compose -f deploy/compose/docker-compose.yml config --format json \
+            | jq -r '.services | to_entries[] | .key as $s | (.value.volumes // [])[] | select(.type == "bind") | .source' \
+            | while read -r dir; do
+                mkdir -p "$dir"
+                chmod -R 0777 "$dir"
+              done
+          ls -ld deploy/compose/data/audit
+
       - name: Docker Compose stack (build + health checks)
         env:
           API_ACCESS_KEY: ci-test-key
