@@ -267,3 +267,41 @@ def test_async_indexing_reinitializes_when_vector_store_is_chroma_instance(tmp_p
     fut = store.add_property_collection_async(coll, replace_existing=False)
     assert fut.result(timeout=5) == 0
     assert store._initialize_vector_store.called
+
+
+def test_get_retriever_comes_from_the_vector_store_when_it_has_documents(tmp_path):
+    """The retriever is the Chroma store's own, when the store has documents.
+
+    The Chroma client is untyped, so this branch is the one the signature
+    cannot check - and the unit suite is what keeps it covered.
+    """
+    with patch.object(ChromaPropertyStore, "_create_embeddings", return_value=None):
+        store = ChromaPropertyStore(persist_directory=str(tmp_path))
+
+    fake_store = MagicMock()
+    fake_store.as_retriever.return_value = "the-retriever"
+
+    with (
+        patch.object(store, "_get_vector_store", return_value=fake_store),
+        patch.object(store, "get_stats", return_value={"db_document_count": 3}),
+    ):
+        assert store.get_retriever(search_type="mmr", k=3) == "the-retriever"
+
+    fake_store.as_retriever.assert_called_once_with(
+        search_type="mmr", search_kwargs={"k": 3, "fetch_k": 20}
+    )
+
+
+def test_get_retriever_falls_back_when_the_store_is_empty(tmp_path):
+    """An empty store answers with the fallback retriever, not with Chroma's."""
+    with patch.object(ChromaPropertyStore, "_create_embeddings", return_value=None):
+        store = ChromaPropertyStore(persist_directory=str(tmp_path))
+
+    with (
+        patch.object(store, "_get_vector_store", return_value=MagicMock()),
+        patch.object(store, "get_stats", return_value={"db_document_count": 0}),
+    ):
+        retriever = store.get_retriever()
+
+    assert retriever is not None
+    assert hasattr(retriever, "invoke")
