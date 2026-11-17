@@ -53,6 +53,30 @@ class TestAuditLogger:
             assert logger._log_dir == Path(tmpdir)
             assert logger._log_file.exists()
 
+    def test_an_unwritable_audit_directory_does_not_take_the_api_down(self, tmp_path, monkeypatch):
+        """A directory the app cannot write moves the log, it does not raise.
+
+        On a Linux host the container's user (uid 999) cannot write a
+        root-owned mount, and the API must not die because of it.
+        """
+        blocked = tmp_path / "blocked"
+        fallback_root = tmp_path / "fallback"
+        original_mkdir = Path.mkdir
+
+        def refuse_the_blocked_dir(self, *args, **kwargs):
+            if self == blocked:
+                raise PermissionError(13, "Permission denied")
+            return original_mkdir(self, *args, **kwargs)
+
+        monkeypatch.setattr(Path, "mkdir", refuse_the_blocked_dir)
+        monkeypatch.setattr(tempfile, "gettempdir", lambda: str(fallback_root))
+        monkeypatch.setenv("AUDIT_LOG_DIR", str(blocked))
+
+        logger = AuditLogger(log_dir=None)
+
+        assert logger._log_dir == fallback_root / "audit"
+        assert logger._log_file.exists()
+
     def test_audit_logger_hash_identifier(self):
         """Test identifier hashing."""
         with tempfile.TemporaryDirectory() as tmpdir:

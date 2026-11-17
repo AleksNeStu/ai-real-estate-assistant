@@ -31,6 +31,7 @@ import csv
 import hashlib
 import logging
 import os
+import tempfile
 import threading
 from datetime import datetime, timezone
 from enum import Enum
@@ -154,7 +155,6 @@ class AuditLogger:
             log_dir = Path(os.getenv("AUDIT_LOG_DIR", "data/audit"))
 
         self._log_dir = Path(log_dir)
-        self._log_dir.mkdir(parents=True, exist_ok=True)
 
         # Current log file (rotates daily)
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -163,11 +163,31 @@ class AuditLogger:
         # Thread lock for file writing
         self._lock = threading.Lock()
 
-        # Initialize CSV file with headers
-        self._init_csv()
-
         # Standard logger for real-time alerts
         self._logger = logging.getLogger("audit")
+
+        requested_dir = self._log_dir
+        try:
+            self._log_dir.mkdir(parents=True, exist_ok=True)
+            # Initialize CSV file with headers
+            self._init_csv()
+        except OSError as exc:
+            # The audit directory belongs to whoever mounted it. A container
+            # that runs as a non-root user (uid 999) cannot write a
+            # root-owned mount, and an audit log that cannot be written must
+            # not take the whole API down with it - the log moves to a
+            # directory that is writable, and the fallback is named out loud.
+            fallback_dir = Path(tempfile.gettempdir()) / "audit"
+            fallback_dir.mkdir(parents=True, exist_ok=True)
+            self._log_dir = fallback_dir
+            self._log_file = fallback_dir / f"audit_{today}.csv"
+            self._init_csv()
+            self._logger.warning(
+                "The audit log directory %s is not writable (%s); the audit log is written to %s.",
+                requested_dir,
+                exc,
+                fallback_dir,
+            )
 
         if self._enabled:
             self._logger.info("Audit logging initialized", extra={"log_file": str(self._log_file)})
