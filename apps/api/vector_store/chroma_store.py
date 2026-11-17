@@ -728,7 +728,7 @@ class ChromaPropertyStore:
                     results = vector_store.similarity_search_with_score(
                         query=query, k=k, filter=chroma_filter, **kwargs
                     )
-                    return results
+                    return results  # type: ignore[no-any-return]
             else:
                 raise RuntimeError("no_vector_store")
         except Exception as e:
@@ -1148,7 +1148,7 @@ class ChromaPropertyStore:
 
         vector_store = self._get_vector_store()
         if vector_store is not None and db_count > 0:
-            return vector_store.as_retriever(
+            return vector_store.as_retriever(  # type: ignore[no-any-return]
                 search_type=search_type, search_kwargs={"k": k, "fetch_k": fetch_k, **kwargs}
             )
         else:

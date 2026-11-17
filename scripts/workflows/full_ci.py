@@ -238,7 +238,17 @@ def main(argv: list[str] | None = None) -> int:
                     "-v",
                     f"{root}:/app",
                     "-w",
-                    "/app/frontend",
+                    # The frontend lives in apps/web - the working directory
+                    # used to point at a folder that does not exist, so npm
+                    # walked up to the repository root and ran the root lint
+                    # (which needs ruff) inside a node-only image.
+                    "/app/apps/web",
+                    # The host's node_modules carries the Windows binaries;
+                    # inside the container they are in the way of the Linux
+                    # ones npm wants to install. An anonymous volume gives
+                    # the container its own tree.
+                    "-v",
+                    "/app/apps/web/node_modules",
                     "node:20-alpine",
                     "sh",
                     "-c",
