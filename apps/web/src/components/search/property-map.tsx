@@ -8,6 +8,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { MapTileTheme } from '@/components/ui/map-tile-theme';
 import { formatPrice } from '@/lib/format';
+import { pinLabel, pricePin } from '@/lib/map-pin';
 import { cn } from '@/lib/utils';
 
 import { computeBounds, computeCenter, type PropertyMapPoint } from './property-map-utils';
@@ -94,15 +95,25 @@ export default function PropertyMap({
   const onZoomChange = useCallback((nextZoom: number) => setZoom(nextZoom), []);
   const items = useMemo(() => clusterMapPoints(points, zoom), [points, zoom]);
 
-  const markerIcon = useMemo(
-    () =>
-      divIcon({
-        className: '',
-        html: `<div style="width:14px;height:14px;background:hsl(var(--chart-1));border-radius:9999px;border:2px solid hsl(var(--background));box-shadow:0 1px 2px hsl(var(--foreground) / 0.3)"></div>`,
-        iconSize: [14, 14],
-        iconAnchor: [7, 7],
-      }),
-    []
+  // The pin is the price. A dot tells the visitor where a listing is; the
+  // price tells them whether it is worth the click, and the popup opens on
+  // the same number. The landing's map draws the same pin (see
+  // `@/lib/map-pin`), so the two maps of the product speak one language.
+  //
+  // The icons are cached by price: a new icon object would make Leaflet
+  // rebuild the marker on every render.
+  const iconCache = useMemo(() => new Map<string, ReturnType<typeof pricePin>>(), []);
+
+  const markerIcon = useCallback(
+    (price?: number, currency?: string) => {
+      const key = `${price ?? 'none'}|${currency ?? 'PLN'}`;
+      const cached = iconCache.get(key);
+      if (cached) return cached;
+      const icon = pricePin(pinLabel(price, currency ?? 'PLN', locale), false);
+      iconCache.set(key, icon);
+      return icon;
+    },
+    [iconCache, locale]
   );
 
   const getClusterIcon = useCallback(
@@ -141,7 +152,7 @@ export default function PropertyMap({
             if (item.kind === 'point') {
               const p = item.point;
               return (
-                <Marker key={p.id} position={[p.lat, p.lon]} icon={markerIcon}>
+                <Marker key={p.id} position={[p.lat, p.lon]} icon={markerIcon(p.price, p.currency)}>
                   <Popup>
                     <div className="space-y-1">
                       <div className="font-semibold">{p.title ?? t('card.untitled')}</div>

@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
-import { divIcon, type LatLngBoundsExpression } from 'leaflet';
+import { type LatLngBoundsExpression } from 'leaflet';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 
 import { MapTileTheme } from '@/components/ui/map-tile-theme';
-import { formatMapPinPrice } from '@/lib/format';
+import { pinLabel, pricePin } from '@/lib/map-pin';
 
 /**
  * The map of the hero instrument: the matches, on the map they sit on.
@@ -38,41 +38,11 @@ function FitBounds({ bounds }: { bounds: LatLngBoundsExpression | null }) {
 }
 
 /**
- * The pin's label: the price, in the same spelling the row below prints it.
- *
- * The rows format the price with the Polish locale (the market's own
- * spelling), so the chip does the same — a pin that reads "2 100 zł" next to
- * a row that reads "2 100 zł" is one price, one spelling.
- */
-function pinLabel(price?: number, currency = 'PLN', locale = 'pl-PL'): string {
-  return formatMapPinPrice(price, currency, locale);
-}
-
-/**
  * The pin is the price, and the price is the price the row below shows.
  *
- * The chip used to print the number in thousands with no magnitude check, so
- * 322 000 zł read as "322k" and 4 100 zł read as "4k" next to a row that
- * said "4 100 zł". Carrying the currency into the chip was not enough: a
- * 2 100 zł listing still read as "2.1K", which is a different price. The
- * chip prints the price the row prints, and only shortens it when the number
- * is genuinely too long — the same rule the search map's popup uses.
+ * The pin itself lives in `@/lib/map-pin`, because the search map draws the
+ * same pin: one map, one pin, one spelling of a price.
  */
-function pricePin(
-  label: string,
-  highlighted: boolean
-): ReturnType<typeof divIcon> {
-  const background = highlighted ? 'hsl(var(--foreground))' : 'hsl(var(--background))';
-  const color = highlighted ? 'hsl(var(--background))' : 'hsl(var(--foreground))';
-  const border = highlighted ? 'hsl(var(--foreground))' : 'hsl(var(--border))';
-
-  return divIcon({
-    className: '',
-    html: `<div style="transform:translate(-50%,-50%);display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:9999px;border:1px solid ${border};background:${background};color:${color};font-family:var(--font-mono),ui-monospace,monospace;font-size:11px;line-height:1;white-space:nowrap;box-shadow:0 2px 8px hsl(var(--foreground) / 0.28)">${label}</div>`,
-    iconSize: [0, 0],
-    iconAnchor: [0, 0],
-  });
-}
 
 export default function HeroMap({
   points,

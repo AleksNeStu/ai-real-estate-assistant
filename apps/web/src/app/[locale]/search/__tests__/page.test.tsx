@@ -428,4 +428,97 @@ describe('SearchPage', () => {
       expect(screen.getByRole('alert')).toHaveTextContent(/Failed to export/);
     });
   });
+  it('offers the enhanced map only where a Mapbox token exists', async () => {
+    const previous = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+    delete process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+
+    try {
+      mockSearchProperties.mockResolvedValueOnce({
+        results: [
+          {
+            property: {
+              id: '1',
+              title: 'Modern Apartment',
+              price: 500000,
+              city: 'Downtown',
+              country: 'US',
+              rooms: 2,
+              bathrooms: 2,
+              latitude: 40.0,
+              longitude: -74.0,
+            },
+            score: 0.9,
+          },
+        ],
+        count: 1,
+      });
+
+      render(<SearchPage />);
+      fireEvent.change(screen.getByLabelText('Search query'), {
+        target: { value: 'Downtown' },
+      });
+      fireEvent.click(screen.getByRole('button', { name: /search/i }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('property-map')).toBeInTheDocument();
+      });
+
+      // Without a token the enhanced map is not offered: Mapbox refuses to
+      // serve its style without one, and the visitor would get a grey
+      // rectangle instead of a map.
+      expect(screen.queryByLabelText('Use Mapbox')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('property-mapbox-map')).not.toBeInTheDocument();
+    } finally {
+      if (previous === undefined) {
+        delete process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+      } else {
+        process.env.NEXT_PUBLIC_MAPBOX_TOKEN = previous;
+      }
+    }
+  });
+
+  it('offers the enhanced map where a Mapbox token exists', async () => {
+    const previous = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+    process.env.NEXT_PUBLIC_MAPBOX_TOKEN = 'pk.test-token';
+
+    try {
+      mockSearchProperties.mockResolvedValueOnce({
+        results: [
+          {
+            property: {
+              id: '1',
+              title: 'Modern Apartment',
+              price: 500000,
+              city: 'Downtown',
+              country: 'US',
+              rooms: 2,
+              bathrooms: 2,
+              latitude: 40.0,
+              longitude: -74.0,
+            },
+            score: 0.9,
+          },
+        ],
+        count: 1,
+      });
+
+      render(<SearchPage />);
+      fireEvent.change(screen.getByLabelText('Search query'), {
+        target: { value: 'Downtown' },
+      });
+      fireEvent.click(screen.getByRole('button', { name: /search/i }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('property-map')).toBeInTheDocument();
+      });
+
+      expect(screen.getByLabelText('Use Mapbox')).toBeInTheDocument();
+    } finally {
+      if (previous === undefined) {
+        delete process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+      } else {
+        process.env.NEXT_PUBLIC_MAPBOX_TOKEN = previous;
+      }
+    }
+  });
 });

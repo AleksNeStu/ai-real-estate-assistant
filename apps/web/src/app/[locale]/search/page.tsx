@@ -124,6 +124,14 @@ function SearchPageContent() {
   // the route opens on. The switch narrows the route to the list.
   const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  // The enhanced map is Mapbox GL, and Mapbox asks for an access token. A
+  // deployment without one (the public demo, a self-hoster) must not be
+  // offered a switch that opens a map the provider refuses to serve: the
+  // style request answers 401 and the visitor gets a grey rectangle. So the
+  // switch appears only where the token exists - and the free OpenStreetMap
+  // map is what everyone else gets.
+  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+  const canUseMapbox = Boolean(mapboxToken);
   const [useMapbox, setUseMapbox] = useState(false);
   const [mapFilterOptions, setMapFilterOptions] = useState<MapFilterOptions>({
     showHeatmap: false,
@@ -958,11 +966,11 @@ function SearchPageContent() {
           <section data-testid="search-map" className="relative order-2 lg:order-3">
             <div className="lg:sticky lg:top-0">
               {mapPoints.length ? (
-                useMapbox ? (
+                useMapbox && canUseMapbox ? (
                   <>
                     <PropertyMapboxMap
                       points={drawnPolygon ? filteredByPolygon : filteredMapPoints}
-                      mapboxToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+                      mapboxToken={mapboxToken}
                       showHeatmap={mapFilterOptions.showHeatmap}
                       heatmapIntensity={mapFilterOptions.heatmapIntensity}
                       heatmapMode={mapFilterOptions.heatmapMode}
@@ -1006,16 +1014,18 @@ function SearchPageContent() {
 
               {mapPoints.length ? (
                 <div className="absolute right-4 top-4 z-[1000] flex items-center gap-2 rounded-lg border border-border bg-background px-2.5 py-1.5">
-                  <label className="flex items-center gap-2 text-[12px] text-foreground">
-                    <input
-                      type="checkbox"
-                      checked={useMapbox}
-                      onChange={(e) => setUseMapbox(e.target.checked)}
-                      className="size-3.5 rounded border-input"
-                      aria-label={t('map.useMapbox')}
-                    />
-                    {t('map.enhanced')}
-                  </label>
+                  {canUseMapbox ? (
+                    <label className="flex items-center gap-2 text-[12px] text-foreground">
+                      <input
+                        type="checkbox"
+                        checked={useMapbox}
+                        onChange={(e) => setUseMapbox(e.target.checked)}
+                        className="size-3.5 rounded border-input"
+                        aria-label={t('map.useMapbox')}
+                      />
+                      {t('map.enhanced')}
+                    </label>
+                  ) : null}
                   {useMapbox ? (
                     <Button
                       type="button"
