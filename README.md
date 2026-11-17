@@ -377,6 +377,11 @@ cd ai-real-estate-assistant
 
 # Docker, demo mode, no API keys required
 cp deploy/compose/.env.example deploy/compose/.env
+# The backend runs as uid 999 and writes its state into these directories.
+# On Linux Docker creates them as root, so they need write access for that
+# user; on macOS and Windows Docker's own permissions already allow it.
+mkdir -p deploy/compose/{chroma_db,data/audit,.preferences,.notifications,.sessions}
+chmod -R a+rwX deploy/compose/{chroma_db,data/audit,.preferences,.notifications,.sessions}
 docker compose -f deploy/compose/docker-compose.yml up --build
 # Frontend: http://localhost:3082 · API: http://localhost:8082/docs
 ```
