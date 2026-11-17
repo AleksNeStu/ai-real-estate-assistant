@@ -91,6 +91,11 @@ API_ACCESS_KEY=change-me
 JWT_SECRET_KEY=change-me
 SECURITY_PEPPER=change-me
 ENV
+# The stack keeps its database and its audit log in ./state, and its vector
+# index in ./chroma_db. The backend runs as uid 999 and cannot write a
+# root-owned directory, so these have to be writable for that user.
+mkdir -p state chroma_db
+chmod -R a+rwX state chroma_db
 docker compose -f docker-compose.selfhosted.yml up -d
 ```
 

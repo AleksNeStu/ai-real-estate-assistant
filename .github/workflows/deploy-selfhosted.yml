@@ -435,6 +435,14 @@ jobs:
           . "$BUILD_ENV_FILE"
           set +a
 
+          # The stack keeps its database and its audit log in ./state, and its
+          # vector index in ./chroma_db. The backend runs as uid 999 and cannot
+          # write a root-owned directory - and Docker creates a missing bind
+          # mount as root - so the directories are prepared for that user
+          # before the stack comes up.
+          mkdir -p state chroma_db
+          chmod -R a+rwX state chroma_db
+
           docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
 
           if [ -n "$DEPLOY_HEALTH_URL" ]; then
