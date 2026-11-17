@@ -594,6 +594,21 @@ jobs:
         continue-on-error: true
         env:
           API_ACCESS_KEY: ci-test-key
+          # The postgres service sits behind a profile and never starts here,
+          # but Compose interpolates the whole file - without the variable the
+          # stack refuses to come up at all.
+          POSTGRES_PASSWORD: ci-profile-not-started # pragma: allowlist secret - a throwaway value for a service that never starts
+          # The provider is mocked (the local MockLLM), so the pipeline needs
+          # no paid API key and no answer leaves the runner.
+          DEMO_MODE: 'true'
+          # The demo catalogue is seeded when the backend starts, and the map
+          # of the public demo draws it - so the stack needs it.
+          DEMO_DATA_MODE: 'true'
+          DEMO_LLM_MODE: 'true'
+          DEMO_API_KEY_BYPASS: 'true' # pragma: allowlist secret - a flag, not a credential
+          # The stack is served over plain HTTP, so the browser must not
+          # upgrade its requests to HTTPS.
+          FORCE_HTTPS: 'false'
         run: |
           docker --version
           docker compose version
@@ -603,6 +618,52 @@ jobs:
             if [ $attempt -eq 2 ]; then exit 1; fi
             echo "Compose smoke failed. Retrying..."
           done
+
+      - name: Wait for the demo catalogue
+        env:
+          API_ACCESS_KEY: ci-test-key
+        run: |
+          # The catalogue is seeded in the background when the backend starts,
+          # and the seeding embeds every listing. The e2e suite draws that
+          # catalogue on the map, so it waits for the listings to arrive
+          # instead of asserting against an empty map.
+          for attempt in $(seq 1 60); do
+            if curl -s -m 30 -X POST http://localhost:8082/api/v1/search \
+              -H 'Content-Type: application/json' \
+              -H "X-API-Key: ${API_ACCESS_KEY}" \
+              -d '{"query":"apartment in Krakow"}' | grep -q '"latitude"'; then
+              echo "the catalogue has listings"
+              exit 0
+            fi
+            echo "waiting for the demo catalogue ($attempt/60)"
+            sleep 10
+          done
+          echo "the demo catalogue never filled up" >&2
+          exit 1
+
+      - name: E2E against the real stack
+        env:
+          CI: 'true'
+          E2E_STACK: 'true'
+          STACK_BACKEND_URL: http://localhost:8082
+          STACK_FRONTEND_URL: http://localhost:3082
+          API_ACCESS_KEY: ci-test-key
+          PLAYWRIGHT_BASE_URL: http://localhost:3082
+          PLAYWRIGHT_START_WEB: 'false'
+        run: npx playwright test e2e/infrastructure --project=desktop-chromium
+
+      - name: Upload the stack e2e report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: stack-e2e-report
+          path: artifacts/e2e-report/
+
+      - name: Tear the stack down
+        if: always()
+        env:
+          POSTGRES_PASSWORD: ci-profile-not-started # pragma: allowlist secret - a throwaway value for a service that never starts
+        run: docker compose -f deploy/compose/docker-compose.yml down --volumes --remove-orphans
 
   pipeline-health:
     runs-on: ubuntu-latest

@@ -88,9 +88,46 @@ describe("PropertyMap", () => {
 
     expect(divIconMock).toHaveBeenCalled();
     const html = divIconMock.mock.calls.map((call) => (call[0] as { html: string }).html).join(" ");
-    expect(html).toContain("hsl(var(--chart-1))");
     expect(html).toContain("hsl(var(--background))");
     expect(html).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);
+  });
+
+  it("states the price on the pin, so the map answers what the listing costs", () => {
+    render(
+      <PropertyMap
+        points={[
+          {
+            id: "a",
+            lat: 52.23,
+            lon: 21.01,
+            title: "A",
+            city: "Warsaw",
+            country: "PL",
+            price: 322000,
+            currency: "PLN",
+          },
+        ]}
+      />
+    );
+
+    const html = divIconMock.mock.calls.map((call) => (call[0] as { html: string }).html).join(" ");
+
+    // The pin is the price - the same price the popup prints.
+    expect(html).toContain("322");
+    // The landing's pin, the same pin: the theme's tokens, not raw colors.
+    expect(html).toContain("hsl(var(--border))");
+  });
+
+  it("draws a pin without a price when the listing has none", () => {
+    render(
+      <PropertyMap
+        points={[{ id: "a", lat: 52.23, lon: 21.01, title: "A", city: "Warsaw", country: "PL" }]}
+      />
+    );
+
+    const html = divIconMock.mock.calls.map((call) => (call[0] as { html: string }).html).join(" ");
+
+    expect(html).toContain("—");
   });
 
   it("clusters dense points and renders a cluster popup summary", () => {
