@@ -219,7 +219,16 @@ def main(argv: list[str]) -> int:
         return 0
 
     try:
-        run_command(up_cmd)
+        try:
+            run_command(up_cmd)
+        except Exception:
+            # A failed `up` means a container died, or a dependency never
+            # became healthy. The container's own output is the only place the
+            # reason is written - compose reports the symptom ("unhealthy")
+            # and nothing else, so without these lines the gate fails with no
+            # cause at all.
+            run_diagnostics(base)
+            raise
         try:
             wait_for_http_ok(
                 cfg.backend_health_url,
