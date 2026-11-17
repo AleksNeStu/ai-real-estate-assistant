@@ -649,7 +649,7 @@ open htmlcov/index.html
 
 ### Issue: Docker Build Timeout
 
-**Symptom:** `compose_smoke` job times out.
+**Symptom:** `compose-stack` job times out.
 
 **Cause:** Slow build or health check failure.
 
@@ -748,7 +748,7 @@ Jobs with automatic retry:
 | Job | Retry Condition | Max Retries |
 |-----|-----------------|-------------|
 | backend-tests (integration) | Any failure | 1 |
-| compose_smoke | Any failure | 1 |
+| compose-stack | Any failure | 1 |
 | CodeQL analysis | continue-on-error | N/A (doesn't block) |
 
 ---

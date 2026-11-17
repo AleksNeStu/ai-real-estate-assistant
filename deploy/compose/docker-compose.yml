@@ -119,6 +119,10 @@ services:
     build:
       context: ../..
       dockerfile: deploy/docker/Dockerfile.frontend
+      args:
+        # The security headers are baked into the build, so whether the
+        # deployment is served over HTTPS is a build argument.
+        FORCE_HTTPS: ${FORCE_HTTPS:-true}
     container_name: ai-re-prod-frontend
     ports:
       - "3082:3000"

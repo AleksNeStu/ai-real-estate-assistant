@@ -133,11 +133,16 @@ def parse_args(argv: list[str]) -> SmokeConfig:
         default="",
         help="A second compose file, applied over the first one (local host ports).",
     )
-    parser.add_argument("--backend-health-url", default="http://localhost:8001/health")
+    # The ports the compose file publishes: the backend on 8082, the frontend
+    # on 3082. The old defaults (8001/3001) are the ports of the local
+    # non-Docker stack, so the smoke test was probing a host that the compose
+    # stack never opens - and in CI, where nothing else listens, it waited out
+    # the whole timeout for a port that would never answer.
+    parser.add_argument("--backend-health-url", default="http://localhost:8082/health")
     parser.add_argument(
-        "--backend-verify-auth-url", default="http://localhost:8001/api/v1/verify-auth"
+        "--backend-verify-auth-url", default="http://localhost:8082/api/v1/verify-auth"
     )
-    parser.add_argument("--frontend-url", default="http://localhost:3001/")
+    parser.add_argument("--frontend-url", default="http://localhost:3082/")
     parser.add_argument(
         "--api-access-key", default=get_default_api_access_key_from_env()
     )
@@ -149,6 +154,14 @@ def parse_args(argv: list[str]) -> SmokeConfig:
     parser.add_argument(
         "--ci", action="store_true", help="CI defaults: build+down, longer timeout."
     )
+    parser.add_argument(
+        "--keep-up",
+        action="store_true",
+        help=(
+            "Leave the stack running after the health checks. The caller runs "
+            "something against it (the e2e suite) and tears it down itself."
+        ),
+    )
 
     ns = parser.parse_args(argv)
     build = bool(ns.build)
@@ -159,6 +172,11 @@ def parse_args(argv: list[str]) -> SmokeConfig:
         build = True
         down = True
         timeout_seconds = max(timeout_seconds, 240)
+
+    if ns.keep_up:
+        # The stack is the subject of the caller's next step, so it outlives
+        # the health checks. The caller owns the teardown.
+        down = False
 
     return SmokeConfig(
         compose_file=Path(ns.compose_file),

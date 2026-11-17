@@ -10,10 +10,15 @@
 
 import { test, expect } from '@playwright/test';
 
-// Service URLs - defaults for local Docker Compose
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
-const REDIS_URL = process.env.REDIS_URL || 'http://localhost:6379';
+// Service URLs - the ports the compose file publishes.
+//
+// The names are STACK_* on purpose: a project's own .env already carries a
+// FRONTEND_URL for the local development stack, and npm loads that file into
+// the test process, so a generic name silently points the probe at the wrong
+// host. The defaults are the compose ports (8082 / 3082).
+const BACKEND_URL = process.env.STACK_BACKEND_URL || 'http://localhost:8082';
+const FRONTEND_URL = process.env.STACK_FRONTEND_URL || 'http://localhost:3082';
+const REDIS_URL = process.env.STACK_REDIS_URL || 'http://localhost:16379';
 
 // Timeout for service health checks
 const SERVICE_TIMEOUT = 60000;
@@ -53,26 +58,43 @@ test.describe('Docker Compose Validation', () => {
     test('frontend is accessible @smoke', async ({ page }) => {
       await page.goto(FRONTEND_URL);
 
-      // Should load the page without errors
-      await expect(page).toHaveURL(FRONTEND_URL);
+      // The root redirects to the default locale, so the assertion is that
+      // the page stayed on this host - not that the URL is unchanged.
+      await expect(page).toHaveURL(new RegExp(`^${FRONTEND_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
+      await expect(page.locator('body')).not.toBeEmpty();
     });
 
     test('frontend loads without console errors', async ({ page }) => {
-      const errors: string[] = [];
+      const errors: { text: string; url: string }[] = [];
 
       page.on('console', (msg) => {
         if (msg.type() === 'error') {
-          errors.push(msg.text());
+          errors.push({ text: msg.text(), url: msg.location()?.url ?? '' });
         }
       });
 
       await page.goto(FRONTEND_URL);
       await page.waitForTimeout(3000); // Wait for any delayed errors
 
-      // Filter out known non-critical errors
-      const criticalErrors = errors.filter(
-        (err) => !err.includes('ResizeObserver') && !err.includes('network') && !err.includes('404')
+      // Three kinds of console error are not the stack's fault:
+      // - a resource from another host (a font, a map tile): the stack does
+      //   not serve it, and the runner's network decides;
+      // - the anonymous auth probe, which answers 401 until the visitor
+      //   signs in;
+      // - a ResizeObserver notice, which is a browser hint, not an error.
+      const ownHost = new RegExp(
+        `^https?://(localhost|127\\.0\\.0\\.1)(:${new URL(BACKEND_URL).port}|:${new URL(FRONTEND_URL).port})?`
       );
+
+      const criticalErrors = errors.filter(({ text, url }) => {
+        if (text.includes('ResizeObserver')) return false;
+        // The harness blocks the service worker on purpose (so the API mocks
+        // stay in charge), so its registration cannot succeed.
+        if (text.includes('Service Worker registration failed')) return false;
+        if (url && !ownHost.test(url)) return false;
+        if (text.includes('401 (Unauthorized)') && url.includes('/api/v1/auth/')) return false;
+        return true;
+      });
 
       expect(criticalErrors).toHaveLength(0);
     });
@@ -84,8 +106,11 @@ test.describe('Docker Compose Validation', () => {
       const healthResponse = await request.get(`${BACKEND_URL}/health`);
       expect(healthResponse.status()).toBe(200);
 
-      // Then verify frontend can access backend through its proxy
-      await page.goto(`${FRONTEND_URL}/api/v1/health`);
+      // Then verify frontend can access backend through its proxy.
+      // The frontend's own health route (/api/health) forwards to the
+      // backend's /health - the backend has no /api/v1/health route, so the
+      // proxy would answer 404 and the check would prove nothing.
+      await page.goto(`${FRONTEND_URL}/api/health`);
 
       // The frontend proxy should forward to backend
       const content = await page.content();
@@ -93,8 +118,7 @@ test.describe('Docker Compose Validation', () => {
     });
 
     test('backend API returns proper CORS headers', async ({ request }) => {
-      const response = await request.fetch({
-        url: `${BACKEND_URL}/health`,
+      const response = await request.fetch(`${BACKEND_URL}/health`, {
         method: 'OPTIONS',
         headers: {
           Origin: FRONTEND_URL,
@@ -173,9 +197,12 @@ test.describe('Docker Compose Validation', () => {
     test('frontend shows error page for invalid routes', async ({ page }) => {
       await page.goto(`${FRONTEND_URL}/nonexistent-route-12345`);
 
-      // Should show 404 page or redirect to home
+      // The unknown route is redirected into the default locale, so the
+      // answer is the not-found page - and the page carries the number in
+      // more than one element, so the first match is the one to look at.
       const is404 = await page
-        .locator('text=/404|not found/i')
+        .getByText(/404|not found/i)
+        .first()
         .isVisible()
         .catch(() => false);
       const isHome = page.url() === FRONTEND_URL + '/' || page.url() === FRONTEND_URL;

@@ -231,7 +231,7 @@ This document captures practical details for working on the FastAPI backend and 
 - Docker Compose smoke:
   - CI runs a Compose smoke job that builds backend/frontend images and waits for `/health` + the frontend `/`.
   - If `API_ACCESS_KEY` or `API_ACCESS_KEYS` is set, the smoke script also verifies `GET /api/v1/verify-auth` using `X-API-Key`.
-  - Local equivalent: `python scripts\ci\compose_smoke.py --ci`
+  - Local equivalent: `python scripts\docker\compose_smoke.py --ci`
 - Security:
   - CI jobs: `security` (Bandit) and `audit` (pip-audit) in `.github/workflows/ci.yml`
   - Static analysis: Bandit (fail on high severity/high confidence): `python -m bandit -r api agents ai analytics config data i18n models notifications rules scripts tools utils vector_store workflows -lll -iii`
