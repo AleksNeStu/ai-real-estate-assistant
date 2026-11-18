@@ -160,7 +160,7 @@ written down here rather than passed over.
 | The stack could not start on a machine where a sibling product holds the ports | the Compose file hardcoded the host ports while its own `.env.example` documented `REDIS_PORT` and `POSTGRES_PORT` as variables | `deploy/compose/docker-compose.yml` — the host ports are variables now, the same way `POSTGRES_PORT` already was |
 | The stack still bound a port another service held, though the file named a free one | Compose gives the shell precedence over `--env-file`, and `REDIS_PORT=6379` — the non-Docker stack's port — lives in the OS environment | `scripts/docker/start.ps1` — the ports are read from `deploy/compose/.env` and put into the process environment, so the file decides |
 | The start script reported a healthy stack as still starting | its health check asked `8082` and `3082` while the stack answered on `8083` | `scripts/docker/start.ps1` — the health check probes the ports the stack published |
-| The compose smoke probed a port that belonged to somebody else | it hardcoded the published ports | `scripts/docker/compose_smoke.py` — the URLs are built from the same variables the compose file reads |
+| The compose smoke probed a port that belonged to somebody else | it hardcoded the published ports, and it inherited the machine's `REDIS_PORT` — Compose gives the shell precedence over the file it reads | `scripts/docker/compose_smoke.py` — the URLs are built from the same variables the compose file reads, and the file's own `.env` decides the ports |
 
 ## The accessibility
 
