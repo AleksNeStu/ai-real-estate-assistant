@@ -59,6 +59,11 @@ export function Modal({
   }, [open]);
 
   return (
+    // A click on the backdrop lands on the dialog element itself, and that
+    // closes the dialog. The keyboard already has its way out: Escape cancels
+    // the dialog and calls onClose. This is the pointer's second way to the
+    // same door, not the only one.
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
     <dialog
       ref={dialogRef}
       onCancel={(event) => {
@@ -68,7 +73,6 @@ export function Modal({
       }}
       onClose={onClose}
       onClick={(event) => {
-        // A click on the backdrop lands on the dialog element itself.
         if (event.target === dialogRef.current) onClose();
       }}
       className={cn(

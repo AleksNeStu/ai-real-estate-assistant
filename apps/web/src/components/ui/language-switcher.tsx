@@ -34,7 +34,11 @@ export function LanguageSwitcher() {
         <Button
           variant="ghost"
           size="sm"
-          aria-label={t('changeLanguage')}
+          // The name carries the code the button shows: a name that leaves
+          // out the visible text is a name a reader cannot match to what is
+          // on the screen. The code is not in brackets - a name in brackets
+          // reads as an aside, and an aside is not the text on the screen.
+          aria-label={`${t('changeLanguage')}: ${locale}`}
           data-testid="language-switcher"
           className="gap-1 px-2 text-xs font-medium uppercase"
         >

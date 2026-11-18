@@ -128,30 +128,25 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
 
   return (
     <div className="space-y-4">
-      {/* Drag-drop zone */}
-      <div
-        className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
-          isDragging
-            ? 'border-action bg-action/5'
-            : file
-              ? 'border-success bg-success/10'
-              : 'border-muted-foreground/25 hover:border-action/50'
-        }`}
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onClick={() => document.getElementById('file-input')?.click()}
-      >
+      {/* The drop zone. The file input is the control: it stays in the page -
+          visually hidden, not removed - so a keyboard reaches it with Tab and
+          opens it with Space, and the zone is its label, so a click anywhere
+          in it opens the picker. */}
+      <div onDrop={handleDrop} onDragOver={handleDragOver} onDragLeave={handleDragLeave}>
         <input
           id="file-input"
           type="file"
           accept={ACCEPTED_TYPES}
-          className="hidden"
+          className="sr-only"
           onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
         />
 
         {file ? (
-          <div className="flex items-center justify-center gap-3">
+          <div
+            className={`flex items-center justify-center gap-3 rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
+              isDragging ? 'border-action bg-action/5' : 'border-success bg-success/10'
+            }`}
+          >
             <FileText className="h-8 w-8 text-success" />
             <div className="text-left">
               <p className="font-medium">{file.name}</p>
@@ -172,12 +167,19 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
             </button>
           </div>
         ) : (
-          <>
+          <label
+            htmlFor="file-input"
+            className={`block cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
+              isDragging
+                ? 'border-action bg-action/5'
+                : 'border-muted-foreground/25 hover:border-action/50'
+            }`}
+          >
             <Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground" aria-hidden="true" />
             <p className="font-medium">{t('upload.dragDrop')}</p>
             <p className="text-sm text-muted-foreground mt-1">{t('upload.orClick')}</p>
             <p className="text-xs text-muted-foreground mt-2">{t('upload.supportedTypes')}</p>
-          </>
+          </label>
         )}
       </div>
 

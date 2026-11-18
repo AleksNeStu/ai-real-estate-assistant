@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -384,10 +384,16 @@ interface FieldProps {
 }
 
 function Field({ label, value, onChange, disabled, placeholder, inputMode }: FieldProps) {
+  // The label is tied to the input it names: a label that is not associated
+  // with a control is a caption, and the field it sits above is unnamed.
+  const id = useId();
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-[12px] font-medium text-foreground">{label}</label>
+      <label htmlFor={id} className="text-[12px] font-medium text-foreground">
+        {label}
+      </label>
       <input
+        id={id}
         type="text"
         inputMode={inputMode ?? 'text'}
         value={value}

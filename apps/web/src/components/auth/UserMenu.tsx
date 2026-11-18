@@ -138,12 +138,26 @@ export function UserMenu() {
         className="flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-accent transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
         aria-expanded={isOpen}
         aria-haspopup="true"
-        aria-label={t('userMenu', { defaultValue: 'User menu' })}
+        // The name carries what the button shows - the avatar's initials and
+        // the account's name - because a name that leaves the visible text
+        // out is a name a reader cannot match to the screen.
+        aria-label={`${t('userMenu', { defaultValue: 'User menu' })}: ${initials} ${
+          user.full_name || user.email.split('@')[0]
+        }`}
       >
-        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground text-sm font-medium">
+        <div
+          className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground text-sm font-medium"
+          aria-hidden="true"
+        >
           {initials}
         </div>
+        {/* The space is real: the initials and the name are two words, and
+            without the space between them the button reads as one long
+            word - to a screen reader and to the rule that says a name must
+            carry the text the reader sees. The space is collapsed by the
+            rendering, so the pill looks the way it always looked. */}
         <span className="hidden sm:block text-sm font-medium max-w-[100px] truncate">
+          {' '}
           {user.full_name || user.email.split('@')[0]}
         </span>
         <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
@@ -153,6 +167,7 @@ export function UserMenu() {
         <div
           className="absolute right-0 mt-2 w-56 rounded-md border bg-popover shadow-lg z-50"
           role="menu"
+          tabIndex={-1}
           aria-label={t('userMenu', { defaultValue: 'User menu' })}
           onKeyDown={handleMenuKeyDown}
         >

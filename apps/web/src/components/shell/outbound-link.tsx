@@ -12,7 +12,15 @@ import { reportOutbound } from '@/lib/attribution';
  * from the browser, in the click handler, before the navigation happens -
  * `keepalive` lets the request finish on its way out.
  */
-export interface OutboundLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
+export interface OutboundLinkProps
+  extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
+  /**
+   * Where the link goes.
+   *
+   * Required: an anchor without a destination is not a link - it cannot be
+   * followed with the keyboard, and it does not announce itself as one.
+   */
+  href: string;
   /**
    * What was clicked - the studio name, the campaign, the target.
    *
@@ -33,10 +41,12 @@ export function OutboundLink({
   campaign,
   children,
   onClick,
+  href,
   ...rest
 }: OutboundLinkProps) {
   return (
     <a
+      href={href}
       {...rest}
       onClick={(event) => {
         void reportOutbound(outboundTarget, slot, campaign);
