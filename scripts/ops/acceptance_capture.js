@@ -59,6 +59,16 @@ const VIEWPORTS = [
   { name: "390", width: 390, height: 844 },
 ];
 
+/**
+ * The routes that carry a map.
+ *
+ * A map mounts after the API answers, and its tiles arrive after that, from
+ * a tile host that takes its time. The wait for them is only worth its cost
+ * on the routes that have a map - and a route that gains one is named here,
+ * or its shot shows an empty canvas that reads as a broken map.
+ */
+const ROUTES_WITH_MAP = new Set(["landing", "search", "city-overview"]);
+
 /** The two themes. */
 const THEMES = ["light", "dark"];
 
@@ -92,7 +102,7 @@ async function capture(browser, viewport, theme) {
     const file = path.join(OUT, `${route.name}-${viewport.name}-${theme}.png`);
     try {
       await page.goto(`${BASE}${route.url}`, { waitUntil: "load", timeout: 45000 });
-      const tiles = await waitForMapTiles(page);
+      const tiles = ROUTES_WITH_MAP.has(route.name) ? await waitForMapTiles(page) : { total: 0, painted: 0 };
       await page.waitForTimeout(2500);
       await page.screenshot({ path: file, fullPage: false });
       const map = tiles.total > 0 ? ` map:${tiles.painted}/${tiles.total} tiles` : "";
@@ -136,8 +146,6 @@ async function waitForMapTiles(page) {
       };
     });
     if (state.total > 0 && state.painted === state.total) return state;
-    // A route without a map has no tiles at all; there is nothing to wait for.
-    if (state.total === 0 && (await page.locator(".leaflet-container").count()) === 0) return state;
     await page.waitForTimeout(250);
   }
   return state;
