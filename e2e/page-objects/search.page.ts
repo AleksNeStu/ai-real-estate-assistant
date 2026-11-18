@@ -74,6 +74,20 @@ export class SearchPage {
   }
 
   /**
+   * Open the filter pane when it is collapsed.
+   *
+   * Below the `lg` breakpoint the pane - the filters and the export panel
+   * with them - sits behind the toggle in the search header. It is the same
+   * pane, collapsed, so a test that fills a filter has to open it first:
+   * otherwise it fills nothing and the request carries no filter at all.
+   */
+  async openFiltersIfCollapsed(): Promise<void> {
+    if (await this.filtersPanel.isVisible().catch(() => false)) return;
+    await this.page.getByTestId('search-filters-toggle').click();
+    await expect(this.filtersPanel).toBeVisible({ timeout: 10000 });
+  }
+
+  /**
    * Perform a search query.
    */
   async search(query: string): Promise<void> {
@@ -148,6 +162,7 @@ export class SearchPage {
    * Set price range filter.
    */
   async setPriceRange(min: number, max: number): Promise<void> {
+    await this.openFiltersIfCollapsed();
     const minInput = this.page.locator('#min-price');
     const maxInput = this.page.locator('#max-price');
 
@@ -163,6 +178,7 @@ export class SearchPage {
    * Set minimum rooms filter.
    */
   async setMinRooms(rooms: number): Promise<void> {
+    await this.openFiltersIfCollapsed();
     const roomsInput = this.page.locator('#rooms');
     if (await roomsInput.isVisible()) {
       await roomsInput.fill(rooms.toString());
@@ -173,6 +189,7 @@ export class SearchPage {
    * Apply filters (click apply button if exists).
    */
   async applyFilters(): Promise<void> {
+    await this.openFiltersIfCollapsed();
     const applyButton = this.filtersPanel.getByRole('button', { name: /apply filters/i });
     if (await applyButton.isVisible().catch(() => false)) {
       await applyButton.click();
@@ -206,6 +223,9 @@ export class SearchPage {
    * Export results in the specified format.
    */
   async exportResults(format: 'csv' | 'excel' | 'json' = 'csv'): Promise<void> {
+    // The export panel sits in the filter pane, which is collapsed below the
+    // `lg` breakpoint.
+    await this.openFiltersIfCollapsed();
     await this.exportButton.click();
 
     // Select format if dropdown appears

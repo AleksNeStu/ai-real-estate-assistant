@@ -12,13 +12,14 @@
 
 import { test, expect } from '@playwright/test';
 import { mockLandingApis } from '../mocks';
+import { topBarLinkScope } from '../conftest';
 
 test.describe('The Top Bar', () => {
   test('the landing bar carries the anchors of the landing page', async ({ page }) => {
     await mockLandingApis(page);
     await page.goto('/en/');
 
-    const nav = page.getByRole('navigation', { name: /main navigation/i });
+    const nav = await topBarLinkScope(page);
     await expect(nav.locator('a[href="#features"]')).toBeVisible({ timeout: 15000 });
     await expect(nav.locator('a[href="#data"]')).toBeVisible();
     await expect(nav.locator('a[href="#faq"]')).toBeVisible();
@@ -30,7 +31,7 @@ test.describe('The Top Bar', () => {
   test('the application bar carries the seven links and the More menu', async ({ page }) => {
     await page.goto('/en/search');
 
-    const nav = page.getByRole('navigation', { name: /main navigation/i });
+    const nav = await topBarLinkScope(page);
     for (const route of [
       '/search',
       '/chat',
@@ -43,10 +44,14 @@ test.describe('The Top Bar', () => {
       await expect(nav.locator(`a[href$="${route}"]`)).toHaveCount(1);
     }
 
-    // The More menu opens and every row carries the route it opens.
+    // The More menu opens and every row carries the route it opens. Below
+    // the `lg` breakpoint there is no More menu: its routes are rows of the
+    // menu itself, and each of them carries its route in mono.
     const more = nav.getByRole('button', { name: /more/i });
-    await expect(more).toBeVisible({ timeout: 15000 });
-    await more.click();
+    if (await more.isVisible().catch(() => false)) {
+      await expect(more).toBeVisible({ timeout: 15000 });
+      await more.click();
+    }
 
     for (const route of ['/market-trends', '/cma', '/valuation', '/showcase']) {
       await expect(page.locator(`a[href$="${route}"]`).first()).toBeVisible();

@@ -141,8 +141,12 @@ export class ChatPage {
 
   /**
    * Get the number of displayed sources (citations).
+   *
+   * The sources arrive with the stream, so the count waits for them: a
+   * single read would count an empty list on a slow screen.
    */
   async getSourceCount(): Promise<number> {
+    await expect(this.sourcesContainer).toBeVisible({ timeout: 10000 }).catch(() => undefined);
     if (!(await this.hasSources())) return 0;
     const sources = this.sourcesContainer.locator('ol > li');
     return await sources.count();

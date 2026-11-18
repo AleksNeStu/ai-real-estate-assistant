@@ -181,6 +181,10 @@ This document captures practical details for working on the FastAPI backend and 
   $env:PLAYWRIGHT_START_WEB='1'
   npx playwright test -c playwright.config.ts --reporter=list
   ```
+- E2E viewports: the suite runs at three sizes - `desktop-chromium` (1440x900),
+  `tablet-chromium` (iPad, 810x1080) and `mobile-chromium` (390x844). One of them
+  is selected with `--project=<name>`; the plain run carries all three, and the
+  baselines of the three surfaces live in `e2e/baselines/<project>/`.
 - Playwright env vars:
   - `PLAYWRIGHT_BASE_URL` (default `http://localhost:3000`)
   - `PLAYWRIGHT_START_WEB` (`1`/`true` to auto-start Next.js dev server)
