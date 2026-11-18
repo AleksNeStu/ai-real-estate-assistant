@@ -23,6 +23,7 @@ from scripts.docker.compose_smoke import (  # noqa: E402
     http_get_status,
     main,
     parse_args,
+    publish_compose_ports,
     wait_for_http_ok,
 )
 
@@ -309,6 +310,48 @@ def test_parse_args_follow_the_ports_the_stack_was_moved_to(tmp_path, monkeypatc
     assert cfg.backend_health_url == "http://localhost:8083/health"
     assert cfg.backend_verify_auth_url == "http://localhost:8083/api/v1/verify-auth"
     assert cfg.frontend_url == "http://localhost:3083/"
+
+
+def test_publish_compose_ports_lets_the_file_decide(tmp_path, monkeypatch):
+    """The compose file's own .env decides the published ports.
+
+    Compose gives the shell precedence over the file it reads, and the
+    machine's environment carries REDIS_PORT for the non-Docker stack: the
+    compose stack would bind a port another service holds, and the smoke
+    would report a healthy stack as broken.
+    """
+    compose_file = tmp_path / "docker-compose.yml"
+    compose_file.write_text("version: '3.8'\nservices: {}\n", encoding="utf-8")
+    (tmp_path / ".env").write_text(
+        "# the compose stack's ports\n"
+        "REDIS_PORT=16380\n"
+        "BACKEND_HOST_PORT=8083\n"
+        "FRONTEND_HOST_PORT=3082\n"
+        "POSTGRES_PORT=5432\n"
+        "API_ACCESS_KEY=not-a-port\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("REDIS_PORT", "6379")
+
+    ports = publish_compose_ports(compose_file)
+
+    assert ports == {
+        "REDIS_PORT": "16380",
+        "BACKEND_HOST_PORT": "8083",
+        "FRONTEND_HOST_PORT": "3082",
+        "POSTGRES_PORT": "5432",
+    }
+    assert os.environ["REDIS_PORT"] == "16380"
+
+
+def test_publish_compose_ports_without_a_file_changes_nothing(tmp_path, monkeypatch):
+    """A compose file without a .env next to it keeps the environment."""
+    compose_file = tmp_path / "docker-compose.yml"
+    compose_file.write_text("version: '3.8'\nservices: {}\n", encoding="utf-8")
+    monkeypatch.setenv("REDIS_PORT", "6379")
+
+    assert publish_compose_ports(compose_file) == {}
+    assert os.environ["REDIS_PORT"] == "6379"
 
 
 def test_parse_args_keep_up_leaves_the_stack_running(tmp_path):

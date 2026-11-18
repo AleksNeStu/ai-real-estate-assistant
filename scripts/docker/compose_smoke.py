@@ -45,6 +45,44 @@ def build_compose_base_command(
     return cmd
 
 
+COMPOSE_PORT_VARS = {
+    "BACKEND_HOST_PORT",
+    "FRONTEND_HOST_PORT",
+    "REDIS_PORT",
+    "POSTGRES_PORT",
+}
+
+
+def publish_compose_ports(compose_file: Path) -> dict[str, str]:
+    """Put the compose file's own .env ports into the environment.
+
+    Compose gives the shell precedence over the file it reads, and the
+    machine's environment carries REDIS_PORT for the non-Docker stack: the
+    compose stack would bind a port another service holds, and the smoke
+    would report a healthy stack as broken. The file next to the compose
+    file is the sanctioned place for these ports - it is what
+    .env.example documents - so its values are what compose reads.
+
+    The ports are returned as they were read, for the caller to report.
+    """
+    env_file = compose_file.parent / ".env"
+    if not env_file.exists():
+        return {}
+
+    ports: dict[str, str] = {}
+    for line in env_file.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        name, _, value = line.partition("=")
+        name = name.strip()
+        value = value.strip().strip('"').strip("'")
+        if name in COMPOSE_PORT_VARS and value.isdigit():
+            ports[name] = value
+            os.environ[name] = value
+    return ports
+
+
 def build_compose_up_command(base: list[str], *, build: bool) -> list[str]:
     cmd = [*base, "up", "-d"]
     if build:
@@ -208,6 +246,13 @@ def main(argv: list[str]) -> int:
 
     if not compose_file.exists():
         raise FileNotFoundError(f"Compose file not found: {compose_file}")
+
+    # The compose file's own .env decides the ports, before compose reads
+    # the environment. The URLs the smoke probes are built from the
+    # environment, so the arguments are parsed again once the ports are
+    # known - the first parse is only to find the compose file.
+    publish_compose_ports(compose_file)
+    cfg = parse_args(argv)
 
     override = cfg.compose_override
     if override is not None and not override.exists():
