@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.11] - 2026-11-19
+
+### Fixed
+- **The free tier's Google fallback named a retired model** — `gemini-2.0-flash`
+  was shut down by Google on 2026-06-01, and the provider does not check the
+  id it is handed: it builds the client and lets the request fail with a 404.
+  So the cascade picked a model that could not answer, and the fallback that
+  was supposed to carry the free tier carried nothing. It names
+  `gemini-3.8-flash` now — the model the provider's own connection check
+  uses — and a test pins it to the models the provider still lists.
+
 ## [5.3.10] - 2026-11-18
 
 ### Fixed

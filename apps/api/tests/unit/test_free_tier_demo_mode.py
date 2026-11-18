@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import pytest
 
+from models.providers.google import GoogleProvider
 from utils import free_tier
 
 
@@ -67,6 +68,59 @@ class TestFreeTierDemoMode:
         free_tier.get_llm_for_free_user()
 
         assert built == list(free_tier._PROVIDERS_BY_NAME)
+
+
+class TestGoogleFallbackModel:
+    """The Google fallback must name a model Google still serves."""
+
+    def test_the_google_fallback_names_a_live_model(self, monkeypatch):
+        """gemini-2.0-flash was retired on 2026-06-01.
+
+        The provider does not check the id it is handed - it builds the client
+        and lets the request fail with a 404 - so the cascade used to pick a
+        model that cannot answer, and the fallback that was supposed to carry
+        the free tier carried nothing.
+        """
+        built: list[str] = []
+
+        class _Provider:
+            def create_model(self, model_id: str, **_kwargs):
+                built.append(model_id)
+                return object()
+
+        class _Factory:
+            @staticmethod
+            def get_provider(name: str):
+                assert name == "google"
+                return _Provider()
+
+        monkeypatch.setattr(free_tier, "get_settings", lambda: _google_settings())
+        monkeypatch.setattr(
+            "models.provider_factory.ModelProviderFactory.get_provider",
+            staticmethod(_Factory.get_provider),
+        )
+
+        free_tier._try_create_google_flash()
+
+        assert built, "the google fallback built no model"
+        live = {model.id for model in GoogleProvider().list_models()}
+        assert built[0] in live, (
+            f"{built[0]} is not a model the provider lists any more - "
+            "the fallback must name one Google still serves"
+        )
+
+
+class _GoogleSettings:
+    """A deployment with a Google key."""
+
+    google_api_key = "test-key"  # pragma: allowlist secret - a stub, not a credential
+    demo_llm_mode = False
+    free_tier_enabled = True
+    free_tier_provider_cascade: list[str] = []
+
+
+def _google_settings() -> _GoogleSettings:
+    return _GoogleSettings()
 
 
 class _Settings:
