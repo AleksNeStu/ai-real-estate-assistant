@@ -265,7 +265,7 @@ def test_http_get_status_sends_headers():
         )
 
 
-def test_parse_args_defaults_probe_the_published_compose_ports(tmp_path):
+def test_parse_args_defaults_probe_the_published_compose_ports(tmp_path, monkeypatch):
     """The smoke test has to probe the ports the compose file publishes.
 
     The old defaults (8001/3001) are the ports of the local non-Docker
@@ -273,15 +273,42 @@ def test_parse_args_defaults_probe_the_published_compose_ports(tmp_path):
     waiting out its whole timeout for a host the stack never opens - in CI,
     where nothing else listens, that is the difference between a green and a
     red job.
+
+    The compose file publishes its ports as variables, so the smoke reads
+    them from the environment - and a machine that moved the stack sets
+    them. This test is about the default, so the variables are cleared: an
+    environment that happens to carry them must not decide what the default
+    is.
     """
     compose_file = tmp_path / "docker-compose.yml"
     compose_file.write_text("version: '3.8'\nservices: {}\n", encoding="utf-8")
+    monkeypatch.delenv("BACKEND_HOST_PORT", raising=False)
+    monkeypatch.delenv("FRONTEND_HOST_PORT", raising=False)
 
     cfg = parse_args(["--compose-file", str(compose_file)])
 
     assert cfg.backend_health_url == "http://localhost:8082/health"
     assert cfg.backend_verify_auth_url == "http://localhost:8082/api/v1/verify-auth"
     assert cfg.frontend_url == "http://localhost:3082/"
+
+
+def test_parse_args_follow_the_ports_the_stack_was_moved_to(tmp_path, monkeypatch):
+    """A machine that moved the stack publishes its ports as variables.
+
+    The smoke has to follow them: probing the published default while the
+    stack listens elsewhere is how the smoke reported a healthy stack as
+    broken - and how it reported somebody else's service as the stack.
+    """
+    compose_file = tmp_path / "docker-compose.yml"
+    compose_file.write_text("version: '3.8'\nservices: {}\n", encoding="utf-8")
+    monkeypatch.setenv("BACKEND_HOST_PORT", "8083")
+    monkeypatch.setenv("FRONTEND_HOST_PORT", "3083")
+
+    cfg = parse_args(["--compose-file", str(compose_file)])
+
+    assert cfg.backend_health_url == "http://localhost:8083/health"
+    assert cfg.backend_verify_auth_url == "http://localhost:8083/api/v1/verify-auth"
+    assert cfg.frontend_url == "http://localhost:3083/"
 
 
 def test_parse_args_keep_up_leaves_the_stack_running(tmp_path):
