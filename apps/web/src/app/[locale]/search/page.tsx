@@ -517,6 +517,7 @@ function SearchPageContent() {
             size="sm"
             onClick={() => setFiltersOpen((open) => !open)}
             aria-expanded={filtersOpen}
+            data-testid="search-filters-toggle"
             className="h-7 rounded-full px-3 text-[12px] lg:hidden"
           >
             {t('filters.title')}

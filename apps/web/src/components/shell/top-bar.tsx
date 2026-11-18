@@ -215,7 +215,10 @@ export function TopBar() {
       </div>
 
       {mobileOpen && (
-        <div className="border-b border-border bg-background lg:hidden">
+        <div
+          data-testid="top-bar-menu"
+          className="border-b border-border bg-background lg:hidden"
+        >
           <div className="mx-auto flex max-w-[1248px] flex-col px-6 py-4">
             {isLanding
               ? landingLinks.map((link) => (
@@ -238,6 +241,21 @@ export function TopBar() {
                     {link.label}
                   </Link>
                 ))}
+            {/* The routes of the "More" menu are routes of the application,
+                so they belong to the phone menu too - otherwise four of them
+                are unreachable below the `lg` breakpoint. */}
+            {!isLanding &&
+              moreLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center justify-between gap-3 py-2 text-[14px] font-medium text-muted-foreground"
+                >
+                  <span>{link.label}</span>
+                  <span className="font-mono text-[11px] text-muted-foreground">{link.route}</span>
+                </Link>
+              ))}
           </div>
         </div>
       )}

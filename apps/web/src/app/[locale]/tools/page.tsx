@@ -75,6 +75,7 @@ export default function ToolsPage({ initialTool }: { initialTool?: string }) {
           value={selected}
           onChange={(event) => setSelected(event.target.value)}
           aria-label={t('console.tools')}
+          data-testid="tools-select"
         >
           {rail.map((tool) => (
             <option key={tool.id} value={tool.id}>
