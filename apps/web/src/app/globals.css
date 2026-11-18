@@ -60,13 +60,6 @@
   --critical: 322 55% 34%;
   --critical-foreground: 0 0% 100%;
 
-  /* The district boundary layer. The map paints these itself, so they are
-     tokens like every other colour - and the halo is the page background,
-     so the layer keeps its edge in the dark theme too. */
-  --district-line: 217 19% 26.7%;
-  --district-label: 215 27.9% 16.9%;
-  --district-halo: 0 0% 100%;
-
   /* Categorical series ramp. One slot per series, so a chart and a category
      list draw from the same set and never invent a hue of their own. The
      order matches the series order the charts already used. */
@@ -117,9 +110,6 @@
   --caution-foreground: 0 0% 100%;
   --critical: 322 60% 62%;
   --critical-foreground: 0 0% 100%;
-  --district-line: 217 19% 70%;
-  --district-label: 215 27.9% 88%;
-  --district-halo: 240 10% 3.9%;
   --chart-1: 217 91% 70%;
   --chart-2: 142 71% 50%;
   --chart-3: 38 92% 58%;

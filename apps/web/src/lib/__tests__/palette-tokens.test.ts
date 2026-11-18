@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { ACTION_HEX, DISTRICT_FILL, DISTRICT_LAYER, PALETTE, TOKEN_SOURCES } from '../palette';
+import { ACTION_HEX, PALETTE, TOKEN_SOURCES } from '../palette';
 
 /**
  * The palette holds literals because the map engines cannot read CSS. This
@@ -71,22 +71,8 @@ describe('the palette follows the tokens', () => {
     expectSameColor(literal, tokenHsl(token));
   });
 
-  it('the district fills are the status tokens at their stated opacity', () => {
-    expectSameColor(DISTRICT_FILL.low, tokenHsl('--success'));
-    expectSameColor(DISTRICT_FILL.mediumLow, tokenHsl('--warning'));
-    expectSameColor(DISTRICT_FILL.mediumHigh, tokenHsl('--caution'));
-    expectSameColor(DISTRICT_FILL.high, tokenHsl('--destructive'));
-    expectSameColor(DISTRICT_FILL.noData, tokenHsl('--muted-foreground'));
-  });
-
   it('the accent is the teal of the design', () => {
     expectSameColor(PALETTE.action, tokenHsl('--action'));
-  });
-
-  it('the boundary layer colours are tokens too', () => {
-    expectSameColor(DISTRICT_LAYER.line, tokenHsl('--district-line'));
-    expectSameColor(DISTRICT_LAYER.label, tokenHsl('--district-label'));
-    expectSameColor(DISTRICT_LAYER.halo, tokenHsl('--district-halo'));
   });
 
   it('the browser chrome colour is the same teal', () => {
