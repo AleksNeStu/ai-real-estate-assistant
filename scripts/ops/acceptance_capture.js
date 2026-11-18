@@ -72,18 +72,21 @@ const ROUTES_WITH_MAP = new Set(["landing", "search", "city-overview"]);
 /** The two themes. */
 const THEMES = ["light", "dark"];
 
-async function capture(browser, viewport, theme) {
+/**
+ * A browser context for one shot.
+ *
+ * The theme is set the way the application sets it: the `theme` key in
+ * localStorage. The application's own script reads that key and puts the
+ * `dark` class on the document element, so setting the key is enough.
+ * Every statement has its own guard, because at document-start the document
+ * element is still null and one throw would skip every statement after it.
+ */
+async function newContext(browser, viewport, theme) {
   const context = await browser.newContext({
     viewport: { width: viewport.width, height: viewport.height },
     locale: "en-US",
     colorScheme: theme,
   });
-
-  // The theme is set the way the application sets it: the `theme` key in
-  // localStorage. The application's own script reads that key and puts the
-  // `dark` class on the document element, so setting the key is enough.
-  // Every statement has its own guard, because at document-start the document
-  // element is still null and one throw would skip every statement after it.
   await context.addInitScript((wanted) => {
     try {
       localStorage.setItem("theme", wanted);
@@ -94,11 +97,27 @@ async function capture(browser, viewport, theme) {
       localStorage.setItem("onboarding-tour-dismissed-v1", "1");
     } catch {}
   });
+  return context;
+}
 
-  const page = await context.newPage();
+async function capture(browser, viewport, theme) {
+  let context = await newContext(browser, viewport, theme);
+  let page = await context.newPage();
   const failures = [];
 
   for (const route of ROUTES) {
+    // A map route gets a browser context of its own. The tile host refuses
+    // a session that has already asked for tiles - measured: the first map
+    // in a pass painted its tiles, the second was refused, and the third
+    // was refused outright, every request answered with 408 - so a
+    // context per map route keeps every map on the host's good side. The
+    // routes without a map share one context and never leave it.
+    if (ROUTES_WITH_MAP.has(route.name)) {
+      await context.close();
+      context = await newContext(browser, viewport, theme);
+      page = await context.newPage();
+    }
+
     const file = path.join(OUT, `${route.name}-${viewport.name}-${theme}.png`);
     try {
       await page.goto(`${BASE}${route.url}`, { waitUntil: "load", timeout: 45000 });
@@ -153,7 +172,13 @@ async function waitForMapTiles(page) {
 
 async function main() {
   fs.mkdirSync(OUT, { recursive: true });
-  const browser = await chromium.launch({ headless: true });
+  // Chromium resolves IPv6 first where the tile host offers it. A machine
+  // whose IPv6 path is broken gets no answer at all from that address - the
+  // request stalls and comes back 408, and the map never paints - so the
+  // shot would show an empty canvas that says nothing about the
+  // application. The shot is about the application: the browser is put on
+  // the address family that works here.
+  const browser = await chromium.launch({ headless: true, args: ["--disable-ipv6"] });
   const failures = [];
 
   for (const theme of THEMES) {
