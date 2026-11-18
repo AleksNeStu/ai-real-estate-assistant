@@ -15,7 +15,12 @@ repos:
         # The same clip is served to the web app from apps/web/public/clips,
         # and the design reference's screenshots live in assets/design - both
         # are published materials as well.
-        exclude: ^docs/api/openapi\.json$|^assets/clips/|^apps/web/public/clips/|^assets/design/
+        #
+        # The design acceptance's shots are the third one: the evidence of
+        # the acceptance, a route at two widths in two themes. A shot of a
+        # map carries photographic detail and is larger than a shot of a
+        # ledger; they are evidence, not build residue.
+        exclude: ^docs/api/openapi\.json$|^assets/clips/|^apps/web/public/clips/|^assets/design/|^docs/reviews/design-acceptance-
       - id: check-illegal-windows-names
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
