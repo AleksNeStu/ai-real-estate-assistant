@@ -209,6 +209,11 @@ test.describe('Full User Journey @integration @smoke', () => {
 
     test('step 8: view market trends', async ({ page }) => {
       await setupPageAuth(page);
+      // The mocked payloads are the API's own shapes. The trends endpoint
+      // answers with `data_points`, and the page maps over them: a mock
+      // that carried a bare array under `trends` left the page reading
+      // `undefined.map`, and the route answered the visitor with the
+      // error boundary instead of the market.
       await page.route('**/api/v1/market/indicators**', async (route) => {
         await route.fulfill({
           status: 200,
@@ -218,7 +223,8 @@ test.describe('Full User Journey @integration @smoke', () => {
             total_listings: 150,
             new_listings_7d: 12,
             price_drops_7d: 5,
-            avg_price_change_pct: 2.3,
+            hottest_districts: [{ name: 'Śródmieście', avg_price: 2500, count: 45 }],
+            coldest_districts: [{ name: 'Białynin', avg_price: 1800, count: 12 }],
           }),
         });
       });
@@ -227,9 +233,26 @@ test.describe('Full User Journey @integration @smoke', () => {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            trends: [
-              { period: '2025-01', avg_price: 2500, listings: 45 },
-              { period: '2025-02', avg_price: 2550, listings: 50 },
+            interval: 'month',
+            trend_direction: 'increasing',
+            confidence: 'high',
+            data_points: [
+              {
+                period: '2025-01',
+                start_date: '2025-01-01',
+                end_date: '2025-01-31',
+                average_price: 2500,
+                median_price: 2400,
+                volume: 45,
+              },
+              {
+                period: '2025-02',
+                start_date: '2025-02-01',
+                end_date: '2025-02-28',
+                average_price: 2550,
+                median_price: 2450,
+                volume: 50,
+              },
             ],
           }),
         });
