@@ -92,9 +92,11 @@ async function capture(browser, viewport, theme) {
     const file = path.join(OUT, `${route.name}-${viewport.name}-${theme}.png`);
     try {
       await page.goto(`${BASE}${route.url}`, { waitUntil: "load", timeout: 45000 });
+      const tiles = await waitForMapTiles(page);
       await page.waitForTimeout(2500);
       await page.screenshot({ path: file, fullPage: false });
-      console.log(`  ${route.name} ${viewport.name} ${theme}`);
+      const map = tiles.total > 0 ? ` map:${tiles.painted}/${tiles.total} tiles` : "";
+      console.log(`  ${route.name} ${viewport.name} ${theme}${map}`);
     } catch (error) {
       failures.push(`${route.name} (${viewport.name} ${theme}): ${error.message}`);
       console.error(`  FAILED ${route.name} ${viewport.name} ${theme}: ${error.message}`);
@@ -103,6 +105,42 @@ async function capture(browser, viewport, theme) {
 
   await context.close();
   return failures;
+}
+
+/**
+ * The wait for a map that is drawn.
+ *
+ * Leaflet fetches its tiles after the page has loaded, one request per tile,
+ * from the free OpenStreetMap tiles. A fixed pause shoots the page before the
+ * tiles arrive, and the shot shows an empty canvas - which reads as a broken
+ * map and is not one. This waits for the tiles the map actually asked for and
+ * for them to be painted, and gives up rather than hanging: a map that never
+ * draws its tiles is a finding, and the shot records it.
+ *
+ * The tile host is a third party and it is slow: the tiles of a map that
+ * first drew at one zoom and then fitted its bounds arrive ten seconds or
+ * more after the page did. The wait is generous, and it reports what it found
+ * - a shot that says nothing about the map is a shot that cannot be read.
+ */
+async function waitForMapTiles(page) {
+  const deadline = Date.now() + 30000;
+  let state = { total: 0, painted: 0 };
+  while (Date.now() < deadline) {
+    state = await page.evaluate(() => {
+      const tiles = Array.from(document.querySelectorAll(".leaflet-tile"));
+      return {
+        total: tiles.length,
+        painted: tiles.filter(
+          (tile) => tile.naturalWidth > 0 && tile.classList.contains("leaflet-tile-loaded")
+        ).length,
+      };
+    });
+    if (state.total > 0 && state.painted === state.total) return state;
+    // A route without a map has no tiles at all; there is nothing to wait for.
+    if (state.total === 0 && (await page.locator(".leaflet-container").count()) === 0) return state;
+    await page.waitForTimeout(250);
+  }
+  return state;
 }
 
 async function main() {
