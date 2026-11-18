@@ -134,11 +134,11 @@ Day +30          → Product Hunt (after audiences warmed up)
       caller, and without it for anyone else. The demo runs that same
       commit, so the stamp is true of what the visitor is talking to.
 
-## What changed since the drafts were written (2026-11-09 → 2026-11-16)
+## What changed since the drafts were written (2026-11-09 → 2026-11-18)
 
 The five drafts were written against the deployment of 2026-11-09 and are
-re-verified against the deployment of 2026-11-16 (the v5.3.9 build, `sha
-ae08dd3ed`). Three things moved, and every draft now carries the new truth:
+re-verified against the deployment of 2026-11-18 (the v5.3.11 build, `sha
+1fe220d5d`). Three things moved, and every draft now carries the new truth:
 
 1. **The demo can be signed into with Google** (`v5.3.4`). The drafts used
    to promise *"no signup"*; the honest claim is narrower — browsing needs
@@ -152,7 +152,7 @@ ae08dd3ed`). Three things moved, and every draft now carries the new truth:
    every draft now carries the English path.
 
 Also corrected, because they would not survive a reader checking them:
-`v5.1.17` → the current `v5.3.9`; *"the demo uses simulated AI
+`v5.1.17` → the current `v5.3.11`; *"the demo uses simulated AI
 responses"* → the demo answers with a real provider; *"16 supported
 providers"* → 17; *"9 languages with EU AI Act compliance labels"* → nine
 locales ship, English and Polish are maintained, the rest fall back to

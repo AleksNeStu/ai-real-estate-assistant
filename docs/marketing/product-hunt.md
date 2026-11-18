@@ -9,7 +9,7 @@
 
 ## Asset checklist (upload to PH during submission)
 
-Checked on 2026-11-16 (the assets are on disk; the live build is v5.3.9):
+Checked on 2026-11-18 (the assets are on disk; the live build is v5.3.11):
 
 - [x] Logo: 512×512 PNG (transparent background) and JPG (white background) —
       `assets/logo.png` and `assets/logo.jpg`
