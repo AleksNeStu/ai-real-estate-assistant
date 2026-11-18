@@ -15,7 +15,7 @@ services:
       dockerfile: deploy/docker/Dockerfile.backend
     container_name: ai-re-prod-backend
     ports:
-      - "8082:8000"
+      - "${BACKEND_HOST_PORT:-8082}:8000"
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - API_ACCESS_KEY=${API_ACCESS_KEY:-dev-secret-key}
@@ -125,7 +125,7 @@ services:
         FORCE_HTTPS: ${FORCE_HTTPS:-true}
     container_name: ai-re-prod-frontend
     ports:
-      - "3082:3000"
+      - "${FRONTEND_HOST_PORT:-3082}:3000"
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api/v1}
       - BACKEND_API_URL=${BACKEND_API_URL:-http://backend:8000/api/v1}
@@ -226,7 +226,7 @@ services:
     image: redis:7-alpine
     container_name: ai-re-prod-redis
     ports:
-      - "16379:6379"
+      - "${REDIS_PORT:-16379}:6379"
     command: ["redis-server", "--appendonly", "yes", "--maxmemory", "100mb", "--maxmemory-policy", "allkeys-lru"]
     volumes:
       - redis_data:/data
