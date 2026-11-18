@@ -23,10 +23,21 @@ test.describe('Tools', () => {
       // Verify main heading
       await expect(toolsPage.heading).toBeVisible();
 
-      // The console shows one tool at a time; the list carries them all.
-      await expect(authenticatedPage.getByTestId('tool-mortgage_calculator')).toBeVisible();
-      await expect(authenticatedPage.getByTestId('tool-compare_properties')).toBeVisible();
-      await expect(authenticatedPage.getByTestId('tool-neighborhood_quality')).toBeVisible();
+      // The console shows one tool at a time; the list carries them all. The
+      // list is the rail in the sidebar above the `lg` breakpoint and a
+      // drop-down below it - the same tools either way.
+      const rail = authenticatedPage.getByTestId('tool-mortgage_calculator');
+      const dropDown = authenticatedPage.getByTestId('tools-select');
+      if (await rail.isVisible().catch(() => false)) {
+        await expect(rail).toBeVisible();
+        await expect(authenticatedPage.getByTestId('tool-compare_properties')).toBeVisible();
+        await expect(authenticatedPage.getByTestId('tool-neighborhood_quality')).toBeVisible();
+      } else {
+        await expect(dropDown).toBeVisible();
+        for (const tool of ['mortgage_calculator', 'compare_properties', 'neighborhood_quality']) {
+          await expect(dropDown.locator(`option[value="tool-${tool}"]`)).toHaveCount(1);
+        }
+      }
 
       // The tool the console opens with is on screen.
       await expect(authenticatedPage.getByText('Mortgage Calculator')).toBeVisible();

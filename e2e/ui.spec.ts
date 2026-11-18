@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { mkdir } from 'fs/promises';
 import { mockLandingApis } from './mocks';
+import { topBarLinkScope } from './conftest';
 
 const SCREENSHOT_DIR = process.env.PLAYWRIGHT_SCREENSHOT_DIR || 'artifacts/playwright/screenshots';
 
@@ -65,8 +66,9 @@ test.describe('UI Smoke', () => {
       // On the landing - the navigation carries the sections of the page
       // (the app links are on the app pages, not on the landing). The
       // assertions name the anchors, not the labels: the landing is
-      // localized and the default locale is Polish.
-      const nav = page.getByRole('navigation').first();
+      // localized and the default locale is Polish. Below the `lg`
+      // breakpoint the anchors live in the menu behind the button.
+      const nav = await topBarLinkScope(page);
       await expect(nav.locator('a[href="#features"]')).toBeVisible();
       await expect(nav.locator('a[href="#faq"]')).toBeVisible();
     }

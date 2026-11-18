@@ -80,8 +80,10 @@ test.describe('Chat Flows', () => {
       await authenticatedChatPage.navigate();
       await authenticatedChatPage.sendMessage('Test message');
 
-      // Should show error
-      expect(await authenticatedChatPage.hasError()).toBe(true);
+      // Should show error. The answer arrives in its own time, so the
+      // assertion waits for it - a single check would read the screen
+      // before the error was on it.
+      await expect(authenticatedChatPage.errorMessage).toBeVisible({ timeout: 10000 });
     });
 
     test('should show retry button on failure', async ({ authenticatedChatPage, page }) => {
@@ -124,7 +126,7 @@ test.describe('Chat Flows', () => {
       await authenticatedChatPage.sendMessage('Test message');
 
       // Should show timeout error
-      expect(await authenticatedChatPage.hasError()).toBe(true);
+      await expect(authenticatedChatPage.errorMessage).toBeVisible({ timeout: 10000 });
       const errorText = await authenticatedChatPage.getErrorMessage();
       expect(errorText.toLowerCase()).toContain('timeout');
     });
@@ -140,7 +142,9 @@ test.describe('Chat Flows', () => {
       await authenticatedChatPage.navigate();
       await authenticatedChatPage.sendMessageAndWaitForResponse('Find apartments in Berlin');
 
-      // Should show sources
+      // Should show sources. The sources arrive with the stream, so the
+      // assertion waits for them.
+      await expect(authenticatedChatPage.sourcesContainer).toBeVisible({ timeout: 10000 });
       expect(await authenticatedChatPage.hasSources()).toBe(true);
     });
 

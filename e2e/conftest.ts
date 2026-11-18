@@ -3,7 +3,7 @@
  * Provides common setup for all E2E tests.
  */
 
-import { test as base, Page, BrowserContext } from '@playwright/test';
+import { test as base, Page, BrowserContext, Locator, expect } from '@playwright/test';
 import {
   LoginPage,
   RegisterPage,
@@ -227,6 +227,30 @@ export { TEST_USERS, getTestUser, generateUniqueEmail } from './fixtures/users';
 export { TEST_PROPERTIES, getTestProperties } from './fixtures/properties';
 export * from './mocks';
 export * from './page-objects';
+
+/**
+ * The scope the top bar's links are read from.
+ *
+ * Above the `lg` breakpoint the bar shows its links in the navigation; below
+ * it, in the menu behind the button. The links are the same ones either way,
+ * so the helper opens the one that is collapsed and hands back the scope the
+ * assertions read from.
+ */
+export async function topBarLinkScope(page: Page): Promise<Locator> {
+  const nav = page.getByRole('navigation', { name: /main navigation/i });
+  if (await nav.isVisible().catch(() => false)) return nav;
+
+  const menu = page.getByRole('button', { name: 'Menu', exact: true });
+  await expect(menu).toBeVisible({ timeout: 15000 });
+  await menu.click();
+
+  // The panel of the menu, not the whole bar: the navigation of the wide
+  // bar is in the document at every width, and a count over the whole bar
+  // would read its links twice.
+  const panel = page.getByTestId('top-bar-menu');
+  await expect(panel.locator('a').first()).toBeVisible({ timeout: 15000 });
+  return panel;
+}
 
 /**
  * Helper to wait for services to be healthy.

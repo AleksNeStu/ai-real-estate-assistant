@@ -57,7 +57,26 @@ export default defineConfig({
         viewport: { width: 1440, height: 900 },
       },
     },
-    // Tablet and mobile projects run in private repo full suite
+    // Tablet (iPad, portrait) - the width between the phone and the desktop
+    {
+      name: 'tablet-chromium',
+      use: {
+        ...devices['iPad (gen 7)'],
+        browserName: 'chromium',
+      },
+    },
+    // Mobile - the width the product was never tested at. The iPhone 13
+    // profile carries the touch emulation and the device pixel ratio; the
+    // viewport is 390x844 because that is the size the acceptance test
+    // names (Task #91).
+    {
+      name: 'mobile-chromium',
+      use: {
+        ...devices['iPhone 13'],
+        browserName: 'chromium',
+        viewport: { width: 390, height: 844 },
+      },
+    },
   ],
   // Fail build on CI if tests use .only
   forbidOnly: isCI,

@@ -19,7 +19,7 @@
     "test:coverage": "cd apps/web && npm run test:coverage",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test --grep @smoke",
-    "test:e2e:ci": "playwright test --project=desktop-chromium",
+    "test:e2e:desktop": "playwright test --project=desktop-chromium",
     "lint": "npm run lint:api && npm run lint:web",
     "lint:api": "cd apps/api && ruff check .",
     "lint:web": "cd apps/web && npm run lint",

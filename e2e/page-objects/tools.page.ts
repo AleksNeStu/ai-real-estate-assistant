@@ -91,7 +91,14 @@ export class ToolsPage {
    * calls it: `mortgage_calculator`.
    */
   async selectTool(name: string): Promise<void> {
-    await this.page.getByTestId(`tool-${name}`).click();
+    // Above the `lg` breakpoint the rail is the list of the tools; below it,
+    // the same tools in a drop-down. Both carry the tool's own id.
+    const rail = this.page.getByTestId(`tool-${name}`);
+    if (await rail.isVisible().catch(() => false)) {
+      await rail.click();
+      return;
+    }
+    await this.page.getByTestId('tools-select').selectOption(`tool-${name}`);
   }
 
   /**
