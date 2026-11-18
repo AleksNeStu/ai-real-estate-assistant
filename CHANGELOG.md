@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.10] - 2026-11-18
+
+### Fixed
+- **The status colours failed AA as small text** — the tokens sat at the 600
+  shade of their hue, so a status label was legible only to a reader who
+  squinted. They moved to the 700 shade of the same hue, and the contrast
+  table in the acceptance report is the measurement.
+- **The accessible names left out the text the reader sees** — the language
+  switcher's name left out the code it shows, and the user menu's name left
+  out the account it shows; the initials and the account's name were one word
+  in the DOM. Six fields of the valuation form had no name at all: the
+  `Field` component rendered a `<label>` without `htmlFor`. Every name now
+  carries what the reader sees.
+- **The stack could not start on a machine where a sibling product holds the
+  ports** — the compose file hardcoded the host ports while its own
+  `.env.example` documented them as variables. They are variables now, the
+  way `POSTGRES_PORT` already was.
+- **The stack still bound a port another service held, though the file named
+  a free one** — Compose gives the shell precedence over `--env-file`, and
+  `REDIS_PORT` — the non-Docker stack's port — lives in the OS environment.
+  The ports are read from the compose stack's own `.env` and put into the
+  process environment, so the file decides.
+- **The start script reported a healthy stack as still starting** — its
+  health check asked for two ports the stack never published. It probes the
+  ports the stack published.
+- **The compose smoke probed a port that belonged to somebody else** — it
+  hardcoded the published ports and inherited the machine's `REDIS_PORT`. Its
+  URLs are built from the same variables the compose file reads, and the
+  file's own `.env` decides them.
+
+### Changed
+- **The search row opens with the photo slot** — the row carried the price
+  first and the picture last, where the design draws the picture first. The
+  price and its monthly estimate are the first line of the listing's column,
+  and the address and the facts follow it.
+- **The accessibility has a gate** — axe-core over nineteen routes in both
+  themes, and `ACCESSIBILITY.md` re-based on WCAG 2.2. The suite covers the
+  phone and the tablet widths as well as the desktop.
+
+### Removed
+- **The district choropleth scaffold** — five hardcoded Warsaw rectangles
+  that the design never asked for. The map is the markers and the area panel,
+  which is what the Leaflet map draws; the Mapbox variant stays a
+  configuration, not a gap.
+
 ## [5.3.9] - 2026-11-16
 
 ### Fixed
