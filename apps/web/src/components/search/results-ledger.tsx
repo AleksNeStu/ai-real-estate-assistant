@@ -76,6 +76,10 @@ export function ResultsLedger({ results, query, className }: ResultsLedgerProps)
               })
             : null;
 
+        // The facts and the price per square meter share the row's detail
+        // line - the prototype carries the same numbers there.
+        const details = [...facts, perSqm].filter(Boolean);
+
         // A rented flat is priced per month already; a sold one is priced
         // once, and the estimate says what that price costs per month.
         const isRent = property.listing_type === 'rent';
@@ -100,47 +104,71 @@ export function ResultsLedger({ results, query, className }: ResultsLedgerProps)
             key={`${property.id ?? 'unknown'}-${index}`}
             data-testid="property-card"
             aria-label={title}
-            className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 gap-y-2 border-b border-border px-6 py-4"
+            className="grid grid-cols-[minmax(0,1fr)] gap-y-2 border-b border-border px-6 py-4 md:grid-cols-[128px_minmax(0,1fr)] md:gap-x-4"
           >
+            {/* The photo slot.
+                The design's row opens with the picture: the prototype draws a
+                placeholder where the photograph would be, 128 pixels wide,
+                and the catalogue the demo serves holds no photographs - so
+                the slot draws the placeholder, in the same form the other
+                photo slots of the product use, and it draws the photograph
+                itself the day a listing carries one. */}
+            <div className="relative hidden h-24 w-full self-start overflow-hidden rounded-md border border-border bg-muted md:block">
+              {property.images?.[0] ? (
+                <img
+                  src={property.images[0]}
+                  alt=""
+                  loading="lazy"
+                  className="size-full object-cover"
+                />
+              ) : (
+                <span className="absolute bottom-2 left-2 font-mono text-[10px] leading-4 text-muted-foreground">
+                  {t('imagePlaceholder')}
+                </span>
+              )}
+            </div>
+
+            {/* The listing.
+                The price is the first line of the column and the monthly
+                estimate stands at its end, the way the prototype's row
+                carries them: the picture took the width the price column
+                used to hold, and the listing's sentence needs the room
+                more than a third column of numbers does. */}
             <div className="min-w-0">
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="font-mono text-[16px] font-semibold leading-5 text-foreground">
+                  {price || t('priceOnRequest')}
+                </span>
+                {monthlyLabel ? (
+                  <span className="font-mono text-[12px] leading-4 text-success">
+                    {monthlyLabel}
+                  </span>
+                ) : null}
+              </div>
               {property.id ? (
                 <Link
                   href={`/${locale}/property/${property.id}`}
-                  className="block truncate text-[15px] font-medium leading-5 text-foreground underline-offset-4 hover:underline"
+                  className="mt-1 block truncate text-[15px] font-medium leading-5 text-foreground underline-offset-4 hover:underline"
                 >
                   {title}
                 </Link>
               ) : (
-                <p className="truncate text-[15px] font-medium leading-5 text-foreground">
+                <p className="mt-1 truncate text-[15px] font-medium leading-5 text-foreground">
                   {title}
                 </p>
               )}
               <p className="mt-1 truncate text-[12px] leading-4 text-muted-foreground">
                 {location}
               </p>
-              {facts.length ? (
+              {details.length ? (
                 <p className="mt-1 text-[12px] leading-4 text-muted-foreground">
-                  {facts.join(' • ')}
+                  {details.join(' • ')}
                 </p>
               ) : null}
             </div>
 
-            <div className="flex flex-col items-end gap-1 text-right">
-              <span className="font-mono text-[16px] font-semibold leading-5 text-foreground">
-                {price || t('priceOnRequest')}
-              </span>
-              {monthlyLabel ? (
-                <span className="font-mono text-[12px] leading-4 text-success">{monthlyLabel}</span>
-              ) : null}
-              {perSqm ? (
-                <span className="font-mono text-[12px] leading-4 text-muted-foreground">
-                  {perSqm}
-                </span>
-              ) : null}
-            </div>
-
             {property.id ? (
-              <div className="col-span-2 mt-1 flex items-center gap-2">
+              <div className="flex items-center gap-2 md:col-start-1 md:col-span-2">
                 <HeartButton propertyId={property.id} size="sm" />
                 <ListingGenerator propertyId={property.id} compact />
                 <RelevanceRating query={query} propertyId={property.id} />

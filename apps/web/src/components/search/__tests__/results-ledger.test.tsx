@@ -118,6 +118,27 @@ describe('ResultsLedger', () => {
     expect(screen.getByText(/75 m²/)).toBeInTheDocument();
   });
 
+  it('opens the row with the photo slot the design draws', () => {
+    // The design's row opens with the picture: the prototype draws a
+    // placeholder where the photograph would be, and the demo catalogue
+    // holds no photographs. The slot is there either way, and it carries
+    // the photograph itself the day a listing has one.
+    render(
+      <ResultsLedger
+        results={makeResults([makeProperty({ id: 'p1' }), makeProperty({ id: 'p2', images: ['https://example.test/flat.jpg'] })])}
+        query="Berlin"
+      />
+    );
+
+    const rows = screen.getAllByTestId('property-card');
+    // The placeholder of the listing without a photograph.
+    expect(rows[0]).toHaveTextContent('Property image');
+    // The photograph of the listing that carries one.
+    const photo = rows[1].querySelector('img');
+    expect(photo).not.toBeNull();
+    expect(photo).toHaveAttribute('src', 'https://example.test/flat.jpg');
+  });
+
   it('renders the empty state when there is nothing to list', () => {
     render(<ResultsLedger results={[]} query="Berlin" />);
 
