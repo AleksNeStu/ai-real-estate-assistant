@@ -47,6 +47,29 @@ $hasLlm = @("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY", "XAI_API_KE
 }
 if ($hasLlm) { Ok "LLM key found" } else { Warn "No LLM key — app will run in demo mode" }
 
+# ── The host ports the compose file publishes ─────────────────────────
+# The compose file publishes its host ports as variables and reads them from
+# this .env. An ambient variable of the same name overrides the file,
+# because Compose gives the shell precedence over --env-file: REDIS_PORT
+# belongs to the non-Docker stack and lives in the OS environment, and it
+# sent the container to a port another service was holding.
+#
+# The file is the sanctioned place for these ports, so it is read here and
+# put into the process environment - the shell value becomes the file's
+# value, and the health checks below probe the ports the stack published.
+$publishedPorts = @{}
+foreach ($name in @("BACKEND_HOST_PORT", "FRONTEND_HOST_PORT", "REDIS_PORT", "POSTGRES_PORT")) {
+    $match = [regex]::Match($envContent, "(?m)^$name=(\d+)\s*$")
+    if ($match.Success) {
+        $publishedPorts[$name] = $match.Groups[1].Value
+        Set-Item -Path "Env:$name" -Value $match.Groups[1].Value
+    }
+}
+if ($publishedPorts.Count -gt 0) {
+    $shown = ($publishedPorts.Keys | Sort-Object | ForEach-Object { "$_=$($publishedPorts[$_])" }) -join "  "
+    Ok "Published ports: $shown"
+}
+
 # ── Build and start ───────────────────────────────────────────────────
 Step "[4/5] Building and starting containers..."
 Push-Location $ComposeDir
@@ -60,8 +83,10 @@ Ok "Containers started"
 
 # ── Health check ──────────────────────────────────────────────────────
 Step "[5/5] Waiting for health checks (up to 120s)..."
-$BackendUrl = "http://localhost:8082"
-$FrontendUrl = "http://localhost:3082"
+$BackendPort = if ($publishedPorts.ContainsKey("BACKEND_HOST_PORT")) { $publishedPorts["BACKEND_HOST_PORT"] } else { "8082" }
+$FrontendPort = if ($publishedPorts.ContainsKey("FRONTEND_HOST_PORT")) { $publishedPorts["FRONTEND_HOST_PORT"] } else { "3082" }
+$BackendUrl = "http://localhost:$BackendPort"
+$FrontendUrl = "http://localhost:$FrontendPort"
 $elapsed = 0; $bOk = $false; $fOk = $false
 
 while ($elapsed -lt 120 -and -not ($bOk -and $fOk)) {
