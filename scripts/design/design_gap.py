@@ -181,6 +181,19 @@ CSS_UTILITY_PREFIXES = (
 
 
 # ---------------------------------------------------------------- colours
+COMMENT_RE = re.compile(r"/\*.*?\*/|<!--.*?-->", re.DOTALL)
+
+
+def strip_comments(text):
+    """The artefact without its comments.
+
+    A comment is prose about the design, not the design. The prototype's
+    theme.css writes "the pages keep their literals inside `var(--token,
+    #hex)`" - read as a definition, that is a fourteenth token.
+    """
+    return COMMENT_RE.sub(" ", text)
+
+
 def hex_to_rgb(value):
     value = value.lstrip("#")
     if len(value) == 3:
@@ -188,6 +201,11 @@ def hex_to_rgb(value):
     if len(value) == 6:
         value += "ff"
     if len(value) != 8:
+        return None
+    # A value that is not hex is not a colour. The prototype writes its
+    # literals inside `var(--token, #hex)` in a comment, and that is prose,
+    # not a colour - the analyser names it, it does not crash on it.
+    if not all(c in "0123456789abcdefABCDEF" for c in value):
         return None
     return tuple(int(value[i : i + 2], 16) for i in (0, 2, 4, 6))
 
@@ -360,7 +378,9 @@ def main():
     text_by_file = {}
     for p in files:
         try:
-            text_by_file[p] = p.read_text(encoding="utf-8", errors="ignore")
+            text_by_file[p] = strip_comments(
+                p.read_text(encoding="utf-8", errors="ignore")
+            )
         except OSError:
             continue
 
