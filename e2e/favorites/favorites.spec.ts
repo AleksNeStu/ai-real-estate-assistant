@@ -535,7 +535,11 @@ test.describe('Favorites Page', () => {
 
     // The favorites page shows the error of the context in a destructive
     // colored div. The text is the message of the API, so the alert itself is
-    // checked.
-    await expect(page.locator('[role="alert"]')).toBeVisible({ timeout: 15000 });
+    // checked. The locator names that message: a bare `[role="alert"]` also
+    // matches the framework's route announcer, and a locator that resolves to
+    // two elements fails on the strictness rather than on the page.
+    await expect(
+      page.locator('[role="alert"]').filter({ hasText: 'Internal server error' })
+    ).toBeVisible({ timeout: 15000 });
   });
 });
