@@ -2,10 +2,9 @@
  * The colours that cannot be read from CSS.
  *
  * The design tokens live in `app/globals.css` as raw HSL channels, and the
- * Tailwind utilities read them through the `@theme inline` aliases. Two
- * consumers cannot go that way: the map engines (Mapbox and Leaflet parse
- * their own colour strings and do not understand `var()`), and the GeoJSON
- * style objects that Mapbox paints itself.
+ * Tailwind utilities read them through the `@theme inline` aliases. One
+ * consumer cannot go that way: the map engines (Mapbox and Leaflet parse
+ * their own colour strings and do not understand `var()`).
  *
  * This file is the single place where those literals live. Each one is the
  * value of a named token, and `lib/__tests__/palette-tokens.test.ts` asserts
@@ -14,8 +13,6 @@
  */
 
 const hsl = (h: number, s: number, l: number) => `hsl(${h}, ${s}%, ${l}%)`;
-const hsla = (h: number, s: number, l: number, a: number) =>
-  `hsla(${h}, ${s}%, ${l}%, ${a})`;
 
 /** The status ramp, as the tokens define it. */
 export const PALETTE = {
@@ -33,31 +30,6 @@ export const PALETTE = {
   destructive: hsl(0, 72.2, 43.5),
   /** --action - the teal of the single primary action (#0f766e) */
   action: hsl(175.34, 77.44, 26.08),
-  /** --muted-foreground, the muted grey of a choropleth without data */
-  muted: hsl(240, 3.2, 44.5),
-} as const;
-
-/**
- * The choropleth fill of a district, by the share of the maximum price.
- * The four bands are the success, warning, caution and destructive tokens at
- * 40% opacity, and the "no data" band the muted foreground at 30%.
- */
-export const DISTRICT_FILL = {
-  noData: hsla(240, 3.2, 44.5, 0.3),
-  low: hsla(142, 71, 28, 0.4),
-  mediumLow: hsla(26, 90, 37, 0.4),
-  mediumHigh: hsla(20, 90, 38, 0.4),
-  high: hsla(0, 72.2, 43.5, 0.4),
-} as const;
-
-/** The Mapbox style colours of the district boundary layer. */
-export const DISTRICT_LAYER = {
-  /** --district-line */
-  line: hsl(217, 19, 26.7),
-  /** --district-label */
-  label: hsl(215, 27.9, 16.9),
-  /** --district-halo */
-  halo: hsl(0, 0, 100),
 } as const;
 
 /**
@@ -81,8 +53,4 @@ export const TOKEN_SOURCES: Record<string, string> = {
   [PALETTE.caution]: '--caution',
   [PALETTE.destructive]: '--destructive',
   [PALETTE.action]: '--action',
-  [PALETTE.muted]: '--muted-foreground',
-  [DISTRICT_LAYER.line]: '--district-line',
-  [DISTRICT_LAYER.label]: '--district-label',
-  [DISTRICT_LAYER.halo]: '--district-halo',
 };
