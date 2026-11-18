@@ -14,7 +14,7 @@ measurements the analyser takes and the accessibility the axe-core gate now prov
 
 | | |
 |---|---|
-| The prototype | `tmp/design/realt2/v2/` — 30 files, gitignored, never published |
+| The prototype | `tmp/design/realt2/v2/` — 31 files, gitignored, never published |
 | The application | the current `dev` commit, built and running in the repository's own Docker Compose stack |
 | The shots | `docs/reviews/design-acceptance-2026-11-18/` — 24 routes × 2 widths × 2 themes = 96 PNGs |
 | The capture | `scripts/ops/acceptance_capture.js` (`SITE_URL`, `OUT_DIR`) |
