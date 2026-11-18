@@ -114,10 +114,19 @@ export class RegisterPage {
    * Wait for registration to complete.
    */
   async waitForRegistrationSuccess(): Promise<void> {
-    // Wait for success message or redirect
+    // Wait for success message or redirect.
+    //
+    // The redirect is waited for with `domcontentloaded`, not with `load`:
+    // the landing page that follows draws a map, and the map's tiles come
+    // from a third party that takes its time - so the `load` event waited
+    // for the tiles, and a registration that had worked was reported as a
+    // timeout.
     await Promise.race([
       expect(this.successMessage).toBeVisible({ timeout: 10000 }),
-      this.page.waitForURL(/^(?!.*\/auth\/register).*$/, { timeout: 10000 }),
+      this.page.waitForURL(/^(?!.*\/auth\/register).*$/, {
+        timeout: 10000,
+        waitUntil: 'domcontentloaded',
+      }),
     ]);
   }
 
