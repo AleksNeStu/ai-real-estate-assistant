@@ -1,5 +1,6 @@
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import jsxA11y from "eslint-plugin-jsx-a11y";
 
 const eslintConfig = [
   ...nextVitals,
@@ -49,6 +50,21 @@ const eslintConfig = [
             "A hex literal cannot follow the theme. Use a token - or lib/palette.ts when the consumer is the map engine.",
         },
       ],
+    },
+  },
+  {
+    // The accessibility rules that can be read off the markup: a control
+    // without a name, an image without an alternative, a click handler on a
+    // non-interactive element. The axe-core gate in CI proves the assembled
+    // route; this gate catches the mistake at the line it was written.
+    //
+    // The plugin itself is already registered by eslint-config-next, which
+    // turns on six of the rules; this block turns on the rest of the
+    // recommended set.
+    name: "jsx-a11y",
+    files: ["src/**/*.{ts,tsx}"],
+    rules: {
+      ...jsxA11y.flatConfigs.recommended.rules,
     },
   },
   {

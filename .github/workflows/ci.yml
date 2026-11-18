@@ -575,6 +575,48 @@ jobs:
             echo "No results.json found" >> $GITHUB_STEP_SUMMARY
           fi
 
+      # The accessibility gate: axe-core over every route of the assembled
+      # application, at WCAG 2.2 A/AA. It runs inside this job - the browser
+      # and the built application are already here - and a violation fails
+      # the job, so the pipeline goes red with it. The summary names the
+      # result, because a gate nobody can see is a gate nobody trusts.
+      - name: Accessibility summary
+        if: always()
+        run: |
+          echo "### Accessibility (axe-core, WCAG 2.2 A/AA)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f artifacts/e2e-report/results.json ]; then
+            node -e '
+              const report = require("./artifacts/e2e-report/results.json");
+              const rows = [];
+              const walk = (suite) => {
+                for (const spec of suite.specs || []) {
+                  if (!(spec.file || "").includes("accessibility")) continue;
+                  for (const test of spec.tests || []) {
+                    rows.push([spec.title, test.status]);
+                    for (const result of test.results || []) {
+                      for (const error of result.errors || []) {
+                        console.log("- FAILED " + spec.title + ": " + String(error.message || "").slice(0, 900));
+                      }
+                    }
+                  }
+                }
+                for (const child of suite.suites || []) walk(child);
+              };
+              for (const suite of report.suites || []) walk(suite);
+              const passed = rows.filter(([, s]) => s === "expected" || s === "passed").length;
+              const failed = rows.filter(([, s]) => s !== "expected" && s !== "passed" && s !== "skipped").length;
+              const skipped = rows.filter(([, s]) => s === "skipped").length;
+              console.log("| Route | Result |");
+              console.log("|---|---|");
+              for (const [title, status] of rows) console.log("| " + title + " | " + status + " |");
+              console.log("");
+              console.log("Routes scanned: " + rows.length + " | passed: " + passed + " | failed: " + failed + " | skipped: " + skipped);
+            ' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No results.json found" >> $GITHUB_STEP_SUMMARY
+          fi
+
   # ===== STAGE 5: Integration =====
 
   # The stack job: it builds the Docker Compose stack, checks that it comes
