@@ -167,7 +167,15 @@ def _try_create_openrouter_free() -> Optional[BaseChatModel]:
 
 
 def _try_create_google_flash() -> Optional[BaseChatModel]:
-    """Try to create an LLM using Google Gemini Flash (has free tier)."""
+    """Try to create an LLM using Google Gemini Flash (has free tier).
+
+    The model must be one Google still serves. gemini-2.0-flash was retired on
+    2026-06-01, and the provider does not check the id it is handed - it builds
+    the client and lets the request fail with a 404. So the cascade picked a
+    model that cannot answer, and the fallback that was supposed to carry the
+    free tier carried nothing. The provider's own current GA model is the one
+    named here, the same one its connection check uses.
+    """
     settings = get_settings()
     if not settings.google_api_key:
         return None
@@ -176,7 +184,7 @@ def _try_create_google_flash() -> Optional[BaseChatModel]:
         from models.provider_factory import ModelProviderFactory
 
         provider = ModelProviderFactory.get_provider("google")
-        return provider.create_model(model_id="gemini-2.0-flash", temperature=0.0, max_tokens=2048)
+        return provider.create_model(model_id="gemini-3.8-flash", temperature=0.0, max_tokens=2048)
     except Exception:
         return None
 
