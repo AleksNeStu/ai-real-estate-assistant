@@ -138,11 +138,20 @@ def parse_args(argv: list[str]) -> SmokeConfig:
     # non-Docker stack, so the smoke test was probing a host that the compose
     # stack never opens - and in CI, where nothing else listens, it waited out
     # the whole timeout for a port that would never answer.
-    parser.add_argument("--backend-health-url", default="http://localhost:8082/health")
+    #
+    # The ports are the compose file's own variables, so the smoke probes
+    # where the stack actually listens. A machine where another service holds
+    # 8082 moves the stack - and the smoke follows it.
+    backend_port = int(os.environ.get("BACKEND_HOST_PORT", "8082"))
+    frontend_port = int(os.environ.get("FRONTEND_HOST_PORT", "3082"))
     parser.add_argument(
-        "--backend-verify-auth-url", default="http://localhost:8082/api/v1/verify-auth"
+        "--backend-health-url", default=f"http://localhost:{backend_port}/health"
     )
-    parser.add_argument("--frontend-url", default="http://localhost:3082/")
+    parser.add_argument(
+        "--backend-verify-auth-url",
+        default=f"http://localhost:{backend_port}/api/v1/verify-auth",
+    )
+    parser.add_argument("--frontend-url", default=f"http://localhost:{frontend_port}/")
     parser.add_argument(
         "--api-access-key", default=get_default_api_access_key_from_env()
     )
