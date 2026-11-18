@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -32,6 +32,14 @@ export function SavePresetDialog({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  // The name is what the dialog is for, so the cursor goes there when the
+  // dialog opens. `autoFocus` would do it too - and would also move the focus
+  // while the page is still rendering, which is what the rule warns about.
+  useEffect(() => {
+    if (isOpen) nameInputRef.current?.focus();
+  }, [isOpen]);
 
   const handleClose = () => {
     onOpenChange(false);
@@ -127,7 +135,7 @@ export function SavePresetDialog({
               onChange={(e) => setName(e.target.value)}
               placeholder={t('namePlaceholder')}
               maxLength={255}
-              autoFocus
+              ref={nameInputRef}
             />
           </div>
 

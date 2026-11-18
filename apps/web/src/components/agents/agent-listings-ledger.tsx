@@ -65,9 +65,8 @@ export function AgentListingsLedger({
             data-testid="property-card"
             role="article"
             aria-label={title}
-            onClick={() => onSelect(listing.property_id)}
             className={[
-              'grid cursor-pointer grid-cols-[72px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2',
+              'grid grid-cols-[72px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2',
               'border-b border-border py-2.5 transition-colors',
               'md:grid-cols-[100px_minmax(0,1fr)_minmax(0,1.6fr)_96px_150px]',
               selected ? 'bg-muted' : 'hover:bg-muted/60',
@@ -92,7 +91,16 @@ export function AgentListingsLedger({
             </span>
 
             <span className="col-span-2 flex min-w-0 flex-col md:col-span-1">
-              <span className="truncate text-[14px] font-medium text-foreground">{title}</span>
+              {/* The title is the row's control: a reader picks the listing
+                  they want to ask about with the title, with the keyboard as
+                  well as with the mouse. */}
+              <button
+                type="button"
+                onClick={() => onSelect(listing.property_id)}
+                className="truncate text-left text-[14px] font-medium text-foreground hover:underline"
+              >
+                {title}
+              </button>
               <span className="truncate text-[12px] text-muted-foreground">{location}</span>
             </span>
 

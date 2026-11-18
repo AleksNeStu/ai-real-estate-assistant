@@ -24,17 +24,17 @@ export const PALETTE = {
   /** --chart-5 */
   chart5: hsl(192, 91, 39),
   /** --success */
-  success: hsl(142, 76, 36),
+  success: hsl(142, 71, 28),
   /** --warning */
   warning: hsl(26, 90, 37),
   /** --caution */
-  caution: hsl(20, 90, 48),
+  caution: hsl(20, 90, 38),
   /** --destructive */
-  destructive: hsl(0, 84.2, 60.2),
+  destructive: hsl(0, 72.2, 43.5),
   /** --action - the teal of the single primary action (#0f766e) */
   action: hsl(175.34, 77.44, 26.08),
   /** --muted-foreground, the muted grey of a choropleth without data */
-  muted: hsl(240, 3.8, 46.1),
+  muted: hsl(240, 3.2, 44.5),
 } as const;
 
 /**
@@ -43,11 +43,11 @@ export const PALETTE = {
  * 40% opacity, and the "no data" band the muted foreground at 30%.
  */
 export const DISTRICT_FILL = {
-  noData: hsla(240, 3.8, 46.1, 0.3),
-  low: hsla(142, 76, 36, 0.4),
+  noData: hsla(240, 3.2, 44.5, 0.3),
+  low: hsla(142, 71, 28, 0.4),
   mediumLow: hsla(26, 90, 37, 0.4),
-  mediumHigh: hsla(20, 90, 48, 0.4),
-  high: hsla(0, 84.2, 60.2, 0.4),
+  mediumHigh: hsla(20, 90, 38, 0.4),
+  high: hsla(0, 72.2, 43.5, 0.4),
 } as const;
 
 /** The Mapbox style colours of the district boundary layer. */

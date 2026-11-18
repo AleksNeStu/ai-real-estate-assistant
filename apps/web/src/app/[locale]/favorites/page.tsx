@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FolderPlus, Loader2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
@@ -173,6 +173,14 @@ export default function FavoritesPage() {
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
   const [showNewCollectionModal, setShowNewCollectionModal] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
+  const newCollectionInputRef = useRef<HTMLInputElement>(null);
+
+  // The name is what the dialog is for, so the cursor goes there when the
+  // dialog opens. `autoFocus` would do it too - and would also move the focus
+  // while the page is still rendering, which is what the rule warns about.
+  useEffect(() => {
+    if (showNewCollectionModal) newCollectionInputRef.current?.focus();
+  }, [showNewCollectionModal]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -377,7 +385,7 @@ export default function FavoritesPage() {
           value={newCollectionName}
           onChange={(e) => setNewCollectionName(e.target.value)}
           placeholder={t('collectionName')}
-          autoFocus
+          ref={newCollectionInputRef}
         />
       </Modal>
     </div>

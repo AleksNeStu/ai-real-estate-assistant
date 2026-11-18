@@ -99,7 +99,6 @@ export function ResultsLedger({ results, query, className }: ResultsLedgerProps)
           <article
             key={`${property.id ?? 'unknown'}-${index}`}
             data-testid="property-card"
-            role="article"
             aria-label={title}
             className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 gap-y-2 border-b border-border px-6 py-4"
           >

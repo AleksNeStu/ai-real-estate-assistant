@@ -89,7 +89,9 @@ describe('AgentListingsLedger', () => {
       />
     );
 
-    fireEvent.click(screen.getByTestId('property-card'));
+    // The title is the row's control: it is the listing, and it is what a
+    // reader picks with the mouse and with the keyboard.
+    fireEvent.click(screen.getByRole('button', { name: '2 rooms, 46 m²' }));
 
     expect(onSelect).toHaveBeenCalledWith('p1');
   });
