@@ -441,7 +441,19 @@ jobs:
           # mount as root - so the directories are prepared for that user
           # before the stack comes up.
           mkdir -p state chroma_db
-          chmod -R a+rwX state chroma_db
+          # The backend writes into these two directories as its own uid, so
+          # the files inside them belong to the container and not to the
+          # deploy user - and chmod refuses a file the caller does not own.
+          # The abort that follows is what killed the roll of 2026-11-18: the
+          # stack was never restarted, and the reason was a permission, not
+          # a build. sudo does not refuse, so it is tried next, and a warning
+          # is printed when neither can widen them - the roll goes on, because
+          # the container owns those files and writes them as it always did.
+          if ! chmod -R a+rwX state chroma_db 2>/dev/null; then
+            if ! sudo chmod -R a+rwX state chroma_db 2>/dev/null; then
+              echo "WARNING: the permissions of state/ and chroma_db/ could not be widened" >&2
+            fi
+          fi
 
           docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
 
