@@ -121,7 +121,25 @@ async function capture(browser, viewport, theme) {
     const file = path.join(OUT, `${route.name}-${viewport.name}-${theme}.png`);
     try {
       await page.goto(`${BASE}${route.url}`, { waitUntil: "load", timeout: 45000 });
-      const tiles = ROUTES_WITH_MAP.has(route.name) ? await waitForMapTiles(page) : { total: 0, painted: 0 };
+      let tiles = ROUTES_WITH_MAP.has(route.name)
+        ? await waitForMapTiles(page)
+        : { total: 0, painted: 0 };
+
+      // The tile host refuses a session now and then - measured: a browser
+      // that asked for tiles is answered with 408 and paints none of them,
+      // and the refusal is intermittent, so it can hit a session that had
+      // not asked for anything yet. A map that painted nothing gets one
+      // more attempt, in a session of its own; a map that still paints
+      // nothing is a finding, and the shot records it.
+      if (ROUTES_WITH_MAP.has(route.name) && tiles.painted === 0) {
+        console.log(`  ${route.name} ${viewport.name} ${theme} - no tiles, asking again`);
+        await context.close();
+        context = await newContext(browser, viewport, theme);
+        page = await context.newPage();
+        await page.goto(`${BASE}${route.url}`, { waitUntil: "load", timeout: 45000 });
+        tiles = await waitForMapTiles(page);
+      }
+
       await page.waitForTimeout(2500);
       await page.screenshot({ path: file, fullPage: false });
       const map = tiles.total > 0 ? ` map:${tiles.painted}/${tiles.total} tiles` : "";
@@ -172,13 +190,7 @@ async function waitForMapTiles(page) {
 
 async function main() {
   fs.mkdirSync(OUT, { recursive: true });
-  // Chromium resolves IPv6 first where the tile host offers it. A machine
-  // whose IPv6 path is broken gets no answer at all from that address - the
-  // request stalls and comes back 408, and the map never paints - so the
-  // shot would show an empty canvas that says nothing about the
-  // application. The shot is about the application: the browser is put on
-  // the address family that works here.
-  const browser = await chromium.launch({ headless: true, args: ["--disable-ipv6"] });
+  const browser = await chromium.launch({ headless: true });
   const failures = [];
 
   for (const theme of THEMES) {

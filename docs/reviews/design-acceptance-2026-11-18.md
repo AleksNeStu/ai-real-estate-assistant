@@ -24,15 +24,17 @@ measurements the analyser takes and the accessibility the axe-core gate now prov
 
 **How each verdict was reached.** Every route was opened in the running application and shot at
 1440 and 390, in light and in dark. Each shot was then compared, pixel by pixel, with the
-previous acceptance's shot of the same route: **20 of the 96 are identical to 2026-11-10**, and the
-76 that changed were read against the prototype. Three things account for the change, and none of
+previous acceptance's shot of the same route: **23 of the 96 are identical to 2026-11-10**, and the
+ones that changed were read against the prototype. Five things account for the change, and none of
 them is a layout that moved:
 
 | The change | Where it shows |
 |---|---|
-| The maps draw their tiles — on 2026-11-10 they were empty canvases | the city overview changed most (42–52 % of its pixels), the search page 14–16 %, the landing 10–12 % |
+| The maps draw their tiles — on 2026-11-10 they were empty canvases | the city overview changed most (42–52 % of its pixels), the search page 9–17 %, the landing 10–12 % |
+| The demo catalogue is regenerated every time the stack starts, so the routes that show listings carry different numbers | the agents, the favourites, the leads, the saved searches — the layout is the same, the data is not |
 | The footer's last line changed — "The hosted version is in development by NestLab" became "in deployment by" — which shifts the waitlist block above it | the same band on every page, 2.3–2.5 % of its pixels |
 | The muted text and the status colours moved to their AA shades | the rest, in the text |
+| The search row opens with the photo slot | the search page's rows |
 
 A route whose shot did not change keeps the verdict it had; a route whose shot changed was judged
 again.
@@ -49,7 +51,7 @@ analyser reads every token definition in the artefact and finds the repository t
 | Token definitions read in the prototype | 13 | 13 |
 | Matched a repository token by colour | 12 | 12 |
 | Without a counterpart | 1 — `--tilef`, the CSS filter the prototype puts on the map tiles. It is not a colour; the repository applies the same filter in code (`components/ui/map-tile-theme.tsx`), not as a token | the same |
-| Repository tokens without a counterpart in the artefact | 83 | 83 |
+| Repository tokens without a counterpart in the artefact | 83 | 81 |
 
 The twelve that matched are `--ac` → `--action`, `--acf` → `--action-foreground`, `--bd` →
 `--border`/`--input`, `--bg` → `--background`/`--card`, `--c1` → `--chart-1`, `--er` →
@@ -108,7 +110,7 @@ application has them.
 | Route | Prototype | What the application shows | Verdict |
 |---|---|---|---|
 | `/` | Landing | The hero, the six-row feature ledger, "Data and coverage, as of today" (read from `/catalogue/stats`), the four-state comparison table, the studio strip, the FAQ, the footer — and the hero instrument, whose map now draws its tiles and states the price on every pin | matches |
-| `/en/search` | Search | The sentence input with the parsed filters, the filter column, the result list, the map — with the tiles painted. The row states the listing in text where the prototype's row carries a picture | acceptable deviation |
+| `/en/search` | Search | The sentence input with the parsed filters, the filter column, the result list, the map — with the tiles painted. The row opens with the photo slot the design gives the picture, the price and its monthly estimate on the first line, the listing under it | matches |
 | `/en/chat` | Chat | The suggestion row, the message stream, the composer — at 1440 and at 390 | matches |
 | `/en/tools` | Tools | The five calculators as a ledger, each marked `ready` or `needs config` | matches |
 | `/en/analytics` | Analytics | The same five calculators in one console, with the tabs the prototype draws | matches |
@@ -132,17 +134,18 @@ application has them.
 | `/en/admin/data-sources` | Admin | The admin shell, the data sources and the portals | matches |
 | `/en/admin/monitoring` | Admin | The admin shell, the health, the readiness, the deployment | matches |
 
-**The two deviations.** The prototype's agent analytics is an agent's dashboard, and the API keeps
+**The one deviation.** The prototype's agent analytics is an agent's dashboard, and the API keeps
 it for agents and administrators: an ordinary account gets `403` for every one of its calls. The
 page says what it is — the view belongs to an agent — and offers no retry, because retrying will
 not help. `apps/web/src/app/[locale]/agent-analytics/page.tsx`.
 
-The prototype's search row opens with a picture of the listing. The application's row states the
-listing in text — the title, the address, the facts, the price, the monthly cost and the price per
-m², in mono — and the demo catalogue holds no photographs to draw. The search ledger draws no empty
-cell for a picture it does not have; the agent ledger, whose catalogue entries do carry pictures,
-draws the cell. This is the same deviation the acceptance of 2026-11-10 accepted, and it is
-written down here rather than passed over.
+**The deviation that is now closed.** The prototype's search row opens with a picture of the
+listing, and the row carried no slot for it at all — the one region the design gives the picture
+was the one region the application was missing. The row now opens with the slot: 128 pixels wide,
+holding the placeholder the other photo slots of the product use, and holding the photograph
+itself the day a listing carries one. The price and its monthly estimate moved onto the first line
+of the listing's column, the way the prototype carries them, so that the picture's width does not
+come out of the title's.
 
 ---
 
@@ -151,8 +154,9 @@ written down here rather than passed over.
 | The defect | The cause | The fix |
 |---|---|---|
 | The maps drew no tiles in the shots — the search map and the city overview were empty canvases | the capture shot the page 2.5 seconds after it loaded, and Leaflet fetches its tiles afterwards — from a tile host that answers in ten seconds or more | `scripts/ops/acceptance_capture.js` now waits for the tiles the map asked for, and reports what it found (`map:12/12 tiles`); the shots show the maps a visitor sees |
-| The tiles the map asked for came back `408`, and the map painted none of them | the browser resolves IPv6 first, and this machine's IPv6 path is broken: the request to the tile host stalls and the host answers `408` instead of the tile. The same URLs answer `200` over IPv4, and `curl -6` fails to connect at all | `scripts/ops/acceptance_capture.js` — the browser is put on the address family that works here, because the shot is about the application and the network's answer is not the application's |
-| The third map in a pass was refused even over IPv4 — its tiles came back `408` while the same route painted them in a browser of its own | the tile host refuses a browser session that has already asked for tiles: measured, the first map in a pass painted, the second was refused, the third was refused outright | `scripts/ops/acceptance_capture.js` — a map route gets a browser context of its own; the routes without a map still share one |
+| The tiles the map asked for came back `408`, and the map painted none of them | the tile host refuses a browser session that has already asked for tiles: measured, the first map in a pass painted, the second was refused, and the third was refused outright, every request answered with `408` and an empty body | `scripts/ops/acceptance_capture.js` — a map route gets a browser context of its own, and a map that still paints nothing is asked once more; the routes without a map still share one context |
+| The search row had no slot for the picture the design gives it | the row was the one region of the design the application was missing: the prototype opens the row with a 128-pixel picture, and the row drew none | `components/search/results-ledger.tsx` — the row opens with the slot; the price and its monthly estimate moved onto the listing's first line, the way the prototype carries them |
+| A district choropleth stood in the product that no map drew | it was a scaffold, not a feature: a Mapbox-only layer nothing imported, an aggregation library whose own comment says it would load real GeoJSON in production and whose districts are five rectangles around Warsaw, and the tokens it painted itself | retired — the layer, the library, its test, the three tokens and the palette entries are gone; the design's map is the markers and the area panel, and both ship |
 | The design analyser crashed on the prototype | the prototype's `theme.css` explains itself in a comment — "the pages keep their historical literals inside `var(--token, #hex)`" — and the analyser read the prose as a token definition, then failed on a value that is not a colour | `scripts/design/design_gap.py` strips the comments and returns nothing for a value that is not hex |
 | The status colours failed AA as small text — 32 nodes | the tokens sat at the 600 shade of their hue, the prototype's own values | the tokens moved to the 700 shade of the same hue; the contrast table above is the measurement |
 | The accessible names left out the text the reader sees — 37 nodes | the language switcher's name left out the code it shows, and the user menu's name left out the account it shows; the initials and the account's name were one word in the DOM | `components/ui/language-switcher.tsx`, `components/auth/UserMenu.tsx` |
@@ -189,6 +193,7 @@ findings, all fixed. The full account is in `ACCESSIBILITY.md`.
 | The type scale as Tailwind tokens | the `--text-*` tokens are the analyser's; no drift |
 | The focus ring is the accent | `--ring` is the teal of `--action`, and every interactive primitive uses it |
 | The map's tiles are grey, and inverted in the dark theme | `components/ui/map-tile-theme.tsx` puts the filter on the tile pane, and the dark shots show the inverted map |
+| The property card is photo + price + details + location link | the search row opens with the photo slot, the price and its monthly estimate are the first line of the listing's column, and the address and the facts follow it |
 
 ## The live sweep
 
@@ -204,11 +209,17 @@ account and creates no lead.
 
 | The gap | Where it stands |
 |---|---|
-| The Mapbox path is dormant: the stack carries no `NEXT_PUBLIC_MAPBOX_TOKEN`, so the shipping map is the Leaflet one and the district choropleth (`components/search/district-boundary-layer.tsx`, `lib/district-aggregation.ts` — five hardcoded Warsaw rectangles) never draws | named, not built: the plan never had a token, and a feature the plan did not have is not built in an acceptance |
-| The demo catalogue holds no photographs, so the search row states the listing in text where the prototype's row carries a picture | named as a deviation above: the component draws no empty cell for an image it does not have; the agent ledger, whose catalogue entries do have pictures, draws the cell |
 | The tile host is a third party and it is slow: the tiles of a map that first drew at one zoom and then fitted its bounds arrive ten seconds or more after the page did | the capture waits for them and reports what it found; the e2e test separates "the map asked for nothing" (the product is broken) from "the host refused" (the network is) |
-| The tile host is reached over IPv6 where the browser offers it, and this machine's IPv6 path is broken — the request stalls and the host answers `408` rather than failing fast, so the browser never falls back to IPv4 | the capture puts the browser on IPv4; the finding is in the report because the same machine will show an empty map in any browser until its IPv6 path is repaired — the application's own map code is not involved |
-| The tile host refuses a browser session that has already asked for tiles — a third map in a pass is answered with `408` while the same route paints in a browser of its own | the capture gives a map route its own context; a visitor's own browser asks for one map's worth of tiles and is answered |
+| The tile host refuses a browser session now and then — a map is answered with `408` and paints none of its tiles, and the refusal is intermittent enough that it can hit a session that had asked for nothing yet | the capture gives a map route its own context and asks once more when a map paints nothing; a visitor's own browser asks for one map's worth of tiles and is answered |
+| The demo catalogue holds no photographs — the API carries no `images` at all, so every photo slot in the product draws its placeholder | the slots are drawn, and a listing that carries a photograph draws it; the catalogue is the demo's own data, and photographs for it are a content question, not a design one |
+| This machine has no IPv6 route: the Wi-Fi adapter's IPv6 binding is off, there is no `::/0` route, and `curl -6` cannot connect | it does not reach the product: the browser falls back to IPv4 and the tiles arrive (measured, 8/8 painted in 0.8 s, with and without the browser's IPv6 attempt), so the `408`s were the tile host's, not the network's |
+
+**The Mapbox variant is a configuration, not a gap.** The search page draws the Mapbox map when
+`NEXT_PUBLIC_MAPBOX_TOKEN` is set and the Leaflet map when it is not, and the unit suite covers
+both ways (`apps/web/src/app/[locale]/search/__tests__/page.test.tsx`). The demo deployment
+carries no token — a Mapbox token belongs to a paid account — and the design's map is the markers
+and the area panel, which is what the Leaflet map draws. What stood beside it was a choropleth
+the design never asked for, and that is retired.
 
 ## How to reproduce
 
