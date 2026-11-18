@@ -185,6 +185,13 @@ This document captures practical details for working on the FastAPI backend and 
   `tablet-chromium` (iPad, 810x1080) and `mobile-chromium` (390x844). One of them
   is selected with `--project=<name>`; the plain run carries all three, and the
   baselines of the three surfaces live in `e2e/baselines/<project>/`.
+- E2E and Node: the suite runs under **Node 22** (`22.23.4` in the pipeline).
+  Playwright 1.65 is silent on Node 24 - the command prints nothing and exits 0,
+  so the suite looks like it ran and never did. On a workstation whose default
+  is Node 24, the runner is invoked explicitly:
+  ```powershell
+  & "C:\Users\he\AppData\Local\nvm\v22.22.2\node.exe" ".\node_modules\@playwright\test\cli.js" test
+  ```
 - Playwright env vars:
   - `PLAYWRIGHT_BASE_URL` (default `http://localhost:3000`)
   - `PLAYWRIGHT_START_WEB` (`1`/`true` to auto-start Next.js dev server)
