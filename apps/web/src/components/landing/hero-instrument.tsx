@@ -139,7 +139,8 @@ export function HeroInstrument({ query, locale }: { query: string; locale: strin
         {state.results.map((property) => (
           <div
             key={property.id ?? `${property.city}-${property.price}`}
-            className="grid grid-cols-[96px_minmax(0,1fr)_92px_92px] items-baseline gap-3 border-b border-border px-3.5 py-2.5 text-left"
+            data-testid="instrument-row"
+            className="grid grid-cols-[96px_minmax(0,1fr)] items-baseline gap-3 border-b border-border px-3.5 py-2.5 text-left sm:grid-cols-[96px_minmax(0,1fr)_92px_92px]"
           >
             <span className="font-mono text-[14px] font-semibold">
               {formatPrice(property.price, property.currency ?? 'PLN', 'pl-PL')}
@@ -147,16 +148,23 @@ export function HeroInstrument({ query, locale }: { query: string; locale: strin
             <span className="text-[14px]">
               {property.rooms} rooms, {property.area_sqm} m² in {property.district ?? property.city}
             </span>
-            <span className="text-right font-mono text-[12px] text-muted-foreground">
-              {property.price && property.area_sqm
-                ? t('hero.instrumentPerSqm', {
-                    amount: Math.round(property.price / property.area_sqm).toLocaleString('en-US'),
-                    currency: property.currency ?? 'PLN',
-                  })
-                : '—'}
-            </span>
-            <span className="text-right font-mono text-[12px] text-success">
-              {property.price ? t('hero.instrumentPerMonth', { amount: '2 473' }) : '—'}
+            {/* The two derived numbers sit on their own row at the phone
+                width: the four-column grid needs 344px and the row has 340px
+                there, and the instrument clips what does not fit - a price cut
+                in half. From `sm` up the wrapper dissolves and the numbers
+                take their two columns. */}
+            <span className="col-span-2 flex items-baseline justify-end gap-4 sm:contents">
+              <span className="text-right font-mono text-[12px] text-muted-foreground">
+                {property.price && property.area_sqm
+                  ? t('hero.instrumentPerSqm', {
+                      amount: Math.round(property.price / property.area_sqm).toLocaleString('en-US'),
+                      currency: property.currency ?? 'PLN',
+                    })
+                  : '—'}
+              </span>
+              <span className="text-right font-mono text-[12px] text-success">
+                {property.price ? t('hero.instrumentPerMonth', { amount: '2 473' }) : '—'}
+              </span>
             </span>
           </div>
         ))}
