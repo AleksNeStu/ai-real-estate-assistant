@@ -306,6 +306,53 @@ class TestUserActivityService:
         assert everything.total_searches == 2
 
     @pytest.mark.asyncio
+    async def test_a_search_without_a_city_is_not_a_city(self, activity_service, db_session):
+        """The searched cities answer the same on either database.
+
+        SQLite keeps a row whose filters carry no "city" key - the query
+        wrapper reads it as NULL and the row survives the filter - so the
+        rows are filtered in Python as well. Without that the two databases
+        count a city the search never named.
+        """
+        config = RankingConfig(name="city-test-config", description="city")
+        db_session.add(config)
+        await db_session.flush()
+
+        filters = [
+            {"city": "Krakow"},
+            {"city": "Krakow"},
+            {"type": "apartment"},  # no city key at all
+            {"city": None},  # a null city
+            {"city": ""},  # an empty city
+        ]
+        for index, row_filters in enumerate(filters):
+            db_session.add(
+                SearchEvent(
+                    session_id=f"city-{index}",
+                    ranking_config_id=config.id,
+                    query="apartments",
+                    filters=row_filters,
+                    results_count=1,
+                    processing_time_ms=8,
+                    search_timestamp=datetime(2026, 11, 4, 9, 0, tzinfo=UTC),
+                )
+            )
+        await db_session.flush()
+
+        summary = await activity_service.get_activity_summary(
+            period_start=datetime(2026, 11, 1, tzinfo=UTC),
+            period_end=datetime(2026, 11, 10, tzinfo=UTC),
+        )
+
+        cities = summary.top_search_cities
+        # The searches that named no city are not counted under one: the list
+        # carries one row per city, not two rows both called "unknown".
+        assert cities == [
+            {"city": "Krakow", "count": 2},
+            {"city": "unknown", "count": 1},
+        ]
+
+    @pytest.mark.asyncio
     async def test_export_activity_csv_returns_valid_csv(self, activity_service, db_session):
         """Test CSV export format."""
         await activity_service.track_event(
