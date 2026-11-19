@@ -2753,6 +2753,36 @@
         "methodsDesc": "The ways this deployment lets you in. The methods themselves live on the auth side.",
         "methodPassword": "E-mail + password"
       },
+      "memory": {
+        "title": "Buyer memory",
+        "description": "What the assistant remembers about your search: a budget, areas you ruled out, a feature you need, a listing you liked. It is read back into the answers you get, and it steers the listings you are shown. A fact is kept for a year after it is recorded, and then it expires and is removed.",
+        "count": "{count, plural, one {# fact} other {# facts}}",
+        "kinds": {
+          "budget": "Budget",
+          "ruledOutArea": "Area ruled out",
+          "liked": "Listing you liked",
+          "disliked": "Listing you disliked",
+          "requirement": "A feature you need",
+          "note": "Note"
+        },
+        "expires": "expires {date}",
+        "recorded": "recorded {date}",
+        "deleted": "{count, plural, one {# fact deleted} other {# facts deleted}}",
+        "emptyTitle": "Nothing is remembered about you.",
+        "emptyDescription": "The assistant has not kept a fact about your search. It keeps one only after you tell it about your budget, an area you ruled out, a feature you need or a listing you liked.",
+        "signedOutTitle": "The memory belongs to a signed-in account.",
+        "signedOutDescription": "Sign in and the facts the assistant keeps about your search are yours to read and to delete. It is not attached to visitors who are not signed in, and it is not shared between accounts.",
+        "loadFailed": "Failed to load the buyer memory.",
+        "deleteLabel": "Delete the buyer memory",
+        "deleteDescription": "Removes every fact the assistant keeps about you. The answers you get afterwards no longer carry them, and the listings you are shown are no longer steered by them. Deleting your account removes the memory with the account.",
+        "deleteButton": "Delete the memory",
+        "confirmTitle": "Delete the buyer memory?",
+        "confirmDescription": "Every fact the assistant keeps about your search is removed.",
+        "confirmNote": "It cannot be undone. The assistant stops reading your budget, your ruled-out areas and your likes into the answers it gives you and into the listings it shows you.",
+        "deleteConfirm": "Delete it",
+        "deleting": "Deleting...",
+        "deleteFailed": "Failed to delete the buyer memory."
+      },
       "models": {
         "loadFailed": "Failed to load model catalog. Please try again.",
         "failedToLoadCatalog": "Failed to load the model catalogue",

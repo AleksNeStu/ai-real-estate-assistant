@@ -2753,6 +2753,36 @@
         "methodsDesc": "Sposoby, w jakie to wdrożenie dopuszcza. Same metody są po stronie logowania.",
         "methodPassword": "E-mail i hasło"
       },
+      "memory": {
+        "title": "Pamięć kupującego",
+        "description": "To, co asystent pamięta o Twoim poszukiwaniu: budżet, obszary, które wykluczyłeś, potrzebną cechę, ofertę, którą polubiłeś. Trafia to z powrotem do odpowiedzi, które dajesz, i steruje ofertami, które Ci pokazujemy. Fakt jest przechowywany przez rok od zapisu, a potem wygasa i jest usuwany.",
+        "count": "{count, plural, one {# fakt} few {# fakty} many {# faktów} other {# faktu}}",
+        "kinds": {
+          "budget": "Budżet",
+          "ruledOutArea": "Wykluczony obszar",
+          "liked": "Polubiona oferta",
+          "disliked": "Odrzucona oferta",
+          "requirement": "Potrzebna cecha",
+          "note": "Notatka"
+        },
+        "expires": "wygasa {date}",
+        "recorded": "zapisano {date}",
+        "deleted": "{count, plural, one {# fakt usunięty} few {# fakty usunięte} many {# faktów usuniętych} other {# faktu usuniętego}}",
+        "emptyTitle": "Nic o Tobie nie jest zapamiętane.",
+        "emptyDescription": "Asystent nie zachował żadnego faktu o Twoim poszukiwaniu. Zapamiętuje go dopiero, gdy powiesz mu o swoim budżecie, wykluczonym obszarze, potrzebnej cesze lub polubionej ofercie.",
+        "signedOutTitle": "Pamięć należy do zalogowanego konta.",
+        "signedOutDescription": "Zaloguj się, a fakty, które asystent przechowuje o Twoim poszukiwaniu, staną się Twoje do odczytania i usunięcia. Nie są przywiązane do gości, którzy nie są zalogowani, i nie są współdzielone między kontami.",
+        "loadFailed": "Nie udało się wczytać pamięci kupującego.",
+        "deleteLabel": "Usuń pamięć kupującego",
+        "deleteDescription": "Usuwa wszystkie fakty, które asystent o Tobie przechowuje. Odpowiedzi, które dajesz dalej, nie niosą już tych informacji, a oferty, które Ci pokazujemy, nie są przez nie sterowane. Usunięcie konta usuwa pamięć razem z nim.",
+        "deleteButton": "Usuń pamięć",
+        "confirmTitle": "Usunąć pamięć kupującego?",
+        "confirmDescription": "Wszystkie fakty, które asystent przechowuje o Twoim poszukiwaniu, zostaną usunięte.",
+        "confirmNote": "Tego nie można cofnąć. Asystent przestanie wplatać Twój budżet, wykluczone obszary i polubione oferty w odpowiedzi, które daje, i w oferty, które pokazuje.",
+        "deleteConfirm": "Usuń",
+        "deleting": "Usuwanie...",
+        "deleteFailed": "Nie udało się usunąć pamięci kupującego."
+      },
       "models": {
         "loadFailed": "Nie udało się wczytać katalogu modeli. Spróbuj ponownie.",
         "failedToLoadCatalog": "Nie udało się wczytać katalogu modeli",
