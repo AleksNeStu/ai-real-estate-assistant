@@ -18,6 +18,9 @@ DOCKER_COMPOSE := docker compose
 DOCKER_COMPOSE_FILE := deploy/compose/docker-compose.yml
 SCRIPTS_DIR := scripts
 
+# The backend the end-to-end suite runs against. Empty means "in-process".
+E2E_BASE_URL ?=
+
 # Colors for help output
 BLUE := \033[34m
 GREEN := \033[32m
@@ -29,6 +32,7 @@ RESET := \033[0m
 .PHONY: docker-up docker-down docker-logs docker-build
 .PHONY: ci ci-quick setup clean install docs
 .PHONY: sprav sprav-quick sprav-json benchmark-search benchmark-chat load-test
+.PHONY: perf-budget perf-preflight
 .PHONY: migrate-check migrate-up migrate-down smoke-test test-resilience quickstart
 .PHONY: api-diff api-diff-baseline
 .PHONY: seed
@@ -121,13 +125,54 @@ test-api:
 test-dev:
 	cd apps/api && $(PYTHON) -m pytest tests/unit tests/integration -x --ff
 
+## ============================================================================
+## PERFORMANCE (Task #93)
+## ============================================================================
+## The p95 and the load suites are NOT in the pull-request path, and that is a
+## decision, not an omission: a percentile measured on a shared runner is a
+## measurement of the runner, not of the product. A suite that fails on the
+## runner's load belongs on a schedule, not on every pull request - and a
+## suite nobody trusts is a suite nobody reads.
+##
+## They run here, on demand, against a backend you name, and the budget is
+## stated: PERF_BASE_URL says which machine, and `make perf-budget` prints
+## the numbers the product is measured against.
+
+## perf-base-url: The backend the performance suites measure.
+PERF_BASE_URL ?= http://localhost:8000
+
+## perf-budget: The response times the product is measured against.
+## The same numbers the suites assert on (tests/performance/conftest.py).
+PERF_SEARCH_P95_BUDGET ?= 2.0
+PERF_CHAT_P95_BUDGET ?= 8.0
+PERF_HEALTH_P95_BUDGET ?= 0.1
+PERF_SUCCESS_RATE_BUDGET ?= 99.0
+
+## perf-budget: Print the budget the p95 and load suites are measured against.
+perf-budget:
+	@echo "PERF_BASE_URL               = $(PERF_BASE_URL)"
+	@echo "search p95                  <= $(PERF_SEARCH_P95_BUDGET)s"
+	@echo "chat p95                    <= $(PERF_CHAT_P95_BUDGET)s"
+	@echo "health p95                  <= $(PERF_HEALTH_P95_BUDGET)s"
+	@echo "success rate                >= $(PERF_SUCCESS_RATE_BUDGET)%"
+	@echo ""
+	@echo "The backend under measurement needs its rate limit above the suite's"
+	@echo "request count (API_RATE_LIMIT_RPM) - otherwise the suite measures the"
+	@echo "limiter and says so."
+
+## perf-preflight: Fail loudly when there is no backend to measure.
+## The measurement needs a backend; a missing one is a mistake in the
+## invocation, not a reason to report a number that means nothing.
+perf-preflight:
+	@$(PYTHON) -c "import urllib.request; urllib.request.urlopen('$(PERF_BASE_URL)/health', timeout=5)" 2>/dev/null || (echo "no backend at $(PERF_BASE_URL) - start one and set PERF_BASE_URL" && exit 1)
+
 ## benchmark-search: Run search p95 benchmark tests (Task #50)
-benchmark-search:
-	cd apps/api && $(PYTHON) -m pytest tests/performance/test_search_p95.py -v -m benchmark
+benchmark-search: perf-preflight
+	cd apps/api && PERF_BASE_URL=$(PERF_BASE_URL) $(PYTHON) -m pytest tests/performance/test_search_p95.py -v -m benchmark
 
 ## benchmark-chat: Run chat p95 benchmark tests (Task #51)
-benchmark-chat:
-	cd apps/api && $(PYTHON) -m pytest tests/performance/test_chat_p95.py -v -m benchmark
+benchmark-chat: perf-preflight
+	cd apps/api && PERF_BASE_URL=$(PERF_BASE_URL) $(PYTHON) -m pytest tests/performance/test_chat_p95.py -v -m benchmark
 
 ## load-test: Run concurrent load tests with baseline benchmarks (Task #65)
 load-test:
@@ -138,8 +183,10 @@ test-web:
 	cd apps/web && npm test
 
 ## e2e: Run backend E2E tests
+## In-process by default. Set E2E_BASE_URL to run them against a running
+## backend instead (the compose stack serves http://localhost:8082).
 e2e:
-	cd apps/api && $(PYTHON) -m pytest tests/e2e_backend -v
+	cd apps/api && E2E_BASE_URL=$(E2E_BASE_URL) $(PYTHON) -m pytest tests/e2e_backend -v
 
 ## migrate-check: Validate Alembic migrations are consistent (Task #63)
 migrate-check:

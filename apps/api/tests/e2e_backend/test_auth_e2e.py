@@ -9,11 +9,11 @@ import pytest
 class TestAuthE2E:
     """API key authentication — validates auth middleware rejects bad keys."""
 
-    async def test_search_requires_api_key(self, e2e_client):
+    async def test_search_requires_api_key(self, e2e_client, requires_api_key):
         resp = await e2e_client.post("/api/v1/search", json={"query": "test"})
         assert resp.status_code == 401
 
-    async def test_search_rejects_invalid_api_key(self, e2e_client):
+    async def test_search_rejects_invalid_api_key(self, e2e_client, requires_api_key):
         resp = await e2e_client.post(
             "/api/v1/search",
             json={"query": "test"},
@@ -29,15 +29,15 @@ class TestAuthE2E:
         )
         assert resp.status_code == 200
 
-    async def test_chat_requires_api_key(self, e2e_client):
+    async def test_chat_requires_api_key(self, e2e_client, requires_api_key):
         resp = await e2e_client.post("/api/v1/chat", json={"message": "hello"})
         assert resp.status_code == 401
 
-    async def test_rag_requires_api_key(self, e2e_client):
+    async def test_rag_requires_api_key(self, e2e_client, requires_api_key):
         resp = await e2e_client.post("/api/v1/rag/qa", json={"question": "test"})
         assert resp.status_code == 401
 
-    async def test_admin_requires_api_key(self, e2e_client):
+    async def test_admin_requires_api_key(self, e2e_client, requires_api_key):
         resp = await e2e_client.post("/api/v1/admin/ingest")
         assert resp.status_code == 401
 

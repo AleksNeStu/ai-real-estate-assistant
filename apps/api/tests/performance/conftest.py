@@ -1,6 +1,7 @@
 """Performance test configuration and fixtures."""
 
 import asyncio
+import os
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -9,6 +10,32 @@ from typing import Any
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
+
+# The backend the suites measure. It is a variable, not a constant: the
+# suites are run against a local server, against the compose stack, or
+# against a deployment - and a percentile is only a measurement of the
+# machine that produced it, so the URL has to be named by whoever runs them.
+PERF_BASE_URL = os.environ.get("PERF_BASE_URL", "http://localhost:8000").rstrip("/")
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    """Register the markers this directory uses."""
+    config.addinivalue_line(
+        "markers",
+        "performance: a measurement of the response times (not a unit test)",
+    )
+    config.addinivalue_line(
+        "markers",
+        "benchmark: a p95 measurement against a running backend",
+    )
+    config.addinivalue_line(
+        "markers",
+        "load: a load measurement - resource intensive, opt in with RUN_LOAD_TESTS=1",
+    )
+    config.addinivalue_line(
+        "markers",
+        "database: a measurement of the database layer",
+    )
 
 
 @dataclass
@@ -137,13 +164,40 @@ def performance_thresholds() -> dict[str, dict[str, float]]:
     }
 
 
+def _reject_rate_limited(response) -> None:
+    """A 429 is not a measurement.
+
+    The limiter answered, not the product - and a percentile computed over
+    limiter responses is a percentile of the limiter. The suite says so
+    instead of reporting a number that means nothing.
+    """
+    if response.status_code == 429:
+        raise AssertionError(
+            "the backend rate-limited the measurement (429). Raise its rate limit "
+            "(API_RATE_LIMIT_RPM) above the suite's request count - otherwise the "
+            "suite measures the limiter, not the product."
+        )
+
+
 @pytest_asyncio.fixture
 async def perf_client():
-    """Create an async HTTP client for performance testing."""
+    """
+    Create an async HTTP client for performance testing.
+
+    The suite measures a backend, so the backend has to be there. Without
+    one the measurement is skipped with the reason - not a wall of
+    connection errors, and not a number that means nothing.
+    """
+    if not _backend_reachable():
+        pytest.skip(
+            f"no backend at {PERF_BASE_URL} - start one and point PERF_BASE_URL at it. "
+            "A percentile is a measurement of the machine that produced it."
+        )
     async with AsyncClient(
-        base_url="http://localhost:8000",
+        base_url=PERF_BASE_URL,
         timeout=30.0,
         follow_redirects=True,
+        event_hooks={"response": [_reject_rate_limited]},
     ) as client:
         yield client
 
@@ -155,11 +209,30 @@ async def authed_perf_client(perf_client: AsyncClient, api_key: str):
     yield perf_client
 
 
+_BACKEND_REACHABLE: bool | None = None
+
+
+def _backend_reachable() -> bool:
+    """Whether a backend answers at PERF_BASE_URL. Asked once per run."""
+    global _BACKEND_REACHABLE
+    if _BACKEND_REACHABLE is None:
+        import urllib.error
+        import urllib.request
+
+        try:
+            with urllib.request.urlopen(f"{PERF_BASE_URL}/health", timeout=5) as response:
+                _BACKEND_REACHABLE = response.status < 500
+        except urllib.error.HTTPError as error:
+            # A degraded backend still answers - it is measurable.
+            _BACKEND_REACHABLE = error.code < 500
+        except Exception:
+            _BACKEND_REACHABLE = False
+    return _BACKEND_REACHABLE
+
+
 @pytest.fixture
 def api_key() -> str:
     """Get API key for testing."""
-    import os
-
     return os.environ.get("API_ACCESS_KEY", "test-api-key")
 
 

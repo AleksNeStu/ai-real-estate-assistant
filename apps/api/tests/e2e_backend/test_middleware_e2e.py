@@ -11,11 +11,11 @@ import pytest
 class TestMiddlewareE2E:
     """Middleware stack — validates cross-cutting concerns."""
 
-    async def test_cors_headers(self, e2e_client):
+    async def test_cors_headers(self, e2e_client, cors_origin):
         resp = await e2e_client.options(
             "/health",
             headers={
-                "Origin": "http://localhost:3000",
+                "Origin": cors_origin,
                 "Access-Control-Request-Method": "GET",
             },
         )

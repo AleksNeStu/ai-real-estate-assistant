@@ -91,14 +91,14 @@ class TestSearchAPIPerformance:
 
         # Warmup
         for _ in range(WARMUP_REQUESTS):
-            await authed_perf_client.post("/api/v1/properties/search", json=search_payload)
+            await authed_perf_client.post("/api/v1/search", json=search_payload)
 
         # Measurement
         for _ in range(MEASUREMENT_REQUESTS):
             await measure_request(
                 authed_perf_client,
                 "POST",
-                "/api/v1/properties/search",
+                "/api/v1/search",
                 metrics,
                 json=search_payload,
             )
@@ -122,7 +122,7 @@ class TestSearchAPIPerformance:
         await concurrent_requests(
             authed_perf_client,
             "POST",
-            "/api/v1/properties/search",
+            "/api/v1/search",
             CONCURRENT_USERS,
             metrics,
             json=search_payload,
