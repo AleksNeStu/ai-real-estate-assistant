@@ -873,7 +873,7 @@ jobs:
   pipeline-health:
     runs-on: ubuntu-latest
     if: always()
-    needs: [gitleaks, secret-validation, backend-lint, backend-tests,
+    needs: [gitleaks, secret-validation, rule5-protected-paths, backend-lint, backend-tests,
             api-contract, backend-e2e, backend-resilience,
             frontend-build, security-sast, frontend-tests,
             security-deps, codeql-python, codeql-javascript, container-scan,
