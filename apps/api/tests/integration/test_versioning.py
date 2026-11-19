@@ -202,9 +202,16 @@ class TestBreakingChangeDetection:
             assert spec is not None
             assert spec.loader is not None
             mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-            diff: list[str] = mod.diff_paths(baseline_paths, current_paths)
-            return diff
+            # The module has to be in sys.modules before it is executed: the
+            # dataclasses it declares resolve their annotations through the
+            # module registry, and without the entry they fail on the import.
+            sys.modules[spec.name] = mod
+            try:
+                spec.loader.exec_module(mod)
+                diff: list[str] = mod.diff_paths(baseline_paths, current_paths)
+                return diff
+            finally:
+                sys.modules.pop(spec.name, None)
         finally:
             sys.path = sys_path_backup
 
