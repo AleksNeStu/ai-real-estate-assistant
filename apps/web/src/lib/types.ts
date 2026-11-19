@@ -2191,6 +2191,7 @@ export interface UserActivitySummary {
   avg_processing_time_ms?: number;
   top_tools: Array<{ tool_name: string; count: number }>;
   top_search_cities: Array<{ city: string; count: number }>;
+  visitors_by_locale: Array<{ locale: string; visitors: number }>;
   event_counts_by_day: Array<{ date: string; count: number }>;
 }
 

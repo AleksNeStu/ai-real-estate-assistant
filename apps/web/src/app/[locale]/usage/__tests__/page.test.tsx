@@ -106,6 +106,10 @@ describe('UsagePage', () => {
       { city: 'Warsaw', count: 30 },
       { city: 'Krakow', count: 25 },
     ],
+    visitors_by_locale: [
+      { locale: 'pl', visitors: 9 },
+      { locale: 'en', visitors: 6 },
+    ],
     event_counts_by_day: [
       { date: '2024-01-01', count: 20 },
       { date: '2024-01-02', count: 25 },
