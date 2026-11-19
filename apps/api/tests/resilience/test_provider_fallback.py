@@ -224,17 +224,6 @@ class TestTheDegradationAnswer:
             assert "traceback" not in detail
             assert "retry" in detail or "moment" in detail
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason=(
-            "The search router raises a 503 when the vector store is degraded "
-            "and then wraps it - like every other exception - into a 500 "
-            "(api/routers/search.py: the generic `except Exception` arm). The "
-            "message is the degradation message; the status code is not the "
-            "one it promises. Strict, so the day the router answers 503 the "
-            "pipeline goes red and this marker is removed."
-        ),
-    )
     @pytest.mark.asyncio
     async def test_the_degraded_search_answers_503(self):
         store = _FailingStore()

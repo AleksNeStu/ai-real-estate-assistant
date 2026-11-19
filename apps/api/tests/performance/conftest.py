@@ -227,7 +227,7 @@ def _backend_reachable() -> bool:
             _BACKEND_REACHABLE = error.code < 500
         except Exception:
             _BACKEND_REACHABLE = False
-    return _BACKEND_REACHABLE
+    return bool(_BACKEND_REACHABLE)
 
 
 @pytest.fixture

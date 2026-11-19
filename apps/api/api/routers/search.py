@@ -323,6 +323,10 @@ async def search_properties(
 
         return response
 
+    except HTTPException:
+        # A status the router already decided on keeps it: a degraded store
+        # is a 503, not a server failure.
+        raise
     except Exception as e:
         logger.error("Search failed: %s", sanitize_for_log(e))
         raise HTTPException(
