@@ -80,6 +80,20 @@ export function formatCompactPrice(
 }
 
 /**
+ * The money shape the calculators print.
+ *
+ * The sign stands outside the currency symbol ("-$1,200", not "$-1,200") -
+ * the same sign the currency format prints - in the shape these surfaces
+ * have always used: the symbol in front, and the digits grouped the way the
+ * runtime groups them. A difference adds its own plus.
+ */
+export function formatSignedMoney(value?: number | null): string {
+  if (value === null || value === undefined || Number.isNaN(value)) return '';
+  const sign = value < 0 ? '-' : '';
+  return `${sign}$${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+}
+
+/**
  * The label of a map pin: the price the row next to it shows.
  *
  * A pin is a small space, so the price is shortened - but it must stay the

@@ -1,4 +1,4 @@
-import { formatCompactPrice, formatPrice } from '../format';
+import { formatCompactPrice, formatPrice, formatSignedMoney } from '../format';
 
 /**
  * The Intl API puts a non-breaking space between a currency code and its
@@ -39,8 +39,31 @@ describe('formatCompactPrice', () => {
   });
 });
 
-describe('formatPrice', () => {
-  it('writes a full price in the currency of the listing', () => {
+describe('formatSignedMoney', () => {
+  it('keeps the sign outside the currency symbol', () => {
+    // "$-1,200" is a shape no locale prints.
+    expect(formatSignedMoney(-1200)).toBe('-$1,200');
+  });
+
+  it('prints a positive amount the way it always has', () => {
+    expect(formatSignedMoney(1200)).toBe('$1,200');
+  });
+
+  it('prints zero as zero', () => {
+    expect(formatSignedMoney(0)).toBe('$0');
+  });
+
+  it('rounds the cents away, the way the calculators do', () => {
+    expect(formatSignedMoney(-1200.41)).toBe('-$1,200');
+  });
+
+  it('returns an empty string for a missing amount', () => {
+    expect(formatSignedMoney(undefined)).toBe('');
+    expect(formatSignedMoney(null)).toBe('');
+  });
+});
+
+describe('formatPrice', () => {  it('writes a full price in the currency of the listing', () => {
     expect(readable(formatPrice(620000, 'PLN', 'en'))).toBe('PLN 620,000');
   });
 

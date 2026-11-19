@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatCompactPrice, formatSignedMoney } from '@/lib/format';
 import type { AppreciationScenario } from '@/lib/types';
 import { useTranslations } from 'next-intl';
 
@@ -46,12 +47,9 @@ export function ScenarioChart({ scenarios, initialPrice, className }: ScenarioCh
     Optimistic: 'hsl(var(--chart-2))',
   };
 
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`;
-    }
-    return `$${(value / 1000).toFixed(0)}K`;
-  };
+  // The axis calls its formatter with the value and the tick index, so the
+  // money is formatted here and not handed on.
+  const formatCurrency = (value: number) => formatCompactPrice(value);
 
   return (
     <Card className={className}>
@@ -77,7 +75,7 @@ export function ScenarioChart({ scenarios, initialPrice, className }: ScenarioCh
               />
               <Tooltip
                 formatter={(value: number) => [
-                  `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                  formatSignedMoney(value),
                   t('charts.scenario.value'),
                 ]}
               />
