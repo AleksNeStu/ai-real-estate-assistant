@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import type { TooltipProps } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatCompactPrice } from '@/lib/format';
 import type { TCOProjection } from '@/lib/types';
 import { useTranslations } from 'next-intl';
 
@@ -19,19 +20,15 @@ interface TCOProjectionChartProps {
   projections: TCOProjection[];
   className?: string;
   highlightYears?: number[];
-}
-
-function formatCurrency(value: number) {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`;
-  }
-  return `$${(value / 1000).toFixed(0)}K`;
+  /** The scenario the projections belong to - the chart says whose they are. */
+  scenarioName?: string;
 }
 
 export function TCOProjectionChart({
   projections,
   className,
   highlightYears = [5, 10, 20],
+  scenarioName,
 }: TCOProjectionChartProps) {
   const t = useTranslations('mortgage');
   const chartData = projections.map((proj) => ({
@@ -53,7 +50,7 @@ export function TCOProjectionChart({
           <p className="font-medium mb-2">{t('charts.projection.year', { year: label })}</p>
           {payload.map((entry, index) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.name}: {entry.value !== undefined ? formatCurrency(entry.value) : 'N/A'}
+              {entry.name}: {entry.value !== undefined ? formatCompactPrice(entry.value) : 'N/A'}
             </p>
           ))}
         </div>
@@ -65,6 +62,9 @@ export function TCOProjectionChart({
   return (
     <Card className={className}>
       <CardHeader>
+        {scenarioName && (
+          <p className="text-sm font-medium text-muted-foreground">{scenarioName}</p>
+        )}
         <CardTitle>{t('charts.projection.title')}</CardTitle>
         <CardDescription>{t('charts.projection.description')}</CardDescription>
       </CardHeader>
@@ -86,7 +86,7 @@ export function TCOProjectionChart({
               <YAxis
                 tick={{ fontSize: 11 }}
                 tickLine={false}
-                tickFormatter={formatCurrency}
+                tickFormatter={(value) => formatCompactPrice(value)}
                 domain={['auto', 'auto']}
               />
               <Tooltip content={renderTooltip} />
@@ -136,13 +136,13 @@ export function TCOProjectionChart({
               </p>
               <div className="mt-1 space-y-1">
                 <p className="text-xs text-muted-foreground">
-                  {`${t('charts.projection.cost')} ${formatCurrency(point.cumulative_cost)}`}
+                  {`${t('charts.projection.cost')} ${formatCompactPrice(point.cumulative_cost)}`}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {`${t('charts.projection.equity')} ${formatCurrency(point.cumulative_equity)}`}
+                  {`${t('charts.projection.equity')} ${formatCompactPrice(point.cumulative_equity)}`}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {`${t('charts.projection.value')} ${formatCurrency(point.property_value_estimate)}`}
+                  {`${t('charts.projection.value')} ${formatCompactPrice(point.property_value_estimate)}`}
                 </p>
               </div>
             </div>

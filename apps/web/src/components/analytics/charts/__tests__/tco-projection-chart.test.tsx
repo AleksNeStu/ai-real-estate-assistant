@@ -9,6 +9,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { TCOProjectionChart } from '../tco-projection-chart';
+import { formatCompactPrice } from '@/lib/format';
 import type { TCOProjection } from '@/lib/types';
 import en from '../../../../../messages/en.json';
 
@@ -25,9 +26,8 @@ const copy = (namespace: string, key: string): string => {
   return typeof value === 'string' ? value : key;
 };
 
-/** The short money shape the chart prints. */
-const short = (value: number): string =>
-  value >= 1000000 ? `$${(value / 1000000).toFixed(1)}M` : `$${(value / 1000).toFixed(0)}K`;
+/** The short money shape the chart prints - the house compact form. */
+const short = (value: number): string => formatCompactPrice(value);
 
 const projection = (year: number, overrides: Partial<TCOProjection> = {}): TCOProjection => ({
   year,
@@ -109,6 +109,30 @@ describe('TCOProjectionChart', () => {
     expect(screen.getByText('Year 10')).toBeInTheDocument();
     expect(screen.queryByText('Year 5')).not.toBeInTheDocument();
     expect(screen.queryByText('Year 20')).not.toBeInTheDocument();
+  });
+
+  it('prints the money in the house shape - the same price, not a rounded one', () => {
+    // Zero is zero and a price under a thousand is that price: the compact
+    // form must not turn them into "$0K" and "$1K".
+    const small: TCOProjection[] = [
+      projection(1, {
+        cumulative_cost: 0,
+        cumulative_equity: 500,
+        property_value_estimate: 1250,
+      }),
+    ];
+
+    render(<TCOProjectionChart projections={small} highlightYears={[1]} />);
+
+    expect(screen.getByText('Cost: $0')).toBeInTheDocument();
+    expect(screen.getByText('Equity: $500')).toBeInTheDocument();
+    expect(screen.getByText('Value: $1.3K')).toBeInTheDocument();
+  });
+
+  it('names the scenario the projections belong to', () => {
+    render(<TCOProjectionChart projections={projections} scenarioName="Central Apartment" />);
+
+    expect(screen.getByText('Central Apartment')).toBeInTheDocument();
   });
 
   it('renders an empty chart without a blank', () => {

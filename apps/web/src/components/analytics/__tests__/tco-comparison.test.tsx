@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { TCOComparison } from '../tco-comparison';
 import { compareTCO, ApiError } from '@/lib/api';
 import type { EnhancedTCOResult, TCOComparisonResult } from '@/lib/types';
@@ -258,6 +258,32 @@ describe('TCOComparison', () => {
     expect(screen.getByText('Cost: $250K')).toBeInTheDocument();
     expect(screen.getByText('Equity: $80K')).toBeInTheDocument();
     expect(screen.getByText('Value: $450K')).toBeInTheDocument();
+
+    // The chart says whose projections it draws.
+    const header = screen
+      .getByText(copy('mortgage', 'charts.projection.title'))
+      .closest('div');
+    expect(header).not.toBeNull();
+    expect(within(header as HTMLElement).getByText('Central Apartment')).toBeInTheDocument();
+  });
+
+  it('prints a negative difference with the sign outside the currency symbol', async () => {
+    (compareTCO as jest.Mock).mockResolvedValueOnce({
+      ...comparisonResult,
+      monthly_cost_difference: -1200.41,
+      equity_difference: -2500,
+    });
+
+    render(<TCOComparison />);
+    clickCompare();
+
+    await waitFor(() => {
+      expect(screen.getByText(copy('mortgage', 'tco.comparisonSummary'))).toBeInTheDocument();
+    });
+
+    // "$-1,200" is not a shape any locale prints.
+    expect(screen.getByText('-$1,200')).toBeInTheDocument();
+    expect(screen.getByText('-$2,500')).toBeInTheDocument();
   });
 
   it('renders no projection chart when the scenario carries no projections', async () => {
