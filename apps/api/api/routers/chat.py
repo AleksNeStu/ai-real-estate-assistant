@@ -668,6 +668,10 @@ async def chat_endpoint(
             citation_stats=citation_stats,
         )
 
+    except HTTPException:
+        # A client error that the router already decided on keeps its status:
+        # an empty message is a 400, not a server failure.
+        raise
     except ServiceDegradedError as e:
         logger.warning("Chat degraded: %s", e)
         raise HTTPException(
@@ -766,6 +770,9 @@ async def chat_free_endpoint(
             session_id=session_id,
         )
 
+    except HTTPException:
+        # A client error that the router already decided on keeps its status.
+        raise
     except ServiceDegradedError as e:
         logger.warning("Free tier chat degraded: %s", e)
         raise HTTPException(
