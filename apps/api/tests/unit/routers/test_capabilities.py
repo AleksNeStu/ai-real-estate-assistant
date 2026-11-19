@@ -27,8 +27,14 @@ def _settings(**overrides):
         "apple_client_id": None,
         "apple_team_id": None,
         "apple_private_key_path": None,
+        # The address the callback sends the visitor back to. Without it the
+        # browser flow cannot be delivered, so the capability stays off.
+        "frontend_url": None,
         "demo_mode": True,
+        "demo_llm_mode": False,
+        "demo_user_bypass": False,
         "default_provider": "zai",
+        "default_model": "test-model",
         "sentry_dsn": None,
     }
     defaults.update(overrides)
@@ -81,12 +87,51 @@ class TestBuildCapabilities:
                 google_client_id="id",
                 google_client_secret="secret",  # pragma: allowlist secret
                 google_redirect_uri="https://example.test/api/v1/auth/oauth/callback",
+                frontend_url="https://app.example.test",
             ),
         ):
             result = capabilities.build_capabilities(email_enabled=False)
 
         assert result["auth"]["oauth"]["google"] is True
         assert result["auth"]["oauth"]["apple"] is False
+
+    def test_a_provider_without_a_frontend_url_is_not_reported_as_available(self):
+        # The callback sends the visitor back to the interface only when the
+        # deployment names an address it can redirect to. Without one the
+        # click answers with a JSON body - a button that leads to JSON is a
+        # dead end, so the browser flow is part of the capability.
+        with patch.object(
+            capabilities,
+            "get_settings",
+            return_value=_settings(
+                auth_jwt_enabled=True,
+                auth_oauth_google_enabled=True,
+                google_client_id="id",
+                google_client_secret="secret",  # pragma: allowlist secret
+                google_redirect_uri="https://example.test/api/v1/auth/oauth/callback",
+                frontend_url=None,
+            ),
+        ):
+            result = capabilities.build_capabilities(email_enabled=False)
+
+        assert result["auth"]["oauth"]["google"] is False
+
+    def test_a_frontend_url_that_is_not_a_url_is_not_reported_as_available(self):
+        with patch.object(
+            capabilities,
+            "get_settings",
+            return_value=_settings(
+                auth_jwt_enabled=True,
+                auth_oauth_google_enabled=True,
+                google_client_id="id",
+                google_client_secret="secret",  # pragma: allowlist secret
+                google_redirect_uri="https://example.test/api/v1/auth/oauth/callback",
+                frontend_url="app.example.test",
+            ),
+        ):
+            result = capabilities.build_capabilities(email_enabled=False)
+
+        assert result["auth"]["oauth"]["google"] is False
 
     def test_a_provider_without_a_redirect_uri_is_not_reported_as_available(self):
         # The endpoint needs the redirect URI as well as the credentials:
@@ -137,6 +182,7 @@ class TestBuildCapabilities:
             apple_team_id="team",
             apple_private_key_path="/tmp/AppleAuthKey.p8",
             google_redirect_uri="https://example.test/api/v1/auth/oauth/callback",
+            frontend_url="https://app.example.test",
         )
         with patch.object(capabilities, "get_settings", return_value=configured):
             result = capabilities.build_capabilities(email_enabled=False)
@@ -149,6 +195,7 @@ class TestBuildCapabilities:
             apple_team_id="team",
             apple_private_key_path=None,
             google_redirect_uri="https://example.test/api/v1/auth/oauth/callback",
+            frontend_url="https://app.example.test",
         )
         with patch.object(capabilities, "get_settings", return_value=without_key):
             result = capabilities.build_capabilities(email_enabled=False)

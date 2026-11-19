@@ -364,18 +364,18 @@ class TestChatErrors:
 
     @pytest.mark.asyncio
     async def test_no_vector_store_returns_503(self, no_store_chat_client):
-        """When store is None, HTTPException(503) is raised but caught by the outer
-        except Exception handler which returns 500. This is a known behavior of
-        the router -- the 503 is re-raised as 500."""
+        """When the store is None the router answers 503 - the status it decided on.
+
+        The dependency is down: that is a service that cannot serve the
+        request, not a failure of the request. The router keeps the status.
+        """
         with patch("api.routers.chat.get_settings", return_value=_mock_settings()):
             response = await no_store_chat_client.post(
                 "/api/v1/chat",
                 json={"message": "Hello"},
             )
 
-        # The 503 HTTPException is caught by the generic except Exception handler
-        # which returns 500. This test verifies the actual runtime behavior.
-        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
         assert "unavailable" in response.json()["detail"].lower()
 
     @pytest.mark.asyncio
@@ -744,10 +744,9 @@ class TestChatValidation:
     async def test_empty_message_returns_400(self, chat_client):
         """Empty/whitespace message triggers validation.
 
-        Note: _build_agent_and_process raises HTTPException(400) for empty
-        messages, but the outer except Exception handler in chat_endpoint
-        catches it and returns 500. This test verifies the actual runtime
-        behavior.
+        The sanitizer raises HTTPException(400) for an empty message, and
+        the router keeps the status it decided on: a client error is not a
+        server failure.
         """
         with patch("api.routers.chat.get_settings", return_value=_mock_settings()):
             response = await chat_client.post(
@@ -755,9 +754,7 @@ class TestChatValidation:
                 json={"message": "   "},
             )
 
-        # The HTTPException(400) from sanitize_chat_message is caught by the
-        # outer except Exception handler which returns 500
-        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     @pytest.mark.asyncio
     async def test_missing_message_returns_422(self, chat_client):
