@@ -43,9 +43,7 @@ async def get_activity_summary(
     period_start: datetime | None = Query(
         None, description="Start of analysis period (default: 30 days ago)"
     ),
-    period_end: datetime | None = Query(
-        None, description="End of analysis period (default: now)"
-    ),
+    period_end: datetime | None = Query(None, description="End of analysis period (default: now)"),
     user: User = Depends(get_current_active_user),
     session: AsyncSession = Depends(get_db),
 ) -> UserActivitySummary:
@@ -70,6 +68,7 @@ async def get_activity_summary(
         avg_processing_time_ms=summary.avg_processing_time_ms,
         top_tools=summary.top_tools,
         top_search_cities=summary.top_search_cities,
+        visitors_by_locale=summary.visitors_by_locale,
         event_counts_by_day=summary.event_counts_by_day,
     )
 
@@ -89,9 +88,7 @@ async def get_activity_trends(
     period_start: datetime | None = Query(
         None, description="Start of analysis period (default: 30 days ago)"
     ),
-    period_end: datetime | None = Query(
-        None, description="End of analysis period (default: now)"
-    ),
+    period_end: datetime | None = Query(None, description="End of analysis period (default: now)"),
     user: User = Depends(get_current_active_user),
     session: AsyncSession = Depends(get_db),
 ) -> UserActivityTrendsResponse:
@@ -134,9 +131,7 @@ async def export_activity_data(
     period_start: datetime | None = Query(
         None, description="Start of analysis period (default: 30 days ago)"
     ),
-    period_end: datetime | None = Query(
-        None, description="End of analysis period (default: now)"
-    ),
+    period_end: datetime | None = Query(None, description="End of analysis period (default: now)"),
     user: User = Depends(get_current_active_user),
     session: AsyncSession = Depends(get_db),
 ) -> Response:
@@ -174,9 +169,7 @@ async def get_global_activity_summary(
     period_start: datetime | None = Query(
         None, description="Start of analysis period (default: 30 days ago)"
     ),
-    period_end: datetime | None = Query(
-        None, description="End of analysis period (default: now)"
-    ),
+    period_end: datetime | None = Query(None, description="End of analysis period (default: now)"),
     user: User = Depends(get_current_active_user),
     session: AsyncSession = Depends(get_db),
 ) -> UserActivitySummary:
@@ -207,6 +200,7 @@ async def get_global_activity_summary(
         avg_processing_time_ms=summary.avg_processing_time_ms,
         top_tools=summary.top_tools,
         top_search_cities=summary.top_search_cities,
+        visitors_by_locale=summary.visitors_by_locale,
         event_counts_by_day=summary.event_counts_by_day,
     )
 
@@ -226,9 +220,7 @@ async def get_global_activity_trends(
     period_start: datetime | None = Query(
         None, description="Start of analysis period (default: 30 days ago)"
     ),
-    period_end: datetime | None = Query(
-        None, description="End of analysis period (default: now)"
-    ),
+    period_end: datetime | None = Query(None, description="End of analysis period (default: now)"),
     user: User = Depends(get_current_active_user),
     session: AsyncSession = Depends(get_db),
 ) -> UserActivityTrendsResponse:

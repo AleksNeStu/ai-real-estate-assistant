@@ -19,7 +19,7 @@ from typing import Any, Optional
 from sqlalchemy import and_, desc, func, select, true
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.models import SearchEvent, SearchResultInteraction, UserActivityEvent
+from db.models import LeadInteraction, SearchEvent, SearchResultInteraction, UserActivityEvent
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +81,7 @@ class UserActivitySummary:
     avg_processing_time_ms: Optional[float] = None
     top_tools: list[dict[str, Any]] = field(default_factory=list)
     top_search_cities: list[dict[str, Any]] = field(default_factory=list)
+    visitors_by_locale: list[dict[str, Any]] = field(default_factory=list)
     event_counts_by_day: list[dict[str, Any]] = field(default_factory=list)
 
 
@@ -283,6 +284,9 @@ class UserActivityService:
         # Get top search cities (from SearchEvent.filters)
         top_search_cities = await self._get_top_search_cities(period_start, period_end, user_id)
 
+        # Get the visitors per locale (from the interactions the site wrote)
+        visitors_by_locale = await self._get_visitors_by_locale(period_start, period_end)
+
         # Get event counts by day
         event_counts_by_day = await self._get_event_counts_by_day(period_start, period_end, user_id)
 
@@ -299,6 +303,7 @@ class UserActivityService:
             avg_processing_time_ms=avg_processing_time_ms,
             top_tools=top_tools,
             top_search_cities=top_search_cities,
+            visitors_by_locale=visitors_by_locale,
             event_counts_by_day=event_counts_by_day,
         )
 
@@ -387,6 +392,54 @@ class UserActivityService:
         rows = result.all()
 
         return [{"city": row.city or "unknown", "count": row.count} for row in rows]
+
+    async def _get_visitors_by_locale(
+        self,
+        period_start: datetime,
+        period_end: datetime,
+        limit: int = 10,
+    ) -> list[dict[str, Any]]:
+        """The locales the visitors came from, with the visitors in each.
+
+        The locale travels with the interaction - it is the segment the
+        route carried - so the answer comes from the rows the site wrote,
+        not from a counter kept beside them. A visitor is a lead, so the
+        count is the number of distinct leads, not the number of rows.
+
+        Args:
+            period_start: Start of period
+            period_end: End of period
+            limit: Maximum results
+
+        Returns:
+            List of {locale, visitors} dicts
+        """
+        # Extract the locale from the interaction metadata
+        query = (
+            select(
+                LeadInteraction.interaction_metadata["locale"].label("locale"),
+                func.count(func.distinct(LeadInteraction.lead_id)).label("visitors"),
+            )
+            .where(
+                and_(
+                    LeadInteraction.created_at >= period_start,
+                    LeadInteraction.created_at <= period_end,
+                    LeadInteraction.interaction_metadata["locale"].is_not(None),
+                )
+            )
+            .group_by(LeadInteraction.interaction_metadata["locale"])
+            .order_by(desc("visitors"))
+            .limit(limit)
+        )
+
+        result = await self.session.execute(query)
+        rows = result.all()
+
+        # A row without a locale is not a locale. SQLite reads a missing key
+        # as an empty value instead of NULL, so the rows are filtered here
+        # as well as in the query - the answer is the same on either
+        # database.
+        return [{"locale": row.locale, "visitors": row.visitors} for row in rows if row.locale]
 
     async def _get_event_counts_by_day(
         self,

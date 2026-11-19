@@ -837,6 +837,9 @@ class OutboundClickRequest(BaseModel):
         "anonymous", min_length=1, max_length=36, description="Visitor UUID from the cookie"
     )
     page_url: Optional[str] = Field(None, max_length=500, description="The page it happened on")
+    locale: Optional[str] = Field(
+        None, max_length=20, description="The locale of the page the click happened on"
+    )
 
 
 class TrackInteractionRequest(BaseModel):
@@ -855,6 +858,9 @@ class TrackInteractionRequest(BaseModel):
     page_url: Optional[str] = Field(None, max_length=500, description="Current page URL")
     referrer: Optional[str] = Field(None, max_length=500, description="Referrer URL")
     time_spent_seconds: Optional[int] = Field(None, ge=0, description="Time on page")
+    locale: Optional[str] = Field(
+        None, max_length=20, description="The locale of the page the interaction happened on"
+    )
 
 
 class LeadInteractionResponse(BaseModel):
@@ -2088,6 +2094,9 @@ class UserActivitySummary(BaseModel):
     avg_processing_time_ms: Optional[float] = None
     top_tools: list[dict[str, Any]] = Field(default_factory=list)
     top_search_cities: list[dict[str, Any]] = Field(default_factory=list)
+    visitors_by_locale: list[dict[str, Any]] = Field(
+        default_factory=list, description="The visitors per locale"
+    )
     event_counts_by_day: list[dict[str, Any]] = Field(default_factory=list)
 
 

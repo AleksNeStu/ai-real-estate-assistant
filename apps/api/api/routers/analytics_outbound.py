@@ -39,4 +39,5 @@ async def record_outbound_click(
         referrer=request.headers.get("referer"),
         user_agent=request.headers.get("user-agent"),
         ip_address=request.client.host if request.client else None,
+        locale=body.locale,
     )

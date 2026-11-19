@@ -8,6 +8,7 @@ This service handles:
 """
 
 import logging
+import re
 import secrets
 from typing import Any, Optional
 
@@ -23,6 +24,25 @@ logger = logging.getLogger(__name__)
 VISITOR_COOKIE_NAME = "visitor_id"
 VISITOR_COOKIE_MAX_AGE_DAYS = 365
 SESSION_TIMEOUT_MINUTES = 30
+
+# The locale of the page an interaction happened on - "pl", "en", "de" ...
+# A locale is optional everywhere: a request that carries none is recorded
+# as it is, and one that carries a malformed one loses the locale instead of
+# the interaction.
+LOCALE_PATTERN = re.compile(r"^[a-z]{2,3}(-[a-z0-9]{2,8})?$")
+
+
+def normalize_locale(locale: Optional[str]) -> Optional[str]:
+    """The locale a request claims, in the shape the site uses.
+
+    The locale is never worth rejecting a request for - it is a measurement,
+    not a condition - so a value that is not a locale is dropped and the
+    interaction is still recorded.
+    """
+    if not locale:
+        return None
+    candidate = locale.strip().lower()
+    return candidate if LOCALE_PATTERN.match(candidate) else None
 
 
 class LeadTrackingService:
@@ -47,6 +67,7 @@ class LeadTrackingService:
         ip_address: Optional[str] = None,
         time_spent_seconds: Optional[int] = None,
         user_id: Optional[str] = None,
+        locale: Optional[str] = None,
     ) -> LeadInteraction:
         """Record a lead interaction.
 
@@ -63,6 +84,7 @@ class LeadTrackingService:
             ip_address: Client IP address
             time_spent_seconds: Time spent on page
             user_id: Linked user ID if registered
+            locale: The locale of the page the interaction happened on
 
         Returns:
             The created LeadInteraction record
@@ -74,13 +96,21 @@ class LeadTrackingService:
         if user_id and not lead.user_id:
             await self.lead_repo.link_to_user(lead, user_id)
 
+        # The locale travels with the interaction, in the metadata the
+        # aggregation already reads. A request without one keeps the
+        # metadata it brought.
+        stored_metadata = dict(metadata or {})
+        normalized_locale = normalize_locale(locale)
+        if normalized_locale:
+            stored_metadata["locale"] = normalized_locale
+
         # Record the interaction
         interaction = await self.interaction_repo.create(
             lead_id=lead.id,
             interaction_type=interaction_type,
             property_id=property_id,
             search_query=search_query,
-            metadata=metadata or {},
+            metadata=stored_metadata,
             session_id=session_id,
             page_url=page_url,
             referrer=referrer,

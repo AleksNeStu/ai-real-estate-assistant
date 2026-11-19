@@ -192,6 +192,7 @@ async def track_interaction(
         ip_address=request.client.host if request.client else None,
         time_spent_seconds=body.time_spent_seconds,
         user_id=user_id,
+        locale=body.locale,
     )
 
 
