@@ -9,6 +9,14 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+# The real adapter, captured before any test patches the module attribute.
+from data.adapters.neighborhood_adapter import (
+    get_neighborhood_adapter as _real_get_neighborhood_adapter,
+)
+from tests.fixtures.neighborhood.loader import (
+    overpass_get,
+    valid_query_answer,
+)
 from tools.property_tools import (
     NeighborhoodQualityIndexTool,
     create_property_tools,
@@ -42,6 +50,23 @@ def _mock_safety_adapter():
         confidence=0.7,
     )
     return mock
+
+
+@pytest.fixture
+def _recorded_overpass():
+    """Serve the recorded Overpass answers to the real neighbourhood adapter.
+
+    Task #92: the adapter is exercised against the provider's own recorded
+    responses instead of the network.
+    """
+    with (
+        patch("requests.get", side_effect=overpass_get(valid_query_answer)),
+        patch(
+            "data.adapters.neighborhood_adapter.get_neighborhood_adapter",
+            side_effect=_real_get_neighborhood_adapter,
+        ),
+    ):
+        yield
 
 
 @pytest.fixture
@@ -278,7 +303,7 @@ class TestNeighborhoodQualityIndexTool:
             NeighborhoodQualityIndexTool._get_rating_label(20) == "Very Poor - Significant concerns"
         )
 
-    @pytest.mark.skip(reason="External API dependency - requires network access to Overpass API")
+    @pytest.mark.usefixtures("_recorded_overpass")
     def test_schools_score_range(self, neighborhood_calc):
         """Test schools score is always in valid range."""
         for lat in range(-80, 81, 20):
@@ -290,7 +315,7 @@ class TestNeighborhoodQualityIndexTool:
                 )
                 assert 0 <= result.schools_score <= 100
 
-    @pytest.mark.skip(reason="External API dependency - requires network access to Overpass API")
+    @pytest.mark.usefixtures("_recorded_overpass")
     def test_amenities_score_range(self, neighborhood_calc):
         """Test amenities score is always in valid range."""
         for lat in range(-80, 81, 20):
@@ -302,7 +327,7 @@ class TestNeighborhoodQualityIndexTool:
                 )
                 assert 0 <= result.amenities_score <= 100
 
-    @pytest.mark.skip(reason="External API dependency - requires network access to Overpass API")
+    @pytest.mark.usefixtures("_recorded_overpass")
     def test_walkability_score_range(self, neighborhood_calc):
         """Test walkability score is always in valid range."""
         for lat in range(-80, 81, 20):
@@ -314,7 +339,7 @@ class TestNeighborhoodQualityIndexTool:
                 )
                 assert 0 <= result.walkability_score <= 100
 
-    @pytest.mark.skip(reason="External API dependency - requires network access to Overpass API")
+    @pytest.mark.usefixtures("_recorded_overpass")
     def test_green_space_score_range(self, neighborhood_calc):
         """Test green space score is always in valid range."""
         for lat in range(-80, 81, 20):

@@ -3,8 +3,10 @@
 Tests cover CRUD operations,sync management, and health tracking.
 """
 
+import asyncio
 import os
 from collections.abc import AsyncGenerator
+from unittest.mock import patch
 
 import pytest
 from fastapi import FastAPI
@@ -461,9 +463,20 @@ class TestDeleteDataSource:
         assert response.status_code == 204
 
 
-@pytest.mark.skip(reason="External API dependency - sync triggers external data fetching")
 class TestSyncDataSource:
-    """Tests for triggering data source sync."""
+    """Tests for triggering data source sync.
+
+    Task #92: the skip is gone. The sync of a ``file_upload`` source never
+    fetches anything (the background task reads the record count from the
+    source's config), and the vector store - the only part that would reach
+    for the embedding model - is stubbed out, so the test is hermetic.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _no_vector_store(self):
+        """The background sync must not initialise the embedding model."""
+        with patch("api.dependencies.get_vector_store", return_value=None):
+            yield
 
     @pytest.mark.asyncio
     async def test_sync_triggers_successfully(
@@ -482,6 +495,9 @@ class TestSyncDataSource:
         assert data["source_id"] == sample_data_source.id
         assert data["status"] == "syncing"
         assert data["message"] == "Sync triggered successfully"
+
+        # Let the background sync finish while the session is still open.
+        await asyncio.sleep(0.2)
 
     @pytest.mark.asyncio
     async def test_sync_already_syncing(
