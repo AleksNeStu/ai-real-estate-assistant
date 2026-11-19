@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Loader2, AlertCircle, ArrowRight, Check } from 'lucide-react';
 import { compareTCO, ApiError } from '@/lib/api';
+import { formatSignedMoney } from '@/lib/format';
 import type { TCOInput, TCOComparisonResult, EnhancedTCOResult } from '@/lib/types';
 import { TCOBreakdownChart } from './charts/tco-breakdown-chart';
 import { TCOProjectionChart } from './charts/tco-projection-chart';
@@ -19,13 +20,11 @@ interface TCOComparisonProps {
 }
 
 /**
- * The difference between the two scenarios, in the money shape the component
- * prints: the sign stands outside the currency symbol ("-$1,200", not
- * "$-1,200").
+ * The difference between the two scenarios: the money shape the component
+ * prints, with the plus a difference carries.
  */
 function formatDifference(value: number): string {
-  const sign = value > 0 ? '+' : value < 0 ? '-' : '';
-  return `${sign}$${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+  return `${value > 0 ? '+' : ''}${formatSignedMoney(value)}`;
 }
 
 interface ScenarioFormProps {

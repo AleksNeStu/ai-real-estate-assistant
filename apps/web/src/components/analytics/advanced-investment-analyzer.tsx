@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { calculateAdvancedInvestment, ApiError } from '@/lib/api';
+import { formatSignedMoney } from '@/lib/format';
 import type { AdvancedInvestmentResult, AdvancedInvestmentInput } from '@/lib/types';
 import {
   Loader2,
@@ -594,10 +595,7 @@ export function AdvancedInvestmentAnalyzer() {
                     <p
                       className={`text-2xl font-bold ${result.total_projected_cash_flow >= 0 ? 'text-success' : 'text-destructive'}`}
                     >
-                      $
-                      {result.total_projected_cash_flow.toLocaleString(undefined, {
-                        maximumFractionDigits: 0,
-                      })}
+                      {formatSignedMoney(result.total_projected_cash_flow)}
                     </p>
                   </div>
                   <div className="text-center">
@@ -605,7 +603,7 @@ export function AdvancedInvestmentAnalyzer() {
                       {t('charts.cashFlow.finalEquity')}
                     </p>
                     <p className="text-2xl font-bold text-info">
-                      ${result.final_equity.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                      {formatSignedMoney(result.final_equity)}
                     </p>
                   </div>
                   <div className="text-center">

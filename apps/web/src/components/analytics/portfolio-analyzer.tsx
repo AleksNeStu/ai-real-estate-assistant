@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { analyzePortfolio, ApiError } from '@/lib/api';
+import { formatSignedMoney } from '@/lib/format';
 import type { PortfolioAnalysisResult, PropertyHolding } from '@/lib/types';
 import { extractErrorState, type ErrorState } from '@/lib/error-utils';
 import { Loader2, AlertCircle, RefreshCw, PieChart, Plus, Trash2, Building2 } from 'lucide-react';
@@ -324,10 +325,7 @@ export function PortfolioAnalyzer() {
                     <p
                       className={`text-2xl font-bold ${result.metrics.total_annual_cash_flow >= 0 ? 'text-success' : 'text-destructive'}`}
                     >
-                      $
-                      {result.metrics.total_annual_cash_flow.toLocaleString(undefined, {
-                        maximumFractionDigits: 0,
-                      })}
+                      {formatSignedMoney(result.metrics.total_annual_cash_flow)}
                     </p>
                   </div>
                   <div className="text-center p-3 bg-muted/50 rounded-lg">

@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatCompactPrice, formatSignedMoney } from '@/lib/format';
 import type { YearlyCashFlow } from '@/lib/types';
 import { useTranslations } from 'next-intl';
 
@@ -38,12 +39,9 @@ export function CashFlowChart({
     propertyValue: item.property_value,
   }));
 
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`;
-    }
-    return `$${(value / 1000).toFixed(0)}K`;
-  };
+  // The axis calls its formatter with the value and the tick index, so the
+  // money is formatted here and not handed on.
+  const formatCurrency = (value: number) => formatCompactPrice(value);
 
   const totalCashFlow = data.length > 0 ? data[data.length - 1].cumulative_cash_flow : 0;
   const finalEquity = data.length > 0 ? data[data.length - 1].equity : 0;
@@ -67,7 +65,7 @@ export function CashFlowChart({
               <YAxis tick={{ fontSize: 11 }} tickLine={false} tickFormatter={formatCurrency} />
               <Tooltip
                 formatter={(value: number, name: string) => [
-                  `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                  formatSignedMoney(value),
                   name === 'cashFlow'
                     ? t('charts.cashFlow.annualCashFlow')
                     : name === 'cumulativeCashFlow'
@@ -107,13 +105,13 @@ export function CashFlowChart({
             <p
               className={`text-lg font-semibold ${totalCashFlow >= 0 ? 'text-success' : 'text-destructive'}`}
             >
-              ${totalCashFlow.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              {formatSignedMoney(totalCashFlow)}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">{t('charts.cashFlow.finalEquity')}</p>
             <p className="text-lg font-semibold text-info">
-              ${finalEquity.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              {formatSignedMoney(finalEquity)}
             </p>
           </div>
         </div>

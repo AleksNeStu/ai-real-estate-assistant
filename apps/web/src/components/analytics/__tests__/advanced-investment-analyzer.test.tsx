@@ -157,6 +157,30 @@ describe('AdvancedInvestmentAnalyzer', () => {
     });
   });
 
+  it('prints a negative total with the sign outside the currency symbol', async () => {
+    (calculateAdvancedInvestment as jest.Mock).mockResolvedValueOnce({
+      ...mockAdvancedResult,
+      total_projected_cash_flow: -35000,
+      final_equity: -285000,
+    });
+
+    render(<AdvancedInvestmentAnalyzer />);
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: copy('investment', 'advancedAnalyzer.runAnalysis'),
+      })
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Investment Summary')).toBeInTheDocument();
+    });
+
+    // "$-35,000" is a shape no locale prints.
+    expect(screen.getByText('-$35,000')).toBeInTheDocument();
+    expect(screen.getByText('-$285,000')).toBeInTheDocument();
+  });
+
   it('handles calculation errors', async () => {
     (calculateAdvancedInvestment as jest.Mock).mockRejectedValueOnce(new Error('API Error'));
 
