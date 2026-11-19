@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Optional
 import requests
 
 from core.security_utils import sanitize_for_log
+from data.adapters.overpass_query import build_query, element_statement, tag_regex_filter
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,37 @@ class NeighborhoodAdapter:
         "grass",
         "meadow",
         "recreation_ground",
+    ]
+
+    # The key a POI hangs on, the values of that key, and the element types
+    # the provider answers with. The groups overlap on purpose: a
+    # `supermarket` is an amenity and a shop, and a `forest` is a leisure
+    # ground and a landuse.
+    QUERY_TAG_GROUPS = [
+        ("amenity", ["school", "kindergarten", "university", "college"], ("node", "way")),
+        (
+            "amenity",
+            [
+                "restaurant",
+                "cafe",
+                "supermarket",
+                "pharmacy",
+                "hospital",
+                "clinic",
+                "bank",
+                "atm",
+                "fuel",
+                "post_office",
+            ],
+            ("node", "way"),
+        ),
+        ("shop", ["shop", "supermarket", "convenience", "bakery"], ("node",)),
+        (
+            "leisure",
+            ["park", "garden", "forest", "grass", "meadow", "recreation_ground"],
+            ("node", "way"),
+        ),
+        ("landuse", ["forest", "grass", "meadow", "recreation_ground"], ("node",)),
     ]
 
     def __init__(self, api_url: Optional[str] = None) -> None:
@@ -276,19 +308,27 @@ class NeighborhoodAdapter:
         Returns:
             Overpass QL query string
         """
-        # Build tag filters
-        tag_filters = " | ".join(f'["{tag}"]' for tag in poi_tags)
+        # A POI is a VALUE of a tag - `amenity=school`, `leisure=park`,
+        # `landuse=forest` - and the key it hangs on differs per category.
+        # One statement per key and per element type, each with the values
+        # of that key: a union term names its element type every time, and
+        # a filter on the existence of a key matches every tag of that name
+        # rather than the value the category is about.
+        around = f"{radius_m},{lat},{lon}"
+        statements: List[str] = []
+        for key, values, element_types in self.QUERY_TAG_GROUPS:
+            if not set(values) & set(poi_tags):
+                continue
+            for element_type in element_types:
+                statements.append(
+                    element_statement(
+                        element_type,
+                        tag_regex_filter(key, values),
+                        around,
+                    )
+                )
 
-        query = f"""
-            [out:json][timeout:25];
-            (
-              node{tag_filters}(around:{radius_m},{lat},{lon});
-              way{tag_filters}(around:{radius_m},{lat},{lon});
-            );
-            out tags center;
-            """
-
-        return query.strip()
+        return build_query(statements)
 
     def _parse_poi_element(self, element: Dict[str, Any]) -> Dict[str, Any]:
         """

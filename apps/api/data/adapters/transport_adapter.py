@@ -14,6 +14,11 @@ from typing import Any, Dict, List, Optional
 import requests
 
 from core.security_utils import sanitize_for_log
+from data.adapters.overpass_query import (
+    build_query,
+    element_statement,
+    tag_exact_filter,
+)
 from utils.sanitization import sanitize_for_logging
 
 logger = logging.getLogger(__name__)
@@ -329,34 +334,30 @@ class TransportAdapter:
         Returns:
             Overpass QL query string
         """
-        # Build query for various public transport tags
-        query = f"""
-            [out:json][timeout:25];
-            (
-              # Bus stops
-              node["highway"="bus_stop"](around:{radius_m},{lat},{lon});
-              way["highway"="bus_stop"](around:{radius_m},{lat},{lon});
-              # Tram stops
-              node["railway"="tram_stop"](around:{radius_m},{lat},{lon});
-              way["railway"="tram_stop"](around:{radius_m},{lat},{lon});
-              # Subway/metro entrances
-              node["railway"="subway_entrance"](around:{radius_m},{lat},{lon});
-              # Railway stations
-              node["railway"="station"](around:{radius_m},{lat},{lon});
-              way["railway"="station"](around:{radius_m},{lat},{lon});
-              # Light rail
-              node["railway"="light_rail"](around:{radius_m},{lat},{lon});
-              way["railway"="light_rail"](around:{radius_m},{lat},{lon});
-              # Generic public transport stops
-              node["public_transport"="stop_position"](around:{radius_m},{lat},{lon});
-              way["public_transport"="stop_position"](around:{radius_m},{lat},{lon});
-              node["public_transport"="platform"](around:{radius_m},{lat},{lon});
-              way["public_transport"="platform"](around:{radius_m},{lat},{lon});
-            );
-            out tags center;
-            """
+        # Overpass QL has no comment syntax: a `#` in the query is a parse
+        # error of its own, and the whole query is refused. The statements
+        # below are the ones the provider accepts, one per element type and
+        # per tag.
+        around = f"{radius_m},{lat},{lon}"
+        statements = [
+            element_statement("node", tag_exact_filter("highway", "bus_stop"), around),
+            element_statement("way", tag_exact_filter("highway", "bus_stop"), around),
+            element_statement("node", tag_exact_filter("railway", "tram_stop"), around),
+            element_statement("way", tag_exact_filter("railway", "tram_stop"), around),
+            element_statement("node", tag_exact_filter("railway", "subway_entrance"), around),
+            element_statement("node", tag_exact_filter("railway", "station"), around),
+            element_statement("way", tag_exact_filter("railway", "station"), around),
+            element_statement("node", tag_exact_filter("railway", "light_rail"), around),
+            element_statement("way", tag_exact_filter("railway", "light_rail"), around),
+            element_statement(
+                "node", tag_exact_filter("public_transport", "stop_position"), around
+            ),
+            element_statement("way", tag_exact_filter("public_transport", "stop_position"), around),
+            element_statement("node", tag_exact_filter("public_transport", "platform"), around),
+            element_statement("way", tag_exact_filter("public_transport", "platform"), around),
+        ]
 
-        return query.strip()
+        return build_query(statements)
 
     def _parse_transport_stop(
         self,

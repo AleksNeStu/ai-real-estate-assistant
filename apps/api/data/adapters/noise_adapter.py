@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Optional
 import requests
 
 from core.security_utils import sanitize_for_log
+from data.adapters.overpass_query import build_query, element_statement, tag_regex_filter
 
 logger = logging.getLogger(__name__)
 
@@ -308,16 +309,18 @@ class NoiseAdapter:
         """Query for major roads near the location."""
         noise_sources: List[NoiseSource] = []
 
-        # Build tag filters for roads
-        tag_filters = " | ".join(f'["{tag}"]' for tag in self.ROAD_HIGHWAY_TAGS)
-
-        query = f"""
-            [out:json][timeout:25];
-            (
-              way{tag_filters}(around:{radius_m},{lat},{lon});
-            );
-            out tags center;
-            """
+        # The value of the `highway` tag is what says which road this is: a
+        # filter on the existence of the key would match every road and no
+        # motorway at all.
+        query = build_query(
+            [
+                element_statement(
+                    "way",
+                    tag_regex_filter("highway", self.ROAD_HIGHWAY_TAGS),
+                    f"{radius_m},{lat},{lon}",
+                )
+            ]
+        )
 
         try:
             response = requests.get(
@@ -367,16 +370,16 @@ class NoiseAdapter:
         """Query for railways near the location."""
         noise_sources: List[NoiseSource] = []
 
-        # Build tag filters for railways
-        tag_filters = " | ".join(f'["{tag}"]' for tag in self.RAILWAY_TAGS)
-
-        query = f"""
-            [out:json][timeout:25];
-            (
-              way{tag_filters}(around:{radius_m},{lat},{lon});
-            );
-            out tags center;
-            """
+        # The value of the `railway` tag is what says which track this is.
+        query = build_query(
+            [
+                element_statement(
+                    "way",
+                    tag_regex_filter("railway", self.RAILWAY_TAGS),
+                    f"{radius_m},{lat},{lon}",
+                )
+            ]
+        )
 
         try:
             response = requests.get(
@@ -481,17 +484,22 @@ class NoiseAdapter:
         """Query for industrial areas near the location."""
         noise_sources: List[NoiseSource] = []
 
-        # Build tag filters for industrial/commercial areas
-        tag_filters = " | ".join(f'["landuse"="{tag}"]' for tag in self.INDUSTRIAL_LANDUSE_TAGS)
-
-        query = f"""
-            [out:json][timeout:25];
-            (
-              way{tag_filters}(around:{radius_m},{lat},{lon});
-              relation{tag_filters}(around:{radius_m},{lat},{lon});
-            );
-            out tags center;
-            """
+        # An industrial area is a way or a relation - both carry the
+        # `landuse` tag, and both have to be asked for.
+        query = build_query(
+            [
+                element_statement(
+                    "way",
+                    tag_regex_filter("landuse", self.INDUSTRIAL_LANDUSE_TAGS),
+                    f"{radius_m},{lat},{lon}",
+                ),
+                element_statement(
+                    "relation",
+                    tag_regex_filter("landuse", self.INDUSTRIAL_LANDUSE_TAGS),
+                    f"{radius_m},{lat},{lon}",
+                ),
+            ]
+        )
 
         try:
             response = requests.get(
