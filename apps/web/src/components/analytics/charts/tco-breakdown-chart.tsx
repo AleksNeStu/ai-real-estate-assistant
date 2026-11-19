@@ -35,8 +35,11 @@ export function TCOBreakdownChart({
   description,
 }: TCOBreakdownChartProps) {
   const t = useTranslations('mortgage');
-  const chartTitle = title ?? t('charts.breakdown.title');
-  const chartDescription = description ?? t('charts.breakdown.description');
+  // An empty title means the card around the chart already carries it. The
+  // chart then renders no heading at all - an empty one is still a heading,
+  // and a screen reader reads it as one.
+  const chartTitle = title === '' ? null : (title ?? t('charts.breakdown.title'));
+  const chartDescription = description === '' ? null : (description ?? t('charts.breakdown.description'));
   const CATEGORY_LABELS: Record<string, string> = {
     mortgage: t('charts.breakdown.categories.mortgage'),
     property_tax: t('charts.breakdown.categories.propertyTax'),
@@ -91,8 +94,8 @@ export function TCOBreakdownChart({
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle>{chartTitle}</CardTitle>
-        <CardDescription>{chartDescription}</CardDescription>
+        {chartTitle ? <CardTitle>{chartTitle}</CardTitle> : null}
+        {chartDescription ? <CardDescription>{chartDescription}</CardDescription> : null}
       </CardHeader>
       <CardContent>
         <div
