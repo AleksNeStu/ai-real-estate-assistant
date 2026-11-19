@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional
 import requests
 
 from core.security_utils import sanitize_for_log
+from data.adapters.overpass_query import build_query, element_statement, tag_regex_filter
 
 logger = logging.getLogger(__name__)
 
@@ -340,19 +341,22 @@ class SafetyAdapter:
 
     def _build_radius_query(self, lat: float, lon: float, radius_m: int, tags: List[str]) -> str:
         """Build Overpass QL query for safety POIs within radius."""
-        # Build tag filters for amenity types
-        tag_filters = " | ".join(f'["amenity"="{tag}"]' for tag in tags)
-
-        query = f"""
-            [out:json][timeout:25];
-            (
-              node{tag_filters}(around:{radius_m},{lat},{lon});
-              way{tag_filters}(around:{radius_m},{lat},{lon});
-            );
-            out tags center;
-        """
-
-        return query.strip()
+        # A safety POI is an `amenity` with a certain value: the value is
+        # what says which kind of service it is.
+        return build_query(
+            [
+                element_statement(
+                    "node",
+                    tag_regex_filter("amenity", tags),
+                    f"{radius_m},{lat},{lon}",
+                ),
+                element_statement(
+                    "way",
+                    tag_regex_filter("amenity", tags),
+                    f"{radius_m},{lat},{lon}",
+                ),
+            ]
+        )
 
     def _parse_safety_element(
         self, element: Dict[str, Any], center_lat: float, center_lon: float

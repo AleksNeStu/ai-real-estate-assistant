@@ -46,6 +46,8 @@ from tests.fixtures.neighborhood.loader import (
     load_overpass_body,
     load_waqi_keyless,
     overpass_get,
+    query_shape,
+    recorded_response,
 )
 from tests.fixtures.neighborhood.loader import (
     valid_query_answer as _valid_query_answer,
@@ -466,8 +468,16 @@ class TestRecordedProviderMapping:
             assert source.type == "industrial"
             assert source.severity == 0.5
 
-    def test_the_provider_rejects_the_queries_the_adapters_build(self):
-        """The recorded answers show what the provider says to the adapters' own queries."""
+    def test_the_provider_rejected_the_queries_the_adapters_used_to_build(self):
+        """The record of what the provider said to the queries of before.
+
+        The adapters asked a question the provider could not parse: a union
+        term without its element type, a filter on the existence of a key
+        instead of on its value, and - in the transport query - a comment,
+        which Overpass QL has no syntax for. The record is kept: it is the
+        evidence of the defect, and the queries the adapters build now are
+        the accepted ones.
+        """
         for name in (
             "adapter_query_noise_roads",
             "adapter_query_noise_railways",
@@ -480,7 +490,7 @@ class TestRecordedProviderMapping:
             assert entry["status"] == 400
             assert "parse error" in entry["body"]
 
-        # The airports query is the one the provider accepts
+        # The airports query is the one the provider accepted even then
         assert load_overpass("adapter_query_noise_airports")["status"] == 200
 
     def test_an_adapter_whose_query_is_rejected_still_answers(self):
@@ -492,6 +502,117 @@ class TestRecordedProviderMapping:
 
         assert result.pois == []
         assert 0 <= result.score <= 100
+
+
+# =============================================================================
+# The queries the adapters build
+# =============================================================================
+
+
+# The provider's own answer for every request shape, keyed by the shape.
+ACCEPTED_FORM_FOR_SHAPE = {
+    "noise_roads": "valid_query_noise_roads",
+    "noise_railways": "valid_query_noise_railways",
+    "noise_industrial": "valid_query_noise_industrial",
+    "noise_airports": "valid_query_noise_airports",
+    "safety_pois": "valid_query_safety_pois",
+    "transport_stops": "valid_query_transport_stops",
+    "neighborhood_pois": "valid_query_neighborhood_pois",
+}
+
+
+def _queries_sent(call):
+    """The queries an adapter sends, captured at the network boundary."""
+    sent = []
+
+    def _get(url, params=None, **kwargs):
+        sent.append((params or {}).get("data", ""))
+        return recorded_response(load_overpass("empty_result"))
+
+    with patch("requests.get", side_effect=_get):
+        call()
+    return sent
+
+
+def _as_one_line(query):
+    """A query as the provider reads it: the spacing does not matter."""
+    return " ".join(query.split())
+
+
+class TestTheQueriesTheAdaptersBuild:
+    """Every query an adapter builds is one the provider answered with data."""
+
+    def _assert_the_provider_accepts(self, query, shape):
+        accepted = load_overpass(ACCEPTED_FORM_FOR_SHAPE[shape])["query"]
+        assert _as_one_line(query) == _as_one_line(accepted)
+
+    def test_the_noise_adapter_builds_the_queries_the_provider_accepts(self):
+        adapter = NoiseAdapter()
+
+        sent = _queries_sent(lambda: adapter.get_nearby_noise_sources(WARSAW_LAT, WARSAW_LON))
+        by_shape = {query_shape(query): query for query in sent}
+
+        assert set(by_shape) == {
+            "noise_roads",
+            "noise_railways",
+            "noise_airports",
+            "noise_industrial",
+        }
+        for shape in ("noise_roads", "noise_railways", "noise_industrial"):
+            self._assert_the_provider_accepts(by_shape[shape], shape)
+
+    def test_the_safety_adapter_builds_the_query_the_provider_accepts(self):
+        adapter = SafetyAdapter()
+
+        sent = _queries_sent(lambda: adapter.get_safety_score(WARSAW_LAT, WARSAW_LON, "Warsaw"))
+
+        assert len(sent) == 1
+        self._assert_the_provider_accepts(sent[0], "safety_pois")
+
+    def test_the_transport_adapter_builds_the_query_the_provider_accepts(self):
+        adapter = TransportAdapter()
+
+        sent = _queries_sent(lambda: adapter.fetch_transport_pois(WARSAW_LAT, WARSAW_LON))
+
+        assert len(sent) == 1
+        self._assert_the_provider_accepts(sent[0], "transport_stops")
+
+    def test_the_neighborhood_adapter_builds_the_query_the_provider_accepts(self):
+        adapter = NeighborhoodAdapter()
+
+        sent = _queries_sent(lambda: adapter.fetch_pois_within_radius(WARSAW_LAT, WARSAW_LON, 1000))
+
+        assert len(sent) == 1
+        self._assert_the_provider_accepts(sent[0], "neighborhood_pois")
+
+    def test_no_query_carries_a_comment(self):
+        # Overpass QL has no comment syntax: a `#` is a parse error of its own.
+        adapter = TransportAdapter()
+
+        sent = _queries_sent(lambda: adapter.fetch_transport_pois(WARSAW_LAT, WARSAW_LON))
+
+        assert "#" not in sent[0]
+
+    def test_every_statement_names_its_element_type(self):
+        # A union term without its element type is a parse error.
+        adapters = (
+            (NoiseAdapter(), lambda a: a.get_nearby_noise_sources(WARSAW_LAT, WARSAW_LON)),
+            (SafetyAdapter(), lambda a: a.get_safety_score(WARSAW_LAT, WARSAW_LON, "Warsaw")),
+            (TransportAdapter(), lambda a: a.fetch_transport_pois(WARSAW_LAT, WARSAW_LON)),
+            (
+                NeighborhoodAdapter(),
+                lambda a: a.fetch_pois_within_radius(WARSAW_LAT, WARSAW_LON, 1000),
+            ),
+        )
+
+        for adapter, call in adapters:
+            for query in _queries_sent(lambda bound=call, target=adapter: bound(target)):
+                body = query.split("(", 1)[1].rsplit(");", 1)[0]
+                for statement in body.splitlines():
+                    statement = statement.strip()
+                    if not statement:
+                        continue
+                    assert statement.startswith(("node[", "way[", "relation[")), statement
 
 
 # =============================================================================

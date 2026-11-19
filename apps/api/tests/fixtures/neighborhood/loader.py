@@ -28,12 +28,16 @@ WAQI_FIXTURE = FIXTURE_DIR / "waqi_keyless.json"
 
 def load_overpass_entries() -> Dict[str, Any]:
     """Return every recorded Overpass response, keyed by request shape."""
-    return json.loads(OVERPASS_FIXTURE.read_text(encoding="utf-8"))["responses"]
+    payload = json.loads(OVERPASS_FIXTURE.read_text(encoding="utf-8"))
+    entries: Dict[str, Any] = payload["responses"]
+    return entries
 
 
 def load_overpass_meta() -> Dict[str, Any]:
     """Return the header of the Overpass fixture (provider, URL shape, date)."""
-    return json.loads(OVERPASS_FIXTURE.read_text(encoding="utf-8"))["_meta"]
+    payload = json.loads(OVERPASS_FIXTURE.read_text(encoding="utf-8"))
+    meta: Dict[str, Any] = payload["_meta"]
+    return meta
 
 
 def load_overpass(name: str) -> Dict[str, Any]:
@@ -51,7 +55,8 @@ def load_overpass(name: str) -> Dict[str, Any]:
     entries = load_overpass_entries()
     if name not in entries:
         raise KeyError(f"No recorded Overpass response named {name!r}")
-    return entries[name]
+    entry: Dict[str, Any] = entries[name]
+    return entry
 
 
 def load_overpass_body(name: str) -> Any:
@@ -61,7 +66,9 @@ def load_overpass_body(name: str) -> Any:
 
 def load_waqi_keyless() -> Dict[str, Any]:
     """Return the WAQI adapter's own keyless answer."""
-    return json.loads(WAQI_FIXTURE.read_text(encoding="utf-8"))
+    payload = json.loads(WAQI_FIXTURE.read_text(encoding="utf-8"))
+    answer: Dict[str, Any] = payload
+    return answer
 
 
 def recorded_response(entry: Dict[str, Any]) -> Mock:
@@ -106,14 +113,14 @@ def overpass_get(resolver: Any) -> Callable[..., Mock]:
     if callable(resolver):
 
         def _resolve(query: str) -> str:
-            return resolver(query)
+            return str(resolver(query))
 
     else:
 
         def _resolve(query: str) -> str:
             for marker, entry_name in resolver.items():
                 if marker in query:
-                    return entry_name
+                    return str(entry_name)
             raise AssertionError(f"No recorded response configured for query: {query[:120]}")
 
     def _get(url: str, params: Optional[Dict[str, Any]] = None, **kwargs: Any) -> Mock:
@@ -125,25 +132,25 @@ def overpass_get(resolver: Any) -> Callable[..., Mock]:
 
 def query_shape(query: str) -> str:
     """Name the request shape a query belongs to, whatever its spelling."""
-    if 'way["motorway"]' in query:
+    if 'way["highway"~' in query:
         return "noise_roads"
-    if 'way["rail"]' in query:
+    if 'way["railway"~' in query:
         return "noise_railways"
-    if 'way["landuse"="industrial"]' in query:
+    if 'way["landuse"~"^(industrial' in query:
         return "noise_industrial"
     if 'way["aeroway"="aerodrome"]' in query:
         return "noise_airports"
-    if 'node["amenity"="police"]' in query:
+    if 'node["amenity"~"^(police' in query:
         return "safety_pois"
     if 'node["highway"="bus_stop"]' in query:
         return "transport_stops"
-    if '["school"]' in query and '["restaurant"]' in query:
+    if "school" in query and "restaurant" in query:
         return "neighborhood_pois"
-    if '["school"]' in query:
+    if "school" in query:
         return "neighborhood_schools"
-    if '["restaurant"]' in query:
+    if "restaurant" in query:
         return "neighborhood_amenities"
-    if '["park"]' in query:
+    if "park" in query:
         return "neighborhood_green_spaces"
     raise AssertionError(f"No recorded answer for query: {query[:160]}")
 
