@@ -206,6 +206,35 @@ jobs:
           name: coverage-${{ matrix.test-suite.name }}
           path: apps/api/coverage.xml
 
+  api-contract:
+    # The public API is a promise. This job compares the schema the
+    # application serves with the baseline that was released, and fails on a
+    # difference a consumer cannot survive: a field that is gone, renamed,
+    # retyped or newly required, an endpoint or a parameter that disappeared.
+    # An additive change passes - a consumer that does not know the new field
+    # ignores it.
+    runs-on: ubuntu-latest
+    needs: [backend-lint]
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: ./.github/actions/setup-python
+        with:
+          working-directory: apps/api
+          dev-requirements-file: requirements-dev.txt
+
+      # The schema comes from the application itself, so the contract that is
+      # checked is the one this commit serves - not a snapshot that can go
+      # stale.
+      - name: Export the OpenAPI schema
+        run: python scripts/docs/export_openapi.py
+
+      - name: Check the API contract for breaking changes
+        run: python scripts/api/openapi_diff.py --current docs/api/openapi.json
+
   frontend-build:
     runs-on: ubuntu-latest
     needs: [gitleaks, secret-validation]
@@ -768,6 +797,7 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     needs: [gitleaks, secret-validation, backend-lint, backend-tests,
+            api-contract,
             frontend-build, security-sast, frontend-tests,
             security-deps, codeql-python, codeql-javascript, container-scan,
             lighthouse, e2e, compose-stack]

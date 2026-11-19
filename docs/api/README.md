@@ -41,6 +41,28 @@ To regenerate the static OpenAPI schema:
 cd apps/api && python -m scripts.docs.export_openapi
 ```
 
+## The contract is checked on every pull request
+
+The `api-contract` job of the pipeline compares the schema the application
+serves with the baseline that was released (`docs/api-v1-baseline.json`), and
+it fails on a difference a consumer cannot survive: a field that is gone,
+renamed, retyped or newly required, an endpoint or a parameter that
+disappeared. An additive change passes - a consumer that does not know the
+new field ignores it.
+
+The same check runs locally:
+
+```bash
+python scripts/api/openapi_diff.py
+```
+
+To accept a change of the contract on purpose, move the baseline with the
+command the failure names:
+
+```bash
+python scripts/api/openapi_diff.py --update-baseline
+```
+
 ## Available Resources
 
 | Resource | Description | Auth Required |
