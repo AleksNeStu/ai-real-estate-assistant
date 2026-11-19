@@ -64,12 +64,20 @@ def build_capabilities(
     # auth router only exists when JWT is enabled, so without that the
     # click answers 404. The Apple endpoint reads its private key from a
     # file and reuses the same redirect URI setting.
+    #
+    # The callback sends the visitor back to the interface only when the
+    # frontend URL is one it can redirect to; without one it answers with
+    # the tokens as a JSON body. A button that leads to JSON is a dead end,
+    # so the browser flow is part of the capability the interface reads.
+    frontend_url = getattr(settings, "frontend_url", None)
+    browser_flow = isinstance(frontend_url, str) and frontend_url.startswith("http")
     google = bool(
         settings.auth_jwt_enabled
         and settings.auth_oauth_google_enabled
         and settings.google_client_id
         and settings.google_client_secret
         and settings.google_redirect_uri
+        and browser_flow
     )
     apple = bool(
         settings.auth_jwt_enabled
@@ -78,6 +86,7 @@ def build_capabilities(
         and settings.apple_team_id
         and settings.apple_private_key_path
         and settings.google_redirect_uri
+        and browser_flow
     )
 
     capabilities = {
