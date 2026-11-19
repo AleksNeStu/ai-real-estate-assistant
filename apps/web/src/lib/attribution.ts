@@ -12,6 +12,7 @@
  * from the browser, before the navigation happens.
  */
 import { buildHeaders, getApiUrl } from '@/lib/api/client';
+import { currentLocale } from '@/lib/visitor-tracking';
 
 const SLOT_PARAM = 'from';
 
@@ -38,6 +39,7 @@ export async function reportArrival(): Promise<void> {
         interaction_type: 'navigation',
         metadata: { slot },
         page_url: window.location.pathname,
+        locale: currentLocale() ?? undefined,
       }),
       keepalive: true,
     });
@@ -67,7 +69,12 @@ export async function reportOutbound(
     await fetch(`${getApiUrl()}/analytics/outbound`, {
       method: 'POST',
       headers: buildHeaders(),
-      body: JSON.stringify({ target, slot, campaign: campaign ?? null }),
+      body: JSON.stringify({
+        target,
+        slot,
+        campaign: campaign ?? null,
+        locale: currentLocale() ?? undefined,
+      }),
       keepalive: true,
     });
   } catch {

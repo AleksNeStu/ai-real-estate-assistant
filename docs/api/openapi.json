@@ -17052,6 +17052,19 @@
             "minLength": 1,
             "title": "Visitor Id",
             "type": "string"
+          },
+          "locale": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locale",
+            "description": "The locale of the page the interaction happened on"
           }
         },
         "required": [
@@ -17143,6 +17156,15 @@
             "default": 0,
             "title": "Unique Sessions",
             "type": "integer"
+          },
+          "visitors_by_locale": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Visitors By Locale",
+            "description": "The visitors per locale"
           }
         },
         "required": [
@@ -17963,6 +17985,19 @@
             ],
             "title": "Page Url",
             "description": "The page it happened on"
+          },
+          "locale": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locale",
+            "description": "The locale of the page the click happened on"
           }
         },
         "type": "object",

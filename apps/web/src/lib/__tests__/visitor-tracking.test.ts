@@ -16,6 +16,8 @@ import {
   getVisitorIdFromCookies,
   setVisitorIdCookie,
   getOrCreateVisitorId,
+  parseLocaleFromPath,
+  currentLocale,
   trackInteraction,
   trackSearch,
   trackPropertyView,
@@ -57,6 +59,10 @@ beforeEach(() => {
 
   // Reset document.cookie to empty
   setDocumentCookie('');
+
+  // Reset the route: jsdom keeps the address bar of the test file, and the
+  // locale is read from the path.
+  window.history.pushState({}, '', '/');
 
   // window.location is not configurable in jsdom, use its actual href
   try {
@@ -219,6 +225,49 @@ describe('getOrCreateVisitorId', () => {
     // Instead, verify the function does NOT throw when document exists:
     setDocumentCookie('visitor_id=ssr-test');
     expect(() => getOrCreateVisitorId()).not.toThrow();
+  });
+});
+
+// =============================================================================
+// parseLocaleFromPath / currentLocale
+// =============================================================================
+describe('parseLocaleFromPath', () => {
+  it('reads the locale from the first segment of the path', () => {
+    expect(parseLocaleFromPath('/pl/properties')).toBe('pl');
+    expect(parseLocaleFromPath('/en/properties')).toBe('en');
+  });
+
+  it('reads the locale of a path that is only the locale', () => {
+    expect(parseLocaleFromPath('/pl')).toBe('pl');
+    expect(parseLocaleFromPath('/en/')).toBe('en');
+  });
+
+  it('returns null for a path that does not start with a locale', () => {
+    expect(parseLocaleFromPath('/properties')).toBeNull();
+    expect(parseLocaleFromPath('/')).toBeNull();
+  });
+
+  it('returns null for a segment that is not a locale of this site', () => {
+    expect(parseLocaleFromPath('/xx/properties')).toBeNull();
+    expect(parseLocaleFromPath('/api/v1/leads/track')).toBeNull();
+  });
+
+  it('returns null for an empty path', () => {
+    expect(parseLocaleFromPath('')).toBeNull();
+    expect(parseLocaleFromPath(null)).toBeNull();
+    expect(parseLocaleFromPath(undefined)).toBeNull();
+  });
+});
+
+describe('currentLocale', () => {
+  it('returns the locale of the page the browser is on', () => {
+    window.history.pushState({}, '', '/pl/properties');
+    expect(currentLocale()).toBe('pl');
+  });
+
+  it('returns null on a page that is not under a locale', () => {
+    window.history.pushState({}, '', '/properties');
+    expect(currentLocale()).toBeNull();
   });
 });
 
@@ -597,5 +646,54 @@ describe('trackProfileUpdate', () => {
     const body = JSON.parse(mockFetch.mock.calls[0][1].body);
     expect(body.interaction_type).toBe('profile_update');
     expect(body.metadata.updated_fields).toEqual(['name', 'email']);
+  });
+});
+
+// =============================================================================
+// trackInteraction and the locale
+// =============================================================================
+describe('trackInteraction and the locale', () => {
+  it('sends the locale of the route the visitor is on', async () => {
+    setDocumentCookie('visitor_id=v-1');
+    mockFetch.mockResolvedValueOnce({ ok: true });
+    window.history.pushState({}, '', '/pl/properties');
+
+    await trackInteraction({ interaction_type: 'view' });
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.locale).toBe('pl');
+  });
+
+  it('sends the English locale for an English route', async () => {
+    setDocumentCookie('visitor_id=v-1');
+    mockFetch.mockResolvedValueOnce({ ok: true });
+    window.history.pushState({}, '', '/en/search');
+
+    await trackInteraction({ interaction_type: 'search' });
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.locale).toBe('en');
+  });
+
+  it('sends the locale the caller names over the one of the route', async () => {
+    setDocumentCookie('visitor_id=v-1');
+    mockFetch.mockResolvedValueOnce({ ok: true });
+    window.history.pushState({}, '', '/pl/properties');
+
+    await trackInteraction({ interaction_type: 'view', locale: 'de' });
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.locale).toBe('de');
+  });
+
+  it('sends no locale on a page that is not under one', async () => {
+    setDocumentCookie('visitor_id=v-1');
+    mockFetch.mockResolvedValueOnce({ ok: true });
+    window.history.pushState({}, '', '/properties');
+
+    await trackInteraction({ interaction_type: 'view' });
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.locale).toBeUndefined();
   });
 });

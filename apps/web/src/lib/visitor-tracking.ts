@@ -5,6 +5,8 @@
  * for the lead scoring system.
  */
 
+import { isValidLocale } from '@/i18n/config';
+
 // Cookie configuration
 const VISITOR_ID_COOKIE = 'visitor_id';
 const VISITOR_ID_MAX_AGE = 365 * 24 * 60 * 60 * 1000; // 365 days in seconds
@@ -112,6 +114,27 @@ export type InteractionType =
   | 'profile_update';
 
 /**
+ * The locale of a path, read from its first segment.
+ *
+ * Every page of the site lives under a locale segment (`/pl/properties`,
+ * `/en/properties`), so the locale is known where the route is - and nowhere
+ * else. A path that does not begin with a locale carries none.
+ */
+export function parseLocaleFromPath(pathname: string | null | undefined): string | null {
+  if (!pathname) return null;
+  const segment = pathname.split('/').filter(Boolean)[0];
+  return segment && isValidLocale(segment) ? segment : null;
+}
+
+/**
+ * The locale of the page the browser is on.
+ */
+export function currentLocale(): string | null {
+  if (typeof window === 'undefined') return null;
+  return parseLocaleFromPath(window.location.pathname);
+}
+
+/**
  * Track a visitor interaction.
  * Sends the interaction to the backend for lead scoring.
  */
@@ -124,8 +147,13 @@ export async function trackInteraction(event: {
   page_url?: string;
   referrer?: string;
   time_spent_seconds?: number;
+  locale?: string;
 }): Promise<void> {
   const visitor_id = getOrCreateVisitorId();
+  // The locale is the route's own segment, so it is read here - where the
+  // route is - and sent as its own field. A page that is not under a
+  // locale sends none: the field is optional.
+  const locale = event.locale ?? currentLocale();
 
   try {
     await fetch('/api/v1/leads/track', {
@@ -134,6 +162,7 @@ export async function trackInteraction(event: {
       body: JSON.stringify({
         visitor_id,
         ...event,
+        locale: locale ?? undefined,
         page_url:
           event.page_url || (typeof window !== 'undefined' ? window.location.href : undefined),
         referrer:
