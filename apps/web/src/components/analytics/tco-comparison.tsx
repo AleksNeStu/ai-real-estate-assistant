@@ -18,6 +18,16 @@ interface TCOComparisonProps {
   className?: string;
 }
 
+/**
+ * The difference between the two scenarios, in the money shape the component
+ * prints: the sign stands outside the currency symbol ("-$1,200", not
+ * "$-1,200").
+ */
+function formatDifference(value: number): string {
+  const sign = value > 0 ? '+' : value < 0 ? '-' : '';
+  return `${sign}$${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+}
+
 interface ScenarioFormProps {
   title: string;
   formData: TCOInput;
@@ -357,10 +367,7 @@ export function TCOComparison({ className }: TCOComparisonProps) {
                       result.monthly_cost_difference > 0 ? 'text-destructive' : 'text-success'
                     }`}
                   >
-                    {result.monthly_cost_difference > 0 ? '+' : ''}$
-                    {result.monthly_cost_difference.toLocaleString(undefined, {
-                      maximumFractionDigits: 0,
-                    })}
+                    {formatDifference(result.monthly_cost_difference)}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {ti('tcoComparison.versus', {
@@ -378,10 +385,7 @@ export function TCOComparison({ className }: TCOComparisonProps) {
                       result.equity_difference < 0 ? 'text-destructive' : 'text-success'
                     }`}
                   >
-                    {result.equity_difference > 0 ? '+' : ''}$
-                    {result.equity_difference.toLocaleString(undefined, {
-                      maximumFractionDigits: 0,
-                    })}
+                    {formatDifference(result.equity_difference)}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {ti('tcoComparison.versus', {
@@ -479,7 +483,10 @@ export function TCOComparison({ className }: TCOComparisonProps) {
           {/* Projections Chart */}
           {result.scenario_a.projections.length > 0 && (
             <div className="mt-6">
-              <TCOProjectionChart projections={result.scenario_a.projections} />
+              <TCOProjectionChart
+                projections={result.scenario_a.projections}
+                scenarioName={result.scenario_a_name}
+              />
             </div>
           )}
         </>
