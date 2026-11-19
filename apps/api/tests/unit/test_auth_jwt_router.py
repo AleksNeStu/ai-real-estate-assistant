@@ -1721,3 +1721,79 @@ class TestAppleOAuth:
 
             response = await auth_client.get("/api/v1/auth/oauth/apple")
             assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    @pytest.mark.asyncio
+    async def test_the_redirect_uri_is_the_configured_one(self, auth_client, tmp_path):
+        """Both providers land on the same callback endpoint.
+
+        The Apple redirect URI used to be derived by replacing every
+        "google" in the configured URI with "apple" - which also rewrote a
+        "google" in the host, the query or any other segment of the URL.
+        """
+        key_path = tmp_path / "apple.p8"
+        key_path.write_text("a private key", encoding="utf-8")
+
+        with patch("api.routers.auth_jwt.get_settings") as mock_settings:
+            mock_settings_obj = MagicMock()
+            mock_settings_obj.auth_oauth_apple_enabled = True
+            mock_settings_obj.apple_client_id = "apple-client-id"
+            mock_settings_obj.apple_team_id = "apple-team-id"
+            mock_settings_obj.apple_key_id = "apple-key-id"
+            mock_settings_obj.apple_private_key_path = str(key_path)
+            mock_settings_obj.google_redirect_uri = (
+                "https://api.example.com/api/v1/auth/oauth/callback"
+            )
+            mock_settings_obj.environment = "development"
+            mock_settings.return_value = mock_settings_obj
+
+            with patch("core.oauth.AppleOAuthProvider") as mock_provider_cls:
+                mock_provider = MagicMock()
+                mock_provider_cls.return_value = mock_provider
+                mock_provider.generate_pkce_verifier.return_value = "verifier"
+                mock_provider.generate_pkce_challenge.return_value = "challenge"
+                mock_provider.get_authorization_url.return_value = (
+                    "https://appleid.apple.com/auth?state=abc"
+                )
+
+                response = await auth_client.get("/api/v1/auth/oauth/apple")
+
+                assert response.status_code == status.HTTP_200_OK
+                assert (
+                    mock_provider_cls.call_args.kwargs["redirect_uri"]
+                    == "https://api.example.com/api/v1/auth/oauth/callback"
+                )
+
+    @pytest.mark.asyncio
+    async def test_a_google_in_the_host_is_not_rewritten(self, auth_client, tmp_path):
+        key_path = tmp_path / "apple.p8"
+        key_path.write_text("a private key", encoding="utf-8")
+
+        with patch("api.routers.auth_jwt.get_settings") as mock_settings:
+            mock_settings_obj = MagicMock()
+            mock_settings_obj.auth_oauth_apple_enabled = True
+            mock_settings_obj.apple_client_id = "apple-client-id"
+            mock_settings_obj.apple_team_id = "apple-team-id"
+            mock_settings_obj.apple_key_id = "apple-key-id"
+            mock_settings_obj.apple_private_key_path = str(key_path)
+            mock_settings_obj.google_redirect_uri = (
+                "https://google.example.com/api/v1/auth/oauth/callback"
+            )
+            mock_settings_obj.environment = "development"
+            mock_settings.return_value = mock_settings_obj
+
+            with patch("core.oauth.AppleOAuthProvider") as mock_provider_cls:
+                mock_provider = MagicMock()
+                mock_provider_cls.return_value = mock_provider
+                mock_provider.generate_pkce_verifier.return_value = "verifier"
+                mock_provider.generate_pkce_challenge.return_value = "challenge"
+                mock_provider.get_authorization_url.return_value = (
+                    "https://appleid.apple.com/auth?state=abc"
+                )
+
+                response = await auth_client.get("/api/v1/auth/oauth/apple")
+
+                assert response.status_code == status.HTTP_200_OK
+                assert (
+                    mock_provider_cls.call_args.kwargs["redirect_uri"]
+                    == "https://google.example.com/api/v1/auth/oauth/callback"
+                )

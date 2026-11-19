@@ -1188,7 +1188,12 @@ async def apple_oauth_start(
     provider = AppleOAuthProvider(
         client_id=settings.apple_client_id,
         client_secret="",  # Not used for Apple
-        redirect_uri=settings.google_redirect_uri.replace("google", "apple"),  # Use same base
+        # Both providers land on the same callback endpoint - there is one
+        # route, "/oauth/callback" - so the Apple redirect URI is the URI
+        # that is configured. It used to be derived by replacing every
+        # "google" in it with "apple", which also rewrote a "google" in the
+        # host, the query or any other segment of the URL.
+        redirect_uri=settings.google_redirect_uri,
         team_id=settings.apple_team_id,
         key_id=settings.apple_key_id or "",
         private_key=private_key,
