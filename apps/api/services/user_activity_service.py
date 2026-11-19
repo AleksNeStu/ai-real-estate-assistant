@@ -391,7 +391,15 @@ class UserActivityService:
         result = await self.session.execute(query)
         rows = result.all()
 
-        return [{"city": row.city or "unknown", "count": row.count} for row in rows]
+        # A search without a city is not a city. On SQLite the JSON_QUOTE
+        # wrapper keeps a row whose filters carry no "city" key - the row
+        # survives the query and is read as NULL - so the rows are filtered
+        # here as well. The answer is the same on either database.
+        return [
+            {"city": row.city or "unknown", "count": row.count}
+            for row in rows
+            if row.city is not None
+        ]
 
     async def _get_visitors_by_locale(
         self,

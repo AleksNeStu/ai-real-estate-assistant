@@ -365,7 +365,7 @@ def user_activity_service(db_session):
     """
     from services.user_activity_service import UserActivityService
 
-    return UserActivityService(db_session, retention_days=30)
+    return UserActivityService(db_session)
 
 
 @pytest.fixture
