@@ -86,6 +86,19 @@ describe('TCOBreakdownChart', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('renders no heading when the title and the description are empty', () => {
+    // The card around the chart carries the title. An empty heading is
+    // still a heading, and a screen reader reads it as one.
+    const { container } = render(
+      <TCOBreakdownChart tcoResult={tcoResult} title="" description="" />
+    );
+
+    expect(container.querySelector('h3')).toBeNull();
+    expect(
+      screen.queryByText(copy('mortgage', 'charts.breakdown.title'))
+    ).not.toBeInTheDocument();
+  });
+
   it('names every non-zero category in the accessible label of the pie', () => {
     render(<TCOBreakdownChart tcoResult={tcoResult} />);
 
