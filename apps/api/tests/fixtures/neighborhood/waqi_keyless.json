@@ -1,0 +1,48 @@
+{
+  "_meta": {
+    "provider": "World Air Quality Index (WAQI) - https://api.waqi.info",
+    "url_shape": "GET {provider}/feed/geo:{lat};{lon}/?token={WAQI_API_KEY}",
+    "recorded_at": "2026-11-19",
+    "recorded_for": "TaskMaster #92 - the neighbourhood adapters are tested against recorded responses",
+    "note": "THIS IS NOT AN UPSTREAM WAQI PAYLOAD. No WAQI_API_KEY exists anywhere in this project - not in the OS environment, not on the deployment node, not in the repository .env - so the upstream endpoint was never called and no upstream answer was recorded. What is recorded here is the adapter's OWN keyless answer: the AirQualityResult the adapter returns when it holds no token, i.e. the CITY_AQI_AVERAGES fallback (air_quality_adapter.py, get_aqi_score -> _get_fallback_result). The values below are that fallback's output, field for field.",
+    "upstream_status": "not callable - the provider requires a token and none exists"
+  },
+  "keyless_result": {
+    "city": "Warsaw",
+    "latitude": 52.2297,
+    "longitude": 21.0122,
+    "score": 83.3,
+    "aqi_value": 65,
+    "pm25": 18.5,
+    "pm10": 28.0,
+    "data_source": "fallback",
+    "confidence": 0.5,
+    "station_name": "Warsaw (average)"
+  },
+  "keyless_result_known_city": {
+    "city": "Krakow",
+    "score": 79.5,
+    "aqi_value": 75,
+    "pm25": 22.0,
+    "pm10": 35.0,
+    "data_source": "fallback",
+    "confidence": 0.5,
+    "station_name": "Krakow (average)"
+  },
+  "keyless_result_unknown_city": {
+    "city": "Atlantis",
+    "score": 90.0,
+    "aqi_value": 50,
+    "pm25": 14.0,
+    "pm10": 22.0,
+    "data_source": "fallback",
+    "confidence": 0.5,
+    "station_name": "Atlantis (average)"
+  },
+  "keyless_station_lookup": {
+    "latitude": 52.2297,
+    "longitude": 21.0122,
+    "station": null,
+    "note": "without a token the adapter returns None and logs 'No API key available for station lookup'"
+  }
+}
