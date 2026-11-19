@@ -515,6 +515,37 @@ separate floor for each of them. Security: Gitleaks, Semgrep, Bandit,
 Trivy, CodeQL. Full details in the
 [testing guide](docs/testing/TESTING_GUIDE.md).
 
+### What the pipeline runs
+
+| Suite | Where it runs | What it proves |
+|---|---|---|
+| `backend-e2e` | every push and pull request | the backend's end-to-end suite: the real application, the real middleware stack, the API-key contract |
+| `compose-stack` | every push and pull request | the same suite against the stack the pipeline builds — the seeded catalogue, the real provider (the local MockLLM, so no key and no answer leaves the runner) |
+| `backend-resilience` | every push and pull request | the fallback chain and the degradation answer, proved with a provider that fails locally — no outage, no key |
+
+### What the pipeline does not run
+
+The p95 and the load suites are **not** in the pull-request path, and that is a
+decision rather than an omission: a percentile measured on a shared runner is a
+measurement of the runner, not of the product, and a suite that fails on the
+runner's load is a suite nobody reads.
+
+They run on demand, against a backend you name:
+
+```bash
+make perf-budget          # the budget the product is measured against
+make benchmark-search     # the search p95
+make benchmark-chat       # the chat p95
+make load-test            # the concurrent load
+```
+
+`PERF_BASE_URL` says which backend to measure
+(`make benchmark-search PERF_BASE_URL=http://localhost:8082` for the compose
+stack). The budget is **search p95 ≤ 2.0 s, chat p95 ≤ 8.0 s, health p95 ≤
+0.1 s, success rate ≥ 99 %**. The backend under measurement needs its rate
+limit above the suite's request count (`API_RATE_LIMIT_RPM`) — otherwise the
+suite measures the limiter, and says so.
+
 ## Contributing
 
 Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the

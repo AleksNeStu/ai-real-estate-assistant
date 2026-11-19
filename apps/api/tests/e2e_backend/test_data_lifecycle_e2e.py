@@ -23,7 +23,9 @@ class TestDataIngestSearchE2E:
         resp = await e2e_client.get("/health")
         assert resp.status_code == 200
         data = resp.json()
-        assert data["status"] == "healthy"
+        # "degraded" is an answer too: a deployment whose optional
+        # dependency is off says so instead of pretending to be healthy.
+        assert data["status"] in ("healthy", "degraded")
 
     async def test_openapi_schema_accessible(self, e2e_client):
         """Verify OpenAPI schema is generated."""
@@ -71,15 +73,15 @@ class TestDataIngestSearchE2E:
 class TestAPIKeyAuthE2E:
     """Tests for API key authentication on all endpoints."""
 
-    async def test_settings_requires_auth(self, e2e_client):
+    async def test_settings_requires_auth(self, e2e_client, requires_api_key):
         resp = await e2e_client.get("/api/v1/settings/notifications")
         assert resp.status_code in (401, 403)
 
-    async def test_prompt_templates_requires_auth(self, e2e_client):
+    async def test_prompt_templates_requires_auth(self, e2e_client, requires_api_key):
         resp = await e2e_client.get("/api/v1/prompt-templates")
         assert resp.status_code in (401, 403)
 
-    async def test_exports_requires_auth(self, e2e_client):
+    async def test_exports_requires_auth(self, e2e_client, requires_api_key):
         resp = await e2e_client.post("/api/v1/export/properties")
         assert resp.status_code in (401, 403, 422)
 
@@ -87,12 +89,12 @@ class TestAPIKeyAuthE2E:
         resp = await e2e_client.get("/api/v1/settings/models", headers=api_headers)
         assert resp.status_code == 200
 
-    async def test_cors_headers_present(self, e2e_client):
+    async def test_cors_headers_present(self, e2e_client, cors_origin):
         """Verify CORS headers are set on preflight requests."""
         resp = await e2e_client.options(
             "/api/v1/search",
             headers={
-                "Origin": "http://localhost:3000",
+                "Origin": cors_origin,
                 "Access-Control-Request-Method": "POST",
             },
         )

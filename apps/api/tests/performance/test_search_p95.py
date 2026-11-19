@@ -93,14 +93,14 @@ class TestSimpleSearchBenchmark:
 
         # Warmup
         for _ in range(WARMUP_REQUESTS):
-            await authed_perf_client.post("/api/v1/properties/search", json=query)
+            await authed_perf_client.post("/api/v1/search", json=query)
 
         # Benchmark
         for _ in range(BENCHMARK_REQUESTS):
             import time
 
             start = time.perf_counter()
-            response = await authed_perf_client.post("/api/v1/properties/search", json=query)
+            response = await authed_perf_client.post("/api/v1/search", json=query)
             elapsed = time.perf_counter() - start
             measurements.append(elapsed)
             assert response.status_code == 200
@@ -129,14 +129,14 @@ class TestSimpleSearchBenchmark:
 
         # Warmup
         for _ in range(WARMUP_REQUESTS):
-            await authed_perf_client.post("/api/v1/properties/search", json=query)
+            await authed_perf_client.post("/api/v1/search", json=query)
 
         # Benchmark
         for _ in range(BENCHMARK_REQUESTS):
             import time
 
             start = time.perf_counter()
-            response = await authed_perf_client.post("/api/v1/properties/search", json=query)
+            response = await authed_perf_client.post("/api/v1/search", json=query)
             elapsed = time.perf_counter() - start
             measurements.append(elapsed)
             assert response.status_code == 200
@@ -174,14 +174,14 @@ class TestFilteredSearchBenchmark:
 
         # Warmup
         for _ in range(WARMUP_REQUESTS):
-            await authed_perf_client.post("/api/v1/properties/search", json=query)
+            await authed_perf_client.post("/api/v1/search", json=query)
 
         # Benchmark
         for _ in range(BENCHMARK_REQUESTS):
             import time
 
             start = time.perf_counter()
-            response = await authed_perf_client.post("/api/v1/properties/search", json=query)
+            response = await authed_perf_client.post("/api/v1/search", json=query)
             elapsed = time.perf_counter() - start
             measurements.append(elapsed)
             assert response.status_code == 200
@@ -209,14 +209,14 @@ class TestFilteredSearchBenchmark:
 
         # Warmup
         for _ in range(WARMUP_REQUESTS):
-            await authed_perf_client.post("/api/v1/properties/search", json=query)
+            await authed_perf_client.post("/api/v1/search", json=query)
 
         # Benchmark
         for _ in range(BENCHMARK_REQUESTS):
             import time
 
             start = time.perf_counter()
-            response = await authed_perf_client.post("/api/v1/properties/search", json=query)
+            response = await authed_perf_client.post("/api/v1/search", json=query)
             elapsed = time.perf_counter() - start
             measurements.append(elapsed)
             assert response.status_code == 200
@@ -244,14 +244,14 @@ class TestFilteredSearchBenchmark:
 
         # Warmup
         for _ in range(WARMUP_REQUESTS):
-            await authed_perf_client.post("/api/v1/properties/search", json=query)
+            await authed_perf_client.post("/api/v1/search", json=query)
 
         # Benchmark
         for _ in range(BENCHMARK_REQUESTS):
             import time
 
             start = time.perf_counter()
-            response = await authed_perf_client.post("/api/v1/properties/search", json=query)
+            response = await authed_perf_client.post("/api/v1/search", json=query)
             elapsed = time.perf_counter() - start
             measurements.append(elapsed)
             assert response.status_code == 200
@@ -281,14 +281,14 @@ class TestFilteredSearchBenchmark:
 
         # Warmup
         for _ in range(WARMUP_REQUESTS):
-            await authed_perf_client.post("/api/v1/properties/search", json=query)
+            await authed_perf_client.post("/api/v1/search", json=query)
 
         # Benchmark
         for _ in range(BENCHMARK_REQUESTS):
             import time
 
             start = time.perf_counter()
-            response = await authed_perf_client.post("/api/v1/properties/search", json=query)
+            response = await authed_perf_client.post("/api/v1/search", json=query)
             elapsed = time.perf_counter() - start
             measurements.append(elapsed)
             assert response.status_code == 200
@@ -320,14 +320,14 @@ class TestComplexSearchBenchmark:
 
         # Warmup
         for _ in range(WARMUP_REQUESTS):
-            await authed_perf_client.post("/api/v1/properties/search", json=query)
+            await authed_perf_client.post("/api/v1/search", json=query)
 
         # Benchmark
         for _ in range(BENCHMARK_REQUESTS):
             import time
 
             start = time.perf_counter()
-            response = await authed_perf_client.post("/api/v1/properties/search", json=query)
+            response = await authed_perf_client.post("/api/v1/search", json=query)
             elapsed = time.perf_counter() - start
             measurements.append(elapsed)
             assert response.status_code == 200
@@ -352,14 +352,14 @@ class TestComplexSearchBenchmark:
 
         # Warmup
         for _ in range(WARMUP_REQUESTS):
-            await authed_perf_client.post("/api/v1/properties/search", json=query)
+            await authed_perf_client.post("/api/v1/search", json=query)
 
         # Benchmark
         for _ in range(BENCHMARK_REQUESTS):
             import time
 
             start = time.perf_counter()
-            response = await authed_perf_client.post("/api/v1/properties/search", json=query)
+            response = await authed_perf_client.post("/api/v1/search", json=query)
             elapsed = time.perf_counter() - start
             measurements.append(elapsed)
             assert response.status_code == 200
@@ -392,14 +392,14 @@ class TestComplexSearchBenchmark:
 
         # Warmup
         for _ in range(WARMUP_REQUESTS):
-            await authed_perf_client.post("/api/v1/properties/search", json=query)
+            await authed_perf_client.post("/api/v1/search", json=query)
 
         # Benchmark
         for _ in range(BENCHMARK_REQUESTS):
             import time
 
             start = time.perf_counter()
-            response = await authed_perf_client.post("/api/v1/properties/search", json=query)
+            response = await authed_perf_client.post("/api/v1/search", json=query)
             elapsed = time.perf_counter() - start
             measurements.append(elapsed)
             assert response.status_code == 200
@@ -424,14 +424,14 @@ class TestComplexSearchBenchmark:
 
         # Warmup (fewer for large queries)
         for _ in range(3):
-            await authed_perf_client.post("/api/v1/properties/search", json=query)
+            await authed_perf_client.post("/api/v1/search", json=query)
 
         # Benchmark (fewer for large queries)
         for _ in range(25):  # Reduced for large result sets
             import time
 
             start = time.perf_counter()
-            response = await authed_perf_client.post("/api/v1/properties/search", json=query)
+            response = await authed_perf_client.post("/api/v1/search", json=query)
             elapsed = time.perf_counter() - start
             measurements.append(elapsed)
             assert response.status_code == 200
@@ -485,14 +485,14 @@ class TestSearchBenchmarkSummary:
 
             # Warmup
             for _ in range(WARMUP_REQUESTS):
-                await authed_perf_client.post("/api/v1/properties/search", json=query)
+                await authed_perf_client.post("/api/v1/search", json=query)
 
             # Benchmark
             for _ in range(BENCHMARK_REQUESTS):
                 import time
 
                 start = time.perf_counter()
-                response = await authed_perf_client.post("/api/v1/properties/search", json=query)
+                response = await authed_perf_client.post("/api/v1/search", json=query)
                 elapsed = time.perf_counter() - start
                 measurements.append(elapsed)
                 assert response.status_code == 200
