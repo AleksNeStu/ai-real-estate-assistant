@@ -14,6 +14,7 @@ import { ModelCatalogue, LocalRuntimeNote } from '@/components/settings/model-ca
 import { NotificationSettings } from '@/components/settings/notification-settings';
 import { ProfileSettings } from '@/components/settings/profile-settings';
 import { PrivacySettings } from '@/components/settings/privacy-settings';
+import { BuyerMemorySettings } from '@/components/settings/buyer-memory-settings';
 import { getModelsCatalog, ApiError } from '@/lib/api';
 import type { ModelProviderCatalog } from '@/lib/types';
 
@@ -118,7 +119,12 @@ export default function SettingsPage() {
       case 'profile':
         return <ProfileSettings userEmail={userEmail} />;
       case 'privacy':
-        return <PrivacySettings userEmail={userEmail} />;
+        return (
+          <div className="flex flex-col gap-8">
+            <PrivacySettings userEmail={userEmail} />
+            <BuyerMemorySettings />
+          </div>
+        );
       default:
         return null;
     }

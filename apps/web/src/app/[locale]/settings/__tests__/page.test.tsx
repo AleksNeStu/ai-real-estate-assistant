@@ -38,6 +38,12 @@ jest.mock('@/components/settings/privacy-settings', () => ({
   PrivacySettings: () => <div data-testid="privacy-settings">Privacy Settings Component</div>,
 }));
 
+jest.mock('@/components/settings/buyer-memory-settings', () => ({
+  BuyerMemorySettings: () => (
+    <div data-testid="buyer-memory-settings">Buyer Memory Component</div>
+  ),
+}));
+
 const openaiCatalog = [
   {
     name: 'openai',

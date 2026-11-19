@@ -254,6 +254,14 @@ export {
   getExportStatus,
 } from './user';
 
+// Buyer Memory: what the platform remembers about the signed-in buyer, and the erasure of it
+export { getBuyerMemory, deleteBuyerMemory } from './buyer-memory';
+export type {
+  BuyerMemoryFact,
+  BuyerMemoryListResponse,
+  BuyerMemoryDeleteResponse,
+} from './buyer-memory';
+
 // CMA (Comparative Market Analysis)
 export {
   findComparables,
