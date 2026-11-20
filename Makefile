@@ -243,6 +243,14 @@ E2E_REAL_CORS_ORIGIN ?= http://localhost:$(FRONTEND_HOST_PORT)
 ## not the stack the developer has running.
 E2E_REAL_PROJECT ?= e2e-real-provider
 
+## E2E_REAL_CATALOGUE_WAIT - How many attempts the wait loop spends waiting
+## for the demo catalogue to fill before it stops waiting. The catalogue is
+## seeded in the background, so the API answers before it is there, and a
+## proof that runs against an empty catalogue can go red for a reason that
+## has nothing to do with the provider. The wait is bounded, so the target
+## never fails where it would have passed.
+E2E_REAL_CATALOGUE_WAIT ?= 30
+
 ## e2e-real-provider: Prove the demo answers with a real model, not the mock.
 e2e-real-provider:
 	@test -f apps/api/tests/e2e_backend/test_real_provider.py || (echo "ERROR: the proof spec is missing - apps/api/tests/e2e_backend/test_real_provider.py" && exit 1)
@@ -271,7 +279,11 @@ e2e-real-provider:
 		if [ -n "$$oid" ] \
 			&& [ "$$(docker inspect --format '{{.State.Health.Status}}' $$oid 2>/dev/null)" = "healthy" ] \
 			&& curl -sf "$(E2E_REAL_BASE_URL)/health" >/dev/null 2>&1; then \
-			echo "the stack is ready"; break; \
+			if curl -sf "$(E2E_REAL_BASE_URL)/api/v1/properties?limit=1" 2>/dev/null | grep -q '"count": *[1-9]' \
+				|| [ $$attempt -ge $(E2E_REAL_CATALOGUE_WAIT) ]; then \
+				echo "the stack is ready"; break; \
+			fi; \
+			echo "waiting for the demo catalogue ($$attempt/$(E2E_REAL_CATALOGUE_WAIT))"; \
 		fi; \
 		if [ $$attempt -eq 240 ]; then echo "ERROR: the stack never became ready"; exit 1; fi; \
 		echo "waiting for the stack ($$attempt/240)"; sleep 10; \
