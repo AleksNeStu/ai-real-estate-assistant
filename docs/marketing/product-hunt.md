@@ -155,7 +155,7 @@ the multi-provider routing logic.
 > unreachable, so the answers are not canned. The catalogue is seeded demo
 > data, not live listings; in a deployment with your own data, accuracy
 > depends on (a) the source data quality and (b) the LLM provider chosen
-> for each task. Per-task priority cascade in
+> for the request. The provider chain is in
 > `apps/api/api/dependencies.py`.
 
 **Comment: "Can I self-host this?"**
