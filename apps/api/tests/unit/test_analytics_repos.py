@@ -853,7 +853,9 @@ class TestAuditLogRepository:
         assert entry.prev_hash == ""
         assert entry.details == {}
         session.add.assert_called_once()
-        session.flush.assert_awaited_once()
+        # Two flushes: the row goes in first (that is what takes the write
+        # lock), then the link is written into it.
+        assert session.flush.await_count == 2
 
     async def test_append_chains_hash(self, repo: AuditLogRepository, session: AsyncMock):
         prev_entry = _make_audit_entry(entry_hash="prevhash123")
