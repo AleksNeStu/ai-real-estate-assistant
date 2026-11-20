@@ -218,17 +218,26 @@ E2E_PROVIDER_MODEL ?= llama3.2:3b
 ## E2E_OLLAMA_HOST_PORT - The host port the proof stack publishes Ollama on.
 ## The backend reaches the model over the compose network, so this port is
 ## for a human - but 11434 is the default port of every Ollama on the
-## machine, and a developer's own Ollama holds it. Move it when it is taken.
-E2E_OLLAMA_HOST_PORT ?= 11434
+## machine, and a developer's own Ollama holds it. The proof therefore
+## takes one of its own.
+E2E_OLLAMA_HOST_PORT ?= 11444
 
-## E2E_REAL_BASE_URL - Where the proof stack serves the backend.
-## The ports come from the environment, because the compose file reads them
-## from there: the workstation carries its own BACKEND_HOST_PORT (the
-## non-Docker stack needs it), and the proof has to ask the stack for the
-## port the stack actually opened - not the one the file defaults to.
+## BACKEND_HOST_PORT / FRONTEND_HOST_PORT - The ports the developer's own
+## stack opens (`make docker-up`). The proof does not use them: it has its
+## own, so the two stacks never ask for the same host port.
 BACKEND_HOST_PORT ?= 8082
 FRONTEND_HOST_PORT ?= 3082
-E2E_REAL_BASE_URL ?= http://localhost:$(BACKEND_HOST_PORT)
+
+## E2E_REAL_BACKEND_PORT / E2E_REAL_FRONTEND_PORT - The host ports the
+## proof stack opens. They are the proof's own, because the compose file
+## reads them from the environment and the shell wins over the developer's
+## deploy/compose/.env - so exporting the stack's ports here would ask for
+## a port the developer's own stack already holds.
+E2E_REAL_BACKEND_PORT ?= 8092
+E2E_REAL_FRONTEND_PORT ?= 3092
+
+## E2E_REAL_BASE_URL - Where the proof stack serves the backend.
+E2E_REAL_BASE_URL ?= http://localhost:$(E2E_REAL_BACKEND_PORT)
 
 ## E2E_REAL_API_KEY - The key the stack is started with, and the one the
 ## spec authenticates with.
@@ -236,7 +245,7 @@ E2E_REAL_API_KEY ?= dev-secret-key
 
 ## E2E_REAL_CORS_ORIGIN - An origin the stack allows (the preflight is
 ## checked against the stack's own origins).
-E2E_REAL_CORS_ORIGIN ?= http://localhost:$(FRONTEND_HOST_PORT)
+E2E_REAL_CORS_ORIGIN ?= http://localhost:$(E2E_REAL_FRONTEND_PORT)
 
 ## E2E_REAL_PROJECT - The compose project the proof stack runs under. It is
 ## its own, so the teardown at the end of the target removes the proof and
@@ -259,8 +268,8 @@ e2e-real-provider:
 	trap '$(DOCKER_COMPOSE) -p $(E2E_REAL_PROJECT) -f $(DOCKER_COMPOSE_FILE) --profile local-llm down --remove-orphans' EXIT; \
 	export POSTGRES_PASSWORD=not-started \
 		API_ACCESS_KEY=$(E2E_REAL_API_KEY) \
-		BACKEND_HOST_PORT=$(BACKEND_HOST_PORT) \
-		FRONTEND_HOST_PORT=$(FRONTEND_HOST_PORT) \
+		BACKEND_HOST_PORT=$(E2E_REAL_BACKEND_PORT) \
+		FRONTEND_HOST_PORT=$(E2E_REAL_FRONTEND_PORT) \
 		CORS_ALLOW_ORIGINS=$(E2E_REAL_CORS_ORIGIN),$(E2E_REAL_BASE_URL) \
 		DEMO_MODE=true DEMO_DATA_MODE=true \
 		DEMO_LLM_MODE=false \

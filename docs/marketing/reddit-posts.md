@@ -150,13 +150,13 @@ Three decisions in that loop worth stealing:
   read nor written — the prompt is byte-for-byte the prompt of before the
   memory existed.
 
-**Multi-provider LLM routing isn't a luxury.** Per-task priority
-cascade in `apps/api/api/dependencies.py`, with the default
-per-task model a free one (`SYSTEM_DEFAULTS` in
-`apps/api/services/model_preference_service.py`):
-- chat → the primary provider (configurable per-user)
-- search / tools / analysis → the same default, a free model
-- embeddings → a dedicated embedding provider
+**Multi-provider LLM routing isn't a luxury.** The provider chain lives in
+`apps/api/api/dependencies.py`:
+- chat → the visitor's provider if they picked one, otherwise the
+  deployment's default, and then the local Ollama
+- search / tools / analysis → the model the agent already holds, otherwise
+  the deployment's default model
+- embeddings → a dedicated local embedding model
 
 When one provider rate-limits, the demo keeps working. This is the
 difference between "AI demo" and "AI product."
@@ -193,15 +193,14 @@ Sharing the LLM routing logic from
 — an open-source conversational property search platform, v5.3, shipping
 property valuation, neighborhood AI summaries and a buyer memory.
 
-The trick: per-task priority cascade, not just a single
-`DEFAULT_PROVIDER`.
+The trick: a provider chain, not just a single `DEFAULT_PROVIDER`.
 
 ```
-CHAT          → configurable (default: the deployment's provider)
-SEARCH        → the default per-task model — a free one
-TOOLS         → the default per-task model — a free one
-ANALYSIS      → the default per-task model — a free one
-EMBEDDINGS    → a dedicated embedding provider
+CHAT          → the visitor's pick, else the deployment's provider, else Ollama
+SEARCH        → the agent's model, else the deployment's default
+TOOLS         → the agent's model, else the deployment's default
+ANALYSIS      → the agent's model, else the deployment's default
+EMBEDDINGS    → a dedicated local embedding model
 ```
 
 The free-tier cascade (`POST /api/v1/chat/free`, the endpoint that needs
@@ -213,18 +212,19 @@ Ollama — so an outage upstream costs the demo nothing.
 
 When the primary provider rate-limits during a Saturday demo, the next one
 in the chain picks up the chat — the primary provider, then the default
-one, then Ollama. Local Ollama is the always-on fallback for chat and
-embeddings.
+one, then Ollama. Local Ollama is the always-on fallback for the chat; the
+embeddings are local too, but they are a small local embedding model rather
+than Ollama.
 
 The provider factory (`apps/api/models/provider_factory.py`) builds the
-provider; the per-task provider and model are resolved in
+provider; the provider and model the request runs with are resolved in
 `apps/api/api/dependencies.py`. Lazy import on a memory-constrained host,
 eager import on a VPS and in local dev.
 
 What surprised me:
-- **A free model as the default per-task model is not a compromise** —
-  the search and tool paths carry the structured work, and a free model
-  handles them. The expensive model is the one that writes prose.
+- **The deployment's default model carries the structured work** —
+  the search and tool paths run on the model the agent already holds, and
+  the expensive model is the one that writes prose.
 - **Local Ollama is a real fallback, not a gimmick.** A 7B instruct model
   handles chat and neighborhood summaries surprisingly well. Property
   valuation is too nuanced for it though.

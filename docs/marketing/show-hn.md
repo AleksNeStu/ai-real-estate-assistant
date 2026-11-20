@@ -81,14 +81,14 @@ Quick answers to the inevitable ones:
 
 - **Multi-provider LLM routing isn't just a config flag — why bother?**
   Reliability. When one provider rate-limits or has an outage, the demo
-  keeps working. The chat falls back from the primary provider to the
-  default one and then to Ollama on the server, and the free-tier cascade
+  keeps working: the chat speaks with the provider the visitor — or the
+  deployment — picked, falls back to the deployment's default provider, and
+  then to Ollama on the server. The free-tier cascade
   (`POST /api/v1/chat/free`) is a deployment variable: the repository default
   is MiniMax → Ollama (local, on the server) → OpenRouter's free models →
   Google's free Flash, and the public demo runs Google's free Flash first.
-  The default per-task model is a free one, so a provider outage doesn't take
-  the demo down with it.
-  See `apps/api/utils/free_tier.py` for the chain and
+  See `apps/api/api/dependencies.py` for the chat's chain,
+  `apps/api/utils/free_tier.py` for the free-tier one and
   `apps/api/config/settings.py` for the order it starts in.
 
 - **Isn't this just a chatbot with a filter bolted on?**

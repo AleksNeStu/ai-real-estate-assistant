@@ -88,10 +88,12 @@ part a competitor demo cannot copy in a weekend.
 
 **Section 3: Multi-provider LLM routing (150-270s)**
 
-- Per-task priority cascade in `apps/api/api/dependencies.py`
-- Chat → primary provider (configurable)
-- Search / tools / analysis → the default per-task model, a free one
-- Embeddings → dedicated embedding model
+- The provider chain in `apps/api/api/dependencies.py`
+- Chat → the visitor's or the deployment's provider, then the default one,
+  then the local Ollama
+- Search / tools / analysis → the model the agent already holds, or the
+  deployment's default model
+- Embeddings → a dedicated local embedding model
 - The free-tier chain (`/api/v1/chat/free`): the order is a deployment
   variable — the repository default is MiniMax → Ollama (local, on our own
   server) → OpenRouter free models → Google's free Flash, and the public
