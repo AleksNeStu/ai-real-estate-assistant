@@ -29,6 +29,7 @@ from db.models import User
 from services.buyer_memory_service import BuyerMemoryService
 from services.personalization_service import DeclaredPreferences
 from utils.free_tier import client_ip, get_free_tier_rate_limiter, get_llm_for_free_user
+from utils.llm_content import content_to_text
 from utils.sanitization import (
     sanitize_chat_message,
     sanitize_for_logging,
@@ -450,9 +451,7 @@ async def chat_endpoint(
                                 agent, sanitized_message, memory_block
                             )
                             raw_answer = result.get("answer", "")
-                            answer_text = (
-                                raw_answer if isinstance(raw_answer, str) else str(raw_answer)
-                            )
+                            answer_text = content_to_text(raw_answer)
                             if answer_text:
                                 # Record metrics for web path
                                 chunk_bytes = len(answer_text.encode("utf-8"))
@@ -607,7 +606,7 @@ async def chat_endpoint(
 
         result = await _process_with_memory(agent, sanitized_message, memory_block)
 
-        answer = result.get("answer", "")
+        answer = content_to_text(result.get("answer", ""))
         if "sources" in result and isinstance(result.get("sources"), list):
             raw_sources = result.get("sources") or []
             if (
@@ -744,7 +743,7 @@ async def chat_free_endpoint(
 
         result = await _process_with_memory(agent, sanitized_message, memory_block)
 
-        answer = result.get("answer", "")
+        answer = content_to_text(result.get("answer", ""))
         sources, sources_truncated = serialize_chat_sources(
             result.get("source_documents") or [],
             max_items=sources_max_items,
