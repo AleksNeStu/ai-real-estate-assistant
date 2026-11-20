@@ -29,7 +29,7 @@ plugs into 17 LLM providers (OpenAI, Anthropic, Google, Grok, DeepSeek,
 OpenRouter, Groq, Mistral, MiniMax and local Ollama among them) with an
 automatic fallback chain so a single provider rate-limit doesn't kill the
 demo. Per-task and per-user provider selection lives in
-`apps/api/models/provider_factory.py`.
+`apps/api/api/dependencies.py`.
 
 What works today:
 - Conversational search with automatic filter extraction
@@ -81,10 +81,11 @@ Quick answers to the inevitable ones:
 
 - **Multi-provider LLM routing isn't just a config flag — why bother?**
   Reliability. When one provider rate-limits or has an outage, the demo
-  keeps working. The deployed chain is MiniMax → Ollama (local, on the
-  server) → OpenRouter's free models, and the default per-task model is a
-  free one, so a provider outage doesn't take the demo down with it.
-  See `apps/api/models/provider_factory.py` for the priority cascade.
+  keeps working. The free-tier cascade is MiniMax → Ollama (local, on the
+  server) → OpenRouter's free models → Google's free Flash, and the
+  default per-task model is a free one, so a provider outage doesn't take
+  the demo down with it.
+  See `apps/api/utils/free_tier.py` for the priority cascade.
 
 - **Isn't this just a chatbot with a filter bolted on?**
   The part that isn't: the buyer memory. Every turn, the same model that

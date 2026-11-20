@@ -73,7 +73,7 @@ Things I learned the hard way:
 1. **Multi-provider LLM routing isn't optional.** When OpenAI rate-limits
    you at 2am on a Saturday and your entire demo dies, you learn fast.
    The fallback chain lives in
-   `apps/api/models/provider_factory.py`.
+   `apps/api/utils/free_tier.py`.
 
 2. **512 MB of RAM is brutal.** Solved with environment-conditional
    lazy provider loading — on a memory-capped host only the active
@@ -151,7 +151,7 @@ Three decisions in that loop worth stealing:
   memory existed.
 
 **Multi-provider LLM routing isn't a luxury.** Per-task priority
-cascade in `apps/api/models/provider_factory.py`, with the default
+cascade in `apps/api/api/dependencies.py`, with the default
 per-task model a free one (`SYSTEM_DEFAULTS` in
 `apps/api/services/model_preference_service.py`):
 - chat → the primary provider (configurable per-user)
@@ -204,18 +204,19 @@ ANALYSIS      → the default per-task model — a free one
 EMBEDDINGS    → a dedicated embedding provider
 ```
 
-The deployed chain for an anonymous visitor is MiniMax → Ollama (local,
-on the server) → OpenRouter's free models, so an outage upstream costs
-the demo nothing.
+The free-tier cascade for an anonymous visitor is MiniMax → Ollama (local,
+on the server) → OpenRouter's free models → Google's free Flash, so an
+outage upstream costs the demo nothing.
 
-When the primary provider rate-limits during a Saturday demo, the next
-one in the chain picks up the chat. When that one has an outage, the
-third does. Local Ollama is the always-on fallback for chat and
+When the primary provider rate-limits during a Saturday demo, the next one
+in the chain picks up the chat — the primary provider, then the default
+one, then Ollama. Local Ollama is the always-on fallback for chat and
 embeddings.
 
-The provider factory (`apps/api/models/provider_factory.py`) returns
-a `(provider_name, model_name)` tuple per task. Lazy import on a
-memory-constrained host, eager import on a VPS and in local dev.
+The provider factory (`apps/api/models/provider_factory.py`) builds the
+provider; the per-task provider and model are resolved in
+`apps/api/api/dependencies.py`. Lazy import on a memory-constrained host,
+eager import on a VPS and in local dev.
 
 What surprised me:
 - **A free model as the default per-task model is not a compromise** —
@@ -229,7 +230,7 @@ What surprised me:
   inference cost for embeddings.
 
 Full code:
-[apps/api/models/provider_factory.py](https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/apps/api/models/provider_factory.py)
+[apps/api/api/dependencies.py](https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/apps/api/api/dependencies.py)
 
 Curious: how are others handling multi-provider fallback in production
 LLM apps? Anyone running local Ollama as a real production fallback?

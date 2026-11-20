@@ -156,7 +156,7 @@ the multi-provider routing logic.
 > data, not live listings; in a deployment with your own data, accuracy
 > depends on (a) the source data quality and (b) the LLM provider chosen
 > for each task. Per-task priority cascade in
-> `apps/api/models/provider_factory.py`.
+> `apps/api/api/dependencies.py`.
 
 **Comment: "Can I self-host this?"**
 

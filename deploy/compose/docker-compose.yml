@@ -19,7 +19,7 @@ services:
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - API_ACCESS_KEY=${API_ACCESS_KEY:-dev-secret-key}
-      - DEFAULT_PROVIDER=${DEFAULT_PROVIDER:-openai}
+      - DEFAULT_PROVIDER=${DEFAULT_PROVIDER:-minimax}
       - OLLAMA_DEFAULT_MODEL=${OLLAMA_DEFAULT_MODEL:-llama3.2:3b}
       - INTERNET_ENABLED=${INTERNET_ENABLED:-false}
       - SEARXNG_URL=${SEARXNG_URL:-http://searxng:8080}
@@ -83,8 +83,6 @@ services:
       - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI:-}
       # Auto-seed on startup (set to "true" for fresh dev/demo data)
       - SEED_ON_STARTUP=${SEED_ON_STARTUP:-false}
-      # Demo mode (use MockLLM, toggleable via UI)
-      - DEMO_MODE=${DEMO_MODE:-false}
     volumes:
       - ./chroma_db:/app/chroma_db
       - ./data/audit:/app/data/audit
@@ -160,7 +158,11 @@ services:
     image: ollama/ollama:latest
     container_name: ai-re-prod-ollama
     ports:
-      - "11434:11434"
+      # The backend reaches Ollama over the compose network (OLLAMA_API_BASE),
+      # so the published port is for a human, not for the app. It is a variable
+      # because 11434 is the default port of every Ollama on the machine, and
+      # a developer's own Ollama holds it.
+      - "${OLLAMA_HOST_PORT:-11434}:11434"
     environment:
       - OLLAMA_HOST=0.0.0.0:11434
       - OLLAMA_DEFAULT_MODEL=${OLLAMA_DEFAULT_MODEL:-llama3.2:3b}
@@ -177,10 +179,14 @@ services:
       start_period: 20s
 
   ollama_gpu:
-    profiles: ["local-llm", "gpu"]  # Requires both profiles: --profile local-llm --profile gpu
+    # The "gpu" profile alone enables this service. Compose starts a service
+    # when ANY of its profiles is enabled, so listing "local-llm" here too
+    # made every CPU-only run (--profile local-llm) start the GPU model as
+    # well - two copies of the same model, two pulls, two host ports.
+    profiles: ["gpu"]  # The GPU model: --profile local-llm --profile gpu
     image: ollama/ollama:latest
     ports:
-      - "11435:11434"
+      - "${OLLAMA_GPU_HOST_PORT:-11435}:11434"
     environment:
       - OLLAMA_HOST=0.0.0.0:11434
       - OLLAMA_DEFAULT_MODEL=${OLLAMA_DEFAULT_MODEL:-llama3.2:3b}
