@@ -92,8 +92,8 @@ part a competitor demo cannot copy in a weekend.
 - Chat → primary provider (configurable)
 - Search / tools / analysis → the default per-task model, a free one
 - Embeddings → dedicated embedding model
-- The deployed chain: MiniMax → Ollama (local, on our own server) →
-  OpenRouter free models → Google's free Flash
+- The free-tier chain (`/api/v1/chat/free`): MiniMax → Ollama (local, on
+  our own server) → OpenRouter free models → Google's free Flash
 - When one provider rate-limits, the demo keeps working — automatic
   fallback chain
 - Show code: provider factory + lazy import logic
