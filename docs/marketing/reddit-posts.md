@@ -205,8 +205,10 @@ EMBEDDINGS    → a dedicated embedding provider
 ```
 
 The free-tier cascade (`POST /api/v1/chat/free`, the endpoint that needs
-no account) is MiniMax → Ollama (local, on the server) → OpenRouter's free
-models → Google's free Flash, so an outage upstream costs the demo nothing.
+no account) is a deployment variable: the repository default is MiniMax →
+Ollama (local, on the server) → OpenRouter's free models → Google's free
+Flash, and the public demo runs Google's free Flash first — so an outage
+upstream costs the demo nothing.
 
 When the primary provider rate-limits during a Saturday demo, the next one
 in the chain picks up the chat — the primary provider, then the default

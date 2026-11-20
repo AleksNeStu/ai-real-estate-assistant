@@ -703,8 +703,10 @@ async def chat_free_endpoint(
     """
     Free tier chat — no API key required.
 
-    Uses the free LLM provider cascade (OpenRouter free → Google Flash → Ollama)
-    with hourly/daily rate limits per client IP.
+    Uses the free LLM provider cascade configured by
+    FREE_TIER_PROVIDER_CASCADE (the repository default is MiniMax → Ollama →
+    OpenRouter free → Google Flash) with hourly/daily rate limits per client
+    IP.
     """
     settings = get_settings()
 

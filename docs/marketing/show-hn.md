@@ -83,9 +83,11 @@ Quick answers to the inevitable ones:
   Reliability. When one provider rate-limits or has an outage, the demo
   keeps working. The chat falls back from the primary provider to the
   default one and then to Ollama on the server, and the free-tier cascade
-  (`POST /api/v1/chat/free`) is MiniMax → Ollama (local, on the server) →
-  OpenRouter's free models → Google's free Flash. The default per-task model
-  is a free one, so a provider outage doesn't take the demo down with it.
+  (`POST /api/v1/chat/free`) is a deployment variable: the repository default
+  is MiniMax → Ollama (local, on the server) → OpenRouter's free models →
+  Google's free Flash, and the public demo runs Google's free Flash first.
+  The default per-task model is a free one, so a provider outage doesn't take
+  the demo down with it.
   See `apps/api/utils/free_tier.py` for the priority cascade.
 
 - **Isn't this just a chatbot with a filter bolted on?**

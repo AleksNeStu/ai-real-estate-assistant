@@ -22642,7 +22642,7 @@
     },
     "/api/v1/chat/free": {
       "post": {
-        "description": "Free tier chat \u2014 no API key required.\n\nUses the free LLM provider cascade (OpenRouter free \u2192 Google Flash \u2192 Ollama)\nwith hourly/daily rate limits per client IP.",
+        "description": "Free tier chat \u2014 no API key required.\n\nUses the free LLM provider cascade configured by\nFREE_TIER_PROVIDER_CASCADE (the repository default is MiniMax \u2192 Ollama \u2192\nOpenRouter free \u2192 Google Flash) with hourly/daily rate limits per client\nIP.",
         "operationId": "chat_free_endpoint_api_v1_chat_free_post",
         "requestBody": {
           "content": {
