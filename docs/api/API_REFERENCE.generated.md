@@ -1065,7 +1065,7 @@ Query audit log entries with filters and pagination.
 
 **Tags**: Admin, Audit
 
-Verify hash-chain integrity of the audit log.
+Verify hash-chain integrity of the audit log. Three verdicts: `valid` says the checked entries are one unbroken line, `integrity_valid` says every entry's own hash still matches its content (the tamper-evidence claim), and `fork_count` says where the chain branched.
 
 **Parameters**
 
@@ -1077,7 +1077,7 @@ Verify hash-chain integrity of the audit log.
 
 | Status | Description | Body (application/json) |
 |---|---|---|
-| 200 | Successful Response | object |
+| 200 | Successful Response | ChainVerificationResponse |
 | 422 | Validation Error | HTTPValidationError |
 
 ## GET /api/v1/audit/{entry_id}

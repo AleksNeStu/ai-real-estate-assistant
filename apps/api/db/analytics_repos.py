@@ -5,10 +5,12 @@ Provides repositories for PriceSnapshot, MarketAnomaly,
 CMAReport, and AuditLog models.
 """
 
+import inspect
+from collections import Counter
 from datetime import UTC, datetime, timedelta
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
-from sqlalchemy import func, or_, select, update
+from sqlalchemy import and_, func, or_, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import (
@@ -21,6 +23,18 @@ from db.models import (
 # Stable reference to the real datetime class. The module attribute ``datetime``
 # can be swapped out (tests freeze the clock), this one always stays put.
 _DATETIME = datetime
+
+
+def _as_utc(value: datetime) -> datetime:
+    """A timestamp as an aware UTC datetime.
+
+    SQLite hands the timestamps back without a timezone, so comparing one
+    with an aware datetime raises. Both are UTC in practice - the column
+    is written in UTC - so the naive one is read as UTC.
+    """
+    if value.tzinfo is None:
+        return value.replace(tzinfo=UTC)
+    return value.astimezone(UTC)
 
 
 class PriceSnapshotRepository:
@@ -494,6 +508,11 @@ class CMAReportRepository:
 class AuditLogRepository:
     """Repository for AuditLogEntry operations with hash-chain integrity."""
 
+    # The chain's writers are serialized on this key on a server-side
+    # database. SQLite has one writer anyway - the insert below takes the
+    # write lock - so the lock is only needed where several writers exist.
+    _CHAIN_LOCK_KEY = 8_147_236_591
+
     def __init__(self, session: AsyncSession):
         self.session = session
 
@@ -510,15 +529,25 @@ class AuditLogRepository:
         user_agent: Optional[str] = None,
         request_id: Optional[str] = None,
     ) -> AuditLogEntry:
-        """Create a new audit log entry linked to the hash chain."""
-        from uuid import uuid4
+        """Create a new audit log entry linked to the hash chain.
 
-        # Get previous hash from the most recent entry
-        prev = await self.session.execute(
-            select(AuditLogEntry).order_by(AuditLogEntry.created_at.desc()).limit(1)
-        )
-        prev_entry = prev.scalar_one_or_none()
-        prev_hash = prev_entry.entry_hash if prev_entry else ""
+        The link is made atomic with the insert. Reading the tip first and
+        inserting afterwards is what forked the chain: two writers read the
+        same tip and both linked to it, so the log became a forest instead
+        of a line - measured on the live demo, 678 entries share a tip.
+
+        So the row goes in first, with an empty hash. That insert takes
+        SQLite's write lock, so a second writer waits for it instead of
+        reading the same tip. The tip is read under that lock, and the row
+        is completed with the link. On a server-side database, where the
+        insert takes no lock at all, the chain takes a transaction-scoped
+        advisory lock for the same reason.
+
+        The entry's timestamp is set to be strictly after the tip's, so the
+        order of the links and the order of the timestamps are the same
+        order - which is what the verifier walks.
+        """
+        from uuid import uuid4
 
         now = datetime.now(UTC)
         entry_id = str(uuid4())
@@ -533,13 +562,92 @@ class AuditLogRepository:
             ip_address=ip_address,
             user_agent=user_agent,
             request_id=request_id,
-            prev_hash=prev_hash,
+            prev_hash="",
+            entry_hash="",
             created_at=now,
         )
-        entry.entry_hash = entry.compute_hash(prev_hash)
         self.session.add(entry)
+        # The insert is the lock: on SQLite it takes the write lock, so the
+        # tip read below is exclusive.
+        await self.session.flush()
+
+        await self._lock_the_chain()
+        tip_hash, tip_created_at = await self._read_tip(exclude_id=entry_id)
+
+        if tip_created_at is not None:
+            # Strictly after the tip, so the chain's order and the
+            # timestamps' order are the same order.
+            after_tip = _as_utc(tip_created_at) + timedelta(microseconds=1)
+            if after_tip > _as_utc(now):
+                entry.created_at = after_tip
+
+        entry.prev_hash = tip_hash
+        entry.entry_hash = entry.compute_hash(tip_hash)
         await self.session.flush()
         return entry
+
+    async def _lock_the_chain(self) -> None:
+        """Serialize the chain's writers where the database has many.
+
+        SQLite has one writer, and the insert has already taken that lock,
+        so there is nothing to do here. Postgres has many, and its
+        transaction-scoped advisory lock is what makes the tip read below
+        exclusive to one writer.
+        """
+        bind = self.session.get_bind()
+        if inspect.isawaitable(bind):
+            bind = cast(Any, await bind)
+        dialect = getattr(bind, "dialect", None)
+        if getattr(dialect, "name", "") != "postgresql":
+            return
+        await self.session.execute(
+            text("SELECT pg_advisory_xact_lock(:key)"), {"key": self._CHAIN_LOCK_KEY}
+        )
+
+    async def _read_tip(self, *, exclude_id: str) -> tuple[str, Optional[datetime]]:
+        """The newest entry's hash and timestamp, read under the chain lock.
+
+        The entry being written is excluded: it is already in the table
+        (its insert took the lock), with an empty hash.
+        """
+        result = await self.session.execute(
+            select(AuditLogEntry)
+            .where(AuditLogEntry.id != exclude_id)
+            .order_by(AuditLogEntry.created_at.desc(), AuditLogEntry.id.desc())
+            .limit(1)
+        )
+        prev_entry = result.scalar_one_or_none()
+        if prev_entry is None:
+            return "", None
+        tip_created_at = prev_entry.created_at
+        if not isinstance(tip_created_at, datetime):
+            tip_created_at = None
+        return prev_entry.entry_hash or "", tip_created_at
+
+    async def _anchor_hash(self, first: AuditLogEntry) -> str:
+        """The hash of the entry the checked window continues from.
+
+        The window is the newest entries, so its first entry follows an
+        older one. That older entry is the anchor, and the window's first
+        link is judged against it - so the verdict is exact instead of
+        starting from a link that points outside the window.
+        """
+        result = await self.session.execute(
+            select(AuditLogEntry.entry_hash)
+            .where(
+                or_(
+                    AuditLogEntry.created_at < first.created_at,
+                    and_(
+                        AuditLogEntry.created_at == first.created_at,
+                        AuditLogEntry.id < first.id,
+                    ),
+                )
+            )
+            .order_by(AuditLogEntry.created_at.desc(), AuditLogEntry.id.desc())
+            .limit(1)
+        )
+        anchor = result.scalars().first()
+        return anchor or ""
 
     async def query(
         self,
@@ -586,15 +694,44 @@ class AuditLogRepository:
     async def verify_chain(self, limit: int = 1000) -> dict[str, Any]:
         """Verify hash-chain integrity of the last N entries.
 
-        Returns dict with 'valid' bool and list of broken entries.
+        Three verdicts, because they answer three different questions:
+
+        - `valid`: the checked entries form one unbroken line - each entry's
+          prev_hash is the entry_hash of the one before it.
+        - `integrity_valid`: every checked entry's own hash still matches
+          its content and its own link. This is the tamper-evidence claim:
+          nobody changed what an entry says or which entry it follows.
+          A log that forked under concurrency keeps this one true - the
+          entries are intact, they are just not one line.
+        - `fork_count`: how many of the checked entries share their tip
+          with another entry, i.e. where the chain branched.
+
+        The window is the newest `limit` entries, as the docstring says.
         """
+        newest = (
+            select(AuditLogEntry.id)
+            .order_by(AuditLogEntry.created_at.desc(), AuditLogEntry.id.desc())
+            .limit(limit)
+            .subquery()
+        )
         rows = await self.session.execute(
-            select(AuditLogEntry).order_by(AuditLogEntry.created_at.asc()).limit(limit)
+            select(AuditLogEntry)
+            .where(AuditLogEntry.id.in_(select(newest.c.id)))
+            .order_by(AuditLogEntry.created_at.asc(), AuditLogEntry.id.asc())
         )
         entries = list(rows.scalars().all())
 
+        # The window's first entry continues an older one, so its link is
+        # judged against that older entry - the anchor. Without the anchor
+        # the walk would start at a link that points outside the window and
+        # report a mismatch that is not one.
+        expected_first = ""
+        if entries and entries[0].prev_hash:
+            expected_first = await self._anchor_hash(entries[0])
+
         broken: list[dict[str, Any]] = []
-        prev_hash = ""
+        prev_hash = expected_first
+        integrity_valid = True
         for entry in entries:
             if entry.prev_hash != prev_hash:
                 broken.append(
@@ -615,10 +752,19 @@ class AuditLogRepository:
                         "actual": entry.entry_hash,
                     }
                 )
+            # The entry's own claim: this hash is what its content and its
+            # own link hash to. Nothing about the entry itself was changed.
+            if entry.entry_hash != entry.compute_hash(entry.prev_hash or ""):
+                integrity_valid = False
             prev_hash = entry.entry_hash
+
+        tips = Counter(entry.prev_hash for entry in entries if entry.prev_hash)
+        fork_count = sum(count for count in tips.values() if count > 1)
 
         return {
             "valid": len(broken) == 0,
+            "integrity_valid": integrity_valid,
+            "fork_count": fork_count,
             "checked_count": len(entries),
             "broken_count": len(broken),
             "broken_entries": broken[:20],

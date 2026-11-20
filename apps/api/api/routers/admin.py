@@ -32,6 +32,7 @@ from data.csv_loader import DataLoaderCsv, DataLoaderExcel
 from data.excel_loader import ExcelDataLoader
 from data.schemas import Property, PropertyCollection
 from db.database import get_db
+from db.schemas import ChainVerificationResponse
 from notifications.alert_storage_stats import load_alert_storage_summary
 from utils.property_cache import load_collection, save_collection
 from vector_store.chroma_store import ChromaPropertyStore
@@ -893,13 +894,18 @@ async def list_audit_logs(
     )
 
 
-@router.get("/audit/verify", tags=["Audit"])
+@router.get("/audit/verify", tags=["Audit"], response_model=ChainVerificationResponse)
 async def verify_audit_chain(
     limit: int = 1000,
     session: AsyncSession = Depends(get_db),
 ):
-    """Verify hash-chain integrity of the audit log."""
-    from db.schemas import ChainVerificationResponse
+    """Verify hash-chain integrity of the audit log.
+
+    Three verdicts: `valid` says the checked entries are one unbroken
+    line, `integrity_valid` says every entry's own hash still matches its
+    content (the tamper-evidence claim), and `fork_count` says where the
+    chain branched.
+    """
     from services.audit_service import AuditService
 
     service = AuditService(session)

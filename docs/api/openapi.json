@@ -18105,6 +18105,49 @@
         ],
         "title": "BuyerMemoryListResponse",
         "description": "Everything the platform holds about the caller."
+      },
+      "ChainVerificationResponse": {
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "title": "Valid"
+          },
+          "checked_count": {
+            "type": "integer",
+            "title": "Checked Count"
+          },
+          "broken_count": {
+            "type": "integer",
+            "title": "Broken Count"
+          },
+          "broken_entries": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Broken Entries"
+          },
+          "integrity_valid": {
+            "type": "boolean",
+            "title": "Integrity Valid",
+            "default": true
+          },
+          "fork_count": {
+            "type": "integer",
+            "title": "Fork Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "valid",
+          "checked_count",
+          "broken_count",
+          "broken_entries"
+        ],
+        "title": "ChainVerificationResponse",
+        "description": "Schema for hash-chain verification result.\n\n`valid` says whether the checked entries are one unbroken line.\n`integrity_valid` says whether every entry's own hash still matches its\ncontent - the tamper-evidence claim, which stays true for a log that\nforked under concurrency. `fork_count` says where the chain branched."
       }
     },
     "securitySchemes": {
@@ -21368,7 +21411,7 @@
     },
     "/api/v1/audit/verify": {
       "get": {
-        "description": "Verify hash-chain integrity of the audit log.",
+        "description": "Verify hash-chain integrity of the audit log.\n\nThree verdicts: `valid` says the checked entries are one unbroken\nline, `integrity_valid` says every entry's own hash still matches its\ncontent (the tamper-evidence claim), and `fork_count` says where the\nchain branched.",
         "operationId": "verify_audit_chain_api_v1_audit_verify_get",
         "parameters": [
           {
@@ -21386,7 +21429,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ChainVerificationResponse"
+                }
               }
             },
             "description": "Successful Response"

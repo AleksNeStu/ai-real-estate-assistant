@@ -2463,12 +2463,20 @@ class AuditLogListResponse(BaseModel):
 
 
 class ChainVerificationResponse(BaseModel):
-    """Schema for hash-chain verification result."""
+    """Schema for hash-chain verification result.
+
+    `valid` says whether the checked entries are one unbroken line.
+    `integrity_valid` says whether every entry's own hash still matches its
+    content - the tamper-evidence claim, which stays true for a log that
+    forked under concurrency. `fork_count` says where the chain branched.
+    """
 
     valid: bool
     checked_count: int
     broken_count: int
     broken_entries: list[dict[str, Any]]
+    integrity_valid: bool = True
+    fork_count: int = 0
 
 
 # ============================================================================
