@@ -103,13 +103,14 @@ Day +30          → Product Hunt (after audiences warmed up)
 - [x] og:image renders in Twitter Card Validator — checked 2026-11-08:
       `https://realty.kittray.com/og-image.png` answers 200 with a PNG of
       1200×630.
-- [ ] Lighthouse SEO ≥ 95 on demo URL — **not reachable while the demo stays
-      `noindex`**. Measured 2026-11-08 with Lighthouse 12.6.1 against the live
-      demo: SEO 63 on `/en` and on `/en/search`, and the only failing SEO
-      audit is `is-crawlable` ("Page is blocked from indexing"). Every other
-      SEO audit passes, so releasing the demo (see the note below) turns this
-      into 100. The CI gate on the built application is stricter still
-      (performance ≥ 0.9, accessibility ≥ 0.9, LCP ≤ 2500 ms, TBT ≤ 300 ms).
+- [ ] Lighthouse SEO ≥ 95 on demo URL — **the block is gone; re-measure it**.
+      Measured 2026-11-08 with Lighthouse 12.6.1 against the live demo: SEO 63
+      on `/en` and on `/en/search`, and the only failing SEO audit was
+      `is-crawlable` ("Page is blocked from indexing") — the demo was `noindex`
+      then. It is indexable now (see the note below), so that audit passes and
+      the score should be re-measured against the live address. The CI gate on
+      the built application is stricter still (performance ≥ 0.9,
+      accessibility ≥ 0.9, LCP ≤ 2500 ms, TBT ≤ 300 ms).
 - [x] Lighthouse Performance ≥ 85 on demo URL — measured 2026-11-08 against
       the live demo: 87 on `/en` (83 on `/en/search`). The remaining cost is
       total blocking time (440 ms on `/en`), which the demo pays for hosting
@@ -159,19 +160,19 @@ locales ship, English and Polish are maintained, the rest fall back to
 English; and the *"~50k monthly demo visitors"* in the r/sideproject draft
 → the measured 262 unique visitors in a fortnight.
 
-## The demo is deliberately not indexed
+## The demo IS indexed (changed 2026-11-20)
 
-The product is not finished, and it is not being released in this state. The
-demo deployment therefore answers `X-Robots-Tag: noindex, nofollow` on every
-page and serves a `robots.txt` that disallows everything, so the site stays
-reachable for a test but stays out of the index — the drafts can link to it
-without the unfinished pages entering a search index.
+The demo was held out of the index while the product was unfinished. That
+hold is over: the deployment answers no `X-Robots-Tag: noindex, nofollow`,
+its `robots.txt` allows crawling (and names the AI crawlers it invites), and
+the zone `kittray.com` is verified in the Search Console property
+`sc-domain:kittray.com` — the first impression was recorded on 2026-11-17.
 
-**Before the first post, decide:** either keep it that way, or release it (see
-the release step in the deployment notes). If the demo is released,
-`SEARCH_INDEXING` is unset in the deployment environment (it is `false` today,
-and `apps/web/src/lib/indexing.ts` only adds the header when it is exactly
-`false`), and the product's own `robots.txt` comes back with the image.
+**To put it back out of the index:** set `SEARCH_INDEXING=false` in the
+deployment environment. `apps/web/src/lib/indexing.ts` adds the header to every
+page when the variable is exactly `false`; with it unset the pages are
+indexable. The step-by-step of the original hold is in
+`docs/community/SEO_INDEXING_SETUP.md`.
 
 ## Where the audience actually comes from (measured 2026-11-15)
 
@@ -193,10 +194,11 @@ Hunt, a directory that converts). The full traffic snapshot lives in
 from the stargazer edges on 2026-11-15, the traffic figures are from the W47
 collection.
 
-**The organic column is noise.** The demo is deliberately `noindex`, so the
-Google traffic is a page that is not in the index. Releasing it is an operator
-decision (see `docs/community/SEO_INDEXING_SETUP.md`), and it is the one lever
-that does not depend on publishing anything.
+**The organic column is noise — but the site is in the index now.** The demo is
+indexable (see the note above); the Google traffic it brings is still
+negligible because the pages are days old in the index, not because they are
+excluded. The organic lever is real and it is the one that does not depend on
+publishing anything.
 
 ## During-launch blockers (resolve during each post)
 
