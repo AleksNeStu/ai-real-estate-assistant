@@ -147,7 +147,10 @@ def _answer_from_sse(body: str) -> str:
             content = parsed.get("content")
             if isinstance(content, str):
                 parts.append(content)
-                continue
+            # An envelope without the answer in it - the metrics, the
+            # listings - is not the answer, and nothing in it may satisfy
+            # the proof.
+            continue
         parts.append(payload)
     return "".join(parts)
 
@@ -209,6 +212,7 @@ def test_the_mock_cannot_answer_the_arithmetic_question():
     mock = MockLLM(response_selector="sequential")
     canned = {text.strip() for text in DEMO_RESPONSES}
 
+    seen: set[str] = set()
     for _ in range(len(DEMO_RESPONSES)):
         answer = mock.invoke(ARITHMETIC_QUESTION).content
         # The mock always stores a string; narrowing it here keeps the rest of
@@ -217,6 +221,7 @@ def test_the_mock_cannot_answer_the_arithmetic_question():
 
         # The mock ignores the question: every answer is one of the four.
         assert answer.strip() in canned
+        seen.add(answer.strip())
         # And none of them carries the computed value.
         assert not _carries_the_computed_value(answer)
         assert EXPECTED_ANSWER not in _numbers_in(answer)
@@ -224,3 +229,6 @@ def test_the_mock_cannot_answer_the_arithmetic_question():
         # function, so a weakened discriminator would fail here too.
         with pytest.raises(AssertionError):
             _assert_a_real_model_answered(answer)
+
+    # The control saw every canned answer, not four copies of one of them.
+    assert seen == canned
