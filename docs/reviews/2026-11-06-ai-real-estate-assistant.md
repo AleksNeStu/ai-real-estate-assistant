@@ -4,6 +4,11 @@ A full review of the TaskMaster backlog and the live application state, the chan
 what is still open. Everything below was measured on 2026-11-06 against the `dev` branch at
 `3f5e428d` and against the running deployment.
 
+> **Update 2026-11-20** — the passages below about the demo being deliberately kept out of
+> the index describe the state of 2026-11-06. The operator lifted that hold on **2026-11-16**:
+> the deployment answers no `X-Robots-Tag`, its `robots.txt` allows crawling, and the zone
+> `kittray.com` is verified in the Search Console property `sc-domain:kittray.com`.
+
 ---
 
 ## 1. State at the start of the review

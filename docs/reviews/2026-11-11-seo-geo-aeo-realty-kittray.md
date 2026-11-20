@@ -4,6 +4,13 @@
 `AleksNeStu/ai-real-estate-assistant`) · **Task:** TaskMaster #74 · **Method:** live
 requests against the deployed domain + a read of the repository's own SEO surface.
 
+> **Update 2026-11-20 — the indexing hold is over.** The operator lifted it on
+> **2026-11-16**: the deployment answers no `X-Robots-Tag`, its `robots.txt` allows
+> crawling, and the zone is verified in the Search Console property
+> `sc-domain:kittray.com`. The premise of this audit is therefore historical — read it
+> as the state of 2026-11-11, not as the state of the site. `SEARCH_INDEXING=false` in
+> the deployment environment puts the hold back.
+
 > **The demo is deliberately `noindex`.** Every finding below is about a domain that
 > answers `X-Robots-Tag: noindex, nofollow` and serves a Disallow-all `robots.txt`.
 > That is the operator's decision (Rule 306 gate 4) and it is correct while the product
