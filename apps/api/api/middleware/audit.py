@@ -11,6 +11,7 @@ entry written before the response is sent therefore waits for a lock that is
 only released after the entry is written - and the visitor waits for it.
 """
 
+import asyncio
 import logging
 from typing import Any, Awaitable, Callable
 
@@ -31,6 +32,9 @@ _EXCLUDED_PREFIXES = (
     "/health",
     "/metrics",
 )
+
+# How long the entry waits for the request's transaction to close.
+_WAIT_SECONDS = 30.0
 
 
 class AuditMiddleware(BaseHTTPMiddleware):
@@ -81,7 +85,7 @@ class AuditMiddleware(BaseHTTPMiddleware):
         # The write happens after the response is on the wire. A task the
         # route set itself still runs - the audit entry does not replace it.
         existing = response.background
-        audit = BackgroundTask(self._write_entry, entry)
+        audit = BackgroundTask(self._write_entry, request, entry)
         if existing is None:
             response.background = audit
         else:
@@ -94,9 +98,25 @@ class AuditMiddleware(BaseHTTPMiddleware):
 
         return response
 
-    async def _write_entry(self, entry: dict[str, Any]) -> None:
-        """Write one audit entry, on its own session."""
+    async def _write_entry(self, request: Request, entry: dict[str, Any]) -> None:
+        """Write one audit entry, on its own session, once the request is done."""
         try:
+            # The request holds the database's only write lock until its own
+            # transaction commits, and that commit waits for the response to
+            # be sent. Waiting for it here - after the response is on the
+            # wire - keeps the entry from being a second writer.
+            transaction_closed = getattr(request.state, "db_transaction_closed", None)
+            if transaction_closed is not None:
+                try:
+                    await asyncio.wait_for(transaction_closed.wait(), timeout=_WAIT_SECONDS)
+                except TimeoutError:
+                    # The request's transaction did not report itself as
+                    # closed - the write goes ahead and the retry covers the
+                    # lock it may meet.
+                    logger.warning(
+                        "The request transaction did not close in %ss; the audit entry is written anyway",
+                        _WAIT_SECONDS,
+                    )
             session_factory = get_session_factory()
             async with session_factory() as session:
                 service = AuditService(session)

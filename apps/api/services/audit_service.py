@@ -6,6 +6,7 @@ Provides tamper-evident database-backed audit logging with SHA-256 hash chains.
 
 import asyncio
 import logging
+import sqlite3
 from typing import Any, Optional
 
 from sqlalchemy.exc import OperationalError
@@ -20,6 +21,11 @@ logger = logging.getLogger(__name__)
 # lock held - it waits for it and tries again, rather than losing the entry.
 _RETRY_DELAYS_SECONDS = (0.1, 0.4, 1.0)
 _LOCK_MARKERS = ("database is locked", "database table is locked")
+
+# The async driver re-raises the driver's own error rather than SQLAlchemy's
+# wrapper, so the lock arrives as sqlite3.OperationalError. Both are caught:
+# the wrapper carries the same message.
+_LOCK_ERRORS = (OperationalError, sqlite3.OperationalError)
 
 
 def _is_lock_error(error: BaseException) -> bool:
@@ -70,7 +76,7 @@ class AuditService:
                 await self.session.commit()
                 logger.debug("Audit entry created: action=%s actor=%s", action, actor_id)
                 return
-            except OperationalError as exc:
+            except _LOCK_ERRORS as exc:
                 await self.session.rollback()
                 if attempt == attempts - 1 or not _is_lock_error(exc):
                     logger.exception("Failed to write audit entry: action=%s", action)
