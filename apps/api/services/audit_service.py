@@ -4,14 +4,28 @@ Audit Log Service (Task #95).
 Provides tamper-evident database-backed audit logging with SHA-256 hash chains.
 """
 
+import asyncio
 import logging
 from typing import Any, Optional
 
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.repositories import AuditLogRepository
 
 logger = logging.getLogger(__name__)
+
+# SQLite has one writer, and the request that triggered the audit holds that
+# lock until its own transaction commits. The entry can therefore meet the
+# lock held - it waits for it and tries again, rather than losing the entry.
+_RETRY_DELAYS_SECONDS = (0.1, 0.4, 1.0)
+_LOCK_MARKERS = ("database is locked", "database table is locked")
+
+
+def _is_lock_error(error: BaseException) -> bool:
+    """Whether the error is SQLite refusing the write because of the lock."""
+    message = str(error).lower()
+    return any(marker in message for marker in _LOCK_MARKERS)
 
 
 class AuditService:
@@ -39,23 +53,35 @@ class AuditService:
         Errors are logged but not raised — audit failures must never break
         the request pipeline.
         """
-        try:
-            await self.repo.append(
-                actor_id=actor_id,
-                actor_email=actor_email,
-                actor_role=actor_role,
-                action=action,
-                resource=resource,
-                details=details,
-                ip_address=ip_address,
-                user_agent=user_agent,
-                request_id=request_id,
-            )
-            await self.session.commit()
-            logger.debug("Audit entry created: action=%s actor=%s", action, actor_id)
-        except Exception:
-            await self.session.rollback()
-            logger.exception("Failed to write audit entry: action=%s", action)
+        attempts = len(_RETRY_DELAYS_SECONDS) + 1
+        for attempt in range(attempts):
+            try:
+                await self.repo.append(
+                    actor_id=actor_id,
+                    actor_email=actor_email,
+                    actor_role=actor_role,
+                    action=action,
+                    resource=resource,
+                    details=details,
+                    ip_address=ip_address,
+                    user_agent=user_agent,
+                    request_id=request_id,
+                )
+                await self.session.commit()
+                logger.debug("Audit entry created: action=%s actor=%s", action, actor_id)
+                return
+            except OperationalError as exc:
+                await self.session.rollback()
+                if attempt == attempts - 1 or not _is_lock_error(exc):
+                    logger.exception("Failed to write audit entry: action=%s", action)
+                    return
+                # The lock belongs to the request that triggered this entry;
+                # it is released when that request commits.
+                await asyncio.sleep(_RETRY_DELAYS_SECONDS[attempt])
+            except Exception:
+                await self.session.rollback()
+                logger.exception("Failed to write audit entry: action=%s", action)
+                return
 
     async def query(
         self,
