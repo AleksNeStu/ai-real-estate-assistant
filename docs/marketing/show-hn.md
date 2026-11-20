@@ -88,7 +88,8 @@ Quick answers to the inevitable ones:
   Google's free Flash, and the public demo runs Google's free Flash first.
   The default per-task model is a free one, so a provider outage doesn't take
   the demo down with it.
-  See `apps/api/utils/free_tier.py` for the priority cascade.
+  See `apps/api/utils/free_tier.py` for the chain and
+  `apps/api/config/settings.py` for the order it starts in.
 
 - **Isn't this just a chatbot with a filter bolted on?**
   The part that isn't: the buyer memory. Every turn, the same model that
