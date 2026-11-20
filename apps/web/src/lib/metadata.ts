@@ -32,6 +32,23 @@ import { absoluteUrl } from '@/lib/site';
 export const LOCALES = ['pl', 'en', 'ru', 'de', 'es', 'it', 'pt', 'tr', 'uk'] as const;
 
 /**
+ * The social image every page advertises.
+ *
+ * A page-level `openGraph` REPLACES the one the layout declares, so a page
+ * that declares its own social block has to carry the image too — otherwise
+ * a link preview of that page has no picture. The live pages said as much:
+ * the routes that declared their own social block answered with zero
+ * `og:image` tags.
+ */
+export const OG_IMAGE = {
+  url: absoluteUrl('/og-image.png'),
+  width: 1200,
+  height: 630,
+  alt: 'AI Real Estate Assistant — Conversational AI for property search',
+  type: 'image/png',
+};
+
+/**
  * The hreflang map for the whole site: one entry per locale plus the
  * `x-default` pointer. Shared by the layout and by any page that declares its
  * own canonical — a page-level `alternates` replaces the inherited one, so it
@@ -43,9 +60,16 @@ export const LOCALES = ['pl', 'en', 'ru', 'de', 'es', 'it', 'pt', 'tr', 'uk'] as
  *               in Polish is /pl/search, not the Polish home page. Without
  *               the path every page claimed the home pages as its
  *               translations.
+ *
+ *               The home page is spelled '' or '/' and means the SAME address
+ *               as `/pl` — with a trailing slash it becomes `/pl/`, which the
+ *               application answers with a permanent redirect. A sitemap that
+ *               points at a redirect is a sitemap of redirects, and a cluster
+ *               that points at redirects is a cluster of redirects.
  */
-export function languageAlternates(path: string = ''): Record<string, string> {
-  const suffix = path === '/' ? '' : path.startsWith('/') ? path : `/${path}`;
+export function languageAlternates(path: string = '/'): Record<string, string> {
+  const suffix =
+    path === '' || path === '/' ? '' : path.startsWith('/') ? path : `/${path}`;
   const languages: Record<string, string> = {};
   for (const locale of LOCALES) {
     languages[locale] = absoluteUrl(`/${locale}${suffix}`);
@@ -66,7 +90,7 @@ export function pageMetadata(locale: string, path: string): Metadata {
   return {
     alternates: {
       canonical: absoluteUrl(`/${locale}${suffix}`),
-      languages: languageAlternates(),
+      languages: languageAlternates(path),
     },
   };
 }
@@ -114,18 +138,22 @@ export async function routeMetadata(
     description,
     alternates: {
       canonical: url,
-      languages: languageAlternates(),
+      languages: languageAlternates(path),
     },
     openGraph: {
       title,
       description,
       url,
       type: 'website',
+      // The social image comes with the block: a page that declares its own
+      // social metadata replaces the layout's, image included.
+      images: [OG_IMAGE],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: [OG_IMAGE.url],
     },
   };
 }

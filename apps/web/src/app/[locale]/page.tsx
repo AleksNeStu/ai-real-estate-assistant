@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { languageAlternates } from '@/lib/metadata';
+import { languageAlternates, OG_IMAGE } from '@/lib/metadata';
 import { absoluteUrl } from '@/lib/site';
 
 import { CompareTable } from '@/components/landing/compare-table';
@@ -53,6 +53,10 @@ export async function generateMetadata({
     openGraph: {
       url,
       type: 'website',
+      // A page that declares its own social block replaces the layout's, so
+      // the image has to be named here or the landing page has no picture in
+      // a link preview.
+      images: [OG_IMAGE],
     },
   };
 }

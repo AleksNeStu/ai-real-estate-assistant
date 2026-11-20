@@ -16,9 +16,10 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import type { Locale } from '@/i18n/config';
 import { catalogueFor } from '@/i18n/catalogue';
 import { routing } from '@/i18n/routing';
-import { SITE_URL, absoluteUrl } from '@/lib/site';
+import { SITE_URL } from '@/lib/site';
 import { ACTION_HEX } from '@/lib/palette';
 import { buildStructuredData } from '@/lib/structured-data';
+import { OG_IMAGE } from '@/lib/metadata';
 
 /**
  * Open Graph expects a `language_TERRITORY` tag. Every supported locale gets
@@ -136,21 +137,13 @@ export async function generateMetadata({
       siteName: 'AI Real Estate Assistant',
       locale: OPEN_GRAPH_LOCALE[locale as Locale] || 'en_US',
       type: 'website',
-      images: [
-        {
-          url: absoluteUrl('/og-image.png'),
-          width: 1200,
-          height: 630,
-          alt: 'AI Real Estate Assistant — Conversational AI for property search',
-          type: 'image/png',
-        },
-      ],
+      images: [OG_IMAGE],
     },
     twitter: {
       card: 'summary_large_image',
       title: titles[locale as Locale] || titles.en,
       description: descriptions[locale as Locale] || descriptions.en,
-      images: [absoluteUrl('/og-image.png')],
+      images: [OG_IMAGE.url],
       creator: '@AleksNeStu',
     },
     robots: {
