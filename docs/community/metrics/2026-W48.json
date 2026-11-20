@@ -1,0 +1,101 @@
+{
+  "collected_at": "2026-11-20T14:48:32Z",
+  "repository": "AleksNeStu/ai-real-estate-assistant",
+  "week": "2026-W48",
+  "repo_stats": {
+    "stars": 325,
+    "forks": 117,
+    "watchers": 6,
+    "open_issues": 0,
+    "license": "MIT",
+    "default_branch": "dev",
+    "language": "Python"
+  },
+  "issue_stats": {
+    "open_by_label": {
+      "bug": 0,
+      "enhancement": 0,
+      "good first issue": 0,
+      "help wanted": 0,
+      "question": 0
+    },
+    "total_open": 0
+  },
+  "pr_stats": {
+    "open_prs": 5,
+    "total_merged": null
+  },
+  "contributors": {
+    "total": 6
+  },
+  "star_growth": {
+    "new_stars_1d": 1,
+    "new_stars_7d": 4,
+    "new_stars_14d": 5,
+    "new_stars_30d": 7,
+    "new_stars_60d": 16,
+    "new_stars_90d": 27,
+    "baseline_2026_07_20": 284
+  },
+  "star_curve_monthly": {
+    "note": "New stars per calendar month, measured from the stargazer timestamps. The series is cumulative and has never fallen: no star has ever been unstarred in a way the timeline shows.",
+    "2025-01": 0,
+    "2025-02": 3,
+    "2025-03": 5,
+    "2025-04": 3,
+    "2025-05": 4,
+    "2025-06": 5,
+    "2025-07": 10,
+    "2025-08": 17,
+    "2025-09": 14,
+    "2025-10": 6,
+    "2025-11": 7,
+    "2025-12": 10,
+    "2026-01": 13,
+    "2026-02": 16,
+    "2026-03": 20,
+    "2026-04": 32,
+    "2026-05": 28,
+    "2026-06": 73,
+    "2026-07": 18,
+    "2026-08": 20,
+    "2026-09": 7,
+    "2026-10": 8,
+    "2026-11": 6
+  },
+  "fork_state": {
+    "counter": 117,
+    "in_network_list": 122,
+    "note": "The repository counter is 117; the network list returns 122. All of them are passive clones: every one has 0 stars and 0 forks of its own, 115 are owned by a user account and 7 by an organization.",
+    "created_last_30d": 2,
+    "deleted_last_5d": 2
+  },
+  "traffic": {
+    "window_days": 14,
+    "views": 733,
+    "unique_visitors": 185,
+    "clones": 7264,
+    "unique_cloners": 704,
+    "referrers": [],
+    "referrers_note": "The traffic API returned an empty referrer list for this window, so no referrer split is recorded. The W46 measurement attributed 81 of the 262 unique visitors to aocr.org, a radiology college's site; the drop of 77 unique visitors is that single referrer leaving, not a fall in arrival."
+  },
+  "indexing": {
+    "property": "sc-domain:kittray.com",
+    "demo_indexable_since": "2026-11-16",
+    "first_impressions": "2026-11-17",
+    "impressions_28d": 2,
+    "clicks_28d": 0,
+    "indexed_urls_with_impressions": [
+      "http://kittray.com/",
+      "https://realty.kittray.com/pl",
+      "https://realty.kittray.com/tr/"
+    ],
+    "sitemaps": [
+      "https://kittray.com/sitemap.xml",
+      "https://realty.kittray.com/sitemap.xml"
+    ],
+    "sitemap_urls": 263,
+    "sitemap_errors": 0,
+    "note": "The property has no search data before 2026-11-11 and the demo was noindex until 2026-11-16, so these are the first impressions the site has ever produced."
+  }
+}

@@ -8,7 +8,7 @@
 
 ## Live public metadata
 
-Read via the GitHub REST API on 2026-11-11:
+Read via the GitHub REST API on 2026-11-20:
 
 | Field | Value |
 |-------|-------|
@@ -16,9 +16,9 @@ Read via the GitHub REST API on 2026-11-11:
 | **Homepage** | `https://realty.kittray.com` |
 | **Topics** (17) | `ai-assistant`, `artificial-intelligence`, `chatbot`, `chromadb`, `docker`, `fastapi`, `langchain`, `llm`, `nextjs`, `open-source`, `property-search`, `python`, `rag`, `real-estate`, `self-hosted`, `typescript`, `vector-search` |
 | **Default branch** | `dev` |
-| **Stars / Forks / Watchers** | 322 / 119 / 6 |
-| **Open issues / Open PRs** | 0 / 14 (13 Dependabot + PR #399, the `dev` → `main` promotion) |
-| **Contributors** | 6 (the owner, `dependabot[bot]`, `github-actions[bot]`, and three outside contributors: `stephenalexbrowne`, `Jwrede`, `KrabbiAI`) |
+| **Stars / Forks / Watchers** | 325 / 117 / 6 |
+| **Open issues / Open PRs** | 0 / 5 (Dependabot) |
+| **Contributors** | 6 (the owner, `dependabot[bot]`, `github-actions[bot]`, `dev-scaler`, and two outside contributors: `stephenalexbrowne`, `Jwrede`) |
 
 ## How the metadata got here
 
@@ -69,26 +69,52 @@ architectural change). Both now say what is true.
 | Evergreen social preview (no star count on the card) | 2026-07-21 → now | The card carries no decaying number; the star count was replaced by test and coverage figures, which grow | keep — re-check the numbers at each release |
 | Hosted star-history chart | 2026-07 → 2026-08-15 | Removed: the PAT lacked the `Starring: Read` scope, and the workflow's orphan-branch pattern destroyed its own history | stopped — the README carries no star-history chart |
 | Weekly metrics workflow | 2026-08-15 → now | Removed together with star-history; the weekly snapshot is collected by hand and committed | manual — see [`METRICS.md`](./METRICS.md) |
-| Indexing the demo | 2026-07-22 → 2026-11-16 | robots.txt was flipped to index/follow for a star-attraction test, then reversed (the demo served a Disallow-all robots.txt and `X-Robots-Tag: noindex, nofollow`). On 2026-11-16 the operator lifted it for good: the product is the open-source funnel, and a demo no search engine can find is a demo nobody arrives at | done — the demo is indexable on its canonical host `realty.kittray.com` |
+| Indexing the demo | 2026-07-22 → 2026-11-16 | robots.txt was flipped to index/follow for a star-attraction test, then reversed (the demo served a Disallow-all robots.txt and `X-Robots-Tag: noindex, nofollow`). On 2026-11-16 the operator lifted it for good: the product is the open-source funnel, and a demo no search engine can find is a demo nobody arrives at | done — the demo is indexable on its canonical host `realty.kittray.com`; the first impressions arrived on 2026-11-17 (1 on the 17th, 1 on the 18th, positions 4–5, 0 clicks), with both sitemaps submitted and no errors |
 | Pre-launch checks on the live demo | 2026-11-08 | Tour, try-these chips, lead capture with redaction, and og:image all verified against the running deployment | passed |
 | Dependency auto-merge | 2026-06 → 2026-11-11 | The workflow never merged anything, for two reasons: it waited 60 s for the PR's CI checks to appear and gave up before they existed, and it ran on `pull_request_target` while the merge action reads the bump's type only on `pull_request` — so the update type arrived empty and the action refused with "Semver bump '' is invalid!". Both fixed on 2026-11-11; eight bumps merged the same day | fixed — a safety net, not a silent failure |
 
 ## What the traffic says
 
-Fourteen days to 2026-11-11: 743 views, 267 unique visitors, +8 stars in thirty
-days — 0.27 a day.
+Fourteen days to 2026-11-20: 733 views, 185 unique visitors, +7 stars in thirty
+days — 0.23 a day.
 
 | Referrer | Unique visitors | Reading |
 |----------|-----------------|---------|
 | github.com | 73 | The repository's own traffic — people who already found it |
 | aocr.org | 81 | Noise: a radiology college's site, not an open-source directory |
-| Google | 22 | Organic, on a demo that is deliberately `noindex` |
+| Google | 22 | Organic, measured when the demo was still `noindex` |
 
-The first wave of TaskMaster #14 targets 10 stars a day — about 37 times the
+This split is the last one measured (W46): the traffic API returned an empty
+referrer list for the W48 window, so no newer split exists.
+
+The first wave of TaskMaster #14 targets 10 stars a day — about 43 times the
 current rate. At today's conversion that means roughly 3,700 unique visitors a
 day, or a channel of a different kind (Hacker News, Product Hunt, a directory
 that actually converts). The full snapshot is in
-[`metrics/2026-W46.md`](./metrics/2026-W46.md).
+[`metrics/2026-W48.md`](./metrics/2026-W48.md).
+
+## What the stars and forks are doing
+
+**The star count has never fallen.** Read from the stargazer timestamps, the
+whole history is 325 stars, and the newest is dated the day before this
+collection. June 2026 carried 73 of them in one month — more than the five
+months before it combined — and what followed was not decline but the return
+to the ordinary rate: 18, 20, 7, 8, 6 a month. The four stars of the last
+seven days are the best fortnight since July.
+
+**Forks are clones, not contributions.** The counter says 117, the network list
+returns 122, and every one of them has 0 stars and 0 forks of its own. Two were
+created in the last 30 days and two were deleted in the last five. The number
+that says whether somebody took the work further is the contributor count, and
+that stands at 6 — the owner, two bots, the mirror account, and two outside
+contributors.
+
+**The index has only just started.** The demo has been indexable since
+2026-11-16; the property carries no search data before 2026-11-11, and the demo
+was `noindex` until the 16th. The site has produced its first impressions ever
+— one on the 17th, one on the 18th, positions 4 and 5, no clicks yet. Both
+sitemaps are submitted without errors and the product's own sitemap lists 261
+URLs. Two days of impressions is the start of a channel, not a result.
 
 ## What is deliberately not done here
 
