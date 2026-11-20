@@ -238,12 +238,17 @@ E2E_REAL_API_KEY ?= dev-secret-key
 ## checked against the stack's own origins).
 E2E_REAL_CORS_ORIGIN ?= http://localhost:$(FRONTEND_HOST_PORT)
 
+## E2E_REAL_PROJECT - The compose project the proof stack runs under. It is
+## its own, so the teardown at the end of the target removes the proof and
+## not the stack the developer has running.
+E2E_REAL_PROJECT ?= e2e-real-provider
+
 ## e2e-real-provider: Prove the demo answers with a real model, not the mock.
 e2e-real-provider:
 	@test -f apps/api/tests/e2e_backend/test_real_provider.py || (echo "ERROR: the proof spec is missing - apps/api/tests/e2e_backend/test_real_provider.py" && exit 1)
 	@echo "Starting the stack with the $(E2E_PROVIDER) provider..."
 	@status=0; \
-	trap '$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) --profile local-llm down --remove-orphans' EXIT; \
+	trap '$(DOCKER_COMPOSE) -p $(E2E_REAL_PROJECT) -f $(DOCKER_COMPOSE_FILE) --profile local-llm down --remove-orphans' EXIT; \
 	export POSTGRES_PASSWORD=not-started \
 		API_ACCESS_KEY=$(E2E_REAL_API_KEY) \
 		BACKEND_HOST_PORT=$(BACKEND_HOST_PORT) \
@@ -251,16 +256,20 @@ e2e-real-provider:
 		CORS_ALLOW_ORIGINS=$(E2E_REAL_CORS_ORIGIN),$(E2E_REAL_BASE_URL) \
 		DEMO_MODE=true DEMO_DATA_MODE=true \
 		DEMO_LLM_MODE=false \
+		OPENAI_API_KEY= ANTHROPIC_API_KEY= GOOGLE_API_KEY= \
+		MINIMAX_API_KEY= REALT_MINIMAX_API_KEY= \
+		XAI_API_KEY= DEEPSEEK_API_KEY= OPENROUTER_API_KEY= \
 		DEFAULT_PROVIDER=$(E2E_PROVIDER) \
 		DEFAULT_MODEL=$(E2E_PROVIDER_MODEL) \
 		OLLAMA_API_BASE=http://ollama:11434 \
 		OLLAMA_HOST_PORT=$(E2E_OLLAMA_HOST_PORT) \
 		FORCE_HTTPS=false; \
-	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) --profile local-llm up -d --build || exit 1; \
+	$(DOCKER_COMPOSE) -p $(E2E_REAL_PROJECT) -f $(DOCKER_COMPOSE_FILE) --profile local-llm up -d --build || exit 1; \
 	echo "Waiting for the local model and the backend..."; \
-	oid=$$($(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) --profile local-llm ps -q ollama); \
 	for attempt in $$(seq 1 240); do \
-		if [ "$$(docker inspect --format '{{.State.Health.Status}}' $$oid 2>/dev/null)" = "healthy" ] \
+		oid=$$($(DOCKER_COMPOSE) -p $(E2E_REAL_PROJECT) -f $(DOCKER_COMPOSE_FILE) --profile local-llm ps -q ollama); \
+		if [ -n "$$oid" ] \
+			&& [ "$$(docker inspect --format '{{.State.Health.Status}}' $$oid 2>/dev/null)" = "healthy" ] \
 			&& curl -sf "$(E2E_REAL_BASE_URL)/health" >/dev/null 2>&1; then \
 			echo "the stack is ready"; break; \
 		fi; \
