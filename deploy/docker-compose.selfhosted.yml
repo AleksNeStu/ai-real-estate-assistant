@@ -131,6 +131,11 @@ services:
       # The public hostname of YOUR deployment. Server-rendered metadata
       # (canonical, og:image, JSON-LD) reads it at runtime.
       - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-}
+      # The measurement beacon (Cloudflare Web Analytics). Read at RUNTIME -
+      # `NEXT_PUBLIC_*` is inlined when the image is built, and this token
+      # belongs to the deployment, not to the build. Without it the site has
+      # no measurement at all.
+      - CF_WEB_ANALYTICS_TOKEN=${CF_WEB_ANALYTICS_TOKEN:-}
     depends_on:
       backend:
         condition: service_healthy

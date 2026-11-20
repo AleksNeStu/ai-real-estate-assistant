@@ -45,7 +45,13 @@ const nextConfig: NextConfig = {
     const cspDirectives = isProduction
       ? {
           'default-src': ["'self'"],
-          'script-src': ["'self'", "'unsafe-inline'"],
+          'script-src': [
+            "'self'",
+            "'unsafe-inline'",
+            // The measurement beacon (Cloudflare Web Analytics). It is
+            // cookieless and third-party requests are otherwise not allowed.
+            'https://static.cloudflareinsights.com',
+          ],
           'style-src': ["'self'", "'unsafe-inline'"],
           'img-src': ["'self'", 'data:', 'https:', 'blob:'],
           'font-src': ["'self'", 'data:'],
@@ -66,6 +72,8 @@ const nextConfig: NextConfig = {
             // Sentry error tracking
             'https://sentry.io',
             'https://*.ingest.sentry.io',
+            // The measurement beacon reports to Cloudflare.
+            'https://cloudflareinsights.com',
           ],
           'frame-src': ["'none'"],
           'object-src': ["'none'"],
