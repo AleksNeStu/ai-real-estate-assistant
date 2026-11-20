@@ -115,42 +115,52 @@ async def test_the_audit_write_waits_for_the_lock_and_lands(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_the_audit_write_waits_for_the_request_transaction(monkeypatch):
-    """The entry is not written while the request still holds the lock."""
+async def test_the_audit_entry_joins_the_request_transaction(monkeypatch):
+    """The entry is written in the request's own transaction, not a second one."""
     from api.middleware import audit as audit_module
 
     written = []
 
     class TheService:
-        def __init__(self, _session) -> None:
-            pass
+        def __init__(self, session) -> None:
+            self.session = session
 
         async def log(self, **kwargs) -> None:
-            written.append(kwargs["action"])
+            written.append((self.session, kwargs))
 
     monkeypatch.setattr(audit_module, "AuditService", TheService)
 
-    class TheSession:
-        async def __aenter__(self):
-            return self
-
-        async def __aexit__(self, *args) -> bool:
-            return False
-
-    # the code takes the factory and then opens a session from it
-    monkeypatch.setattr(audit_module, "get_session_factory", lambda: lambda: TheSession())
+    the_request_session = object()
 
     class TheRequest:
+        method = "POST"
+        url = SimpleNamespace(path="/api/v1/thing")
+        client = SimpleNamespace(host="127.0.0.1")
+        headers = {"user-agent": "the-test"}
+
         def __init__(self) -> None:
-            self.state = SimpleNamespace(db_transaction_closed=asyncio.Event())
+            self.state = SimpleNamespace(
+                db_session=the_request_session,
+                user_id=None,
+                user_email=None,
+                user_role=None,
+                request_id=None,
+            )
 
-    request = TheRequest()
+    class TheResponse:
+        status_code = 200
+        background = None
+
     middleware = audit_module.AuditMiddleware(app=None)
+    response = await middleware.dispatch(TheRequest(), lambda _request: _a_response(TheResponse()))
 
-    task = asyncio.create_task(middleware._write_entry(request, {"action": "post /api/v1/thing"}))
-    await asyncio.sleep(0.2)
-    assert written == [], "the entry was written while the request held the lock"
+    assert written, "the entry was never written"
+    session, kwargs = written[0]
+    assert session is the_request_session, "the entry did not join the request's transaction"
+    assert kwargs["commit"] is False, "the entry committed on its own, away from the request"
+    assert kwargs["action"] == "post /api/v1/thing"
+    assert response.background is None, "the entry was scheduled instead of written"
 
-    request.state.db_transaction_closed.set()
-    await task
-    assert written == ["post /api/v1/thing"], "the entry was never written"
+
+async def _a_response(value):
+    return value
