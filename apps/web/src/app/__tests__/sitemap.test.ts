@@ -92,6 +92,37 @@ describe('the sitemap', () => {
     }
   });
 
+  /**
+   * The file used to name ONE url per page - the default locale's - and
+   * attach the other eight as hreflang alternates. That is a cluster whose
+   * members are not in the sitemap, and a file whose alternates are not
+   * listed is a file whose cluster cannot be verified. Google's own structure
+   * for a site in several languages lists EVERY version of a page, each one
+   * carrying the same set of alternates.
+   */
+  it('lists every language version of a page, not only the default one', async () => {
+    mockCatalogue([]);
+    const entries = await sitemap();
+    const urls = entries.map((entry) => entry.url);
+
+    for (const locale of routing.locales) {
+      expect(urls).toContain(`${'https://realty.kittray.com'}/${locale}/search`);
+    }
+  });
+
+  it('points the cluster of a page at that page in every language', async () => {
+    mockCatalogue([]);
+    const entries = await sitemap();
+    const search = entries.find((entry) => entry.url.endsWith('/pl/search'));
+
+    expect(search).toBeDefined();
+    const languages = search?.alternates?.languages ?? {};
+    // The home pages are NOT the translations of the search page.
+    expect(languages.pl).toMatch(/\/pl\/search$/);
+    expect(languages.en).toMatch(/\/en\/search$/);
+    expect(languages['x-default']).toMatch(/\/pl\/search$/);
+  });
+
   it('still answers with the routes when the catalogue is unreachable', async () => {
     mockCatalogue('unreachable');
     const entries = await sitemap();
