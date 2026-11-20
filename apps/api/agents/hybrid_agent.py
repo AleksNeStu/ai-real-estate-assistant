@@ -55,6 +55,7 @@ from agents.query_analyzer import (
 from agents.web_research_agent import WebResearchAgent, WebResearchConfig
 from ai.buffer_memory import ConversationBufferMemory
 from tools.property_tools import create_property_tools
+from utils.llm_content import content_to_text
 from utils.tool_calls import build_tool_call
 
 logger = logging.getLogger(__name__)
@@ -759,8 +760,8 @@ Thought: {agent_scratchpad}"""
                 )
 
                 response_msg = self.llm.invoke(prompt)
-                answer = (
-                    response_msg.content if hasattr(response_msg, "content") else str(response_msg)
+                answer = content_to_text(
+                    response_msg.content if hasattr(response_msg, "content") else response_msg
                 )
 
                 return {
@@ -1009,7 +1010,7 @@ Thought: {agent_scratchpad}"""
             logger.error("Streaming failed: %s", sanitize_for_log(e))
             try:
                 result = self.process_query(query, buyer_memory=memory_block)
-                answer = result.get("answer", "")
+                answer = content_to_text(result.get("answer", ""))
                 if answer:
                     yield json.dumps({"content": answer})
                     return
@@ -1037,7 +1038,7 @@ Thought: {agent_scratchpad}"""
                     self.last_source_documents = list(output["source_documents"])
                 continue
             if kind == "on_chat_model_stream":
-                content = event["data"]["chunk"].content
+                content = content_to_text(event["data"]["chunk"].content)
                 if content:
                     yield json.dumps({"content": content})
 
@@ -1100,7 +1101,7 @@ Thought: {agent_scratchpad}"""
                     yield json.dumps({"tool_call": call})
                 continue
             if kind == "on_chat_model_stream":
-                content = event["data"]["chunk"].content
+                content = content_to_text(event["data"]["chunk"].content)
                 if content:
                     yield json.dumps({"content": content})
 
