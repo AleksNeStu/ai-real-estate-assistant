@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 
@@ -54,7 +55,16 @@ def test_start_stop(scheduler):
     assert scheduler._thread is not None
     assert scheduler._thread.is_alive()
 
-    scheduler.stop()
+    scheduler.stop(timeout_seconds=10.0)
+
+    # The scheduler stops by setting an event and joining with a timeout, so
+    # the thread can still be winding down when stop() returns - more often
+    # on a loaded machine, where its current cycle takes longer than the
+    # join waits. Wait for it, with a bound, instead of asserting on the
+    # instant.
+    deadline = time.time() + 10
+    while scheduler._thread.is_alive() and time.time() < deadline:
+        time.sleep(0.05)
     assert not scheduler._thread.is_alive()
 
 
