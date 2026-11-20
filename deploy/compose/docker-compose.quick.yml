@@ -17,11 +17,15 @@ services:
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-production}
       - API_ACCESS_KEY=${API_ACCESS_KEY:-dev-secret-key}
-      - DEFAULT_PROVIDER=${DEFAULT_PROVIDER:-openai}
+      - DEFAULT_PROVIDER=${DEFAULT_PROVIDER:-minimax}
       - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS:-*}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      # The provider the .env.example names is minimax, so its key travels
+      # with the rest: a stack that asks for minimax and carries no MiniMax
+      # key answers nothing.
+      - MINIMAX_API_KEY=${REALT_MINIMAX_API_KEY:-${MINIMAX_API_KEY:-}}
       - CACHE_ENABLED=${CACHE_ENABLED:-true}
       - CACHE_TTL_SECONDS=${CACHE_TTL_SECONDS:-300}
       - CACHE_REDIS_URL=${CACHE_REDIS_URL:-redis://redis:6379}
