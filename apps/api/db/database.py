@@ -1,6 +1,5 @@
 """SQLAlchemy async database setup."""
 
-import asyncio
 import os
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
@@ -152,19 +151,17 @@ async def get_db(request: Request) -> AsyncGenerator[AsyncSession, None]:
     """Dependency for getting async database sessions."""
     factory = get_session_factory()
     async with factory() as session:
-        # SQLite has one writer, and this transaction holds that lock until
-        # it commits. The audit entry is written on its own session, so it
-        # needs to know when this one is done - this event says it.
-        transaction_closed = asyncio.Event()
-        request.state.db_transaction_closed = transaction_closed
+        # The audit entry is written in this request's own transaction.
+        # SQLite has one writer, and a second transaction would be a second
+        # writer: the two would deadlock on the write lock. Publishing the
+        # session lets the audit ride along with the request's commit.
+        request.state.db_session = session
         try:
             yield session
             await session.commit()
         except Exception:
             await session.rollback()
             raise
-        finally:
-            transaction_closed.set()
 
 
 @asynccontextmanager

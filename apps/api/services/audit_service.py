@@ -53,12 +53,32 @@ class AuditService:
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
         request_id: Optional[str] = None,
+        commit: bool = True,
     ) -> None:
         """Append an audit log entry to the hash chain.
 
-        Errors are logged but not raised — audit failures must never break
+        With `commit=False` the entry joins the caller's transaction and the
+        caller commits it. That is how a request's own audit entry is
+        written: SQLite has one writer, and a second transaction would be a
+        second writer - the two deadlock on the write lock.
+
+        Errors are logged but not raised - audit failures must never break
         the request pipeline.
         """
+        if not commit:
+            await self._log_in_the_callers_transaction(
+                action=action,
+                actor_id=actor_id,
+                actor_email=actor_email,
+                actor_role=actor_role,
+                resource=resource,
+                details=details,
+                ip_address=ip_address,
+                user_agent=user_agent,
+                request_id=request_id,
+            )
+            return
+
         attempts = len(_RETRY_DELAYS_SECONDS) + 1
         for attempt in range(attempts):
             try:
@@ -88,6 +108,42 @@ class AuditService:
                 await self.session.rollback()
                 logger.exception("Failed to write audit entry: action=%s", action)
                 return
+
+    async def _log_in_the_callers_transaction(
+        self,
+        *,
+        action: str,
+        actor_id: Optional[str],
+        actor_email: Optional[str],
+        actor_role: Optional[str],
+        resource: Optional[str],
+        details: Optional[dict[str, Any]],
+        ip_address: Optional[str],
+        user_agent: Optional[str],
+        request_id: Optional[str],
+    ) -> None:
+        """Append the entry inside the caller's transaction.
+
+        The entry is written inside a savepoint, so a failure of the entry
+        rolls the savepoint back and leaves the caller's own work alone: an
+        audit failure must never break the request that carried it.
+        """
+        try:
+            async with self.session.begin_nested():
+                await self.repo.append(
+                    actor_id=actor_id,
+                    actor_email=actor_email,
+                    actor_role=actor_role,
+                    action=action,
+                    resource=resource,
+                    details=details,
+                    ip_address=ip_address,
+                    user_agent=user_agent,
+                    request_id=request_id,
+                )
+            logger.debug("Audit entry created: action=%s actor=%s", action, actor_id)
+        except Exception:
+            logger.exception("Failed to write audit entry: action=%s", action)
 
     async def query(
         self,
