@@ -88,12 +88,12 @@ part a competitor demo cannot copy in a weekend.
 
 **Section 3: Multi-provider LLM routing (150-270s)**
 
-- Per-task priority cascade in `apps/api/models/provider_factory.py`
+- Per-task priority cascade in `apps/api/api/dependencies.py`
 - Chat → primary provider (configurable)
 - Search / tools / analysis → the default per-task model, a free one
 - Embeddings → dedicated embedding model
 - The deployed chain: MiniMax → Ollama (local, on our own server) →
-  OpenRouter free models
+  OpenRouter free models → Google's free Flash
 - When one provider rate-limits, the demo keeps working — automatic
   fallback chain
 - Show code: provider factory + lazy import logic

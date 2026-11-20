@@ -520,8 +520,49 @@ Trivy, CodeQL. Full details in the
 | Suite | Where it runs | What it proves |
 |---|---|---|
 | `backend-e2e` | every push and pull request | the backend's end-to-end suite: the real application, the real middleware stack, the API-key contract |
-| `compose-stack` | every push and pull request | the same suite against the stack the pipeline builds — the seeded catalogue, the real provider (the local MockLLM, so no key and no answer leaves the runner) |
+| `compose-stack` | every push and pull request | the same suite against the stack the pipeline builds — the seeded catalogue and the local mock provider (so no key and no answer leaves the runner): it proves the transport and the app's behaviour, not the provider |
 | `backend-resilience` | every push and pull request | the fallback chain and the degradation answer, proved with a provider that fails locally — no outage, no key |
+
+### What the pipeline proves about the model
+
+**A green pull request says nothing about which provider answers.** The
+pull-request suite mocks the provider, so it proves the transport, the
+middleware and the app's behaviour — not the model behind them. No job in
+the pull-request pipeline carries a provider key, so a key that no longer
+authenticates does not turn the pipeline red.
+
+**The demo's real-model claim has its own proof.**
+`apps/api/tests/e2e_backend/test_real_provider.py` asks the stack a
+question the mock cannot answer and asserts three things: the answer is
+not one of the mock's four canned sentences, the answer is not empty, and
+the arithmetic result is in it. It also reads
+`GET /api/v1/capabilities` and asserts that the deployment reports a
+provider and not the mock. `MockLLM` picks a random line out of four
+fixed strings and ignores the question, so it cannot pass those
+assertions by construction — and the spec proves that as a property, in
+its own negative control, without a second stack and without swapping
+anything.
+
+**The proof is opt-in, so the pull-request job stays green.** It runs
+only where two things are true: a backend is named
+(`E2E_BASE_URL`) and that backend promises a real model
+(`E2E_REQUIRE_REAL_PROVIDER=1`). The `compose-stack` job names a
+backend but runs the mock, so the proof skips there rather than failing
+the pipeline.
+
+**Running it costs nothing and needs no secret.** The proof runs against
+the compose stack with a real provider configured — a local Ollama by
+default, which is a real model with no key and no bill:
+
+```bash
+make e2e-real-provider
+```
+
+**The paid nightly job is not built.** A scheduled CI run against a hosted
+provider would be the strongest proof, but it spends the studio's key and
+needs a repository secret. That is the operator's call, not the
+repository's, so the spec is written to run there when that job exists —
+and the local run above needs neither.
 
 ### What the pipeline does not run
 

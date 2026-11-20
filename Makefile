@@ -27,7 +27,7 @@ GREEN := \033[32m
 RESET := \033[0m
 
 # Phony targets
-.PHONY: help security security-quick test test-api test-web e2e lint lint-api lint-web format
+.PHONY: help security security-quick test test-api test-web e2e e2e-real-provider lint lint-api lint-web format
 .PHONY: dev dev-api dev-web
 .PHONY: docker-up docker-down docker-logs docker-build
 .PHONY: ci ci-quick setup clean install docs
@@ -54,6 +54,7 @@ help: ## Show this help message
 	@echo ""
 	@echo "$(GREEN)Testing:$(RESET)"
 	@sed -n 's/^## test/\tmake &/p' $(MAKEFILE_LIST) | head -3
+	@sed -n 's/^## e2e/\tmake &/p' $(MAKEFILE_LIST)
 	@sed -n 's/^## benchmark/\tmake &/p' $(MAKEFILE_LIST)
 	@echo ""
 	@echo "$(GREEN)Linting & Formatting:$(RESET)"
@@ -187,6 +188,93 @@ test-web:
 ## backend instead (the compose stack serves http://localhost:8082).
 e2e:
 	cd apps/api && E2E_BASE_URL=$(E2E_BASE_URL) $(PYTHON) -m pytest tests/e2e_backend -v
+
+## ============================================================================
+## THE REAL-PROVIDER PROOF (Task #97)
+## ============================================================================
+## The demo's headline claim is that it answers with a real model. The mock
+## answers too - with four canned sentences - so a green suite on the mock
+## proves nothing about the provider. This target brings the stack up with a
+## REAL provider and runs the spec that says so.
+##
+## The default provider is the local Ollama one: the "local-llm" compose
+## profile, no API key, no cost, nothing leaves the machine. The model is
+## pulled by the container on first start (~2GB, slow) and the volume is kept
+## afterwards, so the second run starts immediately. Point E2E_PROVIDER at a
+## hosted provider to prove that one instead, and give it its own model id:
+##   make e2e-real-provider E2E_PROVIDER=minimax E2E_PROVIDER_MODEL=MiniMax-M3.1-Flash
+## (the key goes in deploy/compose/.env).
+##
+## The stack is torn down at the end, whether the proof passed or failed.
+
+## E2E_PROVIDER - The provider the proof stack answers with.
+E2E_PROVIDER ?= ollama
+
+## E2E_PROVIDER_MODEL - The model id that provider is asked for. It follows
+## the provider: Ollama takes a local model id, a hosted provider takes its
+## own. A mismatch here is the incoherence the compose file no longer has.
+E2E_PROVIDER_MODEL ?= llama3.2:3b
+
+## E2E_OLLAMA_HOST_PORT - The host port the proof stack publishes Ollama on.
+## The backend reaches the model over the compose network, so this port is
+## for a human - but 11434 is the default port of every Ollama on the
+## machine, and a developer's own Ollama holds it. Move it when it is taken.
+E2E_OLLAMA_HOST_PORT ?= 11434
+
+## E2E_REAL_BASE_URL - Where the proof stack serves the backend.
+## The ports come from the environment, because the compose file reads them
+## from there: the workstation carries its own BACKEND_HOST_PORT (the
+## non-Docker stack needs it), and the proof has to ask the stack for the
+## port the stack actually opened - not the one the file defaults to.
+BACKEND_HOST_PORT ?= 8082
+FRONTEND_HOST_PORT ?= 3082
+E2E_REAL_BASE_URL ?= http://localhost:$(BACKEND_HOST_PORT)
+
+## E2E_REAL_API_KEY - The key the stack is started with, and the one the
+## spec authenticates with.
+E2E_REAL_API_KEY ?= dev-secret-key
+
+## E2E_REAL_CORS_ORIGIN - An origin the stack allows (the preflight is
+## checked against the stack's own origins).
+E2E_REAL_CORS_ORIGIN ?= http://localhost:$(FRONTEND_HOST_PORT)
+
+## e2e-real-provider: Prove the demo answers with a real model, not the mock.
+e2e-real-provider:
+	@test -f apps/api/tests/e2e_backend/test_real_provider.py || (echo "ERROR: the proof spec is missing - apps/api/tests/e2e_backend/test_real_provider.py" && exit 1)
+	@echo "Starting the stack with the $(E2E_PROVIDER) provider..."
+	@status=0; \
+	trap '$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) --profile local-llm down --remove-orphans' EXIT; \
+	export POSTGRES_PASSWORD=not-started \
+		API_ACCESS_KEY=$(E2E_REAL_API_KEY) \
+		BACKEND_HOST_PORT=$(BACKEND_HOST_PORT) \
+		FRONTEND_HOST_PORT=$(FRONTEND_HOST_PORT) \
+		CORS_ALLOW_ORIGINS=$(E2E_REAL_CORS_ORIGIN),$(E2E_REAL_BASE_URL) \
+		DEMO_MODE=true DEMO_DATA_MODE=true \
+		DEMO_LLM_MODE=false \
+		DEFAULT_PROVIDER=$(E2E_PROVIDER) \
+		DEFAULT_MODEL=$(E2E_PROVIDER_MODEL) \
+		OLLAMA_API_BASE=http://ollama:11434 \
+		OLLAMA_HOST_PORT=$(E2E_OLLAMA_HOST_PORT) \
+		FORCE_HTTPS=false; \
+	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) --profile local-llm up -d --build || exit 1; \
+	echo "Waiting for the local model and the backend..."; \
+	oid=$$($(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) --profile local-llm ps -q ollama); \
+	for attempt in $$(seq 1 240); do \
+		if [ "$$(docker inspect --format '{{.State.Health.Status}}' $$oid 2>/dev/null)" = "healthy" ] \
+			&& curl -sf "$(E2E_REAL_BASE_URL)/health" >/dev/null 2>&1; then \
+			echo "the stack is ready"; break; \
+		fi; \
+		if [ $$attempt -eq 240 ]; then echo "ERROR: the stack never became ready"; exit 1; fi; \
+		echo "waiting for the stack ($$attempt/240)"; sleep 10; \
+	done; \
+	( cd apps/api && \
+		E2E_BASE_URL=$(E2E_REAL_BASE_URL) \
+		E2E_REQUIRE_REAL_PROVIDER=1 \
+		API_ACCESS_KEY=$(E2E_REAL_API_KEY) \
+		E2E_API_KEY=$(E2E_REAL_API_KEY) \
+		E2E_CORS_ORIGIN=$(E2E_REAL_CORS_ORIGIN) \
+		$(PYTHON) -m pytest tests/e2e_backend/test_real_provider.py -v --tb=short ) || status=$$?; \
+	exit $$status
 
 ## migrate-check: Validate Alembic migrations are consistent (Task #63)
 migrate-check:

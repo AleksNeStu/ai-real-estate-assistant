@@ -58,7 +58,10 @@ DEMO_RESPONSES: list[str] = [
 class MockLLM(BaseChatModel):
     """LangChain-compatible chat model that returns pre-written demo responses.
 
-    Used when DEMO_MODE=true to avoid calling real LLM APIs on staging.
+    Used when DEMO_LLM_MODE=true to avoid calling real LLM APIs on staging.
+    DEMO_MODE is only the umbrella fallback for the demo flags, so a
+    deployment that sets DEMO_LLM_MODE=false answers with a real model
+    even while DEMO_MODE is on.
     """
 
     response_selector: str = "random"  # random | sequential
