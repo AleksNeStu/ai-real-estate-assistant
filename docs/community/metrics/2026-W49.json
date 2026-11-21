@@ -115,6 +115,8 @@
     "demo_indexable_since": "2026-11-16",
     "first_impressions": "2026-11-17",
     "period": "2026-10-24 → 2026-11-20",
+    "data_state": "all",
+    "measured_at": "2026-11-21T10:14:19Z",
     "impressions_28d": 20,
     "clicks_28d": 0,
     "ctr_28d": 0,
@@ -165,9 +167,50 @@
         "indexed": 0,
         "warnings": 261,
         "errors": 0,
-        "note": "2349 entries = 261 paths × 9 locales. The indexed counter reads 0 while the URL inspection reports the pages as submitted and indexed, so the counter is not a coverage statement. The 261 warnings are one per path-group and their type is not exposed by the API; they are tracked as a task."
+        "note": "2349 entries = 261 paths × 9 locales. The indexed counter reads 0 while the URL inspection reports the pages as submitted and indexed, so the counter is not a coverage statement. The 261 warnings are one per path-group and their type is not exposed by the API; the diagnosis is in docs/community/SEO_INDEXING_SETUP.md §1.7 — everything checkable from the API and from the live site is sound, and the warning text itself needs the operator's Search Console UI to read."
       }
     ],
-    "note": "The property has no search data before 2026-11-11 and the demo was noindex until 2026-11-16, so these are the first impressions the site has ever produced. Twenty impressions in four days, no clicks, and an average position of 39: the pages are days old in the index."
+    "re_read": {
+      "measured_at": "2026-11-21T15:09:48Z",
+      "why": "The same 28-day window read again the same day, through the corrected monitor (.claude/ops/monitor-gsc-traffic.ps1). Google finalises rows with a delay, so a fresh reading of an unchanged window carries more than the morning reading. The morning reading is kept above as it was measured; this block is the later one.",
+      "data_state": "all",
+      "property_totals": {
+        "clicks": 1,
+        "impressions": 24,
+        "ctr": 0.0417,
+        "position": 33.9
+      },
+      "realty_totals": {
+        "clicks": 1,
+        "impressions": 31,
+        "ctr": 0.0323,
+        "position": 27.7
+      },
+      "impressions_by_date": {
+        "2026-11-17": 1,
+        "2026-11-18": 1,
+        "2026-11-19": 1,
+        "2026-11-20": 21
+      },
+      "page_rows": 19,
+      "first_click": {
+        "date": "2026-11-20",
+        "page": "https://realty.kittray.com/en/property/prop-0038",
+        "position": 6,
+        "query": null,
+        "query_note": "The page+query cut returns no row for this page at all, so Google withholds the query behind the click; the click is attributable to the page and to the date, not to a search term."
+      },
+      "queries": [
+        { "query": "ai property valuation", "page": "https://realty.kittray.com/en/valuation", "clicks": 0, "impressions": 1, "position": 35 },
+        { "query": "instant property valuation ai", "page": "https://realty.kittray.com/en/valuation", "clicks": 0, "impressions": 9, "position": 74.2 },
+        { "query": "оцінка квартири онлайн", "page": "https://realty.kittray.com/uk/valuation", "clicks": 0, "impressions": 1, "position": 46 }
+      ],
+      "urls_with_impressions_added_since_collection": [
+        "https://realty.kittray.com/en/property/prop-0038",
+        "https://realty.kittray.com/pl/property/prop-0038"
+      ],
+      "note": "The site's first organic click, on 2026-11-20, one day after the demo became indexable. The property total (24 impressions) is the byProperty aggregate; the page rows sum to 33 because the http:// and https:// variants of a URL are counted separately there."
+    },
+    "note": "The property has no search data before 2026-11-11 and the demo was noindex until 2026-11-16, so these are the first impressions the site has ever produced. At collection time: twenty impressions in four days, no clicks, an average position of 39 — the pages are days old in the index. Re-read the same day: 24 impressions, the site's first click (2026-11-20) and an average position of 33.9."
   }
 }

@@ -183,6 +183,46 @@ Paste any public URL from the site into the GSC search bar to see:
 
 Use this for any page you update and want recrawled faster than the next sitemap refresh cycle.
 
+### 1.7 The 261 sitemap warnings, and the `/tr/` canonical
+
+**The two findings this section answers** (read-only diagnosis, 2026-11-21):
+`https://realty.kittray.com/sitemap.xml` reports **261 warnings**, and the URL
+inspection of `https://realty.kittray.com/tr/` reports *"Google chose
+`…/tr/`, you declared `…/tr`"*.
+
+**The count.** The sitemap carries 2349 `<url>` entries = 261 paths × 9 locales.
+261 warnings is exactly one per **path-group** — and also exactly one per
+**path** (one locale each) — not one per URL. The Search Console API exposes the
+warning *count* per sitemap but not the warning *text*, so the API cannot say
+which of the two it is. That single fact is the whole limit of the API.
+
+**Everything the API can see is sound.** Each check was made against the live
+site and the live API:
+
+| Check | Result |
+|-------|--------|
+| All 2349 sitemap URLs | answer 200, `index, follow`, a self-referencing canonical |
+| The hreflang clusters | every cluster lists its 9 locales plus `x-default` → `/pl`; every alternate points at a URL that is itself in the file |
+| The locales | carry genuinely translated content — the `/ru` page renders Russian, and the per-locale content differs |
+| URL inspection, sampled across the locales | *"Submitted and indexed"*, `canonicalMatch: true`, `issues: []` |
+| A page Google has not crawled yet (`/ru/valuation`) | *"URL is unknown to Google"* — yet it answers 200 with the right canonical, and `robots.txt` allows `/` |
+| Googlebot, bingbot and a browser UA | the same 200, the same bytes and the same canonical — no bot-blocking, no challenge |
+
+**The one URL that differs.** `https://realty.kittray.com/tr/` — the
+trailing-slash variant. The site serves `/tr` with 200 and a self-referencing
+canonical and 308-redirects `/tr/` → `/tr`; the sitemap lists no trailing-slash
+locale root, and neither does the page: the homepage's hreflang cluster and its
+canonical are slashless (`https://realty.kittray.com/tr`), and the page carries
+no `"/xx/"` locale link at all. Google still indexed the redirecting variant
+and chose it as its own canonical. That is Google's choice, not a defect in the
+file: the redirect resolves and the canonical converges on the URL the site
+serves.
+
+**What is left to close this.** The warning text. Reading it needs the
+Search Console UI, which the API does not expose — the operator's screen, and
+the one item in this diagnosis that cannot be settled from here. If the UI
+names a warning type, it belongs in this section.
+
 ---
 
 ## 2. Bing Webmaster Tools

@@ -117,7 +117,7 @@ Reports are stored at: `docs/community/reports/YYYY-MM.md`
 | `docs/community/metrics/2026-W46.json` / `.md` | 2026-W46 | 322 stars |
 | `docs/community/metrics/2026-W47.json` / `.md` | 2026-W47 | 323 stars |
 | `docs/community/metrics/2026-W48.json` / `.md` | 2026-W48 | 325 stars, 117 forks, the first snapshot to read the star timeline back in full |
-| `docs/community/metrics/2026-W49.json` / `.md` | 2026-W49 | The newest: 325 stars, 117 forks, one open issue, 20 impressions and 0 clicks over the 28-day Search Console window, and the first non-empty referrer split |
+| `docs/community/metrics/2026-W49.json` / `.md` | 2026-W49 | The newest: 325 stars, 117 forks, one open issue, 24 impressions and the site's first click over the 28-day Search Console window (read with `dataState=all`), and the first non-empty referrer split |
 | `docs/community/metrics/latest.json` | 2026-W49 | Copy of the newest week |
 
 > **On the week names.** The file names follow this repository's own weekly

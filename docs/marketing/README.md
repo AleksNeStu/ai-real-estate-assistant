@@ -104,14 +104,14 @@ Day +30          → Product Hunt (after audiences warmed up)
 - [x] og:image renders in Twitter Card Validator — checked 2026-11-08:
       `https://realty.kittray.com/og-image.png` answers 200 with a PNG of
       1200×630.
-- [ ] Lighthouse SEO ≥ 95 on demo URL — **the block is gone; re-measure it**.
-      Measured 2026-11-08 with Lighthouse 12.6.1 against the live demo: SEO 63
-      on `/en` and on `/en/search`, and the only failing SEO audit was
-      `is-crawlable` ("Page is blocked from indexing") — the demo was `noindex`
-      then. It is indexable now (see the note below), so that audit passes and
-      the score should be re-measured against the live address. The CI gate on
-      the built application is stricter still (performance ≥ 0.9,
-      accessibility ≥ 0.9, LCP ≤ 2500 ms, TBT ≤ 300 ms).
+- [x] Lighthouse SEO ≥ 95 on demo URL — measured 2026-11-21 with Lighthouse
+      12.6.1 against the live demo: **SEO 100** on `/en` and on `/en/search`,
+      with no failing SEO audit. The reading of 2026-11-08 (SEO 63 on both)
+      failed on exactly one audit, `is-crawlable` ("Page is blocked from
+      indexing"), and the demo was `noindex` then; it has been indexable since
+      2026-11-16, and that audit now passes. The CI gate on the built
+      application is stricter still (performance ≥ 0.9, accessibility ≥ 0.9,
+      LCP ≤ 2500 ms, TBT ≤ 300 ms).
 - [x] Lighthouse Performance ≥ 85 on demo URL — measured 2026-11-08 against
       the live demo: 87 on `/en` (83 on `/en/search`). The remaining cost is
       total blocking time (440 ms on `/en`), which the demo pays for hosting
