@@ -14,7 +14,7 @@ which several of them answer with a bot-protection status):
 | Directory | URL in this file | Where it lands | State |
 |---|---|---|---|
 | There's An AI For That | `theresanaiforthat.com/submit` | `/launch/` — "Launch Your AI Tool" | open |
-| FutureTools | `futuretools.io/submit-a-tool` | the submission form | open |
+| FutureTools | `futuretools.io/submit-a-tool` | the submission form | open — it takes a submission without an account; the Cloudflare challenge on the submit button is the one human step (2026-11-21) |
 | BetaList | `betalist.com/submit` | `/submissions/new` | open |
 | AIcyclopedia | `aicyclopedia.com/submit` | `/submit-your-ai-tool/` | **403 from this network** — the site's own navigation links to exactly this path, so the URL is right and the block is on our side of the fence (IP or region). If it refuses the operator's browser too, the tier-3 entry goes through the site's contact form instead. |
 | Product Hunt | `producthunt.com/posts/new` | `/login?origin=/posts/new` | open, needs a signed-in maker account |
@@ -78,6 +78,25 @@ both to the next search. Hybrid semantic + keyword retrieval.
 Multi-provider LLM fallback. UI in 9 languages (en/pl maintained).
 MIT-licensed.
 ```
+
+**The form's own fields (measured 2026-11-21; the form is server-rendered, so
+the values below are the ones it accepts):**
+
+| Field | Value |
+|---|---|
+| Your Name | Aleksandr Nesterovich |
+| Tool Name * | AI Real Estate Assistant |
+| Tool URL * | https://realty.kittray.com/en |
+| Short Description * | the template's description with the GitHub line appended — the form has no GitHub field of its own |
+| Category * | `other` — the list has no real-estate bucket, so "Other" is the honest choice |
+| Pricing * | `freemium` — the README's own Free $0 / Pro $29 / Enterprise table |
+| Your Email * | a.v.nesterovich@gmail.com (the publishing account's primary address) |
+| newsletter_opt_in | leave unchecked |
+
+**One human step is left.** The submit button answers *"Please complete the
+captcha before submitting"* — the page carries a Cloudflare challenge, and the
+agent does not clear challenges (Rule 306 gate 3). Nothing was sent: the form
+was filled, not submitted.
 
 ### AIcyclopedia (aicyclopedia.com)
 
@@ -189,7 +208,7 @@ It remembers your budget and what you ruled out. UI in 9 languages
 | Directory | Submitted | Approved | Live URL | Notes |
 |---|---|---|---|---|
 | There's An AI For That | _ | _ | _ | |
-| FutureTools.io | _ | _ | _ | |
+| FutureTools.io | _ | _ | _ | The form is filled and the values stick; the Cloudflare challenge is the one human step |
 | AIcyclopedia | _ | _ | _ | |
 | Product Hunt | _ | _ | _ | See product-hunt.md |
 | BetaList | _ | _ | _ | |

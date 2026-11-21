@@ -14,7 +14,7 @@ because Zillow's API died years ago and I'm tired of filter-first portals
 **Body:**
 
 I shipped [AI Real Estate Assistant](https://github.com/AleksNeStu/ai-real-estate-assistant)
-two years ago and just hit v5.3.11 with multi-year property valuation,
+two years ago and just hit v5.4.0 with multi-year property valuation,
 neighborhood AI summaries, and a buyer memory that learns what you told it.
 
 The stack is intentionally boring:

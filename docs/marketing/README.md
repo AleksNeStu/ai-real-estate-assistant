@@ -84,7 +84,8 @@ Day +30          → Product Hunt (after audiences warmed up)
       button, and the anonymous path is still open (`demo_user_bypass:
       false`, so an anonymous visitor is not handed a synthetic user).
 - [x] Live demo: the buyer memory is in the running build — the deployment
-      serves `111441521c4f73eaabc2bf638d2f6e25136742f9`, and that commit
+      serves `96d70c20f92cca037f1da2c15652162f34d55ec3` (the v5.4.0 tag), and
+      that commit
       carries the memory commits (`apps/api/services/buyer_memory_service.py`,
       the extractor, the steering and the filters). A signed-in buyer's
       budget, ruled-out areas and disliked listings survive a turn and shape
@@ -135,11 +136,11 @@ Day +30          → Product Hunt (after audiences warmed up)
       caller, and without it for anyone else. The demo runs that same
       commit, so the stamp is true of what the visitor is talking to.
 
-## What changed since the drafts were written (2026-11-09 → 2026-11-18)
+## What changed since the drafts were written (2026-11-09 → 2026-11-21)
 
 The five drafts were written against the deployment of 2026-11-09 and are
-re-verified against the deployment of 2026-11-18 (the v5.3.11 build, `sha
-1fe220d5d`). Three things moved, and every draft now carries the new truth:
+re-verified against the deployment of 2026-11-21 (the v5.4.0 build, `sha
+96d70c20f`). Three things moved, and every draft now carries the new truth:
 
 1. **The demo can be signed into with Google** (`v5.3.4`). The drafts used
    to promise *"no signup"*; the honest claim is narrower — browsing needs
@@ -148,12 +149,12 @@ re-verified against the deployment of 2026-11-18 (the v5.3.11 build, `sha
    build). It was in none of the drafts. It is now the headline in all
    five, because it is the thing a competitor's demo cannot copy in a
    weekend.
-3. **The launch URL is `/en`.** The bare root 307-redirects to `/pl`, so an
+3. **The launch URL is `/en`.** The bare root redirects to `/pl`, so an
    English-language audience was landing on a Polish page. Every link in
    every draft now carries the English path.
 
 Also corrected, because they would not survive a reader checking them:
-`v5.1.17` → the current `v5.3.11`; *"the demo uses simulated AI
+`v5.1.17` → the current `v5.4.0`; *"the demo uses simulated AI
 responses"* → the demo answers with a real provider; *"16 supported
 providers"* → 17; *"9 languages with EU AI Act compliance labels"* → nine
 locales ship, English and Polish are maintained, the rest fall back to
@@ -238,8 +239,11 @@ publishing anything.
   `/submit-your-ai-tool`, which answers 403 from this network although the
   site's own navigation links there), and the per-directory copy is in
   [directory-submissions.md](./directory-submissions.md). FutureTools accepts a
-  submission without an account; the agent's pass did not get its React form to
-  accept the values, so that one is a human click.
+  submission without an account, and on 2026-11-21 the agent's pass filled the
+  whole form and every value stuck — the submit button then refused with the
+  page's own Cloudflare challenge ("Please complete the captcha before
+  submitting"), and the agent does not clear challenges (Rule 306 gate 3).
+  Nothing was sent: that one is a human click.
 - **Reddit** — the four posts are written. Each subreddit's own rule expects the
   account to have some history, and a brand-new account posting the project's own
   launch is what the moderators remove. The posts wait for the operator's account.

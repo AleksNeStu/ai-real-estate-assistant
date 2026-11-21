@@ -116,11 +116,11 @@ Quick answers to the inevitable ones:
 
 ## Assets checklist before posting
 
-Re-verified on 2026-11-18 against the live deployment, which now runs the
-**v5.3.11** build (`build.sha = 1fe220d5da503e76b02c7b36e1bce43f21c7d7b3`):
+Re-verified on 2026-11-21 against the live deployment, which now runs the
+**v5.4.0** build (`build.sha = 96d70c20f92cca037f1da2c15652162f34d55ec3`):
 
 - [x] Live demo URL responds 200: `https://realty.kittray.com/en` — the bare
-      root 307-redirects to `/pl`, so the English path is the one to publish
+      root redirects to `/pl`, so the English path is the one to publish
 - [x] GitHub repo link works
 - [x] og:image renders: `https://realty.kittray.com/og-image.png` answers 200 with
       a PNG of 1200×630 (the card a Twitter validator asks for)
@@ -140,7 +140,7 @@ Re-verified on 2026-11-18 against the live deployment, which now runs the
       `MiniMax-M3.1-Flash`; the codebase carries 17 provider modules and nine
       locales (`apps/web/src/i18n/config.ts`: pl, en, ru, de, es, it, pt, tr,
       uk), English and Polish maintained and the rest frozen onto English
-- [x] The buyer memory is in the running build: `111441521` descends from the
+- [x] The buyer memory is in the running build: `96d70c20f` descends from the
       commits that wrote `buyer_memory_service.py` and the `chat.py` filters
 
 Everything below needs the operator: the posting, the account, the voice.
