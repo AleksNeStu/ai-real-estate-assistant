@@ -6,20 +6,24 @@ This document defines the community health metrics tracked for the AI Real Estat
 
 ## Target Metrics (Roadmap Goals)
 
-| Metric | Target | Timeline | Current (2026-11-08) | Status |
+| Metric | Target | Timeline | Current (2026-11-21) | Status |
 |--------|--------|----------|------------------------|--------|
-| GitHub Stars | >= 100 | 6 months post-launch | 321 | Reached |
-| First External PR Merged | >= 1 | 3 months post-launch | 0 | Not reached |
-| Doc Site Visits Growth | Month-over-month increase | Ongoing | 706 views / 272 uniques (14 days) | Measured, no trend yet |
-| GitHub Issues (good first issue) | >= 5 open at any time | Ongoing | 0 open issues in total | Not met — no onboarding funnel |
-| Fork Count | >= 20 | 6 months post-launch | 119 | Reached |
+| GitHub Stars | >= 100 | 6 months post-launch | 325 | Reached |
+| First External PR Merged | >= 1 | 3 months post-launch | 1 — PR #348, merged 2026-10-20 | Reached |
+| Doc Site Visits Growth | Month-over-month increase | Ongoing | 733 views / 185 uniques (14 days) | Measured, no trend yet |
+| GitHub Issues (good first issue) | >= 5 open at any time | Ongoing | 1 open issue, and it carries the label | Not met — but the first entry point is now open (#418) |
+| Fork Count | >= 20 | 6 months post-launch | 117 | Reached |
 | Contributors (external) | >= 3 | 6 months post-launch | 3 | Reached |
 
-The two unmet targets are the same gap seen from two sides: nobody outside the
-owner contributes, because there is nothing for them to pick up — the tracker
-holds **zero** open issues, so a newcomer finds no entry point. The external
-contributors that did exist (`stephenalexbrowne`, `Jwrede`, `KrabbiAI`) came in
-with their own pull requests rather than from an issue.
+Two of the targets are met and two are not, and the two that are not are the
+same gap seen from two sides: an outside account has had a pull request merged
+(#348, 2026-10-20) and three outside accounts are on the contributor list, but
+the tracker held **zero** open issues until 2026-11-21, so a newcomer had no
+entry point to pick up. Issue #418 ("Community: Add Telegram Connector for
+Saved Searches", labelled `good first issue`) is the first one — one entry
+point is not a funnel. The outside contributors (`stephenalexbrowne`, `Jwrede`,
+`Krabbi`) came in with their own pull requests or commits rather than from an
+issue.
 
 ## Weekly Tracking
 
@@ -110,7 +114,19 @@ Reports are stored at: `docs/community/reports/YYYY-MM.md`
 |------|------|------|
 | `docs/community/metrics/2026-W18.json` / `.md` | 2026-W18 | Superseded — it carried placeholder zeroes from a workflow that could not read the repository |
 | `docs/community/metrics/2026-W45.json` / `.md` | 2026-W45 | The first snapshot collected directly from the GitHub API (321 stars, 119 forks, 706 views / 272 uniques over 14 days) |
-| `docs/community/metrics/latest.json` | 2026-W45 | Copy of the newest week |
+| `docs/community/metrics/2026-W46.json` / `.md` | 2026-W46 | 322 stars |
+| `docs/community/metrics/2026-W47.json` / `.md` | 2026-W47 | 323 stars |
+| `docs/community/metrics/2026-W48.json` / `.md` | 2026-W48 | 325 stars, 117 forks, the first snapshot to read the star timeline back in full |
+| `docs/community/metrics/2026-W49.json` / `.md` | 2026-W49 | The newest: 325 stars, 117 forks, one open issue, 20 impressions and 0 clicks over the 28-day Search Console window, and the first non-empty referrer split |
+| `docs/community/metrics/latest.json` | 2026-W49 | Copy of the newest week |
+
+> **On the week names.** The file names follow this repository's own weekly
+> sequence. The ISO week of the collection date has drifted one step behind
+> since `2026-W47`: `2026-W45` was collected on 2026-11-08 (ISO W45),
+> `2026-W46` on 2026-11-11 (ISO W46), `2026-W47` on 2026-11-15 (ISO W46),
+> `2026-W48` on 2026-11-20 (ISO W47) and `2026-W49` on 2026-11-21 (ISO W47).
+> Each snapshot records its `iso_week_of_collection` in the JSON, so both the
+> sequence name and the calendar week are readable.
 
 ## Star History and Growth-Metrics Data
 
@@ -170,6 +186,13 @@ orphan branches (`dev` and `main` only).
 
 `pr_stats.total_merged` is `null` when the count could not be resolved
 reliably — a null is honest, a zero would not be.
+
+The snapshots also carry the blocks the schema above does not list, because the
+measurement produced them: `star_curve_monthly` (new stars per calendar
+month), `fork_state` (the repository counter against the network list),
+`indexing` (the Search Console reading), and `iso_week_of_collection` with
+`week_naming_note`. `docs/community/metrics/2026-W49.json` is the reference for
+their shape.
 
 ### GitHub Traffic Data Limitations
 

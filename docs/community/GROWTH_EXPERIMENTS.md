@@ -8,16 +8,16 @@
 
 ## Live public metadata
 
-Read via the GitHub REST API on 2026-11-20:
+Read via the GitHub REST API on 2026-11-21:
 
 | Field | Value |
 |-------|-------|
-| **Description** | `Open-source AI real estate assistant: RAG + vector search over your own listings, 16 LLM providers, FastAPI + Next.js. Run it on your own server with Docker, or try the live demo.` (179 chars) |
+| **Description** | `Open-source AI real estate assistant: RAG + vector search over your own listings, 17 LLM providers, FastAPI + Next.js. Run it on your own server with Docker, or try the live demo.` (179 chars) |
 | **Homepage** | `https://realty.kittray.com` |
 | **Topics** (17) | `ai-assistant`, `artificial-intelligence`, `chatbot`, `chromadb`, `docker`, `fastapi`, `langchain`, `llm`, `nextjs`, `open-source`, `property-search`, `python`, `rag`, `real-estate`, `self-hosted`, `typescript`, `vector-search` |
 | **Default branch** | `dev` |
 | **Stars / Forks / Watchers** | 325 / 117 / 6 |
-| **Open issues / Open PRs** | 0 / 5 (Dependabot) |
+| **Open issues / Open PRs** | 1 / 0 — the issue is #418 (`good first issue`, `help wanted`); the five Dependabot pull requests were closed unmerged on 2026-11-21 |
 | **Contributors** | 6 (the owner, `dependabot[bot]`, `github-actions[bot]`, `dev-scaler`, and two outside contributors: `stephenalexbrowne`, `Jwrede`) |
 
 ## How the metadata got here
@@ -29,6 +29,7 @@ Read via the GitHub REST API on 2026-11-20:
 | 2026-07-21 | The social preview card was regenerated from its SVG source, with the decaying star count removed | `.superpowers/sdd/progress.md` (Task 5) |
 | 2026-07-21 | A second card variant was added next to the live one | `.superpowers/sdd/progress.md` (Task 8) |
 | 2026-11-08 | Read back for this record: 17 topics, a 179-char description naming the 16 providers, the vector search and the Docker path | GitHub REST API |
+| 2026-11-21 | Read back for this record: the description now names the 17 providers, the repository carries 325 stars and 117 forks, one open issue and no open pull requests | GitHub REST API |
 
 The current description says what a visitor can verify in the README — the
 provider count, the retrieval stack and the two ways to run it — and nothing
@@ -69,52 +70,62 @@ architectural change). Both now say what is true.
 | Evergreen social preview (no star count on the card) | 2026-07-21 → now | The card carries no decaying number; the star count was replaced by test and coverage figures, which grow | keep — re-check the numbers at each release |
 | Hosted star-history chart | 2026-07 → 2026-08-15 | Removed: the PAT lacked the `Starring: Read` scope, and the workflow's orphan-branch pattern destroyed its own history | stopped — the README carries no star-history chart |
 | Weekly metrics workflow | 2026-08-15 → now | Removed together with star-history; the weekly snapshot is collected by hand and committed | manual — see [`METRICS.md`](./METRICS.md) |
-| Indexing the demo | 2026-07-22 → 2026-11-16 | robots.txt was flipped to index/follow for a star-attraction test, then reversed (the demo served a Disallow-all robots.txt and `X-Robots-Tag: noindex, nofollow`). On 2026-11-16 the operator lifted it for good: the product is the open-source funnel, and a demo no search engine can find is a demo nobody arrives at | done — the demo is indexable on its canonical host `realty.kittray.com`; the first impressions arrived on 2026-11-17 (1 on the 17th, 1 on the 18th, positions 4–5, 0 clicks), with both sitemaps submitted and no errors |
+| Indexing the demo | 2026-07-22 → 2026-11-16 | robots.txt was flipped to index/follow for a star-attraction test, then reversed (the demo served a Disallow-all robots.txt and `X-Robots-Tag: noindex, nofollow`). On 2026-11-16 the operator lifted it for good: the product is the open-source funnel, and a demo no search engine can find is a demo nobody arrives at | done — the demo is indexable on its canonical host `realty.kittray.com`; the first impressions arrived on 2026-11-17 — 20 impressions over four days (1 on the 17th, 1 on the 18th, 1 on the 19th, 17 on the 20th), 0 clicks, an average position of 39 — with both sitemaps submitted and no errors |
 | Pre-launch checks on the live demo | 2026-11-08 | Tour, try-these chips, lead capture with redaction, and og:image all verified against the running deployment | passed |
 | Dependency auto-merge | 2026-06 → 2026-11-11 | The workflow never merged anything, for two reasons: it waited 60 s for the PR's CI checks to appear and gave up before they existed, and it ran on `pull_request_target` while the merge action reads the bump's type only on `pull_request` — so the update type arrived empty and the action refused with "Semver bump '' is invalid!". Both fixed on 2026-11-11; eight bumps merged the same day | fixed — a safety net, not a silent failure |
 
 ## What the traffic says
 
-Fourteen days to 2026-11-20: 733 views, 185 unique visitors, +7 stars in thirty
-days — 0.23 a day.
+Fourteen days to 2026-11-19 (the window the traffic API still serves): 733
+views, 185 unique visitors, +7 stars in thirty days — 0.23 a day.
 
 | Referrer | Unique visitors | Reading |
 |----------|-----------------|---------|
 | github.com | 73 | The repository's own traffic — people who already found it |
-| aocr.org | 81 | Noise: a radiology college's site, not an open-source directory |
-| Google | 22 | Organic, measured when the demo was still `noindex` |
+| Google | 18 | Organic — the first measurable referral the repository has had |
+| ashishpatel26.github.io | 3 | A single visitor |
+| nestlab.tech | 2 | The studio |
+| discuss.pytorch.kr | 2 | A single discussion thread |
+| l.facebook.com | 2 | One visitor, through social |
+| t.co | 2 | One visitor, through social |
+| search.brave.com | 1 | A search engine |
+| Bing | 1 | A search engine |
+| Yahoo | 1 | A search engine |
 
-This split is the last one measured (W46): the traffic API returned an empty
-referrer list for the W48 window, so no newer split exists.
+The aocr.org referrer that carried 81 of the 262 unique visitors in the W46
+window is gone. This split was measured on 2026-11-21; the collection the day
+before returned an empty list, so there is no reading between the two.
 
 The first wave of TaskMaster #14 targets 10 stars a day — about 43 times the
 current rate. At today's conversion that means roughly 3,700 unique visitors a
 day, or a channel of a different kind (Hacker News, Product Hunt, a directory
 that actually converts). The full snapshot is in
-[`metrics/2026-W48.md`](./metrics/2026-W48.md).
+[`metrics/2026-W49.md`](./metrics/2026-W49.md).
 
 ## What the stars and forks are doing
 
 **The star count has never fallen.** Read from the stargazer timestamps, the
-whole history is 325 stars, and the newest is dated the day before this
-collection. June 2026 carried 73 of them in one month — more than the five
-months before it combined — and what followed was not decline but the return
-to the ordinary rate: 18, 20, 7, 8, 6 a month. The four stars of the last
-seven days are the best fortnight since July.
+whole history is 325 stars, and the newest is dated 2026-11-19 — two days
+before this collection. June 2026 carried 73 of them in one month — more than
+the five months before it combined — and what followed was not decline but the
+return to the ordinary rate: 18, 20, 7, 8, 6 a month. The four stars of the
+last seven days (five in fourteen) are the best run since July.
 
 **Forks are clones, not contributions.** The counter says 117, the network list
-returns 122, and every one of them has 0 stars and 0 forks of its own. Two were
-created in the last 30 days and two were deleted in the last five. The number
-that says whether somebody took the work further is the contributor count, and
-that stands at 6 — the owner, two bots, the mirror account, and two outside
-contributors.
+returns 122 — 115 owned by a user account, 7 by an organization — and four were
+created in the last 30 days. Five of them are no longer empty: four of the
+oldest hold a star each, one holds a fork. The number that says whether
+somebody took the work further is the contributor count, and that stands at 6
+— the owner, two bots, the mirror account, and two outside contributors.
 
 **The index has only just started.** The demo has been indexable since
 2026-11-16; the property carries no search data before 2026-11-11, and the demo
 was `noindex` until the 16th. The site has produced its first impressions ever
-— one on the 17th, one on the 18th, positions 4 and 5, no clicks yet. Both
-sitemaps are submitted without errors and the product's own sitemap lists 261
-URLs. Two days of impressions is the start of a channel, not a result.
+— 20 over four days (1 on the 17th, 1 on the 18th, 1 on the 19th, 17 on the
+20th), no clicks yet, an average position of 39. Both sitemaps are submitted
+without errors, and the product's own sitemap lists 2349 URLs — 261 paths × 9
+locales — every one of them answering 200. Four days of impressions is the
+start of a channel, not a result.
 
 ## What is deliberately not done here
 
