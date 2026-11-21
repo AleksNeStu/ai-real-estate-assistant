@@ -7,6 +7,174 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.4.0] - 2026-11-21
+
+Forty-five commits since v5.3.11. The theme is the same as the previous
+releases: the claims the project makes about itself are now the claims the
+pipeline checks.
+
+### Added
+- **The demo's real-model answer is proven by a test** — the headline claim
+  was proved by nothing. The e2e suite mocked the provider at the browser
+  boundary, and the one suite that talks to a running backend still selected
+  the local `MockLLM`, so a green pipeline said nothing about which provider
+  answers. The proof asks the stack a question the mock cannot answer —
+  arithmetic — and asserts the answer is not one of the mock's four canned
+  sentences, is not empty, and carries the computed value. The mock ignores
+  the question entirely, so it cannot pass those assertions by construction;
+  the spec proves that as a property in its own negative control, which runs
+  the same assertion function against every canned answer and requires it to
+  reject each one. `make e2e-real-provider` runs it against the local Ollama
+  profile: a real model, no API key, no cost, nothing leaves the machine.
+- **The backend suites run in the pipeline** — the end-to-end suite runs
+  twice (in-process, and against the compose stack the pipeline already
+  builds) and the resilience suite runs in a job of its own, proving the
+  fallback against the real application rather than against a mini-app that
+  mirrors its logic. The p95 and the load suites stay out of the pull-request
+  path: a percentile measured on a shared runner is a measurement of the
+  runner. They stay a named Makefile target against a backend you name, with
+  the budget stated.
+- **A breaking change to the public API fails the pipeline** — the drift
+  check existed, but only locally: a green pipeline said "the API is
+  unchanged" and nothing checked. The check now runs on every pull request.
+  It exports the schema the application serves and compares it with the
+  released baseline, and it fails on a difference a consumer cannot survive
+  — a field that is gone, renamed, retyped or newly required, an endpoint or
+  a parameter that disappeared — naming the field and saying how the consumer
+  breaks. An additive change passes.
+- **The site measures itself** — Cloudflare Web Analytics, cookieless and
+  without personal data. The token is read from the RUNTIME environment,
+  not from a `NEXT_PUBLIC_*` variable: the latter is inlined when the image
+  is built, and the token belongs to the deployment, not to the build.
+  Without it the site sends no third-party request at all.
+- **The buyer memory can be seen and deleted in the account** — the legal
+  pages promise the visitor that the memory can be seen and deleted. The
+  endpoint existed; nothing in the product reached it. The account area
+  lists the facts one per row and deletes the whole memory behind a
+  confirmation, in the legal wording: a budget, areas ruled out, a feature
+  you need, a listing you liked.
+- **The tracked interaction carries the locale it happened on** — the
+  locale was only implicit inside the page URL and was never parsed, so a
+  locale's traffic could not be counted. The field is optional everywhere: a
+  request without a locale is recorded as it is, and a malformed one loses
+  the locale instead of the interaction.
+- **The Telegram connector good-first-issue is drafted** — the issue text
+  is written and committed; opening it under the operator's account is the
+  operator's click.
+
+### Changed
+- **The demo is indexed, and the documents say so** — the deployment stopped
+  answering `X-Robots-Tag: noindex` and its robots.txt allows crawling, but
+  the repository still said the opposite in the marketing index, in the
+  weekly metrics and in two dated reviews. The snapshots now carry the date
+  the hold ended instead of the state they were written in; the reviews
+  carry the same note, so a reader of a dated audit does not read it as a
+  description of the site.
+- **The launch drafts name the build the demo now runs** — four drafts are
+  corrected against the code: the default per-task model has no application
+  caller, the embeddings are a small local model and Ollama is never in that
+  path, the free-tier cascade serves an endpoint the interface never calls,
+  and the demo's chat has a chain of its own.
+- **The free-tier cascade is a deployment variable** — it was described as a
+  fixed chain. It is not: `FREE_TIER_PROVIDER_CASCADE` is an environment
+  variable, the repository default is MiniMax → Ollama → OpenRouter free →
+  Google Flash, and the public demo runs Google's free Flash first. The
+  copy now names the order the demo actually runs and marks the chain as a
+  deployment variable.
+- **The capability promises no browser flow the deployment cannot deliver**
+  — the OAuth callback sends the visitor back to the interface only when the
+  frontend URL is one it can redirect to; without one it answers with the
+  tokens as a JSON body. The capability now mirrors the endpoint, as its own
+  comment says it should. The Apple redirect URI was derived by replacing
+  every "google" in the configured URI with "apple" — which also rewrote a
+  "google" in the host, the query or any other segment.
+- **The default provider travels with the key it needs** — the compose
+  default provider was `minimax`, but the example file documented only the
+  OpenAI key, so a fresh clone that followed the example got a provider it
+  had no key for, and the chat answered nothing.
+
+### Fixed
+- **The audit chain forked under concurrent writes** — 678 entries on the
+  live demo share their tip, because the tip was read and the row inserted in
+  two steps, and two writers read the same tip. The row now goes in first —
+  that insert takes SQLite's write lock — and the tip is read under it, so a
+  second writer waits instead of reading the same tip; Postgres, where the
+  insert takes no lock, gets a transaction-scoped advisory lock. The entry's
+  timestamp is set strictly after the tip's, so the order of the links and the
+  order of the timestamps are the same order. The verifier walks the newest N
+  entries — the docstring said "the last N", the code took the oldest N —
+  and judges the window's first link against its anchor. It reports three
+  verdicts: `valid` (one unbroken line, unchanged), `integrity_valid` (every
+  entry's own hash still matches its content — the tamper-evidence claim,
+  which stays true for a log that forked under concurrency) and `fork_count`.
+  The history is not rewritten: an audit log is not edited, so the endpoint
+  says what the forks are instead of calling an intact log invalid.
+- **The audit entry raced the request's write lock** — SQLite has one
+  writer, so the middleware wrote its entry in a transaction of its own
+  while the request still held the lock; the two deadlocked, the entry was
+  lost, and the request waited for the busy timeout. The entry now joins the
+  request's own transaction, written inside a savepoint so a failed entry
+  rolls back only itself.
+- **A client error kept its own status** — the chat and the search router
+  caught every exception in one arm and answered 500 with it, including the
+  `HTTPException` the router itself had raised a line earlier. An empty chat
+  message is a 400 and a degraded vector store is a 503; both were reported
+  as a server failure.
+- **The neighbourhood adapters asked the provider a question it could not
+  accept** — six of the seven request shapes the four adapters build were
+  answered with an HTTP 400 and a parse error, and the adapters swallowed
+  it: in production every one of them answers with nothing. A union term has
+  to name its element type every time, a filter on the existence of a key is
+  not a filter on its value, and Overpass QL has no comment syntax. The
+  queries are now built from the provider's own accepted forms, against
+  recorded answers, and the recorded rejections are kept as the record of the
+  defect.
+- **The chat answered 500 when the provider answered in content blocks** —
+  Anthropic-style answers, and OpenRouter's free models, put a list into a
+  field typed as a string. The answer is flattened into its text in one
+  place, and the chat router and the agent both read it from there.
+- **The money in the calculators kept the sign inside the symbol** — a
+  negative amount read "$-5,000" while a positive one read "$5,000", and the
+  compact form the charts use printed "$0K" for zero and rounded a price
+  under a thousand up to "$1K". One house helper owns the shape now.
+- **The searched cities answered differently on either database** — SQLite
+  keeps a search whose filters carry no "city" key, so the row survived the
+  filter and the aggregation counted a city the search never named — twice.
+  The rows are filtered in Python as well, so the two databases answer
+  identically.
+- **The translations named the page they belonged to** — a page that
+  declares its own metadata replaced the one the layout declares, so the
+  layout's hreflang cluster was inherited by every route below it: the search
+  page claimed the nine home pages as its translations. The cluster is now
+  built per route. The sitemap carries every language version of every page
+  as its own entry, with the date the listings were scraped rather than the
+  date the request was served.
+- **The breakdown chart rendered a heading it did not have** — an empty
+  string is not nullish, so the fallback never applied and the card carried
+  an empty heading element, which a screen reader reads as a heading.
+- **The usage summary's type did not carry the visitors per locale** — the
+  API answered it; the client's type for the answer did not declare it.
+- **The health summary reported on every job the pipeline runs** — the
+  rule5 gate was a job the pipeline ran and the summary never mentioned, so
+  its failure showed up nowhere in the table that names the failed jobs.
+- **The scheduler test waited for the instant, not for the thread** — on a
+  loaded machine the join could expire before the thread ended, and the test
+  failed on a race it does not control.
+- **The proof waited for the demo catalogue, and only for a while** — the
+  catalogue is seeded in the background, so the API answers before the
+  listings are there; a proof that runs against an empty catalogue can go red
+  for a reason that has nothing to do with the provider.
+- **The proof stack is its own project, with no provider keys** — it ran
+  under the developer's own compose project, so its teardown took that stack
+  with it, and it inherited the workstation's provider keys, so "no key, no
+  cost" was not true of it.
+- **The proof scans the answer only, and the control sees every answer** —
+  the SSE branch collected every envelope, so the metrics and the listings
+  went into the text the proof scans.
+- **The contract test loaded the diff script the way the module registry
+  needs** — a dataclass resolves its annotations through `sys.modules`, so
+  every breaking-change case died on the import instead of on the comparison.
+
 ## [5.3.11] - 2026-11-19
 
 ### Fixed
@@ -1545,6 +1713,7 @@ First production release of AI Real Estate Assistant.
 - SQLite database for property listings
 
 [Unreleased]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases
+[5.4.0]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.4.0
 [5.3.4]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.4
 [5.3.3]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.3
 [5.3.2]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.2
