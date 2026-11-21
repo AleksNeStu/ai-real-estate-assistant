@@ -241,6 +241,24 @@ being computed. The warning text cannot be read until that processing finishes
 — the re-check is TaskMaster **#107**, and the release numbers it waits on
 arrive with the +24h datapoint (TaskMaster #14).
 
+**The re-read, 2026-11-21T21:10Z — nothing moved.** The API still answers
+`warnings: 261` and `warnings: 1` (`errors: 0`; realty `lastDownloaded
+2026-11-21T06:42Z`), both sitemaps are still `Status: Success`, the realty
+drilldown still answers *"Sitemap processed successfully"*, and the Pages report
+filtered by the realty sitemap still answers *"Processing data, please check
+again in a day or so"* with an **empty** exclusion table — the header row and
+nothing else. The per-URL data is still being computed, so the warning text
+does not exist yet, and nothing is claimed about it.
+
+**And the re-read is now automatic.** The detached collector that takes the
+release-wave numbers also reads both surfaces over CDP at every due point and
+then polls every 15 minutes from that point until the data arrives, writing
+`sitemap-reread-<label>.json` (the structured read, with a `closed` flag) and
+`sitemap-reread-<label>.txt` (the verbatim UI text of both surfaces) into
+`docs/community/private-evidence/` — the gitignored evidence directory. The
+next reading is due at **2026-11-22T01:05Z**. TaskMaster #107 closes on the
+first file that carries `closed: true`, or on the API counter falling to 0.
+
 **The three redirecting URLs, named.** The "Page with redirect" drilldown
 lists them: `https://kittray.com/` (crawled Nov 11), `http://www.kittray.com/`
 (Nov 11) and `https://www.kittray.com/` (Nov 10). All three are the studio
