@@ -131,7 +131,7 @@ Re-verified on 2026-11-21 against the live deployment, which now runs the
       `assets/screenshots/login-dark.png`
 - [x] Title under 80 chars — the title above is 75; the one it replaced was 94
 - [x] Body under 400 words — 367
-- [x] First comment drafted and ready to paste immediately — 320 words
+- [x] First comment drafted and ready to paste immediately — 364 words
 - [x] The claims the body makes, read off the running deployment
       (`GET /api/v1/capabilities`): `auth.jwt_enabled: true`,
       `auth.oauth.google: true`, `auth.demo_user_bypass: false` — so "browsing
