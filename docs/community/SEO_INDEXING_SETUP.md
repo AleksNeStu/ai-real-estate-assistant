@@ -218,10 +218,68 @@ and chose it as its own canonical. That is Google's choice, not a defect in the
 file: the redirect resolves and the canonical converges on the URL the site
 serves.
 
-**What is left to close this.** The warning text. Reading it needs the
-Search Console UI, which the API does not expose — the operator's screen, and
-the one item in this diagnosis that cannot be settled from here. If the UI
-names a warning type, it belongs in this section.
+### 1.7.1 The warning text, read in the Search Console UI (2026-11-21)
+
+The warning text was read in the Search Console UI — through the NestLab
+Automation Chrome over CDP, signed in as `nestlab.micro@gmail.com` (the
+account that owns `sc-domain:kittray.com`; the Automation Chrome's `Default`
+profile carries `auto.tester.py@gmail.com`, which answers *"Oops, you don't
+have access to this property"*). **The UI does not show a warning text, and it
+does not show a warning at all:**
+
+| Surface | What it says |
+|---|---|
+| Sitemaps list | both sitemaps **Status: Success** — realty 1,899 discovered pages (last read Nov 21), kittray.com 2 (last read Nov 19) |
+| realty drilldown | **"Sitemap processed successfully"** — no Warnings card, no Errors card |
+| kittray.com drilldown | the same — **"Sitemap processed successfully"** |
+| Pages report (whole property) | 3 indexed pages; **one** exclusion reason — **"Page with redirect", 3 pages**, Source: Website, Validation: Not Started, first detected 11/14/26, last update 11/16/26, trend 6 -> 4 -> 2 -> 0 |
+| Pages report **filtered by the realty sitemap** | **"Processing data, please check again in a day or so"** |
+
+The API's counter (`warnings: 261` and `warnings: 1`) therefore has **no
+counterpart in the UI today**, and the UI itself says the per-URL data is still
+being computed. The warning text cannot be read until that processing finishes
+— the re-check is TaskMaster **#107**, and the release numbers it waits on
+arrive with the +24h datapoint (TaskMaster #14).
+
+**The three redirecting URLs, named.** The "Page with redirect" drilldown
+lists them: `https://kittray.com/` (crawled Nov 11), `http://www.kittray.com/`
+(Nov 11) and `https://www.kittray.com/` (Nov 10). All three are the studio
+landing page's host variants — and **`https://kittray.com/` is one of the two
+URLs in the kittray.com sitemap**. That is the whole content of that
+sitemap's single warning: a listed URL that was a redirect when Google last
+crawled it. It answers 200 today. The sitemap's other URL,
+`https://realty.kittray.com/pl`, is on a **second host** — a cross-domain
+entry in a sitemap submitted for `kittray.com` — which is the only other
+candidate for that warning, and the reason that sitemap carries two URLs at
+all.
+
+**The 261, measured at full scale.** Every one of the 2349 URLs in
+`realty.kittray.com/sitemap.xml` was probed for redirects: **2349 x 200, zero
+redirects, zero errors.** The file is also structurally clean — 2349 unique
+`<loc>` values, no duplicates, no trailing-slash variants, and every entry
+carrying exactly 10 hreflang links (9 locales + `x-default`) that all point at
+the **same path** in that locale, `x-default` at the same path in Polish.
+Every `lastmod` is the same valid W3C datetime shape. The generator
+(`apps/web/src/app/sitemap.ts` -> `languageAlternates(path)` in
+`apps/web/src/lib/metadata.ts`) is right, and its own test
+(`apps/web/src/app/__tests__/sitemap.test.ts`) asserts the `x-default` shape.
+
+**What that leaves.** By the same mechanism as the kittray.com warning, the
+261 are one per path-group of a URL that **was** a redirect when Google crawled
+it — the Pages report's trend (6 -> 4 -> 2 -> 0, last update 11/16/26) says
+the redirects were fixed on 2026-11-16, the day the demo was made indexable.
+The count fits: the URL every cluster points at as `x-default` is the `/pl`
+variant, and there are exactly 261 of those. **That is a hypothesis, not a
+measurement** — the Pages report for that sitemap says the data is still
+processing, and no crawl data exists for 261 of these URLs (Google has
+crawled 6 of the property's pages). The prediction is falsifiable: after the
+next processing, either the warning count drops to 0, or the drilldown names
+the type and the URLs, and either outcome belongs in this section.
+
+**What is left to close this.** The warning text, once Google finishes
+processing — the drilldown itself says *"check again in a day or so"*. Until
+then this section carries the measurement, the two named candidates and the
+falsifiable prediction, and nothing more.
 
 ---
 
