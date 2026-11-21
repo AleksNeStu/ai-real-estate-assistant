@@ -180,7 +180,7 @@ When submitting a PR, ensure you have addressed all items in the pull request te
 
 Looking for a place to start? Check these community-friendly issues:
 
-- **[Community: Implement Telegram Bot MCP Connector](https://github.com/AleksNeStu/ai-real-estate-assistant/issues/16)** - Build a Telegram bot connector following the MCP pattern
+- **[Community: Add Telegram Connector for Saved Searches](https://github.com/AleksNeStu/ai-real-estate-assistant/issues/418)** - Build a Telegram bot connector following the MCP pattern
 - **[Community: Add Email Notification MCP Connector](https://github.com/AleksNeStu/ai-real-estate-assistant/issues/NEW)** - Implement email notifications via SMTP/sendgrid
 - **[Community: Add iCal Export for Saved Searches](https://github.com/AleksNeStu/ai-real-estate-assistant/issues/NEW)** - Calendar export for property viewing schedules
 - **[Community: Add CSV Export for Property Results](https://github.com/AleksNeStu/ai-real-estate-assistant/issues/NEW)** - Export search results as spreadsheet
