@@ -282,6 +282,7 @@ docs/community/private-evidence/
 node_modules/
 package-lock.json
 !apps/web/package-lock.json
+!packages/cli/package-lock.json
 yarn.lock
 apps/web/.next/
 apps/web/out/

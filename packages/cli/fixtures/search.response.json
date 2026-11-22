@@ -1,0 +1,35 @@
+{
+  "count": 2,
+  "results": [
+    {
+      "property": {
+        "id": "prop-001",
+        "address": "Myśliwska 68C",
+        "city": "Kraków",
+        "district": "Śródmieście",
+        "price": 850000.0,
+        "currency": "PLN",
+        "area_sqm": 60.0,
+        "rooms": 3.0,
+        "property_type": "apartment",
+        "listing_type": "sale"
+      },
+      "score": 0.91
+    },
+    {
+      "property": {
+        "id": "prop-002",
+        "address": "Kopernika 12",
+        "city": "Kraków",
+        "district": "Zwierzyniec",
+        "price": 720000.0,
+        "currency": "PLN",
+        "area_sqm": 54.0,
+        "rooms": 2.0,
+        "property_type": "apartment",
+        "listing_type": "sale"
+      },
+      "score": 0.87
+    }
+  ]
+}

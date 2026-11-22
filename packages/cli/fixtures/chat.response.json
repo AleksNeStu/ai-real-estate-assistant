@@ -1,0 +1,20 @@
+{
+  "response": "In Śródmieście the register shows 12 notarial sales in the first half of 2026, with a median of 15,986 PLN per m².",
+  "session_id": "session-001",
+  "sources": [
+    {
+      "title": "Rejestr Cen Nieruchomości - Kraków, Śródmieście",
+      "url": "https://example.invalid/register/krakow"
+    }
+  ],
+  "sources_truncated": false,
+  "citation_stats": {
+    "total": 1,
+    "unique": 1,
+    "duplicates": 0,
+    "avg_confidence": 0.9,
+    "by_type": {
+      "register": 1
+    }
+  }
+}

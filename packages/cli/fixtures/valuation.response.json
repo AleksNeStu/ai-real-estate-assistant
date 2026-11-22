@@ -1,0 +1,39 @@
+{
+  "estimated_value": 959182,
+  "property_id": null,
+  "currency": "PLN",
+  "source": "Rejestr Cen Nieruchomości",
+  "confidence": "medium",
+  "sample_size": 12,
+  "comparison_area": "Kraków, Śródmieście",
+  "period_start": "2026-01-01",
+  "period_end": "2026-06-30",
+  "price_per_sqm_median": 15986.37,
+  "low": 820000.0,
+  "high": 1020000.0,
+  "notes": [
+    "The register covers the transactions registered by a notary; the price is what was paid, not what was asked."
+  ],
+  "comparables": [
+    {
+      "address": "Myśliwska 68C",
+      "area_sqm": 60.0,
+      "price": 960000.0,
+      "price_per_sqm": 16000.0,
+      "transaction_date": "2026-03-14",
+      "rooms": 3,
+      "floor": 4,
+      "deed_reference": "A/1234/2026"
+    },
+    {
+      "address": "Myśliwska 68A",
+      "area_sqm": 58.5,
+      "price": 910000.0,
+      "price_per_sqm": 15555.56,
+      "transaction_date": "2026-02-02",
+      "rooms": 2,
+      "floor": 2,
+      "deed_reference": "A/987/2026"
+    }
+  ]
+}

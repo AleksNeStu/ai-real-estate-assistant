@@ -1,0 +1,45 @@
+{
+  "name": "propvector-cli",
+  "version": "0.1.0",
+  "description": "An open MIT command-line client for the AI Real Estate Assistant API.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "propvector": "dist/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "generate:types": "node scripts/generate-types.mjs",
+    "test": "npm run build && node scripts/run-tests.mjs",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "real-estate",
+    "cli",
+    "openapi",
+    "valuation",
+    "mit"
+  ],
+  "author": "Alex Nesterovich",
+  "repository": {
+    "type": "git",
+    "url": "git+https://AleksNeStu@github.com/AleksNeStu/ai-real-estate-assistant.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/AleksNeStu/ai-real-estate-assistant/issues"
+  },
+  "homepage": "https://realty.kittray.com/",
+  "devDependencies": {
+    "@types/node": "^20.19.9",
+    "typescript": "^5.9.3"
+  }
+}

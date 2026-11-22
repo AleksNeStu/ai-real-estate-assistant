@@ -235,6 +235,32 @@ jobs:
       - name: Check the API contract for breaking changes
         run: python scripts/api/openapi_diff.py --current docs/api/openapi.json
 
+  cli-tests:
+    # The open command-line client. Its types are generated from the
+    # published contract, and this job is what proves they still match it:
+    # the test regenerates them and fails when the committed copy differs.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: packages/cli
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: packages/cli/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Build and test the client
+        run: npm test
+
   backend-e2e:
     # The backend's own end-to-end suite: the real application, the real
     # middleware stack, the real auth contract - request to response.
@@ -874,7 +900,7 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     needs: [gitleaks, secret-validation, rule5-protected-paths, backend-lint, backend-tests,
-            api-contract, backend-e2e, backend-resilience,
+            api-contract, cli-tests, backend-e2e, backend-resilience,
             frontend-build, security-sast, frontend-tests,
             security-deps, codeql-python, codeql-javascript, container-scan,
             lighthouse, e2e, compose-stack]
