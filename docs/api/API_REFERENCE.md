@@ -5673,6 +5673,8 @@ Get location-based default cost estimates for TCO Calculator. Returns reasonable
 
 **Tags**: Tools, Tools
 
+What a flat is worth. An address can only be valued against the official register — the prices people actually paid for comparable flats, with the sales themselves listed — so a request that names a place is always answered from there. A request that names a catalogue property follows ``VALUATION_MODE``: the register when it says ``rcn``, the catalogue's own price per square metre otherwise, which is all the seeded listings can offer.
+
 **Request Body**
 
 - Required: yes

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -512,12 +512,47 @@ class LocationAnalysisResponse(BaseModel):
 
 
 class ValuationRequest(BaseModel):
-    property_id: str
+    """A valuation, either of a catalogue property or of an address.
+
+    The address form is what the official register can answer: the city and
+    the street it compares, and the area it scales.
+    """
+
+    property_id: Optional[str] = None
+    city: Optional[str] = None
+    street: Optional[str] = None
+    area_sqm: Optional[float] = None
+    rooms: Optional[int] = None
+
+
+class ValuationComparable(BaseModel):
+    """One sale the valuation stands on."""
+
+    address: str
+    area_sqm: float
+    price: float
+    price_per_sqm: float
+    transaction_date: str
+    rooms: Optional[int] = None
+    floor: Optional[int] = None
+    deed_reference: Optional[str] = None
 
 
 class ValuationResponse(BaseModel):
-    property_id: str
+    property_id: Optional[str] = None
     estimated_value: float
+    currency: str = "PLN"
+    source: str = "simple"
+    confidence: Optional[str] = None
+    sample_size: Optional[int] = None
+    comparison_area: Optional[str] = None
+    period_start: Optional[date] = None
+    period_end: Optional[date] = None
+    price_per_sqm_median: Optional[float] = None
+    low: Optional[float] = None
+    high: Optional[float] = None
+    notes: List[str] = Field(default_factory=list)
+    comparables: List[ValuationComparable] = Field(default_factory=list)
 
 
 # ============================================================================

@@ -319,6 +319,10 @@ desktop.ini
 # *.parquet
 # *.feather
 
+# The official price register is downloaded, not committed: one export per
+# voivodeship is tens of megabytes and the register publishes them weekly.
+apps/api/cache/
+
 # Assets cache (keep source files, ignore compiled/minified)
 # assets/**/*.min.*
 #

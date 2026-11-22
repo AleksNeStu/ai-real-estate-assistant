@@ -19,6 +19,9 @@ from typing import Any, List, Optional
 from langchain_core.language_models import BaseChatModel
 from langchain_core.tools import BaseTool
 
+# The prices people actually paid, from the official price register.
+from agents.services.valuation import read_register_context_sync
+
 # Re-export OSRM commute tools (Task #114)
 from tools.commute_tool import (  # noqa: F401
     CommuteAnalysisInput,
@@ -94,6 +97,10 @@ from tools.price_forecast_tools import (  # noqa: F401
     PriceForecastResult,
     PriceForecastTool,
 )
+from tools.rcn_valuation_tool import (  # noqa: F401
+    RcnValuationInput,
+    RcnValuationTool,
+)
 
 # Re-export TCO tools
 from tools.tco_tools import (  # noqa: F401
@@ -154,8 +161,16 @@ def create_property_tools(
         PropertyDescriptionGeneratorTool(llm=llm),
         HeadlineGeneratorTool(llm=llm),
         SocialMediaContentGeneratorTool(llm=llm),
-        # v5.1: AI Price Forecast with multi-year projection
-        PriceForecastTool(vector_store=vector_store, llm=llm),
+        # v5.1: AI Price Forecast with multi-year projection. It reads the
+        # official register when it holds the place, so the projection
+        # follows the prices people actually paid.
+        PriceForecastTool(
+            vector_store=vector_store,
+            llm=llm,
+            register_reader=read_register_context_sync,
+        ),
         # v5.1: AI Neighborhood One-Liner
         NeighborhoodSummaryTool(llm=llm),
+        # The prices people actually paid, from the official register.
+        RcnValuationTool(),
     ]

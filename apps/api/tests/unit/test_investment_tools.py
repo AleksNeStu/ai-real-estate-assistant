@@ -269,8 +269,9 @@ class TestInvestmentToolFactory:
         assert "investment_analyzer" in tool_names
         # Task #114: Added commute_analysis, multi_origin_commute
         # Task #115: Added negotiation_helper (17 total tools)
-        # v5.1: Added price_forecast, neighborhood_summary (19 total tools)
-        assert len(tools) == 19
+        # v5.1: Added price_forecast, neighborhood_summary
+        # Added rcn_property_valuation — the official register of notarial prices
+        assert len(tools) == 20
 
     def test_all_expected_tools_present(self):
         """Test that all expected tools including investment are created."""
@@ -279,7 +280,8 @@ class TestInvestmentToolFactory:
 
         # Task #114: Added commute_analysis, multi_origin_commute
         # Task #115: Added negotiation_helper (17 total tools)
-        # v5.1: Added price_forecast, neighborhood_summary (19 total tools)
+        # v5.1: Added price_forecast, neighborhood_summary
+        # Added rcn_property_valuation — the official register of notarial prices
         expected_names = {
             "mortgage_calculator",
             "tco_calculator",
@@ -300,6 +302,7 @@ class TestInvestmentToolFactory:
             "negotiation_helper",  # Task #115
             "price_forecast",  # v5.1
             "neighborhood_summary",  # v5.1
+            "rcn_property_valuation",  # the official register of notarial prices
         }
 
         assert tool_names == expected_names

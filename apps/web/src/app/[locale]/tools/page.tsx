@@ -812,7 +812,7 @@ function ValuationSection() {
           setError(null);
           setLoading(true);
           try {
-            const res = await valuationApi(pid);
+            const res = await valuationApi({ property_id: pid });
             setValue(res.estimated_value);
           } catch (e: unknown) {
             const msg = e instanceof Error ? e.message : String(e);

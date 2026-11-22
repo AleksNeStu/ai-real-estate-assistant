@@ -25,7 +25,7 @@ Tests cover:
 - POST /tools/generate-listing — listing generation
 """
 
-from datetime import datetime
+from datetime import date, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -37,12 +37,14 @@ from api.dependencies import (
     get_crm_connector,
     get_data_enrichment_service,
     get_legal_check_service,
+    get_rcn_valuation_provider,
     get_valuation_provider,
     get_vector_store,
 )
 from api.routers.tools import (
     router as tools_router,
 )
+from config.settings import settings
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -1151,6 +1153,142 @@ class TestValuation:
                 "/api/v1/tools/valuation",
                 json={"property_id": "nonexistent"},
             )
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+class TestValuationFromTheRegister:
+    """The valuation that answers with the prices people actually paid."""
+
+    @staticmethod
+    def _app(provider, store=None):
+        app = _build_app(store=store, provider=MagicMock())
+        app.dependency_overrides[get_rcn_valuation_provider] = lambda: provider
+        return app
+
+    @pytest.mark.asyncio
+    async def test_it_answers_with_the_number_and_its_evidence(self):
+        from agents.services.valuation import ValuationOutcome
+
+        provider = MagicMock()
+        provider.outcome = AsyncMock(
+            return_value=ValuationOutcome(
+                estimated_value=710732.05,
+                low=640000.0,
+                high=780000.0,
+                price_per_sqm_median=14214.64,
+                sample_size=15,
+                comparison_area="Topolowa, Kraków",
+                period_start=date(2025, 10, 1),
+                period_end=date(2026, 8, 27),
+                confidence="medium",
+                notes=["Based on 15 registered sale(s)."],
+                comparables=[
+                    {
+                        "address": "TOPOLOWA, 48, KRAKÓW",
+                        "area_sqm": 38.72,
+                        "price": 790000.0,
+                        "price_per_sqm": 20402.89,
+                        "transaction_date": "2026-08-27",
+                        "rooms": 2,
+                        "floor": 3,
+                        "deed_reference": "Rep. A 18806/2026",
+                    }
+                ],
+                source="rcn",
+            )
+        )
+        app = self._app(provider)
+        old_mode = settings.valuation_mode
+        settings.valuation_mode = "rcn"
+        try:
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://test") as c:
+                response = await c.post(
+                    "/api/v1/tools/valuation",
+                    json={"city": "Kraków", "street": "Topolowa", "area_sqm": 50},
+                )
+        finally:
+            settings.valuation_mode = old_mode
+
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data["estimated_value"] == 710732.05
+        assert data["source"] == "rcn"
+        assert data["currency"] == "PLN"
+        assert data["sample_size"] == 15
+        assert data["comparison_area"] == "Topolowa, Kraków"
+        assert data["confidence"] == "medium"
+        assert data["comparables"][0]["deed_reference"] == "Rep. A 18806/2026"
+
+    @pytest.mark.asyncio
+    async def test_it_resolves_the_address_from_the_catalogue(self, mock_store_with_property):
+        """A request that names a catalogue listing gets that listing's address."""
+        from agents.services.valuation import ValuationOutcome
+
+        provider = MagicMock()
+        provider.outcome = AsyncMock(
+            return_value=ValuationOutcome(estimated_value=710732.05, source="rcn")
+        )
+        app = self._app(provider, store=mock_store_with_property)
+        old_mode = settings.valuation_mode
+        settings.valuation_mode = "rcn"
+        try:
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://test") as c:
+                response = await c.post(
+                    "/api/v1/tools/valuation",
+                    json={"property_id": "p1"},
+                )
+        finally:
+            settings.valuation_mode = old_mode
+
+        assert response.status_code == status.HTTP_200_OK
+        # The catalogue listing knows its own city, street and area.
+        asked = provider.outcome.await_args.args[0]
+        assert asked["city"] == "Berlin"
+        assert asked["street"] == "Mitte"
+        assert asked["area_sqm"] == 60
+
+    @pytest.mark.asyncio
+    async def test_an_address_without_a_city_is_refused(self):
+        provider = MagicMock()
+        provider.outcome = AsyncMock()
+        app = self._app(provider)
+        old_mode = settings.valuation_mode
+        settings.valuation_mode = "rcn"
+        try:
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://test") as c:
+                response = await c.post(
+                    "/api/v1/tools/valuation",
+                    json={"area_sqm": 50},
+                )
+        finally:
+            settings.valuation_mode = old_mode
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @pytest.mark.asyncio
+    async def test_an_address_nobody_sold_on_is_not_invented(self):
+        from agents.services.valuation import ValuationOutcome
+
+        provider = MagicMock()
+        provider.outcome = AsyncMock(
+            return_value=ValuationOutcome(notes=["No sales of flats are registered."])
+        )
+        app = self._app(provider)
+        old_mode = settings.valuation_mode
+        settings.valuation_mode = "rcn"
+        try:
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://test") as c:
+                response = await c.post(
+                    "/api/v1/tools/valuation",
+                    json={"city": "Gdańsk", "area_sqm": 50},
+                )
+        finally:
+            settings.valuation_mode = old_mode
+
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
 

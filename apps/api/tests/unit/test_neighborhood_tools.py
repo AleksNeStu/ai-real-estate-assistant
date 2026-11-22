@@ -419,7 +419,8 @@ class TestNeighborhoodToolFactory:
         # Task #42: Added rent_vs_buy_calculator (14 total tools)
         # Task #114: Added commute_analysis and multi_origin_commute (OSRM-based)
         # Task #115: Added negotiation_helper (17 total tools)
-        # v5.1: Added price_forecast and neighborhood_summary (19 total tools)
+        # v5.1: Added price_forecast and neighborhood_summary
+        # Added rcn_property_valuation — the official register of notarial prices
         expected_names = {
             "mortgage_calculator",
             "tco_calculator",
@@ -440,6 +441,7 @@ class TestNeighborhoodToolFactory:
             "negotiation_helper",  # Task #115
             "price_forecast",  # v5.1
             "neighborhood_summary",  # v5.1
+            "rcn_property_valuation",  # the official register of notarial prices
         }
 
         assert tool_names == expected_names

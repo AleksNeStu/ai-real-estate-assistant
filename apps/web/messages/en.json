@@ -3014,6 +3014,8 @@
       "errors": {
         "requiredFields": "Please fill in at least city, area (sqm), and price (or use a property id).",
         "propertyId": "Please enter a property id.",
+        "addressRequired": "Please enter the city and the street.",
+        "valuationFailed": "Valuation failed",
         "forecastFailed": "Forecast failed"
       },
       "propertyIdPlaceholder": "e.g. prop-12345",
@@ -3035,6 +3037,12 @@
         "yearBuilt": "Year built",
         "askingPrice": "Asking price",
         "currency": "Currency",
+        "street": "Street",
+        "cityPlaceholder": "Kraków",
+        "streetPlaceholder": "Topolowa",
+        "registerHint": "The official register of notarial prices — real transaction prices, not asking prices.",
+        "estimatingValuation": "Valuating…",
+        "getValuation": "Value from the register",
         "currencyPlaceholder": "EUR, USD, GBP…",
         "propertyId": "Property ID (optional)",
         "propertyIdHint": "The id the catalogue gave the property.",
@@ -3064,12 +3072,26 @@
       "source": "valuation_forecast · demo catalogue history",
       "mode": {
         "byId": "By property id",
-        "byFeatures": "Enter features"
+        "byFeatures": "Enter features",
+        "byAddress": "By address"
       },
       "empty": {
         "title": "No forecast yet",
-        "description": "Name the property by its catalogue id, or enter its facts, and the model returns today's value and the projection."
-      }
+        "description": "Name the property by its catalogue id, or enter its facts, and the model returns today's value and the projection.",
+        "titleAddress": "No valuation yet",
+        "descriptionAddress": "Name the city and the street, and the register answers with what people actually paid there — the estimate, the sales it rests on and their dates."
+      },
+      "register": {
+        "estimate": "Estimated value",
+        "medianPerSqm": "Median per m²",
+        "comparisonArea": "Comparison area",
+        "sample": "Sales used",
+        "sampleCount": "{count, plural, one {# registered sale} other {# registered sales}}",
+        "period": "Period",
+        "confidence": "Confidence",
+        "sales": "The sales behind the estimate"
+      },
+      "registerSource": "RCN · Rejestr Cen Nieruchomości — official notarial prices"
     },
     "usage": {
       "title": "Usage Dashboard",

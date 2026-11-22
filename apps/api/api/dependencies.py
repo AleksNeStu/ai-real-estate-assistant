@@ -15,7 +15,11 @@ from agents.hybrid_agent import HybridPropertyAgent, SimpleRAGAgent, create_hybr
 from agents.services.crm_connector import CRMConnector, WebhookCRMConnector
 from agents.services.data_enrichment import BasicDataEnrichmentService, DataEnrichmentService
 from agents.services.legal_check import BasicLegalCheckService, LegalCheckService
-from agents.services.valuation import SimpleValuationProvider, ValuationProvider
+from agents.services.valuation import (
+    RcnValuationProvider,
+    SimpleValuationProvider,
+    ValuationProvider,
+)
 from api.models import RagQaRequest
 from config.settings import settings
 from db.database import get_db
@@ -653,9 +657,21 @@ def get_rag_qa_llm_details(
 
 
 def get_valuation_provider() -> Optional[ValuationProvider]:
+    """The provider that values a flat from the catalogue's own prices.
+
+    The official register is the better price source, but it needs the
+    database, so it comes through :func:`get_rcn_valuation_provider`.
+    """
     if settings.valuation_mode != "simple":
         return None
     return SimpleValuationProvider()
+
+
+async def get_rcn_valuation_provider(
+    session: Annotated[AsyncSession, Depends(get_db)],
+) -> RcnValuationProvider:
+    """The provider that values a flat from the prices people actually paid."""
+    return RcnValuationProvider(session)
 
 
 def get_crm_connector() -> Optional[CRMConnector]:

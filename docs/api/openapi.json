@@ -17399,14 +17399,63 @@
         "properties": {
           "property_id": {
             "title": "Property Id",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "street": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Street"
+          },
+          "area_sqm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Area Sqm"
+          },
+          "rooms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rooms"
           }
         },
-        "required": [
-          "property_id"
-        ],
         "title": "ValuationRequest",
-        "type": "object"
+        "type": "object",
+        "description": "A valuation, either of a catalogue property or of an address.\n\nThe address form is what the official register can answer: the city and\nthe street it compares, and the area it scales."
       },
       "ValuationResponse": {
         "properties": {
@@ -17416,11 +17465,131 @@
           },
           "property_id": {
             "title": "Property Id",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "default": "PLN"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "default": "simple"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "sample_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sample Size"
+          },
+          "comparison_area": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison Area"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End"
+          },
+          "price_per_sqm_median": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Per Sqm Median"
+          },
+          "low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Low"
+          },
+          "high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "High"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          },
+          "comparables": {
+            "items": {
+              "$ref": "#/components/schemas/ValuationComparable"
+            },
+            "type": "array",
+            "title": "Comparables"
           }
         },
         "required": [
-          "property_id",
           "estimated_value"
         ],
         "title": "ValuationResponse",
@@ -18148,6 +18317,73 @@
         ],
         "title": "ChainVerificationResponse",
         "description": "Schema for hash-chain verification result.\n\n`valid` says whether the checked entries are one unbroken line.\n`integrity_valid` says whether every entry's own hash still matches its\ncontent - the tamper-evidence claim, which stays true for a log that\nforked under concurrency. `fork_count` says where the chain branched."
+      },
+      "ValuationComparable": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "area_sqm": {
+            "type": "number",
+            "title": "Area Sqm"
+          },
+          "price": {
+            "type": "number",
+            "title": "Price"
+          },
+          "price_per_sqm": {
+            "type": "number",
+            "title": "Price Per Sqm"
+          },
+          "transaction_date": {
+            "type": "string",
+            "title": "Transaction Date"
+          },
+          "rooms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rooms"
+          },
+          "floor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Floor"
+          },
+          "deed_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deed Reference"
+          }
+        },
+        "type": "object",
+        "required": [
+          "address",
+          "area_sqm",
+          "price",
+          "price_per_sqm",
+          "transaction_date"
+        ],
+        "title": "ValuationComparable",
+        "description": "One sale the valuation stands on."
       }
     },
     "securitySchemes": {
@@ -33020,7 +33256,8 @@
         "tags": [
           "Tools",
           "Tools"
-        ]
+        ],
+        "description": "What a flat is worth.\n\nAn address can only be valued against the official register \u2014 the prices\npeople actually paid for comparable flats, with the sales themselves\nlisted \u2014 so a request that names a place is always answered from there.\nA request that names a catalogue property follows ``VALUATION_MODE``: the\nregister when it says ``rcn``, the catalogue's own price per square metre\notherwise, which is all the seeded listings can offer."
       }
     },
     "/api/v1/user-activity/admin/summary": {

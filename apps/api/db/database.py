@@ -177,6 +177,32 @@ async def get_db_context() -> AsyncGenerator[AsyncSession, None]:
             raise
 
 
+@asynccontextmanager
+async def standalone_session() -> AsyncGenerator[AsyncSession, None]:
+    """A session in an engine of its own.
+
+    Code that runs outside a request — a tool called from a worker thread —
+    cannot share the request's session: a pooled connection belongs to the
+    loop that opened it, and handing it to another loop fails. This opens an
+    engine in the loop that uses it and closes it again afterwards.
+    """
+    db_url = get_database_url()
+    connect_args = {"check_same_thread": False} if db_url.startswith("sqlite") else {}
+    engine = create_engine(db_url, connect_args=connect_args)
+    try:
+        factory = async_sessionmaker(
+            bind=engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+            autocommit=False,
+            autoflush=False,
+        )
+        async with factory() as session:
+            yield session
+    finally:
+        await engine.dispose()
+
+
 async def init_db() -> None:
     """Initialize database tables."""
     engine = get_engine()

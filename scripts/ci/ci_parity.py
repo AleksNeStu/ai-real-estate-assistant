@@ -5,9 +5,9 @@ import os
 import platform
 import subprocess
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
 
 
 @dataclass(frozen=True)
@@ -183,6 +183,11 @@ def build_unit_diff_coverage_gate_cmd(
         "scripts/*",
         "--exclude",
         "workflows/*",
+        # A migration is a declarative script that no test imports, so its
+        # lines can never be covered. Counting them made the gate
+        # structurally unpassable for any change that adds a migration.
+        "--exclude",
+        "alembic/versions/*",
     ]
     if base_ref:
         cmd.extend(["--base-ref", base_ref])
@@ -237,6 +242,10 @@ def build_integration_diff_coverage_gate_cmd(
         "scripts/*",
         "--exclude",
         "workflows/*",
+        # A migration is a declarative script that no test imports, so its
+        # lines can never be covered.
+        "--exclude",
+        "alembic/versions/*",
     ]
     if base_ref:
         cmd.extend(["--base-ref", base_ref])

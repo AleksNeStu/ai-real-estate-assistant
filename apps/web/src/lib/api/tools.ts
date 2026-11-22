@@ -195,15 +195,6 @@ export async function locationAnalysisApi(propertyId: string) {
   }>(response);
 }
 
-export async function valuationApi(propertyId: string) {
-  const response = await fetch(`${getApiUrl()}/tools/valuation`, {
-    method: 'POST',
-    headers: buildHeaders(),
-    body: JSON.stringify({ property_id: propertyId }),
-  });
-  return handleResponse<{ property_id: string; estimated_value: number }>(response);
-}
-
 export async function legalCheckApi(text: string) {
   const response = await fetch(`${getApiUrl()}/tools/legal-check`, {
     method: 'POST',
@@ -379,6 +370,62 @@ export async function priceForecastApi(
     body: JSON.stringify(input),
   });
   return handleResponse<PriceForecastResponse>(response);
+}
+
+// ============================================================================
+// Valuation from the official register of notarial prices
+// ============================================================================
+
+export interface ValuationRequest {
+  property_id?: string;
+  city?: string;
+  street?: string;
+  area_sqm?: number;
+  rooms?: number;
+}
+
+export interface ValuationComparable {
+  address: string;
+  area_sqm: number;
+  price: number;
+  price_per_sqm: number;
+  transaction_date: string;
+  rooms?: number | null;
+  floor?: number | null;
+  deed_reference?: string | null;
+}
+
+export interface ValuationResponse {
+  property_id?: string | null;
+  estimated_value: number;
+  currency: string;
+  source: string;
+  confidence?: string | null;
+  sample_size?: number | null;
+  comparison_area?: string | null;
+  period_start?: string | null;
+  period_end?: string | null;
+  price_per_sqm_median?: number | null;
+  low?: number | null;
+  high?: number | null;
+  notes: string[];
+  comparables: ValuationComparable[];
+}
+
+/**
+ * Value a flat — by address against the official register, or by catalogue id.
+ *
+ * The address form is the one that answers with what people actually paid:
+ * the city and the street it compares, and the area it scales.
+ */
+export async function valuationApi(input: ValuationRequest): Promise<ValuationResponse> {
+  const response = await safeFetch(`${getApiUrl()}/tools/valuation`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(input),
+  });
+  return handleResponse<ValuationResponse>(response);
 }
 
 // ============================================================================

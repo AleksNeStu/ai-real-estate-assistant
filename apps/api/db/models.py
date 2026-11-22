@@ -1,12 +1,13 @@
 """SQLAlchemy models for user authentication."""
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Optional
 from uuid import uuid4
 
 from sqlalchemy import (
     JSON,
     Boolean,
+    Date,
     DateTime,
     Float,
     ForeignKey,
@@ -2514,3 +2515,76 @@ class SearchFeedback(Base):
 
     def __repr__(self) -> str:
         return f"<SearchFeedback(id={self.id[:8]}..., rating={self.rating})>"
+
+
+class PropertyTransaction(Base):
+    """A sale a notary registered, as the official price register holds it.
+
+    The Rejestr Cen Nieruchomości (RCN) is the only price source in this
+    project that is neither an asking price nor an estimate: it is what
+    people actually paid, recorded in a deed. The rows are the comparables a
+    valuation stands on.
+
+    The register publishes the position of a building in EPSG:2180
+    (PL-1992), a local projection in metres — not in degrees. The columns
+    therefore say ``2180`` rather than pretending to be a latitude.
+    """
+
+    __tablename__ = "property_transactions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    # The register's own identifier for this flat sale.
+    external_id: Mapped[str] = mapped_column(String(64), nullable=False, unique=True, index=True)
+    # The transaction the flat was sold in: one deed may sell two flats.
+    transaction_id: Mapped[Optional[str]] = mapped_column(String(64), nullable=True, index=True)
+    # The deed it was registered under.
+    deed_reference: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+
+    teryt: Mapped[Optional[str]] = mapped_column(String(16), nullable=True, index=True)
+    city: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    # The same names, folded into a comparable form: the register writes
+    # "KRAKÓW", a visitor writes "Kraków", and the database has to find one
+    # from the other.
+    city_norm: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    # The register's export does not carry the district; the column is here
+    # because the address of a flat has one and the comparables will want it.
+    district: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    street: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    street_norm: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    number: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
+
+    area_sqm: Mapped[float] = mapped_column(Float, nullable=False)
+    rooms: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    floor: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+    price_brutto: Mapped[float] = mapped_column(Float, nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False, default="PLN")
+    transaction_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    market_type: Mapped[Optional[str]] = mapped_column(String(32), nullable=True, index=True)
+
+    source: Mapped[str] = mapped_column(String(16), nullable=False, default="rcn", index=True)
+    source_url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
+
+    # PL-1992 (EPSG:2180) metres, as the register gives them.
+    x_2180: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    y_2180: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+
+    __table_args__ = (
+        Index("ix_property_transactions_city_date", "city_norm", "transaction_date"),
+        Index(
+            "ix_property_transactions_street_date",
+            "city_norm",
+            "street_norm",
+            "transaction_date",
+        ),
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<PropertyTransaction({self.street} {self.number}, {self.city}, "
+            f"{self.price_brutto} {self.currency}, {self.transaction_date})>"
+        )

@@ -410,7 +410,7 @@ describe('tools.ts API', () => {
       const result = { property_id: 'prop-1', estimated_value: 320000 };
       mockFetch.mockResolvedValueOnce(createMockResponse(result));
 
-      const response = await valuationApi('prop-1');
+      const response = await valuationApi({ property_id: 'prop-1' });
 
       expectCalledWithPath(`${API_BASE}/tools/valuation`);
       const init = mockFetch.mock.calls[0][1] as RequestInit;
@@ -422,7 +422,7 @@ describe('tools.ts API', () => {
     it('throws on error', async () => {
       mockFetch.mockResolvedValueOnce(createErrorResponse('Error', 500));
 
-      await expect(valuationApi('bad')).rejects.toThrow(ApiError);
+      await expect(valuationApi({ property_id: 'bad' })).rejects.toThrow(ApiError);
     });
   });
 

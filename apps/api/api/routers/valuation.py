@@ -15,6 +15,7 @@ from typing import Annotated, Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from langchain_core.language_models import BaseChatModel
 
+from agents.services.valuation import read_register_context_sync
 from api.dependencies import get_llm, get_vector_store
 from api.models import (
     ForecastPointResponse,
@@ -139,7 +140,11 @@ async def price_forecast(
     if request.property_features:
         features.update(request.property_features)
 
-    tool = PriceForecastTool(vector_store=store, llm=_llm)
+    tool = PriceForecastTool(
+        vector_store=store,
+        llm=_llm,
+        register_reader=read_register_context_sync,
+    )
     try:
         result: PriceForecastResult = tool.forecast(
             {

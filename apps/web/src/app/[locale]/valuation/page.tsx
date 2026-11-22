@@ -4,7 +4,7 @@ import React, { useId, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { Loader2, TrendingUp } from 'lucide-react';
+import { Loader2, Scale, TrendingUp } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState } from '@/components/ui/states';
@@ -12,8 +12,9 @@ import { MonoAnnotation } from '@/components/ui/mono-annotation';
 import { PageHeader } from '@/components/ui/page-header';
 import { ForecastChart } from '@/components/valuation/forecast-chart';
 import { ForecastLedger } from '@/components/valuation/forecast-ledger';
-import { priceForecastApi } from '@/lib/api';
-import type { PriceForecastResponse } from '@/lib/api/tools';
+import { RegisterValuation } from '@/components/valuation/register-valuation';
+import { priceForecastApi, valuationApi } from '@/lib/api';
+import type { PriceForecastResponse, ValuationResponse } from '@/lib/api/tools';
 import { formatPrice } from '@/lib/format';
 
 type FeatureForm = {
@@ -40,8 +41,23 @@ const DEFAULT_FORM: FeatureForm = {
 
 const HORIZON_OPTIONS = [1, 3, 5, 10];
 
-/** How the reader names the property: the catalogue's own id, or its facts. */
-type ValuationMode = 'id' | 'features';
+/** The address the reader names: the city and the street the register knows. */
+type AddressForm = {
+  city: string;
+  street: string;
+  area_sqm: string;
+  rooms: string;
+};
+
+const DEFAULT_ADDRESS: AddressForm = {
+  city: '',
+  street: '',
+  area_sqm: '',
+  rooms: '',
+};
+
+/** How the reader names the property: the catalogue's own id, its facts, or its address. */
+type ValuationMode = 'id' | 'features' | 'address';
 
 export default function ValuationPage() {
   const t = useTranslations('pages.valuation');
@@ -52,10 +68,12 @@ export default function ValuationPage() {
   const [mode, setMode] = useState<ValuationMode>(initialPropertyId ? 'id' : 'features');
   const [propertyId, setPropertyId] = useState<string>(initialPropertyId);
   const [form, setForm] = useState<FeatureForm>(DEFAULT_FORM);
+  const [address, setAddress] = useState<AddressForm>(DEFAULT_ADDRESS);
   const [horizons, setHorizons] = useState<number[]>([1, 3, 5]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PriceForecastResponse | null>(null);
+  const [registerResult, setRegisterResult] = useState<ValuationResponse | null>(null);
 
   const features = useMemo(() => {
     if (mode !== 'features') return null;
@@ -83,29 +101,55 @@ export default function ValuationPage() {
     return Object.keys(out).length ? out : null;
   }, [form, mode]);
 
-  const canSubmit = mode === 'id' ? propertyId.trim().length > 0 : features !== null;
+  const canSubmit =
+    mode === 'id'
+      ? propertyId.trim().length > 0
+      : mode === 'features'
+        ? features !== null
+        : address.city.trim().length > 0 && address.street.trim().length > 0;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setResult(null);
+    setRegisterResult(null);
     if (!canSubmit) {
-      setError(mode === 'features' ? t('errors.requiredFields') : t('errors.propertyId'));
+      setError(
+        mode === 'features'
+          ? t('errors.requiredFields')
+          : mode === 'address'
+            ? t('errors.addressRequired')
+            : t('errors.propertyId')
+      );
       return;
     }
     setLoading(true);
     try {
-      const res = await priceForecastApi({
-        property_id: mode === 'id' ? propertyId.trim() : undefined,
-        property_features: mode === 'features' ? (features ?? undefined) : undefined,
-        horizon_years: horizons,
-      });
-      setResult(res);
+      if (mode === 'address') {
+        const area = Number(address.area_sqm);
+        const rooms = Number(address.rooms);
+        const res = await valuationApi({
+          city: address.city.trim(),
+          street: address.street.trim(),
+          area_sqm: Number.isFinite(area) && area > 0 ? area : undefined,
+          rooms: Number.isFinite(rooms) && rooms > 0 ? rooms : undefined,
+        });
+        setRegisterResult(res);
+      } else {
+        const res = await priceForecastApi({
+          property_id: mode === 'id' ? propertyId.trim() : undefined,
+          property_features: mode === 'features' ? (features ?? undefined) : undefined,
+          horizon_years: horizons,
+        });
+        setResult(res);
+      }
     } catch (err: unknown) {
       const msg =
         err && typeof err === 'object' && 'message' in err
           ? String((err as { message: unknown }).message)
-          : t('errors.forecastFailed');
+          : mode === 'address'
+            ? t('errors.valuationFailed')
+            : t('errors.forecastFailed');
       setError(msg);
     } finally {
       setLoading(false);
@@ -120,13 +164,26 @@ export default function ValuationPage() {
     );
   };
 
+  /**
+   * Switching the way the property is named clears the answer: the forecast
+   * of one property is not the answer to a question about another.
+   */
+  const switchMode = (next: ValuationMode) => {
+    setMode(next);
+    setResult(null);
+    setRegisterResult(null);
+    setError(null);
+  };
+
   return (
     <div className="flex min-h-[calc(100vh-56px)] flex-col">
       <div className="border-b border-border px-6 pb-5 pt-6">
         <PageHeader
           title={t('title')}
           description={t('description')}
-          actions={<MonoAnnotation>{t('source')}</MonoAnnotation>}
+          actions={
+            <MonoAnnotation>{mode === 'address' ? t('registerSource') : t('source')}</MonoAnnotation>
+          }
         />
       </div>
 
@@ -136,13 +193,13 @@ export default function ValuationPage() {
           className="flex flex-col gap-4 border-b border-border pb-6 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-6"
           data-testid="valuation-form"
         >
-          <div className="grid grid-cols-2 overflow-hidden rounded-md border border-border">
+          <div className="grid grid-cols-3 overflow-hidden rounded-md border border-border">
             <button
               type="button"
-              onClick={() => setMode('id')}
+              onClick={() => switchMode('id')}
               aria-pressed={mode === 'id'}
               className={[
-                'h-[34px] text-[13px] font-medium transition-colors',
+                'h-[34px] px-1 text-[13px] font-medium transition-colors',
                 mode === 'id'
                   ? 'bg-foreground text-background'
                   : 'bg-background text-foreground hover:bg-muted',
@@ -152,16 +209,30 @@ export default function ValuationPage() {
             </button>
             <button
               type="button"
-              onClick={() => setMode('features')}
+              onClick={() => switchMode('features')}
               aria-pressed={mode === 'features'}
               className={[
-                'h-[34px] text-[13px] font-medium transition-colors',
+                'h-[34px] px-1 text-[13px] font-medium transition-colors',
                 mode === 'features'
                   ? 'bg-foreground text-background'
                   : 'bg-background text-foreground hover:bg-muted',
               ].join(' ')}
             >
               {t('mode.byFeatures')}
+            </button>
+            <button
+              type="button"
+              onClick={() => switchMode('address')}
+              aria-pressed={mode === 'address'}
+              data-testid="valuation-mode-address"
+              className={[
+                'h-[34px] px-1 text-[13px] font-medium transition-colors',
+                mode === 'address'
+                  ? 'bg-foreground text-background'
+                  : 'bg-background text-foreground hover:bg-muted',
+              ].join(' ')}
+            >
+              {t('mode.byAddress')}
             </button>
           </div>
 
@@ -180,6 +251,40 @@ export default function ValuationPage() {
                 disabled={loading}
               />
               <span className="text-[12px] text-muted-foreground">{t('form.propertyIdHint')}</span>
+            </div>
+          ) : mode === 'address' ? (
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Field
+                  label={t('form.city')}
+                  value={address.city}
+                  onChange={(v) => setAddress((a) => ({ ...a, city: v }))}
+                  disabled={loading}
+                  placeholder={t('form.cityPlaceholder')}
+                />
+                <Field
+                  label={t('form.street')}
+                  value={address.street}
+                  onChange={(v) => setAddress((a) => ({ ...a, street: v }))}
+                  disabled={loading}
+                  placeholder={t('form.streetPlaceholder')}
+                />
+                <Field
+                  label={t('form.area')}
+                  value={address.area_sqm}
+                  onChange={(v) => setAddress((a) => ({ ...a, area_sqm: v }))}
+                  disabled={loading}
+                  inputMode="decimal"
+                />
+                <Field
+                  label={t('form.rooms')}
+                  value={address.rooms}
+                  onChange={(v) => setAddress((a) => ({ ...a, rooms: v }))}
+                  disabled={loading}
+                  inputMode="decimal"
+                />
+              </div>
+              <span className="text-[12px] text-muted-foreground">{t('form.registerHint')}</span>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -240,6 +345,7 @@ export default function ValuationPage() {
             </div>
           )}
 
+          {mode === 'address' ? null : (
           <div className="flex flex-col gap-1.5">
             <span className="text-[12px] font-medium text-foreground">{t('horizons.title')}</span>
             <div className="flex flex-wrap gap-1.5">
@@ -265,6 +371,7 @@ export default function ValuationPage() {
               })}
             </div>
           </div>
+          )}
 
           <Button
             type="submit"
@@ -275,12 +382,16 @@ export default function ValuationPage() {
             {loading ? (
               <>
                 <Loader2 className="size-4 animate-spin" aria-hidden />
-                {t('form.estimating')}
+                {mode === 'address' ? t('form.estimatingValuation') : t('form.estimating')}
               </>
             ) : (
               <>
-                <TrendingUp className="size-4" aria-hidden />
-                {t('form.getForecast')}
+                {mode === 'address' ? (
+                  <Scale className="size-4" aria-hidden />
+                ) : (
+                  <TrendingUp className="size-4" aria-hidden />
+                )}
+                {mode === 'address' ? t('form.getValuation') : t('form.getForecast')}
               </>
             )}
           </Button>
@@ -292,10 +403,15 @@ export default function ValuationPage() {
 
         <div className="flex min-w-0 flex-col gap-6">
           {error ? (
-            <ErrorState title={t('errors.forecastFailed')} description={error} />
+            <ErrorState
+              title={mode === 'address' ? t('errors.valuationFailed') : t('errors.forecastFailed')}
+              description={error}
+            />
           ) : null}
 
-          {result ? (
+          {registerResult ? (
+            <RegisterValuation result={registerResult} />
+          ) : result ? (
             <>
               <ForecastLedger result={result} />
 
@@ -366,7 +482,10 @@ export default function ValuationPage() {
               </div>
             </>
           ) : (
-            <EmptyState title={t('empty.title')} description={t('empty.description')} />
+            <EmptyState
+              title={mode === 'address' ? t('empty.titleAddress') : t('empty.title')}
+              description={mode === 'address' ? t('empty.descriptionAddress') : t('empty.description')}
+            />
           )}
         </div>
       </div>

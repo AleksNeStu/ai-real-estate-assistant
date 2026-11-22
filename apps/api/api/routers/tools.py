@@ -4,11 +4,13 @@ import statistics
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from pydantic import BaseModel, Field
 
+from agents.services.valuation import RcnValuationProvider
 from api.dependencies import (
     get_crm_connector,
     get_data_enrichment_service,
     get_legal_check_service,
     get_optional_llm,
+    get_rcn_valuation_provider,
     get_valuation_provider,
     get_vector_store,
 )
@@ -37,6 +39,7 @@ from api.models import (
     NeighborhoodQualityResponse,
     PriceAnalysisRequest,
     PriceAnalysisResponse,
+    ValuationComparable,
     ValuationRequest,
     ValuationResponse,
 )
@@ -63,6 +66,7 @@ from tools.property_tools import (
     TCOResult,
     create_property_tools,
 )
+from config.settings import settings
 from data.location_defaults import get_location_defaults, get_available_locations
 from tools.negotiation_tool import NegotiationTool
 from tools.portfolio_tools import (
@@ -628,7 +632,20 @@ async def valuation(
     request: ValuationRequest,
     store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
     provider=Depends(get_valuation_provider),
+    rcn_provider=Depends(get_rcn_valuation_provider),
 ):
+    """What a flat is worth.
+
+    An address can only be valued against the official register — the prices
+    people actually paid for comparable flats, with the sales themselves
+    listed — so a request that names a place is always answered from there.
+    A request that names a catalogue property follows ``VALUATION_MODE``: the
+    register when it says ``rcn``, the catalogue's own price per square metre
+    otherwise, which is all the seeded listings can offer.
+    """
+    if settings.valuation_mode == "rcn" or (request.city or "").strip():
+        return await _valuation_from_register(request, store, rcn_provider)
+
     if not store:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -639,7 +656,7 @@ async def valuation(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Valuation disabled",
         )
-    pid = request.property_id.strip()
+    pid = (request.property_id or "").strip()
     if not pid:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -656,6 +673,66 @@ async def valuation(
     price_per_sqm = md.get("price_per_sqm")
     value = provider.estimate_value({"area": area, "price_per_sqm": price_per_sqm})
     return ValuationResponse(property_id=pid, estimated_value=value)
+
+
+async def _valuation_from_register(
+    request: ValuationRequest,
+    store: Optional[ChromaPropertyStore],
+    provider: RcnValuationProvider,
+) -> ValuationResponse:
+    """Value an address from the prices people actually paid.
+
+    The address may come with the request or be resolved from a catalogue
+    property — the demo's listings know their own city and area.
+    """
+    city = (request.city or "").strip()
+    street = (request.street or "").strip()
+    area = request.area_sqm
+    rooms = request.rooms
+    property_id = (request.property_id or "").strip() or None
+
+    if not city and property_id and store:
+        docs = store.get_properties_by_ids([property_id])
+        if docs:
+            md = docs[0].metadata or {}
+            city = str(md.get("city") or "").strip()
+            street = street or str(md.get("neighborhood") or "").strip()
+            area = area if area is not None else md.get("area_sqm")
+
+    if not city:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="city is required to value an address against the official register",
+        )
+
+    outcome = await provider.outcome(
+        {"city": city, "street": street, "area_sqm": area, "rooms": rooms}
+    )
+    if outcome.estimated_value is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=(
+                "No registered sale could be found to compare this address with — "
+                "the official register holds nothing for it yet."
+            ),
+        )
+
+    return ValuationResponse(
+        property_id=property_id,
+        estimated_value=round(outcome.estimated_value, 2),
+        currency="PLN",
+        source=outcome.source,
+        confidence=outcome.confidence,
+        sample_size=outcome.sample_size,
+        comparison_area=outcome.comparison_area,
+        period_start=outcome.period_start,
+        period_end=outcome.period_end,
+        price_per_sqm_median=outcome.price_per_sqm_median,
+        low=outcome.low,
+        high=outcome.high,
+        notes=outcome.notes,
+        comparables=[ValuationComparable(**comparable) for comparable in outcome.comparables],
+    )
 
 
 @router.post("/tools/legal-check", response_model=LegalCheckResponse, tags=["Tools"])

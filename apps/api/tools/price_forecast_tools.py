@@ -6,10 +6,14 @@ future value at 1y/3y/5y horizons, using:
 - Property features from the vector store
 - Comparable sales (top-N similar listings)
 - City/neighborhood median price-per-sqm
+- The official register of notarial prices, when it holds the place
 - LLM-based structured output with a confidence band
 
 No external paid APIs are required; the LLM alone produces the estimate and
-projection. This makes the feature work in demo mode out of the box.
+projection. This makes the feature work in demo mode out of the box. When the
+register holds the place, the forecast stands on the prices people actually
+paid — including the rate those prices moved at, which is measured rather than
+assumed.
 """
 
 from __future__ import annotations
@@ -17,15 +21,20 @@ from __future__ import annotations
 import json
 import logging
 import statistics
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Callable, Dict, List, Optional, cast
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field, PrivateAttr
 
+from agents.services.valuation import RegisterContext
 from tools.llm_resolution import resolve_tool_llm
 
 logger = logging.getLogger(__name__)
+
+# The rate a forecast falls back to when nothing was measured. It is an
+# assumption, and the result says so.
+ASSUMED_ANNUAL_RATE = 0.03
 
 
 # ---------------------------------------------------------------------------
@@ -142,11 +151,15 @@ class PriceForecastTool(BaseTool):
 
     _llm: BaseChatModel | None = PrivateAttr(default=None)
     _vector_store: Any = PrivateAttr(default=None)
+    _register_reader: Optional[Callable[[str, str], Optional[RegisterContext]]] = PrivateAttr(
+        default=None
+    )
 
     def __init__(
         self,
         vector_store: Any = None,
         llm: Optional[BaseChatModel] = None,
+        register_reader: Optional[Callable[[str, str], Optional[RegisterContext]]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -160,6 +173,9 @@ class PriceForecastTool(BaseTool):
             max_tokens=800,
         )
         self._vector_store = vector_store
+        # The register is read through an injected reader so a test can answer
+        # for it and a deployment without it simply forecasts without it.
+        self._register_reader = register_reader
 
     # ---- public helpers used by tests and the router -----------------------
 
@@ -266,6 +282,7 @@ class PriceForecastTool(BaseTool):
         comparables: List[Dict[str, Any]],
         median_ppsm: Optional[float],
         nbh_median_ppsm: Optional[float],
+        register: Optional[RegisterContext] = None,
     ) -> str:
         parts: List[str] = []
         if median_ppsm is not None:
@@ -279,6 +296,20 @@ class PriceForecastTool(BaseTool):
                 pass
         if comparables:
             parts.append(f"Comparables used: {len(comparables)}")
+        if register is not None and register.has_data:
+            if register.median_price_per_sqm is not None:
+                parts.append(
+                    f"Official register median price-per-sqm ({register.comparison_area}): "
+                    f"{register.median_price_per_sqm:.0f} "
+                    f"({register.sample_size} registered sales)"
+                )
+            if register.trend is not None:
+                parts.append(
+                    f"Registered price change: {register.trend.annual_rate * 100:+.1f}% a year "
+                    f"({register.trend.sample_size} sales between "
+                    f"{register.trend.period_start.isoformat()} and "
+                    f"{register.trend.period_end.isoformat()})"
+                )
         return "\n".join(parts) if parts else "No additional market context."
 
     @staticmethod
@@ -311,6 +342,7 @@ class PriceForecastTool(BaseTool):
         features: Dict[str, Any],
         comparables: List[Dict[str, Any]],
         horizons: List[int],
+        register: Optional[RegisterContext] = None,
     ) -> Dict[str, Any]:
         if self._llm is None:
             return {}
@@ -323,6 +355,7 @@ class PriceForecastTool(BaseTool):
                 comparables,
                 self._median_price_per_sqm(comparables),
                 self._neighborhood_median_price_per_sqm(comparables, features.get("neighborhood")),
+                register,
             ),
         )
         try:
@@ -352,13 +385,20 @@ class PriceForecastTool(BaseTool):
         median_ppsm: Optional[float],
         nbh_median_ppsm: Optional[float],
         n_comps: int,
+        register: Optional[RegisterContext] = None,
     ) -> PriceForecastResult:
-        """Deterministic fallback when the LLM is unavailable.
+        """The forecast when the model could not answer.
 
-        Uses a flat 3%/year appreciation curve anchored at the closest
-        available price-per-sqm reference.
+        The degradation is to the transaction data, not to a constant: when the
+        official register holds the place, the estimate is anchored on the
+        median price per square metre of the sales that happened there, and
+        the projection follows the rate those sales actually moved at. Only
+        when nothing was measured does the flat assumption remain — and then
+        the result says that the rate is an assumption.
         """
-        anchor = nbh_median_ppsm or median_ppsm
+        register_median = register.median_price_per_sqm if register else None
+        trend = register.trend if register else None
+        anchor = register_median or nbh_median_ppsm or median_ppsm
         try:
             area = float(features["area_sqm"]) if features.get("area_sqm") else None
         except (TypeError, ValueError):
@@ -375,9 +415,10 @@ class PriceForecastTool(BaseTool):
         else:
             current = 0.0
 
+        rate = trend.annual_rate if trend else ASSUMED_ANNUAL_RATE
         forecast: List[ForecastPoint] = []
         for y in horizons:
-            mid = current * ((1.03) ** y)
+            mid = current * ((1 + rate) ** y)
             forecast.append(
                 ForecastPoint(
                     years_ahead=y,
@@ -386,22 +427,70 @@ class PriceForecastTool(BaseTool):
                     upper_bound=round(mid * 1.08, 0),
                 )
             )
-        confidence = 0.35 if n_comps >= 3 else 0.2
+
+        if trend is not None:
+            confidence = 0.6 if trend.sample_size >= 20 else 0.5
+            drivers = [
+                f"measured appreciation from {trend.sample_size} registered sale(s)",
+            ]
+            if anchor:
+                drivers.append(f"median {anchor:.0f} PLN/m² from the official register")
+            explanation = (
+                f"Projected from the official register: {trend.describe()} "
+                f"The estimate is the median price per square metre of the sales it "
+                f"stands on, multiplied by the area."
+            )
+        elif register is not None and register.has_data:
+            confidence = 0.35 if n_comps >= 3 else 0.25
+            drivers = ["official register prices — the yearly change could not be measured"]
+            explanation = (
+                "Estimate from the official register of notarial prices. The yearly "
+                "change could not be measured from the sales available, so the "
+                f"projection uses a flat {ASSUMED_ANNUAL_RATE * 100:.0f}% per year "
+                "assumption."
+            )
+        else:
+            confidence = 0.35 if n_comps >= 3 else 0.2
+            drivers = ["fallback estimate — LLM unavailable"]
+            explanation = (
+                "Fallback estimate based on median price-per-sqm and a "
+                f"flat {ASSUMED_ANNUAL_RATE * 100:.0f}% per year appreciation assumption."
+            )
+
+        # The register records prices in złoty, so an estimate taken from it
+        # is in złoty whatever the catalogue said.
+        currency = str(features.get("currency") or ("PLN" if register_median else "EUR"))
+
         return PriceForecastResult(
             current_estimate=round(current, 0),
-            currency=str(features.get("currency") or "EUR"),
+            currency=currency,
             horizon_years=horizons,
             forecast=forecast,
             confidence=confidence,
-            drivers=["fallback estimate — LLM unavailable"],
-            explanation=(
-                "Fallback estimate based on median price-per-sqm and a "
-                "flat 3% per year appreciation assumption."
-            ),
-            comparables_used=n_comps,
-            median_price_per_sqm=median_ppsm,
+            drivers=drivers,
+            explanation=explanation,
+            comparables_used=(register.sample_size if register and register.has_data else n_comps),
+            median_price_per_sqm=register_median or median_ppsm,
             neighborhood_median_price_per_sqm=nbh_median_ppsm,
         )
+
+    def _register_context(self, features: Dict[str, Any]) -> Optional[RegisterContext]:
+        """What the official register holds for the place being forecast.
+
+        The register is a source of truth, not a decoration: when it holds the
+        place, the forecast is anchored on it and its measured rate.
+        """
+        if self._register_reader is None:
+            return None
+        city = str(features.get("city") or "").strip()
+        if not city:
+            return None
+        street = str(features.get("street") or "").strip()
+        try:
+            return self._register_reader(city, street)
+        except Exception as exc:  # pragma: no cover - the store may be absent
+            logger.warning("The official price register could not be read: %s", exc)
+            return None
 
     def forecast(self, args: Dict[str, Any]) -> PriceForecastResult:
         """Compute a forecast for the given input. Public for testability."""
@@ -412,7 +501,8 @@ class PriceForecastTool(BaseTool):
         nbh_median_ppsm = self._neighborhood_median_price_per_sqm(
             comparables, features.get("neighborhood")
         )
-        parsed = self._generate(features, comparables, horizons)
+        register = self._register_context(features)
+        parsed = self._generate(features, comparables, horizons, register)
         if parsed and parsed.get("current_estimate") is not None:
             forecast_points: List[ForecastPoint] = []
             for entry in parsed.get("forecast") or []:
@@ -435,36 +525,49 @@ class PriceForecastTool(BaseTool):
                 current = float(parsed["current_estimate"])
             except (TypeError, ValueError):
                 return self._build_fallback(
-                    features, horizons, median_ppsm, nbh_median_ppsm, len(comparables)
+                    features, horizons, median_ppsm, nbh_median_ppsm, len(comparables), register
                 )
             drivers = [str(d) for d in (parsed.get("drivers") or [])][:3]
             explanation = str(parsed.get("explanation") or "").strip()
             if not forecast_points:
-                # LLM didn't return forecast points — synthesise from current
+                # The model returned no curve: project the estimate with the
+                # rate that was measured, or with the assumption if none was.
+                rate = register.trend.annual_rate if register and register.trend else None
+                if rate is None:
+                    rate = ASSUMED_ANNUAL_RATE
                 for y in horizons:
                     forecast_points.append(
                         ForecastPoint(
                             years_ahead=y,
-                            estimated_value=round(current * ((1.03) ** y), 0),
-                            lower_bound=round(current * ((1.01) ** y), 0),
-                            upper_bound=round(current * ((1.05) ** y), 0),
+                            estimated_value=round(current * ((1 + rate) ** y), 0),
+                            lower_bound=round(current * ((1 + rate * 0.5) ** y), 0),
+                            upper_bound=round(current * ((1 + rate * 1.5) ** y), 0),
                         )
                     )
             return PriceForecastResult(
                 current_estimate=round(current, 0),
-                currency=str(features.get("currency") or "EUR"),
+                currency=str(
+                    features.get("currency")
+                    or ("PLN" if register and register.median_price_per_sqm else "EUR")
+                ),
                 horizon_years=horizons,
                 forecast=forecast_points,
                 confidence=max(0.0, min(1.0, confidence)),
                 drivers=drivers,
                 explanation=explanation or "Estimate based on property features and comparables.",
-                comparables_used=len(comparables),
-                median_price_per_sqm=median_ppsm,
+                comparables_used=(
+                    register.sample_size if register and register.has_data else len(comparables)
+                ),
+                median_price_per_sqm=(
+                    register.median_price_per_sqm
+                    if register and register.median_price_per_sqm
+                    else median_ppsm
+                ),
                 neighborhood_median_price_per_sqm=nbh_median_ppsm,
             )
         # No LLM or no parseable output — use deterministic fallback
         return self._build_fallback(
-            features, horizons, median_ppsm, nbh_median_ppsm, len(comparables)
+            features, horizons, median_ppsm, nbh_median_ppsm, len(comparables), register
         )
 
     # ---- BaseTool overrides -----------------------------------------------

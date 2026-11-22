@@ -32,7 +32,7 @@ describe("api tools", () => {
     expect(global.fetch).toHaveBeenCalled();
   });
   it("calls valuation", async () => {
-    await valuationApi("p1");
+    await valuationApi({ property_id: "p1" });
     expect(global.fetch).toHaveBeenCalled();
   });
   it("calls legal check", async () => {

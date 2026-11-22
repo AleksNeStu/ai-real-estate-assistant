@@ -3014,6 +3014,8 @@
       "errors": {
         "requiredFields": "Podaj co najmniej miasto, powierzchnię (m²) i cenę (lub użyj identyfikatora nieruchomości).",
         "propertyId": "Podaj identyfikator nieruchomości.",
+        "addressRequired": "Podaj miasto i ulicę.",
+        "valuationFailed": "Wycena nie powiodła się",
         "forecastFailed": "Prognoza nie powiodła się"
       },
       "propertyIdPlaceholder": "np. prop-12345",
@@ -3035,6 +3037,12 @@
         "yearBuilt": "Rok budowy",
         "askingPrice": "Cena wywoławcza",
         "currency": "Waluta",
+        "street": "Ulica",
+        "cityPlaceholder": "Kraków",
+        "streetPlaceholder": "Topolowa",
+        "registerHint": "Oficjalny rejestr cen notarialnych — ceny transakcyjne, nie wywoławcze.",
+        "estimatingValuation": "Wyliczanie…",
+        "getValuation": "Wycena z rejestru",
         "currencyPlaceholder": "EUR, USD, GBP…",
         "propertyId": "Identyfikator nieruchomości (opcjonalnie)",
         "propertyIdHint": "Id, który nadał katalog.",
@@ -3064,12 +3072,26 @@
       "source": "valuation_forecast · historia katalogu demo",
       "mode": {
         "byId": "Po numerze katalogowym",
-        "byFeatures": "Po cechach"
+        "byFeatures": "Po cechach",
+        "byAddress": "Po adresie"
       },
       "empty": {
         "title": "Jeszcze bez prognozy",
-        "description": "Wskaż nieruchomość po numerze katalogowym albo po jej cechach, a model zwróci bieżącą wartość i projekcję."
-      }
+        "description": "Wskaż nieruchomość po numerze katalogowym albo po jej cechach, a model zwróci bieżącą wartość i projekcję.",
+        "titleAddress": "Jeszcze bez wyceny",
+        "descriptionAddress": "Podaj miasto i ulicę, a rejestr odpowie, ile naprawdę zapłacono — wycenę, sprzedaże, na których opiera się, i ich daty."
+      },
+      "register": {
+        "estimate": "Szacowana wartość",
+        "medianPerSqm": "Mediana za m²",
+        "comparisonArea": "Obszar porównania",
+        "sample": "Wykorzystane sprzedaże",
+        "sampleCount": "{count, plural, one {# zarejestrowana sprzedaż} few {# zarejestrowane sprzedaże} other {# zarejestrowanych sprzedaży}}",
+        "period": "Okres",
+        "confidence": "Pewność",
+        "sales": "Sprzedaże, na których opiera się wycena"
+      },
+      "registerSource": "RCN · Rejestr Cen Nieruchomości — oficjalne ceny notarialne"
     },
     "usage": {
       "title": "Panel użycia",
