@@ -9,6 +9,7 @@ This section contains comprehensive guides for developers working on the AI Real
 | [Local Development](local-development.md) | Set up your development environment (Docker & non-Docker) |
 | [Environment Setup](environment-setup.md) | Configure environment variables and LLM providers |
 | [Testing Guide](testing.md) | Run tests, understand coverage requirements, and CI parity |
+| [Pricing from notarial deeds](pricing-from-notarial-deeds.md) | How a place is valued against the official register of notarial prices, and what that evidence looks like |
 
 ## Deployment & Operations
 

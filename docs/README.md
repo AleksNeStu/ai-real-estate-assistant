@@ -14,6 +14,9 @@ Welcome to the documentation for the AI Real Estate Assistant.
 ## User
 - **[User Guide](user/USER_GUIDE.md)**: How to use the application.
 - **[Tools Guide](user/USER_GUIDE_TOOLS.md)**: How to use Tools.
+- **[Pricing from notarial deeds](guides/pricing-from-notarial-deeds.md)**: how a place is
+  valued against the official register of notarial prices — the comparable set, the period,
+  the comparison area, and where the register stops.
 
 ## Development
 - **[Developer Guides](guides/)**: Comprehensive guides for setup, testing, and deployment.
