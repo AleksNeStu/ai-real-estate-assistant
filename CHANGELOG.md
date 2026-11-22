@@ -7,6 +7,105 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.5.0] - 2026-11-22
+
+Nine commits since v5.4.0. The theme: the promises the demo makes about
+itself are now the promises it keeps — the waitlist form says an e-mail is
+sent, and one is; the valuation answers from the prices people actually
+paid, not from one listing's asking price.
+
+### Added
+- **The waitlist keeps its promise — the capture reaches the operator** —
+  the waitlist form and the footer's form both post to
+  `POST /api/v1/leads/visitor`, and the row that lands there used to be the
+  END of the story: nothing told the operator that a capture had arrived, so
+  a launch had to be followed by a human reading the board. A new capture now
+  renders the high-value-lead template that already existed and sends it to
+  the operator, whose address comes from the environment
+  (`LEAD_ALERT_EMAIL_TO`) — never from the source, because an address in the
+  code is an address that cannot change without a release. The send is
+  best-effort and bounded: the row is written first and a mail failure cannot
+  turn a successful capture into an error, so a visitor is never shown a
+  failure for an address that was in fact saved. The endpoint is public, so an
+  hourly budget bounds the MAIL — every lead is still stored and still visible
+  on the board. The deployment's transport lives in the node's own `.env`
+  (`SMTP_PROVIDER`, `SMTP_USERNAME`, `SMTP_PASSWORD`,
+  `LEAD_ALERT_EMAIL_TO`): the values never enter the repository, a commit or
+  an argv, and the running container picks them up with the next roll, so the
+  capability flips and the producer arrives in the same moment.
+- **The flat is valued from the register of notarial prices** — "what is my
+  flat worth" was answered from one seeded listing's asking price. It is now
+  answered from the prices people actually paid: the Rejestr Cen
+  Nieruchomości, free by law since February 2026. The register is read from
+  the weekly GeoParquet export, per voivodeship and aware of the publisher's
+  `Last-Modified`, and stored in a new `property_transactions` table. The
+  comparables are the street first and the city when the street is thin, in
+  an area band, on the secondary market, compared by the median of the price
+  per square metre — with N, the period and the comparison area always
+  attached. `/tools/valuation` answers for an address as well as for a
+  catalogue entry, the catalogue price stays as the fallback, and the price
+  forecast degrades to the measured movement of the transactions instead of a
+  flat 3 %. The tracer bullet is proven end to end: a recorded export is
+  ingested and valued through the real boundaries, and one live test reads the
+  register itself and skips when the network is not there.
+
+### Changed
+- **The sitemap warning is re-read by a machine, not by a session to
+  remember** — the re-read of 2026-11-21T21:10Z moved nothing: the API still
+  answers warnings 261 / 1, both sitemaps are "Status: Success", the realty
+  drilldown is still "Sitemap processed successfully", and the Pages report
+  filtered by the realty sitemap is still "Processing data, please check
+  again in a day or so" with an empty exclusion table. The warning text does
+  not exist yet, so no claim about it is made. The detached collector now
+  reads both surfaces over CDP at every release-wave due point and polls every
+  15 minutes from that point until the data arrives, writing the structured
+  read and the verbatim UI text into the gitignored evidence directory.
+  TaskMaster #107 closes on the first file that carries `closed=true`, or on
+  the API counter falling to 0.
+- **The sitemap warning text was read in the Search Console UI** — the API
+  exposes the count and nothing else, so the UI was read on 2026-11-21 over
+  CDP: no warning at all, both sitemaps successful, both drilldowns
+  processed. What the UI gives is the one exclusion reason of the property —
+  "Page with redirect", 3 pages, all host variants of the studio landing
+  page, one of them listed in the kittray.com sitemap itself. The
+  full-scale probe answers the rest: 2349 URLs, 2349 x 200, zero redirects,
+  zero errors, the file structurally clean with correct hreflang clusters.
+  The diagnosis lands in `SEO_INDEXING_SETUP.md` section 1.7 with the
+  measurement, the two named candidates and a falsifiable prediction — not a
+  claim.
+- **The launch drafts name the build the demo actually runs** — the five
+  drafts still named the v5.3.11 build and the sha it was built from, so
+  every draft now names the live build and that sha. The bare root answers
+  301 now, so the drafts say "redirects" instead of naming a status code that
+  moved. The FutureTools entry records what the form actually accepts — the
+  field names and the values that stick — and the one step a person still has
+  to take: the page's Cloudflare challenge. Nothing was submitted.
+- **The site's first click is recorded** — the W49 snapshot recorded the
+  Search Console reading without the dataState it was taken with, and the
+  morning reading is not the last word: read again the same day, the same
+  window carries 24 impressions and the site's first click. The W49 block now
+  names `data_state=all` and the measurement time, and carries the re-read
+  with the click's page, date and position; the metric files follow; and the
+  Lighthouse SEO checklist item closes on a measurement — SEO 100 on `/en` and
+  on `/en/search`, Lighthouse 12.6.1, 2026-11-21.
+- **The weekly snapshot corrects four records** — the description was read
+  back naming 16 providers while the repository names 17; the open-issue
+  count was 0, and issue #418 opened on 2026-11-21; every fork was called a
+  passive clone, and five of the 122 hold a star or a fork of their own; and
+  the star baseline was carried as 284 since 2026-W45, while the stargazer
+  timeline says 281 stars precede 2026-07-20 and the 284th arrived on
+  2026-07-31. Each snapshot now records its `iso_week_of_collection` beside
+  it, because the file name has drifted one step behind since 2026-W47.
+
+### Fixed
+- **The first comment is 364 words, not 320** — the number the launch draft
+  counted was wrong, and the count is the thing a reader checks.
+- **The contributing list pointed at a closed issue** — issue 16 was closed
+  in the May 2026 pre-deployment cleanup. The link now points at issue 418,
+  which carries the draft written against the code as it is now: the four
+  abstract methods, the allowlist entry, the reference connector, and the
+  first slice a contributor can take without asking anyone a question.
+
 ## [5.4.0] - 2026-11-21
 
 Forty-five commits since v5.3.11. The theme is the same as the previous
