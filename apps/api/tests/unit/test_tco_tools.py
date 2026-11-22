@@ -36,7 +36,9 @@ class TestTCOInput:
         inp = TCOInput(property_price=300000)
         assert inp.property_price == 300000
         assert inp.down_payment_percent == 20.0
-        assert inp.interest_rate == 4.5
+        # The rate is not a constant any more (Task #112): no rate means the
+        # NBP reference rate, read at request time.
+        assert inp.interest_rate is None
         assert inp.loan_years == 30
         assert inp.monthly_hoa == 0.0
         assert inp.annual_property_tax == 0.0

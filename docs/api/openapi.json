@@ -6268,6 +6268,30 @@
             "description": "Variable monthly costs (utilities, maintenance)",
             "title": "Variable Costs Monthly",
             "type": "number"
+          },
+          "interest_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interest Rate",
+            "description": "The annual rate the costs were computed with"
+          },
+          "interest_rate_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interest Rate Source",
+            "description": "Where that rate came from, with the date it was published"
           }
         },
         "required": [
@@ -10448,11 +10472,17 @@
             "type": "number"
           },
           "interest_rate": {
-            "default": 4.5,
-            "description": "Annual interest rate as percentage (e.g., 4.5 for 4.5%)",
-            "minimum": 0.0,
+            "description": "Annual interest rate as percentage (e.g., 4.5 for 4.5%). Omit it to use the NBP reference rate, which is read at request time.",
             "title": "Interest Rate",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "loan_years": {
             "default": 30,
@@ -10504,6 +10534,30 @@
           "total_interest": {
             "title": "Total Interest",
             "type": "number"
+          },
+          "interest_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interest Rate",
+            "description": "The annual rate the payment was computed with"
+          },
+          "interest_rate_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interest Rate Source",
+            "description": "Where that rate came from, with the date it was published"
           }
         },
         "required": [
@@ -16270,11 +16324,17 @@
             "type": "number"
           },
           "interest_rate": {
-            "default": 4.5,
-            "description": "Annual interest rate as percentage (e.g., 4.5 for 4.5%)",
-            "minimum": 0.0,
+            "description": "Annual interest rate as percentage (e.g., 4.5 for 4.5%). Omit it to use the NBP reference rate, which is read at request time.",
             "title": "Interest Rate",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "loan_years": {
             "default": 30,
@@ -16495,6 +16555,30 @@
           "total_ownership_cost": {
             "title": "Total Ownership Cost",
             "type": "number"
+          },
+          "interest_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interest Rate",
+            "description": "The annual rate the costs were computed with"
+          },
+          "interest_rate_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interest Rate Source",
+            "description": "Where that rate came from, with the date it was published"
           }
         },
         "required": [

@@ -3,6 +3,10 @@ Total Cost of Ownership (TCO) and Rent vs Buy calculation tools.
 
 Provides TCO calculator, TCO comparison between two scenarios,
 and rent vs buy decision analysis.
+
+The interest rate of the TCO calculator is read from the NBP reference rate
+when the caller does not supply one, and every answer names the rate it used
+and the date that rate was published.
 """
 
 import math
@@ -11,7 +15,7 @@ from typing import Any, Dict, List, Optional
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field
 
-from tools.mortgage_tools import MortgageCalculatorTool
+from tools.mortgage_tools import MortgageCalculatorTool, resolve_interest_rate
 
 
 class TCOInput(BaseModel):
@@ -22,8 +26,13 @@ class TCOInput(BaseModel):
     down_payment_percent: float = Field(
         default=20.0, description="Down payment as percentage (e.g., 20 for 20%)", ge=0, le=100
     )
-    interest_rate: float = Field(
-        default=4.5, description="Annual interest rate as percentage (e.g., 4.5 for 4.5%)", ge=0
+    interest_rate: Optional[float] = Field(
+        default=None,
+        description=(
+            "Annual interest rate as percentage (e.g., 4.5 for 4.5%). "
+            "Omit it to use the NBP reference rate, which is read at request time."
+        ),
+        ge=0,
     )
     loan_years: int = Field(default=30, description="Loan term in years", gt=0, le=50)
 
@@ -77,6 +86,14 @@ class TCOResult(BaseModel):
     total_all_costs: float  # Including down payment
 
     breakdown: Dict[str, float]
+
+    # The rate the numbers were computed with
+    interest_rate: Optional[float] = Field(
+        default=None, description="The annual rate the costs were computed with"
+    )
+    interest_rate_source: Optional[str] = Field(
+        default=None, description="Where that rate came from, with the date it was published"
+    )
 
 
 # Task #52: Enhanced TCO Models
@@ -141,6 +158,14 @@ class EnhancedTCOResult(BaseModel):
     total_ownership_cost: float
     total_all_costs: float
     breakdown: Dict[str, float]
+
+    # The rate the numbers were computed with
+    interest_rate: Optional[float] = Field(
+        default=None, description="The annual rate the costs were computed with"
+    )
+    interest_rate_source: Optional[str] = Field(
+        default=None, description="Where that rate came from, with the date it was published"
+    )
 
     # Enhanced fields
     projections: List[TCOProjection] = Field(
@@ -340,7 +365,7 @@ class TCOCalculatorTool(BaseTool):
     def calculate(
         property_price: float,
         down_payment_percent: float = 20.0,
-        interest_rate: float = 4.5,
+        interest_rate: Optional[float] = None,
         loan_years: int = 30,
         monthly_hoa: float = 0.0,
         annual_property_tax: float = 0.0,
@@ -351,6 +376,9 @@ class TCOCalculatorTool(BaseTool):
         maintenance_percent: float = 1.0,
     ) -> TCOResult:
         """Calculate Total Cost of Ownership."""
+        # A rate that was not supplied is read from NBP now, not from a constant.
+        interest_rate, rate_source = resolve_interest_rate(interest_rate)
+
         # First, calculate mortgage components
         mortgage_result = MortgageCalculatorTool.calculate(
             property_price, down_payment_percent, interest_rate, loan_years
@@ -425,13 +453,15 @@ class TCOCalculatorTool(BaseTool):
                 "parking": monthly_parking,
                 "maintenance": monthly_maintenance,
             },
+            interest_rate=interest_rate,
+            interest_rate_source=rate_source,
         )
 
     def _run(
         self,
         property_price: float,
         down_payment_percent: float = 20.0,
-        interest_rate: float = 4.5,
+        interest_rate: Optional[float] = None,
         loan_years: int = 30,
         monthly_hoa: float = 0.0,
         annual_property_tax: float = 0.0,
@@ -459,6 +489,8 @@ class TCOCalculatorTool(BaseTool):
 
             formatted = f"""
 Total Cost of Ownership for ${property_price:,.2f} Property:
+
+Interest Rate: {result.interest_rate}% ({result.interest_rate_source})
 
 === Monthly Costs ===
 Mortgage Payment:        ${result.monthly_mortgage:,.2f}
@@ -519,11 +551,14 @@ class TCOComparisonTool(BaseTool):
         input_data: TCOInput, projection_years: List[int], appreciation_rate: float
     ) -> EnhancedTCOResult:
         """Calculate enhanced TCO with projections."""
+        # A rate that was not supplied is read from NBP now, not from a constant.
+        interest_rate, rate_source = resolve_interest_rate(input_data.interest_rate)
+
         # Get base TCO result
         base_result = TCOCalculatorTool.calculate(
             property_price=input_data.property_price,
             down_payment_percent=input_data.down_payment_percent,
-            interest_rate=input_data.interest_rate,
+            interest_rate=interest_rate,
             loan_years=input_data.loan_years,
             monthly_hoa=input_data.monthly_hoa,
             annual_property_tax=input_data.annual_property_tax,
@@ -554,7 +589,7 @@ class TCOComparisonTool(BaseTool):
         # Calculate projections
         projections = []
         loan_amount = base_result.loan_amount
-        monthly_rate = (input_data.interest_rate / 100) / 12
+        monthly_rate = (interest_rate / 100) / 12
         down_payment = base_result.down_payment
 
         cumulative_cost = 0.0
@@ -629,6 +664,8 @@ class TCOComparisonTool(BaseTool):
             total_ownership_cost=base_result.total_ownership_cost,
             total_all_costs=base_result.total_all_costs,
             breakdown=base_result.breakdown,
+            interest_rate=interest_rate,
+            interest_rate_source=rate_source,
             # Enhanced fields
             projections=projections,
             percentage_breakdown=percentage_breakdown,
@@ -920,6 +957,12 @@ class TCOComparisonTool(BaseTool):
             )
             output = f"""
 === TCO COMPARISON: {scenario_a_name} vs {scenario_b_name} ===
+
+INTEREST RATE:
+  {scenario_a_name}: {result.scenario_a.interest_rate}% \
+({result.scenario_a.interest_rate_source})
+  {scenario_b_name}: {result.scenario_b.interest_rate}% \
+({result.scenario_b.interest_rate_source})
 
 MONTHLY COSTS:
   {scenario_a_name}: ${result.scenario_a.monthly_tco:,.0f}

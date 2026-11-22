@@ -2,13 +2,34 @@
 Mortgage calculation tools.
 
 Provides mortgage payment calculator with breakdown calculations.
+
+The interest rate is never a constant here: a rate the caller supplies is
+used as it is, and a missing rate is read from the NBP reference rate at
+request time. Every answer names the rate it used and the date that rate
+was published.
 """
 
 import math
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field
+
+from services.fx_rates import get_nbp_reference_rate
+
+
+def resolve_interest_rate(interest_rate: Optional[float]) -> tuple[float, str]:
+    """The rate to compute with, and the name the answer gives it.
+
+    A rate the caller supplied is used as it is. A missing rate is read from
+    the NBP reference rate, so a payment is never computed from a number the
+    code made up.
+    """
+    if interest_rate is not None:
+        return interest_rate, "caller-specified rate"
+
+    reference = get_nbp_reference_rate()
+    return reference.rate, reference.label
 
 
 class MortgageInput(BaseModel):
@@ -18,8 +39,13 @@ class MortgageInput(BaseModel):
     down_payment_percent: float = Field(
         default=20.0, description="Down payment as percentage (e.g., 20 for 20%)", ge=0, le=100
     )
-    interest_rate: float = Field(
-        default=4.5, description="Annual interest rate as percentage (e.g., 4.5 for 4.5%)", ge=0
+    interest_rate: Optional[float] = Field(
+        default=None,
+        description=(
+            "Annual interest rate as percentage (e.g., 4.5 for 4.5%). "
+            "Omit it to use the NBP reference rate, which is read at request time."
+        ),
+        ge=0,
     )
     loan_years: int = Field(default=30, description="Loan term in years", gt=0, le=50)
 
@@ -33,6 +59,12 @@ class MortgageResult(BaseModel):
     down_payment: float
     loan_amount: float
     breakdown: Dict[str, float]
+    interest_rate: Optional[float] = Field(
+        default=None, description="The annual rate the payment was computed with"
+    )
+    interest_rate_source: Optional[str] = Field(
+        default=None, description="Where that rate came from, with the date it was published"
+    )
 
 
 class MortgageCalculatorTool(BaseTool):
@@ -42,14 +74,15 @@ class MortgageCalculatorTool(BaseTool):
     description: str = (
         "Calculate mortgage payments for a property. "
         "Input should be property price, down payment %, interest rate %, and loan years. "
-        "Returns monthly payment, total interest, and breakdown."
+        "When no interest rate is given the NBP reference rate is used. "
+        "Returns monthly payment, total interest, the rate used, and breakdown."
     )
 
     @staticmethod
     def calculate(
         property_price: float,
         down_payment_percent: float = 20.0,
-        interest_rate: float = 4.5,
+        interest_rate: Optional[float] = None,
         loan_years: int = 30,
     ) -> MortgageResult:
         """Pure calculation logic returning structured data."""
@@ -58,10 +91,13 @@ class MortgageCalculatorTool(BaseTool):
             raise ValueError("Property price must be positive")
         if not 0 <= down_payment_percent <= 100:
             raise ValueError("Down payment must be between 0 and 100%")
-        if interest_rate < 0:
+        if interest_rate is not None and interest_rate < 0:
             raise ValueError("Interest rate cannot be negative")
         if loan_years <= 0:
             raise ValueError("Loan term must be positive")
+
+        # A rate that was not supplied is read from NBP now, not from a constant.
+        interest_rate, rate_source = resolve_interest_rate(interest_rate)
 
         # Calculate values
         down_payment = property_price * (down_payment_percent / 100)
@@ -95,13 +131,15 @@ class MortgageCalculatorTool(BaseTool):
                 "interest": total_interest,
                 "down_payment": down_payment,
             },
+            interest_rate=interest_rate,
+            interest_rate_source=rate_source,
         )
 
     def _run(
         self,
         property_price: float,
         down_payment_percent: float = 20.0,
-        interest_rate: float = 4.5,
+        interest_rate: Optional[float] = None,
         loan_years: int = 30,
     ) -> str:
         """Execute mortgage calculation."""
@@ -112,6 +150,7 @@ class MortgageCalculatorTool(BaseTool):
             formatted = f"""
 Mortgage Calculation for ${property_price:,.2f} Property:
 
+Interest Rate: {result.interest_rate}% ({result.interest_rate_source})
 Down Payment ({down_payment_percent}%): ${result.down_payment:,.2f}
 Loan Amount: ${result.loan_amount:,.2f}
 
