@@ -90,17 +90,22 @@ Day +30          → Product Hunt (after audiences warmed up)
       the extractor, the steering and the filters). A signed-in buyer's
       budget, ruled-out areas and disliked listings survive a turn and shape
       the next one; an anonymous request reads and writes none.
-- [ ] **The demo sends no e-mail, and that is what the form says.**
-      `GET /api/v1/capabilities` answers `email.enabled: false`,
-      `lead_capture.waitlist_enabled: false` — the deployment has no mail
-      sender, so the waitlist form says "noted, no e-mail" instead of
-      promising a subscription it cannot keep. The interest is recorded in the
-      database and is visible on the board (`/[locale]/leads`, signed-in);
-      **nobody is notified when it arrives.** The alert type for it
-      (`HIGH_VALUE_LEAD`) and its template exist, but nothing produces them,
-      and SMTP is unset on the node. Until that is wired, a launch has to be
-      followed by a human reading the board — the email cannot be the
-      mechanism that tells you a launch worked.
+- [x] **The waitlist keeps its promise — a capture reaches the operator.**
+      Checked 2026-11-22 against the deployment
+      `4491cb799a150e60fe59cfa54612069c363514b4` (the v5.5.0 tag):
+      `GET /api/v1/capabilities` answers `email.enabled: true`,
+      `lead_capture.waitlist_enabled: true`, and the rendered `/en` page shows
+      the note "One e-mail at launch. Never sold, never shared." — the line
+      that used to say "no e-mail is sent from here" is gone from the
+      rendered page. A test capture (`POST /api/v1/leads/visitor`) stored the
+      row **and** left one message in the operator's mailbox — "🕥
+      High-Value Lead: Anonymous lead (Score: 0)", sent from the node itself.
+      The transport lives in the node's own `.env` (`SMTP_PROVIDER`,
+      `SMTP_USERNAME`, `SMTP_PASSWORD`, `LEAD_ALERT_EMAIL_TO`) and never
+      enters the repository, a commit or an argv. The send is best-effort: a
+      broken transport cannot fail the capture, and an hourly budget bounds
+      the mail — every lead is still stored and still on the board
+      (`/[locale]/leads`, signed-in).
 - [x] og:image renders in Twitter Card Validator — checked 2026-11-08:
       `https://realty.kittray.com/og-image.png` answers 200 with a PNG of
       1200×630.
