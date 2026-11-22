@@ -37,7 +37,7 @@ export const LLMS_TXT_BASE = `# AI Real Estate Assistant
 - Conversational property search with natural-language queries and automatic filter extraction (city, price, bedrooms, type).
 - AI chat interface for property discovery with multi-turn context.
 - Hybrid semantic + keyword retrieval via ChromaDB with MMR reranking (30–40% better relevance than pure vector).
-- Per-user, per-task LLM provider selection (OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, Together AI, Fireworks AI, HuggingFace, local Ollama) with automatic fallback chain.
+- Per-user, per-task LLM provider selection (OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, Together AI, Fireworks AI, HuggingFace, MiniMax, local Ollama) with automatic fallback chain.
 
 ### Financial tools
 
@@ -77,7 +77,7 @@ export const LLMS_TXT_BASE = `# AI Real Estate Assistant
 - **Backend:** FastAPI (Python 3.12+).
 - **Frontend:** Next.js 16 + React 19.
 - **Vector Database:** ChromaDB with MMR reranking.
-- **LLM Providers:** OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, Together AI, Fireworks AI, HuggingFace, local Ollama.
+- **LLM Providers:** OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, Together AI, Fireworks AI, HuggingFace, MiniMax, local Ollama.
 - **Database:** PostgreSQL (production) / SQLite (demo).
 - **Container:** Docker / Docker Compose.
 - **CI/CD:** GitHub Actions (CI + GHCR).
@@ -109,7 +109,7 @@ A: AI-first and conversational rather than filter-first; self-hostable; multi-pr
 A: Yes. MIT license, Docker Compose, 5-minute quickstart, full source on GitHub.
 
 **Q: Is the live demo real?**
-A: The demo uses simulated AI responses and curated mock data (250+ properties across Polish cities) for instant exploration. Production deployment requires API keys and your own data source.
+A: Yes. The demo answers with a real language model — the deployed instance runs MiniMax. Its valuation comes from the official register of notarial transaction prices (Rejestr Cen Nieruchomości), free by law since 13 February 2026: every estimate shows the comparable sales, the period and the comparison area behind it. The 250+ properties across Polish cities are a seeded catalogue for browsing, not a live listing feed.
 
 **Q: What is the difference from PropVector AI?**
 A: PropVector AI (https://propvectorai.com) is the hosted SaaS tier built on this codebase — managed accounts, live data feeds, AI CRM, enterprise capabilities. The open-source repo stays focused on the engine and a self-hostable demo experience.
@@ -118,7 +118,7 @@ A: PropVector AI (https://propvectorai.com) is the hosted SaaS tier built on thi
 A: 9 — English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, Ukrainian. EU AI Act compliance labels included.
 
 **Q: Which LLM providers are supported?**
-A: 16 — OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, Together AI, Fireworks AI, HuggingFace, and local Ollama. Automatic fallback chain. Per-user and per-task selection.
+A: 17 — OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, Together AI, Fireworks AI, HuggingFace, MiniMax, and local Ollama. Automatic fallback chain. Per-user and per-task selection.
 
 **Q: Is there a hosted version with real data?**
 A: Yes — PropVector AI (https://propvectorai.com) with live data, managed accounts, and enterprise features.
@@ -126,8 +126,8 @@ A: Yes — PropVector AI (https://propvectorai.com) with live data, managed acco
 ## Known limitations
 
 - **Demo hosting:** the public demo at https://realty.kittray.com runs on a single small host with a fixed memory budget. Lazy provider loading is used to stay within it. Performance is best-effort, not production-grade.
-- **Demo data:** the live demo uses curated mock listings (250+ properties across 5 Polish cities). No real MLS / portal feeds.
-- **No live feeds out of the box:** no integration with Idealista, Otodom, Zillow, Rightmove, Immobilienscout24, or any other portal. Use PropVector AI for that.
+- **Demo catalogue:** the browse surface is a seeded catalogue of 250+ listings across 5 Polish cities. It is not a feed, and the valuation does not come from it — the valuation reads the official register of notarial transaction prices.
+- **No listing feed out of the box:** no integration with Idealista, Otodom, Zillow, Rightmove, Immobilienscout24, or any other portal. The live data here is the register of notarial transaction prices, not a stream of listings. Use PropVector AI for listing feeds.
 - **English-first technical docs:** while the UI is in 9 languages, the README, architecture, and API reference are English-first. Translated docs are a community contribution.
 - **No native mobile app:** PWA only. No iOS / Android native app.
 

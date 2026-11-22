@@ -3935,13 +3935,13 @@
         "q3": "Can I self-host it?",
         "a3": "Yes. MIT-licensed with Docker Compose, a 5-minute quickstart, and full source on GitHub. Add your own LLM API keys (OpenAI, Anthropic, Google, Grok, DeepSeek, or local Ollama) and ChromaDB-backed data.",
         "q4": "Is the live demo real?",
-        "a4": "The live demo uses simulated AI responses and curated mock data for instant exploration — no signup needed. A production deployment with real listings requires API keys and your own data source.",
+        "a4": "The live demo answers with a real language model — the deployed instance runs MiniMax — and its valuation comes from the official register of notarial transaction prices (Rejestr Cen Nieruchomości), free by law since 13 February 2026: every estimate shows the comparable sales, the period and the comparison area behind it. The 250-property seeded catalogue is the browse surface, not a live listing feed.",
         "q5": "What is the difference from PropVector AI?",
         "a5": "PropVector AI (propvectorai.com) is a hosted SaaS tier built on this open-source codebase, with managed accounts, live data feeds, AI CRM, and enterprise capabilities. The repository stays open-core: the engine remains free, while commercial features live in the hosted product.",
         "q6": "Which languages are supported?",
         "a6": "9 languages for the UI and chat: English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, and Ukrainian. EU AI Act compliance labels are included.",
         "q7": "Which LLM providers are supported?",
-        "a7": "OpenAI, Anthropic, Google, Grok, DeepSeek, and local Ollama. Automatic fallback chain ensures reliability. Provider selection is per-task and per-user with priority cascade.",
+        "a7": "17 — OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, Together AI, Fireworks AI, HuggingFace, MiniMax, and local Ollama. Automatic fallback chain ensures reliability. Provider selection is per-task and per-user with priority cascade.",
         "q8": "Is there a hosted version with real data?",
         "a8": "Yes — PropVector AI (propvectorai.com) offers hosted tiers with live data, managed accounts, and enterprise capabilities. The open-source repo stays focused on the core engine and a self-hostable demo experience."
       }

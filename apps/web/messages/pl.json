@@ -3935,13 +3935,13 @@
         "q3": "Czy mogę uruchomić je samodzielnie?",
         "a3": "Tak. Licencja MIT, Docker Compose, 5-minutowy start i pełny kod na GitHubie. Dodaj własne klucze API LLM (OpenAI, Anthropic, Google, Grok, DeepSeek lub lokalny Ollama) oraz dane oparte na ChromaDB.",
         "q4": "Czy działające demo jest prawdziwe?",
-        "a4": "Działające demo używa symulowanych odpowiedzi AI i przygotowanych danych testowych, aby dać się od razu poznać — bez rejestracji. Wdrożenie produkcyjne z prawdziwymi ofertami wymaga kluczy API i własnego źródła danych.",
+        "a4": "Działające demo odpowiada prawdziwym modelem językowym — na wdrożonej instancji działa MiniMax — a wycenę bierze z oficjalnego rejestru cen notarialnych (Rejestr Cen Nieruchomości), który od 13 lutego 2026 jest bezpłatny na mocy prawa: przy każdej wycenie widać sprzedaże porównawcze, okres i obszar porównania, na których opiera się wynik. Katalog 250 przygotowanych ofert służy do przeglądania — to nie jest strumień ofert na żywo.",
         "q5": "Czym różni się od PropVector AI?",
         "a5": "PropVector AI (propvectorai.com) to hostowana wersja SaaS zbudowana na tym otwartym kodzie, z zarządzanymi kontami, strumieniami danych na żywo, CRM AI i funkcjami dla enterprise. Repozytorium pozostaje open-core: silnik jest darmowy, a funkcje komercyjne żyją w produkcie hostowanym.",
         "q6": "Które języki są obsługiwane?",
         "a6": "9 języków interfejsu i czatu: angielski, polski, rosyjski, niemiecki, hiszpański, włoski, portugalski, turecki i ukraiński. Dołączone są etykiety zgodności z unijnym AI Act.",
         "q7": "Którzy dostawcy LLM są obsługiwani?",
-        "a7": "OpenAI, Anthropic, Google, Grok, DeepSeek oraz lokalny Ollama. Automatyczny łańcuch zapasowy zapewnia niezawodność. Wybór dostawcy odbywa się per zadanie i per użytkownik, z kaskadą priorytetów.",
+        "a7": "17 — OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, Together AI, Fireworks AI, HuggingFace, MiniMax oraz lokalny Ollama. Automatyczny łańcuch zapasowy zapewnia niezawodność. Wybór dostawcy odbywa się per zadanie i per użytkownik, z kaskadą priorytetów.",
         "q8": "Czy istnieje wersja hostowana z prawdziwymi danymi?",
         "a8": "Tak — PropVector AI (propvectorai.com) oferuje hostowane warianty z danymi na żywo, zarządzanymi kontami i funkcjami dla enterprise. Otwarte repozytorium skupia się na rdzeniu silnika i samodzielnie uruchamialnym demo."
       }

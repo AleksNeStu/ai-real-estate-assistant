@@ -51,8 +51,11 @@ const DEFAULT_COPY: StructuredDataCopy = {
     },
     {
       question: 'Is the live demo real?',
+      // The demo answers with a real model, and the valuation behind it comes
+      // from the official register of notarial prices — the seeded catalogue is
+      // the browse surface, not a feed of live listings. Say which is which.
       answer:
-        'The live demo uses simulated AI responses and curated mock data for instant exploration — no signup needed. A production deployment with real listings requires API keys and your own data source.',
+        'The live demo answers with a real language model — the deployed instance runs MiniMax — and its valuation comes from the official register of notarial transaction prices (Rejestr Cen Nieruchomości), free by law since 13 February 2026: every estimate shows the comparable sales, the period and the comparison area behind it. The 250-property seeded catalogue is the browse surface, not a live listing feed.',
     },
     {
       question: 'What is the difference from PropVector AI?',
@@ -66,8 +69,10 @@ const DEFAULT_COPY: StructuredDataCopy = {
     },
     {
       question: 'Which LLM providers are supported?',
+      // The registry carries seventeen, not the six the answer used to name.
+      // A count that is wrong here is the same lie the FAQ told about the demo.
       answer:
-        'OpenAI, Anthropic, Google, Grok, DeepSeek, and local Ollama. Automatic fallback chain ensures reliability. Provider selection is per-task and per-user with priority cascade.',
+        '17 — OpenAI, Anthropic, Google, Grok, DeepSeek, OpenRouter, Groq, Mistral, Qwen, ZAI, Moonshot, OpenCode, Together AI, Fireworks AI, HuggingFace, MiniMax, and local Ollama. Automatic fallback chain ensures reliability. Provider selection is per-task and per-user with priority cascade.',
     },
     {
       question: 'Is there a hosted version with real data?',
