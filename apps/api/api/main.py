@@ -353,6 +353,11 @@ async def startup_event():
     # and the frontend stops promising a subscription the demo cannot honour.
     app.state.email_enabled = email_service is not None
 
+    # The transport itself is handed to the request path: the waitlist capture
+    # notifies the operator through it (TaskMaster #108). `email_enabled` is the
+    # gate - the dummy service below would swallow a send and deliver nothing.
+    app.state.email_service = email_service
+
     if not email_service:
         logger.warning(
             "No email configuration found in environment. "

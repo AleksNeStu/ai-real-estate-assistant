@@ -1,7 +1,9 @@
 """Lead Scoring and Tracking API endpoints."""
 
+import asyncio
 import csv
 import io
+import logging
 from datetime import UTC, datetime
 from typing import Any, Optional
 
@@ -10,6 +12,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.deps.auth import get_current_active_user, get_current_user_optional
+from core.security_utils import sanitize_for_log
 from db.database import get_db
 from db.models import User
 from db.repositories import (
@@ -42,12 +45,15 @@ from db.schemas import (
     RecalculateScoresResponse,
     TrackInteractionRequest,
 )
+from notifications.lead_alerts import lead_alert_recipient, send_lead_alert
 from services.lead_scoring import (
     LeadScoringInput,
     LeadScoringService,
     PrioritizedLeadScoringService,
 )
 from services.lead_tracking import LeadTrackingService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/leads", tags=["Lead Scoring"])
 
@@ -196,6 +202,30 @@ async def track_interaction(
     )
 
 
+async def _notify_operator_of_new_lead(lead: Any, request: Request) -> None:
+    """Tell the operator that a capture arrived (TaskMaster #108).
+
+    Best-effort on purpose. The row is already written, and a mail failure
+    must not turn a successful capture into an error - the waitlist form would
+    show its error state to a visitor whose address was in fact saved. The
+    send runs in a worker thread: ``EmailService.send_email`` is synchronous
+    and retries with a backoff, which would otherwise hold the event loop.
+    """
+    if not getattr(request.app.state, "email_enabled", False):
+        # No real transport: the dummy service would swallow the send.
+        return
+
+    email_service = getattr(request.app.state, "email_service", None)
+    recipient = lead_alert_recipient()
+    if email_service is None or not recipient:
+        return
+
+    try:
+        await asyncio.to_thread(send_lead_alert, lead, email_service, recipient)
+    except Exception as exc:  # noqa: BLE001 - a mail failure is not a capture failure
+        logger.warning("Lead alert not sent: %s", sanitize_for_log(exc))
+
+
 @router.post(
     "/visitor",
     response_model=LeadResponse,
@@ -205,6 +235,7 @@ async def track_interaction(
 )
 async def get_or_create_visitor(
     body: LeadCreate,
+    request: Request,
     session: AsyncSession = Depends(get_db),
 ) -> LeadResponse:
     """Get or create a visitor lead record."""
@@ -216,6 +247,11 @@ async def get_or_create_visitor(
         source=body.source,
         consent_given=body.consent_given,
     )
+
+    # A capture that nobody is told about is a capture that did not happen
+    # (TaskMaster #108). The operator hears about it once, here.
+    if is_new and lead.email:
+        await _notify_operator_of_new_lead(lead, request)
 
     # The contact fields are redacted: this endpoint is public, so the caller
     # may not own the lead that was found by visitor_id.
