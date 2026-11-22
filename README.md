@@ -371,6 +371,26 @@ Full system design: [docs/architecture/large-saas-overview.md](docs/architecture
 
 ## Quick start
 
+One command, no API key:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/AleksNeStu/ai-real-estate-assistant/main/scripts/install/install.sh | sh
+```
+
+On Windows, in PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/AleksNeStu/ai-real-estate-assistant/main/scripts/install/install.ps1 | iex
+```
+
+The installer clones the repository, writes the `.env` with a generated API key
+and database password, creates the state directories, starts the stack, waits
+for the health check and prints the URL it started. The assistant answers with
+the built-in demo model; put a provider key in `deploy/compose/.env` and set
+`DEMO_LLM_MODE=false` to use a real one.
+
+Doing it by hand is eight lines:
+
 ```bash
 git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
 cd ai-real-estate-assistant
