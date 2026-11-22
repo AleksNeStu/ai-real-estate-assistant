@@ -9,6 +9,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, Optional
 
 from sqlalchemy import func, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import (
@@ -205,11 +206,27 @@ class LeadRepository:
         return list(result.scalars().all())
 
     async def get_or_create_by_visitor_id(self, visitor_id: str) -> Lead:
-        """Get existing lead or create new one by visitor ID."""
+        """Get existing lead or create new one by visitor ID.
+
+        The read below and the write that follows it are two statements, and
+        two requests for one visitor can arrive at the same time: the landing
+        page tracks an interaction and the waitlist form captures the same
+        visitor. Both read "no row yet", both write, and the loser of that
+        race dies on the UNIQUE constraint - a 500 for a visitor who did
+        nothing wrong. On that collision the row the other request wrote is
+        read back and returned, so both requests end with the same lead.
+        """
         lead = await self.get_by_visitor_id(visitor_id)
         if lead:
             return lead
-        return await self.create(visitor_id=visitor_id)
+        try:
+            return await self.create(visitor_id=visitor_id)
+        except IntegrityError:
+            await self.session.rollback()
+            lead = await self.get_by_visitor_id(visitor_id)
+            if lead is None:
+                raise
+            return lead
 
     async def delete(self, lead: Lead) -> None:
         """Delete a lead (GDPR right to be forgotten)."""

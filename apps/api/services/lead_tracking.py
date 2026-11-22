@@ -12,6 +12,7 @@ import re
 import secrets
 from typing import Any, Optional
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.security_utils import sanitize_for_log
@@ -164,26 +165,34 @@ class LeadTrackingService:
 
         if lead:
             # Update existing lead if new info provided
-            if user_id and not lead.user_id:
-                await self.lead_repo.link_to_user(lead, user_id)
-            if email and not lead.email:
-                lead.email = email
-                await self.session.flush()
-            if consent_given and not lead.consent_given:
-                await self.lead_repo.set_consent(lead, consent_given)
+            await self._apply_new_information(lead, user_id, email, consent_given)
             return lead, False
 
         # Create new lead
         if not visitor_id:
             visitor_id = self.generate_visitor_id()
 
-        lead = await self.lead_repo.create(
-            visitor_id=visitor_id,
-            user_id=user_id,
-            email=email,
-            source=source,
-            consent_given=consent_given,
-        )
+        try:
+            lead = await self.lead_repo.create(
+                visitor_id=visitor_id,
+                user_id=user_id,
+                email=email,
+                source=source,
+                consent_given=consent_given,
+            )
+        except IntegrityError:
+            # Another request created the row between the read and the write:
+            # the tracking call and the waitlist capture race for one visitor.
+            # The row it wrote is the real one - this request's address is
+            # applied to it, and the capture is announced when that address
+            # was not on the row before (nobody has told the operator yet).
+            await self.session.rollback()
+            lead = await self.lead_repo.get_by_visitor_id(visitor_id)
+            if lead is None:
+                raise
+            had_email = bool(lead.email)
+            await self._apply_new_information(lead, user_id, email, consent_given)
+            return lead, bool(email) and not had_email
 
         logger.info(
             "Created new lead: visitor_id=%s, source=%s",
@@ -191,6 +200,23 @@ class LeadTrackingService:
             sanitize_for_log(source),
         )
         return lead, True
+
+    async def _apply_new_information(
+        self,
+        lead: Lead,
+        user_id: Optional[str] = None,
+        email: Optional[str] = None,
+        consent_given: bool = False,
+    ) -> Lead:
+        """Apply what a later request brought to a lead that already exists."""
+        if user_id and not lead.user_id:
+            await self.lead_repo.link_to_user(lead, user_id)
+        if email and not lead.email:
+            lead.email = email
+            await self.session.flush()
+        if consent_given and not lead.consent_given:
+            await self.lead_repo.set_consent(lead, consent_given)
+        return lead
 
     async def link_visitor_to_user(
         self,
