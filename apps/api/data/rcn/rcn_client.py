@@ -6,7 +6,7 @@ file per voivodeship, refreshed weekly:
     .../PARQUET/<TERYT>_transakcje_ceny_lokale.parquet
 
 ``TERYT`` is the two-digit voivodeship code (02 = dolnośląskie, 12 = małopolskie,
-14 = mazowieckie, 22 = pomorskie, 28 = wielkopolskie). The files carry every
+14 = mazowieckie, 22 = pomorskie, 30 = wielkopolskie). The files carry every
 notarial deed the starostas registered in that voivodeship, with the price, the
 area, the number of rooms, the floor, the deed date and the notary's name.
 
@@ -39,7 +39,7 @@ RCN_VOIVODESHIPS: dict[str, str] = {
     "12": "malopolskie",
     "14": "mazowieckie",
     "22": "pomorskie",
-    "28": "wielkopolskie",
+    "30": "wielkopolskie",
 }
 
 # A flat, not a garage, a shop or a plot.

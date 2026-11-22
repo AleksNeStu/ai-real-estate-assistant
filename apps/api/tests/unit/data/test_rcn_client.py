@@ -113,12 +113,19 @@ class TestExportUrl:
         assert export_url("12").endswith("/PARQUET/12_transakcje_ceny_lokale.parquet")
 
     def test_serves_the_demo_cities(self):
-        assert set(RCN_VOIVODESHIPS.values()) == {
-            "dolnoslaskie",
-            "malopolskie",
-            "mazowieckie",
-            "pomorskie",
-            "wielkopolskie",
+        """The codes are the TERYT codes of the voivodeships the demo cities live in.
+
+        A code that names the wrong voivodeship is silent: the export is
+        downloaded, the rows are stored, and the city that was asked for is
+        simply never in them. The pairs are therefore pinned, not just the
+        names.
+        """
+        assert RCN_VOIVODESHIPS == {
+            "02": "dolnoslaskie",
+            "12": "malopolskie",
+            "14": "mazowieckie",
+            "22": "pomorskie",
+            "30": "wielkopolskie",
         }
 
 
