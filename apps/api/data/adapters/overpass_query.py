@@ -55,3 +55,26 @@ def build_query(statements: Sequence[str]) -> str:
     """
     body = "\n".join("  " + statement for statement in statements)
     return "[out:json][timeout:25];\n(\n{}\n);\nout tags center;".format(body)
+
+
+def build_area_query(
+    area_filter: str,
+    statements: Sequence[str],
+    area_name: str = "searchArea",
+) -> str:
+    """
+    The Overpass QL document for a query scoped to a NAMED area.
+
+    The area statement is not a union term: it resolves the name to the
+    boundary that carries the name, and the union below reads that
+    boundary back by name. A place that is named but not located still
+    has a boundary, and the provider can count inside it - which is the
+    only honest way to measure a place nobody gave coordinates for.
+
+    The statements are the same statements the radius queries use; only
+    the scope differs, and the scope is read from the area set.
+    """
+    body = "\n".join("  " + statement for statement in statements)
+    return (
+        "[out:json][timeout:60];\n{area_filter}->.{area_name};\n(\n{body}\n);\nout tags center;"
+    ).format(area_filter=area_filter, area_name=area_name, body=body)

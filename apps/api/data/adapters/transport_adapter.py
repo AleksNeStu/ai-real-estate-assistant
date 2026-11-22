@@ -9,11 +9,12 @@ import logging
 import math
 import os
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 
 from core.security_utils import sanitize_for_log
+from data.adapters.overpass_area import measure_in_area
 from data.adapters.overpass_query import (
     build_query,
     element_statement,
@@ -180,6 +181,60 @@ class TransportAdapter:
                 "Failed to parse transport data: %s", sanitize_for_log(sanitize_for_logging(e))
             )
             return []
+
+    def fetch_transport_pois_in_area(
+        self, place_name: str
+    ) -> Tuple[List[TransportStop], Optional[str]]:
+        """
+        Fetch the transport stops inside a place the caller NAMED.
+
+        A radius query needs a point; a named place has a boundary, and
+        the provider counts inside a boundary. The stops are returned
+        without a distance, because a stop counted inside an area has no
+        point of reference.
+
+        Returns:
+            The stops, and the reason there are none when the place could
+            not be resolved.
+        """
+        measurement = measure_in_area(
+            place_name,
+            [
+                ("highway", ["bus_stop"], ("node", "way")),
+                (
+                    "railway",
+                    ["tram_stop", "subway_entrance", "station", "light_rail"],
+                    ("node", "way"),
+                ),
+                ("public_transport", ["stop_position", "platform"], ("node", "way")),
+            ],
+            api_url=self._api_url,
+        )
+
+        if measurement.error:
+            logger.warning(
+                "The transport stops of %s could not be counted: %s",
+                sanitize_for_log(place_name),
+                sanitize_for_log(measurement.error),
+            )
+            return [], measurement.error
+
+        stops: List[TransportStop] = []
+        for element in measurement.elements:
+            stop = self._parse_transport_stop(element, 0.0, 0.0)
+            if stop:
+                # The distance is meaningless without a point of reference.
+                stops.append(
+                    TransportStop(
+                        id=stop.id,
+                        name=stop.name,
+                        type=stop.type,
+                        latitude=stop.latitude,
+                        longitude=stop.longitude,
+                    )
+                )
+
+        return stops, None
 
     def count_stops(
         self,

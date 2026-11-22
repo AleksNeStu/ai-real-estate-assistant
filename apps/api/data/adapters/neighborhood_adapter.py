@@ -6,14 +6,34 @@ scoring, including schools, amenities, green spaces, and walkability metrics.
 """
 
 import logging
+import math
+from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 import requests
 
 from core.security_utils import sanitize_for_log
+from data.adapters.overpass_area import (
+    AreaMeasurement,
+    ResolvedArea,
+    measure_in_area,
+)
 from data.adapters.overpass_query import build_query, element_statement, tag_regex_filter
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class AreaPois:
+    """The POIs inside a named place, and the boundary they were counted in."""
+
+    place_name: str
+    schools: List[Dict[str, Any]] = field(default_factory=list)
+    amenities: List[Dict[str, Any]] = field(default_factory=list)
+    green_spaces: List[Dict[str, Any]] = field(default_factory=list)
+    all: List[Dict[str, Any]] = field(default_factory=list)
+    area: Optional[ResolvedArea] = None
+    error: Optional[str] = None
 
 
 class NeighborhoodAdapter:
@@ -144,29 +164,9 @@ class NeighborhoodAdapter:
             elements = data.get("elements", [])
 
             # Categorize POIs
-            result: Dict[str, List[Dict[str, Any]]] = {
-                "schools": [],
-                "amenities": [],
-                "green_spaces": [],
-                "all": [],
-            }
-
-            for element in elements:
-                tags = element.get("tags", {})
-                if not tags:
-                    continue
-
-                poi_data = self._parse_poi_element(element)
-
-                # Categorize by type
-                if self._is_school(tags):
-                    result["schools"].append(poi_data)
-                elif self._is_green_space(tags):
-                    result["green_spaces"].append(poi_data)
-                elif self._is_amenity(tags):
-                    result["amenities"].append(poi_data)
-
-                result["all"].append(poi_data)
+            result: Dict[str, List[Dict[str, Any]]] = self._categorise(
+                elements, latitude, longitude
+            )
 
             logger.info(
                 "Found %s POIs within %sm: %s schools, %s amenities, %s green spaces",
@@ -195,6 +195,47 @@ class NeighborhoodAdapter:
                 "green_spaces": [],
                 "all": [],
             }
+
+    def fetch_pois_in_area(self, place_name: str) -> AreaPois:
+        """
+        Fetch the POIs inside a place the caller NAMED.
+
+        The radius query above needs a point. A named place - a city, a
+        district - has a boundary of its own, and the provider counts
+        inside a boundary, so the place can be measured where it stands
+        instead of being reduced to a point nobody gave.
+
+        When the place cannot be resolved the result carries the reason
+        and no POIs: an unmeasured place is worth saying out loud, and
+        worth more than a number with nothing behind it.
+        """
+        measurement: AreaMeasurement = measure_in_area(
+            place_name,
+            self.QUERY_TAG_GROUPS,
+            api_url=self._api_url,
+        )
+
+        if measurement.error:
+            logger.warning(
+                "The place %s could not be measured: %s",
+                sanitize_for_log(place_name),
+                sanitize_for_log(measurement.error),
+            )
+            return AreaPois(
+                place_name=place_name,
+                area=measurement.area,
+                error=measurement.error,
+            )
+
+        categorised = self._categorise(measurement.elements, None, None)
+        return AreaPois(
+            place_name=place_name,
+            schools=categorised["schools"],
+            amenities=categorised["amenities"],
+            green_spaces=categorised["green_spaces"],
+            all=categorised["all"],
+            area=measurement.area,
+        )
 
     def count_schools(self, latitude: float, longitude: float, radius_m: int = 1000) -> int:
         """
@@ -330,12 +371,58 @@ class NeighborhoodAdapter:
 
         return build_query(statements)
 
-    def _parse_poi_element(self, element: Dict[str, Any]) -> Dict[str, Any]:
+    def _categorise(
+        self,
+        elements: List[Dict[str, Any]],
+        center_lat: Optional[float],
+        center_lon: Optional[float],
+    ) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        Sort the elements the provider answered with into the categories the index scores.
+
+        The distance is kept with every POI, because a count is only
+        traceable to the features behind it when the reader can see which
+        of them lie inside the radius the count was taken in.
+        """
+        result: Dict[str, List[Dict[str, Any]]] = {
+            "schools": [],
+            "amenities": [],
+            "green_spaces": [],
+            "all": [],
+        }
+
+        for element in elements:
+            tags = element.get("tags", {})
+            if not tags:
+                continue
+
+            poi_data = self._parse_poi_element(element, center_lat, center_lon)
+
+            # Categorize by type
+            if self._is_school(tags):
+                result["schools"].append(poi_data)
+            elif self._is_green_space(tags):
+                result["green_spaces"].append(poi_data)
+            elif self._is_amenity(tags):
+                result["amenities"].append(poi_data)
+
+            result["all"].append(poi_data)
+
+        return result
+
+    def _parse_poi_element(
+        self,
+        element: Dict[str, Any],
+        center_lat: Optional[float] = None,
+        center_lon: Optional[float] = None,
+    ) -> Dict[str, Any]:
         """
         Parse an OSM element into POI data.
 
         Args:
             element: OSM element from Overpass response
+            center_lat: The point the query was made around, when there was one
+            center_lon: The point the query was made around, when there was one
 
         Returns:
             Dictionary with POI data
@@ -353,6 +440,10 @@ class NeighborhoodAdapter:
             lat = None
             lon = None
 
+        distance_m: Optional[float] = None
+        if center_lat is not None and center_lon is not None and lat is not None:
+            distance_m = round(_distance_m(center_lat, center_lon, lat, lon), 1)
+
         return {
             "id": element.get("id"),
             "type": element.get("type"),
@@ -363,6 +454,7 @@ class NeighborhoodAdapter:
             "landuse": tags.get("landuse"),
             "latitude": lat,
             "longitude": lon,
+            "distance_m": distance_m,
             "tags": tags,
         }
 
@@ -390,6 +482,18 @@ class NeighborhoodAdapter:
 
 # Singleton instance for reuse
 _default_adapter: Optional[NeighborhoodAdapter] = None
+
+
+def _distance_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """The distance between two points, in metres."""
+    radius = 6371000.0  # the Earth's radius
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    d_phi = math.radians(lat2 - lat1)
+    d_lambda = math.radians(lon2 - lon1)
+
+    a = math.sin(d_phi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(d_lambda / 2) ** 2
+    return 2 * radius * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
 def get_neighborhood_adapter() -> NeighborhoodAdapter:

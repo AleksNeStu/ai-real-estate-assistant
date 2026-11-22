@@ -16,6 +16,11 @@ from typing import Any, Dict, List, Optional
 import requests
 
 from core.security_utils import sanitize_for_log
+from data.adapters.overpass_area import (
+    AreaMeasurement,
+    ResolvedArea,
+    measure_in_area,
+)
 from data.adapters.overpass_query import build_query, element_statement, tag_regex_filter
 
 logger = logging.getLogger(__name__)
@@ -44,6 +49,16 @@ class SafetyResult:
     pois: List[SafetyPOI] = field(default_factory=list)
     data_source: str = "unknown"
     confidence: float = 0.5  # 0-1
+
+
+@dataclass
+class AreaSafety:
+    """The safety services inside a named place, and the boundary they stand in."""
+
+    place_name: str
+    pois: List[SafetyPOI] = field(default_factory=list)
+    area: Optional[ResolvedArea] = None
+    error: Optional[str] = None
 
 
 class SafetyAdapter:
@@ -241,6 +256,41 @@ class SafetyAdapter:
         pois = self._fetch_safety_pois(latitude, longitude, radius_m)
         return [p for p in pois if p.type in self.EMERGENCY_TAGS]
 
+    def fetch_safety_pois_in_area(self, place_name: str) -> AreaSafety:
+        """
+        Get the safety services inside a place the caller NAMED.
+
+        A radius query needs a point, and a named place has a boundary
+        instead. Counting the police stations and the emergency services
+        inside that boundary measures the place itself; a place that
+        cannot be resolved is reported as such rather than scored.
+        """
+        measurement: AreaMeasurement = measure_in_area(
+            place_name,
+            [("amenity", self.POLICE_TAGS + self.EMERGENCY_TAGS, ("node", "way"))],
+            api_url=self._api_url,
+        )
+
+        if measurement.error:
+            logger.warning(
+                "The safety services of %s could not be counted: %s",
+                sanitize_for_log(place_name),
+                sanitize_for_log(measurement.error),
+            )
+            return AreaSafety(
+                place_name=place_name,
+                area=measurement.area,
+                error=measurement.error,
+            )
+
+        pois: List[SafetyPOI] = []
+        for element in measurement.elements:
+            poi = self._parse_safety_element(element, None, None)
+            if poi:
+                pois.append(poi)
+
+        return AreaSafety(place_name=place_name, pois=pois, area=measurement.area)
+
     def _fetch_safety_pois(
         self, latitude: float, longitude: float, radius_m: int
     ) -> List[SafetyPOI]:
@@ -359,7 +409,10 @@ class SafetyAdapter:
         )
 
     def _parse_safety_element(
-        self, element: Dict[str, Any], center_lat: float, center_lon: float
+        self,
+        element: Dict[str, Any],
+        center_lat: Optional[float],
+        center_lon: Optional[float],
     ) -> Optional[SafetyPOI]:
         """Parse an OSM element into SafetyPOI."""
         tags = element.get("tags", {})
@@ -383,8 +436,11 @@ class SafetyAdapter:
         else:
             return None
 
-        # Calculate distance
-        distance = self._haversine_distance(center_lat, center_lon, lat, lon)
+        # Calculate distance - a feature counted inside an area has no
+        # point of reference, and says so by carrying no distance.
+        distance: Optional[float] = None
+        if center_lat is not None and center_lon is not None:
+            distance = self._haversine_distance(center_lat, center_lon, lat, lon)
 
         return SafetyPOI(
             id=f"osm_{element.get('type', 'node')}_{element.get('id', '')}",

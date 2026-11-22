@@ -14,6 +14,7 @@ from data.adapters.neighborhood_adapter import (
     get_neighborhood_adapter as _real_get_neighborhood_adapter,
 )
 from tests.fixtures.neighborhood.loader import (
+    load_overpass_body,
     overpass_get,
     valid_query_answer,
 )
@@ -74,7 +75,7 @@ def _patch_adapters():
     """Patch all external adapters to prevent real HTTP calls during tests."""
     from data.adapters.air_quality_adapter import AirQualityAdapter, AirQualityResult
     from data.adapters.noise_adapter import NoiseAdapter, NoiseResult
-    from data.adapters.transport_adapter import TransportAdapter
+    from data.adapters.transport_adapter import TransportAdapter, TransportResult
 
     mock_aq = Mock(spec=AirQualityAdapter)
     mock_aq.get_aqi_score.return_value = AirQualityResult(
@@ -100,6 +101,17 @@ def _patch_adapters():
 
     mock_transport = Mock(spec=TransportAdapter)
     mock_transport.calculate_accessibility_score.return_value = 60.0
+    # The tool reads the whole transport result, so the mock answers the
+    # whole result: a mock that answers nothing is a measurement that
+    # failed, and the tool says so instead of inventing a score.
+    mock_transport.get_full_result.return_value = TransportResult(
+        score=60.0,
+        total_stops=4,
+        stops_by_type={"bus": 3, "tram": 1, "metro": 0, "train": 0, "light_rail": 0},
+        stops=[],
+        data_source="overpass",
+        confidence=0.7,
+    )
 
     with (
         patch(
@@ -152,29 +164,35 @@ class TestNeighborhoodQualityIndexTool:
         assert 0 <= result.green_space_score <= 100
 
     def test_calculation_with_city_only(self, neighborhood_calc):
-        """Test calculation with only city name (no coordinates)."""
-        result = NeighborhoodQualityIndexTool.calculate(
-            property_id="test_prop_2",
-            city="Warsaw",
-        )
+        """A place that is named but cannot be measured returns no score."""
+        # The provider holds no boundary under this name, so the tool has
+        # nothing to count - and says so instead of inventing a number.
+        with patch("requests.get", side_effect=RuntimeError("no network")):
+            result = NeighborhoodQualityIndexTool.calculate(
+                property_id="test_prop_2",
+                city="Nowhere-at-all",
+            )
 
         assert result.property_id == "test_prop_2"
-        assert result.city == "Warsaw"
-        assert 0 <= result.overall_score <= 100
-        # Safety score should use city-based mock
-        assert 0 <= result.safety_score <= 100
+        assert result.city == "Nowhere-at-all"
+        assert result.schools_score is None
+        assert "schools" in result.components_without_data
+        assert result.components_without_data["schools"]
 
-    def test_safety_score_by_city(self, neighborhood_calc):
-        """Test safety score varies by city."""
-        warsaw = NeighborhoodQualityIndexTool._mock_safety_score("Warsaw", None)
-        london = NeighborhoodQualityIndexTool._mock_safety_score("London", None)
-        berlin = NeighborhoodQualityIndexTool._mock_safety_score("Berlin", None)
+    def test_a_place_the_map_cannot_resolve_carries_no_score(self, neighborhood_calc):
+        """The score of a named place is a measurement, or it is nothing."""
+        with patch("requests.get", side_effect=RuntimeError("no network")):
+            result = NeighborhoodQualityIndexTool.calculate(
+                property_id="test_prop_unresolved",
+                city="Nowhere-at-all",
+            )
 
-        # Each city should have a different base score
-        # All should be in valid range
-        assert 0 <= warsaw <= 100
-        assert 0 <= london <= 100
-        assert 0 <= berlin <= 100
+        assert result.overall_score is None
+        assert result.safety_score is None
+        assert result.schools_score is None
+        assert result.amenities_score is None
+        assert result.walkability_score is None
+        assert result.green_space_score is None
 
     def test_overall_score_weighted_calculation(self, neighborhood_calc):
         """Test overall score is weighted correctly."""
@@ -240,18 +258,20 @@ class TestNeighborhoodQualityIndexTool:
         # Both should include OSM sources; safety may use osm_overpass_api, city_estimate, or fallback
         assert "osm_overpass_api" in result_with_coords.data_sources
 
-    def test_missing_coordinates_returns_default_scores(self, neighborhood_calc):
-        """Test that missing coordinates returns reasonable default scores."""
+    def test_missing_coordinates_returns_no_score(self, neighborhood_calc):
+        """A place that is neither a point nor a name carries no score."""
         result = NeighborhoodQualityIndexTool.calculate(
             property_id="test_no_coords",
         )
 
-        # Should still return valid scores even without coordinates
-        assert result.overall_score >= 0
-        assert result.schools_score >= 0
-        assert result.amenities_score >= 0
-        assert result.walkability_score >= 0
-        assert result.green_space_score >= 0
+        # There is nothing to measure, so nothing is claimed: a default
+        # score would be a number nobody measured.
+        assert result.overall_score is None
+        assert result.schools_score is None
+        assert result.amenities_score is None
+        assert result.walkability_score is None
+        assert result.green_space_score is None
+        assert result.components_without_data
 
     def test_result_includes_all_input_fields(self, neighborhood_calc):
         """Test result includes all provided input fields."""
@@ -381,8 +401,8 @@ class TestNeighborhoodQualityIndexTool:
         assert result.factor_details["safety"]["emergency_services_nearby"] == 1
 
     @patch("data.adapters.safety_adapter.get_safety_adapter")
-    def test_safety_adapter_fallback_on_error(self, mock_get_adapter):
-        """Test fallback to mock when safety adapter fails."""
+    def test_safety_adapter_failure_carries_no_score(self, mock_get_adapter):
+        """A safety adapter that fails carries no score, and says why."""
         mock_get_adapter.side_effect = Exception("API failure")
 
         result = NeighborhoodQualityIndexTool.calculate(
@@ -392,10 +412,9 @@ class TestNeighborhoodQualityIndexTool:
             city="Warsaw",
         )
 
-        # Should still return valid score using fallback
-        assert 0 <= result.safety_score <= 100
-        assert result.factor_details["safety"]["data_source"] == "fallback"
-        assert result.factor_details["safety"]["confidence"] == 0.2
+        assert result.safety_score is None
+        assert result.components_without_data["safety"]
+        assert result.factor_details["safety"]["data_source"] == "unavailable"
 
 
 class TestNeighborhoodToolFactory:
@@ -465,7 +484,7 @@ class TestNeighborhoodToolPhase2:
         assert "geographic_coordinates" in result.data_sources
 
     def test_adapter_fallback_on_schools_error(self):
-        """Test fallback to mock when adapter fails for schools."""
+        """An adapter that fails for schools carries no schools score."""
         # Patch at the module level where imports are resolved
         import data.adapters.neighborhood_adapter as na_module
 
@@ -490,14 +509,16 @@ class TestNeighborhoodToolPhase2:
                 longitude=21.0122,
             )
 
-            # Should still return a valid score using fallback
-            assert 0 <= result.schools_score <= 100
-            assert result.schools_score >= 50  # Fallback minimum
+            # The measurement failed, so there is no score - and the other
+            # factors, which were measured, are untouched.
+            assert result.schools_score is None
+            assert result.components_without_data["schools"]
+            assert result.amenities_score is not None
         finally:
             na_module.get_neighborhood_adapter = original_get_adapter
 
     def test_adapter_fallback_on_amenities_error(self):
-        """Test fallback to mock when adapter fails for amenities."""
+        """An adapter that fails for amenities carries no amenities score."""
         import data.adapters.neighborhood_adapter as na_module
 
         original_get_adapter = na_module.get_neighborhood_adapter
@@ -519,13 +540,13 @@ class TestNeighborhoodToolPhase2:
                 longitude=21.0122,
             )
 
-            # Should still return a valid score using fallback
-            assert 0 <= result.amenities_score <= 100
+            assert result.amenities_score is None
+            assert result.components_without_data["amenities"]
         finally:
             na_module.get_neighborhood_adapter = original_get_adapter
 
     def test_adapter_fallback_on_walkability_error(self):
-        """Test fallback to mock when adapter fails for walkability."""
+        """An adapter that fails for walkability carries no walkability score."""
         import data.adapters.neighborhood_adapter as na_module
 
         original_get_adapter = na_module.get_neighborhood_adapter
@@ -547,13 +568,13 @@ class TestNeighborhoodToolPhase2:
                 longitude=21.0122,
             )
 
-            # Should still return a valid score using fallback
-            assert 0 <= result.walkability_score <= 100
+            assert result.walkability_score is None
+            assert result.components_without_data["walkability"]
         finally:
             na_module.get_neighborhood_adapter = original_get_adapter
 
     def test_adapter_fallback_on_green_space_error(self):
-        """Test fallback to mock when adapter fails for green spaces."""
+        """An adapter that fails for green spaces carries no green space score."""
         import data.adapters.neighborhood_adapter as na_module
 
         original_get_adapter = na_module.get_neighborhood_adapter
@@ -575,14 +596,14 @@ class TestNeighborhoodToolPhase2:
                 longitude=21.0122,
             )
 
-            # Should still return a valid score using fallback
-            assert 0 <= result.green_space_score <= 100
+            assert result.green_space_score is None
+            assert result.components_without_data["green_space"]
         finally:
             na_module.get_neighborhood_adapter = original_get_adapter
 
     @patch("requests.get")
-    def test_adapter_import_error_fallback(self, mock_get):
-        """Test fallback when adapter module cannot be imported."""
+    def test_an_empty_provider_answer_is_a_measurement_not_a_hash(self, mock_get):
+        """The provider's answer decides the score - not the coordinates."""
         mock_get.return_value = Mock(status_code=200, json=lambda: {"elements": []})
         import sys
 
@@ -599,17 +620,23 @@ class TestNeighborhoodToolPhase2:
                 if hasattr(parent, "neighborhood_adapter"):
                     delattr(parent, "neighborhood_adapter")
 
-            result = NeighborhoodQualityIndexTool.calculate(
-                property_id="test_import_error",
+            here = NeighborhoodQualityIndexTool.calculate(
+                property_id="test_empty_answer_here",
                 latitude=52.2297,
                 longitude=21.0122,
             )
+            there = NeighborhoodQualityIndexTool.calculate(
+                property_id="test_empty_answer_there",
+                latitude=50.0614,
+                longitude=19.9366,
+            )
 
-            # Should still return valid scores using hash-based fallback
-            assert 0 <= result.schools_score <= 100
-            assert 0 <= result.amenities_score <= 100
-            assert 0 <= result.walkability_score <= 100
-            assert 0 <= result.green_space_score <= 100
+            # Both places hold no schools within a kilometre, so both are
+            # scored from that count. A score derived from the
+            # coordinates would differ from one place to the next.
+            assert here.schools_score == there.schools_score
+            assert here.schools_score == 30.0
+            assert here.factor_details["schools"]["feature_count"] == 0
         finally:
             # Restore the module
             if original_module is not None:
@@ -744,6 +771,239 @@ class TestNeighborhoodToolPhase2:
 
             assert result.green_space_score >= expected_min_score
             assert result.green_space_score <= 100
+
+
+class TestNeighborhoodAreaMeasurement:
+    """
+    The index of a place that was NAMED, measured inside its own boundary.
+
+    The elements below are the provider's own recorded answers - the same
+    ones the repository keeps for the radius queries, recorded live on
+    2026-11-19 (tests/fixtures/neighborhood/overpass.json). The boundary
+    is the central district of Warsaw; the resident count it carries is
+    the figure the Polish statistics office publishes for the district,
+    and it is the scale every count here is read against.
+
+    A place that is named arrives without coordinates, and the old code
+    answered such a place with a number derived from its name. These
+    tests pin the number the map produces instead.
+    """
+
+    # The named place and the residents its boundary claims.
+    PLACE = "Śródmieście"
+    POPULATION = 94851
+
+    @staticmethod
+    def _elements(entry_name, ids):
+        """The recorded elements with these ids, in the order they are listed."""
+        by_id = {element["id"]: element for element in load_overpass_body(entry_name)["elements"]}
+        return [by_id[element_id] for element_id in ids]
+
+    @staticmethod
+    def _answer(query):
+        """Name the recorded answer for an area query the tool issues."""
+        if '["amenity"~"^(police' in query:
+            return "safety"
+        if '["highway"~"^(bus_stop)' in query or '["railway"~"^(tram_stop' in query:
+            return "transport"
+        if '["amenity"~"^(school' in query:
+            return "pois"
+        return "facts"
+
+    @pytest.fixture
+    def _recorded_area(self):
+        """Serve the recorded answers for the place, and mock the two providers that are not the map."""
+        from data.adapters.air_quality_adapter import AirQualityAdapter, AirQualityResult
+        from data.adapters.noise_adapter import NoiseAdapter, NoiseResult
+
+        answers = {
+            "pois": {
+                "elements": (
+                    self._elements(
+                        "valid_query_neighborhood_schools",
+                        [2599593307, 10162330004, 10592300901, 10592347443],
+                    )
+                    + self._elements(
+                        "valid_query_neighborhood_pois",
+                        [247461210, 248200343, 316892293, 308190809, 308942576, 247461215],
+                    )
+                    + self._elements(
+                        "valid_query_neighborhood_green_spaces",
+                        [5837657, 7306721, 23041563],
+                    )
+                )
+            },
+            "safety": {
+                "elements": self._elements("valid_query_safety_pois", [9858713925, 488559220])
+            },
+            "transport": {
+                "elements": self._elements(
+                    "valid_query_transport_stops",
+                    [32049251, 32528070, 32596651, 35121251, 35121252],
+                )
+            },
+            "facts": {
+                "elements": [
+                    {
+                        "type": "area",
+                        "id": 1,
+                        "tags": {
+                            "name": self.PLACE,
+                            "boundary": "administrative",
+                            "population": str(self.POPULATION),
+                        },
+                        "center": {"lat": 52.2357, "lon": 21.0055},
+                    }
+                ]
+            },
+        }
+
+        def _get(url, params=None, **kwargs):
+            query = (params or {}).get("data", "")
+            response = Mock()
+            response.status_code = 200
+            response.json.return_value = answers[self._answer(query)]
+            response.raise_for_status.return_value = None
+            return response
+
+        mock_aq = Mock(spec=AirQualityAdapter)
+        mock_aq.get_aqi_score.return_value = AirQualityResult(
+            score=70.0,
+            aqi_value=None,
+            pm25=None,
+            pm10=None,
+            data_source="fallback",
+            confidence=0.3,
+            station_name=None,
+        )
+        mock_noise = Mock(spec=NoiseAdapter)
+        mock_noise.estimate_noise_level.return_value = NoiseResult(
+            score=65.0,
+            estimated_db=50.0,
+            noise_sources=[],
+            data_source="fallback",
+            confidence=0.3,
+            query_latitude=None,
+            query_longitude=None,
+        )
+
+        with (
+            patch("requests.get", side_effect=_get),
+            patch(
+                "data.adapters.air_quality_adapter.get_air_quality_adapter",
+                return_value=mock_aq,
+            ),
+            patch(
+                "data.adapters.noise_adapter.get_noise_adapter",
+                return_value=mock_noise,
+            ),
+        ):
+            yield
+
+    def test_the_scores_are_read_off_the_map_features(self, _recorded_area):
+        """Every score of a named place is the count it was taken from."""
+        result = NeighborhoodQualityIndexTool.calculate(
+            property_id="recorded_area",
+            city="Warsaw",
+            neighborhood=self.PLACE,
+        )
+
+        # 4 schools among 94 851 residents is 0.42 per 10 000, and the
+        # curve reads that as 28.4.
+        assert result.schools_score == 28.4
+        # 6 everyday amenities: 0.63 per 10 000 -> 31.3.
+        assert result.amenities_score == 31.3
+        # 3 green spaces: 0.32 per 10 000 -> 52.8.
+        assert result.green_space_score == 52.8
+        # 2 police stations: 0.21 per 10 000 -> 63.3.
+        assert result.safety_score == 63.3
+        # 5 transport stops: 0.53 per 10 000 -> 45.5.
+        assert result.public_transport_score == 45.5
+        # 13 features of every kind, 5 kinds of amenity, 2 of them the
+        # daily necessities: 50 * 0.3 + 10.96 * 0.4 + 30.9 * 0.3.
+        assert result.walkability_score == 28.7
+
+    def test_every_score_names_the_features_it_came_from(self, _recorded_area):
+        """The reader can see which map features a score was taken from."""
+        result = NeighborhoodQualityIndexTool.calculate(
+            property_id="recorded_area_details",
+            city="Warsaw",
+            neighborhood=self.PLACE,
+        )
+
+        schools = result.factor_details["schools"]
+        assert schools["data_source"] == "osm_overpass_area"
+        assert schools["measured_at"] == self.PLACE
+        assert schools["population"] == self.POPULATION
+        assert schools["feature_count"] == 4
+        assert schools["per_10k"] == 0.42
+        assert 'Liceum Ogólnokształcące "Multimedia"' in schools["features"]
+
+        amenities = result.factor_details["amenities"]
+        assert amenities["feature_count"] == 6
+        assert "Cefarm" in amenities["features"]
+        assert "Millennium Bank" in amenities["features"]
+
+        green = result.factor_details["green_space"]
+        assert green["feature_count"] == 3
+        assert "Park Świętokrzyski" in green["features"]
+
+        safety = result.factor_details["safety"]
+        assert safety["feature_count"] == 2
+        assert safety["police_stations_nearby"] == 2
+        assert safety["emergency_services_nearby"] == 0
+        assert "Komenda Rejonowa Policji Warszawa I" in safety["features"]
+
+        transport = result.factor_details["public_transport"]
+        assert transport["feature_count"] == 5
+        assert transport["stops_by_type"]["bus"] == 5
+        assert "Rondo ONZ 05" in transport["features"]
+
+        # Nothing on the map was measured for a place the map does not
+        # hold, so nothing is claimed for it.
+        assert result.components_without_data == {}
+
+    def test_a_place_the_provider_refuses_carries_no_score(self):
+        """The fallback path returns no score, not a number derived from the name."""
+        import requests
+
+        with patch("requests.get", side_effect=requests.RequestException("provider is down")):
+            result = NeighborhoodQualityIndexTool.calculate(
+                property_id="provider_down",
+                city="Warsaw",
+                neighborhood="Nowhere-at-all",
+            )
+
+        assert result.overall_score is None
+        assert result.schools_score is None
+        assert result.amenities_score is None
+        assert result.walkability_score is None
+        assert result.green_space_score is None
+        assert result.safety_score is None
+        assert result.public_transport_score is None
+
+        # Every factor says why it carries none.
+        for factor in (
+            "schools",
+            "amenities",
+            "walkability",
+            "green_space",
+            "safety",
+            "public_transport",
+        ):
+            assert result.components_without_data[factor]
+
+        # A second place that is equally unmeasurable carries the same
+        # absence. A score derived from the name would differ.
+        with patch("requests.get", side_effect=requests.RequestException("provider is down")):
+            other = NeighborhoodQualityIndexTool.calculate(
+                property_id="provider_down_too",
+                city="Gdansk",
+                neighborhood="Nowhere-at-all-either",
+            )
+
+        assert other.schools_score is None
+        assert other.schools_score == result.schools_score
 
 
 class TestNeighborhoodAdapter:
