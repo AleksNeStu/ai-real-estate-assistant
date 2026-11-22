@@ -12,9 +12,26 @@
  * from the browser, before the navigation happens.
  */
 import { buildHeaders, getApiUrl } from '@/lib/api/client';
-import { currentLocale } from '@/lib/visitor-tracking';
+import { currentLocale, getOrCreateVisitorId } from '@/lib/visitor-tracking';
 
 const SLOT_PARAM = 'from';
+
+/**
+ * The id of this browser session.
+ *
+ * The id lives in a cookie, so it is created once and every row the visitor
+ * produces - the arrival, the outbound click - lands under the same lead.
+ * A browser that cannot keep a cookie still gets an id for the call: a
+ * measurement is better than nothing.
+ */
+function visitorId(): string | undefined {
+  if (typeof document === 'undefined') return undefined;
+  try {
+    return getOrCreateVisitorId();
+  } catch {
+    return undefined;
+  }
+}
 
 /** The slot of the current arrival, if any. */
 export function currentSlot(): string | null {
@@ -36,6 +53,7 @@ export async function reportArrival(): Promise<void> {
       method: 'POST',
       headers: buildHeaders(),
       body: JSON.stringify({
+        visitor_id: visitorId(),
         interaction_type: 'navigation',
         metadata: { slot },
         page_url: window.location.pathname,
@@ -70,6 +88,7 @@ export async function reportOutbound(
       method: 'POST',
       headers: buildHeaders(),
       body: JSON.stringify({
+        visitor_id: visitorId(),
         target,
         slot,
         campaign: campaign ?? null,
