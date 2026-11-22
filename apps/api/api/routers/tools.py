@@ -709,13 +709,17 @@ async def _valuation_from_register(
         {"city": city, "street": street, "area_sqm": area, "rooms": rooms}
     )
     if outcome.estimated_value is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=(
+        if outcome.sample_size:
+            detail = (
+                f"Only {outcome.sample_size} registered sale(s) could be found to compare "
+                "this address with — too few to price it."
+            )
+        else:
+            detail = (
                 "No registered sale could be found to compare this address with — "
                 "the official register holds nothing for it yet."
-            ),
-        )
+            )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
 
     return ValuationResponse(
         property_id=property_id,

@@ -399,9 +399,24 @@ def value_transactions(
 
     area = subject.area_sqm or statistics.median([t.area_sqm for t in selected])
 
-    estimate = median * area if median is not None else None
-    low = first_quartile * area if first_quartile is not None else None
-    high = third_quartile * area if third_quartile is not None else None
+    # A set smaller than the minimum is an anecdote, not a valuation: the
+    # price of one flat is not the price of a place. The comparables are still
+    # returned - the evidence is worth having - but no number is derived from
+    # it, because a number derived from three sales is a guess wearing a
+    # valuation's clothes.
+    too_thin = len(selected) < MIN_SAMPLE
+    if too_thin:
+        estimate = low = high = None
+        price_per_sqm_median = None
+        notes.append(
+            f"Only {len(selected)} registered sale(s) could be found for this place — too "
+            f"few to price it. The comparables are listed; no estimate is derived from them."
+        )
+    else:
+        estimate = median * area if median is not None else None
+        low = first_quartile * area if first_quartile is not None else None
+        high = third_quartile * area if third_quartile is not None else None
+        price_per_sqm_median = median
 
     comparables = [
         Comparable(
@@ -436,7 +451,7 @@ def value_transactions(
         estimate=estimate,
         low=low,
         high=high,
-        price_per_sqm_median=median,
+        price_per_sqm_median=price_per_sqm_median,
         comparables=comparables,
         sample_size=len(selected),
         comparison_area=comparison_area,

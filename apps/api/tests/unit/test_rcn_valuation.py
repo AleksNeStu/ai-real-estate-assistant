@@ -174,6 +174,21 @@ class TestValueTransactions:
         assert result.confidence == "low"
         assert result.sample_size == 1
 
+    def test_a_thin_sample_produces_no_number(self):
+        """One sale is an anecdote, not a valuation."""
+        subject = ValuationSubject(city="Kraków", street="Topolowa", area_sqm=50)
+
+        result = value_transactions([_sale()], subject, TODAY)
+
+        assert result.estimate is None
+        assert result.low is None
+        assert result.high is None
+        assert result.price_per_sqm_median is None
+        assert result.has_value is False
+        # The evidence is still worth having - it is the sales, not a number.
+        assert len(result.comparables) == 1
+        assert any("too few to price it" in note for note in result.notes)
+
     def test_no_sales_means_no_number(self):
         subject = ValuationSubject(city="Gdańsk", street="Długa", area_sqm=50)
 
@@ -202,13 +217,14 @@ class TestValueTransactions:
             _sale(area=50.0, price=650000.0, days_ago=30),
             _sale(area=50.0, price=660000.0, days_ago=60),
             _sale(area=50.0, price=640000.0, days_ago=90),
+            _sale(area=50.0, price=655000.0, days_ago=150),
             _sale(area=50.0, price=9000000.0, days_ago=120),
         ]
 
         result = value_transactions(sales, subject, TODAY)
 
-        # Four sales: the median is the mean of the two middle prices per square
-        # metre (13 000 and 13 200), not the 180 000 the outlier carries.
+        # Five sales: the median is the middle price per square metre
+        # (13 100), not the 180 000 the outlier carries.
         assert result.price_per_sqm_median == pytest.approx(13100.0)
 
 
