@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 import { routing } from '@/i18n/routing';
-import { languageAlternates, LOCALES } from '@/lib/metadata';
+import { languageAlternates } from '@/lib/metadata';
 import { serverApiUrl } from '@/lib/api/server';
 import { absoluteUrl } from '@/lib/site';
 
@@ -101,32 +101,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const defaultLocale = routing.defaultLocale;
 
   /**
-   * EVERY LANGUAGE IS LISTED.
+   * ONE ENTRY PER PATH.
    *
-   * The sitemap used to name one URL per page - the default locale's - and
-   * attach the other eight as `hreflang` alternates. That is a cluster whose
-   * members are not in the sitemap: the alternates point at addresses the
-   * file never lists, and a file whose alternates are not listed is a file
-   * whose cluster cannot be verified. Google's own structure for a site in
-   * several languages lists EVERY version of a page, each one carrying the
-   * same set of alternates, and the alternates point back at each other.
+   * The file used to name every locale version of every page as its own
+   * `<loc>` - 261 paths x 9 locales = 2,349 URLs, nine near-duplicates of
+   * each page. That is the shape that produced 261 sitemap warnings and no
+   * indexed page: a crawler was handed the same page nine times and had no
+   * way to tell which copy was the original.
    *
-   * One entry per locale per page, with the same cluster on every entry.
+   * A sitemap is an INDEX, so it names a page once and describes the rest of
+   * its cluster beside it. The `hreflang` alternates carry every locale
+   * version of that same path, and `x-default` names the default locale's
+   * version of it, so a crawler still reaches all nine languages and can
+   * tell that the nine are one page rather than nine.
    */
   const addPage = (path: string, lastModified: Date) => {
     const alternates = languageAlternates(path);
     const changeFrequency = path === '' ? 'daily' : 'weekly';
     const priority = path === '' ? 1.0 : path === '/search' ? 0.9 : 0.7;
 
-    for (const locale of LOCALES) {
-      entries.push({
-        url: absoluteUrl(`/${locale}${path}`),
-        lastModified,
-        changeFrequency,
-        priority: locale === defaultLocale ? priority : Math.min(priority, 0.9),
-        alternates: { languages: alternates },
-      });
-    }
+    entries.push({
+      url: absoluteUrl(`/${defaultLocale}${path}`),
+      lastModified,
+      changeFrequency,
+      priority,
+      alternates: { languages: alternates },
+    });
   };
 
   for (const path of PUBLIC_PATHS) {

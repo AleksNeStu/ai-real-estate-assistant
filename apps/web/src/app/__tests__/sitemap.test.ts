@@ -93,21 +93,19 @@ describe('the sitemap', () => {
   });
 
   /**
-   * The file used to name ONE url per page - the default locale's - and
-   * attach the other eight as hreflang alternates. That is a cluster whose
-   * members are not in the sitemap, and a file whose alternates are not
-   * listed is a file whose cluster cannot be verified. Google's own structure
-   * for a site in several languages lists EVERY version of a page, each one
-   * carrying the same set of alternates.
+   * The file used to name every locale version of every page as its own
+   * `<loc>` - 2,349 URLs for 261 paths, nine near-duplicates of each page.
+   * The shape now is one entry per path: the default locale's version is the
+   * entry, and the other eight are its hreflang alternates.
    */
-  it('lists every language version of a page, not only the default one', async () => {
+  it('names a page once, not once per language', async () => {
     mockCatalogue([]);
     const entries = await sitemap();
     const urls = entries.map((entry) => entry.url);
 
-    for (const locale of routing.locales) {
-      expect(urls).toContain(`${'https://realty.kittray.com'}/${locale}/search`);
-    }
+    expect(urls).toContain('https://realty.kittray.com/pl/search');
+    expect(urls).not.toContain('https://realty.kittray.com/en/search');
+    expect(new Set(urls).size).toBe(urls.length);
   });
 
   it('points the cluster of a page at that page in every language', async () => {
