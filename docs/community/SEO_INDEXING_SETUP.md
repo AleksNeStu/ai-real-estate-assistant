@@ -255,9 +255,43 @@ release-wave numbers also reads both surfaces over CDP at every due point and
 then polls every 15 minutes from that point until the data arrives, writing
 `sitemap-reread-<label>.json` (the structured read, with a `closed` flag) and
 `sitemap-reread-<label>.txt` (the verbatim UI text of both surfaces) into
-`docs/community/private-evidence/` — the gitignored evidence directory. The
-next reading is due at **2026-11-22T01:05Z**. TaskMaster #107 closes on the
-first file that carries `closed: true`, or on the API counter falling to 0.
+`docs/community/private-evidence/` — the gitignored evidence directory. TaskMaster
+#107 closes on the first file that carries `closed: true`, or on the API counter
+falling to 0.
+
+**The re-read, 2026-11-22T17:07Z — still open, and the false close is
+retracted.** The collector's first attempt on the +24h point wrote a file that
+carried `closed: true` **with every reading empty** (`drilldown_status_line:
+""`, `warning_text: null`, `pages_report_reason_rows: []`). That file was a
+false close and it is not evidence: the read had not happened. The Automation
+Chrome was signed in as `auto.tester.py@gmail.com`, whose account answers
+*"Oops, you don't have access to this property"* — and a page that says the
+account has no access is the **absence** of a reading, not a reading. The
+collector's close rule read *"the Pages report does not say 'Processing data'"*
+— which is also what an unreadable Pages report looks like — and closed the
+measurement on it. The file was removed (the copy is kept beside it as
+`*.false-read-*.bak`) and the rule was changed: **a close now requires a
+positive reading** — a non-empty exclusion table, a warning text, or the API
+counter falling to 0 — and a read that cannot run writes no file at all.
+
+The collector was also repaired where it actually failed to read: the
+Automation Chrome's `Default` profile carries the wrong Google account, and
+switching the profile was not enough, because the scratch tab is **reused** and
+the reused tab belongs to the profile that was active when it was created. The
+tab is now closed and opened again, which lands it in the now-active profile.
+The collector also reads the **API counter itself** (`sitemaps.list` through
+the nestlab.tech service account), so the closing criterion no longer depends on
+a browser being signed in.
+
+**The reading itself, 2026-11-22T17:07:57Z — nothing moved.** The realty
+drilldown answers *"Sitemap processed successfully"*; the Pages report filtered
+by the realty sitemap still answers *"Processing data, please check again in a
+day or so"* with an **empty** exclusion table; the API still answers
+`warnings: 261` for the realty sitemap and `warnings: 1` for kittray.com
+(`errors: 0`, `isPending: false`, realty `submitted: 1899`, `indexed: 0`,
+last submitted 2026-11-17T10:35Z). **The warning text still does not exist**,
+so nothing is claimed about it, and TaskMaster #107 stays open — its next due
+point is the weekly one, **2026-11-23T01:05Z**.
 
 **The three redirecting URLs, named.** The "Page with redirect" drilldown
 lists them: `https://kittray.com/` (crawled Nov 11), `http://www.kittray.com/`
