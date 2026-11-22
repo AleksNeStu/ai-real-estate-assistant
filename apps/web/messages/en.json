@@ -3091,7 +3091,26 @@
         "confidence": "Confidence",
         "sales": "The sales behind the estimate"
       },
-      "registerSource": "RCN · Rejestr Cen Nieruchomości — official notarial prices"
+      "registerSource": "RCN · Rejestr Cen Nieruchomości — official notarial prices",
+      "page": {
+        "heading": "Valuation of {address}",
+        "title": "Valuation of {address} — AI Real Estate Assistant",
+        "description": "The estimate rests on {count, plural, one {# registered sale} other {# registered sales}} between {start} and {end}, read from the official register of notarial prices.",
+        "basis": "{count, plural, one {# registered sale} other {# registered sales}} between {start} and {end}, read from the official register of notarial prices.",
+        "noAnswerBody": "Fewer than five registered sales could be found for this address — too few to price it. The sales are listed; the estimate is withheld.",
+        "notFoundTitle": "Valuation not found",
+        "backToForm": "Value another address"
+      },
+      "link": {
+        "title": "A link to this answer",
+        "hint": "The same address always produces the same link, so the answer can be sent to somebody and read by a search engine."
+      },
+      "share": {
+        "copy": "Copy the link",
+        "copied": "Copied",
+        "share": "Share",
+        "open": "Open the answer"
+      }
     },
     "usage": {
       "title": "Usage Dashboard",

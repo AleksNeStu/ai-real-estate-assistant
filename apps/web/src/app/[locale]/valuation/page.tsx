@@ -13,9 +13,12 @@ import { PageHeader } from '@/components/ui/page-header';
 import { ForecastChart } from '@/components/valuation/forecast-chart';
 import { ForecastLedger } from '@/components/valuation/forecast-ledger';
 import { RegisterValuation } from '@/components/valuation/register-valuation';
+import { ValuationShare } from '@/components/valuation/valuation-share';
 import { priceForecastApi, valuationApi } from '@/lib/api';
 import type { PriceForecastResponse, ValuationResponse } from '@/lib/api/tools';
 import { formatPrice } from '@/lib/format';
+import { absoluteUrl } from '@/lib/site';
+import { encodeValuationSlug } from '@/lib/valuation-slug';
 
 type FeatureForm = {
   city: string;
@@ -107,6 +110,26 @@ export default function ValuationPage() {
       : mode === 'features'
         ? features !== null
         : address.city.trim().length > 0 && address.street.trim().length > 0;
+
+  /**
+   * The link to this answer.
+   *
+   * The address the reader typed names the place, and the place names the
+   * link - so the same address always produces the same link, and the answer
+   * can be sent to somebody instead of dying with the tab.
+   */
+  const shareUrl = useMemo(() => {
+    if (!registerResult) return null;
+    const area = Number(address.area_sqm);
+    const rooms = Number(address.rooms);
+    const slug = encodeValuationSlug({
+      city: address.city.trim(),
+      street: address.street.trim(),
+      area_sqm: Number.isFinite(area) && area > 0 ? area : undefined,
+      rooms: Number.isFinite(rooms) && rooms > 0 ? rooms : undefined,
+    });
+    return slug ? absoluteUrl(`/${locale}/valuation/${slug}`) : null;
+  }, [address, registerResult, locale]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -410,7 +433,12 @@ export default function ValuationPage() {
           ) : null}
 
           {registerResult ? (
-            <RegisterValuation result={registerResult} />
+            <>
+              <RegisterValuation result={registerResult} />
+              {shareUrl ? (
+                <ValuationShare url={shareUrl} openLabel={t('share.open')} />
+              ) : null}
+            </>
           ) : result ? (
             <>
               <ForecastLedger result={result} />

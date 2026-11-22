@@ -304,3 +304,103 @@ export function buildPropertyStructuredData(
     ],
   };
 }
+
+/**
+ * The structured data of ONE valuation.
+ *
+ * The listing page describes a flat that is for sale. A valuation page
+ * describes a place and what the people who bought there paid for it - and
+ * the graph says so in the form an answer engine can read:
+ *
+ *   - Residence — the place: its address, its size, its number of rooms
+ *   - Offer     — the estimate: the price, the currency, and the place it
+ *                 is an offer for
+ *   - BreadcrumbList — where the answer sits in the site
+ *
+ * The price comes from the register, so it is the register's number and not
+ * an asking price. When the register could not price the place there is no
+ * offer node at all - a page that carries a price it does not have is worse
+ * than a page that carries none.
+ */
+export function buildValuationStructuredData(
+  valuation: {
+    estimated_value?: number | null;
+    currency?: string | null;
+    comparison_area?: string | null;
+    sample_size?: number | null;
+    period_start?: string | null;
+    period_end?: string | null;
+  },
+  subject: { city: string; street?: string | null; area_sqm?: number | null; rooms?: number | null },
+  options: { url: string; locale: string; basis?: string },
+): Record<string, unknown> {
+  const { url, locale } = options;
+  const origin = SITE_URL.origin;
+  const street = subject.street?.trim();
+
+  const residenceNode: Record<string, unknown> = {
+    '@type': 'Residence',
+    '@id': `${url}#residence`,
+    name: [street, subject.city].filter(Boolean).join(', '),
+    url,
+    inLanguage: locale,
+  };
+
+  residenceNode.address = {
+    '@type': 'PostalAddress',
+    streetAddress: street || undefined,
+    addressLocality: subject.city,
+  };
+
+  if (typeof subject.area_sqm === 'number') {
+    residenceNode.floorSize = {
+      '@type': 'QuantitativeValue',
+      value: subject.area_sqm,
+      unitCode: 'MTK',
+    };
+  }
+
+  if (typeof subject.rooms === 'number') {
+    residenceNode.numberOfRooms = subject.rooms;
+  }
+
+  const graph: Record<string, unknown>[] = [residenceNode];
+
+  if (typeof valuation.estimated_value === 'number') {
+    graph.push({
+      '@type': 'Offer',
+      '@id': `${url}#offer`,
+      price: valuation.estimated_value,
+      priceCurrency: valuation.currency || 'PLN',
+      url,
+      itemOffered: { '@id': `${url}#residence` },
+      // The evidence the estimate rests on travels with it: how many sales,
+      // and over which period they were registered.
+      ...(options.basis ? { description: options.basis } : {}),
+    });
+  }
+
+  graph.push({
+    '@type': 'BreadcrumbList',
+    '@id': `${url}#breadcrumb`,
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Valuation',
+        item: `${origin}/${locale}/valuation`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: valuation.comparison_area || subject.city,
+        item: url,
+      },
+    ],
+  });
+
+  return {
+    '@context': 'https://schema.org',
+    '@graph': graph,
+  };
+}

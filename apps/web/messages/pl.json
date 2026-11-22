@@ -3091,7 +3091,26 @@
         "confidence": "Pewność",
         "sales": "Sprzedaże, na których opiera się wycena"
       },
-      "registerSource": "RCN · Rejestr Cen Nieruchomości — oficjalne ceny notarialne"
+      "registerSource": "RCN · Rejestr Cen Nieruchomości — oficjalne ceny notarialne",
+      "page": {
+        "heading": "Wycena: {address}",
+        "title": "Wycena: {address} — AI Real Estate Assistant",
+        "description": "Wycena opiera się na {count, plural, one {# zarejestrowanej sprzedaży} few {# zarejestrowanych sprzedaży} other {# zarejestrowanych sprzedaży}} z okresu {start} – {end}, odczytanych z oficjalnego rejestru cen notarialnych.",
+        "basis": "{count, plural, one {# zarejestrowana sprzedaż} few {# zarejestrowane sprzedaże} other {# zarejestrowanych sprzedaży}} z okresu {start} – {end}, odczytane z oficjalnego rejestru cen notarialnych.",
+        "noAnswerBody": "Dla tego adresu udało się znaleźć mniej niż pięć zarejestrowanych sprzedaży — to za mało, by wycenić. Sprzedaże są wypisane, wyceny nie ma.",
+        "notFoundTitle": "Nie znaleziono wyceny",
+        "backToForm": "Wycena innego adresu"
+      },
+      "link": {
+        "title": "Link do tej wyceny",
+        "hint": "Ten sam adres zawsze daje ten sam link, więc wycenę można wysłać dalej i przeczytać ją w wyszukiwarce."
+      },
+      "share": {
+        "copy": "Kopiuj link",
+        "copied": "Skopiowano",
+        "share": "Udostępnij",
+        "open": "Otwórz wycenę"
+      }
     },
     "usage": {
       "title": "Panel użycia",
