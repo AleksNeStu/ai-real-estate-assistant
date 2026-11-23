@@ -108,7 +108,9 @@ class TestCircuitBreakerStates:
             await breaker.call(failing_func)
         assert breaker.state == CircuitState.OPEN
 
-        await asyncio.sleep(0.06)
+        # A sleep of four times the timeout: the Windows clock ticks every
+        # ~15.6ms, so a 60ms sleep can measure as 44ms and miss the timeout.
+        await asyncio.sleep(0.2)
         assert breaker.state == CircuitState.HALF_OPEN
         assert breaker.is_degraded is True
 
@@ -128,7 +130,9 @@ class TestCircuitBreakerStates:
             await breaker.call(failing_func)
         assert breaker.state == CircuitState.OPEN
 
-        await asyncio.sleep(0.06)
+        # A sleep of four times the timeout: the Windows clock ticks every
+        # ~15.6ms, so a 60ms sleep can measure as 44ms and miss the timeout.
+        await asyncio.sleep(0.2)
         assert breaker.state == CircuitState.HALF_OPEN
 
         await breaker.call(ok_func)
@@ -144,7 +148,9 @@ class TestCircuitBreakerStates:
 
         with pytest.raises(RuntimeError):
             await breaker.call(failing_func)
-        await asyncio.sleep(0.06)
+        # A sleep of four times the timeout: the Windows clock ticks every
+        # ~15.6ms, so a 60ms sleep can measure as 44ms and miss the timeout.
+        await asyncio.sleep(0.2)
         assert breaker.state == CircuitState.HALF_OPEN
 
         with pytest.raises(RuntimeError):
