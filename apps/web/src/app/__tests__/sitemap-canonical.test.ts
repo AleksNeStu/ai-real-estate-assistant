@@ -37,6 +37,18 @@ jest.mock('@/i18n/routing', () => ({
 
 jest.mock('@/lib/api/server', () => ({
   serverApiUrl: () => 'http://api.test/api/v1',
+  // The catalogue of the places the register covers: a city and one of its
+  // districts.
+  fetchServerPlaceCatalogue: jest.fn(async () => ({
+    places: [
+      {
+        name: 'Kraków',
+        slug: 'krakow',
+        register_city: 'KRAKÓW',
+        districts: [{ name: 'Old Town', slug: 'old-town' }],
+      },
+    ],
+  })),
 }));
 
 jest.mock('next-intl/server', () => ({
@@ -116,8 +128,8 @@ describe('the sitemap holds one entry per path', () => {
     const entries = await sitemap();
 
     const paths = entries.map((entry) => pathOf(entry.url));
-    // 11 public routes + 2 listings, each of them named once.
-    expect(paths.length).toBe(13);
+    // 11 public routes + 2 listings + 2 place pages, each of them named once.
+    expect(paths.length).toBe(15);
     expect(new Set(paths).size).toBe(paths.length);
   });
 

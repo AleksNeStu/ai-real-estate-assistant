@@ -404,3 +404,81 @@ export function buildValuationStructuredData(
     '@graph': graph,
   };
 }
+
+/**
+ * The structured data of ONE place.
+ *
+ * The listing page describes a flat that is for sale. The valuation page
+ * describes one address and what the people who bought there paid. A place
+ * page describes a city or a district and what a square metre costs there -
+ * so the graph says so in the form an answer engine can read:
+ *
+ *   - Place - the place: its name, its address, the numbers it carries
+ *   - BreadcrumbList - where the page sits in the site
+ *
+ * The numbers travel with the node: how many registered sales the figure is
+ * measured on and the period they cover. A price per square metre without
+ * the sales under it is a claim, and the graph is where a claim is read.
+ */
+export function buildPlaceStructuredData(
+  figures: {
+    place: string;
+    district?: string | null;
+    comparison_area?: string | null;
+    median_price_per_sqm?: number | null;
+    sample_size?: number | null;
+    period_start?: string | null;
+    period_end?: string | null;
+    currency?: string | null;
+  },
+  options: { url: string; locale: string; basis?: string },
+): Record<string, unknown> {
+  const { url, locale } = options;
+  const origin = SITE_URL.origin;
+  const name = [figures.district, figures.place].filter(Boolean).join(', ');
+
+  const placeNode: Record<string, unknown> = {
+    '@type': 'Place',
+    '@id': `${url}#place`,
+    name,
+    url,
+    inLanguage: locale,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: figures.place,
+    },
+  };
+
+  if (typeof figures.median_price_per_sqm === 'number') {
+    placeNode.priceRange = `${figures.currency || 'PLN'} ${figures.median_price_per_sqm} per m²`;
+  }
+
+  if (options.basis) {
+    placeNode.description = options.basis;
+  }
+
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      placeNode,
+      {
+        '@type': 'BreadcrumbList',
+        '@id': `${url}#breadcrumb`,
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Valuation',
+            item: `${origin}/${locale}/valuation`,
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name,
+            item: url,
+          },
+        ],
+      },
+    ],
+  };
+}

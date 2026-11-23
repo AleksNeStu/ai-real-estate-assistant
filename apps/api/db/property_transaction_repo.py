@@ -9,7 +9,7 @@ way out, so the valuation service never has to know that a database exists.
 from datetime import date
 from typing import Optional, Sequence
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from data.rcn.rcn_models import RCNAddress, RCNTransaction
@@ -95,3 +95,83 @@ async def transactions_for(
     query = query.order_by(PropertyTransaction.transaction_date.desc()).limit(limit)
     result = await session.execute(query)
     return [to_transaction(row) for row in result.scalars().all()]
+
+
+async def transactions_for_streets(
+    session: AsyncSession,
+    city_norm: str,
+    street_norms: Sequence[str],
+    since: Optional[date] = None,
+    limit: int = 5000,
+    until: Optional[date] = None,
+) -> list[RCNTransaction]:
+    """The sales registered on several streets of one city.
+
+    A district holds no column of its own in the register - the register knows
+    streets - so the district's sales are the sales of the streets it stands
+    on. The read is the street read with more than one street in it.
+    """
+    if not street_norms:
+        return []
+    query = select(PropertyTransaction).where(PropertyTransaction.city_norm == city_norm)
+    query = query.where(PropertyTransaction.street_norm.in_(list(street_norms)))
+    if since is not None:
+        query = query.where(PropertyTransaction.transaction_date >= since)
+    query = query.where(PropertyTransaction.transaction_date <= (until or date.today()))
+    query = query.order_by(PropertyTransaction.transaction_date.desc()).limit(limit)
+    result = await session.execute(query)
+    return [to_transaction(row) for row in result.scalars().all()]
+
+
+async def count_transactions(
+    session: AsyncSession,
+    city_norm: str,
+    street_norms: Optional[Sequence[str]] = None,
+    since: Optional[date] = None,
+    until: Optional[date] = None,
+) -> int:
+    """How many sales the register holds for a place, counted in the database.
+
+    A busy city registers tens of thousands of sales in a year, so the pages
+    cannot read them all to count them - the count is asked of the database,
+    which answers it without building a row object for every sale.
+    """
+    query = select(func.count()).select_from(PropertyTransaction)
+    query = query.where(PropertyTransaction.city_norm == city_norm)
+    if street_norms is not None:
+        if not street_norms:
+            return 0
+        query = query.where(PropertyTransaction.street_norm.in_(list(street_norms)))
+    if since is not None:
+        query = query.where(PropertyTransaction.transaction_date >= since)
+    query = query.where(PropertyTransaction.transaction_date <= (until or date.today()))
+    result = await session.execute(query)
+    return int(result.scalar() or 0)
+
+
+async def usable_sales_by_city_street(
+    session: AsyncSession,
+    since: Optional[date] = None,
+    until: Optional[date] = None,
+) -> dict[tuple[str, str], int]:
+    """How many usable sales the register holds, per city and per street.
+
+    A sale is usable when it carries a price and an area - the two things a
+    price per square metre is computed from. The read is one grouped query,
+    because the question it answers is asked of every city and every district
+    at once: which places the register covers at all.
+    """
+    query = select(
+        PropertyTransaction.city_norm,
+        PropertyTransaction.street_norm,
+        func.count(),
+    ).where(
+        PropertyTransaction.price_brutto > 0,
+        PropertyTransaction.area_sqm > 0,
+        PropertyTransaction.transaction_date <= (until or date.today()),
+    )
+    if since is not None:
+        query = query.where(PropertyTransaction.transaction_date >= since)
+    query = query.group_by(PropertyTransaction.city_norm, PropertyTransaction.street_norm)
+    result = await session.execute(query)
+    return {(city, street): int(count) for city, street, count in result.all()}

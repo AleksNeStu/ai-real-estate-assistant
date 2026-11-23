@@ -66,6 +66,7 @@ from api.routers import (
     metrics,  # Task #62: Production Monitoring
     model_preferences,  # Task #87: Model Preferences Per-Task
     monitoring,  # Task #57: Production Monitoring Dashboard
+    places,  # Task #117: what the register holds for a city or a district
     profile,  # Task #88: User Profile Management
     prompt_templates,
     properties,  # One property, by its id - the data of the property page
@@ -574,6 +575,8 @@ app.include_router(chat.free_router, prefix="/api/v1")
 app.include_router(rag_router.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(settings_router.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(tools.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
+# Task #117: the place pages read the official register
+app.include_router(places.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 # v5.1: AI valuation endpoints (price forecast + neighborhood summary)
 app.include_router(valuation.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(prompt_templates.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])

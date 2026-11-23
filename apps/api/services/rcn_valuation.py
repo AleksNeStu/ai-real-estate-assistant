@@ -48,6 +48,10 @@ MIN_TREND_SPAN_DAYS = 180
 MAX_TREND_RATE = 0.25
 MIN_TREND_RATE = -0.15
 
+# How many of the sales a place's page lists. The register holds tens of
+# thousands of them; the page shows enough to see the shape of the market.
+PLACE_COMPARABLES = 12
+
 
 @dataclass(frozen=True)
 class ValuationSubject:
@@ -463,6 +467,146 @@ def value_transactions(
         comparison_area=comparison_area,
         period_start=period_start,
         period_end=period_end,
+        confidence=confidence,
+        notes=notes,
+    )
+
+
+@dataclass(frozen=True)
+class PlaceFigures:
+    """What the register says about a place, and on what evidence.
+
+    A place has no single flat to price, so there is no estimate here: there
+    is the price a square metre costs there, how many sales that is measured
+    on, the period those sales cover and the sales themselves. The four
+    belong together - the median without the sample is a number with nothing
+    under it.
+    """
+
+    median_price_per_sqm: Optional[float]
+    first_quartile_price_per_sqm: Optional[float]
+    third_quartile_price_per_sqm: Optional[float]
+    sample_size: int
+    registered_count: Optional[int]
+    period_start: Optional[date]
+    period_end: Optional[date]
+    comparison_area: str
+    comparables: list[Comparable]
+    confidence: str = "low"
+    notes: list[str] = field(default_factory=list)
+
+    @property
+    def has_figures(self) -> bool:
+        return self.sample_size > 0
+
+
+def place_figures(
+    transactions: Iterable[RCNTransaction],
+    comparison_area: str,
+    sample_capped: bool = False,
+    registered_count: Optional[int] = None,
+) -> PlaceFigures:
+    """Measure a place from the sales the register holds for it.
+
+    The median is the median price per square metre of the sales; the sample
+    is how many sales it rests on and the period is the dates they carry.
+    A capped sample says so - a page that shows ten thousand of a hundred
+    thousand sales must not read as if it had seen all of them.
+
+    The secondary market is the market of flats that changed hands between
+    people. A new-build flat is priced differently, so the new-build sales
+    are left out when the place has sales of its own - and said so.
+    """
+    usable = [t for t in transactions if t.price_per_sqm > 0 and t.area_sqm > 0]
+    secondary = [t for t in usable if t.market == SECONDARY_MARKET]
+    market_note = ""
+    if secondary:
+        sales = secondary
+        market_note = f"Secondary market only ({SECONDARY_MARKET})."
+    else:
+        sales = usable
+        if usable:
+            market_note = (
+                "Every registered sale was used - the place has no sales of its own market."
+            )
+
+    sales = [t for t in sales if t.transaction_date <= date.today()]
+    if not sales:
+        return PlaceFigures(
+            median_price_per_sqm=None,
+            first_quartile_price_per_sqm=None,
+            third_quartile_price_per_sqm=None,
+            sample_size=0,
+            registered_count=registered_count,
+            period_start=None,
+            period_end=None,
+            comparison_area=comparison_area,
+            comparables=[],
+            confidence="low",
+            notes=[f"No registered sale could be found for {comparison_area}."],
+        )
+
+    prices_per_sqm = [t.price_per_sqm for t in sales]
+    first_quartile, median, third_quartile = _quantiles(prices_per_sqm)
+
+    ordered = sorted(sales, key=lambda t: t.transaction_date, reverse=True)
+    period_start = min(t.transaction_date for t in sales)
+    period_end = max(t.transaction_date for t in sales)
+
+    if len(sales) >= MEDIUM_CONFIDENCE_SAMPLE:
+        confidence = "high"
+    elif len(sales) >= LOW_CONFIDENCE_SAMPLE:
+        confidence = "medium"
+    else:
+        confidence = "low"
+
+    notes = []
+    if market_note:
+        notes.append(market_note)
+    if registered_count is not None and registered_count > len(sales):
+        notes.append(
+            f"The register holds {registered_count} registered sale(s) between "
+            f"{period_start.isoformat()} and {period_end.isoformat()} for this place."
+        )
+    notes.append(
+        f"Based on {len(sales)} registered sale(s) between {period_start.isoformat()} "
+        f"and {period_end.isoformat()}."
+    )
+    if sample_capped:
+        notes.append(
+            "The figure is measured on the most recent of them - the page reads a "
+            "bounded number of the register's sales."
+        )
+    if len(sales) < MIN_SAMPLE:
+        notes.append(
+            f"Only {len(sales)} registered sale(s) could be found for this place - too "
+            f"few to read a market from."
+        )
+
+    comparables = [
+        Comparable(
+            address=str(t.address),
+            area_sqm=t.area_sqm,
+            price=t.price,
+            price_per_sqm=t.price_per_sqm,
+            transaction_date=t.transaction_date,
+            rooms=t.rooms,
+            floor=t.floor,
+            deed_reference=t.deed_reference,
+        )
+        for t in ordered[:PLACE_COMPARABLES]
+    ]
+
+    return PlaceFigures(
+        median_price_per_sqm=median,
+        first_quartile_price_per_sqm=first_quartile,
+        third_quartile_price_per_sqm=third_quartile,
+        sample_size=len(sales),
+        registered_count=registered_count,
+        period_start=period_start,
+        period_end=period_end,
+        comparison_area=comparison_area,
+        comparables=comparables,
         confidence=confidence,
         notes=notes,
     )

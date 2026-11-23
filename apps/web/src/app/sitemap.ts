@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 
 import { routing } from '@/i18n/routing';
 import { languageAlternates } from '@/lib/metadata';
-import { serverApiUrl } from '@/lib/api/server';
+import { fetchServerPlaceCatalogue, serverApiUrl } from '@/lib/api/server';
 import { absoluteUrl } from '@/lib/site';
 
 /**
@@ -88,6 +88,36 @@ async function fetchCatalogue(limit: number): Promise<CatalogueEntry[]> {
 }
 
 /**
+ * The places the register covers.
+ *
+ * The place pages - a city, a district of it - are the pages that carry
+ * content no other page has: the price a square metre costs there, on how
+ * many registered sales, over which period. They are listed here so a
+ * crawler that reads a sitemap can find them; the ones the register holds
+ * nothing for answer 404 and are not listed.
+ */
+async function fetchPlacePaths(): Promise<string[]> {
+  let catalogue;
+  try {
+    catalogue = await fetchServerPlaceCatalogue();
+  } catch {
+    // A deployment that cannot be reached still answers with the routes it
+    // knows: a sitemap that lists the site's pages is better than a sitemap
+    // that fails.
+    return [];
+  }
+  if (!catalogue?.places?.length) return [];
+  const paths: string[] = [];
+  for (const place of catalogue.places) {
+    paths.push(`/valuation/${place.slug}`);
+    for (const district of place.districts ?? []) {
+      paths.push(`/valuation/${place.slug}/${district.slug}`);
+    }
+  }
+  return paths;
+}
+
+/**
  * The sitemap is read when it is asked for, not when the image is built.
  *
  * The catalogue of a deployment is its own: the listings of one instance are
@@ -130,6 +160,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   };
 
   for (const path of PUBLIC_PATHS) {
+    addPage(path, ROUTES_LASTMOD);
+  }
+
+  for (const path of await fetchPlacePaths()) {
     addPage(path, ROUTES_LASTMOD);
   }
 

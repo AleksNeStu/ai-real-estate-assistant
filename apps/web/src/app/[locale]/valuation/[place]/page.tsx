@@ -3,24 +3,33 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
+import PlacePage from '@/components/valuation/place-page';
 import { RegisterValuation } from '@/components/valuation/register-valuation';
 import { ValuationShare } from '@/components/valuation/valuation-share';
 import { MonoAnnotation } from '@/components/ui/mono-annotation';
 import { PageHeader } from '@/components/ui/page-header';
-import { fetchServerValuation } from '@/lib/api/server';
+import { fetchServerPlaceFigures, fetchServerValuation } from '@/lib/api/server';
 import { languageAlternates, OG_IMAGE } from '@/lib/metadata';
 import { absoluteUrl } from '@/lib/site';
-import { buildValuationStructuredData } from '@/lib/structured-data';
+import { buildValuationStructuredData, buildPlaceStructuredData } from '@/lib/structured-data';
 import { decodeValuationSlug, type ValuationSubject } from '@/lib/valuation-slug';
 
-interface ValuationPageProps {
-  params: Promise<{ locale: string; slug: string }>;
+interface ValuationRouteProps {
+  params: Promise<{ locale: string; place: string }>;
 }
 
 /**
- * One valuation, as a page.
+ * Two kinds of page, one path.
  *
- * WHY THE PAGE IS A SERVER COMPONENT
+ * `/valuation/{slug}` is the answer about one address - the slug carries the
+ * city, the street, the area and the rooms. `/valuation/{city}` is the
+ * figures of a whole city, and `/valuation/{city}/{district}` the figures of
+ * one district of it.
+ *
+ * The address slug is the one with a separator in it; a city slug is a single
+ * word. So the route reads the segment and hands it to the page it names.
+ *
+ * WHY THE ANSWER IS READ ON THE SERVER
  *
  * The interactive valuation page answers in the browser: the reader types an
  * address, the register answers, and the answer is gone with the tab. It
@@ -31,16 +40,19 @@ interface ValuationPageProps {
  * read on the server, a crawler that does not run the JavaScript receives
  * the estimate, the sales it rests on, the period they cover and the
  * structured data, not an empty shell.
- *
- * The evidence travels with the answer and the period is stated on the
- * page, so a reader can tell what the number is standing on.
  */
+const isAddressSlug = (place: string): boolean => place.includes('~');
+
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ locale: string; slug: string }>;
+  params: Promise<{ locale: string; place: string }>;
 }): Promise<Metadata> {
-  const { locale, slug } = await params;
+  const { locale, place } = await params;
+  return isAddressSlug(place) ? addressMetadata(locale, place) : placeMetadata(locale, place);
+}
+
+async function addressMetadata(locale: string, slug: string): Promise<Metadata> {
   const subject = decodeValuationSlug(slug);
   const url = absoluteUrl(`/${locale}/valuation/${slug}`);
   const t = await getTranslations({ locale, namespace: 'pages.valuation' });
@@ -102,20 +114,94 @@ export async function generateMetadata({
   };
 }
 
+async function placeMetadata(locale: string, slug: string): Promise<Metadata> {
+  const url = absoluteUrl(`/${locale}/valuation/${slug}`);
+  const t = await getTranslations({ locale, namespace: 'pages.place' });
+
+  const figures = await fetchServerPlaceFigures(slug);
+  if (!figures) {
+    // The register holds nothing for this place: there is no page to index.
+    return {
+      title: t('page.notFoundTitle'),
+      robots: { index: false, follow: true },
+      alternates: { canonical: url, languages: languageAlternates(`/valuation/${slug}`) },
+    };
+  }
+
+  const place = figures.district ? `${figures.district}, ${figures.place}` : figures.place;
+  const title = t('page.title', { place });
+  const description = t('page.description', {
+    count: figures.sample_size,
+    start: figures.period_start ?? '',
+    end: figures.period_end ?? '',
+  });
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url,
+      languages: languageAlternates(`/valuation/${slug}`),
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: 'website',
+      images: [OG_IMAGE],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [OG_IMAGE.url],
+    },
+  };
+}
+
 /** The name the page shows: the register's own spelling of the place. */
 function addressOf(subject: ValuationSubject, comparisonArea?: string | null): string {
   if (comparisonArea) return comparisonArea;
   return subject.street ? `${subject.street}, ${subject.city}` : subject.city;
 }
 
-export default async function ValuationAnswerPage({ params }: ValuationPageProps) {
-  const { locale, slug } = await params;
-  const subject = decodeValuationSlug(slug);
+export default async function ValuationRoute({ params }: ValuationRouteProps) {
+  const { locale, place } = await params;
+
+  if (!isAddressSlug(place)) {
+    // A city: the figures the register holds for it.
+    const figures = await fetchServerPlaceFigures(place);
+    if (!figures) notFound();
+
+    const url = absoluteUrl(`/${locale}/valuation/${place}`);
+    const t = await getTranslations({ locale, namespace: 'pages.place' });
+    const basis = t('basis', {
+      count: figures.sample_size,
+      start: figures.period_start ?? '',
+      end: figures.period_end ?? '',
+    });
+
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(
+              buildPlaceStructuredData(figures, { url, locale, basis }),
+            ),
+          }}
+        />
+        <PlacePage locale={locale} figures={figures} />
+      </>
+    );
+  }
+
+  const subject = decodeValuationSlug(place);
   if (!subject) notFound();
 
   const t = await getTranslations({ locale, namespace: 'pages.valuation' });
   const valuation = await fetchServerValuation(subject);
-  const url = absoluteUrl(`/${locale}/valuation/${slug}`);
+  const url = absoluteUrl(`/${locale}/valuation/${place}`);
   const address = addressOf(subject, valuation?.comparison_area);
 
   const basis =

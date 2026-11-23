@@ -1363,3 +1363,58 @@ class NegotiationResponse(BaseModel):
     arguments: List[str] = []
     email_template: Optional[str] = None
     disclaimer: str
+
+
+# ============================================================================
+# Place pages (Task #117) - what the register holds for a city or a district
+# ============================================================================
+
+
+class PlaceDistrictResponse(BaseModel):
+    """One district of a city, and the link that names it."""
+
+    name: str
+    slug: str
+
+
+class PlaceSummaryResponse(BaseModel):
+    """One city the site knows, and the districts it stands on."""
+
+    name: str
+    slug: str
+    register_city: str
+    districts: List[PlaceDistrictResponse] = Field(default_factory=list)
+
+
+class PlaceCatalogueResponse(BaseModel):
+    """Every place the site knows."""
+
+    places: List[PlaceSummaryResponse] = Field(default_factory=list)
+
+
+class PlaceFiguresResponse(BaseModel):
+    """What the register says about a place, and on what evidence.
+
+    A place has no single flat to price, so there is no estimate here: the
+    price a square metre costs there, the sales the figure is measured on,
+    the period those sales cover and the sales themselves.
+    """
+
+    place: str
+    slug: str
+    district: str = ""
+    district_slug: str = ""
+    median_price_per_sqm: Optional[float] = None
+    first_quartile_price_per_sqm: Optional[float] = None
+    third_quartile_price_per_sqm: Optional[float] = None
+    currency: str = "PLN"
+    source: str = "rcn"
+    confidence: Optional[str] = None
+    sample_size: int = 0
+    registered_count: Optional[int] = None
+    comparison_area: Optional[str] = None
+    period_start: Optional[date] = None
+    period_end: Optional[date] = None
+    notes: List[str] = Field(default_factory=list)
+    comparables: List[ValuationComparable] = Field(default_factory=list)
+    districts: List[PlaceDistrictResponse] = Field(default_factory=list)

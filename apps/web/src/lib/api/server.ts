@@ -18,6 +18,7 @@
  */
 
 import type { Property } from '../types';
+import type { PlaceCatalogue, PlaceFigures } from './places';
 import type { ValuationResponse } from './tools';
 import type { ValuationSubject } from '../valuation-slug';
 
@@ -167,4 +168,59 @@ export async function fetchServerValuation(
     }
   }
   return value;
+}
+
+/**
+ * The places the site knows, read on the server.
+ *
+ * The place pages are read on the server for the same reason the property
+ * page is: a crawler that does not run the JavaScript has to receive the
+ * numbers, not an empty shell.
+ */
+export async function fetchServerPlaceCatalogue(): Promise<PlaceCatalogue | null> {
+  try {
+    const response = await fetch(`${serverApiUrl()}/places`, {
+      headers: { Accept: 'application/json' },
+      next: { revalidate: 3600 },
+    });
+    if (!response.ok) return null;
+    const data = (await response.json()) as PlaceCatalogue;
+    return data && typeof data === 'object' ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * What the register holds for a place, read on the server.
+ *
+ * `district` narrows the answer to one district of the city - the register
+ * knows streets, so the district's figures are the figures of the sales
+ * registered on the streets that district stands on.
+ *
+ * Returns `null` when the register holds nothing for that place: the
+ * endpoint answers 404 for a place it does not cover, and that is a page
+ * without figures, not an error.
+ */
+export async function fetchServerPlaceFigures(
+  citySlug: string,
+  districtSlug?: string,
+): Promise<PlaceFigures | null> {
+  if (!citySlug) return null;
+  const path = districtSlug
+    ? `/places/${encodeURIComponent(citySlug)}/${encodeURIComponent(districtSlug)}`
+    : `/places/${encodeURIComponent(citySlug)}`;
+  try {
+    const response = await fetch(`${serverApiUrl()}${path}`, {
+      headers: { Accept: 'application/json' },
+      // The register moves, but a page that is asked for again a minute
+      // later does not need a different answer.
+      next: { revalidate: 3600 },
+    });
+    if (!response.ok) return null;
+    const data = (await response.json()) as PlaceFigures;
+    return data && typeof data === 'object' ? data : null;
+  } catch {
+    return null;
+  }
 }

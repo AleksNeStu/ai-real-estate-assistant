@@ -3861,6 +3861,28 @@
     },
     "commuteExtra": {
       "emptyHint": "Dodaj miejsce pracy lub inne częste cele, aby sprawdzić czas dojazdu."
+    },
+    "place": {
+      "heading": "{place} — co mówi rejestr",
+      "page": {
+        "title": "{place} — ceny z oficjalnego rejestru",
+        "description": "Ile kosztuje metr kwadratowy w {place}, policzone na {count, plural, one {# zarejestrowanej transakcji} few {# zarejestrowane transakcje} other {# zarejestrowanych transakcji}} zarejestrowanych między {start} a {end}, w oficjalnym rejestrze cen notarialnych.",
+        "notFoundTitle": "Nie znaleziono miejsca"
+      },
+      "basis": "{count, plural, one {# zarejestrowana transakcja} few {# zarejestrowane transakcje} other {# zarejestrowanych transakcji}} zarejestrowanych między {start} a {end}, w oficjalnym rejestrze cen notarialnych.",
+      "medianPerSqm": "Mediana za m²",
+      "registered": "W rejestrze",
+      "registeredCount": "{count, plural, one {# zarejestrowana transakcja} few {# zarejestrowane transakcje} other {# zarejestrowanych transakcji}}",
+      "sample": "Uwzględnione transakcje",
+      "sampleCount": "{count, plural, one {# zarejestrowana transakcja} few {# zarejestrowane transakcje} other {# zarejestrowanych transakcji}}",
+      "period": "Okres",
+      "comparisonArea": "Obszar porównania",
+      "confidence": "Pewność",
+      "sales": "Zarejestrowane transakcje",
+      "districts": "Dzielnice",
+      "wholeCity": "Całe {place}",
+      "backToForm": "Wycena innego adresu",
+      "registerSource": "RCN · Rejestr Cen Nieruchomości — oficjalne ceny notarialne"
     }
   },
   "states": {

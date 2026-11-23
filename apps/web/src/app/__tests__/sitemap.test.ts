@@ -24,6 +24,18 @@ jest.mock('@/i18n/routing', () => ({
 
 jest.mock('@/lib/api/server', () => ({
   serverApiUrl: () => 'http://api.test/api/v1',
+  // The catalogue of the places the register covers: a city and one of its
+  // districts.
+  fetchServerPlaceCatalogue: jest.fn(async () => ({
+    places: [
+      {
+        name: 'Kraków',
+        slug: 'krakow',
+        register_city: 'KRAKÓW',
+        districts: [{ name: 'Old Town', slug: 'old-town' }],
+      },
+    ],
+  })),
 }));
 
 jest.mock('next-intl/server', () => ({
@@ -69,6 +81,19 @@ describe('the sitemap', () => {
 
     expect(urls).toContain(`${origin}/${locale}/property/prop-a`);
     expect(urls).toContain(`${origin}/${locale}/property/prop-b`);
+  });
+
+  it('lists the place pages the register covers', async () => {
+    mockCatalogue([]);
+    const entries = await sitemap();
+    const urls = entries.map((entry) => entry.url);
+
+    const origin = 'https://realty.kittray.com';
+    const locale = routing.defaultLocale;
+    // A city and a district of it: the pages that carry what the register
+    // holds for that place.
+    expect(urls).toContain(`${origin}/${locale}/valuation/krakow`);
+    expect(urls).toContain(`${origin}/${locale}/valuation/krakow/old-town`);
   });
 
   it('does not ask a crawler for the account areas', async () => {

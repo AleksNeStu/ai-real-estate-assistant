@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import * as serverApi from '@/lib/api/server';
 import type { ValuationResponse } from '@/lib/api/tools';
 
-import { generateMetadata, default as ValuationAnswerPage } from '../page';
+import { generateMetadata, default as ValuationRoute } from '../page';
 
 /**
  * The shareable valuation page.
@@ -14,6 +14,7 @@ import { generateMetadata, default as ValuationAnswerPage } from '../page';
  */
 jest.mock('@/lib/api/server', () => ({
   fetchServerValuation: jest.fn(),
+  fetchServerPlaceFigures: jest.fn(),
 }));
 
 // The metadata helper reads the message catalogue through next-intl, whose
@@ -79,7 +80,7 @@ describe('the metadata of a valuation', () => {
 
   it('names the place the link names', async () => {
     const metadata = await generateMetadata({
-      params: Promise.resolve({ locale: 'en', slug: 'krakow~mysliwska~60~3' }),
+      params: Promise.resolve({ locale: 'en', place: 'krakow~mysliwska~60~3' }),
     });
 
     expect(String(metadata.title)).toContain('Valuation of');
@@ -87,7 +88,7 @@ describe('the metadata of a valuation', () => {
 
   it('points the canonical at the answer itself', async () => {
     const metadata = await generateMetadata({
-      params: Promise.resolve({ locale: 'en', slug: 'krakow~mysliwska~60~3' }),
+      params: Promise.resolve({ locale: 'en', place: 'krakow~mysliwska~60~3' }),
     });
 
     const alternates = metadata.alternates as {
@@ -110,7 +111,7 @@ describe('the metadata of a valuation', () => {
     (serverApi.fetchServerValuation as jest.Mock).mockResolvedValue(null);
 
     const metadata = await generateMetadata({
-      params: Promise.resolve({ locale: 'en', slug: 'krakow~mysliwska~60~3' }),
+      params: Promise.resolve({ locale: 'en', place: 'krakow~mysliwska~60~3' }),
     });
 
     expect(metadata.robots).toMatchObject({ index: false, follow: true });
@@ -118,7 +119,7 @@ describe('the metadata of a valuation', () => {
 
   it('keeps a link that names no place out of the index', async () => {
     const metadata = await generateMetadata({
-      params: Promise.resolve({ locale: 'en', slug: 'not-a-slug' }),
+      params: Promise.resolve({ locale: 'en', place: 'not-a-slug' }),
     });
 
     expect(metadata.robots).toMatchObject({ index: false, follow: true });
@@ -132,8 +133,8 @@ describe('the page of a valuation', () => {
   });
 
   it('carries the answer the crawler reads', async () => {
-    const rendered = await ValuationAnswerPage({
-      params: Promise.resolve({ locale: 'en', slug: 'krakow~mysliwska~60~3' }),
+    const rendered = await ValuationRoute({
+      params: Promise.resolve({ locale: 'en', place: 'krakow~mysliwska~60~3' }),
     });
 
     const html = renderToStaticMarkup(rendered);
@@ -146,8 +147,8 @@ describe('the page of a valuation', () => {
   });
 
   it('carries the structured data the crawler reads', async () => {
-    const rendered = await ValuationAnswerPage({
-      params: Promise.resolve({ locale: 'en', slug: 'krakow~mysliwska~60~3' }),
+    const rendered = await ValuationRoute({
+      params: Promise.resolve({ locale: 'en', place: 'krakow~mysliwska~60~3' }),
     });
 
     const html = renderToStaticMarkup(rendered);
@@ -169,8 +170,8 @@ describe('the page of a valuation', () => {
   it('carries no offer for an answer the register could not price', async () => {
     (serverApi.fetchServerValuation as jest.Mock).mockResolvedValue(null);
 
-    const rendered = await ValuationAnswerPage({
-      params: Promise.resolve({ locale: 'en', slug: 'krakow~mysliwska~60~3' }),
+    const rendered = await ValuationRoute({
+      params: Promise.resolve({ locale: 'en', place: 'krakow~mysliwska~60~3' }),
     });
 
     const html = renderToStaticMarkup(rendered);

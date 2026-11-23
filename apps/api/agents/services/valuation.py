@@ -33,6 +33,37 @@ class SimpleValuationProvider:
 
 
 @dataclass
+class PlaceOutcome:
+    """What the register says about a place, and on what evidence.
+
+    A place has no single flat to price, so there is no estimate here: the
+    price a square metre costs there, the sales the figure is measured on,
+    the period those sales cover and the sales themselves.
+    """
+
+    place: str = ""
+    district: str = ""
+    median_price_per_sqm: Optional[float] = None
+    first_quartile_price_per_sqm: Optional[float] = None
+    third_quartile_price_per_sqm: Optional[float] = None
+    sample_size: int = 0
+    registered_count: Optional[int] = None
+    period_start: Optional[date] = None
+    period_end: Optional[date] = None
+    comparison_area: str = ""
+    confidence: str = "low"
+    notes: List[str] = field(default_factory=list)
+    comparables: List[Dict[str, Any]] = field(default_factory=list)
+    districts: List[str] = field(default_factory=list)
+    source: str = "rcn"
+    currency: str = "PLN"
+
+    @property
+    def has_figures(self) -> bool:
+        return self.sample_size > 0
+
+
+@dataclass
 class ValuationOutcome:
     """A valuation and the evidence under it.
 
@@ -81,6 +112,13 @@ class RegisterContext:
 # about it: the result always says how much evidence there was.
 STREET_LIMIT = 2000
 CITY_LIMIT = 5000
+
+# A place's page reads the register over two years, and it reads a bounded
+# number of the sales it finds there: a busy city registers tens of thousands
+# of them, and a page that read all of them would answer slowly and say
+# nothing the sample did not already say.
+PLACE_WINDOW_MONTHS = 24
+PLACE_SAMPLE_LIMIT = 10000
 
 
 class RcnValuationProvider:
@@ -164,6 +202,156 @@ class RcnValuationProvider:
                 for comparable in result.comparables
             ],
             source=result.source,
+        )
+
+    async def covered_places(self) -> List[tuple[Any, List[Any]]]:
+        """The places the register covers, and the districts it covers of each.
+
+        A place gets a page only when the register holds a sale for it. The
+        site knows five cities, but the register of a deployment may hold
+        three of them - and a city it holds nothing for has no page, no link
+        and no place in the sitemap. The read is one grouped query over the
+        register's own rows.
+        """
+        from data.places import PLACES
+        from data.rcn.rcn_models import normalize_text
+        from db.property_transaction_repo import usable_sales_by_city_street
+
+        since = date.today() - timedelta(days=365 * PLACE_WINDOW_MONTHS)
+        counts = await usable_sales_by_city_street(self._session, since=since)
+
+        covered: List[tuple[Any, List[Any]]] = []
+        for place in PLACES:
+            city_norm = normalize_text(place.register_city)
+            street_counts = {
+                street: count for (city, street), count in counts.items() if city == city_norm
+            }
+            if not sum(street_counts.values()):
+                continue
+            districts = [
+                district
+                for district in place.districts
+                if sum(street_counts.get(normalize_text(street), 0) for street in district.streets)
+            ]
+            covered.append((place, districts))
+        return covered
+
+    async def place_outcome(self, city: str, district: str = "") -> "PlaceOutcome":
+        """What the register says about a place - a city, or a district of one.
+
+        A place has no flat to price, so the answer is the price a square
+        metre costs there, the sales that is measured on, the period those
+        sales cover and the sales themselves.
+
+        The register knows streets, not districts: a district's sales are the
+        sales registered on the streets the district stands on.
+        """
+        from data.places import find_district, find_place
+        from data.rcn.rcn_models import normalize_text
+        from db.property_transaction_repo import (
+            count_transactions,
+            transactions_for,
+            transactions_for_streets,
+        )
+        from services.rcn_valuation import place_figures
+
+        place = find_place(city)
+        if place is None:
+            return PlaceOutcome(source="rcn", notes=[f"The register does not know {city}."])
+
+        district_name = (district or "").strip()
+        district_entry = None
+        if district_name:
+            district_entry = find_district(place, district_name)
+            if district_entry is None:
+                return PlaceOutcome(
+                    source="rcn",
+                    notes=[f"{place.name} has no district called {district_name}."],
+                )
+
+        since = date.today() - timedelta(days=365 * PLACE_WINDOW_MONTHS)
+        city_norm = normalize_text(place.register_city)
+
+        if district_entry is not None:
+            street_norms = [normalize_text(street) for street in district_entry.streets]
+            transactions = await transactions_for_streets(
+                self._session,
+                city_norm,
+                street_norms,
+                since=since,
+                limit=PLACE_SAMPLE_LIMIT,
+            )
+            comparison_area = f"{district_entry.name}, {place.name}"
+        else:
+            street_norms = None
+            transactions = await transactions_for(
+                self._session,
+                city_norm,
+                since=since,
+                limit=PLACE_SAMPLE_LIMIT,
+            )
+            comparison_area = place.name
+
+        # The register holds far more sales than a page reads, so the sample
+        # is the most recent of them and the count is asked of the database
+        # for the period that sample covers. The page then says how many
+        # sales the place has and how many of them it measured.
+        sample_capped = len(transactions) >= PLACE_SAMPLE_LIMIT
+        registered_count = None
+        if transactions:
+            period_start = min(t.transaction_date for t in transactions)
+            period_end = max(t.transaction_date for t in transactions)
+            registered_count = await count_transactions(
+                self._session,
+                city_norm,
+                street_norms,
+                since=period_start,
+                until=period_end,
+            )
+
+        figures = place_figures(
+            transactions,
+            comparison_area,
+            sample_capped=sample_capped,
+            registered_count=registered_count,
+        )
+
+        # The districts a page may link to are the ones the register covers:
+        # a link to a district without a sale is a link to a 404.
+        covered_districts: List[str] = []
+        for covered_place, districts in await self.covered_places():
+            if covered_place.name == place.name:
+                covered_districts = [entry.name for entry in districts]
+                break
+
+        return PlaceOutcome(
+            place=place.name,
+            district=district_entry.name if district_entry else "",
+            median_price_per_sqm=figures.median_price_per_sqm,
+            first_quartile_price_per_sqm=figures.first_quartile_price_per_sqm,
+            third_quartile_price_per_sqm=figures.third_quartile_price_per_sqm,
+            sample_size=figures.sample_size,
+            registered_count=figures.registered_count,
+            period_start=figures.period_start,
+            period_end=figures.period_end,
+            comparison_area=figures.comparison_area,
+            confidence=figures.confidence,
+            notes=figures.notes,
+            comparables=[
+                {
+                    "address": comparable.address,
+                    "area_sqm": comparable.area_sqm,
+                    "price": comparable.price,
+                    "price_per_sqm": comparable.price_per_sqm,
+                    "transaction_date": comparable.transaction_date.isoformat(),
+                    "rooms": comparable.rooms,
+                    "floor": comparable.floor,
+                    "deed_reference": comparable.deed_reference,
+                }
+                for comparable in figures.comparables
+            ],
+            districts=covered_districts,
+            source="rcn",
         )
 
     async def context(self, city: str, street: str = "") -> "RegisterContext":

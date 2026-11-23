@@ -37,6 +37,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from loguru import logger
 
 from config.settings import get_settings
+from data.places import CITY_STREETS, DISTRICT_STREETS
 from data.schemas import Property as PropertySchema
 from db.models import (
     AgentListing,
@@ -239,86 +240,8 @@ DISTRICT_CENTRES = {
 DISTRICT_SPREAD_LAT = 0.006
 DISTRICT_SPREAD_LNG = 0.009
 
-# The streets of every city the catalogue uses, so a listing of a district
-# carries an address of that city.
-CITY_STREETS = {
-    "Kraków": ["Floriańska", "Grodzka", "Długa", "Wierzbowa", "Kanonicza"],
-    "Warsaw": ["Marszałkowska", "Nowy Świat", "Krucza", "Mokotowska", "Freta"],
-    "Gdańsk": ["Długa", "Mariacka", "Piwna", "Jęczmienna", "Garbary"],
-    "Wrocław": [
-        "Świętego Mikołaja",
-        "Oławska",
-        "Kazimierza Wielkiego",
-        "Św. Marcina",
-        "Włodkowica",
-    ],
-    "Poznań": ["Długa", "Święty Marcin", "Główny", "Mickiewicza", "Naramowicka"],
-}
-
-# The streets of every district. A listing that stands in Zwierzyniec has to
-# carry a street of Zwierzyniec - the street of another district is the
-# kind of detail a visitor notices at once.
-DISTRICT_STREETS: dict[str, dict[str, list[str]]] = {
-    "Kraków": {
-        "Old Town": ["Floriańska", "Grodzka", "Sienna", "Kanonicza", "Wielopole"],
-        "Kazimierz": ["Kanonicza", "Bocheńska", "Józefa", "Wąska", "Jezuitów"],
-        "Podgórze": ["Kalwaria", "Górka", "Kobierzyńska", "Rynkowa", "Lipowa"],
-        "Bronowice": ["Bronowicka", "Styczna", "Cieszyńska", "Głowackiego", "Topolowa"],
-        "Zwierzyniec": ["Zwierzyniecka", "Kościuszki", "Stradomska", "Gdańska", "Błonia"],
-    },
-    "Warsaw": {
-        "Śródmieście": ["Marszałkowska", "Nowy Świat", "Krucza", "Chmielna", "Żurawia"],
-        "Mokotów": ["Puławska", "Mokotowska", "Iwicka", "Kazimierzowska", "Racławicka"],
-        "Wola": ["Aleje Jerozolimskie", "Woronicza", "Towarowa", "Kasprzyka", "Sokoła"],
-        "Praga": ["Targowa", "Ząbkowska", "Brzeska", "Stalowa", "Kijowska"],
-        "Żoliborz": [
-            "Słowackiego",
-            "Żeliborska",
-            "Modzelewskiego",
-            "Krasińskiego",
-            "Czartoryskiego",
-        ],
-    },
-    "Gdańsk": {
-        "Main Town": ["Długa", "Mariacka", "Świętego Ducha", "Ogarna", "Frauengasse"],
-        "Wrzeszcz": [
-            "Wrzeszczyńska",
-            "Słowackiego",
-            "Skarżyńska",
-            "Partyzantów",
-            "Wojska Polskiego",
-        ],
-        "Oliwa": ["Aleja Grunwaldzka", "Pułaskiego", "Sobieskiego", "Abrahama", "Polna"],
-        "Jelitkowo": ["Jelitkowska", "Nisułka", "Słoneczna", "Kartuska", "Słowackiego"],
-        "Brzeźno": [
-            "Brzeźnieńska",
-            "Kliszewska",
-            "Powstańców Warszawskich",
-            "Kołobrzeska",
-            "Rakoczego",
-        ],
-    },
-    "Wrocław": {
-        "Market Square": ["Rynek", "Szewska", "Włodkowica", "Kuźnicza", "Piotra Ściegiennego"],
-        "Krzyki": [
-            "Białawska",
-            "Armii Krajowej",
-            "Drobnera",
-            "Powstańców Śląskich",
-            "Kamiennogórska",
-        ],
-        "Fabryczna": ["Zelazna", "Bukowska", "Wrocławska", "Grabiszyńska", "Legnicka"],
-        "Psie Pole": ["Dolnośląska", "Kwiatkowskiego", "Botaniczna", "Jaśminowa", "Słowiańska"],
-        "Stare Miasto": ["Odrzańska", "Podwale", "Ruska", "Krasińskiego", "Wyszyńskiego"],
-    },
-    "Poznań": {
-        "Old Town": ["Wielka", "Święty Marcin", "Żydowska", "Paderewskiego", "Wodna"],
-        "Wilda": ["Piątkowska", "Garbary", "Wyszyńskiego", "Świętokrzyska", "Głogowska"],
-        "Jeżyce": ["Słowackiego", "Dąbrowskiego", "Krasickiego", "Mickiewicza", "Bnieńska"],
-        "Grunwald": ["Grunwaldzka", "FGSA", "Bukowiańska", "Skórzeccka", "Seweryna"],
-        "Winogrady": ["Cieszkowskiego", "Pułaskiego", "Dołęgi", "Szypułkowska", "Lechicka"],
-    },
-}
+# The streets of every city and of every district live in one catalogue -
+# the place catalogue the pages and the register read as well.
 
 
 def district_centre(city: str, district: str) -> tuple[float, float]:

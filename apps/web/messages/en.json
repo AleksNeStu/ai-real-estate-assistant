@@ -3861,6 +3861,28 @@
     },
     "commuteExtra": {
       "emptyHint": "Add your work location or other frequent destinations to check commute times."
+    },
+    "place": {
+      "heading": "{place} — what the register holds",
+      "page": {
+        "title": "{place} — prices from the official register",
+        "description": "What a square metre costs in {place}, measured on {count, plural, one {# registered sale} other {# registered sales}} between {start} and {end}, read from the official register of notarial prices.",
+        "notFoundTitle": "Place not found"
+      },
+      "basis": "{count, plural, one {# registered sale} other {# registered sales}} between {start} and {end}, read from the official register of notarial prices.",
+      "medianPerSqm": "Median per m²",
+      "registered": "In the register",
+      "registeredCount": "{count, plural, one {# registered sale} other {# registered sales}}",
+      "sample": "Sales used",
+      "sampleCount": "{count, plural, one {# registered sale} other {# registered sales}}",
+      "period": "Period",
+      "comparisonArea": "Comparison area",
+      "confidence": "Confidence",
+      "sales": "The registered sales",
+      "districts": "Districts",
+      "wholeCity": "The whole of {place}",
+      "backToForm": "Value another address",
+      "registerSource": "RCN · Rejestr Cen Nieruchomości — official notarial prices"
     }
   },
   "states": {
