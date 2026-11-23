@@ -92,7 +92,7 @@ Day +30          → Product Hunt (after audiences warmed up)
       the next one; an anonymous request reads and writes none.
 - [x] Live demo: the valuation answers from the official register — checked
       2026-11-23. The register of notarial transactions was ingested on the
-      node (826,919 registered sales, five voivodeships, from the open GUGiK
+      node (826,919 registered sales, six voivodeships, from the open GUGiK
       GeoParquet exports) and `POST /api/v1/tools/valuation` with
       `{"city": "Kraków", "street": "Myśliwska", "area_sqm": 60, "rooms": 3}`
       answers **959,181.85 PLN** with `source: rcn`, `confidence: high`,
