@@ -1006,6 +1006,47 @@ class TestNeighborhoodAreaMeasurement:
         assert other.schools_score == result.schools_score
 
 
+class TestMeasurementPoint:
+    """
+    The two helpers that read a place's coordinates.
+
+    A point place is measured at its own coordinates; a named place is
+    measured at the centre of its boundary. The helper that reads the
+    coordinates of a point says so when the place carries none, instead
+    of handing back a pair of None.
+    """
+
+    def test_a_point_is_read_at_its_own_coordinates(self):
+        from tools.neighborhood_tools import _measurement_point, _Place, _point_coordinates
+
+        place = _Place(latitude=52.2297, longitude=21.0122, city="Warsaw")
+
+        assert _point_coordinates(place) == (52.2297, 21.0122)
+        assert _measurement_point(place) == (52.2297, 21.0122)
+
+    def test_a_named_place_is_read_at_the_centre_of_its_boundary(self):
+        from tools.neighborhood_tools import _measurement_point, _Place
+
+        place = _Place(city="Warsaw", place_name="Śródmieście", center=(52.2297, 21.0122))
+
+        assert _measurement_point(place) == (52.2297, 21.0122)
+
+    def test_a_place_with_neither_carries_no_measurement_point(self):
+        from tools.neighborhood_tools import _measurement_point, _Place
+
+        place = _Place(city="Warsaw", place_name="Śródmieście")
+
+        assert _measurement_point(place) is None
+
+    def test_a_place_without_coordinates_is_refused(self):
+        from tools.neighborhood_tools import _Place, _point_coordinates
+
+        place = _Place(city="Warsaw", place_name="Śródmieście", center=(52.2297, 21.0122))
+
+        with pytest.raises(ValueError, match="no coordinates"):
+            _point_coordinates(place)
+
+
 class TestNeighborhoodAdapter:
     """Test the NeighborhoodAdapter directly."""
 
