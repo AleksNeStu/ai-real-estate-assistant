@@ -405,8 +405,9 @@ def get_llm_for_free_user() -> Optional[BaseChatModel]:
 
     cascade = settings.free_tier_provider_cascade
     if not cascade:
-        # Every provider that can answer is in this list. A provider that is
-        # registered but unreachable is a fallback that never falls back.
+        # Every provider that can answer is in this list. The order is the
+        # order they are tried in, and a provider that fails at call time
+        # hands the request over to the next one.
         cascade = ["minimax", "ollama", "openrouter", "google"]
 
     providers: list[tuple[str, BaseChatModel]] = []
