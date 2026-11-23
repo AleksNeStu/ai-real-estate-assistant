@@ -4,20 +4,34 @@ Free tier rate limiting and LLM cascade for unauthenticated/demo users.
 Provides hourly/daily request limits and cascades through the providers the
 deployment can afford, in the order the cascade is configured:
 MiniMax → Ollama (local, on our own VPS) → OpenRouter free models.
+
+The cascade is walked twice: once to find the providers whose client can be
+built, and once more, at call time, to find the one that can actually
+answer. A provider that builds and then fails — depleted credits, a rate
+limit, an outage — must not end the request; the next provider takes over.
 """
 
 import asyncio
+import logging
 import time
 from collections import defaultdict
-from typing import Optional, cast
+from typing import Any, Optional, Sequence, cast
 
 from langchain_core.language_models import BaseChatModel
+from langchain_core.messages import BaseMessage
+from langchain_core.outputs import ChatGeneration, ChatResult
+from pydantic import Field
 from starlette.requests import Request
 
 from config.settings import get_settings
 
+logger = logging.getLogger(__name__)
+
 # How many checks pass between two sweeps of the dead buckets.
 SWEEP_EVERY_CHECKS = 100
+
+# How long a provider that could not be built stays out of the cascade.
+PROVIDER_UNAVAILABLE_TTL_SECONDS = 300
 
 
 class FreeTierRateLimiter:
@@ -217,10 +231,166 @@ _PROVIDERS_BY_NAME = {
 }
 
 
+class FreeTierProvidersUnavailable(RuntimeError):
+    """Every provider of the free cascade failed to answer.
+
+    The message names the providers and nothing else: the visitor gets the
+    names, the raw provider error stays in the server log. A visitor who
+    cannot get an answer has no use for a stack trace.
+    """
+
+    def __init__(self, failures: Sequence[tuple[str, str]]) -> None:
+        self.failures = list(failures)
+        names = ", ".join(name for name, _ in self.failures) or "none"
+        super().__init__(f"no free LLM provider could answer ({names})")
+
+
+class CascadingFreeTierModel(BaseChatModel):
+    """The free cascade, walked at call time.
+
+    The cascade used to end at the first provider whose client could be
+    *built*. A provider that builds and then fails — depleted prepaid
+    credits, a rate limit, an outage — ended the request instead of the
+    next provider taking over: a provider that is registered but cannot
+    answer was a fallback that never fell back.
+
+    This model tries the providers in order and moves on when one fails.
+    It reports the providers that failed only when every one of them has
+    failed, and then it names them rather than passing a provider's raw
+    error to the visitor.
+    """
+
+    providers: list[tuple[str, Any]] = Field(default_factory=list)
+
+    @property
+    def _llm_type(self) -> str:
+        return "cascading-free-tier"
+
+    @property
+    def model_name(self) -> str:
+        """The name of the first provider — the context manager sizes the
+        history against a model, and the first provider is the one that
+        normally answers."""
+        for _, model in self.providers:
+            name = getattr(model, "model_name", None) or getattr(model, "model", None)
+            if name:
+                return str(name)
+        return "gpt-4o-mini"
+
+    def bind_tools(
+        self,
+        tools: Sequence[Any],
+        *,
+        tool_choice: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Any:
+        """Bind the tools on every provider that can carry them.
+
+        A provider that cannot bind tools is dropped from the cascade
+        rather than breaking it: the fallback exists to answer, and a
+        provider that cannot answer with tools is not one of them.
+        """
+        bound: list[tuple[str, Any]] = []
+        for name, model in self.providers:
+            try:
+                bound.append((name, model.bind_tools(tools, tool_choice=tool_choice, **kwargs)))
+            except Exception as exc:  # noqa: BLE001 - a provider that cannot bind is skipped
+                logger.warning("Free tier provider %s cannot bind tools: %s", name, exc)
+        if not bound:
+            return self
+        return CascadingFreeTierModel(providers=bound)
+
+    def _failed(self, name: str, exc: Exception) -> tuple[str, str]:
+        logger.warning("Free tier provider %s failed: %s: %s", name, type(exc).__name__, exc)
+        return (name, type(exc).__name__)
+
+    def _generate(
+        self,
+        messages: list[BaseMessage],
+        stop: Optional[list[str]] = None,
+        run_manager: Any = None,
+        **kwargs: Any,
+    ) -> ChatResult:
+        failures: list[tuple[str, str]] = []
+        for name, model in self.providers:
+            try:
+                message = model.invoke(messages, stop=stop, **kwargs)
+            except Exception as exc:  # noqa: BLE001 - the cascade is the point
+                failures.append(self._failed(name, exc))
+                continue
+            return ChatResult(generations=[ChatGeneration(message=message)])
+        raise FreeTierProvidersUnavailable(failures)
+
+    async def _agenerate(
+        self,
+        messages: list[BaseMessage],
+        stop: Optional[list[str]] = None,
+        run_manager: Any = None,
+        **kwargs: Any,
+    ) -> ChatResult:
+        failures: list[tuple[str, str]] = []
+        for name, model in self.providers:
+            try:
+                message = await model.ainvoke(messages, stop=stop, **kwargs)
+            except Exception as exc:  # noqa: BLE001 - the cascade is the point
+                failures.append(self._failed(name, exc))
+                continue
+            return ChatResult(generations=[ChatGeneration(message=message)])
+        raise FreeTierProvidersUnavailable(failures)
+
+
+# The built clients, per provider. The factory is stored next to the client
+# so a patched or replaced factory (a test, a configuration change) is never
+# served a client built by the old one.
+_BUILT_CLIENTS: dict[str, tuple[Any, BaseChatModel]] = {}
+
+# The providers whose client could not be built, and until when they stay
+# out of the cascade.
+_UNAVAILABLE_UNTIL: dict[str, tuple[Any, float]] = {}
+
+
+def reset_free_tier_provider_cache() -> None:
+    """Forget the built clients (a configuration change, a test)."""
+    _BUILT_CLIENTS.clear()
+    _UNAVAILABLE_UNTIL.clear()
+
+
+def _build_provider(provider_name: str) -> Optional[BaseChatModel]:
+    """The client of one provider, built once and remembered."""
+    factory = _PROVIDERS_BY_NAME.get(provider_name)
+    if factory is None:
+        return None
+
+    built = _BUILT_CLIENTS.get(provider_name)
+    if built is not None and built[0] is factory:
+        return built[1]
+
+    unavailable = _UNAVAILABLE_UNTIL.get(provider_name)
+    if unavailable is not None and unavailable[0] is factory and time.monotonic() < unavailable[1]:
+        return None
+
+    try:
+        client = factory()
+    except Exception as exc:  # noqa: BLE001 - a provider that cannot build is skipped
+        logger.warning("Free tier provider %s could not be built: %s", provider_name, exc)
+        client = None
+
+    if client is None:
+        _UNAVAILABLE_UNTIL[provider_name] = (
+            factory,
+            time.monotonic() + PROVIDER_UNAVAILABLE_TTL_SECONDS,
+        )
+        return None
+
+    _BUILT_CLIENTS[provider_name] = (factory, client)
+    return client
+
+
 def get_llm_for_free_user() -> Optional[BaseChatModel]:
     """Cascade through free LLM providers in configured order.
 
-    Returns the first successful LLM, or None if all fail.
+    Returns a model that tries the providers in order at call time and
+    moves on when one fails, or None if no provider can be built at all.
     """
     settings = get_settings()
     if settings.demo_llm_mode:
@@ -239,12 +409,13 @@ def get_llm_for_free_user() -> Optional[BaseChatModel]:
         # registered but unreachable is a fallback that never falls back.
         cascade = ["minimax", "ollama", "openrouter", "google"]
 
+    providers: list[tuple[str, BaseChatModel]] = []
     for provider_name in cascade:
-        factory = _PROVIDERS_BY_NAME.get(provider_name)
-        if factory is None:
-            continue
-        llm = factory()
-        if llm is not None:
-            return llm
+        client = _build_provider(provider_name)
+        if client is not None:
+            providers.append((provider_name, client))
 
-    return None
+    if not providers:
+        return None
+
+    return CascadingFreeTierModel(providers=providers)

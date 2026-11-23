@@ -28,7 +28,12 @@ from core.circuit_breaker import ServiceDegradedError
 from db.models import User
 from services.buyer_memory_service import BuyerMemoryService
 from services.personalization_service import DeclaredPreferences
-from utils.free_tier import client_ip, get_free_tier_rate_limiter, get_llm_for_free_user
+from utils.free_tier import (
+    FreeTierProvidersUnavailable,
+    client_ip,
+    get_free_tier_rate_limiter,
+    get_llm_for_free_user,
+)
 from utils.llm_content import content_to_text
 from utils.sanitization import (
     sanitize_chat_message,
@@ -774,6 +779,19 @@ async def chat_free_endpoint(
     except HTTPException:
         # A client error that the router already decided on keeps its status.
         raise
+    except FreeTierProvidersUnavailable as e:
+        # Every provider of the cascade failed. The visitor gets the names of
+        # the providers that failed and nothing else - the raw provider error
+        # is in the server log, not in the response.
+        logger.error("Free tier chat: every provider failed: %s", e.failures)
+        failed = ", ".join(name for name, _ in e.failures) or "none"
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=(
+                "The assistant is temporarily unavailable - no free AI provider could "
+                f"answer ({failed}). Please try again in a moment."
+            ),
+        ) from e
     except ServiceDegradedError as e:
         logger.warning("Free tier chat degraded: %s", e)
         raise HTTPException(
