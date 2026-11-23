@@ -304,7 +304,7 @@ langchain-core==1.8.1
     #   langgraph-checkpoint
     #   langgraph-prebuilt
     #   langgraph-sdk
-langchain-google-genai==4.5.0
+langchain-google-genai==4.5.2
     # via -r requirements.txt
 langchain-ollama==0.3.10
     # via -r requirements.txt
