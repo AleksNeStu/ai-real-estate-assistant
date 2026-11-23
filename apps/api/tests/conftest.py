@@ -205,6 +205,27 @@ def clear_lru_caches() -> Iterator[None]:
 
 
 @pytest.fixture(scope="function", autouse=True)
+def no_live_air_quality_register(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    """Keep every test away from the official air quality register.
+
+    The register is the default source of the air quality adapter, so any
+    test that asks for a measurement would otherwise read the network: three
+    requests to the state, a station list of three hundred entries, and an
+    answer that differs from one hour to the next. The suite tests the
+    adapter's own behaviour against recorded answers instead; the file that
+    exercises the client undoes this stub for itself.
+    """
+    from data.adapters import gios_air_quality
+
+    monkeypatch.setattr(
+        gios_air_quality.GiosAirQualityClient,
+        "_get",
+        lambda self, path, params=None: None,
+    )
+    yield
+
+
+@pytest.fixture(scope="function", autouse=True)
 def reset_free_tier_rate_limiter() -> Iterator[None]:
     """Start every test with an empty free-tier counter.
 

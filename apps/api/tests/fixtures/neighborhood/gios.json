@@ -1,0 +1,2158 @@
+{
+  "_meta": {
+    "provider": "GIOŚ — Główny Inspektorat Ochrony Środowiska (Chief Inspectorate of Environmental Protection)",
+    "url_shape": "GET {base}/station/findAll?page=N&size=100 · /station/sensors/{id} · /data/getData/{id} · /aqindex/getIndex/{id}",
+    "recorded_at": "2026-11-23",
+    "recorded_for": "TaskMaster #114 - the official register is the default source of the air quality adapter",
+    "note": "The official answers, recorded live. The station list is recorded page by page; the page that carries the Kraków stations is kept, and the other pages are recorded as the empty answer the client reads after them. The measurements are the one-hour means the service publishes, in µg/m³."
+  },
+  "responses": {
+    "stations_page_0": {
+      "status": 200,
+      "body": {
+        "@context": {
+          "Lista stacji pomiarów": {
+            "@id": "https://api.gios.gov.pl/pjp-api/v1/rest/station/findAll"
+          },
+          "links": "https://schema.org/relatedLink",
+          "totalPages": "https://schema.org/numberOfPages"
+        },
+        "Lista stacji pomiarowych": [
+          {
+            "Identyfikator stacji": 11,
+            "Kod stacji": "DsCzerStraza",
+            "Nazwa stacji": "Czerniawa",
+            "WGS84 φ N": "50.912475",
+            "WGS84 λ E": "15.312190",
+            "Identyfikator miasta": 142,
+            "Nazwa miasta": "Czerniawa",
+            "Gmina": "Świeradów-Zdrój",
+            "Powiat": "lubański",
+            "Województwo": "DOLNOŚLĄSKIE",
+            "Ulica": "ul. Strażacka 7"
+          },
+          {
+            "Identyfikator stacji": 16,
+            "Kod stacji": "DsDziePilsud",
+            "Nazwa stacji": "Dzierżoniów, ul. Piłsudskiego",
+            "WGS84 φ N": "50.732817",
+            "WGS84 λ E": "16.648050",
+            "Identyfikator miasta": 198,
+            "Nazwa miasta": "Dzierżoniów",
+            "Gmina": "Dzierżoniów",
+            "Powiat": "dzierżoniowski",
+            "Województwo": "DOLNOŚLĄSKIE",
+            "Ulica": "ul. Piłsudskiego 26"
+          },
+          {
+            "Identyfikator stacji": 38,
+            "Kod stacji": "DsKlodzSzkol",
+            "Nazwa stacji": "Kłodzko, ul. Szkolna",
+            "WGS84 φ N": "50.433493",
+            "WGS84 λ E": "16.653660",
+            "Identyfikator miasta": 368,
+            "Nazwa miasta": "Kłodzko",
+            "Gmina": "Kłodzko",
+            "Powiat": "kłodzki",
+            "Województwo": "DOLNOŚLĄSKIE",
+            "Ulica": "ul. Szkolna 8"
+          },
+          {
+            "Identyfikator stacji": 52,
+            "Kod stacji": "DsLegAlRzecz",
+            "Nazwa stacji": "Legnica, Al. Rzeczypospolitej",
+            "WGS84 φ N": "51.204503",
+            "WGS84 λ E": "16.180513",
+            "Identyfikator miasta": 453,
+            "Nazwa miasta": "Legnica",
+            "Gmina": "Legnica",
+            "Powiat": "Legnica",
+            "Województwo": "DOLNOŚLĄSKIE",
+            "Ulica": "Al. Rzeczypospolitej 10/12"
+          },
+          {
+            "Identyfikator stacji": 70,
+            "Kod stacji": "DsOlawZolnAK",
+            "Nazwa stacji": "Oława, ul. Żołnierzy Armii Krajowej",
+            "WGS84 φ N": "50.942073",
+            "WGS84 λ E": "17.291333",
+            "Identyfikator miasta": 642,
+            "Nazwa miasta": "Oława",
+            "Gmina": "Oława",
+            "Powiat": "oławski",
+            "Województwo": "DOLNOŚLĄSKIE",
+            "Ulica": "ul. Żołnierzy AK 9"
+          },
+          {
+            "Identyfikator stacji": 71,
+            "Kod stacji": "DsOlesBrzozo",
+            "Nazwa stacji": "Oleśnica, ul. Brzozowa",
+            "WGS84 φ N": "51.217483",
+            "WGS84 λ E": "17.389997",
+            "Identyfikator miasta": 637,
+            "Nazwa miasta": "Oleśnica",
+            "Gmina": "Oleśnica",
+            "Powiat": "oleśnicki",
+            "Województwo": "DOLNOŚLĄSKIE",
+            "Ulica": "ul. Brzozowa 7"
+          },
+          {
+            "Identyfikator stacji": 74,
+            "Kod stacji": "DsOsieczow21",
+            "Nazwa stacji": "Osieczów",
+            "WGS84 φ N": "51.317630",
+            "WGS84 λ E": "15.431719",
+            "Identyfikator miasta": 648,
+            "Nazwa miasta": "Osieczów",
+            "Gmina": "Osiecznica",
+            "Powiat": "bolesławiecki",
+            "Województwo": "DOLNOŚLĄSKIE",
+            "Ulica": null
+          },
+          {
+            "Identyfikator stacji": 77,
+            "Kod stacji": "DsPolKasztan",
+            "Nazwa stacji": "Polkowice, ul. Kasztanowa",
+            "WGS84 φ N": "51.502370",
+            "WGS84 λ E": "16.075051",
+            "Identyfikator miasta": 721,
+            "Nazwa miasta": "Polkowice",
+            "Gmina": "Polkowice",
+            "Powiat": "polkowicki",
+            "Województwo": "DOLNOŚLĄSKIE",
+            "Ulica": "ul. Kasztanowa 29"
+          },
+          {
+            "Identyfikator stacji": 93,
+            "Kod stacji": "DsSzczaKolej",
+            "Nazwa stacji": "Szczawno-Zdrój, ul. Kolejowa",
+            "WGS84 φ N": "50.804189",
+            "WGS84 λ E": "16.254111",
+            "Identyfikator miasta": 915,
+            "Nazwa miasta": "Szczawno-Zdrój",
+            "Gmina": "Szczawno-Zdrój",
+            "Powiat": "wałbrzyski",
+            "Województwo": "DOLNOŚLĄSKIE",
+            "Ulica": "ul. Kolejowa 14"
+          },
+          {
+            "Identyfikator stacji": 109,
+            "Kod stacji": "DsWalbrzWyso",
+            "Nazwa stacji": "Wałbrzych, ul. Wysockiego",
+            "WGS84 φ N": "50.768729",
+            "WGS84 λ E": "16.269677",
+            "Identyfikator miasta": 998,
+            "Nazwa miasta": "Wałbrzych",
+            "Gmina": "Wałbrzych",
+            "Powiat": "Wałbrzych",
+            "Województwo": "DOLNOŚLĄSKIE",
+            "Ulica": "ul. Wysockiego 11"
+          },
+          {
+            "Identyfikator stacji": 114,
+            "Kod stacji": "DsWrocBartni",
+            "Nazwa stacji": "Wrocław, ul. Bartnicza",
+            "WGS84 φ N": "51.115933",
+            "WGS84 λ E": "17.141125",
+            "Identyfikator miasta": 1064,
+            "Nazwa miasta": "Wrocław",
+            "Gmina": "Wrocław",
+            "Powiat": "Wrocław",
+            "Województwo": "DOLNOŚLĄSKIE",
+            "Ulica": "ul. Bartnicza"
+          },
+          {
+            "Identyfikator stacji": 115,
+            "Kod stacji": "DsWrocNaGrob",
+            "Nazwa stacji": "Wrocław, ul. Na Grobli",
+            "WGS84 φ N": "51.103456",
+            "WGS84 λ E": "17.059225",
+            "Identyfikator miasta": 1064,
+            "Nazwa miasta": "Wrocław",
+            "Gmina": "Wrocław",
+            "Powiat": "Wrocław",
+            "Województwo": "DOLNOŚLĄSKIE",
+            "Ulica": "ul. Na Grobli"
+          },
+          {
+            "Identyfikator stacji": 117,
+            "Kod stacji": "DsWrocWybCon",
+            "Nazwa stacji": "Wrocław, wyb. Conrada-Korzeniowskiego",
+            "WGS84 φ N": "51.129378",
+            "WGS84 λ E": "17.029250",
+            "Identyfikator miasta": 1064,
+            "Nazwa miasta": "Wrocław",
+            "Gmina": "Wrocław",
+            "Powiat": "Wrocław",
+            "Województwo": "DOLNOŚLĄSKIE",
+            "Ulica": "ul. Wyb. J.Conrada-Korzeniowskiego 18"
+          },
+          {
+            "Identyfikator stacji": 122,
+            "Kod stacji": "DsWrocOrzech",
+            "Nazwa stacji": "Wrocław, ul. Orzechowa",
+            "WGS84 φ N": "51.077525",
+            "WGS84 λ E": "17.042817",
+            "Identyfikator miasta": 1064,
+            "Nazwa miasta": "Wrocław",
+            "Gmina": "Wrocław",
+            "Powiat": "Wrocław",
+            "Województwo": "DOLNOŚLĄSKIE",
+            "Ulica": "ul. Orzechowa 61"
+          },
+          {
+            "Identyfikator stacji": 129,
+            "Kod stacji": "DsWrocAlWisn",
+            "Nazwa stacji": "Wrocław, Al. Wiśniowa",
+            "WGS84 φ N": "51.086225",
+            "WGS84 λ E": "17.012689",
+            "Identyfikator miasta": 1064,
+            "Nazwa miasta": "Wrocław",
+            "Gmina": "Wrocław",
+            "Powiat": "Wrocław",
+            "Województwo": "DOLNOŚLĄSKIE",
+            "Ulica": "Al. Wiśniowa/ul. Powst. Śląskich"
+          },
+          {
+            "Identyfikator stacji": 134,
+            "Kod stacji": "DsZgorBohGet",
+            "Nazwa stacji": "Zgorzelec, ul. Bohaterów Getta",
+            "WGS84 φ N": "51.150391",
+            "WGS84 λ E": "15.008175",
+            "Identyfikator miasta": 1101,
+            "Nazwa miasta": "Zgorzelec",
+            "Gmina": "Zgorzelec",
+            "Powiat": "zgorzelecki",
+            "Województwo": "DOLNOŚLĄSKIE",
+            "Ulica": "ul. Bohaterów Getta 1a"
+          },
+          {
+            "Identyfikator stacji": 142,
+            "Kod stacji": "KpGrudPilsud",
+            "Nazwa stacji": "Grudziądz, ul. Piłsudskiego",
+            "WGS84 φ N": "53.493550",
+            "WGS84 λ E": "18.762139",
+            "Identyfikator miasta": 269,
+            "Nazwa miasta": "Grudziądz",
+            "Gmina": "Grudziądz",
+            "Powiat": "Grudziądz",
+            "Województwo": "KUJAWSKO-POMORSKIE",
+            "Ulica": "ul. Piłsudskiego 51"
+          },
+          {
+            "Identyfikator stacji": 143,
+            "Kod stacji": "KpInowSolank",
+            "Nazwa stacji": "Inowrocław, ul. Solankowa",
+            "WGS84 φ N": "52.793122",
+            "WGS84 λ E": "18.241044",
+            "Identyfikator miasta": 287,
+            "Nazwa miasta": "Inowrocław",
+            "Gmina": "Inowrocław",
+            "Powiat": "inowrocławski",
+            "Województwo": "KUJAWSKO-POMORSKIE",
+            "Ulica": "ul. Solankowa"
+          },
+          {
+            "Identyfikator stacji": 145,
+            "Kod stacji": "KpToruWSikor",
+            "Nazwa stacji": "Toruń, ul. Wały gen. Sikorskiego",
+            "WGS84 φ N": "53.012475",
+            "WGS84 λ E": "18.605681",
+            "Identyfikator miasta": 966,
+            "Nazwa miasta": "Toruń",
+            "Gmina": "Toruń",
+            "Powiat": "Toruń",
+            "Województwo": "KUJAWSKO-POMORSKIE",
+            "Ulica": "ul. Wały gen. Sikorskiego 12"
+          },
+          {
+            "Identyfikator stacji": 150,
+            "Kod stacji": "KpBydFieldor",
+            "Nazwa stacji": "Bydgoszcz, ul. Fieldorfa",
+            "WGS84 φ N": "53.151452",
+            "WGS84 λ E": "18.132062",
+            "Identyfikator miasta": 90,
+            "Nazwa miasta": "Bydgoszcz",
+            "Gmina": "Bydgoszcz",
+            "Powiat": "Bydgoszcz",
+            "Województwo": "KUJAWSKO-POMORSKIE",
+            "Ulica": "ul. gen. Augusta Emila Fieldorfa „Nila” 13"
+          },
+          {
+            "Identyfikator stacji": 156,
+            "Kod stacji": "KpBydPlPozna",
+            "Nazwa stacji": "Bydgoszcz, Pl. Poznański",
+            "WGS84 φ N": "53.121764",
+            "WGS84 λ E": "17.987906",
+            "Identyfikator miasta": 90,
+            "Nazwa miasta": "Bydgoszcz",
+            "Gmina": "Bydgoszcz",
+            "Powiat": "Bydgoszcz",
+            "Województwo": "KUJAWSKO-POMORSKIE",
+            "Ulica": "Plac Poznański"
+          },
+          {
+            "Identyfikator stacji": 158,
+            "Kod stacji": "KpBydWarszaw",
+            "Nazwa stacji": "Bydgoszcz, ul. Warszawska",
+            "WGS84 φ N": "53.134083",
+            "WGS84 λ E": "17.995708",
+            "Identyfikator miasta": 90,
+            "Nazwa miasta": "Bydgoszcz",
+            "Gmina": "Bydgoszcz",
+            "Powiat": "Bydgoszcz",
+            "Województwo": "KUJAWSKO-POMORSKIE",
+            "Ulica": "ul. Warszawska 10"
+          },
+          {
+            "Identyfikator stacji": 164,
+            "Kod stacji": "KpCiechTezni",
+            "Nazwa stacji": "Ciechocinek, ul. Tężniowa",
+            "WGS84 φ N": "52.888422",
+            "WGS84 λ E": "18.780908",
+            "Identyfikator miasta": 122,
+            "Nazwa miasta": "Ciechocinek",
+            "Gmina": "Ciechocinek",
+            "Powiat": "aleksandrowski",
+            "Województwo": "KUJAWSKO-POMORSKIE",
+            "Ulica": "ul. Tężniowa - Park Tężniowy"
+          },
+          {
+            "Identyfikator stacji": 183,
+            "Kod stacji": "KpGrudSienki",
+            "Nazwa stacji": "Grudziądz, ul. Sienkiewicza",
+            "WGS84 φ N": "53.491831",
+            "WGS84 λ E": "18.752503",
+            "Identyfikator miasta": 269,
+            "Nazwa miasta": "Grudziądz",
+            "Gmina": "Grudziądz",
+            "Powiat": "Grudziądz",
+            "Województwo": "KUJAWSKO-POMORSKIE",
+            "Ulica": "ul. Sienkiewicza 27"
+          },
+          {
+            "Identyfikator stacji": 190,
+            "Kod stacji": "KpKoniczynka",
+            "Nazwa stacji": "Koniczynka, Pojezierze Chełmińskie",
+            "WGS84 φ N": "53.080647",
+            "WGS84 λ E": "18.684258",
+            "Identyfikator miasta": 391,
+            "Nazwa miasta": "Koniczynka",
+            "Gmina": "Łysomice",
+            "Powiat": "toruński",
+            "Województwo": "KUJAWSKO-POMORSKIE",
+            "Ulica": "Pojezierze Chełmińskie"
+          },
+          {
+            "Identyfikator stacji": 206,
+            "Kod stacji": "KpToruDziewu",
+            "Nazwa stacji": "Toruń, ul. Dziewulskiego",
+            "WGS84 φ N": "53.028647",
+            "WGS84 λ E": "18.666103",
+            "Identyfikator miasta": 966,
+            "Nazwa miasta": "Toruń",
+            "Gmina": "Toruń",
+            "Powiat": "Toruń",
+            "Województwo": "KUJAWSKO-POMORSKIE",
+            "Ulica": "ul. Dziewulskiego 1"
+          },
+          {
+            "Identyfikator stacji": 208,
+            "Kod stacji": "KpToruKaszow",
+            "Nazwa stacji": "Toruń, ul. Przy Kaszowniku",
+            "WGS84 φ N": "53.017628",
+            "WGS84 λ E": "18.612808",
+            "Identyfikator miasta": 966,
+            "Nazwa miasta": "Toruń",
+            "Gmina": "Toruń",
+            "Powiat": "Toruń",
+            "Województwo": "KUJAWSKO-POMORSKIE",
+            "Ulica": "ul. Przy Kaszowniku"
+          },
+          {
+            "Identyfikator stacji": 225,
+            "Kod stacji": "KpWloclOkrze",
+            "Nazwa stacji": "Włocławek, ul. Okrzei",
+            "WGS84 φ N": "52.658467",
+            "WGS84 λ E": "19.059314",
+            "Identyfikator miasta": 1046,
+            "Nazwa miasta": "Włocławek",
+            "Gmina": "Włocławek",
+            "Powiat": "Włocławek",
+            "Województwo": "KUJAWSKO-POMORSKIE",
+            "Ulica": "ul. Okrzei"
+          },
+          {
+            "Identyfikator stacji": 232,
+            "Kod stacji": "KpZielBoryTu",
+            "Nazwa stacji": "Zielonka, Bory Tucholskie",
+            "WGS84 φ N": "53.662117",
+            "WGS84 λ E": "17.934017",
+            "Identyfikator miasta": 1104,
+            "Nazwa miasta": "Zielonka",
+            "Gmina": "Tuchola",
+            "Powiat": "tucholski",
+            "Województwo": "KUJAWSKO-POMORSKIE",
+            "Ulica": "Bory Tucholskie"
+          },
+          {
+            "Identyfikator stacji": 236,
+            "Kod stacji": "LbBiaPodOrze",
+            "Nazwa stacji": "Biała Podlaska, ul. Orzechowa",
+            "WGS84 φ N": "52.029194",
+            "WGS84 λ E": "23.149389",
+            "Identyfikator miasta": 26,
+            "Nazwa miasta": "Biała Podlaska",
+            "Gmina": "Biała Podlaska",
+            "Powiat": "Biała Podlaska",
+            "Województwo": "LUBELSKIE",
+            "Ulica": "ul. Orzechowa"
+          },
+          {
+            "Identyfikator stacji": 248,
+            "Kod stacji": "LbJarczWolaM",
+            "Nazwa stacji": "Jarczew, IMGW",
+            "WGS84 φ N": "51.814367",
+            "WGS84 λ E": "21.972375",
+            "Identyfikator miasta": 301,
+            "Nazwa miasta": "Jarczew",
+            "Gmina": "Wola Mysłowska",
+            "Powiat": "łukowski",
+            "Województwo": "LUBELSKIE",
+            "Ulica": null
+          },
+          {
+            "Identyfikator stacji": 250,
+            "Kod stacji": "LbKrasKoszar",
+            "Nazwa stacji": "Kraśnik, ul. Koszarowa",
+            "WGS84 φ N": "50.928239",
+            "WGS84 λ E": "22.228308",
+            "Identyfikator miasta": 420,
+            "Nazwa miasta": "Kraśnik",
+            "Gmina": "Kraśnik",
+            "Powiat": "kraśnicki",
+            "Województwo": "LUBELSKIE",
+            "Ulica": "ul. Koszarowa 10A"
+          },
+          {
+            "Identyfikator stacji": 258,
+            "Kod stacji": "LbLubSliwins",
+            "Nazwa stacji": "Lublin, ul. Śliwińskiego",
+            "WGS84 φ N": "51.273078",
+            "WGS84 λ E": "22.551675",
+            "Identyfikator miasta": 489,
+            "Nazwa miasta": "Lublin",
+            "Gmina": "Lublin",
+            "Powiat": "Lublin",
+            "Województwo": "LUBELSKIE",
+            "Ulica": "ul. Śliwińskiego 5"
+          },
+          {
+            "Identyfikator stacji": 266,
+            "Kod stacji": "LbLubObywate",
+            "Nazwa stacji": "Lublin, ul. Obywatelska",
+            "WGS84 φ N": "51.259431",
+            "WGS84 λ E": "22.569133",
+            "Identyfikator miasta": 489,
+            "Nazwa miasta": "Lublin",
+            "Gmina": "Lublin",
+            "Powiat": "Lublin",
+            "Województwo": "LUBELSKIE",
+            "Ulica": "ul. Obywatelska 13"
+          },
+          {
+            "Identyfikator stacji": 275,
+            "Kod stacji": "LbRadzPodSit",
+            "Nazwa stacji": "Radzyń Podlaski, ul. Sitkowskiego",
+            "WGS84 φ N": "51.780000",
+            "WGS84 λ E": "22.625944",
+            "Identyfikator miasta": 778,
+            "Nazwa miasta": "Radzyń Podlaski",
+            "Gmina": "Radzyń Podlaski",
+            "Powiat": "radzyński",
+            "Województwo": "LUBELSKIE",
+            "Ulica": "ul. Sitkowskiego 1b"
+          },
+          {
+            "Identyfikator stacji": 282,
+            "Kod stacji": "LbWilczopole",
+            "Nazwa stacji": "Wilczopole",
+            "WGS84 φ N": "51.163542",
+            "WGS84 λ E": "22.598608",
+            "Identyfikator miasta": 1035,
+            "Nazwa miasta": "Wilczopole",
+            "Gmina": "Głusk",
+            "Powiat": "lubelski",
+            "Województwo": "LUBELSKIE",
+            "Ulica": null
+          },
+          {
+            "Identyfikator stacji": 285,
+            "Kod stacji": "LbZamoHrubie",
+            "Nazwa stacji": "Zamość, ul. Hrubieszowska",
+            "WGS84 φ N": "50.716628",
+            "WGS84 λ E": "23.290247",
+            "Identyfikator miasta": 1081,
+            "Nazwa miasta": "Zamość",
+            "Gmina": "Zamość",
+            "Powiat": "Zamość",
+            "Województwo": "LUBELSKIE",
+            "Ulica": "ul. Hrubieszowska 69A"
+          },
+          {
+            "Identyfikator stacji": 289,
+            "Kod stacji": "LdBrzeReform",
+            "Nazwa stacji": "Brzeziny, ul. Reformacka",
+            "WGS84 φ N": "51.797806",
+            "WGS84 λ E": "19.756094",
+            "Identyfikator miasta": 81,
+            "Nazwa miasta": "Brzeziny",
+            "Gmina": "Brzeziny",
+            "Powiat": "brzeziński",
+            "Województwo": "ŁÓDZKIE",
+            "Ulica": "ul. Reformacka 1"
+          },
+          {
+            "Identyfikator stacji": 291,
+            "Kod stacji": "LdGajewUjWod",
+            "Nazwa stacji": "Gajew, Ujęcie Wody",
+            "WGS84 φ N": "52.143258",
+            "WGS84 λ E": "19.233217",
+            "Identyfikator miasta": 209,
+            "Nazwa miasta": "Gajew",
+            "Gmina": "Witonia",
+            "Powiat": "łęczycki",
+            "Województwo": "ŁÓDZKIE",
+            "Ulica": "Ujęcie wody"
+          },
+          {
+            "Identyfikator stacji": 295,
+            "Kod stacji": "LdLodzCzerni",
+            "Nazwa stacji": "Łódź, ul. Czernika",
+            "WGS84 φ N": "51.758050",
+            "WGS84 λ E": "19.529786",
+            "Identyfikator miasta": 516,
+            "Nazwa miasta": "Łódź",
+            "Gmina": "Łódź",
+            "Powiat": "Łódź",
+            "Województwo": "ŁÓDZKIE",
+            "Ulica": "ul. Czernika 1/3"
+          },
+          {
+            "Identyfikator stacji": 296,
+            "Kod stacji": "LdLodzGdansk",
+            "Nazwa stacji": "Łódź, ul. Gdańska",
+            "WGS84 φ N": "51.775378",
+            "WGS84 λ E": "19.450992",
+            "Identyfikator miasta": 516,
+            "Nazwa miasta": "Łódź",
+            "Gmina": "Łódź",
+            "Powiat": "Łódź",
+            "Województwo": "ŁÓDZKIE",
+            "Ulica": "ul. Gdańska 16"
+          },
+          {
+            "Identyfikator stacji": 302,
+            "Kod stacji": "LdLodzLegion",
+            "Nazwa stacji": "Łódź, ul. Legionów",
+            "WGS84 φ N": "51.776417",
+            "WGS84 λ E": "19.452936",
+            "Identyfikator miasta": 516,
+            "Nazwa miasta": "Łódź",
+            "Gmina": "Łódź",
+            "Powiat": "Łódź",
+            "Województwo": "ŁÓDZKIE",
+            "Ulica": "ul. Legionów 1"
+          },
+          {
+            "Identyfikator stacji": 314,
+            "Kod stacji": "LdPabiKonsta",
+            "Nazwa stacji": "Pabianice, ul. Konstantynowska",
+            "WGS84 φ N": "51.667981",
+            "WGS84 λ E": "19.368683",
+            "Identyfikator miasta": 667,
+            "Nazwa miasta": "Pabianice",
+            "Gmina": "Pabianice",
+            "Powiat": "pabianicki",
+            "Województwo": "ŁÓDZKIE",
+            "Ulica": "ul. Konstantynowska"
+          },
+          {
+            "Identyfikator stacji": 319,
+            "Kod stacji": "LdParzniUjWo",
+            "Nazwa stacji": "Parzniewice, Ujęcie Wody",
+            "WGS84 φ N": "51.291175",
+            "WGS84 λ E": "19.517556",
+            "Identyfikator miasta": 673,
+            "Nazwa miasta": "Parzniewice",
+            "Gmina": "Wola Krzysztoporska",
+            "Powiat": "piotrkowski",
+            "Województwo": "ŁÓDZKIE",
+            "Ulica": "Ujęcie wody"
+          },
+          {
+            "Identyfikator stacji": 322,
+            "Kod stacji": "LdPioTrKraPr",
+            "Nazwa stacji": "Piotrków Trybunalski, ul. Krakowskie Przedmieście",
+            "WGS84 φ N": "51.404406",
+            "WGS84 λ E": "19.696956",
+            "Identyfikator miasta": 703,
+            "Nazwa miasta": "Piotrków Trybunalski",
+            "Gmina": "Piotrków Trybunalski",
+            "Powiat": "Piotrków Trybunalski",
+            "Województwo": "ŁÓDZKIE",
+            "Ulica": "ul. Krakowskie Przedmieście 13"
+          },
+          {
+            "Identyfikator stacji": 331,
+            "Kod stacji": "LdRadomsRoln",
+            "Nazwa stacji": "Radomsko, ul. Rolna",
+            "WGS84 φ N": "51.067417",
+            "WGS84 λ E": "19.448714",
+            "Identyfikator miasta": 773,
+            "Nazwa miasta": "Radomsko",
+            "Gmina": "Radomsko",
+            "Powiat": "radomszczański",
+            "Województwo": "ŁÓDZKIE",
+            "Ulica": "ul. Rolna 2"
+          },
+          {
+            "Identyfikator stacji": 345,
+            "Kod stacji": "LdToMaSwAnto",
+            "Nazwa stacji": "Tomaszów Mazowiecki ul. Św. Antoniego",
+            "WGS84 φ N": "51.526225",
+            "WGS84 λ E": "20.016858",
+            "Identyfikator miasta": 965,
+            "Nazwa miasta": "Tomaszów Mazowiecki",
+            "Gmina": "Tomaszów Mazowiecki",
+            "Powiat": "tomaszowski",
+            "Województwo": "ŁÓDZKIE",
+            "Ulica": "ul. Św. Antoniego 43/45"
+          },
+          {
+            "Identyfikator stacji": 347,
+            "Kod stacji": "LdWielunPOW1",
+            "Nazwa stacji": "Wieluń, ul. POW",
+            "WGS84 φ N": "51.217828",
+            "WGS84 λ E": "18.581828",
+            "Identyfikator miasta": 1028,
+            "Nazwa miasta": "Wieluń",
+            "Gmina": "Wieluń",
+            "Powiat": "wieluński",
+            "Województwo": "ŁÓDZKIE",
+            "Ulica": "ul. POW 12"
+          },
+          {
+            "Identyfikator stacji": 350,
+            "Kod stacji": "LdZduWoKrole",
+            "Nazwa stacji": "Zduńska Wola, ul. Królewska",
+            "WGS84 φ N": "51.601378",
+            "WGS84 λ E": "18.940117",
+            "Identyfikator miasta": 1096,
+            "Nazwa miasta": "Zduńska Wola",
+            "Gmina": "Zduńska Wola",
+            "Powiat": "zduńskowolski",
+            "Województwo": "ŁÓDZKIE",
+            "Ulica": "ul. Królewska 10"
+          },
+          {
+            "Identyfikator stacji": 355,
+            "Kod stacji": "LdZgieMielcz",
+            "Nazwa stacji": "Zgierz, ul. Mielczarskiego",
+            "WGS84 φ N": "51.856692",
+            "WGS84 λ E": "19.421231",
+            "Identyfikator miasta": 1100,
+            "Nazwa miasta": "Zgierz",
+            "Gmina": "Zgierz",
+            "Powiat": "zgierski",
+            "Województwo": "ŁÓDZKIE",
+            "Ulica": "ul. Mielczarskiego 1"
+          },
+          {
+            "Identyfikator stacji": 361,
+            "Kod stacji": "LuGorzKosGdy",
+            "Nazwa stacji": "Gorzów Wlkp. ul. Kosynierów Gdyńskich",
+            "WGS84 φ N": "52.738214",
+            "WGS84 λ E": "15.228667",
+            "Identyfikator miasta": 246,
+            "Nazwa miasta": "Gorzów Wielkopolski",
+            "Gmina": "Gorzów Wielkopolski",
+            "Powiat": "Gorzów Wielkopolski",
+            "Województwo": "LUBUSKIE",
+            "Ulica": "ul. Kosynierów Gdyńskich"
+          },
+          {
+            "Identyfikator stacji": 362,
+            "Kod stacji": "LuGorzPilsud",
+            "Nazwa stacji": "Gorzów Wlkp. ul. Piłsudskiego",
+            "WGS84 φ N": "52.747044",
+            "WGS84 λ E": "15.246294",
+            "Identyfikator miasta": 246,
+            "Nazwa miasta": "Gorzów Wielkopolski",
+            "Gmina": "Gorzów Wielkopolski",
+            "Powiat": "Gorzów Wielkopolski",
+            "Województwo": "LUBUSKIE",
+            "Ulica": "ul. Piłsudskiego"
+          },
+          {
+            "Identyfikator stacji": 374,
+            "Kod stacji": "LuSmolBytnic",
+            "Nazwa stacji": "Smolary Bytnickie",
+            "WGS84 φ N": "52.172222",
+            "WGS84 λ E": "15.206667",
+            "Identyfikator miasta": 848,
+            "Nazwa miasta": "Smolary Bytnickie",
+            "Gmina": "Bytnica",
+            "Powiat": "krośnieński",
+            "Województwo": "LUBUSKIE",
+            "Ulica": "Smolary Bytnickie 45A"
+          },
+          {
+            "Identyfikator stacji": 376,
+            "Kod stacji": "LuSulecDudka",
+            "Nazwa stacji": "Sulęcin ul. Dudka",
+            "WGS84 φ N": "52.437722",
+            "WGS84 λ E": "15.122444",
+            "Identyfikator miasta": 903,
+            "Nazwa miasta": "Sulęcin",
+            "Gmina": "Sulęcin",
+            "Powiat": "sulęciński",
+            "Województwo": "LUBUSKIE",
+            "Ulica": "ul. Dudka"
+          },
+          {
+            "Identyfikator stacji": 379,
+            "Kod stacji": "LuWsKaziWiel",
+            "Nazwa stacji": "Wschowa ul. Kazimierza Wielkiego",
+            "WGS84 φ N": "51.799722",
+            "WGS84 λ E": "16.317500",
+            "Identyfikator miasta": 1066,
+            "Nazwa miasta": "Wschowa",
+            "Gmina": "Wschowa",
+            "Powiat": "wschowski",
+            "Województwo": "LUBUSKIE",
+            "Ulica": "ul. Kazimierza Wielkiego"
+          },
+          {
+            "Identyfikator stacji": 382,
+            "Kod stacji": "LuZarySzyman",
+            "Nazwa stacji": "Żary, ul. Szymanowskiego ",
+            "WGS84 φ N": "51.642656",
+            "WGS84 λ E": "15.127808",
+            "Identyfikator miasta": 1119,
+            "Nazwa miasta": "Żary",
+            "Gmina": "Żary",
+            "Powiat": "żarski",
+            "Województwo": "LUBUSKIE",
+            "Ulica": "ul. Szymanowskiego 8"
+          },
+          {
+            "Identyfikator stacji": 387,
+            "Kod stacji": "LuZielKrotka",
+            "Nazwa stacji": "Zielona Góra ul. Krótka",
+            "WGS84 φ N": "51.939783",
+            "WGS84 λ E": "15.518861",
+            "Identyfikator miasta": 1103,
+            "Nazwa miasta": "Zielona Góra",
+            "Gmina": "Zielona Góra",
+            "Powiat": "Zielona Góra",
+            "Województwo": "LUBUSKIE",
+            "Ulica": "ul. Krótka"
+          },
+          {
+            "Identyfikator stacji": 391,
+            "Kod stacji": "MpBochKonfed",
+            "Nazwa stacji": "Bochnia, ul. Konfederatów Barskich",
+            "WGS84 φ N": "49.969017",
+            "WGS84 λ E": "20.439511",
+            "Identyfikator miasta": 51,
+            "Nazwa miasta": "Bochnia",
+            "Gmina": "Bochnia",
+            "Powiat": "bocheński",
+            "Województwo": "MAŁOPOLSKIE",
+            "Ulica": "ul. Konfederatów Barskich"
+          },
+          {
+            "Identyfikator stacji": 398,
+            "Kod stacji": "MpGorlKrasin",
+            "Nazwa stacji": "Gorlice, ul. Krasińskiego",
+            "WGS84 φ N": "49.658889",
+            "WGS84 λ E": "21.163336",
+            "Identyfikator miasta": 244,
+            "Nazwa miasta": "Gorlice",
+            "Gmina": "Gorlice",
+            "Powiat": "gorlicki",
+            "Województwo": "MAŁOPOLSKIE",
+            "Ulica": "ul. Krasińskiego"
+          },
+          {
+            "Identyfikator stacji": 400,
+            "Kod stacji": "MpKrakAlKras",
+            "Nazwa stacji": "Kraków, Aleja Krasińskiego",
+            "WGS84 φ N": "50.057678",
+            "WGS84 λ E": "19.926189",
+            "Identyfikator miasta": 415,
+            "Nazwa miasta": "Kraków",
+            "Gmina": "Kraków",
+            "Powiat": "Kraków",
+            "Województwo": "MAŁOPOLSKIE",
+            "Ulica": "Al. Krasińskiego"
+          },
+          {
+            "Identyfikator stacji": 401,
+            "Kod stacji": "MpKrakBujaka",
+            "Nazwa stacji": "Kraków, ul. Bujaka",
+            "WGS84 φ N": "50.010575",
+            "WGS84 λ E": "19.949189",
+            "Identyfikator miasta": 415,
+            "Nazwa miasta": "Kraków",
+            "Gmina": "Kraków",
+            "Powiat": "Kraków",
+            "Województwo": "MAŁOPOLSKIE",
+            "Ulica": "ul. Bujaka"
+          },
+          {
+            "Identyfikator stacji": 402,
+            "Kod stacji": "MpKrakBulwar",
+            "Nazwa stacji": "Kraków, ul. Bulwarowa",
+            "WGS84 φ N": "50.069308",
+            "WGS84 λ E": "20.053492",
+            "Identyfikator miasta": 415,
+            "Nazwa miasta": "Kraków",
+            "Gmina": "Kraków",
+            "Powiat": "Kraków",
+            "Województwo": "MAŁOPOLSKIE",
+            "Ulica": "ul. Bulwarowa"
+          },
+          {
+            "Identyfikator stacji": 426,
+            "Kod stacji": "MpNoSaczNadb",
+            "Nazwa stacji": "Nowy Sącz, ul. Nadbrzeżna",
+            "WGS84 φ N": "49.619281",
+            "WGS84 λ E": "20.714403",
+            "Identyfikator miasta": 623,
+            "Nazwa miasta": "Nowy Sącz",
+            "Gmina": "Nowy Sącz",
+            "Powiat": "Nowy Sącz",
+            "Województwo": "MAŁOPOLSKIE",
+            "Ulica": "ul. Nadbrzeżna"
+          },
+          {
+            "Identyfikator stacji": 437,
+            "Kod stacji": "MpSkawOsOgro",
+            "Nazwa stacji": "Skawina, Os. Ogrody",
+            "WGS84 φ N": "49.971047",
+            "WGS84 λ E": "19.830422",
+            "Identyfikator miasta": 834,
+            "Nazwa miasta": "Skawina",
+            "Gmina": "Skawina",
+            "Powiat": "krakowski",
+            "Województwo": "MAŁOPOLSKIE",
+            "Ulica": "Os. Ogrody"
+          },
+          {
+            "Identyfikator stacji": 443,
+            "Kod stacji": "MpSzymbaGorl",
+            "Nazwa stacji": "Szymbark",
+            "WGS84 φ N": "49.633714",
+            "WGS84 λ E": "21.116833",
+            "Identyfikator miasta": 930,
+            "Nazwa miasta": "Szymbark",
+            "Gmina": "Gorlice",
+            "Powiat": "gorlicki",
+            "Województwo": "MAŁOPOLSKIE",
+            "Ulica": "Szymbark 430"
+          },
+          {
+            "Identyfikator stacji": 444,
+            "Kod stacji": "MpTarBitStud",
+            "Nazwa stacji": "Tarnów, ul. Bitwy pod Studziankami",
+            "WGS84 φ N": "50.020169",
+            "WGS84 λ E": "21.004167",
+            "Identyfikator miasta": 958,
+            "Nazwa miasta": "Tarnów",
+            "Gmina": "Tarnów",
+            "Powiat": "Tarnów",
+            "Województwo": "MAŁOPOLSKIE",
+            "Ulica": "ul. Bitwy pod Studziankami"
+          },
+          {
+            "Identyfikator stacji": 449,
+            "Kod stacji": "MpTrzebOsZWM",
+            "Nazwa stacji": "Trzebinia, Os. Związku Walki Młodych",
+            "WGS84 φ N": "50.159406",
+            "WGS84 λ E": "19.477464",
+            "Identyfikator miasta": 974,
+            "Nazwa miasta": "Trzebinia",
+            "Gmina": "Trzebinia",
+            "Powiat": "chrzanowski",
+            "Województwo": "MAŁOPOLSKIE",
+            "Ulica": "Os. Widokowe (dawne os. ZWM)"
+          },
+          {
+            "Identyfikator stacji": 450,
+            "Kod stacji": "MpTuchChopin",
+            "Nazwa stacji": "Tuchów, ul. Chopina",
+            "WGS84 φ N": "49.894169",
+            "WGS84 λ E": "21.051061",
+            "Identyfikator miasta": 980,
+            "Nazwa miasta": "Tuchów",
+            "Gmina": "Tuchów",
+            "Powiat": "tarnowski",
+            "Województwo": "MAŁOPOLSKIE",
+            "Ulica": "ul. Chopina"
+          },
+          {
+            "Identyfikator stacji": 455,
+            "Kod stacji": "MpNiepo3Maja",
+            "Nazwa stacji": "Niepołomice, ul. 3 Maja",
+            "WGS84 φ N": "50.035117",
+            "WGS84 λ E": "20.212689",
+            "Identyfikator miasta": 597,
+            "Nazwa miasta": "Niepołomice",
+            "Gmina": "Niepołomice",
+            "Powiat": "wielicki",
+            "Województwo": "MAŁOPOLSKIE",
+            "Ulica": "ul. 3 Maja"
+          },
+          {
+            "Identyfikator stacji": 459,
+            "Kod stacji": "MpZakopaSien",
+            "Nazwa stacji": "Zakopane, ul. Sienkiewicza",
+            "WGS84 φ N": "49.293564",
+            "WGS84 λ E": "19.960083",
+            "Identyfikator miasta": 1076,
+            "Nazwa miasta": "Zakopane",
+            "Gmina": "Zakopane",
+            "Powiat": "tatrzański",
+            "Województwo": "MAŁOPOLSKIE",
+            "Ulica": "ul. Sienkiewicza"
+          },
+          {
+            "Identyfikator stacji": 460,
+            "Kod stacji": "MzBelsIGFPAN",
+            "Nazwa stacji": "Belsk Duży, IGF PAN",
+            "WGS84 φ N": "51.835242",
+            "WGS84 λ E": "20.791912",
+            "Identyfikator miasta": 19,
+            "Nazwa miasta": "Belsk Duży",
+            "Gmina": "Grójec",
+            "Powiat": "grójecki",
+            "Województwo": "MAZOWIECKIE",
+            "Ulica": "Osiedle PAN 1"
+          },
+          {
+            "Identyfikator stacji": 466,
+            "Kod stacji": "MzGranicaKPN",
+            "Nazwa stacji": "Granica, KPN",
+            "WGS84 φ N": "52.285858",
+            "WGS84 λ E": "20.454653",
+            "Identyfikator miasta": 259,
+            "Nazwa miasta": "Granica",
+            "Gmina": "Kampinos",
+            "Powiat": "warszawski zachodni",
+            "Województwo": "MAZOWIECKIE",
+            "Ulica": "Kampinoski Park Narodowy"
+          },
+          {
+            "Identyfikator stacji": 471,
+            "Kod stacji": "MzLegZegrzyn",
+            "Nazwa stacji": "Legionowo, ul. Zegrzyńska",
+            "WGS84 φ N": "52.407578",
+            "WGS84 λ E": "20.955928",
+            "Identyfikator miasta": 452,
+            "Nazwa miasta": "Legionowo",
+            "Gmina": "Legionowo",
+            "Powiat": "legionowski",
+            "Województwo": "MAZOWIECKIE",
+            "Ulica": "ul. Zegrzyńska 38"
+          },
+          {
+            "Identyfikator stacji": 485,
+            "Kod stacji": "MzOtwoBrzozo",
+            "Nazwa stacji": "Otwock, ul. Brzozowa",
+            "WGS84 φ N": "52.115725",
+            "WGS84 λ E": "21.237297",
+            "Identyfikator miasta": 662,
+            "Nazwa miasta": "Otwock",
+            "Gmina": "Otwock",
+            "Powiat": "otwocki",
+            "Województwo": "MAZOWIECKIE",
+            "Ulica": "ul. Brzozowa 2"
+          },
+          {
+            "Identyfikator stacji": 488,
+            "Kod stacji": "MzPiasPulask",
+            "Nazwa stacji": "Piastów, ul. Pułaskiego",
+            "WGS84 φ N": "52.191728",
+            "WGS84 λ E": "20.837489",
+            "Identyfikator miasta": 685,
+            "Nazwa miasta": "Piastów",
+            "Gmina": "Piastów",
+            "Powiat": "pruszkowski",
+            "Województwo": "MAZOWIECKIE",
+            "Ulica": "ul. Pułaskiego 6/8"
+          },
+          {
+            "Identyfikator stacji": 497,
+            "Kod stacji": "MzPlocKroJad",
+            "Nazwa stacji": "Płock, ul. Królowej Jadwigi",
+            "WGS84 φ N": "52.556279",
+            "WGS84 λ E": "19.687672",
+            "Identyfikator miasta": 707,
+            "Nazwa miasta": "Płock",
+            "Gmina": "Płock",
+            "Powiat": "Płock",
+            "Województwo": "MAZOWIECKIE",
+            "Ulica": "ul. Królowej Jadwigi 4"
+          },
+          {
+            "Identyfikator stacji": 501,
+            "Kod stacji": "MzPlocMiReja",
+            "Nazwa stacji": "Płock, ul. Reja",
+            "WGS84 φ N": "52.550938",
+            "WGS84 λ E": "19.709791",
+            "Identyfikator miasta": 707,
+            "Nazwa miasta": "Płock",
+            "Gmina": "Płock",
+            "Powiat": "Płock",
+            "Województwo": "MAZOWIECKIE",
+            "Ulica": "ul. Mikołaja Reja 28"
+          },
+          {
+            "Identyfikator stacji": 510,
+            "Kod stacji": "MzRad25Czerw",
+            "Nazwa stacji": "Radom, ul. 25 Czerwca",
+            "WGS84 φ N": "51.406080",
+            "WGS84 λ E": "21.166819",
+            "Identyfikator miasta": 771,
+            "Nazwa miasta": "Radom",
+            "Gmina": "Radom",
+            "Powiat": "Radom",
+            "Województwo": "MAZOWIECKIE",
+            "Ulica": "ul. 25 Czerwca 1976 70"
+          },
+          {
+            "Identyfikator stacji": 512,
+            "Kod stacji": "MzRadHallera",
+            "Nazwa stacji": "Radom, ul. Hallera",
+            "WGS84 φ N": "51.415324",
+            "WGS84 λ E": "21.171285",
+            "Identyfikator miasta": 771,
+            "Nazwa miasta": "Radom",
+            "Gmina": "Radom",
+            "Powiat": "Radom",
+            "Województwo": "MAZOWIECKIE",
+            "Ulica": "ul. Hallera"
+          },
+          {
+            "Identyfikator stacji": 515,
+            "Kod stacji": "MzRadTochter",
+            "Nazwa stacji": "Radom, ul. Tochtermana",
+            "WGS84 φ N": "51.399084",
+            "WGS84 λ E": "21.147474",
+            "Identyfikator miasta": 771,
+            "Nazwa miasta": "Radom",
+            "Gmina": "Radom",
+            "Powiat": "Radom",
+            "Województwo": "MAZOWIECKIE",
+            "Ulica": "ul. Tochtermana 1"
+          },
+          {
+            "Identyfikator stacji": 517,
+            "Kod stacji": "MzSiedKonars",
+            "Nazwa stacji": "Siedlce, ul. Konarskiego",
+            "WGS84 φ N": "52.172145",
+            "WGS84 λ E": "22.282001",
+            "Identyfikator miasta": 823,
+            "Nazwa miasta": "Siedlce",
+            "Gmina": "Siedlce",
+            "Powiat": "Siedlce",
+            "Województwo": "MAZOWIECKIE",
+            "Ulica": "ul. Konarskiego 11"
+          },
+          {
+            "Identyfikator stacji": 530,
+            "Kod stacji": "MzWarAlNiepo",
+            "Nazwa stacji": "Warszawa, Al. Niepodległości",
+            "WGS84 φ N": "52.219298",
+            "WGS84 λ E": "21.004724",
+            "Identyfikator miasta": 1006,
+            "Nazwa miasta": "Warszawa",
+            "Gmina": "Warszawa",
+            "Powiat": "Warszawa",
+            "Województwo": "MAZOWIECKIE",
+            "Ulica": "Al. Niepodległości 227/233"
+          },
+          {
+            "Identyfikator stacji": 532,
+            "Kod stacji": "MzWarAKrzywo",
+            "Nazwa stacji": "Warszawa, ul. Krzywoń",
+            "WGS84 φ N": "52.228649",
+            "WGS84 λ E": "20.917513",
+            "Identyfikator miasta": 1006,
+            "Nazwa miasta": "Warszawa",
+            "Gmina": "Warszawa",
+            "Powiat": "Warszawa",
+            "Województwo": "MAZOWIECKIE",
+            "Ulica": "ul. Anieli Krzywoń"
+          },
+          {
+            "Identyfikator stacji": 538,
+            "Kod stacji": "MzWarTolstoj",
+            "Nazwa stacji": "Warszawa, ul. Tołstoja",
+            "WGS84 φ N": "52.285073",
+            "WGS84 λ E": "20.933018",
+            "Identyfikator miasta": 1006,
+            "Nazwa miasta": "Warszawa",
+            "Gmina": "Warszawa",
+            "Powiat": "Warszawa",
+            "Województwo": "MAZOWIECKIE",
+            "Ulica": "ul. Tołstoja 2"
+          },
+          {
+            "Identyfikator stacji": 550,
+            "Kod stacji": "MzWarWokalna",
+            "Nazwa stacji": "Warszawa, ul. Wokalna",
+            "WGS84 φ N": "52.160772",
+            "WGS84 λ E": "21.033819",
+            "Identyfikator miasta": 1006,
+            "Nazwa miasta": "Warszawa",
+            "Gmina": "Warszawa",
+            "Powiat": "Warszawa",
+            "Województwo": "MAZOWIECKIE",
+            "Ulica": "ul. Wokalna 1"
+          },
+          {
+            "Identyfikator stacji": 552,
+            "Kod stacji": "MzWarKondrat",
+            "Nazwa stacji": "Warszawa, ul. Kondratowicza",
+            "WGS84 φ N": "52.290864",
+            "WGS84 λ E": "21.042458",
+            "Identyfikator miasta": 1006,
+            "Nazwa miasta": "Warszawa",
+            "Gmina": "Warszawa",
+            "Powiat": "Warszawa",
+            "Województwo": "MAZOWIECKIE",
+            "Ulica": "ul. Kondratowicza 8"
+          },
+          {
+            "Identyfikator stacji": 562,
+            "Kod stacji": "MzZyraRoosev",
+            "Nazwa stacji": "Żyrardów, ul. Roosevelta",
+            "WGS84 φ N": "52.053811",
+            "WGS84 λ E": "20.429892",
+            "Identyfikator miasta": 1130,
+            "Nazwa miasta": "Żyrardów",
+            "Gmina": "Żyrardów",
+            "Powiat": "żyrardowski",
+            "Województwo": "MAZOWIECKIE",
+            "Ulica": "ul. Roosevelta 2"
+          },
+          {
+            "Identyfikator stacji": 568,
+            "Kod stacji": "OpKKozBSmial",
+            "Nazwa stacji": "Kędzierzyn-Koźle, ul. Śmiałego",
+            "WGS84 φ N": "50.349608",
+            "WGS84 λ E": "18.236575",
+            "Identyfikator miasta": 355,
+            "Nazwa miasta": "Kędzierzyn-Koźle",
+            "Gmina": "Kędzierzyn-Koźle",
+            "Powiat": "kędzierzyńsko-kozielski",
+            "Województwo": "OPOLSKIE",
+            "Ulica": "ul. Bolesława Śmiałego 5"
+          },
+          {
+            "Identyfikator stacji": 577,
+            "Kod stacji": "OpKluczMicki",
+            "Nazwa stacji": "Kluczbork, ul. Mickiewicza",
+            "WGS84 φ N": "50.972181",
+            "WGS84 λ E": "18.207575",
+            "Identyfikator miasta": 363,
+            "Nazwa miasta": "Kluczbork",
+            "Gmina": "Kluczbork",
+            "Powiat": "kluczborski",
+            "Województwo": "OPOLSKIE",
+            "Ulica": "ul. Mickiewicza 10"
+          },
+          {
+            "Identyfikator stacji": 584,
+            "Kod stacji": "OpOlesSlowac",
+            "Nazwa stacji": "Olesno, ul. Słowackiego",
+            "WGS84 φ N": "50.876983",
+            "WGS84 λ E": "18.416878",
+            "Identyfikator miasta": 636,
+            "Nazwa miasta": "Olesno",
+            "Gmina": "Olesno",
+            "Powiat": "oleski",
+            "Województwo": "OPOLSKIE",
+            "Ulica": "ul. Słowackiego"
+          },
+          {
+            "Identyfikator stacji": 590,
+            "Kod stacji": "OpOpoleOsAKr",
+            "Nazwa stacji": "Opole, Os. Armii Krajowej",
+            "WGS84 φ N": "50.676856",
+            "WGS84 λ E": "17.950278",
+            "Identyfikator miasta": 645,
+            "Nazwa miasta": "Opole",
+            "Gmina": "Opole",
+            "Powiat": "Opole",
+            "Województwo": "OPOLSKIE",
+            "Ulica": "Os. Armii Krajowej"
+          },
+          {
+            "Identyfikator stacji": 600,
+            "Kod stacji": "OpZdziePiast",
+            "Nazwa stacji": "Zdzieszowice, ul. Piastów",
+            "WGS84 φ N": "50.423533",
+            "WGS84 λ E": "18.120739",
+            "Identyfikator miasta": 1097,
+            "Nazwa miasta": "Zdzieszowice",
+            "Gmina": "Zdzieszowice",
+            "Powiat": "krapkowicki",
+            "Województwo": "OPOLSKIE",
+            "Ulica": "ul. Piastów 6"
+          },
+          {
+            "Identyfikator stacji": 609,
+            "Kod stacji": "PdBialWarsza",
+            "Nazwa stacji": "Białystok, ul. Warszawska",
+            "WGS84 φ N": "53.129306",
+            "WGS84 λ E": "23.181744",
+            "Identyfikator miasta": 35,
+            "Nazwa miasta": "Białystok",
+            "Gmina": "Białystok",
+            "Powiat": "Białystok",
+            "Województwo": "PODLASKIE",
+            "Ulica": "ul. Warszawska 75 A"
+          },
+          {
+            "Identyfikator stacji": 612,
+            "Kod stacji": "PdBorsukowiz",
+            "Nazwa stacji": "Borsukowizna, Szkółka Leśna",
+            "WGS84 φ N": "53.215492",
+            "WGS84 λ E": "23.642153",
+            "Identyfikator miasta": 63,
+            "Nazwa miasta": "Borsukowizna",
+            "Gmina": "Krynki",
+            "Powiat": "sokólski",
+            "Województwo": "PODLASKIE",
+            "Ulica": null
+          },
+          {
+            "Identyfikator stacji": 618,
+            "Kod stacji": "PdLomSikorsk",
+            "Nazwa stacji": "Łomża, ul. Sikorskiego",
+            "WGS84 φ N": "53.181394",
+            "WGS84 λ E": "22.054381",
+            "Identyfikator miasta": 513,
+            "Nazwa miasta": "Łomża",
+            "Gmina": "Łomża",
+            "Powiat": "Łomża",
+            "Województwo": "PODLASKIE",
+            "Ulica": "ul. Sikorskiego 48/94"
+          },
+          {
+            "Identyfikator stacji": 631,
+            "Kod stacji": "PkJarosPruch",
+            "Nazwa stacji": "Jarosław, ul. Pruchnicka",
+            "WGS84 φ N": "50.012083",
+            "WGS84 λ E": "22.674772",
+            "Identyfikator miasta": 303,
+            "Nazwa miasta": "Jarosław",
+            "Gmina": "Jarosław",
+            "Powiat": "jarosławski",
+            "Województwo": "PODKARPACKIE",
+            "Ulica": "Pruchnicka"
+          },
+          {
+            "Identyfikator stacji": 638,
+            "Kod stacji": "PkJasloSikor",
+            "Nazwa stacji": "Jaslo, ul. Sikorskiego",
+            "WGS84 φ N": "49.744886",
+            "WGS84 λ E": "21.454617",
+            "Identyfikator miasta": 306,
+            "Nazwa miasta": "Jasło",
+            "Gmina": "Jasło",
+            "Powiat": "jasielski",
+            "Województwo": "PODKARPACKIE",
+            "Ulica": "Sikorskiego"
+          },
+          {
+            "Identyfikator stacji": 646,
+            "Kod stacji": "PkKrosKletow",
+            "Nazwa stacji": "Krosno, ul. Kletówki",
+            "WGS84 φ N": "49.690169",
+            "WGS84 λ E": "21.749700",
+            "Identyfikator miasta": 425,
+            "Nazwa miasta": "Krosno",
+            "Gmina": "Krosno",
+            "Powiat": "Krosno",
+            "Województwo": "PODKARPACKIE",
+            "Ulica": "Kletówki"
+          },
+          {
+            "Identyfikator stacji": 659,
+            "Kod stacji": "PkNiskoSzkla",
+            "Nazwa stacji": "Nisko, ul. Szklarniowa",
+            "WGS84 φ N": "50.529892",
+            "WGS84 λ E": "22.112467",
+            "Identyfikator miasta": 600,
+            "Nazwa miasta": "Nisko",
+            "Gmina": "Nisko",
+            "Powiat": "niżański",
+            "Województwo": "PODKARPACKIE",
+            "Ulica": "Szklarniowa"
+          },
+          {
+            "Identyfikator stacji": 665,
+            "Kod stacji": "PkPrzemGrunw",
+            "Nazwa stacji": "Przemyśl, ul. Grunwaldzka",
+            "WGS84 φ N": "49.784339",
+            "WGS84 λ E": "22.756239",
+            "Identyfikator miasta": 748,
+            "Nazwa miasta": "Przemyśl",
+            "Gmina": "Przemyśl",
+            "Powiat": "Przemyśl",
+            "Województwo": "PODKARPACKIE",
+            "Ulica": "Grunwaldzka"
+          }
+        ],
+        "meta": {
+          "dc:description": "Usługa sieciowa udostępniająca listę funkcjonujących stacji pomiarowych",
+          "sy:updateFrequency": "1",
+          "dc:language": "pol (ISO 639-2 / ISO 639-3)",
+          "schema:contentType": "application/ld+json",
+          "schema:provider": {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Warszawa",
+              "postalCode": "02-362",
+              "streetAddress": "Bitwy Warszawskiej 1920 3"
+            },
+            "email": "api@gios.gov.pl",
+            "name": "Główny Inspektorat Ochrony Środowiska"
+          },
+          "schema:dateModified": "do uzupełnienia po publikacji (ISO 8601)",
+          "dc:title": "Lista stacji pomiarowych",
+          "schema:datePublished": "10.04.2017",
+          "schema:keywords": "powietrze, jakość powietrza, zanieczyszczenie powietrza, stacje pomiarowe, stanowiska pomiarowe, monitoring powietrza, Państwowy Monitoring Środowiska, środowisko, stan środowiska",
+          "sy:updatePeriod": "year",
+          "schema:isPartOf": "Państwowy Monitoring Środowiska, Jakość powietrza"
+        },
+        "links": {
+          "next": "https://api.gios.gov.pl/pjp-api/v1/rest/station/findAll?page=1&size=100",
+          "last": "https://api.gios.gov.pl/pjp-api/v1/rest/station/findAll?page=2&size=100",
+          "prev": "https://api.gios.gov.pl/pjp-api/v1/rest/station/findAll?page=0&size=100",
+          "self": "https://api.gios.gov.pl/pjp-api/v1/rest/station/findAll?page=0&size=100",
+          "first": "https://api.gios.gov.pl/pjp-api/v1/rest/station/findAll?page=0&size=100"
+        },
+        "totalPages": 3
+      }
+    },
+    "stations_page_empty": {
+      "status": 200,
+      "body": {
+        "@context": {
+          "Lista stacji pomiarowych": {
+            "@id": "https://api.gios.gov.pl/pjp-api/v1/rest/station/findAll"
+          }
+        },
+        "Lista stacji pomiarowych": [],
+        "totalPages": 1
+      }
+    },
+    "sensors_station": {
+      "status": 200,
+      "body": {
+        "@context": {
+          "Lista stanowisk pomiarowych dla podanej stacji": {
+            "@id": "https://api.gios.gov.pl/pjp-api/v1/rest/station/sensors"
+          },
+          "links": "https://schema.org/relatedLink",
+          "totalPages": "https://schema.org/numberOfPages"
+        },
+        "Lista stanowisk pomiarowych dla podanej stacji": [
+          {
+            "Identyfikator stanowiska": 2745,
+            "Identyfikator stacji": 400,
+            "Wskaźnik": "tlenek węgla",
+            "Wskaźnik - wzór": "CO",
+            "Wskaźnik - kod": "CO",
+            "Id wskaźnika": 8
+          },
+          {
+            "Identyfikator stanowiska": 2746,
+            "Identyfikator stacji": 400,
+            "Wskaźnik": "tlenek azotu",
+            "Wskaźnik - wzór": "NO",
+            "Wskaźnik - kod": "NO",
+            "Id wskaźnika": 16
+          },
+          {
+            "Identyfikator stanowiska": 2747,
+            "Identyfikator stacji": 400,
+            "Wskaźnik": "dwutlenek azotu",
+            "Wskaźnik - wzór": "NO2",
+            "Wskaźnik - kod": "NO2",
+            "Id wskaźnika": 6
+          },
+          {
+            "Identyfikator stanowiska": 2748,
+            "Identyfikator stacji": 400,
+            "Wskaźnik": "tlenki azotu",
+            "Wskaźnik - wzór": "NOx",
+            "Wskaźnik - kod": "NOx",
+            "Id wskaźnika": 7
+          },
+          {
+            "Identyfikator stanowiska": 2750,
+            "Identyfikator stacji": 400,
+            "Wskaźnik": "pył zawieszony PM10",
+            "Wskaźnik - wzór": "PM10",
+            "Wskaźnik - kod": "PM10",
+            "Id wskaźnika": 3
+          },
+          {
+            "Identyfikator stanowiska": 2752,
+            "Identyfikator stacji": 400,
+            "Wskaźnik": "pył zawieszony PM2.5",
+            "Wskaźnik - wzór": "PM2.5",
+            "Wskaźnik - kod": "PM2.5",
+            "Id wskaźnika": 69
+          },
+          {
+            "Identyfikator stanowiska": 16500,
+            "Identyfikator stacji": 400,
+            "Wskaźnik": "benzen",
+            "Wskaźnik - wzór": "C6H6",
+            "Wskaźnik - kod": "C6H6",
+            "Id wskaźnika": 10
+          }
+        ],
+        "meta": {
+          "dc:description": "Usługa sieciowa udostępniająca listę funkcjonujących stanowisk pomiarowych",
+          "sy:updateFrequency": "1",
+          "dc:language": "pol (ISO 639-2 / ISO 639-3)",
+          "schema:contentType": "application/ld+json",
+          "schema:provider": {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Warszawa",
+              "postalCode": "02-362",
+              "streetAddress": "Bitwy Warszawskiej 1920 3"
+            },
+            "email": "api@gios.gov.pl",
+            "name": "Główny Inspektorat Ochrony Środowiska"
+          },
+          "schema:dateModified": "03.11.2022",
+          "dc:title": "Lista stanowisk pomiarowych na stacji",
+          "schema:datePublished": "10.04.2017",
+          "schema:keywords": "powietrze, jakość powietrza, zanieczyszczenie powietrza, stacje pomiarowe, stanowiska pomiarowe, monitoring powietrza, Państwowy Monitoring Środowiska, środowisko, stan środowiska",
+          "sy:updatePeriod": "year",
+          "schema:isPartOf": "Państwowy Monitoring Środowiska, Jakość powietrza"
+        },
+        "links": {
+          "next": "https://api.gios.gov.pl/pjp-api/v1/rest/station/sensors/400?page=1&size=20",
+          "last": "https://api.gios.gov.pl/pjp-api/v1/rest/station/sensors/400?page=0&size=20",
+          "prev": "https://api.gios.gov.pl/pjp-api/v1/rest/station/sensors/400?page=0&size=20",
+          "self": "https://api.gios.gov.pl/pjp-api/v1/rest/station/sensors/400?page=0&size=20",
+          "first": "https://api.gios.gov.pl/pjp-api/v1/rest/station/sensors/400?page=0&size=20"
+        },
+        "totalPages": 1
+      }
+    },
+    "data_pm25": {
+      "status": 200,
+      "body": {
+        "@context": {
+          "Lista danych pomiarowych": {
+            "@id": "https://api.gios.gov.pl/pjp-api/v1/rest/data/getData"
+          },
+          "links": "https://schema.org/relatedLink",
+          "totalPages": "https://schema.org/numberOfPages"
+        },
+        "Lista danych pomiarowych": [
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-23 01:00:00",
+            "Wartość": 38.8
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-23 00:00:00",
+            "Wartość": 34.4
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 23:00:00",
+            "Wartość": 33.1
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 22:00:00",
+            "Wartość": 27.2
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 21:00:00",
+            "Wartość": 19.3
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 20:00:00",
+            "Wartość": 15.6
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 19:00:00",
+            "Wartość": 13.4
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 18:00:00",
+            "Wartość": 10.4
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 17:00:00",
+            "Wartość": 7.4
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 16:00:00",
+            "Wartość": 5.0
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 15:00:00",
+            "Wartość": 3.6
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 14:00:00",
+            "Wartość": 3.0
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 13:00:00",
+            "Wartość": 3.3
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 12:00:00",
+            "Wartość": 2.9
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 11:00:00",
+            "Wartość": 3.2
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 10:00:00",
+            "Wartość": 3.2
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 09:00:00",
+            "Wartość": 3.1
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 08:00:00",
+            "Wartość": 3.4
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 07:00:00",
+            "Wartość": 3.1
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 06:00:00",
+            "Wartość": 3.0
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 05:00:00",
+            "Wartość": 3.4
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 04:00:00",
+            "Wartość": 3.9
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 03:00:00",
+            "Wartość": 4.4
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 02:00:00",
+            "Wartość": 4.9
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 01:00:00",
+            "Wartość": 5.5
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-22 00:00:00",
+            "Wartość": 6.2
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 23:00:00",
+            "Wartość": 8.3
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 22:00:00",
+            "Wartość": 8.2
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 21:00:00",
+            "Wartość": 9.8
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 20:00:00",
+            "Wartość": 7.3
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 19:00:00",
+            "Wartość": 6.0
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 18:00:00",
+            "Wartość": 4.9
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 17:00:00",
+            "Wartość": 5.3
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 16:00:00",
+            "Wartość": 4.3
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 15:00:00",
+            "Wartość": 5.9
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 14:00:00",
+            "Wartość": 5.7
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 13:00:00",
+            "Wartość": 5.9
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 12:00:00",
+            "Wartość": 6.7
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 11:00:00",
+            "Wartość": 7.7
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 10:00:00",
+            "Wartość": 8.7
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 09:00:00",
+            "Wartość": 10.0
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 08:00:00",
+            "Wartość": 7.2
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 07:00:00",
+            "Wartość": 3.7
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 06:00:00",
+            "Wartość": 3.5
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 05:00:00",
+            "Wartość": 5.2
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 04:00:00",
+            "Wartość": 5.7
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 03:00:00",
+            "Wartość": 4.8
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 02:00:00",
+            "Wartość": 5.3
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 01:00:00",
+            "Wartość": 8.9
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM2.5-1g",
+            "Data": "2026-11-21 00:00:00",
+            "Wartość": 8.0
+          }
+        ],
+        "meta": {
+          "dc:description": "Usługa sieciowa udostępniająca wyniki jednogodzinnych pomiarów dwutlenku siarki (SO2), dwutlenku azotu (NO2), pyłu PM10, pyłu PM2,5, tlenku węgla (CO), benzenu (C6H6), ozonu (O3), od ostatniego dostępnego wyniku do trzeciej doby wstecz, na podstawie identyfikatora stanowiska pomiarowego. Dane udostępniane są w czasie lokalnym w jednostce μg/m3",
+          "sy:updateFrequency": "1",
+          "dc:language": "pol (ISO 639-2 / ISO 639-3)",
+          "schema:contentType": "application/ld+json",
+          "schema:provider": {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Warszawa",
+              "postalCode": "02-362",
+              "streetAddress": "Bitwy Warszawskiej 1920 3"
+            },
+            "email": "api@gios.gov.pl",
+            "name": "Główny Inspektorat Ochrony Środowiska"
+          },
+          "schema:dateModified": "03.11.2022",
+          "dc:title": "Bieżące dane pomiarowe z wybranego stanowiska",
+          "schema:datePublished": "10.04.2017",
+          "schema:keywords": "dane pomiarowe, wyniki pomiarów, powietrze, jakość powietrza, zanieczyszczenie powietrza, stacje pomiarowe, stanowiska pomiarowe, monitoring powietrza, Państwowy Monitoring Środowiska, środowisko, stan środowiska",
+          "sy:updatePeriod": "hourly",
+          "schema:isPartOf": "Państwowy Monitoring Środowiska, Jakość powietrza"
+        },
+        "links": {
+          "next": "https://api.gios.gov.pl/pjp-api/v1/rest/data/getData/2752?size=100&page=1&size=100",
+          "last": "https://api.gios.gov.pl/pjp-api/v1/rest/data/getData/2752?size=100&page=0&size=100",
+          "prev": "https://api.gios.gov.pl/pjp-api/v1/rest/data/getData/2752?size=100&page=0&size=100",
+          "self": "https://api.gios.gov.pl/pjp-api/v1/rest/data/getData/2752?size=100&page=0&size=100",
+          "first": "https://api.gios.gov.pl/pjp-api/v1/rest/data/getData/2752?size=100&page=0&size=100"
+        },
+        "totalPages": 1
+      }
+    },
+    "data_pm10": {
+      "status": 200,
+      "body": {
+        "@context": {
+          "Lista danych pomiarowych": {
+            "@id": "https://api.gios.gov.pl/pjp-api/v1/rest/data/getData"
+          },
+          "links": "https://schema.org/relatedLink",
+          "totalPages": "https://schema.org/numberOfPages"
+        },
+        "Lista danych pomiarowych": [
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-23 01:00:00",
+            "Wartość": 43.5
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-23 00:00:00",
+            "Wartość": 39.9
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 23:00:00",
+            "Wartość": 38.3
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 22:00:00",
+            "Wartość": 32.8
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 21:00:00",
+            "Wartość": 25.2
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 20:00:00",
+            "Wartość": 22.5
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 19:00:00",
+            "Wartość": 21.3
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 18:00:00",
+            "Wartość": 17.2
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 17:00:00",
+            "Wartość": 11.6
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 16:00:00",
+            "Wartość": 7.4
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 15:00:00",
+            "Wartość": 6.1
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 14:00:00",
+            "Wartość": 5.5
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 13:00:00",
+            "Wartość": 6.1
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 12:00:00",
+            "Wartość": 5.2
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 11:00:00",
+            "Wartość": 6.7
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 10:00:00",
+            "Wartość": 6.0
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 09:00:00",
+            "Wartość": 4.9
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 08:00:00",
+            "Wartość": 5.3
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 07:00:00",
+            "Wartość": 4.9
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 06:00:00",
+            "Wartość": 5.1
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 05:00:00",
+            "Wartość": 5.2
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 04:00:00",
+            "Wartość": 5.3
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 03:00:00",
+            "Wartość": 6.2
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 02:00:00",
+            "Wartość": 6.9
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 01:00:00",
+            "Wartość": 7.8
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-22 00:00:00",
+            "Wartość": 8.7
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 23:00:00",
+            "Wartość": 12.0
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 22:00:00",
+            "Wartość": 11.8
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 21:00:00",
+            "Wartość": 13.6
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 20:00:00",
+            "Wartość": 12.1
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 19:00:00",
+            "Wartość": 9.0
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 18:00:00",
+            "Wartość": 8.1
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 17:00:00",
+            "Wartość": 8.7
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 16:00:00",
+            "Wartość": 7.6
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 15:00:00",
+            "Wartość": 9.7
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 14:00:00",
+            "Wartość": 8.8
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 13:00:00",
+            "Wartość": 14.0
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 12:00:00",
+            "Wartość": 11.0
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 11:00:00",
+            "Wartość": 12.4
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 10:00:00",
+            "Wartość": 10.8
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 09:00:00",
+            "Wartość": 13.1
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 08:00:00",
+            "Wartość": 8.7
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 07:00:00",
+            "Wartość": 4.8
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 06:00:00",
+            "Wartość": 4.1
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 05:00:00",
+            "Wartość": 5.7
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 04:00:00",
+            "Wartość": 6.3
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 03:00:00",
+            "Wartość": 5.6
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 02:00:00",
+            "Wartość": 6.0
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 01:00:00",
+            "Wartość": 10.4
+          },
+          {
+            "Kod stanowiska": "MpKrakAlKras-PM10-1g",
+            "Data": "2026-11-21 00:00:00",
+            "Wartość": 10.5
+          }
+        ],
+        "meta": {
+          "dc:description": "Usługa sieciowa udostępniająca wyniki jednogodzinnych pomiarów dwutlenku siarki (SO2), dwutlenku azotu (NO2), pyłu PM10, pyłu PM2,5, tlenku węgla (CO), benzenu (C6H6), ozonu (O3), od ostatniego dostępnego wyniku do trzeciej doby wstecz, na podstawie identyfikatora stanowiska pomiarowego. Dane udostępniane są w czasie lokalnym w jednostce μg/m3",
+          "sy:updateFrequency": "1",
+          "dc:language": "pol (ISO 639-2 / ISO 639-3)",
+          "schema:contentType": "application/ld+json",
+          "schema:provider": {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Warszawa",
+              "postalCode": "02-362",
+              "streetAddress": "Bitwy Warszawskiej 1920 3"
+            },
+            "email": "api@gios.gov.pl",
+            "name": "Główny Inspektorat Ochrony Środowiska"
+          },
+          "schema:dateModified": "03.11.2022",
+          "dc:title": "Bieżące dane pomiarowe z wybranego stanowiska",
+          "schema:datePublished": "10.04.2017",
+          "schema:keywords": "dane pomiarowe, wyniki pomiarów, powietrze, jakość powietrza, zanieczyszczenie powietrza, stacje pomiarowe, stanowiska pomiarowe, monitoring powietrza, Państwowy Monitoring Środowiska, środowisko, stan środowiska",
+          "sy:updatePeriod": "hourly",
+          "schema:isPartOf": "Państwowy Monitoring Środowiska, Jakość powietrza"
+        },
+        "links": {
+          "next": "https://api.gios.gov.pl/pjp-api/v1/rest/data/getData/2750?size=100&page=1&size=100",
+          "last": "https://api.gios.gov.pl/pjp-api/v1/rest/data/getData/2750?size=100&page=0&size=100",
+          "prev": "https://api.gios.gov.pl/pjp-api/v1/rest/data/getData/2750?size=100&page=0&size=100",
+          "self": "https://api.gios.gov.pl/pjp-api/v1/rest/data/getData/2750?size=100&page=0&size=100",
+          "first": "https://api.gios.gov.pl/pjp-api/v1/rest/data/getData/2750?size=100&page=0&size=100"
+        },
+        "totalPages": 1
+      }
+    },
+    "index_station": {
+      "status": 200,
+      "body": {
+        "@context": {
+          "AqIndex": {
+            "@id": "https://api.gios.gov.pl/pjp-api/v1/rest/aqindex/getIndex"
+          },
+          "links": "https://schema.org/relatedLink",
+          "totalPages": "https://schema.org/numberOfPages"
+        },
+        "AqIndex": {
+          "Identyfikator stacji pomiarowej": 400,
+          "Data wykonania obliczeń indeksu": "2026-11-23 01:25:22",
+          "Wartość indeksu": 2,
+          "Nazwa kategorii indeksu": "Umiarkowany",
+          "Data danych źródłowych, z których policzono wartość indeksu dla wskaźnika st": "2026-11-23 01:00:00",
+          "Data wykonania obliczeń indeksu dla wskaźnika SO2": "2026-11-23 01:25:22",
+          "Wartość indeksu dla wskaźnika SO2": null,
+          "Nazwa kategorii indeksu dla wskażnika SO2": null,
+          "Data danych źródłowych, z których policzono wartość indeksu dla wskaźnika SO2": null,
+          "Data wykonania obliczeń indeksu dla wskaźnika NO2": "2026-11-23 01:25:22",
+          "Wartość indeksu dla wskaźnika NO2": 0,
+          "Nazwa kategorii indeksu dla wskażnika NO2": "Bardzo dobry",
+          "Data danych źródłowych, z których policzono wartość indeksu dla wskaźnika NO2": "2026-11-23 01:00:00",
+          "Data wykonania obliczeń indeksu dla wskaźnika PM10": "2026-11-23 01:25:22",
+          "Wartość indeksu dla wskaźnika PM10": 1,
+          "Nazwa kategorii indeksu dla wskażnika PM10": "Dobry",
+          "Data danych źródłowych, z których policzono wartość indeksu dla wskaźnika PM10": "2026-11-23 01:00:00",
+          "Data wykonania obliczeń indeksu dla wskaźnika PM2.5": "2026-11-23 01:25:22",
+          "Wartość indeksu dla wskaźnika PM2.5": 2,
+          "Nazwa kategorii indeksu dla wskażnika PM2.5": "Umiarkowany",
+          "Data danych źródłowych, z których policzono wartość indeksu dla wskaźnika PM2.5": "2026-11-23 01:00:00",
+          "Data wykonania obliczeń indeksu dla wskaźnika O3": null,
+          "Wartość indeksu dla wskaźnika O3": null,
+          "Nazwa kategorii indeksu dla wskażnika O3": null,
+          "Data danych źródłowych, z których policzono wartość indeksu dla wskaźnika O3": null,
+          "Status indeksu ogólnego dla stacji pomiarowej": true,
+          "Kod zanieczyszczenia krytycznego": "PYL"
+        },
+        "meta": {
+          "dc:description": "Usługa sieciowa udostępniająca bieżące wskazania Polskiego indeksu jakości powietrza oraz indeksów cząstkowych zanieczyszczeń: pyłu zawieszonego PM10 i PM2,5, dwutlenku siarki, dwutlenku azotu, ozonu, w podziale na 6 kategorii lub jako \"Brak indeksu\". Usługa zwraca dane na podstawie identyfikatora stacji pomiarowej w czasie lokalnym.",
+          "sy:updateFrequency": "1",
+          "dc:language": "pol (ISO 639-2 / ISO 639-3)",
+          "schema:contentType": "application/ld+json",
+          "schema:provider": {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Warszawa",
+              "postalCode": "02-362",
+              "streetAddress": "Bitwy Warszawskiej 1920 3"
+            },
+            "email": "api@gios.gov.pl",
+            "name": "Główny Inspektorat Ochrony Środowiska"
+          },
+          "schema:dateModified": "03.11.2022",
+          "dc:title": "Bieżące wskazania Polskiego indeksu jakości powietrza",
+          "schema:datePublished": "10.04.2017",
+          "schema:keywords": "indeks, indeks jakości powietrza, dobra jakość powietrza, zła jakość powietrza, dane pomiarowe, powietrze, jakość powietrza, zanieczyszczenie powietrza, stacje pomiarowe, stanowiska pomiarowe, monitoring powietrza, Państwowy Monitoring Środowiska, środowisko, stan środowiska",
+          "sy:updatePeriod": "hourly",
+          "schema:isPartOf": "Państwowy Monitoring Środowiska, Jakość powietrza"
+        },
+        "links": {
+          "next": "https://api.gios.gov.pl/pjp-api/v1/rest/aqindex/getIndex/400?page=1&size=20",
+          "last": "https://api.gios.gov.pl/pjp-api/v1/rest/aqindex/getIndex/400?page=0&size=20",
+          "prev": "https://api.gios.gov.pl/pjp-api/v1/rest/aqindex/getIndex/400?page=0&size=20",
+          "self": "https://api.gios.gov.pl/pjp-api/v1/rest/aqindex/getIndex/400?page=0&size=20",
+          "first": "https://api.gios.gov.pl/pjp-api/v1/rest/aqindex/getIndex/400?page=0&size=20"
+        },
+        "totalPages": 1
+      }
+    }
+  },
+  "station": {
+    "Identyfikator stacji": 400,
+    "Kod stacji": "MpKrakAlKras",
+    "Nazwa stacji": "Kraków, Aleja Krasińskiego",
+    "WGS84 φ N": "50.057678",
+    "WGS84 λ E": "19.926189",
+    "Identyfikator miasta": 415,
+    "Nazwa miasta": "Kraków",
+    "Gmina": "Kraków",
+    "Powiat": "Kraków",
+    "Województwo": "MAŁOPOLSKIE",
+    "Ulica": "Al. Krasińskiego"
+  },
+  "sensor_ids": {
+    "CO": 2745,
+    "NO": 2746,
+    "NO2": 2747,
+    "NOx": 2748,
+    "PM10": 2750,
+    "PM2.5": 2752,
+    "C6H6": 16500
+  }
+}

@@ -1,8 +1,16 @@
 """
-Air Quality adapter for fetching air quality data from WAQI API.
+Air Quality adapter for fetching air quality data.
 
-This adapter fetches Air Quality Index (AQI) data for property scoring,
-including PM2.5, PM10, and overall air quality metrics.
+The default source is the official Polish register of air quality, published
+by GIOŚ (Główny Inspektorat Ochrony Środowiska) as open data: the stations
+of the State Environmental Monitoring, their measurements and their official
+index, with no key and no registration. WAQI stays as the fallback for a
+deployment that holds a token for it, and the city averages stay as the last
+resort.
+
+A deployment without a WAQI key used to answer with a city average — a
+number that came from nowhere. It now answers with a measurement the state
+publishes, and names the source, which the service's terms require.
 """
 
 import ipaddress
@@ -13,6 +21,12 @@ from urllib.parse import urlparse
 
 import requests
 
+from data.adapters.gios_air_quality import (
+    GIOS_API_URL,
+    GIOS_ATTRIBUTION,
+    GiosAirQualityClient,
+    us_aqi_from_concentrations,
+)
 from utils.sanitization import redact_sensitive_data, sanitize_for_logging
 
 logger = logging.getLogger(__name__)
@@ -66,9 +80,13 @@ class AirQualityResult:
         aqi_value: Raw AQI value (lower is better, 0-500 scale)
         pm25: PM2.5 concentration in µg/m³
         pm10: PM10 concentration in µg/m³
-        data_source: Source of the data (waqi, fallback)
+        data_source: Source of the data (gios, waqi, fallback)
         confidence: Confidence score 0-1 (1.0 = direct measurement)
         station_name: Name of the monitoring station
+        attribution: Who published the measurement, when the source asks to
+            be named
+        official_index: The source's own index value, when it publishes one
+        official_category: The source's own name for that value
     """
 
     score: float
@@ -78,14 +96,18 @@ class AirQualityResult:
     data_source: str
     confidence: float
     station_name: Optional[str]
+    attribution: Optional[str] = None
+    official_index: Optional[int] = None
+    official_category: Optional[str] = None
 
 
 class AirQualityAdapter:
     """
-    Adapter for fetching air quality data from the World Air Quality Index API.
+    Adapter for fetching air quality data.
 
-    Uses the WAQI API (https://waqi.info/) to fetch real-time air quality data
-    including AQI, PM2.5, and PM10 measurements.
+    The default source is the official Polish register published by GIOŚ; WAQI
+    is the fallback for a deployment that holds a token for it, and the city
+    averages are the last resort.
 
     Environment variables:
         WAQI_API_KEY: API key for WAQI (free tier available at https://aqicn.org/data-platform/token/)
@@ -95,6 +117,7 @@ class AirQualityAdapter:
         _api_key: WAQI API key
         _cache_ttl: Time-to-live for cached results
         _timeout: HTTP request timeout
+        _gios: The client of the official register
     """
 
     # WAQI API endpoint
@@ -108,6 +131,7 @@ class AirQualityAdapter:
         api_key: Optional[str] = None,
         cache_ttl: Optional[int] = None,
         timeout: int = 30,
+        gios_client: Optional[GiosAirQualityClient] = None,
     ) -> None:
         """
         Initialize the air quality adapter.
@@ -116,6 +140,8 @@ class AirQualityAdapter:
             api_key: Optional WAQI API key (falls back to environment variable)
             cache_ttl: Optional cache TTL in seconds
             timeout: HTTP request timeout in seconds
+            gios_client: Optional client of the official register (a test
+                hands its own in)
         """
         import os
 
@@ -124,10 +150,12 @@ class AirQualityAdapter:
         self._cache_ttl: int = cache_ttl or int(ttl_env) if ttl_env else self.DEFAULT_CACHE_TTL
         self._timeout: int = timeout
         self._cache: Dict[str, tuple[Any, float]] = {}
+        self._gios: GiosAirQualityClient = gios_client or GiosAirQualityClient(timeout=timeout)
 
         if not self._api_key:
-            logger.warning(
-                "WAQI_API_KEY not configured. Air quality data will use city fallback with reduced confidence."
+            logger.info(
+                "WAQI_API_KEY not configured. Air quality data comes from the official "
+                "register (GIOŚ), and the city averages are the last resort."
             )
 
     def _validate_url(self, url: str) -> None:
@@ -224,6 +252,11 @@ class AirQualityAdapter:
         """
         Get air quality score for a location.
 
+        The official register is read first: it needs no key, it is the state
+        that publishes the measurements, and its terms ask for the source to
+        be named — so the answer names it. WAQI answers only when the
+        deployment holds a token for it and the register has nothing.
+
         Args:
             lat: Latitude coordinate
             lon: Longitude coordinate
@@ -232,7 +265,12 @@ class AirQualityAdapter:
         Returns:
             AirQualityResult with score and measurements
         """
-        # Try WAQI API first
+        # The official register, which needs no key.
+        gios_result = self._fetch_from_gios(lat, lon)
+        if gios_result:
+            return gios_result
+
+        # WAQI, for a deployment that holds a token for it.
         if self._api_key:
             api_result = self._fetch_from_api(lat, lon)
             if api_result:
@@ -240,6 +278,43 @@ class AirQualityAdapter:
 
         # Fallback to city averages
         return self._get_fallback_result(city)
+
+    def _fetch_from_gios(self, lat: float, lon: float) -> Optional[AirQualityResult]:
+        """
+        Fetch the air quality measurement from the official register.
+
+        Args:
+            lat: Latitude coordinate
+            lon: Longitude coordinate
+
+        Returns:
+            AirQualityResult if the register holds a measurement, None otherwise
+        """
+        try:
+            measurement = self._gios.measurement(lat, lon)
+        except Exception as exc:  # noqa: BLE001 - the fallback chain is the point
+            logger.warning("GIOŚ could not be read: %s", sanitize_for_logging(exc))
+            return None
+
+        if measurement is None:
+            return None
+
+        aqi = us_aqi_from_concentrations(measurement.pm25, measurement.pm10)
+        if aqi is None:
+            return None
+
+        return AirQualityResult(
+            score=self._calculate_aqi_score(aqi),
+            aqi_value=aqi,
+            pm25=measurement.pm25,
+            pm10=measurement.pm10,
+            data_source="gios",
+            confidence=1.0,
+            station_name=measurement.station.name,
+            attribution=measurement.attribution or GIOS_ATTRIBUTION,
+            official_index=measurement.index_value,
+            official_category=measurement.index_category,
+        )
 
     def _fetch_from_api(self, lat: float, lon: float) -> Optional[AirQualityResult]:
         """
@@ -528,6 +603,8 @@ class AirQualityAdapter:
             "cache_ttl": self._cache_ttl,
             "cache_size": len(self._cache),
             "api_endpoint": self.API_URL,
+            "default_source": "gios",
+            "default_source_endpoint": GIOS_API_URL,
         }
 
 

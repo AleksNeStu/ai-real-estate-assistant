@@ -668,6 +668,11 @@ class NeighborhoodQualityIndexTool(BaseTool):
                 "pm25": result.pm25,
                 "pm10": result.pm10,
                 "station_name": result.station_name,
+                # The register's terms ask for the source to be named, so the
+                # attribution travels with the measurement.
+                "attribution": result.attribution,
+                "official_index": result.official_index,
+                "official_category": result.official_category,
             }
         except Exception as e:
             logger.warning("Air quality calculation failed: %s", sanitize_for_log(e))
@@ -1170,10 +1175,10 @@ class NeighborhoodQualityIndexTool(BaseTool):
             data_sources.append("geographic_coordinates")
         else:
             data_sources.append("osm_overpass_area")
-        if any(
-            measurement.details.get("data_source") == "waqi_api"
-            for measurement in measurements.values()
-        ):
+        air_quality_source = measurements["air_quality"].details.get("data_source")
+        if air_quality_source == "gios":
+            data_sources.append("gios_air_quality_api")
+        elif air_quality_source == "waqi":
             data_sources.append("waqi_air_quality_api")
 
         # Data freshness

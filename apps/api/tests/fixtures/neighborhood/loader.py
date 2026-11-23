@@ -130,6 +130,96 @@ def overpass_get(resolver: Any) -> Callable[..., Mock]:
     return _get
 
 
+GIOS_FIXTURE = FIXTURE_DIR / "gios.json"
+
+
+def load_gios_payload() -> Dict[str, Any]:
+    """Return the whole recorded GIOŚ payload."""
+    return json.loads(GIOS_FIXTURE.read_text(encoding="utf-8"))
+
+
+def load_gios(name: str) -> Dict[str, Any]:
+    """Return one recorded GIOŚ response.
+
+    Args:
+        name: The name of the recorded entry, e.g. ``data_pm25``.
+
+    Returns:
+        The recorded entry: status and body.
+
+    Raises:
+        KeyError: When the fixture holds no such entry.
+    """
+    responses = load_gios_payload()["responses"]
+    if name not in responses:
+        raise KeyError(f"No recorded GIOŚ response named {name!r}")
+    return responses[name]
+
+
+def load_gios_body(name: str) -> Any:
+    """Return the recorded GIOŚ body."""
+    return load_gios(name)["body"]
+
+
+def gios_station() -> Dict[str, Any]:
+    """Return the station the recording is about."""
+    return load_gios_payload()["station"]
+
+
+def gios_sensor_ids() -> Dict[str, Any]:
+    """Return the sensors of the recorded station, by pollutant code."""
+    return load_gios_payload()["sensor_ids"]
+
+
+def gios_get(
+    resolver: Optional[Callable[[str, Dict[str, Any]], str]] = None,
+) -> Callable[..., Mock]:
+    """Build a ``requests.get`` replacement that serves the recorded GIOŚ answers.
+
+    The recorded station list is one page of the real list — the page that
+    carries the Kraków stations — and the pages after it are recorded as the
+    empty answers the client reads after them.
+
+    Args:
+        resolver: Optional callable that takes the outgoing URL and the
+            parameters and returns the name of the recorded response that
+            answers it. The default routes every request the way the
+            adapter's own requests are shaped.
+
+    Returns:
+        A callable with the ``requests.get`` signature.
+    """
+    sensors = gios_sensor_ids()
+    pm25_id = str(sensors.get("PM2.5"))
+    pm10_id = str(sensors.get("PM10"))
+
+    def _default(url: str, params: Dict[str, Any]) -> str:
+        if "/station/findAll" in url:
+            return "stations_page_0" if int(params.get("page", 0)) == 0 else "stations_page_empty"
+        if "/station/sensors/" in url:
+            return "sensors_station"
+        if "/data/getData/" in url:
+            if pm25_id in url:
+                return "data_pm25"
+            if pm10_id in url:
+                return "data_pm10"
+            raise AssertionError(f"No recorded answer for URL: {url}")
+        if "/aqindex/getIndex/" in url:
+            return "index_station"
+        raise AssertionError(f"No recorded answer for URL: {url}")
+
+    def _get(url: str, params: Optional[Dict[str, Any]] = None, **kwargs: Any) -> Mock:
+        name = resolver(url, params or {}) if resolver else _default(url, params or {})
+        response = Mock()
+        response.status_code = 200
+        response.json.return_value = load_gios_body(name)
+        response.text = json.dumps(load_gios_body(name), ensure_ascii=False)
+        response.raise_for_status.return_value = None
+        return response
+
+    return _get
+
+
 def query_shape(query: str) -> str:
     """Name the request shape a query belongs to, whatever its spelling."""
     if 'way["highway"~' in query:

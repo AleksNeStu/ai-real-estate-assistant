@@ -4,7 +4,7 @@
     "url_shape": "GET {provider}/feed/geo:{lat};{lon}/?token={WAQI_API_KEY}",
     "recorded_at": "2026-11-19",
     "recorded_for": "TaskMaster #92 - the neighbourhood adapters are tested against recorded responses",
-    "note": "THIS IS NOT AN UPSTREAM WAQI PAYLOAD. No WAQI_API_KEY exists anywhere in this project - not in the OS environment, not on the deployment node, not in the repository .env - so the upstream endpoint was never called and no upstream answer was recorded. What is recorded here is the adapter's OWN keyless answer: the AirQualityResult the adapter returns when it holds no token, i.e. the CITY_AQI_AVERAGES fallback (air_quality_adapter.py, get_aqi_score -> _get_fallback_result). The values below are that fallback's output, field for field.",
+    "note": "THIS IS NOT AN UPSTREAM WAQI PAYLOAD. No WAQI_API_KEY exists anywhere in this project - not in the OS environment, not on the deployment node, not in the repository .env - so the upstream endpoint was never called and no upstream answer was recorded. What is recorded here is the adapter's OWN keyless answer: the AirQualityResult the adapter returns when it holds no token AND the official register (GIOŚ, the default source since TaskMaster #114) has no reading for the place, i.e. the CITY_AQI_AVERAGES fallback (air_quality_adapter.py, get_aqi_score -> _get_fallback_result). The values below are that fallback's output, field for field. The register's own answers are recorded separately in gios.json.",
     "upstream_status": "not callable - the provider requires a token and none exists"
   },
   "keyless_result": {
