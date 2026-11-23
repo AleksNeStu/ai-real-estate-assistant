@@ -41,16 +41,18 @@ operator. The templates below are ready to paste.
 
 ```
 Name: AI Real Estate Assistant
-Tagline (≤ 100 chars): Conversational AI for property search —
-open-source, self-hostable, MIT
+Tagline (≤ 100 chars): Free property valuation on official notarial
+prices — open source
 Category: Real Estate
 Pricing: Free (open-source) | Paid hosted tier (propvectorai.com)
 URL: https://realty.kittray.com/en
 GitHub: https://github.com/AleksNeStu/ai-real-estate-assistant
-Description: Open-source conversational AI for property search. Ask in
-natural language ("2-bedroom apartment in Kraków under 500k") and get
-matched listings. It remembers your budget and what you ruled out.
-Built with FastAPI + Next.js 16 + ChromaDB. 17 LLM providers with
+Description: Open-source property search and valuation. Value any
+address against Poland's official register of notarial prices and see
+the comparable sales, the sample and the period behind the number.
+Ask in natural language ("2-bedroom apartment in Kraków under 500k")
+and get matched listings; the assistant remembers your budget and what
+you ruled out. FastAPI + Next.js 16 + ChromaDB. 17 LLM providers with
 automatic fallback chain. UI in 9 languages (en/pl maintained).
 MIT-licensed.
 ```
@@ -71,12 +73,13 @@ URL: https://realty.kittray.com/en
 GitHub: https://github.com/AleksNeStu/ai-real-estate-assistant
 Category: AI Agents / Real Estate
 Pricing: Free (open-source) | Paid (hosted tier)
-Description: Open-source conversational AI for property search, analytics,
-and market insights. Natural language queries with automatic filter
-extraction. It remembers your budget and what you ruled out, and applies
-both to the next search. Hybrid semantic + keyword retrieval.
-Multi-provider LLM fallback. UI in 9 languages (en/pl maintained).
-MIT-licensed.
+Description: Open-source property search and valuation. Value any address
+against Poland's official register of notarial prices — the answer names
+the sample size, the period and lists the comparable sales. Natural
+language queries with automatic filter extraction; it remembers your
+budget and what you ruled out, and applies both to the next search. Hybrid
+semantic + keyword retrieval. Multi-provider LLM fallback. UI in 9
+languages (en/pl maintained). MIT-licensed.
 ```
 
 **The form's own fields (measured 2026-11-21; the form is server-rendered, so
@@ -112,11 +115,12 @@ was filled, not submitted.
 Tool: AI Real Estate Assistant
 URL: https://realty.kittray.com/en
 Category: Real Estate / Property Tech
-Short description: Conversational AI property search with natural
-language queries. It remembers your budget and what you ruled out.
-Open-source, MIT-licensed, self-hostable.
+Short description: Open-source property search and valuation. Value an
+address against Poland's official register of notarial prices, with the
+comparable sales listed. Natural-language queries; it remembers your
+budget and what you ruled out. MIT-licensed, self-hostable.
 Tags: real-estate, AI, open-source, FastAPI, Next.js, ChromaDB,
-  multi-language, property-search
+  multi-language, property-search, valuation
 ```
 
 ---
@@ -146,12 +150,13 @@ See `product-hunt.md` for full draft.
 ```
 Startup name: AI Real Estate Assistant
 URL: https://realty.kittray.com/en
-Tagline: Conversational AI property search — open-source, MIT-licensed
-Description: Open-source conversational AI platform for property
-search, analytics, and market insights. Built with FastAPI + Next.js
-16 + ChromaDB. Multi-provider LLM fallback chain. It remembers your
-budget and what you ruled out. UI in 9 languages (en/pl maintained).
-Founders: AleksNeStu (solo developer)
+Tagline: Property valuation on official notarial prices — open source, MIT
+Description: Open-source property search and valuation platform. Value any
+address against Poland's official register of notarial prices — the answer
+shows the sample size, the period and the comparable sales. Built with
+FastAPI + Next.js 16 + ChromaDB. Multi-provider LLM fallback chain. It
+remembers your budget and what you ruled out. UI in 9 languages (en/pl
+maintained). Founders: AleksNeStu (solo developer)
 ```
 
 ### Hacker News — Show HN (news.ycombinator.com)
@@ -181,8 +186,9 @@ See `show-hn.md` for full draft.
 ## AI Real Estate Assistant
 
 [AI Real Estate Assistant](https://github.com/AleksNeStu/ai-real-estate-assistant)
-is an open-source conversational AI platform for property search,
-analytics, and market insights. Built with FastAPI + Next.js 16 +
+is an open-source property search and valuation platform. It values any
+address against Poland's official register of notarial prices and lists the
+comparable sales behind the number. Built with FastAPI + Next.js 16 +
 ChromaDB. Multi-provider LLM routing with automatic fallback chain.
 It remembers your budget and what you ruled out. UI in 9 languages
 (en/pl maintained). MIT-licensed.

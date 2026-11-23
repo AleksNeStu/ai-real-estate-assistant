@@ -84,12 +84,31 @@ Day +30          → Product Hunt (after audiences warmed up)
       button, and the anonymous path is still open (`demo_user_bypass:
       false`, so an anonymous visitor is not handed a synthetic user).
 - [x] Live demo: the buyer memory is in the running build — the deployment
-      serves `96d70c20f92cca037f1da2c15652162f34d55ec3` (the v5.4.0 tag), and
+      serves `4491cb799a150e60fe59cfa54612069c363514b4` (the v5.5.0 tag), and
       that commit
       carries the memory commits (`apps/api/services/buyer_memory_service.py`,
       the extractor, the steering and the filters). A signed-in buyer's
       budget, ruled-out areas and disliked listings survive a turn and shape
       the next one; an anonymous request reads and writes none.
+- [x] Live demo: the valuation answers from the official register — checked
+      2026-11-23. The register of notarial transactions was ingested on the
+      node (826,919 registered sales, five voivodeships, from the open GUGiK
+      GeoParquet exports) and `POST /api/v1/tools/valuation` with
+      `{"city": "Kraków", "street": "Myśliwska", "area_sqm": 60, "rooms": 3}`
+      answers **959,181.85 PLN** with `source: rcn`, `confidence: high`,
+      `sample_size: 24`, the comparison area `Myśliwska, Kraków`, the period
+      `2025-06-18 → 2026-10-12` and 20 comparables listed with their deed
+      references. Kraków, Warszawa, Wrocław and Gdańsk answer; **Poznań does
+      not** — the register's export carries no packed address for that
+      municipality, so the rows are dropped and the endpoint answers 404
+      (TaskMaster #127).
+- [x] Live demo: the anonymous chat answers with a real provider — checked
+      2026-11-23. `GET /api/v1/capabilities` answers `llm.provider: minimax`,
+      `llm.model: MiniMax-M3.1-Flash`, and `POST /api/v1/chat/free` returns an
+      answer with its sources. The node's free-tier cascade had Google Flash
+      first, and that key's prepaid credits are depleted (402), so the
+      cascade was reordered to MiniMax first (TaskMaster #129 carries the
+      code-level fallthrough).
 - [x] **The waitlist keeps its promise — a capture reaches the operator.**
       Checked 2026-11-22 against the deployment
       `4491cb799a150e60fe59cfa54612069c363514b4` (the v5.5.0 tag):
@@ -141,11 +160,11 @@ Day +30          → Product Hunt (after audiences warmed up)
       caller, and without it for anyone else. The demo runs that same
       commit, so the stamp is true of what the visitor is talking to.
 
-## What changed since the drafts were written (2026-11-09 → 2026-11-21)
+## What changed since the drafts were written (2026-11-09 → 2026-11-23)
 
 The five drafts were written against the deployment of 2026-11-09 and are
-re-verified against the deployment of 2026-11-21 (the v5.4.0 build, `sha
-96d70c20f`). Three things moved, and every draft now carries the new truth:
+re-verified against the deployment of 2026-11-23 (the v5.5.0 build, `sha
+4491cb79`). Four things moved, and every draft now carries the new truth:
 
 1. **The demo can be signed into with Google** (`v5.3.4`). The drafts used
    to promise *"no signup"*; the honest claim is narrower — browsing needs
@@ -157,14 +176,25 @@ re-verified against the deployment of 2026-11-21 (the v5.4.0 build, `sha
 3. **The launch URL is `/en`.** The bare root redirects to `/pl`, so an
    English-language audience was landing on a Polish page. Every link in
    every draft now carries the English path.
+4. **The valuation answers from the official register** — the *Rejestr Cen
+   Nieruchomości*, the state's open weekly publication of notarial sales.
+   The register was ingested on the node on 2026-11-23 (826,919 registered
+   sales), and `POST /api/v1/tools/valuation` answers with a price, the
+   band, the median price per square metre, the sample size, the period and
+   the comparable sales themselves. This is now the lead of the Show HN
+   title, the Product Hunt tagline and the maker comment, the first Reddit
+   post and the YouTube money shot — it is the one thing the demo does that
+   a competitor's demo cannot fake, because the data is government open
+   data and the answer shows its evidence.
 
 Also corrected, because they would not survive a reader checking them:
-`v5.1.17` → the current `v5.4.0`; *"the demo uses simulated AI
-responses"* → the demo answers with a real provider; *"16 supported
-providers"* → 17; *"9 languages with EU AI Act compliance labels"* → nine
-locales ship, English and Polish are maintained, the rest fall back to
-English; and the *"~50k monthly demo visitors"* in the r/sideproject draft
-→ the measured 262 unique visitors in a fortnight.
+`v5.1.17` → the current `v5.5.0`; *"the demo uses simulated AI
+responses"* → the demo answers with a real provider (MiniMax
+`MiniMax-M3.1-Flash`); *"16 supported providers"* → 17; *"9 languages with
+EU AI Act compliance labels"* → nine locales ship, English and Polish are
+maintained, the rest fall back to English; and the *"~50k monthly demo
+visitors"* in the r/sideproject draft → the measured 262 unique visitors in
+a fortnight.
 
 ## The demo IS indexed (changed 2026-11-20)
 

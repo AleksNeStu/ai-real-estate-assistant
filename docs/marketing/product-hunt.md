@@ -9,7 +9,7 @@
 
 ## Asset checklist (upload to PH during submission)
 
-Checked on 2026-11-21 (the assets are on disk; the live build is v5.4.0):
+Checked on 2026-11-23 (the assets are on disk; the live build is v5.5.0):
 
 - [x] Logo: 512×512 PNG (transparent background) and JPG (white background) —
       `assets/logo.png` and `assets/logo.jpg`
@@ -39,28 +39,28 @@ Checked on 2026-11-21 (the assets are on disk; the live build is v5.4.0):
 
 ## Tagline (≤ 60 chars)
 
-**Property search that speaks natural language — open source**
+**Property valuation on official notarial prices — open source**
 
 Alternatives:
-- "AI property search with multi-provider LLM fallback"
+- "Free valuation on Poland's official notarial prices"
 - "The open-source Zillow alternative for developers"
 - "Property search that speaks natural language, not filters"
 
 ## Description (≤ 260 chars)
 
-Open-source conversational AI for property search. Ask in natural
-language, get matched listings, valuation forecasts, and neighborhood
-summaries. It remembers your budget and what you ruled out. UI in 9
-languages (en/pl maintained). MIT.
+Open-source property search and valuation. Value any address against
+Poland's official register of notarial prices — with the comparable sales,
+the sample and the period shown. Search in natural language. MIT.
 
 Alternatives (≤ 260 chars each):
-1. An open-source AI property search platform. Built with FastAPI +
-   Next.js 16 + ChromaDB. Multi-provider LLM fallback. UI in 9 languages
-   (en/pl maintained). MIT license. Self-hostable.
-2. The open-source, AI-first alternative to filter-first property
-   portals. Natural language queries, hybrid retrieval, multi-year
-   price forecasts. UI in 9 languages (en/pl maintained). FastAPI +
-   Next.js 16 + ChromaDB. MIT.
+1. Open-source property search with a free valuation on official notarial
+   prices. The comparable sales, the sample and the period are shown, not
+   hidden. FastAPI + Next.js + ChromaDB. 17 LLM providers. UI in 9 languages
+   (en/pl maintained). MIT, self-hostable.
+2. The open-source, AI-first alternative to filter-first property portals.
+   Value an address from the government register of notarial transactions.
+   Hybrid retrieval, buyer memory, natural-language queries. FastAPI +
+   Next.js + ChromaDB. MIT.
 
 ---
 
@@ -88,8 +88,23 @@ Alternatives (≤ 260 chars each):
 
 Hey Product Hunt folks 👋 — solo developer here.
 
-I built AI Real Estate Assistant because every "AI for real estate"
-tool I tried was either $200/month or hallucinated square footage.
+I built AI Real Estate Assistant because every "AI for real estate" tool I
+tried either invented its square footage or asked for a subscription before
+it would show its work.
+
+**The thing to try first:**
+
+Ask for a flat — city, street, area, rooms — and you get a valuation of it
+against **Poland's official register of notarial transaction prices**. The
+register is published weekly by the state mapping office as open data: no
+key, no licence. The engine ingests the sales and compares your address with
+the ones people actually paid for.
+
+You get the price, the band it is confident in, the median price per square
+metre, **how many registered sales the comparison stands on, the period those
+sales cover** — and the comparable sales themselves: address, area, price,
+date, floor and the notary's deed reference. If the comparison is thin, it
+says so instead of inventing a number.
 
 **The story:**
 
@@ -100,6 +115,9 @@ get matched listings. Nothing did that. So I built it.
 
 **What's interesting technically:**
 
+- The register is ingested as open GeoParquet per voivodeship and stored
+  sale by sale, so a valuation never waits for a download and every answer
+  names the sample it stands on
 - A buyer memory: every turn, the same model that answered it reads the
   conversation back and writes down what it learned — a budget, an area
   ruled out, a listing liked or disliked — into a per-buyer table. The next
@@ -110,25 +128,28 @@ get matched listings. Nothing did that. So I built it.
   DeepSeek, MiniMax, local Ollama among them) with automatic fallback chain
 - Environment-conditional lazy provider loading (a memory-capped host
   imports one provider at startup, a VPS imports all 17)
+- A neighbourhood index measured from OpenStreetMap features — every score
+  names the map features it was computed from
 - UI in 9 languages — English and Polish maintained, the rest fall back to
   English
 
 **What's NOT here:**
 
-- Live MLS / Idealista / Otodom feeds (the demo uses curated mock data)
+- Live portal feeds (Otodom, Idealista, MLS) — those are the hosted tier's
+  job. The notarial prices are free and official; the listing feeds are not
 - Native mobile app (PWA only)
 - Payment / escrow / contracts (not in scope)
 
 **Open-core model:**
 
-The engine is MIT-licensed and free. Live data feeds, running it for
-you, and the enterprise pieces gate the hosted tier at
+The engine is MIT-licensed and free. Listing feeds, running it for you, and
+the enterprise pieces gate the hosted tier at
 [propvectorai.com](https://propvectorai.com). Accounts, favourites and
 saved searches are in the repo — they need an account, not a payment.
 This repo is the marketing surface for developers.
 
-Happy to answer questions about the RAG pipeline, ChromaDB tuning, or
-the multi-provider routing logic.
+Happy to answer questions about the register, the RAG pipeline, ChromaDB
+tuning, or the multi-provider routing logic.
 
 ---
 
@@ -137,25 +158,29 @@ the multi-provider routing logic.
 **Comment: "Why would I use this over Zillow?"**
 
 > Zillow is great for end-users browsing real listings in the US.
-> This is built for developers who want a self-hostable, AI-first
-> reference stack. Different audiences. If you want live MLS data on
-> top of this engine, the hosted tier at propvectorai.com covers it.
+> This one is built for developers who want a self-hostable, AI-first
+> reference stack — and, differently, for anyone who wants a price for a
+> specific flat that stands on the notarial register with the comparable
+> sales listed. If you want live portal feeds on top of this engine, the
+> hosted tier at propvectorai.com covers it.
 
 **Comment: "How is this different from Idealista / Otodom / Rightmove?"**
 
-> Same answer — those are end-user portals with live feeds in specific
-> markets. This is a developer platform with mock data out of the box.
-> The hosted tier covers live data in markets where it's commercially
-> viable.
+> Same answer — those are end-user portals with live listing feeds in
+> specific markets. This is a developer platform: the prices it values
+> against are the official notarial register, which is open data, and the
+> comparables behind every answer are listed. The hosted tier covers live
+> listing feeds in markets where it's commercially viable.
 
 **Comment: "Is the AI accurate?"**
 
 > The demo answers with a real model the project pays for — MiniMax's
 > MiniMax-M3.1-Flash — and falls back to a local model if that one is
-> unreachable, so the answers are not canned. The catalogue is seeded demo
-> data, not live listings; in a deployment with your own data, accuracy
-> depends on (a) the source data quality and (b) the LLM provider chosen
-> for the request. The provider chain is in
+> unreachable, so the answers are not canned. The valuation is not a model
+> estimate at all: it is a median over the registered sales of comparable
+> flats, and every answer states how many sales it used and over which
+> period. Accuracy then depends on (a) the source data quality and (b) the
+> LLM provider chosen for the request. The provider chain is in
 > `apps/api/api/dependencies.py`.
 
 **Comment: "Can I self-host this?"**
@@ -163,7 +188,8 @@ the multi-provider routing logic.
 > Yes — MIT license, Docker Compose, 5-minute quickstart.
 > https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/development/QUICKSTART_5MIN.md
 > Bring your own LLM API keys (any of the 17 supported providers or
-> local Ollama).
+> local Ollama). The official price register needs no key at all — it is
+> open data, and one command refreshes it.
 
 **Comment: "Why not Pinecone / pgvector instead of ChromaDB?"**
 

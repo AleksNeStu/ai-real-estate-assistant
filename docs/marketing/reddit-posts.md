@@ -8,14 +8,27 @@
 
 ## Post 1: r/opensource (lead)
 
-**Title:** I built an open-source conversational AI property search
-because Zillow's API died years ago and I'm tired of filter-first portals
+**Title:** I built an open-source property valuation on Poland's official
+notarial prices — it shows you the comparable sales
 
 **Body:**
 
-I shipped [AI Real Estate Assistant](https://github.com/AleksNeStu/ai-real-estate-assistant)
-two years ago and just hit v5.4.0 with multi-year property valuation,
-neighborhood AI summaries, and a buyer memory that learns what you told it.
+I built [AI Real Estate Assistant](https://github.com/AleksNeStu/ai-real-estate-assistant)
+and the part I am proudest of answers one question honestly: *what is this
+flat worth, and what is that number made of?*
+
+Give it a flat — city, street, area, rooms — and it answers with a price, the
+band it is confident in, the median price per square metre, **how many
+registered sales the comparison stands on, the period those sales cover**, and
+the comparable sales themselves: address, area, price, date, floor and the
+notary's deed reference.
+
+The prices come from the *Rejestr Cen Nieruchomości* — the official register
+of notarial transactions, published weekly by the state mapping office as open
+GeoParquet. No key, no licence, no terms. The engine ingests the sales per
+voivodeship and compares your address with the ones people actually paid for.
+If the comparison is too thin to price anything, it says so instead of
+inventing a number.
 
 The stack is intentionally boring:
 - Backend: FastAPI + Python 3.12
@@ -25,6 +38,9 @@ The stack is intentionally boring:
 - MIT license
 
 What makes it interesting technically:
+- The valuation is a median over comparable registered sales, and every
+  answer carries the evidence — the sample, the comparison area, the period
+  and the sales themselves
 - A buyer memory: every turn, the same model that answered the turn reads
   the conversation back and writes down what it learned — a budget, an area
   ruled out, a listing liked or disliked — into a per-buyer table. The next
@@ -34,21 +50,24 @@ What makes it interesting technically:
 - Per-task and per-user LLM provider selection with priority cascade
 - Environment-conditional lazy provider loading (a memory-capped host
   imports one provider at startup; a VPS imports all 17)
+- A neighbourhood index measured from OpenStreetMap features, where every
+  score names the map features it was computed from
 - UI in 9 languages — English and Polish maintained, the rest fall back to
   English
 
-The codebase is open-core: the engine stays free, and the hosted tier
-sells the live data feeds, running it for you, and the enterprise pieces
+The codebase is open-core: the engine stays free, and the hosted tier sells
+the listing feeds, running it for you, and the enterprise pieces
 ([propvectorai.com](https://propvectorai.com)).
 
 Live demo: https://realty.kittray.com/en
-Browsing needs no account; sign in with Google to switch on the memory.
+Browsing and the valuation need no account; sign in with Google to switch on
+the memory.
 
 Architecture write-up if you want to skip the code:
 [large-saas-overview.md](https://github.com/AleksNeStu/ai-real-estate-assistant/blob/dev/docs/architecture/large-saas-overview.md)
 
-Happy to answer questions about RAG, ChromaDB tuning, or the multi-
-provider routing logic.
+Happy to answer questions about the register, RAG, ChromaDB tuning, or the
+multi-provider routing logic.
 
 ---
 
@@ -63,37 +82,45 @@ Two years ago I started [AI Real Estate Assistant](https://github.com/AleksNeStu
 because every "AI for X" tool I tried for real estate either cost
 $200/month or hallucinated square footage.
 
-Today it's an open-source conversational property search platform with a
+Today it's an open-source property search and valuation platform with a
 hosted SaaS tier ([propvectorai.com](https://propvectorai.com)). The demo
 gets a few hundred unique visitors a fortnight — small, but the traffic that
 arrives is developers, which is the point.
 
 Things I learned the hard way:
 
-1. **Multi-provider LLM routing isn't optional.** When OpenAI rate-limits
+1. **The price has to come from somewhere real.** The first version valued a
+   flat by multiplying its area by the catalogue's own price per square
+   metre — a number that came from nowhere and looked like an answer. The
+   version that shipped values it against the *notarial register*: the
+   official weekly publication of what people actually paid for flats, as
+   open data. The answer now says how many sales it used, over which period,
+   and lists them. Showing the evidence turned out to be the whole product.
+
+2. **Multi-provider LLM routing isn't optional.** When OpenAI rate-limits
    you at 2am on a Saturday and your entire demo dies, you learn fast.
    The fallback chain lives in
    `apps/api/utils/free_tier.py`.
 
-2. **512 MB of RAM is brutal.** Solved with environment-conditional
+3. **512 MB of RAM is brutal.** Solved with environment-conditional
    lazy provider loading — on a memory-capped host only the active
    `DEFAULT_PROVIDER` is imported at startup, the rest load on first use;
    everywhere else all 17 load eagerly, so local dev and CI behave
    exactly as they always did. Full DX on a VPS, and the demo still fits
    on a small host.
 
-3. **9 languages took longer than the RAG pipeline.** Translation keys,
+4. **9 languages took longer than the RAG pipeline.** Translation keys,
    locale-aware date / currency / number formatting, hreflang SEO,
    per-language LLM prompts. Worth it — DACH and LatAm markets are
    materially different from the English-first default. Today the interface
    ships in 9 locales, with English and Polish maintained and the other
    seven frozen, falling back to English rather than rotting.
 
-4. **ChromaDB with MMR reranking changed the result set.** Started
+5. **ChromaDB with MMR reranking changed the result set.** Started
    with pure vector search; reranker changed everything. See
    `apps/api/vector_store/reranker.py`.
 
-5. **Making the assistant remember is harder than making it answer.** The
+6. **Making the assistant remember is harder than making it answer.** The
    extraction is one model call per turn, and it has to share the model that
    answered the turn — a second provider would mean a second bill and a
    second thing to fail. The part that surprised me: a disliked listing and
@@ -101,9 +128,9 @@ Things I learned the hard way:
    rejected listing lower still shows it; removing it is what the buyer
    actually asked for.
 
-The most fun part: v5.2 added AI property valuation with a 10-year
-forecast, and the current build added the buyer memory. Property detail
-pages show a neighborhood one-liner too.
+The most fun part: the valuation now prices a flat from the notarial
+register, the current build added the buyer memory, and property detail
+pages show a neighbourhood one-liner measured from the map.
 
 Live demo: https://realty.kittray.com/en
 
@@ -114,13 +141,24 @@ multi-language UX, happy to share more code snippets in the comments.
 
 ## Post 3: r/programming (technical deep-dive)
 
-**Title:** Lessons from building a RAG-powered property search with
-ChromaDB and multi-provider LLM fallback
+**Title:** Lessons from pricing a flat against a government register of
+notarial sales
 
 **Body:**
 
 We just shipped v5.3 of [AI Real Estate Assistant](https://github.com/AleksNeStu/ai-real-estate-assistant)
 and I want to share the architectural decisions that mattered.
+
+**A valuation is a measurement with a sample, so it has to carry the
+sample.** The register of notarial transactions is published weekly, per
+voivodeship, as open GeoParquet — no key, no licence. We ingest the sales
+and compare an address with the comparable ones. Every answer states the
+median price per square metre, **the number of registered sales it stands
+on, the period those sales cover and the comparison area**, and lists the
+sales themselves with their deed references. When the street has too few
+sales, the comparison widens to the city — and says that it did. The part
+that matters: the code path that finds no sales returns no number, so an
+answer can never be a number with nothing under it.
 
 **Hybrid retrieval is non-negotiable for property search.** Pure
 vector search misses exact-match queries ("2-bedroom", "Kraków",
@@ -190,8 +228,9 @@ Grok, DeepSeek, MiniMax, Ollama) in a self-hostable property search demo
 
 Sharing the LLM routing logic from
 [AI Real Estate Assistant](https://github.com/AleksNeStu/ai-real-estate-assistant)
-— an open-source conversational property search platform, v5.3, shipping
-property valuation, neighborhood AI summaries and a buyer memory.
+— an open-source property search and valuation platform, v5.3, shipping a
+valuation against the official notarial register, neighbourhood summaries and
+a buyer memory.
 
 The trick: a provider chain, not just a single `DEFAULT_PROVIDER`.
 
@@ -206,9 +245,10 @@ EMBEDDINGS    → a dedicated local embedding model
 The free-tier cascade (`POST /api/v1/chat/free`, the endpoint that needs
 no account) is a deployment variable: the repository default is MiniMax →
 Ollama (local, on the server) → OpenRouter's free models → Google's free
-Flash, and the public demo runs Google's free Flash first. The demo's own
-chat has its own chain — the configured provider, then the default one, then
-Ollama — so an outage upstream costs the demo nothing.
+Flash. The public demo runs MiniMax first — the provider the deployment
+already pays for — with Google's free Flash behind it. The demo's own
+chat has its own chain — the configured provider, then the default one,
+then Ollama — so an outage upstream costs the demo nothing.
 
 When the primary provider rate-limits during a Saturday demo, the next one
 in the chain picks up the chat — the primary provider, then the default
@@ -223,11 +263,12 @@ eager import on a VPS and in local dev.
 
 What surprised me:
 - **The deployment's default model carries the structured work** —
-  the search and tool paths run on the model the agent already holds, and
-  the expensive model is the one that writes prose.
+  the search and tool paths run on the model the agent already holds, and the
+  expensive model is the one that writes prose.
 - **Local Ollama is a real fallback, not a gimmick.** A 7B instruct model
-  handles chat and neighborhood summaries surprisingly well. Property
-  valuation is too nuanced for it though.
+  handles chat and neighborhood summaries surprisingly well. The valuation is
+  arithmetic over registered sales rather than prose, which is exactly why it
+  can run without a model at all.
 - **Embeddings via local bge-small are fine for demo, but production
   wants text-embedding-3-small.** Retrieval quality matters more than
   inference cost for embeddings.

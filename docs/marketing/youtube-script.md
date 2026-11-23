@@ -8,13 +8,13 @@
 
 ## Video 1: 90-second hero demo (vertical + landscape)
 
-**Title:** AI Real Estate Assistant — search with natural language
+**Title:** AI Real Estate Assistant — what is this flat actually worth?
 
 **Hook (0-5s):**
 
-> "Tired of clicking through 14 dropdowns just to find an apartment?
-> Watch me search for one in plain English — and watch it actually
-> work."
+> "Every property portal tells you a price. Almost none of them tell you
+> what that price is made of. Watch me price a flat against Poland's
+> official register of notarial sales."
 
 **Demo (5-50s):**
 
@@ -24,11 +24,16 @@
 4. (20s) Show results appearing — filters extracted, listings matched
 5. (25s) Click a listing → show property detail page with neighborhood
    one-liner
-6. (35s) Click "Valuation" tab → show multi-year forecast
-7. (45s) Switch language to Polish → show localized UI
+6. (35s) Open the valuation → type the address, city, area, rooms
+7. (45s) **The money shot:** the valuation answer — the estimate, the band,
+   the median price per square metre, the number of registered sales it
+   stands on, the period those sales cover — and the comparable sales
+   listed underneath, each with its area, its price, its date and the
+   notary's deed reference
 
-**The beat that makes it (50-72s):** sign in with Google, then run two
-turns —
+**The beat that makes it (50-72s):**
+
+Sign in with Google, then run two turns —
 
 1. ask "2-bedroom apartment in Kraków" → results include Kazimierz
 2. say "actually, nothing in Kazimierz" → the assistant acknowledges
@@ -40,30 +45,32 @@ part a competitor demo cannot copy in a weekend.
 
 **Tagline (72-84s):**
 
-> "Open-source, MIT-licensed, self-hostable. 17 LLM providers with
-> automatic fallback. It remembers your budget and what you ruled out.
-> FastAPI + Next.js + ChromaDB. Live demo at realty.kittray.com/en.
-> Source on GitHub: AleksNeStu / ai-real-estate-assistant. Hosted tier at
-> propvectorai.com."
+> "The prices are the official notarial register — published weekly, open
+> data, and the comparable sales are right there under the answer.
+> Open-source, MIT-licensed, self-hostable. It remembers your budget and
+> what you ruled out. FastAPI + Next.js + ChromaDB. Live demo at
+> realty.kittray.com/en. Source on GitHub: AleksNeStu /
+> ai-real-estate-assistant. Hosted tier at propvectorai.com."
 
 **CTA (84-90s):**
 
-> "Star the repo if you find it useful. We have financial tools, AI
-> valuation, a map with clustered markers, and an assistant that
-> remembers you. Thanks for watching."
+> "Star the repo if you find it useful. We have financial tools, a valuation
+> that shows its evidence, a map with clustered markers, and an assistant
+> that remembers you. Thanks for watching."
 
 ---
 
 ## Video 2: 8-minute architecture deep-dive (landscape)
 
-**Title:** Building a self-hostable AI property search — architecture deep-dive
+**Title:** Building a self-hostable property valuation on an open government
+register — architecture deep-dive
 
 **Hook (0-15s):**
 
 > "Three years ago I moved to Poland and tried to find an apartment.
-> Every portal was filter-first. So I built this. Today it's an
-> open-source AI property search with multi-provider LLM fallback,
-> hybrid retrieval, and an assistant that remembers what you told it.
+> Every portal was filter-first, and every price on them was a black box.
+> So I built this: a property search that values a flat against Poland's
+> official register of notarial sales, and shows the sales it compared.
 > Here's the architecture."
 
 **Section 1: The stack (15-60s)**
@@ -76,7 +83,25 @@ part a competitor demo cannot copy in a weekend.
   falling back to English
 - Why this stack: boring tech, no-GPL, 1-year-old libs
 
-**Section 2: Hybrid retrieval (60-150s)**
+**Section 2: The register and the valuation (60-190s)**
+
+- The source: *Rejestr Cen Nieruchomości* — the official register of
+  notarial transactions, published weekly by the state mapping office as
+  open GeoParquet, one file per voivodeship. No key, no licence, no terms.
+- The ingest: `python -m data.rcn.rcn_ingest` downloads the exports, keeps
+  only the residential flats of the last six years, and stores the sales it
+  does not hold yet — the register republishes the whole history every week
+- The comparison: an address is compared with the registered sales of its
+  street; when the street is too thin, with the city's
+- The answer carries the evidence: the median price per square metre, the
+  sample size, the comparison area, the period, and the comparable sales
+  with their deed references
+- The rule: a place with too few sales returns **no** price — a measurement
+  with no sample is not a measurement
+- Show code: `apps/api/data/rcn/rcn_client.py`, `apps/api/data/rcn/rcn_ingest.py`,
+  `apps/api/agents/services/valuation.py`
+
+**Section 3: Hybrid retrieval (190-260s)**
 
 - Pure vector search misses exact matches ("2-bedroom", "Kraków",
   price ceilings under 500k)
@@ -86,7 +111,7 @@ part a competitor demo cannot copy in a weekend.
 - Show code: `apps/api/vector_store/reranker.py`
 - Show ChromaDB query construction with semantic + keyword weights
 
-**Section 3: Multi-provider LLM routing (150-270s)**
+**Section 4: Multi-provider LLM routing (260-380s)**
 
 - The provider chain in `apps/api/api/dependencies.py`
 - Chat → the visitor's or the deployment's provider, then the default one,
@@ -97,12 +122,12 @@ part a competitor demo cannot copy in a weekend.
 - The free-tier chain (`/api/v1/chat/free`): the order is a deployment
   variable — the repository default is MiniMax → Ollama (local, on our own
   server) → OpenRouter free models → Google's free Flash, and the public
-  demo runs Google's free Flash first
+  demo runs MiniMax first
 - When one provider rate-limits, the demo keeps working — automatic
   fallback chain
 - Show code: provider factory + lazy import logic
 
-**Section 4: The buyer memory (270-360s)**
+**Section 5: The buyer memory (380-460s)**
 
 - The problem: growing the context window re-bills the whole history
   every turn and still forgets by turn ten
@@ -119,7 +144,7 @@ part a competitor demo cannot copy in a weekend.
 - Show code: `apps/api/services/buyer_memory_service.py` and
   `apps/api/api/routers/chat.py`
 
-**Section 5: Nine languages, two maintained (360-405s)**
+**Section 6: Nine languages, two maintained (460-500s)**
 
 - Translation keys: `messages/{locale}.json`
 - Locale-aware date / currency / number formatting
@@ -131,7 +156,7 @@ part a competitor demo cannot copy in a weekend.
   nothing
 - Show code: `apps/web/src/i18n/policy.ts` and `merge.ts`
 
-**Section 6: Lazy loading and the host (405-450s)**
+**Section 7: Lazy loading and the host (500-545s)**
 
 - The provider factory knows 17 providers; importing all of them costs
   real memory
@@ -143,14 +168,14 @@ part a competitor demo cannot copy in a weekend.
 - One code path, two memory profiles
 - Show code: the `RENDER` check in `provider_factory.py`
 
-**Section 7: Open-core model + hosted tier (450-480s)**
+**Section 8: Open-core model + hosted tier (545-575s)**
 
 - Engine stays MIT-licensed and free
-- Live data feeds, accounts, AI CRM gate the hosted tier
-- propvectorai.com covers live MLS / portal feeds
+- Listing feeds, accounts, AI CRM gate the hosted tier
+- propvectorai.com covers the live portal feeds
 - This repo is the marketing surface for developers
 
-**CTA (480-500s):**
+**CTA (575-595s):**
 
 > "Live demo at realty.kittray.com/en. Source on GitHub.
 > Self-hostable with Docker. Hosted tier at propvectorai.com. Thanks
@@ -162,15 +187,17 @@ part a competitor demo cannot copy in a weekend.
 
 **Hook (0-3s):**
 
-> "I built an AI that searches real estate in plain English."
+> "I built an AI that prices a flat from the official notarial register —
+> and shows the sales it used."
 
 **Demo (3-22s):**
 
-1. (3s) Type query
-2. (8s) Show results
-3. (12s) Show property detail
+1. (3s) Type the address into the valuation
+2. (8s) The estimate and the band appear
+3. (12s) Scroll to the comparable sales — the prices people paid, with
+   their dates and deed references
 4. (16s) Switch language
-5. (20s) Show map
+5. (20s) Show the map
 
 **CTA (22-30s):**
 
@@ -187,6 +214,11 @@ part a competitor demo cannot copy in a weekend.
 - [ ] Search results page with filters
 - [ ] Property detail page with neighborhood one-liner highlighted
 - [ ] Valuation page with multi-year forecast chart
+- [ ] **The register valuation answer** — the estimate, the band, the
+      median price per square metre, the sample size and the period, with
+      the comparable sales listed underneath (this is the shot the video is
+      for — take it in the dark theme, large enough to read the deed
+      references)
 - [ ] Map view with clustered markers
 - [ ] Language switcher dropdown (open)
 - [ ] Polish-language UI (after switching)
@@ -199,6 +231,7 @@ part a competitor demo cannot copy in a weekend.
 - [ ] Signing in with Google
 - [ ] The second chat turn — the one where the memory applies (say "nothing
       in Kazimierz", show the next result set without it)
+- [ ] Entering the address in the valuation form and the answer arriving
 - [ ] Switching languages
 - [ ] Scrolling results
 - [ ] Hover effects on property cards
