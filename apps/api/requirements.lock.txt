@@ -17,7 +17,7 @@ aiosqlite==0.22.1
     # via -r requirements.txt
 alembic==1.20.1
     # via -r requirements.txt
-annotated-doc==0.0.6
+annotated-doc==0.0.7
     # via
     #   fastapi
     #   typer
