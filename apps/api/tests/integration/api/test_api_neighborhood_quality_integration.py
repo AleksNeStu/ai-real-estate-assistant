@@ -232,6 +232,45 @@ def test_a_point_is_answered_with_the_factors_and_the_pois_they_came_from():
     assert "geographic_coordinates" in body["data_sources"]
 
 
+def test_a_factor_the_map_cannot_answer_is_answered_without_a_score():
+    """The provider is down: the endpoint answers with the factor left open.
+
+    The answer is 200 - the factor carries no score, and the reason it
+    carries none is named. The endpoint answered 400 before: the response
+    model asked for a number the map had not given.
+    """
+    neighborhood, safety, air_quality, noise, transport = _providers()
+    neighborhood.count_schools.side_effect = RuntimeError("the provider is down")
+
+    key = get_settings().api_access_key
+    with _stubbed_providers(
+        neighborhood=neighborhood,
+        safety=safety,
+        air_quality=air_quality,
+        noise=noise,
+        transport=transport,
+    ):
+        response = client.post(
+            "/api/v1/tools/neighborhood-quality",
+            json=POINT,
+            headers={"X-API-Key": key},
+        )
+
+    assert response.status_code == 200
+    body = response.json()
+
+    # The factor nobody could measure carries no score.
+    assert body["schools_score"] is None
+    # The factors that could be measured still carry theirs.
+    assert body["amenities_score"] is not None
+    assert body["safety_score"] == 75.0
+    # And the reason is in the answer.
+    assert (
+        "the provider could not be asked for the schools nearby"
+        in (body["components_without_data"]["schools"])
+    )
+
+
 def test_a_factor_the_map_cannot_answer_carries_no_score_and_says_why():
     """The provider is down: the factor is left without a number, and the reason is named.
 
