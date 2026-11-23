@@ -22,6 +22,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { describe, it, expect } from '@jest/globals';
+
 import enCatalog from '../../../messages/en.json';
 import plCatalog from '../../../messages/pl.json';
 
@@ -34,13 +36,13 @@ function tierRows(): Row[] {
   const heading = README.indexOf('## The hosted version, and what comes next');
   expect(heading).toBeGreaterThan(-1);
 
-  const table = README.slice(heading).split('\n').filter((line) => line.startsWith('|'));
+  const table = README.slice(heading).split('\n').filter((line: string) => line.startsWith('|'));
   // The header row, the separator, then the capability rows.
-  return table.slice(2).map((line) => {
+  return table.slice(2).map((line: string) => {
     const cells = line
       .split('|')
       .slice(1, -1)
-      .map((cell) => cell.trim());
+      .map((cell: string) => cell.trim());
     return { capability: cells[0], free: cells[1], hosted: cells[2] };
   });
 }
@@ -81,7 +83,7 @@ describe('the tier copy states what each tier ships today', () => {
 
     it.each(SHIPPED_BY_THIS_REPOSITORY)(
       'puts %s in the free column, because the repository ships it',
-      (pattern) => {
+      (pattern: RegExp) => {
         const row = rowMatching(pattern);
 
         expect(row.free).toBe('Free');
