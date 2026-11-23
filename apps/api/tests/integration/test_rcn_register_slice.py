@@ -27,6 +27,7 @@ import pyarrow as pa  # noqa: E402
 import pyarrow.parquet as pq  # noqa: E402
 
 FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "rcn" / "krakow_sample.json"
+POZNAN_FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "rcn" / "poznan_sample.json"
 
 EXPORT_COLUMNS = [
     "gid",
@@ -58,6 +59,24 @@ def _recorded_export(tmp_path: Path) -> Path:
         else:
             values[column] = [row.get(column) for row in rows]
     path = tmp_path / "12_transakcje_ceny_lokale.parquet"
+    pq.write_table(pa.table(values), path)
+    return path
+
+
+def _recorded_poznan_export(tmp_path: Path) -> Path:
+    """The recorded answer for a municipality the register does not name.
+
+    Poznań's starosta files the sales of the city without an address, so the
+    rows of the export carry no place and no street.
+    """
+    rows = json.loads(POZNAN_FIXTURE.read_text(encoding="utf-8"))
+    values: dict[str, list] = {}
+    for column in EXPORT_COLUMNS:
+        if column == "dok_data":
+            values[column] = [date.fromisoformat(row["dok_data"]) for row in rows]
+        else:
+            values[column] = [row.get(column) for row in rows]
+    path = tmp_path / "30_transakcje_ceny_lokale.parquet"
     pq.write_table(pa.table(values), path)
     return path
 
@@ -113,6 +132,54 @@ class TestTheSlice:
 
         assert outcome.estimated_value is None
         assert outcome.notes
+
+
+class TestTheCityTheRegisterDoesNotName:
+    """Poznań, priced from the register like every other city.
+
+    The starosta of the city files its sales without an address, so the code
+    of the municipality is the only place those rows carry. The city is
+    priced from them anyway: the price a square metre costs, the sample that
+    figure is measured on, the period it covers and the sales themselves -
+    and the comparison is the city, not a street.
+    """
+
+    async def test_the_city_is_priced_from_its_own_sales(self, db_session, tmp_path, monkeypatch):
+        export = _recorded_poznan_export(tmp_path)
+        monkeypatch.setattr(rcn_client, "download_export", lambda *a, **k: export)
+
+        report = await ingest_voivodeship(db_session, "30", cache_dir=tmp_path)
+        assert report.inserted == 55
+
+        provider = RcnValuationProvider(db_session)
+        outcome = await provider.place_outcome("Poznań")
+
+        # The figures, and the evidence under them.
+        assert outcome.has_figures
+        assert outcome.median_price_per_sqm is not None
+        assert outcome.comparison_area == "Poznań"
+        assert outcome.sample_size > 0
+        assert outcome.period_start is not None and outcome.period_end is not None
+        assert outcome.registered_count is not None
+        assert outcome.registered_count >= outcome.sample_size
+        # The sales themselves, with the deeds the register gave them.
+        assert outcome.comparables
+        assert all(comparable["deed_reference"] for comparable in outcome.comparables)
+
+    async def test_a_flat_there_is_priced_from_the_city(self, db_session, tmp_path, monkeypatch):
+        export = _recorded_poznan_export(tmp_path)
+        monkeypatch.setattr(rcn_client, "download_export", lambda *a, **k: export)
+        await ingest_voivodeship(db_session, "30", cache_dir=tmp_path)
+
+        provider = RcnValuationProvider(db_session)
+        outcome = await provider.outcome({"city": "Poznań", "street": "Długa", "area_sqm": 50})
+
+        # The register holds no sale of that street, so the comparison is the
+        # city - and the answer says so.
+        assert outcome.estimated_value is not None
+        assert outcome.sample_size > 0
+        assert any("city" in note.lower() for note in outcome.notes)
+        assert all(comparable["deed_reference"] for comparable in outcome.comparables)
 
 
 @pytest.mark.integration

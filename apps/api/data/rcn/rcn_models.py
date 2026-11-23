@@ -33,9 +33,14 @@ class RCNAddress:
     number: str = ""
 
     def __str__(self) -> str:
-        parts = [self.street]
+        # A sale the register published without a street is named by the city
+        # it belongs to, and nothing else - a street with nothing in front of
+        # it would be a street the register never named.
+        parts = [self.street] if self.street else []
         if self.number:
             parts.append(self.number)
+        if not parts:
+            return self.city
         return f"{', '.join(parts)}, {self.city}" if self.city else ", ".join(parts)
 
 

@@ -6,7 +6,7 @@ reader — the parsing, the filtering and the address format are the contract.
 """
 
 import io
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -58,7 +58,7 @@ def _row(
     rooms=2,
     floor=3,
     price: Optional[float] = 640000.0,
-    address="MSC:KRAKÓW;UL:TOPOLOWA;NR_PORZ:47",
+    address: Optional[str] = "MSC:KRAKÓW;UL:TOPOLOWA;NR_PORZ:47",
 ):
     return {
         "gid": gid or f"gid-{external_id}",
@@ -224,6 +224,55 @@ class TestReadExport:
         path = _write_export(tmp_path / "12.parquet", [_row(floor=-1)])
 
         assert list(read_export(path))[0].floor is None
+
+
+class TestAMunicipalityWithoutAddresses:
+    """The register publishes Poznań's sales without naming a street.
+
+    The code of the municipality is the only place those rows carry, so the
+    row is kept with the city and no street instead of being dropped - the
+    valuation compares it with the city's sales.
+    """
+
+    def test_the_city_is_read_from_the_code(self, tmp_path):
+        path = _write_export(
+            tmp_path / "30.parquet",
+            [_row(external_id="poznan", teryt="3064", address=None)],
+        )
+
+        transactions = list(read_export(path))
+
+        assert len(transactions) == 1
+        assert transactions[0].address.city == "POZNAŃ"
+        assert transactions[0].address.street == ""
+        assert transactions[0].address.number == ""
+        assert transactions[0].teryt == "3064"
+
+    def test_a_city_the_register_names_keeps_its_rule(self, tmp_path):
+        # Kraków is published with the street of every sale, so a row that
+        # names none is a sale the register did not locate, and it is dropped
+        # as it always was.
+        path = _write_export(
+            tmp_path / "12.parquet",
+            [_row(external_id="krakow", teryt="1261", address=None)],
+        )
+
+        assert list(read_export(path)) == []
+
+    def test_a_deed_that_has_not_happened_yet_is_not_a_sale(self, tmp_path):
+        path = _write_export(
+            tmp_path / "30.parquet",
+            [
+                _row(
+                    external_id="future",
+                    teryt="3064",
+                    address=None,
+                    deed_date=date.today() + timedelta(days=1),
+                )
+            ],
+        )
+
+        assert list(read_export(path)) == []
 
 
 class _FakeResponse:

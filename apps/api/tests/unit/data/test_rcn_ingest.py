@@ -19,12 +19,14 @@ from data.rcn.rcn_client import RCN_VOIVODESHIPS, read_export
 from data.rcn.rcn_ingest import external_id_for, store_transactions, to_row
 from data.rcn.rcn_models import RCNAddress, RCNTransaction
 from db.models import PropertyTransaction
+from db.property_transaction_repo import transactions_for
 
 pytest.importorskip("pyarrow")
 import pyarrow as pa  # noqa: E402
 import pyarrow.parquet as pq  # noqa: E402
 
 FIXTURE = Path(__file__).resolve().parents[2] / "fixtures" / "rcn" / "krakow_sample.json"
+POZNAN_FIXTURE = Path(__file__).resolve().parents[2] / "fixtures" / "rcn" / "poznan_sample.json"
 
 EXPORT_COLUMNS = [
     "gid",
@@ -67,6 +69,12 @@ def _recorded_transactions(tmp_path: Path) -> list[RCNTransaction]:
     return list(read_export(_write_export(tmp_path / "12.parquet", _recorded_rows())))
 
 
+def _recorded_poznan_transactions(tmp_path: Path) -> list[RCNTransaction]:
+    """The recorded sales of a municipality the register publishes without a street."""
+    rows = json.loads(POZNAN_FIXTURE.read_text(encoding="utf-8"))
+    return list(read_export(_write_export(tmp_path / "30.parquet", rows)))
+
+
 class TestRecordedRegister:
     """The recorded answer of the real service."""
 
@@ -84,6 +92,38 @@ class TestRecordedRegister:
         transactions = _recorded_transactions(tmp_path)
 
         assert len({t.external_id for t in transactions}) == len(transactions)
+
+
+class TestAMunicipalityWithoutAddresses:
+    """A sale the register published without a street.
+
+    The row is stored with the city the code of the municipality names and
+    with no street: a read of the city finds the sale, a read of a street
+    does not.
+    """
+
+    def test_the_row_is_stored_with_the_city_and_no_street(self, tmp_path):
+        transaction = _recorded_poznan_transactions(tmp_path)[0]
+
+        row = to_row(transaction, "https://example.invalid/30.parquet")
+
+        assert row.city == "POZNAŃ"
+        assert row.city_norm == "POZNAN"
+        assert row.street == ""
+        assert row.street_norm == ""
+        assert row.teryt == "3064"
+
+    async def test_the_city_read_finds_the_sale_and_a_street_read_does_not(
+        self, db_session, tmp_path
+    ):
+        transactions = _recorded_poznan_transactions(tmp_path)
+        await store_transactions(db_session, transactions, "https://example.invalid/30.parquet")
+
+        city = await transactions_for(db_session, "POZNAN")
+        street = await transactions_for(db_session, "POZNAN", "DŁUGA")
+
+        assert len(city) == len(transactions)
+        assert street == []
 
 
 class TestExternalId:

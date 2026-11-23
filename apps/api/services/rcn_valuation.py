@@ -563,6 +563,14 @@ def place_figures(
     notes = []
     if market_note:
         notes.append(market_note)
+    if all(not t.address.street for t in sales):
+        # The register published these sales without naming a street - the
+        # starosta of Poznań files the sales of the city that way - so the
+        # comparison is the city and the page has to say so.
+        notes.append(
+            "The register publishes the sales of this place without naming a street - "
+            "the comparison is the city and not a street."
+        )
     if registered_count is not None and registered_count > len(sales):
         notes.append(
             f"The register holds {registered_count} registered sale(s) between "

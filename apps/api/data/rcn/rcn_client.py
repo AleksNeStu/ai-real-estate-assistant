@@ -42,6 +42,19 @@ RCN_VOIVODESHIPS: dict[str, str] = {
     "30": "wielkopolskie",
 }
 
+# The municipalities whose sales the register publishes without a street.
+#
+# Poznań's starosta files the sales of the city with no address at all: every
+# row of the city's export carries no place and no street, and the code of
+# the municipality is the only thing that says where they happened. The other
+# four cities the site knows are published with the street of every sale, so
+# they keep the rule they have always had.
+#
+# The codes are the TERYT codes the national registry of territorial
+# divisions gives the municipalities - the same codes the register files
+# every sale under.
+MUNICIPALITIES_WITHOUT_ADDRESS: frozenset[str] = frozenset({"3064"})
+
 # A flat, not a garage, a shop or a plot.
 UNIT_PROPERTY_KIND = "nieruchomoscLokalowa"
 RESIDENTIAL_FUNCTION = "mieszkalna"
@@ -91,18 +104,18 @@ class RcnExportError(RuntimeError):
     """The export could not be fetched or read."""
 
 
-def parse_rcn_address(raw: Optional[str]) -> Optional[dict[str, str]]:
-    """Split the register's packed address into its parts.
+def _address_parts(raw: Optional[str]) -> dict[str, str]:
+    """The parts of the register's packed address that carry a value.
 
     ``"MSC:KRAKÓW;UL:RACIBORSKA;NR_PORZ:17"`` becomes
     ``{"city": "KRAKÓW", "street": "RACIBORSKA", "number": "17"}``.
 
     The register is not consistent about which parts it carries — a plot has no
     street and a village address has no number — so every part is optional and
-    an address with nothing readable in it is rejected rather than guessed at.
+    what is not there is simply not in the answer.
     """
     if not raw or not isinstance(raw, str):
-        return None
+        return {}
 
     parts: dict[str, str] = {}
     for chunk in raw.split(";"):
@@ -112,7 +125,19 @@ def parse_rcn_address(raw: Optional[str]) -> Optional[dict[str, str]]:
         field = _ADDRESS_KEYS.get(key.strip().upper())
         if field and value.strip():
             parts[field] = value.strip()
+    return parts
 
+
+def parse_rcn_address(raw: Optional[str]) -> Optional[dict[str, str]]:
+    """Split the register's packed address into its parts.
+
+    ``"MSC:KRAKÓW;UL:RACIBORSKA;NR_PORZ:17"`` becomes
+    ``{"city": "KRAKÓW", "street": "RACIBORSKA", "number": "17"}``.
+
+    A sale is located by the street it was sold on, so an address without a
+    street is not an address and is rejected rather than guessed at.
+    """
+    parts = _address_parts(raw)
     if not parts.get("street"):
         return None
     return parts
@@ -202,13 +227,45 @@ def _number(value) -> Optional[float]:
     return number
 
 
+def _city_of_an_unlocated_sale(row: dict) -> tuple[str, str, str]:
+    """The city of a sale the register published without a street.
+
+    The register names the place of a sale in the sale's own address. A
+    municipality it publishes without one is a municipality it does not name,
+    and there the code of the municipality is the only place the row carries.
+    A sale the register does not locate is still a sale of that municipality,
+    so the row is kept with that city and no street - and the valuation
+    compares it with the city's sales.
+
+    A municipality the register publishes with addresses is a municipality it
+    names, and a row of it that names no street is dropped as it always was:
+    the four cities that already answer keep the figures they have.
+    """
+    teryt = str(row.get("teryt") or "")
+    if teryt not in MUNICIPALITIES_WITHOUT_ADDRESS:
+        return "", "", ""
+
+    # The import is made here, not at the top of the module: the catalogue of
+    # places reads the register's own models, and the package of the register
+    # reads this module - a top-level import would close the circle.
+    from data.places import city_for_teryt
+
+    return city_for_teryt(teryt) or "", "", ""
+
+
 def _row_to_transaction(row: dict) -> Optional["RCNTransaction"]:
     """Turn one parquet row into an ``RCNTransaction``, or None if it is not one."""
     from data.rcn.rcn_models import RCNAddress, RCNTransaction
 
-    address_parts = parse_rcn_address(row.get("lok_adres"))
-    if not address_parts:
-        return None
+    address_parts = _address_parts(row.get("lok_adres"))
+    if address_parts.get("street"):
+        city = address_parts.get("city", "")
+        street = address_parts["street"]
+        number = address_parts.get("number", "")
+    else:
+        city, street, number = _city_of_an_unlocated_sale(row)
+        if not city:
+            return None
 
     area = _number(row.get("lok_pow_uzyt"))
     if area is None or not (MIN_AREA_SQM <= area <= MAX_AREA_SQM):
@@ -228,6 +285,11 @@ def _row_to_transaction(row: dict) -> Optional["RCNTransaction"]:
     if isinstance(deed_date, datetime):
         deed_date = deed_date.date()
     if not isinstance(deed_date, date) or deed_date.year < EARLIEST_YEAR:
+        return None
+    if deed_date > date.today():
+        # A deed is registered after it was signed, and the register's export
+        # carries the typos of the notaries who filed them - deeds of the year
+        # 9200 are in it. A sale that has not happened yet is not a sale.
         return None
 
     rooms = _number(row.get("lok_liczba_izb"))
@@ -249,9 +311,9 @@ def _row_to_transaction(row: dict) -> Optional["RCNTransaction"]:
         external_id=str(row.get("gid") or ""),
         teryt=str(row.get("teryt") or ""),
         address=RCNAddress(
-            city=address_parts.get("city", ""),
-            street=address_parts["street"],
-            number=address_parts.get("number", ""),
+            city=city,
+            street=street,
+            number=number,
         ),
         area_sqm=area,
         price=price,

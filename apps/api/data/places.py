@@ -45,11 +45,18 @@ class Place:
     catalogue calls the city - it is the key the listings are written with.
     ``register_city`` is the register's own spelling of the municipality,
     which is what the register's rows are keyed by.
+
+    ``teryt`` is the code of the municipality in the national registry of
+    territorial divisions - the code the register files every sale of the
+    city under. It is the one place the register's own exports name the
+    municipality in, for the starostas who publish their sales without an
+    address.
     """
 
     name: str
     seed_name: str
     register_city: str
+    teryt: str
     districts: tuple[District, ...]
 
 
@@ -137,13 +144,14 @@ CITY_STREETS: dict[str, tuple[str, ...]] = {
 
 # The register spells the city its own way; the catalogue of listings spells
 # it another. Both are kept, so a page can be written in the register's
-# wording and a listing in the catalogue's.
+# wording and a listing in the catalogue's. The TERYT code is the code the
+# register files the city's sales under.
 _PLACE_SEEDS = (
-    ("Kraków", "Kraków", "KRAKÓW"),
-    ("Warszawa", "Warsaw", "WARSZAWA"),
-    ("Gdańsk", "Gdańsk", "GDAŃSK"),
-    ("Wrocław", "Wrocław", "WROCŁAW"),
-    ("Poznań", "Poznań", "POZNAŃ"),
+    ("Kraków", "Kraków", "KRAKÓW", "1261"),
+    ("Warszawa", "Warsaw", "WARSZAWA", "1465"),
+    ("Gdańsk", "Gdańsk", "GDAŃSK", "2261"),
+    ("Wrocław", "Wrocław", "WROCŁAW", "0264"),
+    ("Poznań", "Poznań", "POZNAŃ", "3064"),
 )
 
 
@@ -159,9 +167,10 @@ PLACES: tuple[Place, ...] = tuple(
         name=name,
         seed_name=seed_name,
         register_city=register_city,
+        teryt=teryt,
         districts=_districts_of(seed_name),
     )
-    for name, seed_name, register_city in _PLACE_SEEDS
+    for name, seed_name, register_city, teryt in _PLACE_SEEDS
 )
 
 
@@ -243,6 +252,27 @@ def find_place(name: str) -> Optional[Place]:
         for spelling in (place.name, place.seed_name, place.register_city):
             if _folded(spelling) == wanted:
                 return place
+    return None
+
+
+def city_for_teryt(teryt: str) -> Optional[str]:
+    """The city a municipality code stands for, in the register's spelling.
+
+    The register files every sale under the code of the municipality it
+    happened in - the TERYT code the national registry of territorial
+    divisions gives it. A sale the register publishes without a street still
+    belongs to that municipality, so the code is what names the city.
+
+    Only the municipalities the site knows are named: a sale of a place the
+    site does not serve is of no use to it, and a name invented for it would
+    only be a second spelling of the same place.
+    """
+    wanted = (teryt or "").strip()
+    if not wanted:
+        return None
+    for place in PLACES:
+        if place.teryt == wanted:
+            return place.register_city
     return None
 
 
