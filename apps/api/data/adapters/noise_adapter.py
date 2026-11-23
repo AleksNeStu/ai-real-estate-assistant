@@ -1,9 +1,16 @@
 """
-Noise level adapter for estimating environmental noise from OpenStreetMap.
+Noise level adapter for environmental noise.
 
-This adapter uses the Overpass API to query OpenStreetMap for noise sources
-and estimates noise levels based on proximity to roads, railways, airports,
-and industrial areas.
+The official source comes first: the Chief Inspectorate of Environmental
+Protection (GIOŚ) publishes the measurements of the roads, the railways, the
+industry and the airports — with the level in decibels and the period it was
+measured in — as open data. A place the register covers is answered with the
+register's own measurement.
+
+Where the register holds nothing close enough, the Overpass API is the
+fallback: it is asked for the noise sources around the place and a level is
+estimated from their proximity. The estimate is not a measurement, and it
+says so: its source is named as the Overpass API.
 """
 
 import logging
@@ -14,6 +21,12 @@ from typing import Any, Dict, List, Optional
 import requests
 
 from core.security_utils import sanitize_for_log
+from data.adapters.gios_noise import (
+    GIOS_NOISE_ATTRIBUTION,
+    GiosNoiseClient,
+    GiosNoiseMeasurement,
+    quietness_score,
+)
 from data.adapters.overpass_query import build_query, element_statement, tag_regex_filter
 
 logger = logging.getLogger(__name__)
@@ -64,12 +77,18 @@ class NoiseResult:
 
     Attributes:
         score: Quietness score 0-100 (higher = quieter/lower noise)
-        estimated_db: Estimated decibel level (40-80 range)
+        estimated_db: The level in decibels — the register's own value for a
+            measurement, the estimated value for the Overpass fallback
         noise_sources: List of detected noise sources
         data_source: Source of the data (e.g., "overpass_api")
         confidence: Confidence score 0-1 based on data quality
         query_latitude: Query point latitude
         query_longitude: Query point longitude
+        attribution: The source the register's terms ask to be named
+        measured_at: When the measurement was taken
+        measured_place: The place the measurement point belongs to
+        measured_category: The kind of source the measurement is of
+        measurement_distance_km: How far the measurement point is from the place
     """
 
     score: float
@@ -79,10 +98,15 @@ class NoiseResult:
     confidence: float
     query_latitude: float
     query_longitude: float
+    attribution: Optional[str] = None
+    measured_at: Optional[str] = None
+    measured_place: Optional[str] = None
+    measured_category: Optional[str] = None
+    measurement_distance_km: Optional[float] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
-        return {
+        result: Dict[str, Any] = {
             "score": round(self.score, 1),
             "estimated_db": round(self.estimated_db, 1),
             "noise_sources": [source.to_dict() for source in self.noise_sources],
@@ -91,6 +115,17 @@ class NoiseResult:
             "query_latitude": self.query_latitude,
             "query_longitude": self.query_longitude,
         }
+        if self.attribution:
+            result["attribution"] = self.attribution
+        if self.measured_at:
+            result["measured_at"] = self.measured_at
+        if self.measured_place:
+            result["measured_place"] = self.measured_place
+        if self.measured_category:
+            result["measured_category"] = self.measured_category
+        if self.measurement_distance_km is not None:
+            result["measurement_distance_km"] = round(self.measurement_distance_km, 2)
+        return result
 
 
 class NoiseAdapter:
@@ -112,6 +147,9 @@ class NoiseAdapter:
 
     # Overpass API default endpoint
     DEFAULT_API_URL: str = "https://overpass-api.de/api/interpreter"
+
+    # The name the official register's answers are filed under.
+    GIOS_DATA_SOURCE: str = "gios_noise_register"
 
     # Noise source type classifications
     NOISE_TYPE_ROAD = "road"
@@ -161,28 +199,93 @@ class NoiseAdapter:
     DISTANCE_NEAR = 100
     DISTANCE_MEDIUM = 200
 
-    def __init__(self, api_url: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        api_url: Optional[str] = None,
+        gios_client: Optional[GiosNoiseClient] = None,
+    ) -> None:
         """
         Initialize the noise adapter.
 
         Args:
             api_url: Optional custom Overpass API URL
+            gios_client: Optional client of the official noise register
         """
         url_from_env = os.getenv("OVERPASS_API_URL")
         self._api_url: str = api_url or url_from_env or self.DEFAULT_API_URL
         self._timeout = 30
+        self._gios: GiosNoiseClient = gios_client or GiosNoiseClient()
+
+    # -- the official register -------------------------------------------
+
+    def _result_from_register(
+        self, measurement: GiosNoiseMeasurement, latitude: float, longitude: float
+    ) -> NoiseResult:
+        """The result of a place the official register covers."""
+        source = NoiseSource(
+            id=measurement.point_code or f"gios_{measurement.category}",
+            type=self._source_type(measurement.category),
+            name=measurement.place or None,
+            latitude=measurement.latitude,
+            longitude=measurement.longitude,
+            distance_m=measurement.distance_km * 1000.0,
+            severity=max(0.0, min(1.0, (measurement.decibels - 40.0) / 40.0)),
+            tags={
+                "kodPunktuPomiarowego": measurement.point_code,
+                "pora": measurement.period,
+                "kategoria": measurement.category,
+            },
+        )
+        return NoiseResult(
+            score=quietness_score(measurement.decibels),
+            estimated_db=measurement.decibels,
+            noise_sources=[source],
+            data_source=self.GIOS_DATA_SOURCE,
+            confidence=1.0,
+            query_latitude=latitude,
+            query_longitude=longitude,
+            attribution=measurement.attribution or GIOS_NOISE_ATTRIBUTION,
+            measured_at=measurement.measured_from,
+            measured_place=measurement.place,
+            measured_category=measurement.category,
+            measurement_distance_km=measurement.distance_km,
+        )
+
+    @staticmethod
+    def _source_type(category: str) -> str:
+        """The kind of noise source a category of the register is."""
+        return {
+            "Droga": NoiseAdapter.NOISE_TYPE_ROAD,
+            "Kolej": NoiseAdapter.NOISE_TYPE_RAILWAY,
+            "Przemysł": NoiseAdapter.NOISE_TYPE_INDUSTRIAL,
+            "Lotnisko": NoiseAdapter.NOISE_TYPE_AIRPORT,
+        }.get(category, NoiseAdapter.NOISE_TYPE_ROAD)
 
     def estimate_noise_level(self, latitude: float, longitude: float) -> NoiseResult:
         """
         Estimate noise level for a given location.
+
+        The official register answers first: a place it covers is answered
+        with its own measurement. Where it holds nothing close enough, the
+        Overpass API is asked and a level is estimated from the noise
+        sources around the place.
 
         Args:
             latitude: Location latitude
             longitude: Location longitude
 
         Returns:
-            NoiseResult with score, estimated decibels, and noise sources
+            NoiseResult with score, the level in decibels, and noise sources
         """
+        try:
+            measurement = self._gios.measurement(latitude, longitude)
+        except Exception as e:
+            logger.warning("The noise register could not be read: %s", sanitize_for_log(e))
+            measurement = None
+
+        if measurement is not None:
+            return self._result_from_register(measurement, latitude, longitude)
+
         try:
             # Get nearby noise sources
             noise_sources = self.get_nearby_noise_sources(latitude, longitude)

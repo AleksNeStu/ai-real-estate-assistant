@@ -220,6 +220,85 @@ def gios_get(
     return _get
 
 
+GIOS_NOISE_FIXTURE = FIXTURE_DIR / "gios_noise.json"
+
+
+def load_gios_noise_payload() -> Dict[str, Any]:
+    """Return the whole recorded noise payload."""
+    return json.loads(GIOS_NOISE_FIXTURE.read_text(encoding="utf-8"))
+
+
+def load_gios_noise(name: str) -> Dict[str, Any]:
+    """Return one recorded noise response.
+
+    Args:
+        name: The name of the recorded entry, e.g. ``droga_page_0``.
+
+    Returns:
+        The recorded entry: status and body.
+
+    Raises:
+        KeyError: When the fixture holds no such entry.
+    """
+    responses = load_gios_noise_payload()["responses"]
+    if name not in responses:
+        raise KeyError(f"No recorded noise response named {name!r}")
+    return responses[name]
+
+
+def load_gios_noise_body(name: str) -> Any:
+    """Return the recorded noise body."""
+    return load_gios_noise(name)["body"]
+
+
+def gios_noise_nearest() -> Dict[str, Any]:
+    """Return the recorded measurement point nearest to Kraków, per category."""
+    return load_gios_noise_payload()["nearest_to_krakow"]
+
+
+def gios_noise_get(
+    resolver: Optional[Callable[[str, Dict[str, Any]], str]] = None,
+) -> Callable[..., Mock]:
+    """Build a ``requests.get`` replacement that serves the recorded answers.
+
+    The recorded pages are the ones the client asks for: the first page of
+    the roads, of the railways and of the industry, and the empty answer the
+    pages after them carry. Every other query — another voivodeship, the
+    airports, a page past the end — is answered with the empty page.
+
+    Args:
+        resolver: Optional callable that takes the outgoing URL and the
+            parameters and returns the name of the recorded response that
+            answers it.
+
+    Returns:
+        A callable with the ``requests.get`` signature.
+    """
+    categories = {
+        "Droga": "droga_page_0",
+        "Kolej": "kolej_page_0",
+        "Przemysł": "przemysl_page_0",
+    }
+
+    def _default(url: str, params: Dict[str, Any]) -> str:
+        category = str(params.get("kategoria") or "")
+        page = int(params.get("numerStrony") or 0)
+        if page == 0 and category in categories:
+            return categories[category]
+        return "droga_page_empty"
+
+    def _get(url: str, params: Optional[Dict[str, Any]] = None, **kwargs: Any) -> Mock:
+        name = resolver(url, params or {}) if resolver else _default(url, params or {})
+        response = Mock()
+        response.status_code = 200
+        response.json.return_value = load_gios_noise_body(name)
+        response.text = json.dumps(load_gios_noise_body(name), ensure_ascii=False)
+        response.raise_for_status.return_value = None
+        return response
+
+    return _get
+
+
 def query_shape(query: str) -> str:
     """Name the request shape a query belongs to, whatever its spelling."""
     if 'way["highway"~' in query:

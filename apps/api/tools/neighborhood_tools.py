@@ -703,9 +703,10 @@ class NeighborhoodQualityIndexTool(BaseTool):
             adapter = get_noise_adapter()
             result = adapter.estimate_noise_level(latitude, longitude)
             score = round(result.score, 1)
+            measured = result.data_source == adapter.GIOS_DATA_SOURCE
             details = {
                 "raw_value": result.estimated_db,
-                "unit": "dB (estimated)",
+                "unit": "dB (measured)" if measured else "dB (estimated)",
                 "normalized_score": score,
                 "data_source": result.data_source,
                 "confidence": result.confidence,
@@ -716,6 +717,15 @@ class NeighborhoodQualityIndexTool(BaseTool):
                     if getattr(source, "name", None)
                 ][:25],
             }
+            if getattr(result, "attribution", None):
+                details["attribution"] = result.attribution
+            if getattr(result, "measured_at", None):
+                details["measured_at"] = result.measured_at
+            if getattr(result, "measured_place", None):
+                details["measured_place"] = result.measured_place
+            measurement_distance = getattr(result, "measurement_distance_km", None)
+            if measurement_distance is not None:
+                details["measurement_distance_km"] = round(measurement_distance, 2)
         except Exception as e:
             logger.warning("Noise level calculation failed: %s", sanitize_for_log(e))
             return _unavailable(
@@ -1180,6 +1190,9 @@ class NeighborhoodQualityIndexTool(BaseTool):
             data_sources.append("gios_air_quality_api")
         elif air_quality_source == "waqi":
             data_sources.append("waqi_air_quality_api")
+        noise_source = measurements["noise_level"].details.get("data_source")
+        if noise_source == "gios_noise_register":
+            data_sources.append("gios_noise_register_api")
 
         # Data freshness
         now = datetime.utcnow().isoformat()

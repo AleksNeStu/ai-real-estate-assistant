@@ -226,6 +226,26 @@ def no_live_air_quality_register(monkeypatch: pytest.MonkeyPatch) -> Iterator[No
 
 
 @pytest.fixture(scope="function", autouse=True)
+def no_live_noise_register(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    """Keep every test away from the official noise register.
+
+    The register is the first source of the noise adapter, so a test that
+    asks for a level would otherwise read the network — a dozen pages of the
+    state's own measurements. The suite tests the adapter's own behaviour
+    against recorded answers instead; the file that exercises the client
+    undoes this stub for itself.
+    """
+    from data.adapters import gios_noise
+
+    monkeypatch.setattr(
+        gios_noise.GiosNoiseClient,
+        "_get",
+        lambda self, path, params=None: None,
+    )
+    yield
+
+
+@pytest.fixture(scope="function", autouse=True)
 def reset_free_tier_rate_limiter() -> Iterator[None]:
     """Start every test with an empty free-tier counter.
 

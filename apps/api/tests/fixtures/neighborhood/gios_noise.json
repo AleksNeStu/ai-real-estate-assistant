@@ -1,0 +1,300 @@
+{
+  "_meta": {
+    "provider": "GIOŚ — Chief Inspectorate of Environmental Protection",
+    "url_shape": "GET https://dane.gios.gov.pl/api/halas/v1/pomiar-halasu-w-srodowisku?kategoria=&wojewodztwo=&dataOd=&dataDo=&numerStrony=&liczbaElementowNaStronie=",
+    "recorded_at": "2026-11-23",
+    "licence": "CC BY 4.0 — the source has to be named",
+    "note": "The register's own answers. The page of every category holds the first records of the page and the records nearest to Kraków; the 'liczbaRekordow' is the register's own total for the query, so the count in the file is smaller than the count in the service."
+  },
+  "responses": {
+    "droga_page_0": {
+      "status": 200,
+      "body": {
+        "dane": {
+          "liczbaRekordow": 120,
+          "strona": [
+            {
+              "kodPunktuPomiarowego": "D_12_000083_002",
+              "kategoria": "Droga",
+              "wojewodztwo": "MAŁOPOLSKIE",
+              "powiat": "oświęcimski",
+              "gmina": "Przeciszów (gmina wiejska)",
+              "miejscowosc": "Przeciszów",
+              "coordWgs84X": 19.366528,
+              "coordWgs84Y": 50.011667,
+              "pora": "Dzień 16h",
+              "celPomiaru": "Pomiar w trybie art.175 ust.1 Poś (pomiary okresowe)",
+              "dataOd": "2025-05-06T13:00:00.000+02:00",
+              "dataDo": "2025-05-07T13:00:00.000+02:00",
+              "wynikPomiaru": 67.6,
+              "przekroczenie": 2.6
+            },
+            {
+              "kodPunktuPomiarowego": "D_12_000276_002",
+              "kategoria": "Droga",
+              "wojewodztwo": "MAŁOPOLSKIE",
+              "powiat": "wadowicki",
+              "gmina": "Andrychów (obszar wiejski)",
+              "miejscowosc": "Inwałd",
+              "coordWgs84X": 19.385833,
+              "coordWgs84Y": 49.861222,
+              "pora": "Noc 8h",
+              "celPomiaru": "Pomiar w trybie art.175 ust.1 Poś (pomiary okresowe)",
+              "dataOd": "2025-05-27T13:00:00.000+02:00",
+              "dataDo": "2025-05-28T13:00:00.000+02:00",
+              "wynikPomiaru": 66.6,
+              "przekroczenie": 10.6
+            },
+            {
+              "kodPunktuPomiarowego": "D_12_000370_001",
+              "kategoria": "Droga",
+              "wojewodztwo": "MAŁOPOLSKIE",
+              "powiat": "wielicki",
+              "gmina": "Niepołomice (miasto)",
+              "miejscowosc": "Niepołomice",
+              "coordWgs84X": 20.174406,
+              "coordWgs84Y": 50.03905,
+              "pora": "Noc 8h",
+              "celPomiaru": "Państwowy monitoring środowiska, art. 26 Poś",
+              "dataOd": "2025-06-06T00:00:00.000+02:00",
+              "dataDo": "2025-06-17T08:00:00.000+02:00",
+              "wynikPomiaru": 62.2,
+              "przekroczenie": 6.2
+            },
+            {
+              "kodPunktuPomiarowego": "D_12_000373_001",
+              "kategoria": "Droga",
+              "wojewodztwo": "MAŁOPOLSKIE",
+              "powiat": "krakowski",
+              "gmina": "Kocmyrzów-Luborzyca (gmina wiejska)",
+              "miejscowosc": "Marszowice",
+              "coordWgs84X": 20.093503,
+              "coordWgs84Y": 50.179606,
+              "pora": "Dzień 16h",
+              "celPomiaru": "Państwowy monitoring środowiska, art. 26 Poś",
+              "dataOd": "2025-09-19T00:00:00.000+02:00",
+              "dataDo": "2025-09-23T08:00:00.000+02:00",
+              "wynikPomiaru": 64.5,
+              "przekroczenie": 3.5
+            }
+          ]
+        },
+        "wynik": {
+          "idZdarzenia": "b411010b-2d30-4c9c-9e4e-58795ef6b2c5",
+          "status": "SUKCES",
+          "data": "2026-11-23T03:02:39"
+        }
+      }
+    },
+    "kolej_page_0": {
+      "status": 200,
+      "body": {
+        "dane": {
+          "liczbaRekordow": 2,
+          "strona": [
+            {
+              "kodPunktuPomiarowego": "K_12_000050_002",
+              "kategoria": "Kolej",
+              "wojewodztwo": "MAŁOPOLSKIE",
+              "powiat": "nowotarski",
+              "gmina": "Nowy Targ (gmina miejska)",
+              "miejscowosc": "Nowy Targ",
+              "coordWgs84X": 20.012347,
+              "coordWgs84Y": 49.476278,
+              "pora": "Noc 8h",
+              "celPomiaru": "Państwowy monitoring środowiska, art. 26 Poś",
+              "dataOd": "2025-11-20T07:00:00.000+01:00",
+              "dataDo": "2025-11-21T07:00:00.000+01:00",
+              "wynikPomiaru": 42.4,
+              "przekroczenie": 0
+            }
+          ]
+        },
+        "wynik": {
+          "idZdarzenia": "739de3ac-6ca7-4e46-8ba7-49131f8cf674",
+          "status": "SUKCES",
+          "data": "2026-11-23T03:02:40"
+        }
+      }
+    },
+    "przemysl_page_0": {
+      "status": 200,
+      "body": {
+        "dane": {
+          "liczbaRekordow": 343,
+          "strona": [
+            {
+              "kodPunktuPomiarowego": "P_12_000062_006",
+              "kategoria": "Przemysł",
+              "wojewodztwo": "MAŁOPOLSKIE",
+              "powiat": "suski",
+              "gmina": "Stryszawa (gmina wiejska)",
+              "miejscowosc": "Kuków",
+              "coordWgs84X": 19.462833,
+              "coordWgs84Y": 49.746361,
+              "pora": "Dzień 8h",
+              "celPomiaru": "Analiza porealizacyjna",
+              "dataOd": "2025-05-15T08:00:00.000+02:00",
+              "dataDo": "2025-05-16T00:00:00.000+02:00",
+              "wynikPomiaru": 42.2,
+              "przekroczenie": 0
+            },
+            {
+              "kodPunktuPomiarowego": "P_12_000062_007",
+              "kategoria": "Przemysł",
+              "wojewodztwo": "MAŁOPOLSKIE",
+              "powiat": "suski",
+              "gmina": "Stryszawa (gmina wiejska)",
+              "miejscowosc": "Kuków",
+              "coordWgs84X": 19.466139,
+              "coordWgs84Y": 49.746083,
+              "pora": "Dzień 8h",
+              "celPomiaru": "Analiza porealizacyjna",
+              "dataOd": "2025-05-15T08:00:00.000+02:00",
+              "dataDo": "2025-05-16T08:00:00.000+02:00",
+              "wynikPomiaru": 49.9,
+              "przekroczenie": 0
+            },
+            {
+              "kodPunktuPomiarowego": "P_12_000236_003",
+              "kategoria": "Przemysł",
+              "wojewodztwo": "MAŁOPOLSKIE",
+              "powiat": "wielicki",
+              "gmina": "Niepołomice (obszar wiejski)",
+              "miejscowosc": "Staniątki",
+              "coordWgs84X": 20.186694,
+              "coordWgs84Y": 50.021944,
+              "pora": "Noc 1h",
+              "celPomiaru": "Pomiar w trybie art.147 ust.1 Poś (pomiary okresowe)",
+              "dataOd": "2025-08-19T00:00:00.000+02:00",
+              "dataDo": "2025-08-19T02:00:00.000+02:00",
+              "wynikPomiaru": 39.6,
+              "przekroczenie": 0
+            },
+            {
+              "kodPunktuPomiarowego": "P_12_000236_004",
+              "kategoria": "Przemysł",
+              "wojewodztwo": "MAŁOPOLSKIE",
+              "powiat": "wielicki",
+              "gmina": "Niepołomice (obszar wiejski)",
+              "miejscowosc": "Staniątki",
+              "coordWgs84X": 20.190806,
+              "coordWgs84Y": 50.020333,
+              "pora": "Noc 1h",
+              "celPomiaru": "Pomiar w trybie art.147 ust.1 Poś (pomiary okresowe)",
+              "dataOd": "2025-08-19T00:00:00.000+02:00",
+              "dataDo": "2025-08-19T02:00:00.000+02:00",
+              "wynikPomiaru": 39.2,
+              "przekroczenie": 0
+            },
+            {
+              "kodPunktuPomiarowego": "P_12_000236_005",
+              "kategoria": "Przemysł",
+              "wojewodztwo": "MAŁOPOLSKIE",
+              "powiat": "wielicki",
+              "gmina": "Niepołomice (obszar wiejski)",
+              "miejscowosc": "Staniątki",
+              "coordWgs84X": 20.190306,
+              "coordWgs84Y": 50.018722,
+              "pora": "Noc 1h",
+              "celPomiaru": "Pomiar w trybie art.147 ust.1 Poś (pomiary okresowe)",
+              "dataOd": "2025-08-19T00:00:00.000+02:00",
+              "dataDo": "2025-08-19T02:00:00.000+02:00",
+              "wynikPomiaru": 39.5,
+              "przekroczenie": 0
+            },
+            {
+              "kodPunktuPomiarowego": "P_12_000236_006",
+              "kategoria": "Przemysł",
+              "wojewodztwo": "MAŁOPOLSKIE",
+              "powiat": "wielicki",
+              "gmina": "Niepołomice (obszar wiejski)",
+              "miejscowosc": "Staniątki",
+              "coordWgs84X": 20.188833,
+              "coordWgs84Y": 50.018389,
+              "pora": "Noc 1h",
+              "celPomiaru": "Pomiar w trybie art.147 ust.1 Poś (pomiary okresowe)",
+              "dataOd": "2025-08-19T00:00:00.000+02:00",
+              "dataDo": "2025-08-19T02:00:00.000+02:00",
+              "wynikPomiaru": 39.4,
+              "przekroczenie": 0
+            }
+          ]
+        },
+        "wynik": {
+          "idZdarzenia": "ad6f9f34-92dd-4160-a640-45a104e14a9c",
+          "status": "SUKCES",
+          "data": "2026-11-23T03:02:40"
+        }
+      }
+    },
+    "droga_page_empty": {
+      "status": 200,
+      "body": {
+        "dane": {
+          "liczbaRekordow": 0
+        },
+        "wynik": {
+          "idZdarzenia": "bc730b7a-718a-475a-a653-5bcd6ac7c5cf",
+          "status": "SUKCES",
+          "data": "2026-11-23T03:02:40"
+        }
+      }
+    }
+  },
+  "totals": {
+    "droga": 120,
+    "kolej": 2,
+    "przemysl": 343
+  },
+  "nearest_to_krakow": {
+    "droga": {
+      "kodPunktuPomiarowego": "D_12_000370_001",
+      "kategoria": "Droga",
+      "wojewodztwo": "MAŁOPOLSKIE",
+      "powiat": "wielicki",
+      "gmina": "Niepołomice (miasto)",
+      "miejscowosc": "Niepołomice",
+      "coordWgs84X": 20.174406,
+      "coordWgs84Y": 50.03905,
+      "pora": "Noc 8h",
+      "celPomiaru": "Państwowy monitoring środowiska, art. 26 Poś",
+      "dataOd": "2025-06-06T00:00:00.000+02:00",
+      "dataDo": "2025-06-17T08:00:00.000+02:00",
+      "wynikPomiaru": 62.2,
+      "przekroczenie": 6.2
+    },
+    "kolej": {
+      "kodPunktuPomiarowego": "K_12_000050_002",
+      "kategoria": "Kolej",
+      "wojewodztwo": "MAŁOPOLSKIE",
+      "powiat": "nowotarski",
+      "gmina": "Nowy Targ (gmina miejska)",
+      "miejscowosc": "Nowy Targ",
+      "coordWgs84X": 20.012347,
+      "coordWgs84Y": 49.476278,
+      "pora": "Noc 8h",
+      "celPomiaru": "Państwowy monitoring środowiska, art. 26 Poś",
+      "dataOd": "2025-11-20T07:00:00.000+01:00",
+      "dataDo": "2025-11-21T07:00:00.000+01:00",
+      "wynikPomiaru": 42.4,
+      "przekroczenie": 0
+    },
+    "przemysl": {
+      "kodPunktuPomiarowego": "P_12_000236_003",
+      "kategoria": "Przemysł",
+      "wojewodztwo": "MAŁOPOLSKIE",
+      "powiat": "wielicki",
+      "gmina": "Niepołomice (obszar wiejski)",
+      "miejscowosc": "Staniątki",
+      "coordWgs84X": 20.186694,
+      "coordWgs84Y": 50.021944,
+      "pora": "Noc 1h",
+      "celPomiaru": "Pomiar w trybie art.147 ust.1 Poś (pomiary okresowe)",
+      "dataOd": "2025-08-19T00:00:00.000+02:00",
+      "dataDo": "2025-08-19T02:00:00.000+02:00",
+      "wynikPomiaru": 39.6,
+      "przekroczenie": 0
+    }
+  }
+}
