@@ -9,7 +9,9 @@ Welcome to the documentation for the AI Real Estate Assistant.
 - **[ADRs](adr/)**: Architectural Decision Records.
 - **[Reasoning log](reasoning/)**: the derivation behind the decisions that changed how the
   product behaves — starting with
-  [the interface ships in nine languages and is maintained in two of them](reasoning/2026-11-09-maintained-locales.md).
+  [the interface ships in nine languages and is maintained in two of them](reasoning/2026-11-09-maintained-locales.md),
+  and continuing with
+  [the Russian catalogue joins the maintained set](reasoning/2026-11-24-maintained-locales-ru.md).
 
 ## User
 - **[User Guide](user/USER_GUIDE.md)**: How to use the application.

@@ -5,19 +5,19 @@ import { maintainedLocales } from '../../i18n/policy';
 import { mergeMessages, placeholderNames } from '../../i18n/merge';
 
 /**
- * English and Polish are the maintained pair; the other seven catalogues are
- * frozen.
+ * English, Polish and Russian are the maintained set; the other six catalogues
+ * are frozen.
  *
- * A new key lands in `en.json` and `pl.json` only. The frozen catalogues keep
- * the wording they were given and are allowed to lag behind — that is what
- * moves the other seven languages into the backlog instead of making every
- * feature cost nine translations.
+ * A new key lands in `en.json`, `pl.json` and `ru.json` only. The frozen
+ * catalogues keep the wording they were given and are allowed to lag behind —
+ * that is what moves the other six languages into the backlog instead of making
+ * every feature cost nine translations.
  *
  * The merge in `merge.ts` is what makes that safe: whatever a locale renders
  * is the English key set, so a catalogue that lags shows the English wording
  * instead of a key path. These tests hold both halves:
  *
- *   - the maintained pair must carry the same keys, so a change cannot land in
+ *   - the maintained set must carry the same keys, so a change cannot land in
  *     one of them and be forgotten in the other;
  *   - a catalogue must not invent a key the English catalogue does not have,
  *     because the merge would drop it silently;
@@ -88,7 +88,7 @@ describe('the message catalogues', () => {
     expect([...locales].sort()).toEqual(['de', 'en', 'es', 'it', 'pl', 'pt', 'ru', 'tr', 'uk']);
   });
 
-  describe('the maintained pair', () => {
+  describe('the maintained set', () => {
     it.each(maintainedLocales.filter((locale) => locale !== 'en'))(
       '%s carries the keys the English catalogue carries',
       (locale) => {

@@ -4,7 +4,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { InstallButton } from '../install-button';
 import { canInstallPWA, promptPWAInstall } from '@/lib/sw';
 
-// The locale the button reads. It starts in the maintained pair and moves to
+// The locale the button reads. It starts in the maintained set and moves to
 // a frozen catalogue where the button must not appear.
 let mockLocale = 'en';
 

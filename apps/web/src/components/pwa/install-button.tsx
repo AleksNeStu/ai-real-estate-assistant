@@ -17,8 +17,8 @@ import { cn } from '@/lib/utils';
  * therefore appears only where the install would work: a button that offers
  * an install the browser refuses is worse than no button.
  *
- * The button is offered in the maintained pair of languages only. The other
- * seven catalogues are frozen, and a new surface does not land in them.
+ * The button is offered in the maintained set of languages only. The other six
+ * catalogues are frozen, and a new surface does not land in them.
  */
 export function InstallButton({ className }: { className?: string }) {
   const locale = useLocale();

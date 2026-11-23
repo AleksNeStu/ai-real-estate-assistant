@@ -30,13 +30,13 @@ describe('i18n config', () => {
     });
   });
 
-  describe('the maintained pair', () => {
-    it('is English and Polish', () => {
-      expect([...maintainedLocales].sort()).toEqual(['en', 'pl']);
+  describe('the maintained set', () => {
+    it('is English, Polish and Russian', () => {
+      expect([...maintainedLocales].sort()).toEqual(['en', 'pl', 'ru']);
     });
 
     it('leaves every other locale frozen', () => {
-      expect([...frozenLocales].sort()).toEqual(['de', 'es', 'it', 'pt', 'ru', 'tr', 'uk']);
+      expect([...frozenLocales].sort()).toEqual(['de', 'es', 'it', 'pt', 'tr', 'uk']);
     });
 
     it('covers every locale exactly once', () => {

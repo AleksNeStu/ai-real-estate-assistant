@@ -1,8 +1,8 @@
 /**
  * The message merge that lets a locale lag behind the English catalogue.
  *
- * English and Polish are the maintained pair; the other seven catalogues are
- * frozen and keep the wording they were given. The merge is what makes that
+ * English, Polish and Russian are the maintained set; the other six catalogues
+ * are frozen and keep the wording they were given. The merge is what makes that
  * safe: if a catalogue falls behind, the key it does not carry falls back to
  * the English wording instead of to the key path itself.
  *
