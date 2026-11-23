@@ -847,13 +847,19 @@ class CompareInvestmentsResponse(BaseModel):
 
 
 class FactorDetail(BaseModel):
-    """Detailed breakdown for a scoring factor."""
+    """Detailed breakdown for a scoring factor.
+
+    A factor nobody could measure carries no normalized score and no
+    weighted score - it has no score to normalize or to weigh.
+    """
 
     raw_value: Optional[float] = Field(None, description="Original measurement value")
     unit: str = Field(default="", description="Unit of measurement (e.g., 'count', 'AQI')")
-    normalized_score: float = Field(..., ge=0, le=100, description="Normalized score 0-100")
+    normalized_score: Optional[float] = Field(
+        None, ge=0, le=100, description="Normalized score 0-100"
+    )
     weight: float = Field(..., ge=0, le=1, description="Weight in overall score")
-    weighted_score: float = Field(..., description="Score × weight")
+    weighted_score: Optional[float] = Field(None, description="Score × weight")
     data_source: str = Field(default="", description="Source of the data")
     confidence: float = Field(default=0.5, ge=0, le=1, description="Data quality confidence 0-1")
 
@@ -920,18 +926,29 @@ class NeighborhoodQualityRequest(BaseModel):
 
 
 class NeighborhoodQualityResponse(BaseModel):
-    """Response model for neighborhood quality analysis."""
+    """Response model for neighborhood quality analysis.
+
+    A factor that could not be measured carries no score. The reason it
+    carries none is in `components_without_data` - the same answer the
+    tool gives, so a factor nobody measured is never reported as a zero.
+    """
 
     property_id: str
-    overall_score: float = Field(
-        ..., ge=0, le=100, description="Overall neighborhood quality score (0-100)"
+    overall_score: Optional[float] = Field(
+        None, ge=0, le=100, description="Overall neighborhood quality score (0-100)"
     )
     # Core factors (existing)
-    safety_score: float = Field(..., ge=0, le=100, description="Safety score (0-100)")
-    schools_score: float = Field(..., ge=0, le=100, description="Schools score (0-100)")
-    amenities_score: float = Field(..., ge=0, le=100, description="Amenities score (0-100)")
-    walkability_score: float = Field(..., ge=0, le=100, description="Walkability score (0-100)")
-    green_space_score: float = Field(..., ge=0, le=100, description="Green space score (0-100)")
+    safety_score: Optional[float] = Field(None, ge=0, le=100, description="Safety score (0-100)")
+    schools_score: Optional[float] = Field(None, ge=0, le=100, description="Schools score (0-100)")
+    amenities_score: Optional[float] = Field(
+        None, ge=0, le=100, description="Amenities score (0-100)"
+    )
+    walkability_score: Optional[float] = Field(
+        None, ge=0, le=100, description="Walkability score (0-100)"
+    )
+    green_space_score: Optional[float] = Field(
+        None, ge=0, le=100, description="Green space score (0-100)"
+    )
     # New factors (Task #40)
     air_quality_score: Optional[float] = Field(
         None, ge=0, le=100, description="Air quality score (0-100)"
@@ -948,6 +965,10 @@ class NeighborhoodQualityResponse(BaseModel):
     )
     factor_details: Optional[Dict[str, FactorDetail]] = Field(
         None, description="Detailed information for each factor"
+    )
+    # The factors that could not be measured, and why
+    components_without_data: Dict[str, str] = Field(
+        default_factory=dict, description="The factors that could not be measured, and the reason"
     )
     # City comparison
     city_comparison: Optional[CityComparison] = Field(

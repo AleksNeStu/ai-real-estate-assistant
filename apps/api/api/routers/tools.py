@@ -461,6 +461,7 @@ async def neighborhood_quality(input_data: NeighborhoodQualityInput):
             public_transport_score=result.public_transport_score,
             score_breakdown=result.score_breakdown,
             factor_details=result.factor_details,
+            components_without_data=result.components_without_data,
             city_comparison=result.city_comparison,
             nearby_pois=result.nearby_pois,
             data_sources=result.data_sources,
