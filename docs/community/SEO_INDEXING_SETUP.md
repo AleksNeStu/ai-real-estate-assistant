@@ -333,6 +333,37 @@ processing — the drilldown itself says *"check again in a day or so"*. Until
 then this section carries the measurement, the two named candidates and the
 falsifiable prediction, and nothing more.
 
+**The reading that closed the +24h point — 2026-11-23T02:16:03Z.** The Pages
+report stopped answering *"Processing data, please check again in a day or so"*:
+it rendered, and it lists exactly **one** exclusion row — **"Page with redirect"**,
+Source: Website, Validation: Not Started, **3 pages** — with 3 pages not indexed
+and 1 indexed (last update 11/16/26). That is the row the property-level reading
+named on 2026-11-21: the studio landing's three host variants —
+`https://kittray.com/`, `http://www.kittray.com/`, `https://www.kittray.com/` —
+which answer 301 to the canonical host today (`https://kittray.com/` answers
+200). So the warning type the UI names is **"Page with redirect"**, and it is the
+type of the **kittray.com** sitemap's single warning — the one whose listed URL
+was a redirect when Google last crawled it — and not a measurement of the 261.
+
+**The 261 are still unnamed.** At that reading the realty drilldown answered a
+malformed-request error ("400. That's an error."), so its status line is empty;
+at the weekly point, read 28 seconds later, it answers *"Sitemap processed
+successfully"* and names no warning. The API still answers `warnings: 261` for
+the realty sitemap and `warnings: 1` for kittray.com (`errors: 0`,
+`isPending: false`). The exclusion row the Pages report names counts **3**
+pages, not 261, and those three are the studio landing's host variants — so the
+261 keep the status the paragraph above gives them: a hypothesis, not a
+measurement. The collector keeps polling every 15 minutes; the next reading that
+names a type for the realty sitemap belongs here.
+
+**The collector had stopped, and was started again.** It logged its last attempt
+at 2026-11-22T17:38:54Z and the process was gone — the weekly point came due at
+2026-11-23T01:05Z with nobody reading it. The collector was started again at
+2026-11-23T02:15:19Z: it read the +24h point (closed, the row above) and the
+weekly point (`sitemap-reread-weekly-2026-W50.json`, `closed: false` — the
+drilldown says *"Sitemap processed successfully"*, the Pages report still says
+*"Processing data"*, the counter has not moved).
+
 ---
 
 ## 2. Bing Webmaster Tools
