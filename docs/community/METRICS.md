@@ -6,11 +6,11 @@ This document defines the community health metrics tracked for the AI Real Estat
 
 ## Target Metrics (Roadmap Goals)
 
-| Metric | Target | Timeline | Current (2026-11-21) | Status |
+| Metric | Target | Timeline | Current (2026-11-23) | Status |
 |--------|--------|----------|------------------------|--------|
 | GitHub Stars | >= 100 | 6 months post-launch | 325 | Reached |
 | First External PR Merged | >= 1 | 3 months post-launch | 1 — PR #348, merged 2026-10-20 | Reached |
-| Doc Site Visits Growth | Month-over-month increase | Ongoing | 733 views / 185 uniques (14 days) | Measured, no trend yet |
+| Doc Site Visits Growth | Month-over-month increase | Ongoing | 655 views / 202 uniques (14 days) | Measured, no trend yet |
 | GitHub Issues (good first issue) | >= 5 open at any time | Ongoing | 1 open issue, and it carries the label | Not met — but the first entry point is now open (#418) |
 | Fork Count | >= 20 | 6 months post-launch | 117 | Reached |
 | Contributors (external) | >= 3 | 6 months post-launch | 3 | Reached |
@@ -117,14 +117,16 @@ Reports are stored at: `docs/community/reports/YYYY-MM.md`
 | `docs/community/metrics/2026-W46.json` / `.md` | 2026-W46 | 322 stars |
 | `docs/community/metrics/2026-W47.json` / `.md` | 2026-W47 | 323 stars |
 | `docs/community/metrics/2026-W48.json` / `.md` | 2026-W48 | 325 stars, 117 forks, the first snapshot to read the star timeline back in full |
-| `docs/community/metrics/2026-W49.json` / `.md` | 2026-W49 | The newest: 325 stars, 117 forks, one open issue, 24 impressions and the site's first click over the 28-day Search Console window (read with `dataState=all`), and the first non-empty referrer split |
-| `docs/community/metrics/latest.json` | 2026-W49 | Copy of the newest week |
+| `docs/community/metrics/2026-W49.json` / `.md` | 2026-W49 | 325 stars, 117 forks, one open issue, 24 impressions and the site's first click over the 28-day Search Console window (read with `dataState=all`), and the first non-empty referrer split |
+| `docs/community/metrics/2026-W50.json` / `.md` | 2026-W50 | The newest: 325 stars, 117 forks, 655 views / 202 uniques over a window that advanced, 51 impressions and 35 page rows over the 28-day Search Console window, the first Russian query row, and the two release-wave points of v5.4.0 folded in |
+| `docs/community/metrics/latest.json` | 2026-W50 | Copy of the newest week |
 
 > **On the week names.** The file names follow this repository's own weekly
 > sequence. The ISO week of the collection date has drifted one step behind
 > since `2026-W47`: `2026-W45` was collected on 2026-11-08 (ISO W45),
 > `2026-W46` on 2026-11-11 (ISO W46), `2026-W47` on 2026-11-15 (ISO W46),
-> `2026-W48` on 2026-11-20 (ISO W47) and `2026-W49` on 2026-11-21 (ISO W47).
+> `2026-W48` on 2026-11-20 (ISO W47), `2026-W49` on 2026-11-21 (ISO W47) and
+> `2026-W50` on 2026-11-23 (ISO W48).
 > Each snapshot records its `iso_week_of_collection` in the JSON, so both the
 > sequence name and the calendar week are readable.
 
@@ -190,9 +192,10 @@ reliably — a null is honest, a zero would not be.
 The snapshots also carry the blocks the schema above does not list, because the
 measurement produced them: `star_curve_monthly` (new stars per calendar
 month), `fork_state` (the repository counter against the network list),
-`indexing` (the Search Console reading), and `iso_week_of_collection` with
-`week_naming_note`. `docs/community/metrics/2026-W49.json` is the reference for
-their shape.
+`indexing` (the Search Console reading), `release_wave` (the due points of a
+release wave, folded in when one is running), and `iso_week_of_collection`
+with `week_naming_note`. `docs/community/metrics/2026-W50.json` is the
+reference for their shape.
 
 ### GitHub Traffic Data Limitations
 

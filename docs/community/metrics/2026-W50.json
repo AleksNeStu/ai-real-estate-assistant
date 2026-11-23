@@ -1,0 +1,427 @@
+{
+  "collected_at": "2026-11-23T10:50:00Z",
+  "repository": "AleksNeStu/ai-real-estate-assistant",
+  "week": "2026-W50",
+  "iso_week_of_collection": "2026-W48",
+  "week_naming_note": "The file name follows this repository's own weekly sequence (the previous snapshot is 2026-W49). The collection date 2026-11-23 is a Monday and falls in ISO week 2026-W48. The sequence and the ISO calendar have drifted apart since 2026-W47: the file 2026-W45 was collected 2026-11-08 (ISO W45), 2026-W46 on 2026-11-11 (ISO W46), 2026-W47 on 2026-11-15 (ISO W46), 2026-W48 on 2026-11-20 (ISO W47) and 2026-W49 on 2026-11-21 (ISO W47). The name continues the sequence; the ISO week is recorded here so both are readable.",
+  "repo_stats": {
+    "stars": 325,
+    "forks": 117,
+    "watchers": 6,
+    "open_issues": 1,
+    "license": "MIT",
+    "default_branch": "dev",
+    "language": "Python"
+  },
+  "issue_stats": {
+    "open_by_label": {
+      "bug": 0,
+      "enhancement": 0,
+      "good first issue": 1,
+      "help wanted": 1,
+      "question": 0
+    },
+    "total_open": 1,
+    "note": "One open issue, #418 \"Community: Add Telegram Connector for Saved Searches\", opened 2026-11-21T01:08:04Z with the labels good first issue and help wanted - the same issue as in 2026-W49, still the first entry point the repository has ever carried, so the \"good first issue >= 5 open\" target in METRICS.md stands at one and not at zero."
+  },
+  "pr_stats": {
+    "open_prs": 0,
+    "total_merged": null,
+    "closed_unmerged_this_week": 6,
+    "merged_this_week": 9,
+    "window": "2026-11-16 → 2026-11-23",
+    "note": "The window is the seven days before this collection. Six pull requests were closed unmerged in it: five Dependabot major-version bumps closed by the owner on 2026-11-21T00:58 (eslint 9->10, langchain-ollama 0.3->1.1, huggingface-hub 1.33->2.4, loguru 0.7->0.8, uuid-utils 0.19->1.2 - the frozen-demo policy does not take a major bump) and #405, closed by the owner on 2026-11-16T15:50. Nine were merged: eight Dependabot bumps on 2026-11-16 evening and #404 and #403, merged by the owner the same morning. total_merged stays null: the all-time count was not resolved for this window, and a null is honest where a zero would not be."
+  },
+  "contributors": {
+    "total": 6,
+    "logins": [
+      "AleksNeStu",
+      "dependabot[bot]",
+      "stephenalexbrowne",
+      "Jwrede",
+      "github-actions[bot]",
+      "dev-scaler"
+    ]
+  },
+  "star_growth": {
+    "new_stars_1d": 0,
+    "new_stars_2d": 0,
+    "new_stars_7d": 3,
+    "new_stars_14d": 5,
+    "new_stars_30d": 6,
+    "new_stars_60d": 16,
+    "new_stars_90d": 26,
+    "baseline_2026_07_20": 281,
+    "baseline_note": "Measured from the stargazer timeline: 281 stars carry a starred_at strictly before 2026-07-20T00:00:00Z, 282 including the star of 2026-07-20, and the 284th star arrived on 2026-07-31. The snapshots 2026-W45 through 2026-W48 all carried 284 under this label, so the carried figure matches the end of July rather than the baseline date. The monthly series is identical in both readings, so no star has been removed. The 30-day rate does not depend on the baseline: 6 stars over 30 days is 0.2 a day either way.",
+    "newest_star": "2026-11-19T16:22:20Z",
+    "oldest_star": "2025-02-02T14:07:16Z",
+    "note": "The windows slide, so a star leaves the short window as it ages: the 7-day count reads 3 now and read 4 in 2026-W49, because the star of 2026-11-11T22:06Z has dropped out of it. The five stars of the last fourteen days are 2026-11-11T22:06, 2026-11-16T06:51, 2026-11-16T22:19, 2026-11-17T09:53 and 2026-11-19T16:22."
+  },
+  "star_curve_monthly": {
+    "note": "New stars per calendar month, measured from the stargazer timestamps. The series is cumulative and has never fallen: no star has ever been unstarred in a way the timeline shows.",
+    "2025-01": 0,
+    "2025-02": 3,
+    "2025-03": 5,
+    "2025-04": 3,
+    "2025-05": 4,
+    "2025-06": 5,
+    "2025-07": 10,
+    "2025-08": 17,
+    "2025-09": 14,
+    "2025-10": 6,
+    "2025-11": 7,
+    "2025-12": 10,
+    "2026-01": 13,
+    "2026-02": 16,
+    "2026-03": 20,
+    "2026-04": 32,
+    "2026-05": 28,
+    "2026-06": 73,
+    "2026-07": 18,
+    "2026-08": 20,
+    "2026-09": 7,
+    "2026-10": 8,
+    "2026-11": 6
+  },
+  "fork_state": {
+    "counter": 117,
+    "in_network_list": 122,
+    "owned_by_user": 115,
+    "owned_by_organization": 7,
+    "created_last_30d": 4,
+    "with_stars_or_forks_of_their_own": 5,
+    "note": "The repository counter says 117; the network list returns 122, of which 115 are owned by a user account and 7 by an organization. Five forks carry something of their own — 2026-06-15, 2026-02-15, 2025-12-05 and 2025-08-05 hold a star each, 2026-04-01 holds a fork — and five of them is the same five as in 2026-W49. Four forks were created in the last 30 days (2026-11-16, 2026-11-14, 2026-10-29, 2026-10-28). The count of deletions in the last five days is not observable from the API and is therefore not recorded."
+  },
+  "traffic": {
+    "window_days": 14,
+    "window": "2026-11-09 → 2026-11-22",
+    "views": 655,
+    "unique_visitors": 202,
+    "clones": 4957,
+    "unique_cloners": 609,
+    "referrers": [
+      {
+        "referrer": "github.com",
+        "count": 137,
+        "uniques": 76
+      },
+      {
+        "referrer": "Google",
+        "count": 26,
+        "uniques": 20
+      },
+      {
+        "referrer": "ashishpatel26.github.io",
+        "count": 4,
+        "uniques": 4
+      },
+      {
+        "referrer": "t.co",
+        "count": 3,
+        "uniques": 3
+      },
+      {
+        "referrer": "search.brave.com",
+        "count": 3,
+        "uniques": 2
+      },
+      {
+        "referrer": "Bing",
+        "count": 2,
+        "uniques": 2
+      },
+      {
+        "referrer": "discuss.pytorch.kr",
+        "count": 2,
+        "uniques": 2
+      },
+      {
+        "referrer": "yandex.ru",
+        "count": 2,
+        "uniques": 2
+      },
+      {
+        "referrer": "nestlab.tech",
+        "count": 2,
+        "uniques": 1
+      },
+      {
+        "referrer": "Yahoo",
+        "count": 1,
+        "uniques": 1
+      }
+    ],
+    "referrers_note": "The window advanced this time: the endpoint served 2026-11-09 → 2026-11-22, the fourteen days ending the day before this collection, where 2026-W49 read the same window twice (2026-11-06 → 2026-11-19). The views therefore fell (733 → 655) as the oldest days left the window, while the unique visitors rose (185 → 202). The release-wave collector read the same endpoint at 2026-11-23T02:16Z and got 689 views / 199 uniques - a third reading of the same rolling window, taken three hours earlier. GitHub's traffic data cannot attribute a star to a referrer, so the split is reported as visits, never as caused stars."
+  },
+  "indexing": {
+    "property": "sc-domain:kittray.com",
+    "demo_indexable_since": "2026-11-16",
+    "first_impressions": "2026-11-17",
+    "period": "2026-10-26 → 2026-11-22",
+    "data_state": "all",
+    "measured_at": "2026-11-23T10:50:00Z",
+    "impressions_28d": 51,
+    "clicks_28d": 1,
+    "ctr_28d": 0.0196,
+    "position_28d": 29.2,
+    "realty_impressions_28d": 60,
+    "realty_clicks_28d": 1,
+    "realty_ctr_28d": 0.0167,
+    "realty_position_28d": 27,
+    "impressions_by_date": {
+      "2026-11-11": {
+        "impressions": 0,
+        "clicks": 0,
+        "position": 0
+      },
+      "2026-11-12": {
+        "impressions": 0,
+        "clicks": 0,
+        "position": 0
+      },
+      "2026-11-13": {
+        "impressions": 0,
+        "clicks": 0,
+        "position": 0
+      },
+      "2026-11-14": {
+        "impressions": 0,
+        "clicks": 0,
+        "position": 0
+      },
+      "2026-11-15": {
+        "impressions": 0,
+        "clicks": 0,
+        "position": 0
+      },
+      "2026-11-16": {
+        "impressions": 0,
+        "clicks": 0,
+        "position": 0
+      },
+      "2026-11-17": {
+        "impressions": 1,
+        "clicks": 0,
+        "position": 5
+      },
+      "2026-11-18": {
+        "impressions": 1,
+        "clicks": 0,
+        "position": 4
+      },
+      "2026-11-19": {
+        "impressions": 1,
+        "clicks": 0,
+        "position": 46
+      },
+      "2026-11-20": {
+        "impressions": 21,
+        "clicks": 1,
+        "position": 36.1
+      },
+      "2026-11-21": {
+        "impressions": 16,
+        "clicks": 0,
+        "position": 23.2
+      },
+      "2026-11-22": {
+        "impressions": 11,
+        "clicks": 0,
+        "position": 27.9
+      }
+    },
+    "page_rows": 35,
+    "indexed_urls_with_impressions": [
+      "https://realty.kittray.com/en/property/prop-0038",
+      "http://kittray.com/",
+      "https://kittray.com/",
+      "https://realty.kittray.com/de/property/prop-0202",
+      "https://realty.kittray.com/en/property/prop-0013",
+      "https://realty.kittray.com/en/property/prop-0080",
+      "https://realty.kittray.com/en/property/prop-0170",
+      "https://realty.kittray.com/en/property/prop-0232",
+      "https://realty.kittray.com/en/property/prop-0236",
+      "https://realty.kittray.com/en/property/prop-0238",
+      "https://realty.kittray.com/en/valuation",
+      "https://realty.kittray.com/es/property/prop-0025",
+      "https://realty.kittray.com/es/property/prop-0039",
+      "https://realty.kittray.com/es/property/prop-0121",
+      "https://realty.kittray.com/es/property/prop-0197",
+      "https://realty.kittray.com/it/property/prop-0179",
+      "https://realty.kittray.com/it/property/prop-0197",
+      "https://realty.kittray.com/it/property/prop-0232",
+      "https://realty.kittray.com/pl",
+      "https://realty.kittray.com/pl/property/prop-0025",
+      "https://realty.kittray.com/pl/property/prop-0038",
+      "https://realty.kittray.com/pl/property/prop-0121",
+      "https://realty.kittray.com/pl/property/prop-0157",
+      "https://realty.kittray.com/pt/property/prop-0006",
+      "https://realty.kittray.com/pt/property/prop-0015",
+      "https://realty.kittray.com/pt/property/prop-0117",
+      "https://realty.kittray.com/pt/property/prop-0237",
+      "https://realty.kittray.com/ru",
+      "https://realty.kittray.com/ru/property/prop-0112",
+      "https://realty.kittray.com/ru/property/prop-0121",
+      "https://realty.kittray.com/ru/property/prop-0131",
+      "https://realty.kittray.com/tr/",
+      "https://realty.kittray.com/tr/property/prop-0025",
+      "https://realty.kittray.com/uk/search",
+      "https://realty.kittray.com/uk/valuation"
+    ],
+    "urls_new_since_w49": [
+      "https://realty.kittray.com/en/property/prop-0038",
+      "https://realty.kittray.com/en/property/prop-0013",
+      "https://realty.kittray.com/en/property/prop-0080",
+      "https://realty.kittray.com/en/property/prop-0170",
+      "https://realty.kittray.com/en/property/prop-0232",
+      "https://realty.kittray.com/en/property/prop-0236",
+      "https://realty.kittray.com/es/property/prop-0039",
+      "https://realty.kittray.com/it/property/prop-0179",
+      "https://realty.kittray.com/it/property/prop-0197",
+      "https://realty.kittray.com/it/property/prop-0232",
+      "https://realty.kittray.com/pl/property/prop-0038",
+      "https://realty.kittray.com/pl/property/prop-0157",
+      "https://realty.kittray.com/pt/property/prop-0006",
+      "https://realty.kittray.com/pt/property/prop-0015",
+      "https://realty.kittray.com/pt/property/prop-0117",
+      "https://realty.kittray.com/pt/property/prop-0237",
+      "https://realty.kittray.com/ru",
+      "https://realty.kittray.com/uk/search"
+    ],
+    "queries": [
+      {
+        "query": "ai property price prediction agent development",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 36
+      },
+      {
+        "query": "ai property valuation",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 35
+      },
+      {
+        "query": "estate ai",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 20
+      },
+      {
+        "query": "house search",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 7
+      },
+      {
+        "query": "instant property valuation ai",
+        "clicks": 0,
+        "impressions": 9,
+        "position": 74.2
+      },
+      {
+        "query": "калькулятор стоимость квартиры",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 9
+      },
+      {
+        "query": "оцінка квартири онлайн",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 46
+      }
+    ],
+    "sitemaps": [
+      {
+        "path": "https://kittray.com/sitemap.xml",
+        "last_submitted": "2026-11-17T12:35:56Z",
+        "last_downloaded": "2026-11-23T02:17:21Z",
+        "urls_in_file": 2,
+        "submitted": 2,
+        "indexed": 0,
+        "warnings": 1,
+        "errors": 0,
+        "urls": [
+          "https://kittray.com/",
+          "https://realty.kittray.com/pl"
+        ]
+      },
+      {
+        "path": "https://realty.kittray.com/sitemap.xml",
+        "last_submitted": "2026-11-17T10:35:11Z",
+        "last_downloaded": "2026-11-21T06:42:03Z",
+        "urls_in_file": 2349,
+        "submitted": 1899,
+        "indexed": 0,
+        "warnings": 261,
+        "errors": 0,
+        "warning_type": "Page with redirect (Source: Website, Validation: Not Started, 3 pages) - the type named by the Pages report re-read on 2026-11-23T10:30Z and recorded in docs/community/SEO_INDEXING_SETUP.md section 1.7.1",
+        "note": "2349 entries = 261 paths × 9 locales. The indexed counter reads 0 while the URL inspection reports the pages as submitted and indexed, so the counter is not a coverage statement. The 261 warnings are one per path-group and the API does not expose their type; the type was read in the Search Console UI (TaskMaster #107). The demo sitemap was last downloaded on 2026-11-21 and has not been fetched again since - the studio sitemap was fetched on 2026-11-23."
+      }
+    ],
+    "note": "The property has no search data before 2026-11-11 and the demo was noindex until 2026-11-16, so these are the first impressions the site has ever produced. The window advanced by a day since 2026-W49 (2026-10-24 → 2026-11-20 → 2026-10-26 → 2026-11-22), so the totals are not directly comparable with the previous snapshot; the shape is: 51 impressions and one click for the property, 60 for realty.kittray.com alone, and 35 page rows against 17 URLs in the previous snapshot."
+  },
+  "release_wave": {
+    "release": {
+      "tag": "v5.4.0",
+      "sha": "96d70c20f92cca037f1da2c15652162f34d55ec3",
+      "released_at": "2026-11-21T01:05:00Z"
+    },
+    "baseline_stars": 325,
+    "note": "The release wave of v5.4.0 has two due points read so far, both collected by the detached collector and folded here. The star count has not moved: 325 before the release, 325 at the +24h point, 325 at the weekly point - the wave has not produced a star yet, and the honest-report rule says so in those words.",
+    "points": [
+      {
+        "label": "release-plus-24h",
+        "due_at_utc": "2026-11-22T01:05:00Z",
+        "collected_at_utc": "2026-11-22T13:46:22Z",
+        "elapsed_hours_since_release": 36.69,
+        "stars": 325,
+        "forks": 117,
+        "open_issues": 1,
+        "open_prs": 0,
+        "traffic": {
+          "window_days": 14,
+          "views": 689,
+          "unique_visitors": 199
+        },
+        "evidence": "docs/community/private-evidence/release-plus-24h.json (gitignored)"
+      },
+      {
+        "label": "weekly-2026-W50",
+        "due_at_utc": "2026-11-23T01:05:00Z",
+        "collected_at_utc": "2026-11-23T02:16:03Z",
+        "elapsed_hours_since_release": 49.18,
+        "stars": 325,
+        "forks": 117,
+        "open_issues": 1,
+        "open_prs": 0,
+        "traffic": {
+          "window_days": 14,
+          "views": 689,
+          "unique_visitors": 199
+        },
+        "evidence": "docs/community/private-evidence/weekly-2026-W50.json (gitignored)"
+      }
+    ],
+    "due_points_ahead": [
+      {
+        "label": "release-plus-72h",
+        "due_at_utc": "2026-11-24T01:05:00Z"
+      },
+      {
+        "label": "monthly-2026-11",
+        "due_at_utc": "2026-11-30T01:05:00Z"
+      }
+    ]
+  },
+  "method": {
+    "repo_stats_and_issues": "gh api repos/AleksNeStu/ai-real-estate-assistant (admin-scoped token, account AleksNeStu)",
+    "star_growth": "gh api --paginate -H \"Accept: application/vnd.github.star+json\" repos/AleksNeStu/ai-real-estate-assistant/stargazers --jq \".[].starred_at\" (325 timestamps, counted in windows ending at the collection time)",
+    "traffic": "gh api repos/AleksNeStu/ai-real-estate-assistant/traffic/views and /traffic/clones and /traffic/popular/referrers (the window is read from the daily series the views endpoint returns)",
+    "forks": "gh api --paginate repos/AleksNeStu/ai-real-estate-assistant/forks",
+    "search_data": "the Search Console API, read with the service account .claude/ops/monitor-gsc-traffic.ps1 uses, window 2026-10-26 → 2026-11-22, dataState=all",
+    "sitemaps": "the Search Console API (list_sitemaps) and the two XML files fetched directly",
+    "caveat": "The dev-github-aleksnestu MCP server is defined in this repository but is not loaded in this session, so every GitHub read above went through the gh CLI with the admin-scoped token - the path the repository's own CLAUDE.md names for a session where that MCP is off."
+  }
+}
