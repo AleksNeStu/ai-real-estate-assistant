@@ -4118,7 +4118,7 @@
       "run": {
         "badge": "MIT · free",
         "title": "Run it yourself",
-        "body": "Your server, your keys, your data. Fork it, change it, ship it under your own name — you do not need to ask. The backlog is public; suggestions are read and used.",
+        "body": "Your server, your keys, your data. It ships the official notarial transaction prices from the Rejestr Cen Nieruchomości, the valuation with its evidence, the buyer memory, alerts on saved searches, and 17 LLM providers you bring the keys for — fork it, change it, ship it under your own name; you do not need to ask. The backlog is public; suggestions are read and used.",
         "ctaFork": "Fork it on GitHub",
         "ctaSuggest": "Suggest something",
         "code1": "git clone github.com/AleksNeStu/ai-real-estate-assistant",
@@ -4129,7 +4129,7 @@
       "hosted": {
         "badge": "launching soon",
         "title": "Move to the hosted tier",
-        "body": "PropVector AI runs the same engine for you: managed, live feeds across many countries, the enrichment pipeline, the AI CRM, connectors, SSO/MFA, white-label and a support contract.",
+        "body": "PropVector AI runs the same engine for you: managed, live listing feeds across many countries, alerts against them, the AI CRM with bi-directional sync, connectors, SSO/MFA, white-label and SLAs.",
         "priceFree": "Free",
         "pricePro": "Pro",
         "priceEnterprise": "Enterprise",

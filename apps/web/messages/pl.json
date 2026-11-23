@@ -4118,7 +4118,7 @@
       "run": {
         "badge": "MIT · bezpłatnie",
         "title": "Uruchom sam",
-        "body": "Twój serwer, Twoje klucze, Twoje dane. Skopiuj repozytorium, zmień je, wydaj pod własną nazwą — nie musisz o nic pytać. Backlog jest publiczny; propozycje są czytane i wykorzystywane.",
+        "body": "Twój serwer, Twoje klucze, Twoje dane. Wersja z tego repozytorium ma oficjalne ceny transakcji notarialnych z Rejestru Cen Nieruchomości, wycenę wraz z jej dowodami, pamięć kupującego, alerty dla zapisanych wyszukiwań oraz 17 dostawców LLM, do których sam dokładasz klucze — skopiuj repozytorium, zmień je, wydaj pod własną nazwą; nie musisz o nic pytać. Backlog jest publiczny; propozycje są czytane i wykorzystywane.",
         "ctaFork": "Skopiuj na GitHubie",
         "ctaSuggest": "Zaproponuj coś",
         "code1": "git clone github.com/AleksNeStu/ai-real-estate-assistant",
@@ -4129,7 +4129,7 @@
       "hosted": {
         "badge": "już wkrótce",
         "title": "Przejdź na wersję hostowaną",
-        "body": "PropVector AI prowadzi ten sam silnik za Ciebie: zarządzany, żywe strumienie z wielu krajów, potok wzbogacania, AI CRM, konektory, SSO/MFA, white-label i umowa wsparcia.",
+        "body": "PropVector AI prowadzi ten sam silnik za Ciebie: zarządzany, żywe strumienie ofert z wielu krajów, alerty oparte na tych ofertach, AI CRM z synchronizacją dwukierunkową, konektory, SSO/MFA, white-label i SLA.",
         "priceFree": "Free",
         "pricePro": "Pro",
         "priceEnterprise": "Enterprise",

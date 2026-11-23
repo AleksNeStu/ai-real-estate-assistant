@@ -419,19 +419,36 @@ it stays that way.
 
 The paid version is being built right now on top of the same engine, as
 **PropVector AI**. The split is deliberate and it does not change with the
-roadmap:
+roadmap. The left column is what this repository does **today** — every row is
+a thing in the tree you can run today, not a promise; the right column is what
+the hosted tier adds on top:
 
 | Capability | Open source (this repo) | Hosted (PropVector AI) |
 |---|---|---|
-| Conversational property Q&A, demo catalogue | Free | Included |
-| Bring your own LLM keys, local Ollama | Free | Included |
-| Vector search (ChromaDB) over your own data | Free | Included |
-| Live data feeds and the enrichment pipeline | — | Pro |
+| Conversational property Q&A over your own data | Free | Included |
+| **Official notarial transaction prices** (Rejestr Cen Nieruchomości) | Free | Included |
+| Valuation with its evidence — comparables, sample size, period | Free | Included |
+| Bring your own LLM keys (`17` providers), local Ollama | Free | Included |
+| Hybrid vector + keyword search (ChromaDB) with MMR reranking | Free | Included |
+| Buyer memory — budget, ruled-out areas, liked listings | Free | Included |
 | Accounts, favourites, saved searches | Free | Included |
-| Live feeds, alerts, drip campaigns | — | Pro |
-| AI CRM (lead scoring, drip campaigns, pipeline) | — | Pro / Enterprise |
-| CRM connectors (HubSpot, Pipedrive), SSO, MFA | — | Enterprise |
-| White-label / self-host support contract | — | Enterprise (custom) |
+| Price-drop and new-match alerts on saved searches | Free | Included |
+| Neighbourhood index measured from OpenStreetMap features | Free | Included |
+| Lead scoring, agent board and funnel | Free | Included |
+| Enrichment pipeline and data adapters | Free | Included |
+| Live listing feeds (a real feed, not the register) | — | Pro |
+| More countries | — | Pro |
+| Alerts against the live feeds, at scale | — | Pro |
+| AI CRM with bi-directional sync | — | Pro / Enterprise |
+| CRM connectors (HubSpot, Pipedrive) | — | Enterprise |
+| SSO, MFA | — | Enterprise |
+| White-label, self-host support contract, SLAs | — | Enterprise (custom) |
+
+The register is the free tier's substance: it is published weekly by the state
+mapping office and, since 13 February 2026, it is free of charge for everyone —
+so charging for it would be selling a public record behind a paywall. What the
+hosted tier sells is what the register is not: live listing feeds, in more
+countries, with the CRM around them.
 
 **Free `$0`** · **Pro `$29/mo`** · **Enterprise (custom)** — the tiers reflect the
 public roadmap and may move before launch.
@@ -486,8 +503,9 @@ unreachable. For real answers you bring your own key — any of `17` providers, 
 a local Ollama — and the app falls back to the next one when a provider fails.
 
 **What is the difference to the hosted version?**
-The engine is the same. The hosted tier adds live data feeds, accounts, saved
-searches, alerts and an AI CRM — see [PropVector AI](https://propvectorai.com).
+The engine is the same. The hosted tier adds live listing feeds, in more
+countries, and the CRM around them — bi-directional sync, connectors, SSO/MFA,
+white-label and SLAs — see [PropVector AI](https://propvectorai.com).
 
 **Which languages?**
 Nine in the interface: English, Polish, Russian, German, Spanish, Italian,
