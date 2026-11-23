@@ -60,7 +60,7 @@
   "homepage": "https://realty.kittray.com/",
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
-    "@playwright/test": "^1.65.0",
+    "@playwright/test": "^1.65.1",
     "concurrently": "^10.0.7",
     "eslint": "^9.39.3",
     "lint-staged": "^15.4.3",
