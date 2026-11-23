@@ -71,6 +71,7 @@ async def transactions_for(
     street_norm: Optional[str] = None,
     since: Optional[date] = None,
     limit: int = 5000,
+    until: Optional[date] = None,
 ) -> list[RCNTransaction]:
     """The sales registered in one city, most recent first.
 
@@ -78,12 +79,19 @@ async def transactions_for(
     tens of thousands of sales in a couple of years, so the read is bounded
     by both the window and the row limit. The street narrows it further when
     the address names one.
+
+    The upper bound is today. The register carries the occasional deed dated
+    in the future - a typo in the starosta's register, not a sale that has
+    not happened yet - and the read is ordered by date descending, so such a
+    row would sit at the top of the result set and count against the limit
+    that the real sales have to share.
     """
     query = select(PropertyTransaction).where(PropertyTransaction.city_norm == city_norm)
     if street_norm:
         query = query.where(PropertyTransaction.street_norm == street_norm)
     if since is not None:
         query = query.where(PropertyTransaction.transaction_date >= since)
+    query = query.where(PropertyTransaction.transaction_date <= (until or date.today()))
     query = query.order_by(PropertyTransaction.transaction_date.desc()).limit(limit)
     result = await session.execute(query)
     return [to_transaction(row) for row in result.scalars().all()]

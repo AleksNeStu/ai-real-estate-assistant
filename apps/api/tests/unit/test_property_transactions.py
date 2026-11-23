@@ -13,7 +13,7 @@ from sqlalchemy import text
 
 from db.database import standalone_session
 from db.models import PropertyTransaction
-from db.property_transaction_repo import known_external_ids
+from db.property_transaction_repo import known_external_ids, transactions_for
 
 
 class TestTheSessionOfItsOwn:
@@ -54,3 +54,67 @@ class TestTheStoredRow:
         assert "TOPOLOWA" in text_repr
         assert "KRAKÓW" in text_repr
         assert "650000.0" in text_repr
+
+
+class TestTheSalesOfACity:
+    """The register's own typos must not become the evidence."""
+
+    async def test_a_deed_dated_in_the_future_is_not_a_sale(self, db_session):
+        """The demo's register holds rows dated 3021 - a typo in the deed.
+
+        The read is ordered by date descending, so such a row would sit at the
+        top of the result set and count against the limit the real sales
+        share.
+        """
+        db_session.add(
+            PropertyTransaction(
+                external_id="typed-in-the-future",
+                city="KRAKÓW",
+                city_norm="KRAKOW",
+                street="TOPOLOWA",
+                street_norm="TOPOLOWA",
+                number="47",
+                area_sqm=50.0,
+                price_brutto=650000.0,
+                transaction_date=date(3021, 12, 2),
+            )
+        )
+        db_session.add(
+            PropertyTransaction(
+                external_id="a-real-sale",
+                city="KRAKÓW",
+                city_norm="KRAKOW",
+                street="TOPOLOWA",
+                street_norm="TOPOLOWA",
+                number="48",
+                area_sqm=50.0,
+                price_brutto=640000.0,
+                transaction_date=date(2026, 3, 27),
+            )
+        )
+        await db_session.commit()
+
+        sales = await transactions_for(db_session, "KRAKOW")
+
+        assert [sale.external_id for sale in sales] == ["a-real-sale"]
+
+    async def test_a_sale_of_today_is_a_sale(self, db_session):
+        """The bound is today, and a sale of today is inside it."""
+        db_session.add(
+            PropertyTransaction(
+                external_id="sold-today",
+                city="KRAKÓW",
+                city_norm="KRAKOW",
+                street="TOPOLOWA",
+                street_norm="TOPOLOWA",
+                number="49",
+                area_sqm=50.0,
+                price_brutto=620000.0,
+                transaction_date=date.today(),
+            )
+        )
+        await db_session.commit()
+
+        sales = await transactions_for(db_session, "KRAKOW")
+
+        assert [sale.external_id for sale in sales] == ["sold-today"]

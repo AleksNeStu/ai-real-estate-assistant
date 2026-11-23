@@ -84,6 +84,22 @@ class TestSelectComparables:
 
         assert len(selected) == 1
 
+    def test_leaves_out_the_deeds_dated_in_the_future(self):
+        """The register carries the occasional deed dated in the future.
+
+        The demo's own register holds rows dated 3021 - a typo in the
+        starosta's register, not a sale that has not happened yet. Such a deed
+        is no evidence about the market, and it would sit at the top of the
+        comparables, where a visitor would read its date and believe it.
+        """
+        subject = ValuationSubject(city="Kraków", street="Topolowa", area_sqm=50, months=12)
+        sales = [_sale(days_ago=30), _sale(days_ago=-900)]
+
+        selected, _ = select_comparables(sales, subject, TODAY)
+
+        assert len(selected) == 1
+        assert selected[0].transaction_date == TODAY - __import__("datetime").timedelta(days=30)
+
     def test_widens_the_window_when_there_are_too_few_sales(self):
         subject = ValuationSubject(city="Kraków", area_sqm=50, months=6)
         sales = [_sale(days_ago=200), _sale(days_ago=260)]

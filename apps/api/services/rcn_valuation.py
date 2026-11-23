@@ -179,6 +179,12 @@ def select_comparables(
     notes: list[str] = []
 
     city_pool = [t for t in transactions if _matches_city(t, subject)]
+    # The register carries the occasional deed dated in the future - a typo in
+    # the starosta's register, not a sale that has not happened yet (the demo's
+    # own register holds rows dated 3021). Such a deed is no evidence about
+    # the market, and it would sit at the top of the window and at the top of
+    # the comparables, where a visitor would read its date and believe it.
+    city_pool = [t for t in city_pool if t.transaction_date <= reference]
     if not city_pool:
         return [], [f"No sales of flats are registered in {subject.city}."]
 
