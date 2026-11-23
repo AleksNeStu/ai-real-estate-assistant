@@ -48,6 +48,11 @@ export function NeighborhoodDetails({
   const t = useTranslations('neighborhood');
   const [activeTab, setActiveTab] = useState('overview');
 
+  // A factor nobody could measure carries no score: it is shown as a dash,
+  // never as a zero - a zero would say the neighbourhood is bad, and the
+  // map said nothing about it.
+  const scoreText = (score: number | null): string => (score === null ? '—' : score.toFixed(1));
+
   // Reader-visible labels for the API freshness keys
   const freshnessLabels: Record<string, string> = {
     air_quality: t('details.airQuality'),
@@ -115,24 +120,22 @@ export function NeighborhoodDetails({
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-3 rounded-lg bg-muted/30">
-              <p className="text-2xl font-bold text-info">{result.safety_score.toFixed(1)}</p>
+              <p className="text-2xl font-bold text-info">{scoreText(result.safety_score)}</p>
               <p className="text-xs text-muted-foreground">{t('details.safety')}</p>
             </div>
             <div className="text-center p-3 rounded-lg bg-muted/30">
-              <p className="text-2xl font-bold text-chart-4">
-                {result.schools_score.toFixed(1)}
-              </p>
+              <p className="text-2xl font-bold text-chart-4">{scoreText(result.schools_score)}</p>
               <p className="text-xs text-muted-foreground">{t('details.schools')}</p>
             </div>
             <div className="text-center p-3 rounded-lg bg-muted/30">
               <p className="text-2xl font-bold text-success">
-                {result.walkability_score.toFixed(1)}
+                {scoreText(result.walkability_score)}
               </p>
               <p className="text-xs text-muted-foreground">{t('details.walkability')}</p>
             </div>
             <div className="text-center p-3 rounded-lg bg-muted/30">
               <p className="text-2xl font-bold text-chart-7">
-                {result.green_space_score.toFixed(1)}
+                {scoreText(result.green_space_score)}
               </p>
               <p className="text-xs text-muted-foreground">{t('details.greenSpace')}</p>
             </div>
@@ -219,14 +222,14 @@ export function NeighborhoodDetails({
                           }[key] || key;
 
                         const scoreKey = `${key}_score` as keyof NeighborhoodQualityResult;
-                        const score = result[scoreKey] as number;
+                        const score = result[scoreKey] as number | null;
 
                         return (
                           <tr key={key} className="border-b last:border-0">
                             <td className="py-2 px-3">{factorLabel}</td>
-                            <td className="py-2 px-3 text-right font-medium">{score.toFixed(1)}</td>
+                            <td className="py-2 px-3 text-right font-medium">{scoreText(score)}</td>
                             <td className="py-2 px-3 text-right">
-                              {detail.raw_value} {detail.unit}
+                              {detail.raw_value === null ? '—' : detail.raw_value} {detail.unit}
                             </td>
                             <td className="py-2 px-3 text-center">
                               <span

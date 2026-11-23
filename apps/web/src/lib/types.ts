@@ -563,7 +563,8 @@ export interface CompareInvestmentsResponse {
  * Detailed information about a single scoring factor
  */
 export interface FactorDetail {
-  raw_value: number;
+  // A factor nobody could measure has no raw value either.
+  raw_value: number | null;
   unit: string;
   confidence: number; // 0-1
   data_source: string;
@@ -623,17 +624,19 @@ export interface NeighborhoodQualityInput {
  */
 export interface NeighborhoodQualityResult {
   property_id: string;
-  overall_score: number;
+  // A factor that could not be measured carries no score: the reason it
+  // carries none is in `components_without_data`.
+  overall_score: number | null;
   // Core scores (60% total)
-  safety_score: number;
-  schools_score: number;
-  amenities_score: number;
-  walkability_score: number;
-  green_space_score: number;
+  safety_score: number | null;
+  schools_score: number | null;
+  amenities_score: number | null;
+  walkability_score: number | null;
+  green_space_score: number | null;
   // New scores (40% total)
-  air_quality_score: number;
-  noise_level_score: number;
-  public_transport_score: number;
+  air_quality_score: number | null;
+  noise_level_score: number | null;
+  public_transport_score: number | null;
   // Detailed breakdown for each factor
   factor_details?: {
     safety?: FactorDetail;
@@ -647,6 +650,8 @@ export interface NeighborhoodQualityResult {
   };
   score_breakdown: Record<string, number>;
   data_sources: string[];
+  // The factors that could not be measured, and the reason
+  components_without_data?: Record<string, string>;
   // New fields for Task #40
   city_comparison?: CityComparison;
   nearby_pois?: NearbyPOIs;

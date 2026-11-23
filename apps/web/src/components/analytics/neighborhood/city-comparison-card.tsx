@@ -49,6 +49,11 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
     );
   }
 
+  // The difference against the city average. A neighbourhood with no score
+  // measured is neither above nor below the average - it is nowhere near it.
+  const overallDiff =
+    result.overall_score === null ? null : result.overall_score - comparison.city_average;
+
   const getPercentileColor = (percentile: number): string => {
     if (percentile >= 80) return 'text-success';
     if (percentile >= 60) return 'text-chart-7';
@@ -70,7 +75,9 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
   const chartData = [
     {
       name: t('cityComparison.thisArea'),
-      score: result.overall_score,
+      // The chart is drawn only when there is a score; the zero is a
+      // placeholder for the type, never a number the reader sees.
+      score: result.overall_score ?? 0,
       fill: 'hsl(var(--chart-1))',
     },
     {
@@ -168,40 +175,42 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
         </div>
 
         {/* Comparison Chart */}
-        <div className="mb-6">
-          <h5 className="text-sm font-medium mb-3">{t('cityComparison.scoreComparison')}</h5>
-          <div
-            className="h-40"
-            role="img"
-            aria-label={t('cityComparison.scoreComparisonLabel', {
-              area: result.overall_score.toFixed(1),
-              average: comparison.city_average.toFixed(1),
-            })}
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} layout="vertical" barSize={40}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  tick={{ fontSize: 12 }}
-                  width={80}
-                  tickLine={false}
-                />
-                <Tooltip
-                  formatter={(value: number) => [value.toFixed(1), t('cityComparison.score')]}
-                  contentStyle={{ fontSize: '12px' }}
-                />
-                <Bar dataKey="score" radius={[4, 4, 4, 4]}>
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+        {result.overall_score !== null && (
+          <div className="mb-6">
+            <h5 className="text-sm font-medium mb-3">{t('cityComparison.scoreComparison')}</h5>
+            <div
+              className="h-40"
+              role="img"
+              aria-label={t('cityComparison.scoreComparisonLabel', {
+                area: result.overall_score.toFixed(1),
+                average: comparison.city_average.toFixed(1),
+              })}
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} layout="vertical" barSize={40}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                  <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    tick={{ fontSize: 12 }}
+                    width={80}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    formatter={(value: number) => [value.toFixed(1), t('cityComparison.score')]}
+                    contentStyle={{ fontSize: '12px' }}
+                  />
+                  <Bar dataKey="score" radius={[4, 4, 4, 4]}>
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Better/Worse factors */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -215,11 +224,13 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
               <ul className="space-y-1">
                 {comparison.better_than.map((factor) => {
                   const factorKey = `${factor.toLowerCase().replace(' ', '_')}_score`;
-                  const score = result[factorKey as keyof NeighborhoodQualityResult] as number;
+                  const score = result[factorKey as keyof NeighborhoodQualityResult] as number | null;
                   return (
                     <li key={factor} className="flex items-center justify-between text-xs">
                       <span className="text-success">{factorLabels[factorKey] || factor}</span>
-                      <span className="font-semibold text-success">{score?.toFixed(1)}</span>
+                      <span className="font-semibold text-success">
+                        {score === null ? '—' : score.toFixed(1)}
+                      </span>
                     </li>
                   );
                 })}
@@ -237,11 +248,13 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
               <ul className="space-y-1">
                 {comparison.worse_than.map((factor) => {
                   const factorKey = `${factor.toLowerCase().replace(' ', '_')}_score`;
-                  const score = result[factorKey as keyof NeighborhoodQualityResult] as number;
+                  const score = result[factorKey as keyof NeighborhoodQualityResult] as number | null;
                   return (
                     <li key={factor} className="flex items-center justify-between text-xs">
                       <span className="text-caution">{factorLabels[factorKey] || factor}</span>
-                      <span className="font-semibold text-caution">{score?.toFixed(1)}</span>
+                      <span className="font-semibold text-caution">
+                        {score === null ? '—' : score.toFixed(1)}
+                      </span>
                     </li>
                   );
                 })}
@@ -264,28 +277,28 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
         <div className="mt-4 pt-4 border-t flex items-center justify-center">
           <div
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
-              result.overall_score > comparison.city_average
+              overallDiff !== null && overallDiff > 0
                 ? 'bg-success/20 text-success'
-                : result.overall_score < comparison.city_average
+                : overallDiff !== null && overallDiff < 0
                   ? 'bg-caution/20 text-caution'
                   : 'bg-muted text-foreground'
             }`}
           >
-            {result.overall_score > comparison.city_average ? (
+            {overallDiff !== null && overallDiff > 0 ? (
               <TrendingUp className="h-4 w-4" aria-hidden="true" />
-            ) : result.overall_score < comparison.city_average ? (
+            ) : overallDiff !== null && overallDiff < 0 ? (
               <TrendingDown className="h-4 w-4" aria-hidden="true" />
             ) : (
               <Minus className="h-4 w-4" aria-hidden="true" />
             )}
             <span className="text-sm font-medium">
-              {result.overall_score > comparison.city_average
+              {overallDiff !== null && overallDiff > 0
                 ? t('cityComparison.pointsAbove', {
-                    count: (result.overall_score - comparison.city_average).toFixed(1),
+                    count: overallDiff.toFixed(1),
                   })
-                : result.overall_score < comparison.city_average
+                : overallDiff !== null && overallDiff < 0
                   ? t('cityComparison.pointsBelow', {
-                      count: (comparison.city_average - result.overall_score).toFixed(1),
+                      count: Math.abs(overallDiff).toFixed(1),
                     })
                   : t('cityComparison.equalToAverage')}
             </span>

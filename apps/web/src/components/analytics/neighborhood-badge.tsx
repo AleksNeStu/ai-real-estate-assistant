@@ -4,7 +4,9 @@ import React from "react";
 import { useTranslations } from 'next-intl';
 
 interface NeighborhoodBadgeProps {
-  overallScore: number;
+  // A score nobody could measure is no score: the badge says so instead of
+  // showing a zero, which would read as a bad neighbourhood.
+  overallScore: number | null;
   showLabel?: boolean;
   size?: "sm" | "md" | "lg";
   className?: string;
@@ -22,6 +24,7 @@ interface NeighborhoodBadgeProps {
  * - 55-69 (Fair): Yellow
  * - 40-54 (Poor): Orange
  * - <40 (Very Poor): Red
+ * - no score: Muted
  */
 export function NeighborhoodBadge({
   overallScore,
@@ -31,6 +34,7 @@ export function NeighborhoodBadge({
 }: NeighborhoodBadgeProps) {
   const t = useTranslations('neighborhood');
   const getScoreColor = (): string => {
+    if (overallScore === null) return "text-muted-foreground";
     if (overallScore >= 85) return "text-success";
     if (overallScore >= 70) return "text-chart-7";
     if (overallScore >= 55) return "text-warning";
@@ -39,6 +43,7 @@ export function NeighborhoodBadge({
   };
 
   const getBgColor = (): string => {
+    if (overallScore === null) return "bg-muted/10";
     if (overallScore >= 85) return "bg-success/10";
     if (overallScore >= 70) return "bg-chart-7/10";
     if (overallScore >= 55) return "bg-warning/10";
@@ -47,6 +52,7 @@ export function NeighborhoodBadge({
   };
 
   const getBorderColor = (): string => {
+    if (overallScore === null) return "border-border";
     if (overallScore >= 85) return "border-success/30";
     if (overallScore >= 70) return "border-chart-7/30";
     if (overallScore >= 55) return "border-warning/30";
@@ -55,6 +61,7 @@ export function NeighborhoodBadge({
   };
 
   const getRatingLabel = (): string => {
+    if (overallScore === null) return t('details.noData');
     if (overallScore >= 85) return t('score.excellent');
     if (overallScore >= 70) return t('score.good');
     if (overallScore >= 55) return t('score.fair');
@@ -63,6 +70,7 @@ export function NeighborhoodBadge({
   };
 
   const getRatingLabelShort = (): string => {
+    if (overallScore === null) return '—';
     if (overallScore >= 85) return t('score.short.exc');
     if (overallScore >= 70) return t('score.short.good');
     if (overallScore >= 55) return t('score.short.fair');
@@ -96,11 +104,15 @@ export function NeighborhoodBadge({
   return (
     <div
       className={`inline-flex items-center gap-1.5 rounded-full border ${bgColor} ${borderColor} ${classes.container} ${className}`}
-      title={t('quality.badge', { rating: getRatingLabel(), score: overallScore })}
+      title={
+        overallScore === null
+          ? t('details.noData')
+          : t('quality.badge', { rating: getRatingLabel(), score: overallScore })
+      }
     >
       {/* Score */}
       <span className={`${scoreColor} ${classes.score}`}>
-        {overallScore.toFixed(1)}
+        {overallScore === null ? '—' : overallScore.toFixed(1)}
       </span>
 
       {/* Label */}
@@ -166,12 +178,12 @@ export function NeighborhoodBadgeCircle({
  */
 interface NeighborhoodScoreDisplayProps {
   result: {
-    overall_score: number;
-    safety_score: number;
-    schools_score: number;
-    amenities_score: number;
-    walkability_score: number;
-    green_space_score: number;
+    overall_score: number | null;
+    safety_score: number | null;
+    schools_score: number | null;
+    amenities_score: number | null;
+    walkability_score: number | null;
+    green_space_score: number | null;
   };
   compact?: boolean;
   className?: string;
@@ -183,7 +195,8 @@ export function NeighborhoodScoreDisplay({
   className = "",
 }: NeighborhoodScoreDisplayProps) {
   const t = useTranslations('neighborhood');
-  const getScoreColor = (score: number): string => {
+  const getScoreColor = (score: number | null): string => {
+    if (score === null) return "bg-muted";
     if (score >= 85) return "bg-success";
     if (score >= 70) return "bg-chart-7";
     if (score >= 55) return "bg-warning";
@@ -223,13 +236,15 @@ export function NeighborhoodScoreDisplay({
               </span>
               <div className="flex items-center gap-2">
                 <div className="w-32 bg-muted rounded-full h-2">
-                  <div
-                    className={`h-2 rounded-full ${getScoreColor(component.score)}`}
-                    style={{ width: `${component.score}%` }}
-                  />
+                  {component.score !== null && (
+                    <div
+                      className={`h-2 rounded-full ${getScoreColor(component.score)}`}
+                      style={{ width: `${component.score}%` }}
+                    />
+                  )}
                 </div>
                 <span className="text-muted-foreground w-12 text-right">
-                  {component.score.toFixed(1)}
+                  {component.score === null ? '—' : component.score.toFixed(1)}
                 </span>
               </div>
             </div>

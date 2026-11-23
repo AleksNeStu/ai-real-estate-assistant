@@ -117,13 +117,19 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
     },
   ];
 
-  const getScoreColor = (score: number): string => {
+  const getScoreColor = (score: number | null): string => {
+    if (score === null) return 'bg-muted';
     if (score >= 85) return 'bg-success';
     if (score >= 70) return 'bg-chart-7';
     if (score >= 55) return 'bg-warning';
     if (score >= 40) return 'bg-caution';
     return 'bg-destructive';
   };
+
+  // A factor nobody could measure carries no score: it is shown as a dash,
+  // never as a zero - a zero would say the neighbourhood is bad, and the
+  // map said nothing about it.
+  const scoreText = (score: number | null): string => (score === null ? '—' : score.toFixed(1));
 
   const getConfidenceIndicator = (factorKey: string): { level: string; color: string } => {
     const detail = result.factor_details?.[factorKey as keyof typeof result.factor_details];
@@ -145,7 +151,7 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
     return (
       <div className={`grid grid-cols-2 md:grid-cols-4 gap-3 ${className}`}>
         {factorConfigs.map((config) => {
-          const score = result[config.key] as number;
+          const score = result[config.key] as number | null;
 
           return (
             <div
@@ -157,7 +163,7 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
                 <span className="text-sm font-medium">{config.label}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className={`text-xl font-bold ${config.color}`}>{score.toFixed(1)}</span>
+                <span className={`text-xl font-bold ${config.color}`}>{scoreText(score)}</span>
                 <span className="text-xs text-muted-foreground">{config.weight}</span>
               </div>
             </div>
@@ -174,13 +180,13 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
         <h3 className="text-lg font-semibold">{t('factorBreakdown.title')}</h3>
         <div className="text-sm text-muted-foreground">
           {t('factorBreakdown.overall')}{' '}
-          <span className="font-semibold">{result.overall_score.toFixed(1)}/100</span>
+          <span className="font-semibold">{scoreText(result.overall_score)}/100</span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {factorConfigs.map((config) => {
-          const score = result[config.key] as number;
+          const score = result[config.key] as number | null;
           const confidence = getConfidenceIndicator(config.key);
           const detail = result.factor_details?.[config.key as keyof typeof result.factor_details];
 
@@ -205,23 +211,25 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
               {/* Score display */}
               <div className="mb-3">
                 <div className="flex items-end justify-between mb-2">
-                  <span className={`text-3xl font-bold ${config.color}`}>{score.toFixed(1)}</span>
+                  <span className={`text-3xl font-bold ${config.color}`}>{scoreText(score)}</span>
                   <span className="text-xs text-muted-foreground">
                     {t('factorBreakdown.per100')}
                   </span>
                 </div>
 
                 {/* Progress bar */}
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div
-                    className={`h-2 rounded-full ${getScoreColor(score)}`}
-                    style={{ width: `${Math.min(score, 100)}%` }}
-                    role="progressbar"
-                    aria-valuenow={score}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                  />
-                </div>
+                {score !== null && (
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full ${getScoreColor(score)}`}
+                      style={{ width: `${Math.min(score, 100)}%` }}
+                      role="progressbar"
+                      aria-valuenow={score}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Description */}

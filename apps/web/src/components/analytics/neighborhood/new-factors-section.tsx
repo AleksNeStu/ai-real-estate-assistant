@@ -18,7 +18,7 @@ interface NewFactorConfig {
   detailKey: 'air_quality' | 'noise_level' | 'public_transport';
   description: string;
   getRating: (value: number) => { label: string; color: string; bg: string };
-  formatValue: (detail: { raw_value: number; unit: string } | undefined) => string;
+  formatValue: (detail: { raw_value: number | null; unit: string } | undefined) => string;
 }
 
 /**
@@ -87,18 +87,18 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
     return { label: t('newFactors.ratings.limited'), color: 'text-destructive', bg: 'bg-destructive/10 border-destructive/30' };
   };
 
-  const formatAirQuality = (detail: { raw_value: number; unit: string } | undefined) => {
-    if (!detail) return 'N/A';
+  const formatAirQuality = (detail: { raw_value: number | null; unit: string } | undefined) => {
+    if (!detail || detail.raw_value === null) return 'N/A';
     return `AQI ${detail.raw_value}`;
   };
 
-  const formatNoise = (detail: { raw_value: number; unit: string } | undefined) => {
-    if (!detail) return 'N/A';
+  const formatNoise = (detail: { raw_value: number | null; unit: string } | undefined) => {
+    if (!detail || detail.raw_value === null) return 'N/A';
     return `${detail.raw_value} dB`;
   };
 
-  const formatTransport = (detail: { raw_value: number; unit: string } | undefined) => {
-    if (!detail) return 'N/A';
+  const formatTransport = (detail: { raw_value: number | null; unit: string } | undefined) => {
+    if (!detail || detail.raw_value === null) return 'N/A';
     return t('newFactors.stopsWithin1km', { count: detail.raw_value });
   };
 
@@ -113,7 +113,7 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
       getRating: (_value: number) => {
         void _value;
         const detail = result.factor_details?.air_quality;
-        return detail
+        return detail && detail.raw_value !== null
           ? getAirQualityRating(detail.raw_value)
           : { label: t('newFactors.ratings.unknown'), color: 'text-muted-foreground', bg: 'bg-muted border-border' };
       },
@@ -129,7 +129,7 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
       getRating: (_value: number) => {
         void _value;
         const detail = result.factor_details?.noise_level;
-        return detail
+        return detail && detail.raw_value !== null
           ? getNoiseRating(detail.raw_value)
           : { label: t('newFactors.ratings.unknown'), color: 'text-muted-foreground', bg: 'bg-muted border-border' };
       },
@@ -145,7 +145,7 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
       getRating: (_value: number) => {
         void _value;
         const detail = result.factor_details?.public_transport;
-        return detail
+        return detail && detail.raw_value !== null
           ? getTransportRating(detail.raw_value)
           : { label: t('newFactors.ratings.unknown'), color: 'text-muted-foreground', bg: 'bg-muted border-border' };
       },
@@ -166,7 +166,8 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
     return <AlertTriangle className="h-3 w-3 text-destructive" aria-hidden="true" />;
   };
 
-  const getScoreColor = (score: number): string => {
+  const getScoreColor = (score: number | null): string => {
+    if (score === null) return 'text-muted-foreground';
     if (score >= 85) return 'text-success';
     if (score >= 70) return 'text-chart-7';
     if (score >= 55) return 'text-warning';
@@ -186,7 +187,7 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
             {factorConfigs.map((config) => {
               const score = result[config.key];
               const detail = result.factor_details?.[config.detailKey];
-              const rating = config.getRating(score);
+              const rating = config.getRating(score ?? 0);
               const confidence = detail?.confidence;
 
               return (
@@ -218,7 +219,7 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
                         role="img"
                         aria-label={t('newFactors.scoreLabel', {
                           label: config.label,
-                          score: score.toFixed(0),
+                          score: score === null ? '—' : score.toFixed(0),
                         })}
                       >
                         <circle
@@ -231,22 +232,24 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
                           className="text-muted-foreground"
                         />
                         {/* Score arc */}
-                        <circle
-                          cx="48"
-                          cy="48"
-                          r="40"
-                          stroke="currentColor"
-                          strokeWidth="8"
-                          fill="none"
-                          strokeDasharray={`${(score / 100) * 251.2} 251.2`}
-                          className={getScoreColor(score)}
-                          strokeLinecap="round"
-                        />
+                        {score !== null && (
+                          <circle
+                            cx="48"
+                            cy="48"
+                            r="40"
+                            stroke="currentColor"
+                            strokeWidth="8"
+                            fill="none"
+                            strokeDasharray={`${(score / 100) * 251.2} 251.2`}
+                            className={getScoreColor(score)}
+                            strokeLinecap="round"
+                          />
+                        )}
                       </svg>
                       {/* Center score */}
                       <div className="absolute inset-0 flex items-center justify-center">
                         <span className={`text-2xl font-bold ${getScoreColor(score)}`}>
-                          {score.toFixed(0)}
+                          {score === null ? '—' : score.toFixed(0)}
                         </span>
                       </div>
                     </div>

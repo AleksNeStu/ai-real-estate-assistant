@@ -459,7 +459,11 @@ function NeighborhoodQualitySection() {
   const [loading, setLoading] = useState(false);
   const hint = error ? getToolHint(error, t) : null;
 
-  const getScoreColor = (score: number): string => {
+  // A factor nobody could measure carries no score: it is shown as a dash,
+  // never as a zero - a zero would say the neighbourhood is bad, and the
+  // map said nothing about it.
+  const getScoreColor = (score: number | null): string => {
+    if (score === null) return 'text-muted-foreground';
     if (score >= 85) return 'text-success';
     if (score >= 70) return 'text-chart-7';
     if (score >= 55) return 'text-warning';
@@ -467,7 +471,8 @@ function NeighborhoodQualitySection() {
     return 'text-destructive';
   };
 
-  const getRatingLabel = (score: number): string => {
+  const getRatingLabel = (score: number | null): string => {
+    if (score === null) return '—';
     if (score >= 85) return t('neighborhood.excellent');
     if (score >= 70) return t('neighborhood.good');
     if (score >= 55) return t('neighborhood.fair');
@@ -547,7 +552,7 @@ function NeighborhoodQualitySection() {
             <h3 className="text-lg font-semibold">
               {t('neighborhood.overallScore')}:{' '}
               <span className={`${getScoreColor(data.overall_score)} text-2xl`}>
-                {data.overall_score.toFixed(1)}
+                {data.overall_score === null ? '—' : data.overall_score.toFixed(1)}
               </span>
               /100
             </h3>
@@ -600,9 +605,18 @@ function NeighborhoodQualitySection() {
   );
 }
 
-function ScoreBar({ label, score, weight }: { label: string; score: number; weight: string }) {
+function ScoreBar({
+  label,
+  score,
+  weight,
+}: {
+  label: string;
+  score: number | null;
+  weight: string;
+}) {
   const t = useTranslations('pages.tools');
-  const getScoreColor = (score: number): string => {
+  const getScoreColor = (score: number | null): string => {
+    if (score === null) return 'bg-muted';
     if (score >= 85) return 'bg-success';
     if (score >= 70) return 'bg-chart-7';
     if (score >= 55) return 'bg-warning';
@@ -615,14 +629,19 @@ function ScoreBar({ label, score, weight }: { label: string; score: number; weig
       <div className="flex justify-between mb-1">
         <span className="text-sm font-medium">{label}</span>
         <span className="text-sm text-muted-foreground">
-          {t('neighborhood.scoreBar', { score: score.toFixed(1), weight })}
+          {t('neighborhood.scoreBar', {
+            score: score === null ? '—' : score.toFixed(1),
+            weight,
+          })}
         </span>
       </div>
       <div className="w-full bg-muted rounded-full h-2.5">
-        <div
-          className={`h-2.5 rounded-full ${getScoreColor(score)}`}
-          style={{ width: `${score}%` }}
-        ></div>
+        {score !== null && (
+          <div
+            className={`h-2.5 rounded-full ${getScoreColor(score)}`}
+            style={{ width: `${score}%` }}
+          ></div>
+        )}
       </div>
     </div>
   );
