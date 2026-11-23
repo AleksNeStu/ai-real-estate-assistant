@@ -3919,6 +3919,63 @@ Get model preference for a specific task type (chat, search, tools, analysis, em
 | 200 | Successful Response | TaskModelPreferenceResponse |
 | 422 | Validation Error | HTTPValidationError |
 
+## GET /api/v1/places
+
+**Summary**: The places the site knows
+
+**Tags**: Places
+
+The cities the register covers, with the districts it covers of each.
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | PlaceCatalogueResponse |
+
+## GET /api/v1/places/{city}
+
+**Summary**: What the register holds for a city
+
+**Tags**: Places
+
+The price a square metre costs in a city, the registered sales that figure is measured on, the period those sales cover and the sales themselves.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| city | path | string | yes |  |
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | PlaceFiguresResponse |
+| 422 | Validation Error | HTTPValidationError |
+
+## GET /api/v1/places/{city}/{district}
+
+**Summary**: What the register holds for a district
+
+**Tags**: Places
+
+The price a square metre costs in a district, measured on the sales registered on the streets that district stands on.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| city | path | string | yes |  |
+| district | path | string | yes |  |
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | PlaceFiguresResponse |
+| 422 | Validation Error | HTTPValidationError |
+
 ## GET /api/v1/profile
 
 **Summary**: Get Profile

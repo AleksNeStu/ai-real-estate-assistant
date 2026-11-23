@@ -6517,7 +6517,7 @@
         "type": "object"
       },
       "FactorDetail": {
-        "description": "Detailed breakdown for a scoring factor.",
+        "description": "Detailed breakdown for a scoring factor.\n\nA factor nobody could measure carries no normalized score and no\nweighted score - it has no score to normalize or to weigh.",
         "properties": {
           "confidence": {
             "default": 0.5,
@@ -6535,10 +6535,17 @@
           },
           "normalized_score": {
             "description": "Normalized score 0-100",
-            "maximum": 100.0,
-            "minimum": 0.0,
             "title": "Normalized Score",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "raw_value": {
             "anyOf": [
@@ -6568,13 +6575,18 @@
           "weighted_score": {
             "description": "Score \u00d7 weight",
             "title": "Weighted Score",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
-          "normalized_score",
-          "weight",
-          "weighted_score"
+          "weight"
         ],
         "title": "FactorDetail",
         "type": "object"
@@ -10986,7 +10998,7 @@
         "type": "object"
       },
       "NeighborhoodQualityResponse": {
-        "description": "Response model for neighborhood quality analysis.",
+        "description": "Response model for neighborhood quality analysis.\n\nA factor that could not be measured carries no score. The reason it\ncarries none is in `components_without_data` - the same answer the\ntool gives, so a factor nobody measured is never reported as a zero.",
         "properties": {
           "air_quality_score": {
             "anyOf": [
@@ -11004,10 +11016,17 @@
           },
           "amenities_score": {
             "description": "Amenities score (0-100)",
-            "maximum": 100.0,
-            "minimum": 0.0,
             "title": "Amenities Score",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "city": {
             "anyOf": [
@@ -11071,10 +11090,17 @@
           },
           "green_space_score": {
             "description": "Green space score (0-100)",
-            "maximum": 100.0,
-            "minimum": 0.0,
             "title": "Green Space Score",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "latitude": {
             "anyOf": [
@@ -11136,10 +11162,17 @@
           },
           "overall_score": {
             "description": "Overall neighborhood quality score (0-100)",
-            "maximum": 100.0,
-            "minimum": 0.0,
             "title": "Overall Score",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "property_id": {
             "title": "Property Id",
@@ -11161,17 +11194,31 @@
           },
           "safety_score": {
             "description": "Safety score (0-100)",
-            "maximum": 100.0,
-            "minimum": 0.0,
             "title": "Safety Score",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "schools_score": {
             "description": "Schools score (0-100)",
-            "maximum": 100.0,
-            "minimum": 0.0,
             "title": "Schools Score",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "score_breakdown": {
             "additionalProperties": {
@@ -11183,20 +11230,29 @@
           },
           "walkability_score": {
             "description": "Walkability score (0-100)",
-            "maximum": 100.0,
-            "minimum": 0.0,
             "title": "Walkability Score",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "components_without_data": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Components Without Data",
+            "description": "The factors that could not be measured, and the reason"
           }
         },
         "required": [
-          "property_id",
-          "overall_score",
-          "safety_score",
-          "schools_score",
-          "amenities_score",
-          "walkability_score",
-          "green_space_score"
+          "property_id"
         ],
         "title": "NeighborhoodQualityResponse",
         "type": "object"
@@ -18468,6 +18524,225 @@
         ],
         "title": "ValuationComparable",
         "description": "One sale the valuation stands on."
+      },
+      "PlaceCatalogueResponse": {
+        "properties": {
+          "places": {
+            "items": {
+              "$ref": "#/components/schemas/PlaceSummaryResponse"
+            },
+            "type": "array",
+            "title": "Places"
+          }
+        },
+        "type": "object",
+        "title": "PlaceCatalogueResponse",
+        "description": "Every place the site knows."
+      },
+      "PlaceDistrictResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "slug"
+        ],
+        "title": "PlaceDistrictResponse",
+        "description": "One district of a city, and the link that names it."
+      },
+      "PlaceFiguresResponse": {
+        "properties": {
+          "place": {
+            "type": "string",
+            "title": "Place"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "district": {
+            "type": "string",
+            "title": "District",
+            "default": ""
+          },
+          "district_slug": {
+            "type": "string",
+            "title": "District Slug",
+            "default": ""
+          },
+          "median_price_per_sqm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Price Per Sqm"
+          },
+          "first_quartile_price_per_sqm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Quartile Price Per Sqm"
+          },
+          "third_quartile_price_per_sqm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Third Quartile Price Per Sqm"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "default": "PLN"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "default": "rcn"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "sample_size": {
+            "type": "integer",
+            "title": "Sample Size",
+            "default": 0
+          },
+          "registered_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Registered Count"
+          },
+          "comparison_area": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison Area"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          },
+          "comparables": {
+            "items": {
+              "$ref": "#/components/schemas/ValuationComparable"
+            },
+            "type": "array",
+            "title": "Comparables"
+          },
+          "districts": {
+            "items": {
+              "$ref": "#/components/schemas/PlaceDistrictResponse"
+            },
+            "type": "array",
+            "title": "Districts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "place",
+          "slug"
+        ],
+        "title": "PlaceFiguresResponse",
+        "description": "What the register says about a place, and on what evidence.\n\nA place has no single flat to price, so there is no estimate here: the\nprice a square metre costs there, the sales the figure is measured on,\nthe period those sales cover and the sales themselves."
+      },
+      "PlaceSummaryResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "register_city": {
+            "type": "string",
+            "title": "Register City"
+          },
+          "districts": {
+            "items": {
+              "$ref": "#/components/schemas/PlaceDistrictResponse"
+            },
+            "type": "array",
+            "title": "Districts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "slug",
+          "register_city"
+        ],
+        "title": "PlaceSummaryResponse",
+        "description": "One city the site knows, and the districts it stands on."
       }
     },
     "securitySchemes": {
@@ -34570,6 +34845,138 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/BuyerMemoryDeleteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/places": {
+      "get": {
+        "tags": [
+          "Places"
+        ],
+        "summary": "The places the site knows",
+        "description": "The cities the register covers, with the districts it covers of each.",
+        "operationId": "place_catalogue_api_v1_places_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaceCatalogueResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/api/v1/places/{city}": {
+      "get": {
+        "tags": [
+          "Places"
+        ],
+        "summary": "What the register holds for a city",
+        "description": "The price a square metre costs in a city, the registered sales that figure is measured on, the period those sales cover and the sales themselves.",
+        "operationId": "city_figures_api_v1_places__city__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "city",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "City"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaceFiguresResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/places/{city}/{district}": {
+      "get": {
+        "tags": [
+          "Places"
+        ],
+        "summary": "What the register holds for a district",
+        "description": "The price a square metre costs in a district, measured on the sales registered on the streets that district stands on.",
+        "operationId": "district_figures_api_v1_places__city___district__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "city",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "City"
+            }
+          },
+          {
+            "name": "district",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "District"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaceFiguresResponse"
                 }
               }
             }
