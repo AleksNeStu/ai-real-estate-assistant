@@ -202,14 +202,51 @@ Every release publishes both images to GitHub Container Registry, multi-arch
 (amd64 and arm64):
 
 ```bash
-docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/backend:5.1.10
-docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/frontend:5.1.10
+docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/backend:5.5.0
+docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/frontend:5.5.0
 ```
 
 The full guide — the memory footprint per setup, the published tags and the
 Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.md).
 
 ## What's new
+
+**`v5.5.0`** — the demo keeps the promises it makes about itself.
+
+- **The waitlist form reaches the operator** — a capture used to end at a row
+  in a table only the operator could open, so a launch had to be followed by a
+  human reading the board. The row now renders the high-value-lead template
+  and the mail goes to the address the deployment names
+  (`LEAD_ALERT_EMAIL_TO`) — never to one written in the source. The row is
+  written first and the mail is best-effort, so a mail failure cannot show a
+  visitor a failure for an address that was in fact saved.
+- **The flat is valued from the register of notarial prices** — "what is my
+  flat worth" was answered from one seeded listing's asking price. It is
+  answered now from the prices people actually paid: the Rejestr Cen
+  Nieruchomości, free by law since February 2026, read from the weekly
+  export and kept in a table of its own. The comparables are the street first
+  and the city when the street is thin, and the forecast degrades to the
+  measured movement of the transactions instead of a flat 3 %.
+- **The launch drafts name the build the demo actually runs** — five of them
+  named a build that is not the one the demo serves.
+- **The site's first click is recorded** — the weekly snapshot carries it now,
+  and four records the earlier snapshots got wrong are corrected.
+
+**`v5.4.0`** — the demo measures itself, and the pipeline holds the line.
+
+- **The demo's real-model answer is proven by a test** — the headline claim
+  of this README is checked by the suite instead of asserted.
+- **The backend suites run in the pipeline, and a breaking change to the
+  public API fails it** — the pipeline runs the backend suites and the
+  contract diff, so a change that breaks the committed baseline cannot reach
+  a release.
+- **The site measures itself** — Cloudflare Web Analytics, cookieless, and
+  the tracked interaction carries the locale it happened on.
+- **The buyer memory can be seen and deleted in the account** — the memory
+  the buyer builds is readable and removable, which is what the legal wording
+  promises.
+- **The demo is indexed, and the documents say so** — the deployment stopped
+  answering `noindex`, and the documents follow the state.
 
 **`v5.3.4`** — the demo can be signed into, and the pages say what they are.
 
@@ -313,7 +350,7 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
 - **335 dependency alerts closed** — every critical and high advisory resolved,
   the floors pinned in both the lock file and the project file.
 
-Full notes: [v5.3.1 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.3.1) ·
+Full notes: [v5.5.0 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.5.0) ·
 [changelog](CHANGELOG.md).
 
 ## What it does
