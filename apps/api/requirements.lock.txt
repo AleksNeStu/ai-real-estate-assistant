@@ -278,7 +278,7 @@ kubernetes==37.0.2
     # via chromadb
 langchain==1.5.0
     # via -r requirements.txt
-langchain-anthropic==1.7.10
+langchain-anthropic==1.7.12
     # via -r requirements.txt
 langchain-chroma==1.1.0
     # via -r requirements.txt
