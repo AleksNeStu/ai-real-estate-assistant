@@ -62,7 +62,7 @@
     "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.65.1",
     "concurrently": "^10.0.7",
-    "eslint": "^9.39.3",
+    "eslint": "^10.15.0",
     "lint-staged": "^15.4.3",
     "prettier": "^3.10.1",
     "wait-on": "^8.0.5"
