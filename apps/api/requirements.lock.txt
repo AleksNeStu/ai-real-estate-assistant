@@ -308,7 +308,7 @@ langchain-google-genai==4.5.0
     # via -r requirements.txt
 langchain-ollama==0.3.10
     # via -r requirements.txt
-langchain-openai==1.8.0
+langchain-openai==1.8.5
     # via -r requirements.txt
 langchain-protocol==0.0.21
     # via

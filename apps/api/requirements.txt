@@ -63,7 +63,7 @@ langchain-ollama==0.3.10
 # LangChain core and providers (aligned to core 1.x)
 langchain==1.5.0
 langchain-core==1.8.1
-langchain-openai==1.8.0
+langchain-openai==1.8.5
 langchain-anthropic==1.7.10
 langchain-google-genai==4.5.0
 
