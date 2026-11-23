@@ -146,7 +146,7 @@ notarial sales
 
 **Body:**
 
-We just shipped v5.3 of [AI Real Estate Assistant](https://github.com/AleksNeStu/ai-real-estate-assistant)
+We just shipped v5.5 of [AI Real Estate Assistant](https://github.com/AleksNeStu/ai-real-estate-assistant)
 and I want to share the architectural decisions that mattered.
 
 **A valuation is a measurement with a sample, so it has to carry the
@@ -228,7 +228,7 @@ Grok, DeepSeek, MiniMax, Ollama) in a self-hostable property search demo
 
 Sharing the LLM routing logic from
 [AI Real Estate Assistant](https://github.com/AleksNeStu/ai-real-estate-assistant)
-— an open-source property search and valuation platform, v5.3, shipping a
+— an open-source property search and valuation platform, v5.5, shipping a
 valuation against the official notarial register, neighbourhood summaries and
 a buyer memory.
 
