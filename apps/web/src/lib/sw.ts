@@ -19,39 +19,16 @@ interface BeforeInstallPromptEvent extends Event {
 let deferredInstallPrompt: BeforeInstallPromptEvent | null = null;
 
 /**
- * Register the service worker
- * Should be called once when the app loads
+ * Capture the browser's offer to install the app.
+ *
+ * The event is the only signal that the app can be installed at all: a
+ * browser that does not fire it cannot install the app, so the button that
+ * offers the install stays hidden where the install would not work.
  */
-export function registerServiceWorker(): void {
-  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+export function captureInstallPrompt(): void {
+  if (typeof window === 'undefined') {
     return;
   }
-
-  window.addEventListener('load', async () => {
-    try {
-      const registration = await navigator.serviceWorker.register('/sw.js', {
-        scope: '/',
-      });
-
-      info('SW registered', { scope: registration.scope });
-
-      // Check for updates
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        if (newWorker) {
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New content is available, notify the user
-              info('SW new content available');
-              window.dispatchEvent(new CustomEvent('sw-update-available'));
-            }
-          });
-        }
-      });
-    } catch (error) {
-      console.error('[SW] Service Worker registration failed:', error);
-    }
-  });
 
   // Listen for the beforeinstallprompt event
   window.addEventListener('beforeinstallprompt', (e) => {
@@ -66,6 +43,110 @@ export function registerServiceWorker(): void {
     deferredInstallPrompt = null;
     window.dispatchEvent(new CustomEvent('pwa-installed'));
   });
+}
+
+/**
+ * Announce a new version of the app.
+ *
+ * The worker that carries it waits until the visitor accepts the update -
+ * an update that applied itself would replace the page under the reader.
+ */
+function announceUpdate(registration: ServiceWorkerRegistration): void {
+  // A worker that finished installing before this page opened is already
+  // waiting: the update is offered the moment the app opens.
+  if (registration.waiting && navigator.serviceWorker.controller) {
+    info('SW new content available');
+    window.dispatchEvent(new CustomEvent('sw-update-available'));
+    return;
+  }
+
+  registration.addEventListener('updatefound', () => {
+    const newWorker = registration.installing;
+    if (!newWorker) {
+      return;
+    }
+    newWorker.addEventListener('statechange', () => {
+      if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+        // New content is available, notify the user
+        info('SW new content available');
+        window.dispatchEvent(new CustomEvent('sw-update-available'));
+      }
+    });
+  });
+}
+
+/**
+ * Register the service worker
+ * Should be called once when the app loads
+ *
+ * The environment is a parameter so the test can register the worker at all:
+ * the build inlines the environment into the bundle, and a test bundle is
+ * never a production one.
+ */
+export function registerServiceWorker(environment: string = process.env.NODE_ENV): void {
+  captureInstallPrompt();
+
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+    return;
+  }
+
+  // The worker caches what it serves, and what the development server serves
+  // changes with every edit - a cached chunk is a stale chunk. The worker is
+  // registered in the built application only.
+  if (environment !== 'production') {
+    return;
+  }
+
+  const register = async () => {
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/',
+      });
+
+      info('SW registered', { scope: registration.scope });
+
+      announceUpdate(registration);
+    } catch (error) {
+      console.error('[SW] Service Worker registration failed:', error);
+    }
+  };
+
+  // The page may already be loaded when this runs - a slow first paint is
+  // enough - and a `load` listener added after the event has fired never
+  // fires at all.
+  if (document.readyState === 'complete') {
+    void register();
+  } else {
+    window.addEventListener('load', () => void register(), { once: true });
+  }
+}
+
+/**
+ * Apply the version that is waiting, and reload onto it.
+ *
+ * The worker is asked to take over first: the page reloads only once the new
+ * worker controls it, so the reload lands on the new version instead of on
+ * the old one it is trying to leave.
+ *
+ * The reload is the last thing it does: the promise settles only once the
+ * new worker controls the page, so a caller that awaits it knows the page
+ * it is about to show is the new one.
+ */
+export async function applyUpdate(): Promise<void> {
+  const registration = await getServiceWorkerRegistration();
+  const waiting = registration?.waiting;
+
+  if (!waiting) {
+    window.location.reload();
+    return;
+  }
+
+  await new Promise<void>((resolve) => {
+    navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), { once: true });
+    waiting.postMessage({ type: 'SKIP_WAITING' });
+  });
+
+  window.location.reload();
 }
 
 /**

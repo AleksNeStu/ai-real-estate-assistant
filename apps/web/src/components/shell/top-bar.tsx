@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
 import { UserMenu } from '@/components/auth/UserMenu';
+import { InstallButton } from '@/components/pwa/install-button';
 import { withUtm } from '@/lib/utm';
 
 const THEME_STORAGE_KEY = 'theme';
@@ -165,6 +166,8 @@ export function TopBar() {
           )}
 
           <LanguageSwitcher />
+
+          <InstallButton />
 
           <Button
             type="button"

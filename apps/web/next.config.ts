@@ -10,11 +10,20 @@ const turbopackRoot = resolve(configDir, '..', '..');
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
-// PWA configuration - simplified for v10.2.9
+// PWA configuration.
+//
+// The application ships its own service worker (`public/sw.js`): the app
+// shell is precached for an offline start, and a new version waits until the
+// visitor accepts it instead of replacing the page under them.
+//
+// `next-pwa` is disabled on purpose. It would write a workbox worker over
+// that file, and a workbox worker takes over on its own - the update the
+// task asks to be offered would be applied silently. It never wrote a worker
+// here anyway: the build runs on Turbopack, where the plugin's webpack hooks
+// do not run. The plugin is left in place so the reason is on the record.
 const withPWA = withPWAInit({
   dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
-  register: true,
+  disable: true,
 });
 
 const nextConfig: NextConfig = {

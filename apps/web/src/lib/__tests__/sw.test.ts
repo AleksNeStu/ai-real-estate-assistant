@@ -1,4 +1,4 @@
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
 
 // Mock logger
 jest.mock('@/lib/logger', () => ({
@@ -14,10 +14,15 @@ const eventListeners: Record<string, ((...args: unknown[]) => void)[]> = {};
 const mockRegister = jest.fn();
 const mockGetRegistration = jest.fn();
 const mockUnregister = jest.fn();
+const mockServiceWorkerListeners: Record<string, ((...args: unknown[]) => void)[]> = {};
+
+/** The state of the document when the worker registers. */
+let mockReadyState = 'complete';
 
 beforeEach(() => {
   jest.clearAllMocks();
   for (const key in eventListeners) delete eventListeners[key];
+  for (const key in mockServiceWorkerListeners) delete mockServiceWorkerListeners[key];
 
   // Mock navigator.serviceWorker on existing global
   Object.defineProperty(globalThis, 'navigator', {
@@ -26,9 +31,20 @@ beforeEach(() => {
         register: mockRegister,
         getRegistration: mockGetRegistration,
         controller: null,
+        addEventListener: (event: string, fn: (...args: unknown[]) => void) => {
+          if (!mockServiceWorkerListeners[event]) mockServiceWorkerListeners[event] = [];
+          mockServiceWorkerListeners[event].push(fn);
+        },
       },
     },
     writable: true,
+    configurable: true,
+  });
+
+  // The document is loaded unless a test says otherwise.
+  mockReadyState = 'complete';
+  Object.defineProperty(document, 'readyState', {
+    get: () => mockReadyState,
     configurable: true,
   });
 
@@ -53,17 +69,20 @@ beforeEach(() => {
 
 import {
   registerServiceWorker,
+  captureInstallPrompt,
   canInstallPWA,
   promptPWAInstall,
   isStandalonePWA,
   isServiceWorkerActive,
   getServiceWorkerRegistration,
   unregisterServiceWorker,
+  applyUpdate,
 } from '@/lib/sw';
 
 describe('registerServiceWorker', () => {
   it('adds load, beforeinstallprompt, appinstalled listeners', () => {
-    registerServiceWorker();
+    mockReadyState = 'loading';
+    registerServiceWorker('production');
 
     const events = (window.addEventListener as jest.Mock).mock.calls.map((c) => c[0]);
     expect(events).toContain('load');
@@ -72,13 +91,14 @@ describe('registerServiceWorker', () => {
   });
 
   it('registers service worker on load', async () => {
+    mockReadyState = 'loading';
     mockRegister.mockResolvedValue({
       scope: '/',
       addEventListener: jest.fn(),
       installing: null,
     });
 
-    registerServiceWorker();
+    registerServiceWorker('production');
 
     const loadListeners = eventListeners['load'];
     expect(loadListeners).toBeDefined();
@@ -88,19 +108,36 @@ describe('registerServiceWorker', () => {
     expect(mockRegister).toHaveBeenCalledWith('/sw.js', { scope: '/' });
   });
 
+  it('registers at once when the page is already loaded', async () => {
+    mockRegister.mockResolvedValue({
+      scope: '/',
+      addEventListener: jest.fn(),
+      installing: null,
+    });
+
+    registerServiceWorker('production');
+
+    expect(mockRegister).toHaveBeenCalledWith('/sw.js', { scope: '/' });
+  });
+
+  it('does not register in development', () => {
+    registerServiceWorker('development');
+
+    expect(mockRegister).not.toHaveBeenCalled();
+  });
+
   it('handles registration failure gracefully', async () => {
     mockRegister.mockRejectedValue(new Error('Failed'));
 
-    registerServiceWorker();
+    registerServiceWorker('production');
 
-    const loadListeners = eventListeners['load'];
-    if (loadListeners) {
-      await loadListeners[0](); // Should not throw
+    if (eventListeners['load']) {
+      await eventListeners['load'][0](); // Should not throw
     }
   });
 
   it('handles beforeinstallprompt event', () => {
-    registerServiceWorker();
+    registerServiceWorker('production');
 
     const listeners = eventListeners['beforeinstallprompt'];
     expect(listeners).toBeDefined();
@@ -113,13 +150,37 @@ describe('registerServiceWorker', () => {
   });
 
   it('handles appinstalled event', () => {
-    registerServiceWorker();
+    registerServiceWorker('production');
 
     const listeners = eventListeners['appinstalled'];
     expect(listeners).toBeDefined();
     if (listeners) {
       listeners[0](); // Should not throw
     }
+  });
+});
+
+describe('captureInstallPrompt', () => {
+  it('offers the install once the browser fires the event', () => {
+    captureInstallPrompt();
+
+    expect(canInstallPWA()).toBe(false);
+
+    const listeners = eventListeners['beforeinstallprompt'];
+    listeners![0]({ preventDefault: jest.fn() });
+
+    expect(canInstallPWA()).toBe(true);
+  });
+
+  it('forgets the offer once the app is installed', () => {
+    captureInstallPrompt();
+
+    eventListeners['beforeinstallprompt']![0]({ preventDefault: jest.fn() });
+    expect(canInstallPWA()).toBe(true);
+
+    eventListeners['appinstalled']![0]();
+
+    expect(canInstallPWA()).toBe(false);
   });
 });
 
@@ -186,21 +247,78 @@ describe('getServiceWorkerRegistration', () => {
 describe('unregisterServiceWorker', () => {
   it('returns false when no registration', async () => {
     mockGetRegistration.mockResolvedValue(undefined);
-    const result = await unregisterServiceWorker();
+    const result = await unregisterServiceWorker('production');
     expect(result).toBe(false);
   });
 
   it('returns true when unregistration succeeds', async () => {
     mockGetRegistration.mockResolvedValue({ unregister: mockUnregister });
     mockUnregister.mockResolvedValue(true);
-    const result = await unregisterServiceWorker();
+    const result = await unregisterServiceWorker('production');
     expect(result).toBe(true);
   });
 
   it('returns false when unregistration fails', async () => {
     mockGetRegistration.mockResolvedValue({ unregister: mockUnregister });
     mockUnregister.mockResolvedValue(false);
-    const result = await unregisterServiceWorker();
+    const result = await unregisterServiceWorker('production');
     expect(result).toBe(false);
+  });
+});
+
+describe('applyUpdate', () => {
+  /** Every pending microtask has run. */
+  const flushMicrotasks = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+  /** The navigation jsdom refuses to make, silenced for the test. */
+  let consoleError: jest.SpiedFunction<typeof console.error>;
+
+  beforeEach(() => {
+    consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    consoleError.mockRestore();
+  });
+
+  it('asks the waiting worker to take over', async () => {
+    const postMessage = jest.fn();
+    mockGetRegistration.mockResolvedValue({
+      waiting: { postMessage, state: 'installed' },
+    });
+
+    const applied = applyUpdate();
+    await flushMicrotasks();
+
+    expect(postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' });
+
+    // The new worker has to control the page before the page reloads.
+    mockServiceWorkerListeners['controllerchange']![0]();
+    await applied;
+  });
+
+  it('reloads once the new worker controls the page', async () => {
+    const postMessage = jest.fn();
+    mockGetRegistration.mockResolvedValue({
+      waiting: { postMessage, state: 'installed' },
+    });
+
+    let settled = false;
+    const applied = applyUpdate().then(() => {
+      settled = true;
+    });
+
+    await flushMicrotasks();
+    expect(settled).toBe(false);
+
+    mockServiceWorkerListeners['controllerchange']![0]();
+    await applied;
+    expect(settled).toBe(true);
+  });
+
+  it('reloads at once when no version is waiting', async () => {
+    mockGetRegistration.mockResolvedValue({ waiting: null });
+
+    await applyUpdate();
   });
 });

@@ -1,14 +1,14 @@
 {
   "name": "AI Real Estate Assistant",
-  "short_name": "RealEstate AI",
+  "short_name": "AI Estate",
   "description": "AI-powered property search assistant with intelligent recommendations",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0a0a",
+  "background_color": "#09090b",
   "theme_color": "#09090b",
   "orientation": "portrait-primary",
   "scope": "/",
-  "lang": "en",
+  "lang": "pl",
   "icons": [
     {
       "src": "/icon-192x192.png",

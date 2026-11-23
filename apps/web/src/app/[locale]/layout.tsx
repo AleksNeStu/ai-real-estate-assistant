@@ -9,7 +9,6 @@ import { ArrivalReporter } from '@/components/shell/arrival-reporter';
 import { SkipNav } from '@/components/layout/SkipNav';
 import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/sonner';
-import { InstallPrompt } from '@/components/pwa/install-prompt';
 import { OnboardingTour } from '@/components/onboarding/Tour';
 import { UpdateBanner } from '@/components/pwa/update-banner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -269,7 +268,6 @@ export default async function LocaleLayout({
               <ErrorBoundary>{children}</ErrorBoundary>
             </main>
             <AppFooter />
-            <InstallPrompt />
             <OnboardingTour />
             <Toaster />
           </Providers>

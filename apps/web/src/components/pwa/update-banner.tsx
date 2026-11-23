@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { RefreshCw, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
+import { applyUpdate } from '@/lib/sw';
 import { cn } from '@/lib/utils';
 
 interface UpdateBannerProps {
@@ -13,6 +14,10 @@ interface UpdateBannerProps {
 /**
  * Update Banner Component
  * Shows when a new version of the service worker is available
+ *
+ * The version waits: the banner announces it, the visitor accepts it, and
+ * only then does the new worker take over. A version that replaced the page
+ * on its own would take the reader's work with it.
  */
 export function UpdateBanner({ className }: UpdateBannerProps) {
   const [showBanner, setShowBanner] = useState(false);
@@ -32,7 +37,7 @@ export function UpdateBanner({ className }: UpdateBannerProps) {
   }, []);
 
   const handleUpdate = () => {
-    window.location.reload();
+    void applyUpdate();
   };
 
   const handleDismiss = () => {

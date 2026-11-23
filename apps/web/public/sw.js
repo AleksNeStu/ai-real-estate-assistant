@@ -8,9 +8,15 @@ const STATIC_CACHE = 'static-v1';
 const API_CACHE = 'api-v1';
 const _OFFLINE_URL = '/offline';
 
-// Static assets to pre-cache on install
+// The app shell to pre-cache on install.
+//
+// The shell is the landing page of the two maintained languages. The root of
+// the site ('/') is a redirect into a language, and a redirect is not a
+// document that can be cached - so the languages themselves are the shell,
+// and the offline fallback has something real to serve.
 const PRECACHE_URLS = [
-  '/',
+  '/en',
+  '/pl',
   '/manifest.json',
   '/icon-192x192.svg',
   '/icon-512x512.svg',
@@ -23,6 +29,11 @@ const _API_CACHE_MAX_ENTRIES = 50;
 
 // Install event — pre-cache essential assets (fail soft per-URL so a
 // single 404 doesn't break the whole install).
+//
+// The worker does NOT take over on install. A new version waits until the
+// visitor accepts it — the page tells them there is one and the reload
+// happens when they say so. An update that applied itself would replace the
+// page under the reader.
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
@@ -41,9 +52,6 @@ self.addEventListener('install', (event) => {
             }
           })
         );
-      })
-      .then(() => {
-        return self.skipWaiting();
       })
   );
 });
@@ -157,14 +165,18 @@ async function networkFirstWithOfflineFallback(request) {
     }
     return response;
   } catch {
+    // The page the visitor was last on - the last state they saw.
     const cached = await caches.match(request);
     if (cached) {
       return cached;
     }
-    // Return cached index page as offline fallback (SPA routing)
-    const fallback = await caches.match('/');
-    if (fallback) {
-      return fallback;
+    // The shell of the app, when the visitor opens it for the first time
+    // while the connection is gone.
+    for (const url of ['/pl', '/en']) {
+      const fallback = await caches.match(url);
+      if (fallback) {
+        return fallback;
+      }
     }
     return new Response('You are offline', {
       status: 503,
@@ -185,8 +197,12 @@ function isStaticAsset(pathname) {
 }
 
 // Handle messages from the main thread
+//
+// SKIP_WAITING is the visitor accepting the update: the waiting worker takes
+// over and claims the open pages, and the page reloads onto it.
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
+    self.clients.claim();
   }
 });
