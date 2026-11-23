@@ -209,7 +209,8 @@ class GiosNoiseClient:
         try:
             response = requests.get(url, params=params, timeout=self._timeout)
             response.raise_for_status()
-            return response.json()
+            body = response.json()
+            return body if isinstance(body, dict) else None
         except requests.RequestException as exc:
             logger.warning("GIOŚ noise request failed: %s", sanitize_for_logging(exc))
         except (KeyError, TypeError, ValueError) as exc:

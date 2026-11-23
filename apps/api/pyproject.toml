@@ -167,6 +167,11 @@ python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
+# `tmp/` is a scratch directory: it is gitignored, so nothing in it is part
+# of the product, and a probe script left there would fail the type gate on
+# the code the probe happens to write. The gate reads the product, not the
+# scratchpad.
+exclude = ["^tmp/"]
 # The Pydantic plugin is what teaches mypy that a field declared
 # `Optional[str] = Field(None, ...)` is optional. Without it mypy reads every
 # such field as a required constructor argument and reports a missing

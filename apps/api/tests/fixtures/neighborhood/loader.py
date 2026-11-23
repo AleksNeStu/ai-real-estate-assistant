@@ -135,7 +135,8 @@ GIOS_FIXTURE = FIXTURE_DIR / "gios.json"
 
 def load_gios_payload() -> Dict[str, Any]:
     """Return the whole recorded GIOŚ payload."""
-    return json.loads(GIOS_FIXTURE.read_text(encoding="utf-8"))
+    payload: Dict[str, Any] = json.loads(GIOS_FIXTURE.read_text(encoding="utf-8"))
+    return payload
 
 
 def load_gios(name: str) -> Dict[str, Any]:
@@ -150,10 +151,11 @@ def load_gios(name: str) -> Dict[str, Any]:
     Raises:
         KeyError: When the fixture holds no such entry.
     """
-    responses = load_gios_payload()["responses"]
+    responses: Dict[str, Any] = load_gios_payload()["responses"]
     if name not in responses:
         raise KeyError(f"No recorded GIOŚ response named {name!r}")
-    return responses[name]
+    entry: Dict[str, Any] = responses[name]
+    return entry
 
 
 def load_gios_body(name: str) -> Any:
@@ -163,12 +165,14 @@ def load_gios_body(name: str) -> Any:
 
 def gios_station() -> Dict[str, Any]:
     """Return the station the recording is about."""
-    return load_gios_payload()["station"]
+    station: Dict[str, Any] = load_gios_payload()["station"]
+    return station
 
 
 def gios_sensor_ids() -> Dict[str, Any]:
     """Return the sensors of the recorded station, by pollutant code."""
-    return load_gios_payload()["sensor_ids"]
+    sensor_ids: Dict[str, Any] = load_gios_payload()["sensor_ids"]
+    return sensor_ids
 
 
 def gios_get(
@@ -225,7 +229,8 @@ GIOS_NOISE_FIXTURE = FIXTURE_DIR / "gios_noise.json"
 
 def load_gios_noise_payload() -> Dict[str, Any]:
     """Return the whole recorded noise payload."""
-    return json.loads(GIOS_NOISE_FIXTURE.read_text(encoding="utf-8"))
+    payload: Dict[str, Any] = json.loads(GIOS_NOISE_FIXTURE.read_text(encoding="utf-8"))
+    return payload
 
 
 def load_gios_noise(name: str) -> Dict[str, Any]:
@@ -240,10 +245,11 @@ def load_gios_noise(name: str) -> Dict[str, Any]:
     Raises:
         KeyError: When the fixture holds no such entry.
     """
-    responses = load_gios_noise_payload()["responses"]
+    responses: Dict[str, Any] = load_gios_noise_payload()["responses"]
     if name not in responses:
         raise KeyError(f"No recorded noise response named {name!r}")
-    return responses[name]
+    entry: Dict[str, Any] = responses[name]
+    return entry
 
 
 def load_gios_noise_body(name: str) -> Any:
@@ -253,7 +259,8 @@ def load_gios_noise_body(name: str) -> Any:
 
 def gios_noise_nearest() -> Dict[str, Any]:
     """Return the recorded measurement point nearest to Kraków, per category."""
-    return load_gios_noise_payload()["nearest_to_krakow"]
+    nearest: Dict[str, Any] = load_gios_noise_payload()["nearest_to_krakow"]
+    return nearest
 
 
 def gios_noise_get(

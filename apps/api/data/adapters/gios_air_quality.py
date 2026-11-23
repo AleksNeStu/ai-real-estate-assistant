@@ -112,7 +112,10 @@ class GiosMeasurement:
     attribution: str = GIOS_ATTRIBUTION
 
 
-def us_aqi(concentration: Optional[float], breakpoints: Sequence[Any]) -> Optional[int]:
+def us_aqi(
+    concentration: Optional[float],
+    breakpoints: Sequence[Tuple[float, float, int, int]],
+) -> Optional[int]:
     """
     The US AQI of a concentration, from the EPA breakpoints.
 
@@ -204,7 +207,8 @@ class GiosAirQualityClient:
             self._validate_url(url)
             response = requests.get(url, params=params, timeout=self._timeout)
             response.raise_for_status()
-            return response.json()
+            body = response.json()
+            return body if isinstance(body, dict) else None
         except ValueError as exc:
             logger.warning("GIOŚ request refused: %s", sanitize_for_logging(exc))
         except requests.RequestException as exc:

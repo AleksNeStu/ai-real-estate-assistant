@@ -186,6 +186,48 @@ class _Place:
         return self.latitude is not None and self.longitude is not None
 
 
+def _point_coordinates(place: _Place) -> Tuple[float, float]:
+    """
+    The coordinates of a point place.
+
+    The place knows whether it is a point, but a reader of the code does not:
+    this is where the coordinates are read as the numbers they are.
+
+    Args:
+        place: The place the measurement is taken at.
+
+    Returns:
+        The latitude and the longitude.
+
+    Raises:
+        ValueError: When the place carries no coordinates. A caller that has
+            already checked `is_point` never reaches it.
+    """
+    if place.latitude is None or place.longitude is None:
+        raise ValueError("the place carries no coordinates")
+    return place.latitude, place.longitude
+
+
+def _measurement_point(place: _Place) -> Optional[Tuple[float, float]]:
+    """
+    The point a measurement is taken at.
+
+    A point place is measured at its own coordinates; a named place is
+    measured at the centre of its boundary, because the centre is a real
+    point on the map.
+
+    Args:
+        place: The place the measurement is taken at.
+
+    Returns:
+        The latitude and the longitude, or None when the place carries
+        neither its own coordinates nor a centre.
+    """
+    if place.latitude is not None and place.longitude is not None:
+        return place.latitude, place.longitude
+    return place.center
+
+
 def _unavailable(reason: str, **extra: Any) -> Measurement:
     """No score, and the reason there is none."""
     details: Dict[str, Any] = {"data_source": "unavailable", "reason": reason}
@@ -301,8 +343,8 @@ class NeighborhoodQualityIndexTool(BaseTool):
             count, error = NeighborhoodQualityIndexTool._count_at_point(
                 place, "count_schools", SCHOOLS_RADIUS_M
             )
-            if error is not None:
-                return _unavailable(error)
+            if error is not None or count is None:
+                return _unavailable(error or "the provider could not be asked for the count")
             return Measurement(
                 score=NeighborhoodQualityIndexTool._schools_from_count(count),
                 details={
@@ -355,8 +397,8 @@ class NeighborhoodQualityIndexTool(BaseTool):
             count, error = NeighborhoodQualityIndexTool._count_at_point(
                 place, "count_amenities", AMENITIES_RADIUS_M
             )
-            if error is not None:
-                return _unavailable(error)
+            if error is not None or count is None:
+                return _unavailable(error or "the provider could not be asked for the count")
             return Measurement(
                 score=NeighborhoodQualityIndexTool._amenities_from_count(count),
                 details={
@@ -409,8 +451,8 @@ class NeighborhoodQualityIndexTool(BaseTool):
             count, error = NeighborhoodQualityIndexTool._count_at_point(
                 place, "count_green_spaces", GREEN_SPACE_RADIUS_M
             )
-            if error is not None:
-                return _unavailable(error)
+            if error is not None or count is None:
+                return _unavailable(error or "the provider could not be asked for the count")
             return Measurement(
                 score=NeighborhoodQualityIndexTool._green_space_from_count(count),
                 details={
@@ -460,6 +502,7 @@ class NeighborhoodQualityIndexTool(BaseTool):
     ) -> Measurement:
         """The walkability score: what is within reach, and how varied it is."""
         if place.is_point:
+            latitude, longitude = _point_coordinates(place)
             try:
                 from data.adapters.neighborhood_adapter import get_neighborhood_adapter
 
@@ -467,7 +510,7 @@ class NeighborhoodQualityIndexTool(BaseTool):
                 score = round(
                     float(
                         adapter.calculate_walkability(
-                            place.latitude, place.longitude, radius_m=WALKABILITY_RADIUS_M
+                            latitude, longitude, radius_m=WALKABILITY_RADIUS_M
                         )
                     ),
                     1,
@@ -641,17 +684,15 @@ class NeighborhoodQualityIndexTool(BaseTool):
     @staticmethod
     def _measure_air_quality(place: _Place) -> Measurement:
         """The air quality score: the station the provider reads for the place."""
-        latitude = place.latitude
-        longitude = place.longitude
-        if not place.is_point:
-            # A named place is measured at the centre of its boundary: the
-            # centre is a real point on the map, and the answer says so.
-            if place.center is None:
-                return _unavailable(
-                    "the boundary carries no centre, so no air quality station can be read",
-                    measured_at=place.place_name,
-                )
-            latitude, longitude = place.center
+        # A named place is measured at the centre of its boundary: the
+        # centre is a real point on the map, and the answer says so.
+        measurement_point = _measurement_point(place)
+        if measurement_point is None:
+            return _unavailable(
+                "the boundary carries no centre, so no air quality station can be read",
+                measured_at=place.place_name,
+            )
+        latitude, longitude = measurement_point
 
         try:
             from data.adapters.air_quality_adapter import get_air_quality_adapter
@@ -687,15 +728,13 @@ class NeighborhoodQualityIndexTool(BaseTool):
     @staticmethod
     def _measure_noise(place: _Place) -> Measurement:
         """The noise score: what is loud around the place."""
-        latitude = place.latitude
-        longitude = place.longitude
-        if not place.is_point:
-            if place.center is None:
-                return _unavailable(
-                    "noise is measured around a point, and the boundary carries no centre",
-                    measured_at=place.place_name,
-                )
-            latitude, longitude = place.center
+        measurement_point = _measurement_point(place)
+        if measurement_point is None:
+            return _unavailable(
+                "noise is measured around a point, and the boundary carries no centre",
+                measured_at=place.place_name,
+            )
+        latitude, longitude = measurement_point
 
         try:
             from data.adapters.noise_adapter import get_noise_adapter
@@ -704,7 +743,7 @@ class NeighborhoodQualityIndexTool(BaseTool):
             result = adapter.estimate_noise_level(latitude, longitude)
             score = round(result.score, 1)
             measured = result.data_source == adapter.GIOS_DATA_SOURCE
-            details = {
+            details: Dict[str, Any] = {
                 "raw_value": result.estimated_db,
                 "unit": "dB (measured)" if measured else "dB (estimated)",
                 "normalized_score": score,
@@ -740,11 +779,12 @@ class NeighborhoodQualityIndexTool(BaseTool):
     def _measure_transport(place: _Place) -> Measurement:
         """The public transport score: the stops the map holds where the place is."""
         if place.is_point:
+            latitude, longitude = _point_coordinates(place)
             try:
                 from data.adapters.transport_adapter import get_transport_adapter
 
                 adapter = get_transport_adapter()
-                result = adapter.get_full_result(place.latitude, place.longitude)
+                result = adapter.get_full_result(latitude, longitude)
                 score = round(float(result.score), 1)
                 details = {
                     "raw_value": result.total_stops,
@@ -772,7 +812,7 @@ class NeighborhoodQualityIndexTool(BaseTool):
 
                 adapter = get_transport_adapter()
                 score = round(
-                    float(adapter.calculate_accessibility_score(place.latitude, place.longitude)),
+                    float(adapter.calculate_accessibility_score(latitude, longitude)),
                     1,
                 )
             except Exception as e:
@@ -783,7 +823,7 @@ class NeighborhoodQualityIndexTool(BaseTool):
 
             count: Optional[int] = None
             try:
-                counted = adapter.count_stops(place.latitude, place.longitude)
+                counted = adapter.count_stops(latitude, longitude)
                 if isinstance(counted, int) and not isinstance(counted, bool):
                     count = counted
             except Exception as e:
@@ -1239,12 +1279,13 @@ class NeighborhoodQualityIndexTool(BaseTool):
         """
         if not place.is_point:
             return None
+        latitude, longitude = _point_coordinates(place)
         try:
             from data.adapters.neighborhood_adapter import get_neighborhood_adapter
 
             adapter = get_neighborhood_adapter()
             pois = adapter.fetch_pois_within_radius(
-                place.latitude, place.longitude, radius_m=GREEN_SPACE_RADIUS_M
+                latitude, longitude, radius_m=GREEN_SPACE_RADIUS_M
             )
             if not isinstance(pois, dict):
                 return None
@@ -1309,6 +1350,8 @@ class NeighborhoodQualityIndexTool(BaseTool):
         if not place.is_point:
             return None
 
+        latitude, longitude = _point_coordinates(place)
+
         try:
             from data.adapters.neighborhood_adapter import get_neighborhood_adapter
             from data.adapters.safety_adapter import get_safety_adapter
@@ -1322,17 +1365,15 @@ class NeighborhoodQualityIndexTool(BaseTool):
             # The POIs the counts were read from, when they could be read.
             if pois is None:
                 pois = neighborhood_adapter.fetch_pois_within_radius(
-                    place.latitude, place.longitude, radius_m=GREEN_SPACE_RADIUS_M
+                    latitude, longitude, radius_m=GREEN_SPACE_RADIUS_M
                 )
 
             # Get transport stops
-            transport_result = transport_adapter.calculate_accessibility_score(
-                place.latitude, place.longitude
-            )  # type: ignore[attr-defined]
+            transport_result = transport_adapter.calculate_accessibility_score(latitude, longitude)  # type: ignore[attr-defined]
 
             # Get safety POIs
             safety_pois = safety_adapter.get_police_stations(
-                place.latitude, place.longitude, radius_m=SAFETY_RADIUS_M
+                latitude, longitude, radius_m=SAFETY_RADIUS_M
             )
 
             # Format for response
