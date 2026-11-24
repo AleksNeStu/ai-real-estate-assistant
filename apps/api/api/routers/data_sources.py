@@ -3,6 +3,7 @@
 CRUD operations for managing property data sources with sync tracking.
 """
 
+import asyncio
 import logging
 import tempfile
 import uuid
@@ -40,6 +41,9 @@ from services.property_import import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/data-sources", tags=["Data Sources"])
+
+# The size limit a sync downloads under - the same limit the upload carries.
+_MAX_SYNC_DOWNLOAD_BYTES = 25 * 1024 * 1024
 
 
 def _datasource_to_response(ds: DataSourceDB) -> DataSourceResponse:
@@ -277,8 +281,6 @@ async def sync_data_source(
     await db.commit()
     db_url = get_database_url()
 
-    import asyncio
-
     asyncio.create_task(_run_sync(source_id, sync_record.id, db_url))
 
     logger.info("Triggered sync for data source %s", sanitize_for_log(source_id))
@@ -386,8 +388,11 @@ async def _collect_properties(ds: DataSourceDB) -> list[Property]:
         path = config.get("file_path") or config.get("filename")
         if not path:
             raise ValueError("a file_upload source needs 'file_path' in its config")
+        source_path = Path(str(path))
+        if not source_path.is_file():
+            raise ValueError(f"the file of the source is not there: {source_path.name}")
         properties, _errors = load_properties(
-            str(path),
+            str(source_path),
             sheet_name=config.get("sheet_name"),
             header_row=int(config.get("header_row") or 0),
             max_rows=settings.max_properties,
@@ -401,11 +406,11 @@ async def _collect_properties(ds: DataSourceDB) -> list[Property]:
         if not url:
             raise ValueError("a url source needs 'url' in its config")
         _validate_url_no_ssrf(url)
-        suffix = source_suffix(url)
+        payload, content_type = await _download_url(url)
+        suffix = _format_suffix(content_type) or source_suffix(url)
         if suffix == ".json":
-            payload = await _fetch_url_json(url)
             return properties_from_records(
-                _records_from_payload(payload),
+                _records_from_payload(_parse_json(payload)),
                 source_name=ds.name,
                 source_type="url",
             )[0]
@@ -414,35 +419,31 @@ async def _collect_properties(ds: DataSourceDB) -> list[Property]:
                 f"unsupported file type '{suffix}' - a url source reads "
                 f"{sorted(SUPPORTED_SUFFIXES)} or .json"
             )
-        return await _load_url_file(url, suffix, ds)
+        return _load_downloaded_file(payload, suffix, ds)
 
     if source_type == "json":
-        payload = config.get("data")
-        if payload is None and config.get("url"):
-            payload = await _fetch_url_json(str(config["url"]))
-        if payload is None:
+        document = config.get("data")
+        if document is None and config.get("url"):
+            url = str(config["url"])
+            _validate_url_no_ssrf(url)
+            downloaded, _content_type = await _download_url(url)
+            document = _parse_json(downloaded)
+        if document is None:
             raise ValueError("a json source needs 'data' or 'url' in its config")
         return properties_from_records(
-            _records_from_payload(payload),
+            _records_from_payload(document),
             source_name=ds.name,
             source_type="json",
         )[0]
 
     if source_type == "portal_api":
-        return _collect_portal_properties(ds, config)
+        return await _collect_portal_properties(ds, config)
 
     raise ValueError(f"unsupported source type '{source_type}'")
 
 
-async def _load_url_file(url: str, suffix: str, ds: DataSourceDB) -> list[Property]:
-    """Download a file and read it through the loaders."""
-    import httpx
-
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        response = await client.get(url)
-        response.raise_for_status()
-        payload = response.content
-
+def _load_downloaded_file(payload: bytes, suffix: str, ds: DataSourceDB) -> list[Property]:
+    """Read a downloaded document through the loaders."""
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
         tmp.write(payload)
         tmp_path = tmp.name
@@ -459,14 +460,55 @@ async def _load_url_file(url: str, suffix: str, ds: DataSourceDB) -> list[Proper
         Path(tmp_path).unlink(missing_ok=True)
 
 
-async def _fetch_url_json(url: str) -> Any:
-    """Read a JSON document from a URL."""
+def _parse_json(payload: bytes) -> Any:
+    """Read a JSON document."""
+    import json
+
+    try:
+        return json.loads(payload)
+    except ValueError as e:
+        raise ValueError("the document at the url is not JSON") from e
+
+
+def _format_suffix(content_type: str) -> str:
+    """The file suffix a content type stands for - empty when it says nothing."""
+    lowered = content_type.lower()
+    if "json" in lowered:
+        return ".json"
+    if "csv" in lowered:
+        return ".csv"
+    if "spreadsheet" in lowered or "excel" in lowered:
+        return ".xlsx"
+    return ""
+
+
+async def _download_url(url: str) -> tuple[bytes, str]:
+    """Download a document, with the same size limit the upload carries.
+
+    A sync runs against a url somebody else controls, so the download is
+    bounded: a document bigger than the limit is refused rather than read
+    into the memory of the deployment.
+    """
     import httpx
 
     async with httpx.AsyncClient(timeout=30.0) as client:
-        response = await client.get(url)
-        response.raise_for_status()
-        return response.json()
+        async with client.stream("GET", url) as response:
+            response.raise_for_status()
+            declared = response.headers.get("content-length")
+            if declared and declared.isdigit() and int(declared) > _MAX_SYNC_DOWNLOAD_BYTES:
+                raise ValueError(
+                    f"the document is larger than the import limit "
+                    f"({_MAX_SYNC_DOWNLOAD_BYTES} bytes)"
+                )
+            payload = bytearray()
+            async for chunk in response.aiter_bytes():
+                payload.extend(chunk)
+                if len(payload) > _MAX_SYNC_DOWNLOAD_BYTES:
+                    raise ValueError(
+                        f"the document is larger than the import limit "
+                        f"({_MAX_SYNC_DOWNLOAD_BYTES} bytes)"
+                    )
+            return bytes(payload), response.headers.get("content-type", "")
 
 
 def _records_from_payload(payload: Any) -> list[dict[str, Any]]:
@@ -478,7 +520,7 @@ def _records_from_payload(payload: Any) -> list[dict[str, Any]]:
     raise ValueError("a json source must carry a record or a list of records")
 
 
-def _collect_portal_properties(ds: DataSourceDB, config: dict[str, Any]) -> list[Property]:
+async def _collect_portal_properties(ds: DataSourceDB, config: dict[str, Any]) -> list[Property]:
     """Read a portal answer into properties, through the shared adapter."""
     from data.adapters import get_adapter
     from data.adapters.base import PortalFilter
@@ -492,12 +534,13 @@ def _collect_portal_properties(ds: DataSourceDB, config: dict[str, Any]) -> list
         raise ValueError(f"unknown portal: {portal}")
 
     filters = config.get("filters") or {}
-    result = adapter.fetch(
+    result = await asyncio.to_thread(
+        adapter.fetch,
         PortalFilter(
             city=config.get("city"),
             listing_type=filters.get("listing_type", "rent"),
             limit=config.get("limit", 50),
-        )
+        ),
     )
     return properties_from_records(
         [record for record in result.properties if isinstance(record, dict)],

@@ -213,3 +213,24 @@ async def test_sync_of_a_source_with_no_rows_fails(tmp_path, monkeypatch):
         assert property_cache.load_collection() is None
     finally:
         await harness.close()
+
+
+@pytest.mark.asyncio
+async def test_a_download_over_the_limit_is_refused():
+    """A sync reads a document somebody else controls - under a limit."""
+    import httpx
+    import respx
+
+    url = "https://example.com/listings.csv"
+    over_the_limit = data_sources._MAX_SYNC_DOWNLOAD_BYTES + 1
+
+    with respx.mock:
+        respx.get(url).mock(
+            return_value=httpx.Response(
+                200,
+                headers={"content-length": str(over_the_limit)},
+                content=b"",
+            )
+        )
+        with pytest.raises(ValueError, match="larger than the import limit"):
+            await data_sources._download_url(url)
