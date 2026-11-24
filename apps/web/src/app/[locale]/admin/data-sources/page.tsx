@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   FileUp,
+  FileText,
   Loader2,
   Upload,
   X,
@@ -27,6 +28,7 @@ import {
   syncDataSource,
   deleteDataSource,
   updateDataSource,
+  createDataSource,
   ingestData,
   getExcelSheets,
   listPortals,
@@ -74,10 +76,15 @@ export default function DataSourcesPage() {
   const [editSource, setEditSource] = useState<DataSource | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const [importMode, setImportMode] = useState<'url' | 'file' | 'portal'>('url');
+  const [importMode, setImportMode] = useState<'url' | 'file' | 'portal' | 'register'>('url');
   const [fileUrl, setFileUrl] = useState<string>('');
   const [sourceName, setSourceName] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [registerCity, setRegisterCity] = useState<string>('');
+  const [registerSourceName, setRegisterSourceName] = useState<string>('');
+  // The name of the source the panel registered last, so the operator sees
+  // that the register took it.
+  const [registeredName, setRegisteredName] = useState<string>('');
 
   const [loadingSheets, setLoadingSheets] = useState(false);
   const [sheets, setSheets] = useState<SheetInfo[]>([]);
@@ -376,6 +383,43 @@ export default function DataSourcesPage() {
     }
   };
 
+  /**
+   * Register the official price register as a source.
+   *
+   * The register is not fetched here: the source is registered, and its sync
+   * reads the register for the city the source names. The name the operator
+   * typed is the name of the source; without one, the source is named after
+   * the city it reads.
+   */
+  const onRegisterSource = async () => {
+    const city = registerCity.trim();
+    if (!city) {
+      setError({ message: t('errors.cityRequired') });
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    const name = registerSourceName.trim() || t('register.defaultName', { city });
+
+    try {
+      await createDataSource({
+        name,
+        source_type: 'register',
+        config: { city },
+      });
+      await loadDataSources();
+      setRegisteredName(name);
+      setRegisterCity('');
+      setRegisterSourceName('');
+    } catch (e) {
+      setError(extractErrorState(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <SectionHeader
@@ -436,7 +480,7 @@ export default function DataSourcesPage() {
       {panelOpen ? (
         <section className="flex flex-col gap-4 rounded-lg border border-border p-4">
           <div className="flex flex-wrap gap-2">
-            {(['url', 'file', 'portal'] as const).map((mode) => (
+            {(['url', 'file', 'portal', 'register'] as const).map((mode) => (
               <button
                 type="button"
                 key={mode}
@@ -444,6 +488,14 @@ export default function DataSourcesPage() {
                   setImportMode(mode);
                   setSheets([]);
                   setSelectedSheet('');
+                  // The register keeps its own city and its own name: a name
+                  // typed for a file import is not the name of a register.
+                  // Clicking the mode that is already open changes nothing.
+                  if (mode !== importMode) {
+                    setRegisterCity('');
+                    setRegisterSourceName('');
+                    setRegisteredName('');
+                  }
                 }}
                 aria-pressed={importMode === mode}
                 className={`h-[34px] rounded-md border px-3 text-[13px] font-medium transition-colors ${
@@ -819,6 +871,71 @@ export default function DataSourcesPage() {
                   </div>
                 </>
               )}
+            </div>
+          ) : null}
+
+          {importMode === 'register' ? (
+            <div className="flex flex-col gap-4">
+              <h2 className="m-0 flex items-center gap-2 text-app font-semibold text-foreground">
+                <FileText className="size-4" aria-hidden="true" />
+                {t('register.title')}
+              </h2>
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="registerCity" className="text-app font-medium text-foreground">
+                  {t('register.city')}
+                </label>
+                <input
+                  id="registerCity"
+                  type="text"
+                  placeholder={t('register.cityPlaceholder')}
+                  value={registerCity}
+                  onChange={(e) => setRegisterCity(e.target.value)}
+                  disabled={loading}
+                  className="rounded-md border border-border bg-background px-3 py-2 text-app"
+                />
+                <MonoAnnotation>{t('register.cityHint')}</MonoAnnotation>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="registerSourceName" className="text-app font-medium text-foreground">
+                  {t('import.sourceName')}
+                </label>
+                <input
+                  id="registerSourceName"
+                  type="text"
+                  placeholder={t('register.sourceNamePlaceholder')}
+                  value={registerSourceName}
+                  onChange={(e) => setRegisterSourceName(e.target.value)}
+                  disabled={loading}
+                  className="rounded-md border border-border bg-background px-3 py-2 text-app"
+                />
+              </div>
+
+              <div>
+                <Button onClick={onRegisterSource} disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />
+                      {t('register.registering')}
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="mr-2 size-4" aria-hidden="true" />
+                      {t('register.action')}
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {registeredName ? (
+                <div className="flex items-start gap-3 border-t border-border pt-4">
+                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
+                  <p className="m-0 min-w-0 flex-1 text-app text-foreground">
+                    {t('register.created', { name: registeredName })}
+                  </p>
+                </div>
+              ) : null}
             </div>
           ) : null}
         </section>

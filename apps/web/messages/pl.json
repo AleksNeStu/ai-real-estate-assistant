@@ -3587,7 +3587,8 @@
         "importMode": {
           "url": "Z adresu URL",
           "file": "Prześlij plik",
-          "portal": "API portalu"
+          "portal": "API portalu",
+          "register": "Rejestr cen"
         },
         "import": {
           "title": "Import danych",
@@ -3636,6 +3637,17 @@
           "sourceNamePlaceholder": "np. Wynajmy w Warszawie",
           "fetching": "Pobieranie...",
           "action": "Pobierz z portalu"
+        },
+        "register": {
+          "title": "Dodaj Rejestr Cen Nieruchomości",
+          "city": "Miasto * (wymagane)",
+          "cityPlaceholder": "np. Kraków",
+          "cityHint": "Miasto, dla którego czytany jest rejestr. Publikowane ceny to ceny, które zapłacono.",
+          "sourceNamePlaceholder": "np. rejestr cen Kraków",
+          "defaultName": "rejestr cen — {city}",
+          "created": "Źródło {name} jest zarejestrowane. Uruchom synchronizację, aby odczytać rejestr.",
+          "registering": "Rejestrowanie...",
+          "action": "Zarejestruj źródło"
         },
         "errors": {
           "unknown": "Nieznany błąd",

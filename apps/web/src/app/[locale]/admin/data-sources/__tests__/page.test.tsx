@@ -2,12 +2,19 @@ import '@testing-library/jest-dom';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import DataSourcesPage from '../page';
 import {
+  createDataSource,
   fetchFromPortal,
   getExcelSheets,
   ingestData,
   listPortals,
   listDataSources,
 } from '@/lib/api';
+
+/**
+ * The sources the deployment has, as the mock remembers them. A source the
+ * panel creates lands here, so the ledger reads the new row.
+ */
+const mockCreatedSources: Array<Record<string, unknown>> = [];
 
 jest.mock('@/lib/api', () => {
   class MockApiError extends Error {
@@ -22,11 +29,28 @@ jest.mock('@/lib/api', () => {
   }
   return {
     listDataSources: jest.fn(async () => ({
-      sources: [],
-      total: 0,
+      sources: mockCreatedSources,
+      total: mockCreatedSources.length,
       page: 1,
       page_size: 20,
     })),
+    createDataSource: jest.fn(async (data: Record<string, unknown>) => {
+      const source = {
+        id: `source-${mockCreatedSources.length + 1}`,
+        name: data.name,
+        source_type: data.source_type,
+        config: data.config,
+        status: 'pending',
+        total_records: 0,
+        health_score: 100,
+        consecutive_failures: 0,
+        auto_sync_enabled: false,
+        created_at: '2026-01-01T00:00:00Z',
+        updated_at: '2026-01-01T00:00:00Z',
+      };
+      mockCreatedSources.push(source);
+      return source;
+    }),
     syncDataSource: jest.fn(async () => ({})),
     deleteDataSource: jest.fn(async () => undefined),
     updateDataSource: jest.fn(async () => ({})),
@@ -88,6 +112,7 @@ const getImportButtons = () =>
 describe('DataSourcesPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockCreatedSources.length = 0;
   });
 
   it('loads the configured data sources on mount', async () => {
@@ -182,5 +207,33 @@ describe('DataSourcesPage', () => {
       limit: 50,
     });
     await waitFor(() => expect(screen.getByText('Fetched 1 properties')).toBeInTheDocument());
+  });
+
+  it('registers the official price register as a source', async () => {
+    render(<DataSourcesPage />);
+
+    // Open the import panel, then switch to the register mode
+    const [importTab] = getImportButtons();
+    fireEvent.click(importTab);
+    fireEvent.click(screen.getByRole('button', { name: 'Price Register' }));
+
+    await waitFor(() => expect(screen.getByLabelText(/City/)).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText(/City/), { target: { value: 'Kraków' } });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Register Source' }));
+
+    await waitFor(() => expect(createDataSource).toHaveBeenCalled());
+    expect((createDataSource as jest.Mock).mock.calls[0][0]).toMatchObject({
+      name: 'Kraków price register',
+      source_type: 'register',
+      config: { city: 'Kraków' },
+    });
+
+    // The panel says the register took the source.
+    await waitFor(() => expect(screen.getByText(/is registered/)).toBeInTheDocument());
+
+    // The ledger carries the new row, and the row names its kind.
+    await waitFor(() => expect(screen.getByText('Official Price Register')).toBeInTheDocument());
   });
 });

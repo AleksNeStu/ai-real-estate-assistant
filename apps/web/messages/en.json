@@ -3587,7 +3587,8 @@
         "importMode": {
           "url": "From URL",
           "file": "Upload File",
-          "portal": "Portal API"
+          "portal": "Portal API",
+          "register": "Price Register"
         },
         "import": {
           "title": "Import Data",
@@ -3636,6 +3637,17 @@
           "sourceNamePlaceholder": "e.g., Warsaw Rentals",
           "fetching": "Fetching...",
           "action": "Fetch from Portal"
+        },
+        "register": {
+          "title": "Add the Official Price Register",
+          "city": "City * (required)",
+          "cityPlaceholder": "e.g., Kraków",
+          "cityHint": "The city the register is read for. The prices it publishes are the prices that were paid.",
+          "sourceNamePlaceholder": "e.g., Kraków price register",
+          "defaultName": "{city} price register",
+          "created": "The source {name} is registered. Sync it to read the register.",
+          "registering": "Registering...",
+          "action": "Register Source"
         },
         "errors": {
           "unknown": "Unknown error",
