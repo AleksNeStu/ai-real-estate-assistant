@@ -1905,7 +1905,8 @@
         "fileUpload": "File Upload",
         "url": "URL",
         "portalApi": "Portal API",
-        "json": "JSON"
+        "json": "JSON",
+        "register": "Official Price Register"
       },
       "health": {
         "error": "Error",
@@ -3559,7 +3560,8 @@
           "fileUpload": "File Upload",
           "url": "URL",
           "portalApi": "Portal API",
-          "json": "JSON"
+          "json": "JSON",
+          "register": "Official Price Register"
         },
         "health": {
           "error": "Error",

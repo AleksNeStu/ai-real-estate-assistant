@@ -55,6 +55,8 @@ class RCNTransaction:
     ``external_id`` is the register's own feature id — it names one flat. The
     ``transaction_id`` names the transaction the flat was sold in, and several
     flats share one: a deed may sell two flats in the same building at once.
+    ``source_url`` is the export the sale was read from — the address of the
+    file the publisher sends, which is where the sale is verifiable.
     """
 
     external_id: str
@@ -71,6 +73,7 @@ class RCNTransaction:
     x: Optional[float] = None
     y: Optional[float] = None
     transaction_id: str = ""
+    source_url: str = ""
 
     @property
     def price_per_sqm(self) -> float:

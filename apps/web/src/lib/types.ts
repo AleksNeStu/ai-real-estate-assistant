@@ -1980,7 +1980,7 @@ export interface SignedDocument {
 // Data Sources Types (Task #79)
 // =============================================================================
 
-export type DataSourceType = 'file_upload' | 'url' | 'portal_api' | 'json';
+export type DataSourceType = 'file_upload' | 'url' | 'portal_api' | 'json' | 'register';
 export type DataSourceStatus = 'pending' | 'active' | 'syncing' | 'error' | 'disabled';
 export type SyncStatus = 'pending' | 'running' | 'success' | 'failed' | 'partial';
 

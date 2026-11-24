@@ -42,7 +42,8 @@ class Place:
     """One city, the way the register and the catalogue each spell it.
 
     ``name`` is what the pages say. ``seed_name`` is what the seeded
-    catalogue calls the city - it is the key the listings are written with.
+    catalogue calls the city - it is the key the listings are written with,
+    the seeded ones and the ones the register feeds.
     ``register_city`` is the register's own spelling of the municipality,
     which is what the register's rows are keyed by.
 
@@ -51,12 +52,16 @@ class Place:
     city under. It is the one place the register's own exports name the
     municipality in, for the starostas who publish their sales without an
     address.
+
+    ``region`` is the voivodeship the city stands in - the region a listing
+    of the city carries.
     """
 
     name: str
     seed_name: str
     register_city: str
     teryt: str
+    region: str
     districts: tuple[District, ...]
 
 
@@ -145,13 +150,14 @@ CITY_STREETS: dict[str, tuple[str, ...]] = {
 # The register spells the city its own way; the catalogue of listings spells
 # it another. Both are kept, so a page can be written in the register's
 # wording and a listing in the catalogue's. The TERYT code is the code the
-# register files the city's sales under.
+# register files the city's sales under, and the region is the voivodeship
+# the city stands in.
 _PLACE_SEEDS = (
-    ("Kraków", "Kraków", "KRAKÓW", "1261"),
-    ("Warszawa", "Warsaw", "WARSZAWA", "1465"),
-    ("Gdańsk", "Gdańsk", "GDAŃSK", "2261"),
-    ("Wrocław", "Wrocław", "WROCŁAW", "0264"),
-    ("Poznań", "Poznań", "POZNAŃ", "3064"),
+    ("Kraków", "Kraków", "KRAKÓW", "1261", "małopolskie"),
+    ("Warszawa", "Warsaw", "WARSZAWA", "1465", "mazowieckie"),
+    ("Gdańsk", "Gdańsk", "GDAŃSK", "2261", "pomorskie"),
+    ("Wrocław", "Wrocław", "WROCŁAW", "0264", "dolnośląskie"),
+    ("Poznań", "Poznań", "POZNAŃ", "3064", "wielkopolskie"),
 )
 
 
@@ -168,9 +174,10 @@ PLACES: tuple[Place, ...] = tuple(
         seed_name=seed_name,
         register_city=register_city,
         teryt=teryt,
+        region=region,
         districts=_districts_of(seed_name),
     )
-    for name, seed_name, register_city, teryt in _PLACE_SEEDS
+    for name, seed_name, register_city, teryt, region in _PLACE_SEEDS
 )
 
 
@@ -284,6 +291,28 @@ def find_district(place: Place, name: str) -> Optional[District]:
     for district in place.districts:
         if _folded(district.name) == wanted:
             return district
+    return None
+
+
+def district_of_street(place: Place, street: str) -> Optional[District]:
+    """The district a street stands in, or None.
+
+    The register knows streets and not districts: a sale is registered on a
+    street, and the district of that street is what the catalogue knows the
+    sale by. A street the catalogue does not know belongs to no district of
+    it, and the sale is left without one rather than given a wrong one.
+
+    A street of two districts - one the catalogue knows under two names -
+    belongs to the first of them; the order of the districts is the order
+    they are written in.
+    """
+    wanted = _folded(street)
+    if not wanted:
+        return None
+    for district in place.districts:
+        for candidate in district.streets:
+            if _folded(candidate) == wanted:
+                return district
     return None
 
 

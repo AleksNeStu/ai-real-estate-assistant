@@ -5,11 +5,12 @@ CRUD operations for managing property data sources with sync tracking.
 
 import asyncio
 import logging
+import math
 import os
 import tempfile
 import uuid
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Annotated, Any, Optional
 
@@ -29,9 +30,13 @@ from api.models import (
 )
 from config.settings import settings
 from core.security_utils import sanitize_for_log
+from data.places import find_place
+from data.rcn.rcn_catalogue import properties_from_deeds
+from data.rcn.rcn_models import normalize_text
 from data.schemas import Property
 from db.database import get_database_url, get_db
 from db.models import DataSourceDB, DataSourceSyncHistory
+from db.property_transaction_repo import count_transactions, transactions_for
 from services.property_import import (
     SUPPORTED_SUFFIXES,
     load_properties,
@@ -47,6 +52,12 @@ router = APIRouter(prefix="/data-sources", tags=["Data Sources"])
 # The time a whole download may take - the httpx timeout is per read, so a
 # server that sends a byte at a time would keep the sync open forever.
 _MAX_SYNC_DOWNLOAD_SECONDS = 60
+
+# The most sales a register source reads in one sync. A busy city registers
+# tens of thousands of sales a year, and every sale of them becomes a
+# listing the deployment holds in memory while the sync runs - so the read
+# is bounded, and a source that asks for more is told so when it is written.
+_MAX_REGISTER_SALES = 10_000
 
 
 def _datasource_to_response(ds: DataSourceDB) -> DataSourceResponse:
@@ -333,7 +344,7 @@ async def _run_sync(source_id: str, sync_id: str, db_url: str) -> None:
             return
 
         try:
-            properties = await _collect_properties(ds)
+            properties = await _collect_properties(ds, session)
             if not properties:
                 raise ValueError("no valid properties could be read from the source")
 
@@ -392,11 +403,16 @@ async def _run_sync(source_id: str, sync_id: str, db_url: str) -> None:
             await engine.dispose()
 
 
-async def _collect_properties(ds: DataSourceDB) -> list[Property]:
+async def _collect_properties(
+    ds: DataSourceDB, session: Optional[AsyncSession] = None
+) -> list[Property]:
     """Read the source into properties, through the shared import chain.
 
     Every source type reads the same way the bulk-job import reads: the
     loaders for a file, the records for a JSON document or a portal answer.
+    The register is read from the database: the ingest has already stored
+    what the register published, and a source of that kind turns the stored
+    sales into listings.
     """
     source_type = ds.source_type
     config = ds.config or {}
@@ -455,7 +471,111 @@ async def _collect_properties(ds: DataSourceDB) -> list[Property]:
     if source_type == "portal_api":
         return await _collect_portal_properties(ds, config)
 
+    if source_type == "register":
+        return await _collect_register_properties(config, session)
+
     raise ValueError(f"unsupported source type '{source_type}'")
+
+
+async def _collect_register_properties(
+    config: dict[str, Any], session: Optional[AsyncSession]
+) -> list[Property]:
+    """The register's own sales of one city, as listings of the catalogue.
+
+    The sales are the ones the ingest has stored: the register itself is
+    read by the ingest, and a source of this kind turns what it stored into
+    listings - which are then written through the same chain every other
+    source is written through.
+    """
+    if session is None:
+        raise RuntimeError("a register source reads the register from the database")
+
+    city = str(config.get("city") or "").strip()
+    if not city:
+        raise ValueError("a register source needs 'city' in its config")
+
+    place = find_place(city)
+    if place is None:
+        raise ValueError(f"unknown city '{city}' - the register source names a city the site knows")
+
+    deeds = await transactions_for(
+        session,
+        city_norm=normalize_text(place.register_city),
+        since=_since_from_config(config),
+        limit=_limit_from_config(config),
+    )
+    properties = properties_from_deeds(deeds, place)
+    if not properties:
+        raise ValueError(
+            f"the register holds no sale of {place.name} - the ingest has to run first"
+        )
+    return properties
+
+
+def _since_from_config(config: dict[str, Any]) -> Optional[date]:
+    """The oldest sale a source reads, as the config names it."""
+    raw = config.get("since")
+    if not raw:
+        return None
+    try:
+        return date.fromisoformat(str(raw))
+    except ValueError as exc:
+        raise ValueError(f"'since' is not a date: {raw}") from exc
+
+
+def _parsed_limit(raw: Any) -> int:
+    """The number of sales a limit names, as a whole number.
+
+    A limit reaches the config as a number or as the text of one, and the
+    text may be the text of a whole number written as a decimal ("100.0").
+    A limit that is not a whole number of sales is refused by name: half a
+    sale is not a sale, and a limit that is quietly rounded is a limit the
+    operator did not write.
+    """
+    if isinstance(raw, bool):
+        raise ValueError(f"'limit' is not a number: {raw}")
+    if isinstance(raw, int):
+        return raw
+    if isinstance(raw, float):
+        if not math.isfinite(raw):
+            raise ValueError(f"'limit' is not a number: {raw}")
+        if raw != int(raw):
+            raise ValueError(f"'limit' is not a whole number of sales: {raw}")
+        return int(raw)
+
+    text = str(raw).strip()
+    try:
+        return int(text)
+    except ValueError:
+        pass
+    try:
+        value = float(text)
+    except ValueError as exc:
+        raise ValueError(f"'limit' is not a number: {raw}") from exc
+    if not math.isfinite(value):
+        raise ValueError(f"'limit' is not a number: {raw}")
+    if value != int(value):
+        raise ValueError(f"'limit' is not a whole number of sales: {raw}")
+    return int(value)
+
+
+def _limit_from_config(config: dict[str, Any]) -> int:
+    """How many sales a source reads, as the config names it.
+
+    The read is bounded: a source that asks for every sale of a busy city
+    would hold ten thousand listings in the memory of the deployment at
+    once. A limit above the bound is not honoured - the read takes the most
+    recent sales up to the bound - and a source that names one is refused
+    when it is written, so the operator hears about it there and not in the
+    middle of a run nobody is watching.
+    """
+    raw = config.get("limit")
+    if raw is None or raw == "":
+        return min(settings.max_properties, _MAX_REGISTER_SALES)
+    limit = _parsed_limit(raw)
+    if limit <= 0:
+        raise ValueError("'limit' must be a positive number of sales")
+    return min(limit, _MAX_REGISTER_SALES)
 
 
 def _resolve_source_file(path: str) -> Path:
@@ -693,6 +813,8 @@ async def test_data_source(
                 message="File upload source configuration is valid",
                 details={"type": "file_upload"},
             )
+        elif data.source_type.value == "register":
+            return await _test_register_source(data.config, db)
         else:
             return DataSourceTestResponse(
                 success=False,
@@ -786,6 +908,28 @@ def _validate_config(source_type: str, config: dict[str, Any]) -> None:
     elif source_type == "json":
         if "data" not in config and "url" not in config:
             raise ValueError("JSON source requires 'data' or 'url' in config")
+
+    elif source_type == "register":
+        city = str(config.get("city") or "").strip()
+        if not city:
+            raise ValueError("Register source requires 'city' in config")
+        if find_place(city) is None:
+            raise ValueError(
+                f"unknown city '{city}' - the register source names a city the site knows"
+            )
+        # The window is checked here, so a source that cannot read anything
+        # is refused when it is written and not when it is synced.
+        _since_from_config(config)
+        _limit_from_config(config)
+        # A limit above the bound is not read as a smaller one at the sync:
+        # the operator is told about it here, where the answer can still be
+        # given.
+        raw_limit = config.get("limit")
+        if raw_limit not in (None, ""):
+            # The same reading of the limit as the read uses, so a limit that
+            # slips past the bound here is the very limit the read would take.
+            if _parsed_limit(raw_limit) > _MAX_REGISTER_SALES:
+                raise ValueError(f"'limit' must not be more than {_MAX_REGISTER_SALES} sales")
 
     elif source_type == "file_upload":
         if "filename" not in config and "file_path" not in config:
@@ -926,3 +1070,23 @@ async def _test_json_source(config: dict[str, Any]) -> DataSourceTestResponse:
         return await _test_url_source({"url": config["url"]})
 
     return DataSourceTestResponse(success=False, message="No data or URL provided", details=None)
+
+
+async def _test_register_source(config: dict[str, Any], db: AsyncSession) -> DataSourceTestResponse:
+    """What the register holds for a city - counted from the stored sales.
+
+    The register is read by the ingest, so the test of a source of that kind
+    is the number of sales the deployment has already stored: a source with
+    no sales behind it would sync nothing.
+    """
+    city = str(config.get("city") or "").strip()
+    place = find_place(city)
+    if place is None:
+        raise ValueError(f"unknown city '{city}' - the register source names a city the site knows")
+
+    sales = await count_transactions(db, city_norm=normalize_text(place.register_city))
+    return DataSourceTestResponse(
+        success=True,
+        message=f"The register holds {sales} registered sale(s) of {place.name}.",
+        details={"city": place.name, "sales": sales},
+    )

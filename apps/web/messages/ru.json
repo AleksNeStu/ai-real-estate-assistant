@@ -42,6 +42,7 @@
         "fileUpload": "Загрузка файлов",
         "json": "JSON",
         "portalApi": "API портала",
+        "register": "Реестр цен на недвижимость",
         "url": "URL"
       },
       "syncing": "Синхронизация..."
@@ -3570,6 +3571,7 @@
           "fileUpload": "Загрузка файлов",
           "json": "JSON",
           "portalApi": "API портала",
+          "register": "Реестр цен на недвижимость",
           "url": "URL"
         },
         "syncing": "Синхронизация...",

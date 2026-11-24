@@ -37,7 +37,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from loguru import logger
 
 from config.settings import get_settings
-from data.places import CITY_STREETS, DISTRICT_STREETS
+from data.places import CITY_STREETS, DISTRICT_STREETS, PLACES
 from data.schemas import Property as PropertySchema
 from db.models import (
     AgentListing,
@@ -110,14 +110,10 @@ CITY_RENT_PER_SQM = {
     "Poznań": 37,
 }
 
-# The voivodeship of every city, for the listing's region.
-CITY_REGION = {
-    "Kraków": "małopolskie",
-    "Warsaw": "mazowieckie",
-    "Gdańsk": "pomorskie",
-    "Wrocław": "dolnośląskie",
-    "Poznań": "wielkopolskie",
-}
+# The voivodeship of every city, for the listing's region. The place table
+# names it, so a voivodeship is spelled once and the register's listings and
+# the seeded ones carry the same spelling of it.
+CITY_REGION = {place.seed_name: place.region for place in PLACES}
 
 # How many square meters a room occupies in each kind of property. The area
 # of a listing follows from its rooms, so a one-room loft is not 192 m².

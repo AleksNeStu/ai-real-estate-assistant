@@ -36,6 +36,7 @@ def to_transaction(row: PropertyTransaction) -> RCNTransaction:
         x=row.x_2180,
         y=row.y_2180,
         transaction_id=row.transaction_id or "",
+        source_url=row.source_url or "",
     )
 
 

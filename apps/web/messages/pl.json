@@ -42,6 +42,7 @@
         "fileUpload": "Przesyłanie plików",
         "json": "JSON",
         "portalApi": "API portalu",
+        "register": "Rejestr cen nieruchomości",
         "url": "URL"
       },
       "syncing": "Synchronizowanie..."
@@ -3575,6 +3576,7 @@
           "fileUpload": "Przesyłanie plików",
           "json": "JSON",
           "portalApi": "API portalu",
+          "register": "Rejestr cen nieruchomości",
           "url": "URL"
         },
         "syncing": "Synchronizowanie...",

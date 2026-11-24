@@ -20,47 +20,19 @@ import pytest
 import data.rcn.rcn_client as rcn_client
 from agents.services.valuation import RcnValuationProvider
 from data.rcn.rcn_ingest import ingest_voivodeship
+from tests.fixtures import recorded_rcn_export
 from tools.rcn_valuation_tool import RcnValuationTool
 
 pytest.importorskip("pyarrow")
-import pyarrow as pa  # noqa: E402
-import pyarrow.parquet as pq  # noqa: E402
 
 FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "rcn" / "krakow_sample.json"
 POZNAN_FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "rcn" / "poznan_sample.json"
-
-EXPORT_COLUMNS = [
-    "gid",
-    "tran_lokalny_id_iip",
-    "teryt",
-    "tran_cena_brutto",
-    "dok_data",
-    "dok_oznaczenie",
-    "dok_tworca",
-    "tran_rodzaj_rynku",
-    "nier_rodzaj",
-    "lok_funkcja",
-    "lok_pow_uzyt",
-    "lok_liczba_izb",
-    "lok_nr_kond",
-    "lok_cena_brutto",
-    "lok_adres",
-    "geometry_bbox",
-]
 
 
 def _recorded_export(tmp_path: Path) -> Path:
     """The recorded answer of the real service, as the parquet it sends."""
     rows = json.loads(FIXTURE.read_text(encoding="utf-8"))
-    values: dict[str, list] = {}
-    for column in EXPORT_COLUMNS:
-        if column == "dok_data":
-            values[column] = [date.fromisoformat(row["dok_data"]) for row in rows]
-        else:
-            values[column] = [row.get(column) for row in rows]
-    path = tmp_path / "12_transakcje_ceny_lokale.parquet"
-    pq.write_table(pa.table(values), path)
-    return path
+    return recorded_rcn_export(rows, tmp_path / "12_transakcje_ceny_lokale.parquet")
 
 
 def _recorded_poznan_export(tmp_path: Path) -> Path:
@@ -70,15 +42,7 @@ def _recorded_poznan_export(tmp_path: Path) -> Path:
     rows of the export carry no place and no street.
     """
     rows = json.loads(POZNAN_FIXTURE.read_text(encoding="utf-8"))
-    values: dict[str, list] = {}
-    for column in EXPORT_COLUMNS:
-        if column == "dok_data":
-            values[column] = [date.fromisoformat(row["dok_data"]) for row in rows]
-        else:
-            values[column] = [row.get(column) for row in rows]
-    path = tmp_path / "30_transakcje_ceny_lokale.parquet"
-    pq.write_table(pa.table(values), path)
-    return path
+    return recorded_rcn_export(rows, tmp_path / "30_transakcje_ceny_lokale.parquet")
 
 
 class TestTheSlice:

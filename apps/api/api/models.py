@@ -1083,6 +1083,7 @@ class DataSourceType(str, Enum):
     URL = "url"
     PORTAL_API = "portal_api"
     JSON = "json"
+    REGISTER = "register"
 
 
 class DataSourceStatus(str, Enum):
@@ -1116,7 +1117,8 @@ class DataSourceCreate(BaseModel):
             "Source configuration. For file_upload: {filename, size_bytes, file_path?} "
             "- a file_path names a file of the uploads directory of the deployment. "
             "For url: {url, sheet_name?, header_row?}. "
-            "For portal_api: {portal, city, filters?}"
+            "For portal_api: {portal, city, filters?}. "
+            "For register: {city, since?, limit?} - the official price register of one city."
         ),
     )
     auto_sync_enabled: bool = Field(default=False, description="Enable automatic sync")

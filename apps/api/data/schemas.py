@@ -181,8 +181,15 @@ class Property(BaseModel):
 
     @field_validator("rooms", "bathrooms")
     @classmethod
-    def validate_positive(cls, v: float, info: ValidationInfo) -> float:
-        """Ensure rooms and bathrooms are positive."""
+    def validate_positive(cls, v: Optional[float], info: ValidationInfo) -> Optional[float]:
+        """Ensure rooms and bathrooms are positive.
+
+        A listing that does not know how many rooms it has carries no number
+        at all - the register does not say, and a validator that compared a
+        missing number with zero refused the listing instead of the number.
+        """
+        if v is None:
+            return v
         if v < 0:
             raise ValueError(f"{info.field_name} must be positive")
         return v

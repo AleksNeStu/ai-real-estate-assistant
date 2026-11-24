@@ -12,10 +12,10 @@
 
 | Term | Means | Not to be confused with |
 |---|---|---|
-| **Property** | One flat, house or room the assistant can offer — the listing. It has a city, a price, an area, rooms, amenities, coordinates. | A **deed**. A property is what is *offered*; a deed is what was *transacted*. |
-| **Catalogue** | The set of properties the deployment knows — the Chroma collection `properties` plus the JSON cache `.app_cache/properties.json`. | The **register**. The catalogue is what the app offers; the register is what people actually paid. |
+| **Property** | One flat, house or room the assistant can offer — the listing. It has a city, a price, an area, rooms, amenities, coordinates. A property built from the register (`data/rcn/rcn_catalogue.py`) says what it is in its description: its price is the price that was paid, not an asking price. | A **deed**. A property is what is *offered*; a deed is what was *transacted*. |
+| **Catalogue** | The set of properties the deployment knows — the Chroma collection `properties` plus the JSON cache `.app_cache/properties.json`. It can be built from the register. | The **register**. The register is the source of the prices people paid; the catalogue is the set the app answers with, and a listing of the register carries the deed it came from. |
 | **Register** (Rejestr Cen Nieruchomości, RCN) | The official Polish register of transaction prices, published weekly by the state mapping office, free of charge since 13 February 2026. | A listing feed. The register carries **prices people paid**, not asking prices. |
-| **Deed / PropertyTransaction** | One registered sale in the register: the address, the area, the rooms, the price, the date, the market segment. | A property. A deed becomes a **comparable**; a comparable becomes a **valuation**. |
+| **Deed / PropertyTransaction** | One registered sale in the register: the address, the area, the rooms, the price, the date, the market segment. A deed reaches the catalogue two ways: as a **comparable** of a valuation, and as a **listing** of a data source of the kind *register*. | A property. A deed becomes a **comparable**; a comparable becomes a **valuation**. |
 | **Comparable** | A deed used as evidence for a valuation — matched on city, district, area, rooms and period. | A neighbour. |
 | **Valuation** | What a flat is worth, answered from the register, with its comparables, its sample size, its period and its comparison area. | An asking price. A valuation is never an asking price. |
 | **Place / City / District** | Where a thing is: a city with its districts, a district with its figures. | An **address**. The address names a door; the place names a market. |
@@ -29,15 +29,15 @@
 | **Collection** | A named shortlist of favourites, each with a note. | A **collection of documents** (the document vault). |
 | **Buyer memory** | The durable facts about a buyer: the budget, the ruled-out areas, the liked listings. | The **preferences** profile (the model's ranking boosts for a session). |
 | **Slot** | The named position of a link — `hero_search`, `exit_studio`, `studio_strip`, `footer`, … It travels with the click, so the funnel can say *which* CTA did it. | The **campaign** (`oss`, `studio`, `propvector`) and the **medium** (`landing`, `landing_mobile`, `app`). |
-| **Data source** | A registered place properties come from — a file upload, a URL, a portal API, the register. It has a sync history and a health score. | A **bulk job** (one run of one import). |
+| **Data source** | A registered place properties come from — a file upload, a URL, a portal API, the register. It has a sync history and a health score. A source of the kind *register* names the city it reads and the window it reads: `config {city, since?, limit?}` — the limit is at most 10 000 sales, because the deployment holds the listings it read in memory while the sync runs. | A **bulk job** (one run of one import). |
 | **Bulk job** | One import or export run: its kind, its status, its progress, its records processed. | A data source. |
 
 ## Where each entity lives
 
 | Entity | SQLAlchemy model · table | Frontend | API |
 |---|---|---|---|
-| Property | **no table** — `data/schemas.py` `Property`; Chroma collection `properties`; `.app_cache/properties.json` | `Property` (`apps/web/src/lib/types.ts`) | `GET /api/v1/properties`, `POST /api/v1/search` |
-| PropertyTransaction (deed) | `PropertyTransaction` · `property_transactions` | — (read through the valuation tool) | `POST /api/v1/tools/valuation` |
+| Property | **no table** — `data/schemas.py` `Property`; Chroma collection `properties`; `.app_cache/properties.json`; a register-backed one is built by `data/rcn/rcn_catalogue.py` | `Property` (`apps/web/src/lib/types.ts`) | `GET /api/v1/properties`, `POST /api/v1/search` |
+| PropertyTransaction (deed) | `PropertyTransaction` · `property_transactions` | — (read through the valuation tool) | `POST /api/v1/tools/valuation`, a data source of the kind *register* |
 | User | `User` · `users` | `useAuth` context | `POST /api/v1/auth/*` |
 | OAuth account | `OAuthAccount` · `oauth_accounts` | `OAuthButtons` | `POST /api/v1/auth/oauth/*` |
 | Refresh / reset / verification token | `RefreshToken` · `refresh_tokens`, `PasswordResetToken` · `password_reset_tokens`, `EmailVerificationToken` · `email_verification_tokens` | — | `api/routers/auth_jwt.py` (`/api/v1/auth/*`) |

@@ -30,6 +30,8 @@ export function sourceKindKey(sourceType: DataSourceType): string {
       return 'portalApi';
     case 'json':
       return 'json';
+    case 'register':
+      return 'register';
     default:
       return sourceType;
   }

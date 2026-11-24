@@ -4667,7 +4667,7 @@
           },
           "config": {
             "additionalProperties": true,
-            "description": "Source configuration. For file_upload: {filename, size_bytes, file_path?} - a file_path names a file of the uploads directory of the deployment. For url: {url, sheet_name?, header_row?}. For portal_api: {portal, city, filters?}",
+            "description": "Source configuration. For file_upload: {filename, size_bytes, file_path?} - a file_path names a file of the uploads directory of the deployment. For url: {url, sheet_name?, header_row?}. For portal_api: {portal, city, filters?}. For register: {city, since?, limit?} - the official price register of one city.",
             "title": "Config",
             "type": "object"
           },
@@ -4997,7 +4997,8 @@
           "file_upload",
           "url",
           "portal_api",
-          "json"
+          "json",
+          "register"
         ],
         "title": "DataSourceType",
         "type": "string"
