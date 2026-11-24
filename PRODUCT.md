@@ -104,6 +104,14 @@ called done (Rule 106 §13):
 
 - The gate is green: `python scripts/workflows/full_ci.py` (lint, pytest with
   coverage, Jest with its thresholds, e2e, the security scans).
+- The **local** gate that a change has to pass is
+  `python scripts/ci/ci_parity.py` (backend lint, types, the unit suite, the
+  integration suite, the secret scan, the OpenAPI and API-reference drift
+  checks, bandit) plus `npm run test:shuffle` — the suite in a shuffled order,
+  so a change cannot pass by depending on the order the tests happen to run
+  in. The generic gate that reads `.github/workflows/ci.yml` runs lint and the
+  type check only here (its pytest step is a matrix and is skipped), so
+  **the product gate is the one that runs the tests**.
 - Every changed public URL is read **live**, and its coverage state read
   second.
 - The change is committed on `dev` with a conventional message and **no

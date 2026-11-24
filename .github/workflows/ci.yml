@@ -118,7 +118,16 @@ jobs:
           # image, and the image does not need a type checker.
           dev-requirements-file: requirements-dev.txt
 
+      # The two steps below carry their own working-directory, even though the
+      # job default already names apps/api. The reason: a local gate that
+      # parses this workflow resolves a step-level working-directory, and a
+      # job-level default is invisible to it - so the command would run in the
+      # repository root, where there is no ruff configuration and no
+      # [tool.mypy], and lint a tree it was never meant to lint. The value is
+      # the same one the job default names, so what GitHub Actions runs does
+      # not change.
       - name: Lint (ruff)
+        working-directory: ./apps/api
         run: |
           python -m ruff check .
 
@@ -126,6 +135,7 @@ jobs:
       # apps/api/pyproject.toml (pydantic plugin included) and is the same
       # invocation the local CI-parity gate runs.
       - name: Type check (mypy)
+        working-directory: ./apps/api
         run: |
           python -m mypy .
 
