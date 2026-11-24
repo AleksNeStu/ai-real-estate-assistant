@@ -16,6 +16,7 @@
     "test": "npm run test:api && npm run test:web",
     "test:api": "cd apps/api && set PYTHONPATH=%CD% && python -m pytest",
     "test:web": "cd apps/web && npm test",
+    "test:shuffle": "cd apps/web && npm test -- --randomize",
     "test:coverage": "cd apps/web && npm run test:coverage",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test --grep @smoke",
