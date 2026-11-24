@@ -1,0 +1,49 @@
+{
+  "$schema": "./scripts/quality-gate/quality-gate.schema.json",
+  "product": "ai-real-estate-assistant",
+  "gateVersion": "1.0.0",
+  "sourceDirs": [
+    "apps/web/src",
+    "apps/api"
+  ],
+  "ignoreDirs": [
+    "node_modules",
+    ".next",
+    "dist",
+    "build",
+    "coverage",
+    "out",
+    ".turbo",
+    ".vercel",
+    "playwright-report",
+    "test-results",
+    ".venv",
+    ".venv-uv",
+    ".venv312",
+    ".venv_ci",
+    "venv",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".quality-gate"
+  ],
+  "sast": {
+    "extraRulesets": [
+      "p/typescript",
+      "p/react",
+      "p/nextjs",
+      "p/python"
+    ],
+    "targets": [
+      "apps/api",
+      "apps/web/src",
+      "scripts",
+      ".github/workflows"
+    ]
+  },
+  "perf": {
+    "jsBudgetKb": null
+  },
+  "skip": []
+}

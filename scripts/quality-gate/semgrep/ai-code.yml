@@ -1,0 +1,103 @@
+# AI-code rules of the quality gate (Rule 383). Vendored with quality-gate.mjs.
+# ERROR blocks (when new vs the baseline); WARNING is reported only.
+# Patterns that coding agents produce disproportionately: eval-ish dynamic code, string-built
+# SQL, disabled TLS, secrets in source, and nondeterministic tests.
+rules:
+  - id: qg-dynamic-code-from-input
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Dynamic code execution (eval / new Function / vm) on a value that is not a literal. OWASP A03 Injection.
+    patterns:
+      - pattern-either:
+          - pattern: eval($X)
+          - pattern: new Function(..., $X)
+          - pattern: require('vm').runInNewContext($X, ...)
+          - pattern: vm.runInNewContext($X, ...)
+      - pattern-not: eval("...")
+      - pattern-not: new Function(..., "...")
+
+  - id: qg-sql-string-concat
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: SQL built by string concatenation or interpolation reaches a query call. Use parameters / the query builder. OWASP A03 Injection.
+    patterns:
+      - pattern-either:
+          - pattern: $DB.$Q(`...${$X}...`, ...)
+          - pattern: $DB.$Q("..." + $X + "...", ...)
+          - pattern: $DB.$Q("..." + $X, ...)
+          - pattern: sql.raw(`...${$X}...`)
+      - metavariable-regex:
+          metavariable: $Q
+          regex: ^(query|execute|raw|unsafe|\$queryRawUnsafe|\$executeRawUnsafe|exec)$
+
+  - id: qg-tls-verification-disabled
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: TLS certificate verification is disabled. OWASP A02 Cryptographic Failures.
+    pattern-either:
+      - pattern: "{..., rejectUnauthorized: false, ...}"
+      - pattern: process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+
+  - id: qg-python-tls-verification-disabled
+    languages: [python]
+    severity: ERROR
+    message: TLS certificate verification is disabled (verify=False). OWASP A02.
+    pattern: $REQ.$M(..., verify=False, ...)
+
+  - id: qg-python-sql-format
+    languages: [python]
+    severity: ERROR
+    message: SQL built with an f-string / % / .format reaches execute(). Use bound parameters. OWASP A03.
+    pattern-either:
+      - pattern: $C.execute(f"...", ...)
+      - pattern: $C.execute("..." % $X, ...)
+      - pattern: $C.execute("...".format(...), ...)
+
+  - id: qg-hardcoded-credential
+    languages: [javascript, typescript, python]
+    severity: ERROR
+    message: A credential-shaped literal assigned in source. Read it from the environment (Rule 124).
+    # A TEST file legitimately holds a credential-shaped LITERAL - that is the
+    # point of the fixture. Measured 2026-11-23 on ps: four ERROR findings,
+    # every one of them a fake (`const SECRET = "middleware-test-secret"`).
+    # As an ERROR the rule fired on every new test file and would have parked
+    # a night leg on a fixture. A REAL leak in a test file is still caught -
+    # by the gitleaks secret scan in the pre-commit chain, which reads the
+    # committed history, not the source shape.
+    paths:
+      exclude:
+        - "**/*.test.*"
+        - "**/*.spec.*"
+        - "**/__tests__/**"
+        - "**/test/**"
+        - "**/tests/**"
+    patterns:
+      - pattern-either:
+          - pattern: $K = "$V"
+          - pattern: "{..., $K: \"$V\", ...}"
+      - metavariable-regex:
+          metavariable: $K
+          regex: (?i)^(api[_-]?key|secret|password|passwd|access[_-]?token|auth[_-]?token|private[_-]?key|client[_-]?secret)$
+      - metavariable-regex:
+          metavariable: $V
+          regex: ^[A-Za-z0-9_\-+/=]{16,}$
+
+  - id: qg-nondeterministic-test
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: A test reads the real clock or an unseeded RNG. Use fake timers / a seeded generator, or the test will flake under shuffle.
+    paths:
+      include:
+        - "**/*.test.*"
+        - "**/*.spec.*"
+        - "**/__tests__/**"
+    pattern-either:
+      - pattern: Math.random()
+      - pattern: Date.now()
+      - pattern: new Date()
+
+  - id: qg-cors-wildcard-with-credentials
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: CORS allows any origin together with credentials. OWASP A05 Security Misconfiguration.
+    pattern: "{..., origin: '*', ..., credentials: true, ...}"

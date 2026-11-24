@@ -1,0 +1,567 @@
+{
+  "gate": "1.0.0",
+  "generated": "2026-11-24T14:46:00.783Z",
+  "note": "Accepted pre-existing findings. Shrink it; never grow it by hand.",
+  "findings": [
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "be1369178d6aaa84",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "948ca4039e66a9fb",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "3358d94057738254",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "f389dc5040e66380",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "948ca4039e66a9fb",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "f389dc5040e66380",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "948ca4039e66a9fb",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "948ca4039e66a9fb",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "497a5f789d7a3822",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "97aca6c2ab4e39c2",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "497a5f789d7a3822",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "97aca6c2ab4e39c2",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5d8022fd077a08b6",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5d8022fd077a08b6",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "f389dc5040e66380",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "948ca4039e66a9fb",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "f389dc5040e66380",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "948ca4039e66a9fb",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "948ca4039e66a9fb",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "5c98c439d800b484",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "d710ad43c360e7f0",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "f389dc5040e66380",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "948ca4039e66a9fb",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "c1a7aed69520cb69",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "fp": "9824587497c29cec",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/dependabot-auto-merge.yml"
+    },
+    {
+      "fp": "9824587497c29cec",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/dependabot-auto-merge.yml"
+    },
+    {
+      "fp": "9824587497c29cec",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/dependabot-auto-merge.yml"
+    },
+    {
+      "fp": "9824587497c29cec",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/dependabot-auto-merge.yml"
+    },
+    {
+      "fp": "9824587497c29cec",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/dependabot-auto-merge.yml"
+    },
+    {
+      "fp": "0ba235c1e6d4496d",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/dependabot-auto-merge.yml"
+    },
+    {
+      "fp": "946775943cb463d6",
+      "check": "yaml.github-actions.security.gha-workflow-env-secret.gha-workflow-env-secret",
+      "path": ".github/workflows/deploy.yml"
+    },
+    {
+      "fp": "b63506907f59dd04",
+      "check": "yaml.github-actions.security.gha-workflow-env-secret.gha-workflow-env-secret",
+      "path": ".github/workflows/deploy.yml"
+    },
+    {
+      "fp": "0385a02eae7cbeb0",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/deploy.yml"
+    },
+    {
+      "fp": "7a7a5e691a0c3bc4",
+      "check": "yaml.github-actions.security.workflow-run-target-code-checkout.workflow-run-target-code-checkout",
+      "path": ".github/workflows/deploy.yml"
+    },
+    {
+      "fp": "27bab528df2166a4",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/deploy.yml"
+    },
+    {
+      "fp": "8ca681069543a956",
+      "check": "yaml.github-actions.security.workflow-run-target-code-checkout.workflow-run-target-code-checkout",
+      "path": ".github/workflows/deploy.yml"
+    },
+    {
+      "fp": "417e87caacaa76bf",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/deploy.yml"
+    },
+    {
+      "fp": "0a5012ebc4201766",
+      "check": "yaml.github-actions.security.run-shell-injection.run-shell-injection",
+      "path": ".github/workflows/deploy.yml"
+    },
+    {
+      "fp": "51ac1df3306596b4",
+      "check": "yaml.github-actions.security.run-shell-injection.run-shell-injection",
+      "path": ".github/workflows/deploy.yml"
+    },
+    {
+      "fp": "ba870a2a2bfc3126",
+      "check": "yaml.github-actions.security.run-shell-injection.run-shell-injection",
+      "path": ".github/workflows/deploy.yml"
+    },
+    {
+      "fp": "dbe20ec253a7997e",
+      "check": "yaml.github-actions.security.run-shell-injection.run-shell-injection",
+      "path": ".github/workflows/deploy.yml"
+    },
+    {
+      "fp": "8ca681069543a956",
+      "check": "yaml.github-actions.security.workflow-run-target-code-checkout.workflow-run-target-code-checkout",
+      "path": ".github/workflows/deploy.yml"
+    },
+    {
+      "fp": "417e87caacaa76bf",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/deploy.yml"
+    },
+    {
+      "fp": "4621f2f2ee778c04",
+      "check": "yaml.github-actions.security.run-shell-injection.run-shell-injection",
+      "path": ".github/workflows/deploy.yml"
+    },
+    {
+      "fp": "d95b3252e358f3a1",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/llm-costs.yml"
+    },
+    {
+      "fp": "46944424fc1c0d11",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/publish-ghcr.yml"
+    },
+    {
+      "fp": "9566671f2b9f94cd",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/publish-ghcr.yml"
+    },
+    {
+      "fp": "2da6a5d9f9f3e97d",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/publish-ghcr.yml"
+    },
+    {
+      "fp": "09e8660ff1fac771",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/publish-ghcr.yml"
+    },
+    {
+      "fp": "e573cd22a0a76a66",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/publish-ghcr.yml"
+    },
+    {
+      "fp": "a3e24f69058e0943",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/publish-ghcr.yml"
+    },
+    {
+      "fp": "46944424fc1c0d11",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/publish-ghcr.yml"
+    },
+    {
+      "fp": "2da6a5d9f9f3e97d",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/publish-ghcr.yml"
+    },
+    {
+      "fp": "09e8660ff1fac771",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/publish-ghcr.yml"
+    },
+    {
+      "fp": "e573cd22a0a76a66",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/publish-ghcr.yml"
+    },
+    {
+      "fp": "a3e24f69058e0943",
+      "check": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/publish-ghcr.yml"
+    },
+    {
+      "fp": "3c8db001a9a14a08",
+      "check": "python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure",
+      "path": "apps/api/api/routers/auth_jwt.py"
+    },
+    {
+      "fp": "edebfb0ec74ef2c3",
+      "check": "python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure",
+      "path": "apps/api/api/routers/auth_jwt.py"
+    },
+    {
+      "fp": "06aa1471e74b3a05",
+      "check": "python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected",
+      "path": "apps/api/services/fx_rates.py"
+    },
+    {
+      "fp": "816bdd8c17f8a7f9",
+      "check": "python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected",
+      "path": "apps/api/services/fx_rates.py"
+    },
+    {
+      "fp": "816bdd8c17f8a7f9",
+      "check": "python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected",
+      "path": "apps/api/services/fx_rates.py"
+    },
+    {
+      "fp": "56f73c69c1d4eb0b",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/app/[locale]/documents/__tests__/page.test.tsx"
+    },
+    {
+      "fp": "ded990b661efca25",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/app/[locale]/documents/__tests__/page.test.tsx"
+    },
+    {
+      "fp": "56f73c69c1d4eb0b",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/app/[locale]/documents/__tests__/page.test.tsx"
+    },
+    {
+      "fp": "ded990b661efca25",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/app/[locale]/documents/__tests__/page.test.tsx"
+    },
+    {
+      "fp": "fdb9bf986736848b",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/app/[locale]/documents/__tests__/page.test.tsx"
+    },
+    {
+      "fp": "586cee3f461d2403",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/app/[locale]/favorites/__tests__/page.test.tsx"
+    },
+    {
+      "fp": "d9a6150294a9f774",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/app/[locale]/favorites/__tests__/page.test.tsx"
+    },
+    {
+      "fp": "586cee3f461d2403",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/app/[locale]/favorites/__tests__/page.test.tsx"
+    },
+    {
+      "fp": "d9a6150294a9f774",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/app/[locale]/favorites/__tests__/page.test.tsx"
+    },
+    {
+      "fp": "586cee3f461d2403",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/app/[locale]/favorites/__tests__/page.test.tsx"
+    },
+    {
+      "fp": "d9a6150294a9f774",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/app/[locale]/favorites/__tests__/page.test.tsx"
+    },
+    {
+      "fp": "586cee3f461d2403",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/app/[locale]/favorites/__tests__/page.test.tsx"
+    },
+    {
+      "fp": "d9a6150294a9f774",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/app/[locale]/favorites/__tests__/page.test.tsx"
+    },
+    {
+      "fp": "af6c6201277e6dad",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/app/[locale]/leads/__tests__/page.test.tsx"
+    },
+    {
+      "fp": "7809d14ade54a4f8",
+      "check": "typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml",
+      "path": "apps/web/src/app/[locale]/property/[id]/page.tsx"
+    },
+    {
+      "fp": "c93ddbe0a0812c87",
+      "check": "typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml",
+      "path": "apps/web/src/app/[locale]/valuation/[place]/[district]/page.tsx"
+    },
+    {
+      "fp": "d4bc5b88a5457a1f",
+      "check": "typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml",
+      "path": "apps/web/src/app/[locale]/valuation/[place]/page.tsx"
+    },
+    {
+      "fp": "e08f852076e87a29",
+      "check": "typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml",
+      "path": "apps/web/src/app/[locale]/valuation/[place]/page.tsx"
+    },
+    {
+      "fp": "f62bde6125c36afd",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/components/documents/__tests__/document-list.test.tsx"
+    },
+    {
+      "fp": "1a659fc29e23e3fc",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/components/documents/__tests__/document-list.test.tsx"
+    },
+    {
+      "fp": "969f53d78e338314",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/components/documents/__tests__/document-list.test.tsx"
+    },
+    {
+      "fp": "bbc5e065f77144af",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/components/documents/__tests__/document-list.test.tsx"
+    },
+    {
+      "fp": "969f53d78e338314",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/components/documents/__tests__/document-list.test.tsx"
+    },
+    {
+      "fp": "bbc5e065f77144af",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/components/documents/__tests__/document-list.test.tsx"
+    },
+    {
+      "fp": "09834eff04f27ff3",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/components/search/__tests__/property-map-clustering.test.ts"
+    },
+    {
+      "fp": "2180717942d293bc",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/components/search/__tests__/property-map-clustering.test.ts"
+    },
+    {
+      "fp": "35d58d8bcb639ab3",
+      "check": "scripts.quality-gate.semgrep.qg-sql-string-concat",
+      "path": "apps/web/src/components/shell/gate.tsx"
+    },
+    {
+      "fp": "3ef26a70ea88e94b",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/lib/streaming/__tests__/HeartbeatMonitor.test.ts"
+    },
+    {
+      "fp": "f66e4b45b89a3ea0",
+      "check": "scripts.quality-gate.semgrep.qg-nondeterministic-test",
+      "path": "apps/web/src/lib/streaming/__tests__/HeartbeatMonitor.test.ts"
+    },
+    {
+      "fp": "51a56240ffa0f98d",
+      "check": "python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args",
+      "path": "scripts/ci/network_isolation_check.py"
+    },
+    {
+      "fp": "dbe70aabe39589cd",
+      "check": "python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected",
+      "path": "scripts/docker/compose_smoke.py"
+    },
+    {
+      "fp": "187ea8255e119612",
+      "check": "python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected",
+      "path": "scripts/workflows/full_ci.py"
+    },
+    {
+      "fp": "750cec9bb2394a0f",
+      "check": "python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected",
+      "path": "scripts/workflows/full_ci.py"
+    }
+  ]
+}

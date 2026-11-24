@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 # the stub is installed cannot satisfy it - and the failure lands on whichever
 # line happens to import a `utils` submodule first. Importing the package for
 # real here makes the order explicit instead of accidental.
-import utils  # noqa: F401
+import utils  # noqa: F401  quality-gate-allow: must load before the exporters stub below
 
 # Stub heavy dependencies before importing the router.
 # bulk_jobs imports api.dependencies which triggers agents→langchain→protobuf chain.
@@ -57,7 +57,11 @@ if "utils.exporters" not in sys.modules:
     sys.modules["utils.exporters"] = _exporters
 
 from api.routers import bulk_jobs  # noqa: E402
-from db.database import Base, create_engine, get_db  # noqa: E402
+from db.database import (  # noqa: E402  quality-gate-allow: must follow the stub install
+    Base,
+    create_engine,
+    get_db,
+)
 
 # Restore original modules immediately after importing the router,
 # so that subsequent test modules see the real packages during collection.
@@ -180,7 +184,8 @@ async def _run_import(client: AsyncClient, path: Path) -> dict[str, Any]:
 
     job = await client.get(f"/api/v1/bulk-jobs/{job_id}")
     assert job.status_code == 200, job.text
-    return job.json()
+    payload: dict[str, Any] = job.json()
+    return payload
 
 
 class TestBulkJobsAPI:

@@ -48,7 +48,10 @@ repos:
         # The keyword detector fires on UI words ("password", "token") that appear
         # in the 9 translation catalogues - a false positive per locale, per line.
         # Gitleaks (above) still scans these files with pattern-based rules.
-        exclude: ^apps/web/messages/.*\.json$
+        #
+        # The quality gate's baselines carry SHA-256 fingerprint prefixes of
+        # finding locations, which the hex-entropy plugin reads as secrets.
+        exclude: ^apps/web/messages/.*\.json$|^\.quality-gate/
 
   # Semgrep - SAST (Static Application Security Testing)
   # NOTE: Runs only on pre-push to avoid slowing down frequent commits.

@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nestlab.tech/schemas/quality-gate.schema.json",
+  "title": "quality-gate.json - the product-specific half of the AI-code quality gate (Rule 383)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "product": { "type": "string" },
+    "gateVersion": { "type": "string", "description": "The template version this product vendored." },
+    "sourceDirs": { "type": "array", "items": { "type": "string" } },
+    "ignoreDirs": { "type": "array", "items": { "type": "string" } },
+    "diffSlop": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "allowMarker": { "type": "string" },
+        "disable": { "type": "array", "items": { "enum": ["eslint-disable", "ts-suppress", "as-any", "focused-or-skipped-test", "py-suppress", "py-skip"] } },
+        "patterns": { "const": "default" }
+      }
+    },
+    "deps": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "minAgeDays": { "type": "number", "minimum": 0 },
+        "minWeeklyDownloads": { "type": "number", "minimum": 0 },
+        "exactPins": { "type": "boolean" },
+        "allowUnlisted": { "type": "array", "items": { "type": "string" }, "description": "Bare imports that resolve without a declared dependency (framework virtual modules)." }
+      }
+    },
+    "sast": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "rulesets": { "type": "array", "items": { "type": "string" } },
+        "extraRulesets": { "type": "array", "items": { "type": "string" }, "description": "Stack rulesets, e.g. p/typescript, p/nextjs, p/react, p/python, p/fastapi." },
+        "image": { "type": "string" },
+        "runner": { "enum": ["auto", "docker", "cli"] },
+        "baseline": { "type": "string" },
+        "blockSeverity": { "type": "array", "items": { "enum": ["ERROR", "WARNING", "INFO"] } },
+        "targets": { "type": "array", "items": { "type": "string" }, "description": "What the FULL-mode SAST scan covers. Defaults to the declared sourceDirs, then to the whole tree. A product whose tree carries vendored trees (a 26 000-file .venv) declares its code roots here - measured 2026-11-23 on ps: scanning the whole tree blew the 900 s budget, scanning the three src roots takes minutes." }
+      }
+    },
+    "supplyChain": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "blockSeverity": { "type": "array", "items": { "enum": ["critical", "high", "moderate", "low"] } },
+        "requireFixAvailable": { "type": "boolean" },
+        "ignore": { "type": "array", "items": { "type": "object", "required": ["id", "reason", "until"], "properties": { "id": { "type": "string" }, "reason": { "type": "string", "minLength": 10 }, "until": { "type": "string", "format": "date" } } } }
+      }
+    },
+    "determinism": {
+      "type": "object", "additionalProperties": false,
+      "properties": { "script": { "type": "string", "description": "package.json script that runs the suite in a shuffled order." } }
+    },
+    "slop": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "baseline": { "type": "string" },
+        "duplicationTolerancePct": { "type": "number", "minimum": 0 },
+        "knipIssueTolerance": { "type": "number", "minimum": 0 },
+        "jscpd": { "type": "string" },
+        "knip": { "type": "string" }
+      }
+    },
+    "perf": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "jsBudgetKb": { "type": ["number", "null"], "minimum": 1 },
+        "chunksDir": { "type": "string" },
+        "lighthouse": { "type": ["object", "null"], "properties": { "config": { "type": "string" }, "version": { "type": "string" } } }
+      }
+    },
+    "evals": {
+      "type": ["object", "null"],
+      "properties": { "command": { "type": "string" }, "env": { "type": "object", "additionalProperties": { "type": "string" } } },
+      "description": "The product's golden LLM eval suite. It must pin temperature 0 / a fixed seed (the gate passes LLM_TEMPERATURE=0, QG_SEED=42)."
+    },
+    "extraChecks": {
+      "type": "array",
+      "items": {
+        "type": "object", "required": ["name", "command"], "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "command": { "type": "string" },
+          "modes": { "type": "array", "items": { "enum": ["quick", "preclose", "full"] } },
+          "env": { "type": "object", "additionalProperties": { "type": "string" } }
+        }
+      }
+    },
+    "skip": {
+      "type": "array",
+      "items": {
+        "type": "object", "required": ["check", "reason"], "additionalProperties": false,
+        "properties": { "check": { "type": "string" }, "reason": { "type": "string", "minLength": 10 } }
+      }
+    }
+  }
+}

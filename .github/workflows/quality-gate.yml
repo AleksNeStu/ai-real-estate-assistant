@@ -1,0 +1,96 @@
+# Quality gate (Rule 383) - vendored from nest-solo/templates/quality-gate/quality-gate.yml.
+#
+# Runs the AI-code quality gate in FULL mode: diff slop, dependency reality, frozen lockfile,
+# OWASP SAST (semgrep, baseline-relative), supply chain, shuffled-order tests, duplication /
+# dead code, perf budget and LLM evals - each as declared in the product's quality-gate.json.
+# A passive DAST baseline (OWASP ZAP) runs when the repo variable QG_DAST_URL is set. Use a URL ZAP can
+# reach without a login: staging is CF-Access-locked (Rule 333), so this is usually the public production URL.
+#
+# Cost (Rule 286): push to dev with a docs path filter, weekly, and on demand. Every job sets
+# timeout-minutes. The owner guard keeps private mirrors from spending minutes (Rule 05).
+
+name: Quality gate
+
+on:
+  push:
+    branches: [dev]
+    paths-ignore: ["**/*.md", "docs/**", ".taskmaster/**", ".claude/**"]
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  gate:
+    if: github.repository_owner == 'NestLab-Tech'
+    name: "AI-code quality gate (${{ vars.RUNNER_FLEET || 'unassigned' }})"
+    runs-on: ${{ vars.RUNNER_FLEET == 'github-hosted' && fromJSON('["ubuntu-latest"]') || fromJSON('["self-hosted","linux","x64","nest-solo","eu-region","priority-1"]') }}
+    timeout-minutes: 30
+    env:
+      # The diff the slop / dep checks read: the push range, or HEAD~1 on schedule/dispatch.
+      QG_BASE: ${{ github.event.before }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 50
+
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          dest: ${{ runner.temp }}/setup-pnpm-${{ github.run_id }}-${{ github.job }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24.22.1"
+          cache: "pnpm"
+
+      - name: Capacity probe
+        run: df -h . | tail -1; free -m | head -2; docker info --format '{{.ServerVersion}}' || echo "no docker - semgrep falls back to the CLI"
+
+      # BEFORE install: a non-frozen install rewrites the lockfile and would hide the drift.
+      - name: Lockfile is frozen
+        run: node scripts/quality-gate/quality-gate.mjs --mode full --only lockfile
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Read gate config
+        id: cfg
+        run: |
+          node -e "const c=require('./quality-gate.json');const p=c.perf||{};console.log('perf='+(!!(p.jsBudgetKb||p.lighthouse)))" >> "$GITHUB_OUTPUT"
+
+      - name: Build (perf budget declared)
+        if: steps.cfg.outputs.perf == 'true'
+        run: pnpm run build:ci || pnpm run build
+
+      - name: Semgrep CLI fallback (no docker on this runner)
+        run: docker info >/dev/null 2>&1 || pipx install semgrep==1.94.0
+
+      - name: Quality gate (full)
+        run: node scripts/quality-gate/quality-gate.mjs --mode full --skip lockfile
+
+  dast:
+    # OWASP ZAP baseline - PASSIVE (spider + passive rules, no attacks), so pointing it at the public
+    # production URL is safe. Not on push: deploys run in their own workflows.
+    if: github.repository_owner == 'NestLab-Tech' && vars.QG_DAST_URL != '' && github.event_name != 'push'
+    name: "DAST baseline (OWASP ZAP)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: ZAP baseline
+        uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
+        with:
+          target: ${{ vars.QG_DAST_URL }}
+          # FAIL lines in the rules file block; everything else is reported (the action's -I
+          # flag keeps WARN from failing the job).
+          rules_file_name: .quality-gate/zap-rules.tsv
+          cmd_options: "-I"
+          allow_issue_writing: false
