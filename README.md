@@ -202,14 +202,35 @@ Every release publishes both images to GitHub Container Registry, multi-arch
 (amd64 and arm64):
 
 ```bash
-docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/backend:5.5.0
-docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/frontend:5.5.0
+docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/backend:5.6.0
+docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/frontend:5.6.0
 ```
 
 The full guide — the memory footprint per setup, the published tags and the
 Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.md).
 
 ## What's new
+
+**`v5.6.0`** — the answers the product gives are the ones it measured.
+
+- **The neighbourhood index is measured, not invented** — a factor the map
+  cannot measure carries no score, and the card shows a dash for it — never a
+  zero, which would say the neighbourhood is bad.
+- **The official registers answer first** — the noise level comes from the
+  state register and the air quality from the state monitoring network, both
+  as open data with no key; the estimates that stood in for them stay as the
+  fallback and are named as estimates.
+- **A valuation answer is a link** — shareable and indexable, with the
+  comparable sales, the period they cover and the JSON-LD on the page itself.
+- **The Russian interface is complete** — English, Polish and Russian are the
+  three languages the product is written for, and the key-parity test holds
+  them to it.
+- **The app can be installed** — the install is offered exactly where the
+  browser can perform it, and an update is announced rather than applied
+  silently.
+- **One command from nothing to a running demo**, and **an open command for
+  the public API** — a command-line client for the three public operations,
+  with the types generated from the published contract.
 
 **`v5.5.0`** — the demo keeps the promises it makes about itself.
 
@@ -350,7 +371,7 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
 - **335 dependency alerts closed** — every critical and high advisory resolved,
   the floors pinned in both the lock file and the project file.
 
-Full notes: [v5.5.0 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.5.0) ·
+Full notes: [v5.6.0 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.6.0) ·
 [changelog](CHANGELOG.md).
 
 ## What it does

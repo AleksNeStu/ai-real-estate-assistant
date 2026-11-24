@@ -7,6 +7,176 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.6.0] - 2026-11-24
+
+Forty-seven commits since v5.5.0. The theme: the answers the product gives
+are the ones it measured. A neighbourhood score is computed from the map or
+it is not given at all; a noise level is read from the state register or it
+is named an estimate; a price comes from the register of notarial deeds or
+the site says how few sales it rests on.
+
+### Added
+- **The neighbourhood index is measured, not invented** — the quality index
+  fell back to a pseudo-random score when the coordinates were missing, so an
+  answer that read like a measurement was fabricated. Every factor now
+  returns a measurement that either carries a score traceable to a named map
+  feature or says why there is none, and the overall score is the weighted
+  average of the measured factors only. A place the map says nothing about
+  gets no score.
+- **The official registers answer first** — GIOŚ publishes the noise
+  measurements of the roads, the railways, the industry and the airports, and
+  the State Environmental Monitoring publishes the air quality, both as open
+  data with no key and no licence. The noise adapter answers with the
+  register's own decibel level and period where the register covers the
+  place; the air-quality adapter reads the register first and the token-
+  bearing WAQI only as a fallback; every measurement names its source, as the
+  register's terms ask. The OpenStreetMap estimates stay as the fallback and
+  are named as estimates.
+- **A valuation answer is a link** — the valuation answered in the browser
+  and died with the tab: it could not be shared, not be indexed and carried
+  no structured data. `/<locale>/valuation/<slug>` is that answer with an
+  address. The slug names the place and is folded to ASCII on purpose, so a
+  canonical never competes with itself; the page is read on the server, so a
+  crawler that does not run the JavaScript receives the estimate, the sales
+  it rests on and the JSON-LD.
+- **The city and district pages carry the register's numbers** —
+  `/valuation/{city}` and `/valuation/{city}/{district}` render the median
+  price per square metre, the number of registered sales behind it, the
+  period they cover and the sales themselves. A place the register holds no
+  sale for has no page and stays out of the index. Poznań answers now too:
+  its export files the sales without a street, so the client keeps the rows
+  and reads the municipality code — 0 → 145 954 sales for the city.
+- **One command from nothing to a running demo** — the README quick start
+  was eight lines a person has to get right, and the two lines people get
+  wrong are the `.env` (the example carries literal placeholders, so a stack
+  started from it ships a public API key) and the waiting. The install
+  scripts generate the secrets, write the `.env` through a temporary file
+  that is moved into place, back up an existing one, and poll `/health`
+  instead of telling you to wait.
+- **An open command for the public API** — `packages/cli` is a Node 20 +
+  TypeScript client for the three public operations: valuation, search and
+  chat. The address comes from the environment, the key comes from the
+  environment and from nowhere else, and the types are generated from the
+  published contract — the suite regenerates them and fails on a drift, so
+  the client cannot call an endpoint the contract does not describe.
+- **The app can be installed, and an update is offered** — the web app was
+  already a PWA but never invited the install, so it stayed a bookmark. The
+  header button appears exactly when the browser fires
+  `beforeinstallprompt`, and the service worker keeps its promises: it
+  precaches the shell of the maintained languages, and it no longer takes
+  over on install — the new version is announced and the visitor accepts the
+  reload.
+
+### Changed
+- **The Russian catalogue joins the maintained set** — English, Polish and
+  Russian are the three languages the product is written for. The Russian
+  catalogue was missing 514 keys, and the merge rendered the English wording
+  for all of them, so the interface was half Russian with an English
+  settings page. The catalogue now carries every key of the English one, and
+  the key-parity test enforces it: a key that lands in English and Polish but
+  not in Russian now fails the build. The other six catalogues stay frozen.
+  The repository's own code, comments and documents stay English — this is
+  interface content for visitors.
+- **The free-tier cascade falls through when a provider fails at call time**
+  — the cascade ended at the first provider whose client could be *built*,
+  so a provider that builds and then fails — depleted prepaid credits, a
+  rate limit — ended the request instead of the next provider taking over.
+  That is what the demo's anonymous chat did on 2026-11-23: the Google key's
+  prepaid credits were depleted and every visitor got the raw 402. The
+  cascade is now walked at call time, and the router turns an exhausted
+  cascade into a 503 that names the providers — never the provider's raw
+  error, which stays in the server log.
+- **The three public surfaces stop contradicting reality** — the FAQ JSON-LD
+  still said the demo answers with simulated responses, and `llms.txt` still
+  named sixteen providers and claimed no live feeds. All three were false:
+  the demo answers with a real provider, the registry holds seventeen, and
+  the valuation reads the official register. The provider count is now checked
+  against the backend registry by a drift guard, so it cannot go stale again.
+- **The sitemap names a page once, not nine times** — the file listed every
+  locale version of every path as its own entry: 261 paths × 9 locales =
+  2 349 near-duplicate URLs. That is the shape that produced the 261 sitemap
+  warnings and no indexed page. The default locale's version is the entry,
+  the other eight are its hreflang alternates, and `x-default` names the
+  default locale's version of the same path. Measured: the rebuilt sitemap
+  carries 261 URLs for 261 paths.
+- **The arrival and the outbound click carry the visitor id** — both calls
+  omitted it, so the arrival rows were rejected by the API outright and every
+  outbound click was filed under the literal "anonymous". The id the visitor
+  tracking module already keeps is reused rather than invented a second
+  time.
+- **The compare table says what each tier ships today** — it described a
+  split the code had already left behind: it gave the free tier a "demo
+  catalogue" although the free tier answers from the official register, and
+  it gave the enrichment pipeline, the alerts and the lead scoring to the
+  hosted tier although all three are in this tree. The record behind it
+  states the boundary and the licence discipline: MIT engine, a proprietary
+  hosted tier that is not published, and source-available — never MIT — if a
+  server is ever published.
+- **The valuation answer needs a minimum sample** — `MIN_SAMPLE` was defined
+  and never enforced, so a place with a single registered sale got an
+  estimate computed from it. Below the minimum the service now produces no
+  estimate, no range and no median; the comparable sales are still returned,
+  because the evidence is worth having, and the note says why the number is
+  missing.
+
+### Fixed
+- **A factor nobody could measure carries no score** — the endpoint answered
+  400 when a provider could not measure one of the factors: the response
+  model asked for a number the map had not given, and a pydantic validation
+  error is a `ValueError`, so the router turned a response-validation
+  failure into a bad request. The scores are optional now, the answer names
+  the factors it could not measure and why, and the card shows a dash for
+  them — never a zero, which would say the neighbourhood is bad.
+- **A deed dated in the future is not a sale** — the register carries the
+  occasional deed dated in the future — a typo in the starosta's register,
+  and the demo's own register holds rows dated 3021. The read is now bounded
+  by today and the comparison leaves out the sales dated after the reference
+  date, so a typo no longer sits at the top of the comparables, where a
+  visitor reads its date and believes it.
+- **The mortgage rate comes from the National Bank of Poland** — the
+  calculator and the total-cost-of-ownership tools carried a hardcoded
+  4.5 percent, so every payment on the site was wrong by whatever the bank
+  publishes today. The rate is read from the bank's own base-rates file,
+  cached for a day, and every answer names the rate it used and the date
+  that rate was published.
+- **A capture that collides with a tracking call answers the visitor** — the
+  landing page tracks an interaction and the waitlist form captures the same
+  visitor, and two requests for one visitor can arrive at the same time. Both
+  read "no row yet", both write, and the loser of the race died on the
+  UNIQUE constraint — a 500 for a visitor who did nothing wrong. The loser
+  now reads back the row the winner wrote and returns it.
+- **Wielkopolskie is 30, not 28** — the voivodeship the demo's Poznań lives
+  in is 30; the code named 28, which is warmińsko-mazurskie. The mistake was
+  silent: the export downloaded, the rows stored, and the city that was asked
+  for was simply never in them. The test now pins the code of every
+  voivodeship, not only its name.
+- **The release section of the README tells the truth** — the notes stopped
+  at v5.3.4 while v5.5.0 was published, the link pointed at v5.3.1 and the
+  pull examples at 5.1.10. The two missing releases are written from the
+  changelog, and the root `package.json` says the version the release names.
+- **The neighbourhood tool and the GIOŚ adapters satisfy the type gate** — the
+  tool took the coordinates of a place in three places and each of them could
+  reach a `None`; the two GIOŚ clients returned whatever the JSON body was.
+  A place without coordinates is refused, a measurement without coordinates
+  falls back to the centre of the boundary, and a body that is not an object
+  is no body.
+- **The neighbourhood tool has integration coverage at all** — the tool had
+  none, so the diff gate read its changed lines as uncovered. Two suites
+  answer now: the unit suite reads the points a measurement is taken at, and
+  the integration suite reads the endpoint — the eight factors, the points of
+  interest they came from, and the factor the map cannot answer.
+- **The settings test gave the provider keys back** — `update_api_key`
+  writes into the global settings object as well as the environment, and the
+  settings object kept the fake key for the rest of the worker process, so a
+  later test in the same worker read "openai-key" where it expected the
+  machine's own value. The pollution was invisible in the test that caused
+  it and showed up somewhere else entirely.
+- **The circuit-breaker test is measured above the clock's tick** — the
+  Windows clock ticks every ~15.6 ms, so a 60 ms sleep can be measured as
+  44 ms and miss the 50 ms recovery timeout — the circuit stayed open and
+  the test failed about one run in twenty. The sleep is four times the
+  timeout now.
+
 ## [5.5.0] - 2026-11-22
 
 Nine commits since v5.4.0. The theme: the promises the demo makes about
