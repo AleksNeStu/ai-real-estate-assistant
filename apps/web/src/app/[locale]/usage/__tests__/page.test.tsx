@@ -162,7 +162,6 @@ describe('UsagePage', () => {
 
     // The tile is the handle: the same word also names the ledger's rows and
     // the chart's title, so the assertion is scoped to the tile.
-    const tile = await screen.findByTestId('usage-kind-search');
     const kinds: Array<[string, string, string]> = [
       ['usage-kind-search', 'Searches', '75'],
       ['usage-kind-view', 'Views', '45'],
@@ -172,11 +171,13 @@ describe('UsagePage', () => {
     ];
 
     for (const [testId, label, value] of kinds) {
-      const tile = screen.getByTestId(testId);
-      expect(tile).toHaveTextContent(label);
-      expect(tile).toHaveTextContent(value);
+      // The tile appears before its numbers arrive, so the wait is on the
+      // CONTENT and not on the tile: the order of the suite then decides
+      // nothing about what this test sees.
+      const tile = await screen.findByTestId(testId);
+      await waitFor(() => expect(tile).toHaveTextContent(label));
+      await waitFor(() => expect(tile).toHaveTextContent(value));
     }
-    expect(tile).toBeInTheDocument();
   });
 
   it('draws the daily chart', async () => {

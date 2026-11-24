@@ -67,6 +67,17 @@ beforeEach(() => {
   jest.spyOn(window, 'dispatchEvent').mockReturnValue(true);
 });
 
+afterEach(() => {
+  // The captured install offer lives in module state, and the module outlives
+  // the test: a test that leaves the offer behind hands the next test an
+  // install that is already on offer, and the order of the suite then decides
+  // what that test sees. Firing `appinstalled` is what clears it.
+  const listeners = eventListeners['appinstalled'];
+  if (listeners) {
+    for (const listener of listeners) listener();
+  }
+});
+
 import {
   registerServiceWorker,
   captureInstallPrompt,
