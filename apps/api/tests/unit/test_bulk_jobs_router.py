@@ -8,10 +8,12 @@ import os
 import sys
 import types
 from collections.abc import AsyncGenerator
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pandas as pd
 import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
@@ -57,7 +59,7 @@ def _cleanup_mock_modules():
     """Remove any mock modules after each test."""
     yield
     for key in list(sys.modules.keys()):
-        if key == "data.loaders" or key == "data.adapters":
+        if key == "data.adapters":
             if not hasattr(sys.modules[key], "__file__") or sys.modules[key].__file__ is None:
                 # It's our mock module, remove it
                 del sys.modules[key]
@@ -346,14 +348,55 @@ class TestValidateExportConfig:
 # ===========================================================================
 
 
-def _setup_data_loaders_mock(csv_cls=None, excel_cls=None):
-    """Install mock data.loaders module into sys.modules for lazy import."""
-    loaders_mod = types.ModuleType("data.loaders")
-    # Always set both to satisfy `from data.loaders import DataLoaderCsv, DataLoaderExcel`
-    loaders_mod.DataLoaderCsv = csv_cls or MagicMock()
-    loaders_mod.DataLoaderExcel = excel_cls or MagicMock()
-    sys.modules["data.loaders"] = loaders_mod
-    return loaders_mod
+def _csv_loader_mock(
+    records: list[dict[str, Any]] | None = None, load_error: Exception | None = None
+):
+    """A stand-in for `data.csv_loader.DataLoaderCsv`.
+
+    The router reads a CSV through `load_df()` and then `load_format_df()`,
+    and both answer with the same frame - that is the chain the real loader
+    walks, and the unit tests mock what the router actually calls.
+    """
+    frame = pd.DataFrame(records if records is not None else [{"id": "1", "city": "Krakow"}])
+    loader = MagicMock()
+    loader.load_df.return_value = frame
+    loader.load_format_df.return_value = frame
+    if load_error is not None:
+        loader.load_df.side_effect = load_error
+    return MagicMock(return_value=loader)
+
+
+def _excel_loader_mock(
+    records: list[dict[str, Any]] | None = None, load_error: Exception | None = None
+):
+    """A stand-in for `data.excel_loader.ExcelDataLoader`."""
+    frame = pd.DataFrame(records if records is not None else [{"id": "1", "city": "Krakow"}])
+    loader = MagicMock()
+    loader.load_normalized.return_value = frame
+    if load_error is not None:
+        loader.load_normalized.side_effect = load_error
+    return MagicMock(return_value=loader)
+
+
+@contextmanager
+def _patch_loaders(csv_cls=None, excel_cls=None):
+    """Patch the loader classes the router imports, and the cache it writes.
+
+    The router imports `data.csv_loader.DataLoaderCsv` and
+    `data.excel_loader.ExcelDataLoader` - the modules that exist. The old
+    `data.loaders` module never existed, and mocking it is exactly what kept
+    the broken import path green while the runtime raised ImportError.
+    """
+    import data.csv_loader
+    import data.excel_loader
+
+    with (
+        patch.object(data.csv_loader, "DataLoaderCsv", csv_cls or MagicMock()),
+        patch.object(data.excel_loader, "ExcelDataLoader", excel_cls or MagicMock()),
+        patch.object(bulk_jobs, "load_collection", return_value=None),
+        patch.object(bulk_jobs, "save_collection"),
+    ):
+        yield
 
 
 def _setup_data_adapters_mock(get_adapter_fn=None):
@@ -388,12 +431,14 @@ class TestProcessUrlImport:
         db_session.add(job)
         await db_session.flush()
 
-        mock_loader = AsyncMock()
-        mock_loader.load.return_value = [{"id": 1}, {"id": 2}]
-        mock_csv_cls = MagicMock(return_value=mock_loader)
+        mock_csv_cls = _csv_loader_mock(
+            [{"id": "1", "city": "Krakow"}, {"id": "2", "city": "Krakow"}]
+        )
 
-        _setup_data_loaders_mock(csv_cls=mock_csv_cls)
-        await _process_url_import(job, {"file_urls": ["https://example.com/data.csv"]}, db_session)
+        with _patch_loaders(csv_cls=mock_csv_cls):
+            await _process_url_import(
+                job, {"file_urls": ["https://example.com/data.csv"]}, db_session
+            )
 
         assert job.records_total == 2
         assert job.records_processed == 2
@@ -411,16 +456,14 @@ class TestProcessUrlImport:
         db_session.add(job)
         await db_session.flush()
 
-        mock_loader = AsyncMock()
-        mock_loader.load.return_value = [{"id": 1}]
-        mock_excel_cls = MagicMock(return_value=mock_loader)
+        mock_excel_cls = _excel_loader_mock([{"id": "1", "city": "Krakow"}])
 
-        _setup_data_loaders_mock(excel_cls=mock_excel_cls)
-        await _process_url_import(
-            job,
-            {"file_urls": ["https://example.com/data.xlsx"]},
-            db_session,
-        )
+        with _patch_loaders(excel_cls=mock_excel_cls):
+            await _process_url_import(
+                job,
+                {"file_urls": ["https://example.com/data.xlsx"]},
+                db_session,
+            )
 
         assert job.records_total == 1
         assert job.records_processed == 1
@@ -437,16 +480,14 @@ class TestProcessUrlImport:
         db_session.add(job)
         await db_session.flush()
 
-        mock_loader = AsyncMock()
-        mock_loader.load.return_value = [{"id": 1}]
-        mock_excel_cls = MagicMock(return_value=mock_loader)
+        mock_excel_cls = _excel_loader_mock([{"id": "1", "city": "Krakow"}])
 
-        _setup_data_loaders_mock(excel_cls=mock_excel_cls)
-        await _process_url_import(
-            job,
-            {"file_urls": ["https://example.com/data.xls"]},
-            db_session,
-        )
+        with _patch_loaders(excel_cls=mock_excel_cls):
+            await _process_url_import(
+                job,
+                {"file_urls": ["https://example.com/data.xls"]},
+                db_session,
+            )
 
         assert job.records_processed == 1
 
@@ -462,14 +503,17 @@ class TestProcessUrlImport:
         db_session.add(job)
         await db_session.flush()
 
-        _setup_data_loaders_mock()
-        await _process_url_import(
-            job,
-            {"file_urls": ["https://example.com/data.txt"]},
-            db_session,
-        )
+        with _patch_loaders():
+            await _process_url_import(
+                job,
+                {"file_urls": ["https://example.com/data.txt"]},
+                db_session,
+            )
 
-        assert job.records_total == 0
+        # The file type is not one the import reads, so it is counted as a
+        # failed source - never handed to the loaders.
+        assert job.records_processed == 0
+        assert job.records_total == 1
         assert job.records_failed == 1
 
     @pytest.mark.asyncio
@@ -484,18 +528,17 @@ class TestProcessUrlImport:
         db_session.add(job)
         await db_session.flush()
 
-        mock_loader = AsyncMock()
-        mock_loader.load.side_effect = Exception("Download failed")
-        mock_csv_cls = MagicMock(return_value=mock_loader)
+        mock_csv_cls = _csv_loader_mock(load_error=Exception("Download failed"))
 
-        _setup_data_loaders_mock(csv_cls=mock_csv_cls)
-        await _process_url_import(
-            job,
-            {"file_urls": ["https://example.com/data.csv"]},
-            db_session,
-        )
+        with _patch_loaders(csv_cls=mock_csv_cls):
+            await _process_url_import(
+                job,
+                {"file_urls": ["https://example.com/data.csv"]},
+                db_session,
+            )
 
         assert job.records_failed == 1
+        assert job.records_processed == 0
 
     @pytest.mark.asyncio
     async def test_multiple_urls_mixed_results(self, db_session: AsyncSession):
@@ -514,24 +557,22 @@ class TestProcessUrlImport:
         db_session.add(job)
         await db_session.flush()
 
-        mock_loader = AsyncMock()
-        mock_loader.load.return_value = [{"id": 1}]
-        mock_csv_cls = MagicMock(return_value=mock_loader)
+        mock_csv_cls = _csv_loader_mock([{"id": "1", "city": "Krakow"}])
 
-        _setup_data_loaders_mock(csv_cls=mock_csv_cls)
-        await _process_url_import(
-            job,
-            {
-                "file_urls": [
-                    "https://example.com/a.csv",
-                    "https://example.com/b.txt",
-                ]
-            },
-            db_session,
-        )
+        with _patch_loaders(csv_cls=mock_csv_cls):
+            await _process_url_import(
+                job,
+                {
+                    "file_urls": [
+                        "https://example.com/a.csv",
+                        "https://example.com/b.txt",
+                    ]
+                },
+                db_session,
+            )
 
-        assert job.records_total == 1
         assert job.records_processed == 1
+        assert job.records_total == 2
         assert job.records_failed == 1
 
     @pytest.mark.asyncio
@@ -546,17 +587,16 @@ class TestProcessUrlImport:
         db_session.add(job)
         await db_session.flush()
 
-        mock_loader = AsyncMock()
-        mock_loader.load.return_value = [{"id": 1}]
-        mock_csv_cls = MagicMock(return_value=mock_loader)
+        mock_excel_cls = _excel_loader_mock([{"id": "1", "city": "Krakow"}])
 
-        _setup_data_loaders_mock(csv_cls=mock_csv_cls)
-        await _process_url_import(
-            job,
-            {"file_urls": ["https://example.com/data.csv"], "header_row": 2},
-            db_session,
-        )
-        mock_csv_cls.assert_called_once_with("https://example.com/data.csv", header_row=2)
+        with _patch_loaders(excel_cls=mock_excel_cls):
+            await _process_url_import(
+                job,
+                {"file_urls": ["https://example.com/data.xlsx"], "header_row": 2},
+                db_session,
+            )
+
+        assert mock_excel_cls.call_args.kwargs["header_row"] == 2
 
     @pytest.mark.asyncio
     async def test_sheet_name_for_excel(self, db_session: AsyncSession):
@@ -570,23 +610,22 @@ class TestProcessUrlImport:
         db_session.add(job)
         await db_session.flush()
 
-        mock_loader = AsyncMock()
-        mock_loader.load.return_value = [{"id": 1}]
-        mock_excel_cls = MagicMock(return_value=mock_loader)
+        mock_excel_cls = _excel_loader_mock([{"id": "1", "city": "Krakow"}])
 
-        _setup_data_loaders_mock(excel_cls=mock_excel_cls)
-        await _process_url_import(
-            job,
-            {
-                "file_urls": ["https://example.com/data.xlsx"],
-                "sheet_name": "Sheet2",
-                "header_row": 1,
-            },
-            db_session,
-        )
-        mock_excel_cls.assert_called_once_with(
-            "https://example.com/data.xlsx", sheet_name="Sheet2", header_row=1
-        )
+        with _patch_loaders(excel_cls=mock_excel_cls):
+            await _process_url_import(
+                job,
+                {
+                    "file_urls": ["https://example.com/data.xlsx"],
+                    "sheet_name": "Sheet2",
+                    "header_row": 1,
+                },
+                db_session,
+            )
+
+        assert mock_excel_cls.call_args.args == ("https://example.com/data.xlsx",)
+        assert mock_excel_cls.call_args.kwargs["sheet_name"] == "Sheet2"
+        assert mock_excel_cls.call_args.kwargs["header_row"] == 1
 
 
 # ===========================================================================
@@ -609,14 +648,16 @@ class TestProcessFileImport:
         db_session.add(job)
         await db_session.flush()
 
-        await _process_file_import(
-            job,
-            {"temp_file_path": "/tmp/upload.csv", "filename": "upload.csv"},
-            db_session,
-        )
+        with _patch_loaders(csv_cls=_csv_loader_mock([{"id": "1", "city": "Krakow"}])):
+            await _process_file_import(
+                job,
+                {"temp_file_path": "/tmp/upload.csv", "filename": "upload.csv"},
+                db_session,
+            )
 
         assert job.records_total == 1
         assert job.records_processed == 1
+        assert job.records_failed == 0
         assert job.progress_percent == 100.0
 
     @pytest.mark.asyncio
@@ -851,13 +892,10 @@ class TestRunImportJob:
 
         mock_factory = _make_mock_session_factory(actual_db)
 
-        mock_loader = AsyncMock()
-        mock_loader.load.return_value = [{"id": 1}]
-        mock_csv_cls = MagicMock(return_value=mock_loader)
-
-        _setup_data_loaders_mock(csv_cls=mock_csv_cls)
+        mock_csv_cls = _csv_loader_mock([{"id": "1", "city": "Krakow"}])
 
         with (
+            _patch_loaders(csv_cls=mock_csv_cls),
             patch("sqlalchemy.ext.asyncio.create_async_engine", return_value=mock_engine),
             patch("sqlalchemy.ext.asyncio.async_sessionmaker", return_value=mock_factory),
         ):
@@ -969,6 +1007,7 @@ class TestRunImportJob:
         mock_factory = _make_mock_session_factory(actual_db)
 
         with (
+            _patch_loaders(csv_cls=_csv_loader_mock([{"id": "1", "city": "Krakow"}])),
             patch("sqlalchemy.ext.asyncio.create_async_engine", return_value=mock_engine),
             patch("sqlalchemy.ext.asyncio.async_sessionmaker", return_value=mock_factory),
         ):
@@ -1046,9 +1085,8 @@ class TestRunImportJob:
 
         mock_factory = _make_mock_session_factory(actual_db)
 
-        _setup_data_loaders_mock(csv_cls=MagicMock(side_effect=RuntimeError("Crash")))
-
         with (
+            _patch_loaders(csv_cls=MagicMock(side_effect=RuntimeError("Crash"))),
             patch("sqlalchemy.ext.asyncio.create_async_engine", return_value=mock_engine),
             patch("sqlalchemy.ext.asyncio.async_sessionmaker", return_value=mock_factory),
         ):

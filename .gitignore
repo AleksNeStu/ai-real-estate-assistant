@@ -324,6 +324,10 @@ desktop.ini
 # voivodeship is tens of megabytes and the register publishes them weekly.
 apps/api/cache/
 
+# The property cache: the imported properties, written at runtime by the
+# ingest endpoints and the bulk-job import.
+apps/api/.app_cache/
+
 # Assets cache (keep source files, ignore compiled/minified)
 # assets/**/*.min.*
 #
