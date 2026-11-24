@@ -6,11 +6,8 @@ Async import/export job management with background task execution.
 import logging
 import uuid
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
 from typing import Annotated, Any, Optional
-from urllib.parse import urlparse
 
-import pandas as pd
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,11 +25,16 @@ from api.models import (
 )
 from config.settings import get_settings
 from core.security_utils import sanitize_for_log
-from data.schemas import Property, PropertyCollection
+from data.schemas import Property
 from db.database import create_engine, get_db
 from db.models import BulkJob
+from services.property_import import (
+    EXCEL_SUFFIXES,
+    load_properties,
+    save_imported_properties,
+    source_suffix,
+)
 from utils.exporters import ExportFormat, PropertyExporter
-from utils.property_cache import load_collection, save_collection
 
 logger = logging.getLogger(__name__)
 
@@ -40,13 +42,6 @@ router = APIRouter(prefix="/bulk-jobs", tags=["Bulk Jobs"])
 
 # Job result expiration time in hours
 JOB_RESULT_EXPIRATION_HOURS = 24
-
-# The spreadsheet formats the loaders read.
-EXCEL_SUFFIXES = {".xlsx", ".xls", ".ods"}
-
-# The formats an import accepts. Anything else is counted as a failed source
-# instead of being handed to the loaders.
-SUPPORTED_SUFFIXES = EXCEL_SUFFIXES | {".csv"}
 
 
 def _job_to_response(job: BulkJob) -> BulkJobResponse:
@@ -151,110 +146,6 @@ async def _run_import_job(job_id: str, db_url: str) -> None:
             await engine.dispose()
 
 
-def _source_suffix(source: str) -> str:
-    """The file suffix of a path or an http(s) URL, lowercased."""
-    parsed = urlparse(str(source))
-    path = parsed.path if parsed.scheme and parsed.netloc else str(source)
-    return Path(path).suffix.lower()
-
-
-def _is_missing(value: Any) -> bool:
-    """True when a record carries no value for a field (absent, None or NaN)."""
-    if value is None:
-        return True
-    if isinstance(value, float):
-        return bool(pd.isna(value))
-    return False
-
-
-def _load_properties(
-    source: str,
-    *,
-    sheet_name: Optional[str] = None,
-    header_row: int = 0,
-    max_rows: Optional[int] = None,
-    source_name: Optional[str] = None,
-    source_type: Optional[str] = None,
-) -> tuple[list[Property], list[str]]:
-    """Read a CSV or Excel file (a path or an http(s) URL) into properties.
-
-    This is the chain the admin upload endpoint uses: the loader reads the
-    sheet, the shared normalization formats it, and every record becomes a
-    Property. The bulk-job path used to import a module that does not exist
-    (``data.loaders``) and to call the loaders with keyword arguments they do
-    not accept, so the route raised ImportError the moment a job ran.
-
-    Returns the properties that were read and the records that were skipped.
-    """
-    from data.csv_loader import DataLoaderCsv
-    from data.excel_loader import ExcelDataLoader
-
-    suffix = _source_suffix(source)
-    if suffix not in SUPPORTED_SUFFIXES:
-        raise ValueError(
-            f"unsupported file type '{suffix}' - the import reads {sorted(SUPPORTED_SUFFIXES)}"
-        )
-
-    if suffix in EXCEL_SUFFIXES:
-        loader = ExcelDataLoader(
-            source,
-            sheet_name=sheet_name,
-            header_row=header_row,
-            max_rows=max_rows,
-        )
-        df = loader.load_normalized()
-    else:
-        csv_loader = DataLoaderCsv(source)
-        df = csv_loader.load_format_df(csv_loader.load_df(), rows_count=max_rows)
-
-    properties: list[Property] = []
-    errors: list[str] = []
-    for record in df.to_dict(orient="records"):
-        try:
-            if _is_missing(record.get("source_url")):
-                record["source_url"] = source_name
-            if _is_missing(record.get("source_platform")):
-                record["source_platform"] = source_type
-            properties.append(Property(**record))
-        except Exception as e:
-            record_id = record.get("id", record.get("title", "unknown"))
-            logger.warning(
-                "Skipped invalid property record during bulk import",
-                extra={
-                    "record_id": str(record_id)[:50],
-                    "error_type": type(e).__name__,
-                    "error": str(e)[:200],
-                },
-            )
-            errors.append(f"Record {record_id}: {type(e).__name__}")
-
-    return properties, errors
-
-
-def _save_imported_properties(
-    properties: list[Property],
-    source_name: Optional[str],
-    source_type: Optional[str],
-) -> None:
-    """Add the imported properties to the cached collection.
-
-    The cache is what the product reads and what ``/admin/reindex`` re-indexes
-    into the vector store, so an import that did not write here would load
-    rows the product never shows.
-    """
-    existing = load_collection()
-    merged = list(existing.properties) if existing else []
-    merged.extend(properties)
-    save_collection(
-        PropertyCollection(
-            properties=merged,
-            total_count=len(merged),
-            source=source_name,
-            source_type=source_type,
-        )
-    )
-
-
 async def _process_url_import(job: BulkJob, config: dict[str, Any], db: AsyncSession) -> None:
     """Process import from URL sources (CSV, Excel)."""
     file_urls = config.get("file_urls", [])
@@ -271,7 +162,7 @@ async def _process_url_import(job: BulkJob, config: dict[str, Any], db: AsyncSes
 
     for url in file_urls:
         try:
-            properties, errors = _load_properties(
+            properties, errors = load_properties(
                 url,
                 sheet_name=sheet_name,
                 header_row=header_row,
@@ -294,7 +185,7 @@ async def _process_url_import(job: BulkJob, config: dict[str, Any], db: AsyncSes
         await db.commit()
 
     if imported:
-        _save_imported_properties(imported, source_name, "url")
+        save_imported_properties(imported, source_name, "url")
 
     job.records_total = len(imported) + failed_records
     job.records_processed = len(imported)
@@ -312,10 +203,10 @@ async def _process_file_import(job: BulkJob, config: dict[str, Any], db: AsyncSe
         raise ValueError("temp_file_path is required for file_upload source")
 
     source_name = config.get("source_name") or filename
-    suffix = _source_suffix(temp_file_path)
+    suffix = source_suffix(temp_file_path)
     source_type = "excel" if suffix in EXCEL_SUFFIXES else "csv"
 
-    properties, errors = _load_properties(
+    properties, errors = load_properties(
         temp_file_path,
         sheet_name=config.get("sheet_name"),
         header_row=config.get("header_row") or 0,
@@ -329,7 +220,7 @@ async def _process_file_import(job: BulkJob, config: dict[str, Any], db: AsyncSe
             f"no valid properties could be read from {filename or temp_file_path}",
         )
 
-    _save_imported_properties(properties, source_name, source_type)
+    save_imported_properties(properties, source_name, source_type)
 
     job.records_total = len(properties) + len(errors)
     job.records_processed = len(properties)

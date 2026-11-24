@@ -4,8 +4,10 @@ CRUD operations for managing property data sources with sync tracking.
 """
 
 import logging
+import tempfile
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -22,9 +24,18 @@ from api.models import (
     DataSourceUpdate,
     SyncHistoryResponse,
 )
+from config.settings import settings
 from core.security_utils import sanitize_for_log
-from db.database import get_db
+from data.schemas import Property
+from db.database import get_database_url, get_db
 from db.models import DataSourceDB, DataSourceSyncHistory
+from services.property_import import (
+    SUPPORTED_SUFFIXES,
+    load_properties,
+    properties_from_records,
+    save_imported_properties,
+    source_suffix,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -258,54 +269,84 @@ async def sync_data_source(
     ds.updated_at = datetime.now(timezone.utc)
     await db.flush()
 
-    # Trigger background sync via asyncio
+    # The sync runs in a session of its own: the request that triggered it is
+    # over by the time the work starts, and a record written on a closed
+    # session is a record nobody can read. Its own session reads the rows the
+    # request wrote, so they are committed before it starts.
+    await db.commit()
+    db_url = get_database_url()
+
     import asyncio
 
+    asyncio.create_task(_run_sync(source_id, sync_record.id, db_url))
+
+    logger.info("Triggered sync for data source %s", sanitize_for_log(source_id))
+
+    return DataSourceSyncResponse(
+        source_id=source_id,
+        status="syncing",
+        message="Sync triggered successfully",
+        records_processed=0,
+        started_at=sync_record.started_at,
+    )
+
+
+async def _run_sync(source_id: str, sync_id: str, db_url: str) -> None:
+    """Sync a data source into the catalogue.
+
+    The properties the source carries are written to the vector store (the
+    place the product reads from) and to the JSON cache (the place
+    ``/admin/reindex`` reads from), and ``total_records`` counts the records
+    that landed - not the records that were read.
+    """
+    from sqlalchemy.ext.asyncio import async_sessionmaker
+
     from api.dependencies import get_vector_store
+    from db.database import create_engine
 
-    async def _run_sync(
-        source_id: str,
-        ds: DataSourceDB,
-        sync_record: DataSourceSyncHistory,
-        db_session: AsyncSession,
-    ) -> None:
-        """Background task to sync data from a source into the vector store."""
+    engine = create_engine(db_url)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async with session_factory() as session:
+        source_result = await session.execute(
+            select(DataSourceDB).where(DataSourceDB.id == source_id)
+        )
+        ds = source_result.scalar_one_or_none()
+        record_result = await session.execute(
+            select(DataSourceSyncHistory).where(DataSourceSyncHistory.id == sync_id)
+        )
+        sync_record = record_result.scalar_one_or_none()
+
+        if ds is None or sync_record is None:
+            logger.error(
+                "Sync %s has no data source to run against",
+                sanitize_for_log(sync_id),
+            )
+            await engine.dispose()
+            return
+
         try:
-            get_vector_store()  # Ensure store is initialized
-            source_type = ds.source_type
-            records = 0
+            properties = await _collect_properties(ds)
 
-            if source_type == "url":
-                import httpx
+            store = get_vector_store()
+            if store is None:
+                raise RuntimeError("the vector store is unavailable")
 
-                url = ds.config.get("url", "")
-                async with httpx.AsyncClient(timeout=30.0) as client:
-                    resp = await client.get(url)
-                    resp.raise_for_status()
-                    # Count records based on content length as a proxy
-                    content = resp.text
-                    records = content.count("\n") if content else 0
-
-            elif source_type == "json":
-                data = ds.config.get("data")
-                if isinstance(data, list):
-                    records = len(data)
-                elif isinstance(data, dict):
-                    records = 1
-
-            elif source_type == "file_upload":
-                records = ds.config.get("record_count", 0)
+            landed = 0
+            if properties:
+                landed = int(store.add_properties(properties))
+                save_imported_properties(properties, ds.name, ds.source_type)
 
             # Update sync history as completed
             sync_record.status = "success"
             sync_record.completed_at = datetime.now(timezone.utc)
-            sync_record.records_processed = records
+            sync_record.records_processed = landed
             ds.status = "active"
             ds.last_sync_at = datetime.now(timezone.utc)
             ds.last_sync_status = "success"
             ds.health_score = _recalculate_health_score(ds)
             ds.consecutive_failures = 0
-            ds.total_records = (ds.total_records or 0) + records
+            ds.total_records = (ds.total_records or 0) + landed
 
         except Exception as e:
             logger.error(
@@ -324,19 +365,141 @@ async def sync_data_source(
 
         finally:
             ds.updated_at = datetime.now(timezone.utc)
-            await db_session.commit()
+            await session.commit()
+            await engine.dispose()
 
-    asyncio.create_task(_run_sync(source_id, ds, sync_record, db))
 
-    logger.info("Triggered sync for data source %s", sanitize_for_log(source_id))
+async def _collect_properties(ds: DataSourceDB) -> list[Property]:
+    """Read the source into properties, through the shared import chain.
 
-    return DataSourceSyncResponse(
-        source_id=source_id,
-        status="syncing",
-        message="Sync triggered successfully",
-        records_processed=0,
-        started_at=sync_record.started_at,
+    Every source type reads the same way the bulk-job import reads: the
+    loaders for a file, the records for a JSON document or a portal answer.
+    """
+    source_type = ds.source_type
+    config = ds.config or {}
+
+    if source_type == "file_upload":
+        path = config.get("file_path") or config.get("filename")
+        if not path:
+            raise ValueError("a file_upload source needs 'file_path' in its config")
+        properties, _errors = load_properties(
+            str(path),
+            sheet_name=config.get("sheet_name"),
+            header_row=int(config.get("header_row") or 0),
+            max_rows=settings.max_properties,
+            source_name=ds.name,
+            source_type="file_upload",
+        )
+        return properties
+
+    if source_type == "url":
+        url = str(config.get("url") or "")
+        if not url:
+            raise ValueError("a url source needs 'url' in its config")
+        _validate_url_no_ssrf(url)
+        suffix = source_suffix(url)
+        if suffix == ".json":
+            payload = await _fetch_url_json(url)
+            return properties_from_records(
+                _records_from_payload(payload),
+                source_name=ds.name,
+                source_type="url",
+            )[0]
+        if suffix not in SUPPORTED_SUFFIXES:
+            raise ValueError(
+                f"unsupported file type '{suffix}' - a url source reads "
+                f"{sorted(SUPPORTED_SUFFIXES)} or .json"
+            )
+        return await _load_url_file(url, suffix, ds)
+
+    if source_type == "json":
+        payload = config.get("data")
+        if payload is None and config.get("url"):
+            payload = await _fetch_url_json(str(config["url"]))
+        if payload is None:
+            raise ValueError("a json source needs 'data' or 'url' in its config")
+        return properties_from_records(
+            _records_from_payload(payload),
+            source_name=ds.name,
+            source_type="json",
+        )[0]
+
+    if source_type == "portal_api":
+        return _collect_portal_properties(ds, config)
+
+    raise ValueError(f"unsupported source type '{source_type}'")
+
+
+async def _load_url_file(url: str, suffix: str, ds: DataSourceDB) -> list[Property]:
+    """Download a file and read it through the loaders."""
+    import httpx
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.get(url)
+        response.raise_for_status()
+        payload = response.content
+
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+        tmp.write(payload)
+        tmp_path = tmp.name
+
+    try:
+        properties, _errors = load_properties(
+            tmp_path,
+            max_rows=settings.max_properties,
+            source_name=ds.name,
+            source_type="url",
+        )
+        return properties
+    finally:
+        Path(tmp_path).unlink(missing_ok=True)
+
+
+async def _fetch_url_json(url: str) -> Any:
+    """Read a JSON document from a URL."""
+    import httpx
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.get(url)
+        response.raise_for_status()
+        return response.json()
+
+
+def _records_from_payload(payload: Any) -> list[dict[str, Any]]:
+    """A JSON document is either a list of records or one record."""
+    if isinstance(payload, list):
+        return [record for record in payload if isinstance(record, dict)]
+    if isinstance(payload, dict):
+        return [payload]
+    raise ValueError("a json source must carry a record or a list of records")
+
+
+def _collect_portal_properties(ds: DataSourceDB, config: dict[str, Any]) -> list[Property]:
+    """Read a portal answer into properties, through the shared adapter."""
+    from data.adapters import get_adapter
+    from data.adapters.base import PortalFilter
+
+    portal = config.get("portal")
+    if not portal:
+        raise ValueError("a portal_api source needs 'portal' in its config")
+
+    adapter = get_adapter(portal)
+    if adapter is None:
+        raise ValueError(f"unknown portal: {portal}")
+
+    filters = config.get("filters") or {}
+    result = adapter.fetch(
+        PortalFilter(
+            city=config.get("city"),
+            listing_type=filters.get("listing_type", "rent"),
+            limit=config.get("limit", 50),
+        )
     )
+    return properties_from_records(
+        [record for record in result.properties if isinstance(record, dict)],
+        source_name=ds.name,
+        source_type="portal_api",
+    )[0]
 
 
 @router.post("/test", response_model=DataSourceTestResponse)

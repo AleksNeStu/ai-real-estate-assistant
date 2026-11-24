@@ -389,12 +389,13 @@ def _patch_loaders(csv_cls=None, excel_cls=None):
     """
     import data.csv_loader
     import data.excel_loader
+    from services import property_import
 
     with (
         patch.object(data.csv_loader, "DataLoaderCsv", csv_cls or MagicMock()),
         patch.object(data.excel_loader, "ExcelDataLoader", excel_cls or MagicMock()),
-        patch.object(bulk_jobs, "load_collection", return_value=None),
-        patch.object(bulk_jobs, "save_collection"),
+        patch.object(property_import, "load_collection", return_value=None),
+        patch.object(property_import, "save_collection"),
     ):
         yield
 
