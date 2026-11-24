@@ -54,6 +54,7 @@ def _datasource_to_response(ds: DataSourceDB) -> DataSourceResponse:
         last_sync_status=ds.last_sync_status,
         last_error=ds.last_error,
         total_records=ds.total_records,
+        last_records_synced=ds.last_records_synced,
         health_score=ds.health_score,
         consecutive_failures=ds.consecutive_failures,
         auto_sync_enabled=ds.auto_sync_enabled,
@@ -327,15 +328,17 @@ async def _run_sync(source_id: str, sync_id: str, db_url: str) -> None:
 
         try:
             properties = await _collect_properties(ds)
+            if not properties:
+                raise ValueError("no valid properties could be read from the source")
 
             store = get_vector_store()
             if store is None:
                 raise RuntimeError("the vector store is unavailable")
 
-            landed = 0
-            if properties:
-                landed = int(store.add_properties(properties))
-                save_imported_properties(properties, ds.name, ds.source_type)
+            # The vector store is what the product reads, so it is written
+            # first; the cache is what a later reindex reads.
+            landed = int(store.add_properties(properties))
+            save_imported_properties(properties, ds.name, ds.source_type)
 
             # Update sync history as completed
             sync_record.status = "success"
@@ -347,6 +350,7 @@ async def _run_sync(source_id: str, sync_id: str, db_url: str) -> None:
             ds.health_score = _recalculate_health_score(ds)
             ds.consecutive_failures = 0
             ds.total_records = (ds.total_records or 0) + landed
+            ds.last_records_synced = landed
 
         except Exception as e:
             logger.error(
@@ -620,12 +624,12 @@ def _validate_config(source_type: str, config: dict[str, Any]) -> None:
             raise ValueError("JSON source requires 'data' or 'url' in config")
 
     elif source_type == "file_upload":
-        if "filename" not in config:
+        if "filename" not in config and "file_path" not in config:
             raise ValueError("File upload source requires 'filename' in config")
         # Validate Excel file extensions
         from pathlib import Path
 
-        filename = config["filename"]
+        filename = config.get("filename") or config.get("file_path", "")
         suffix = Path(filename).suffix.lower()
         excel_extensions = {".xlsx", ".xls", ".ods"}
         if suffix in excel_extensions and "record_count" not in config:

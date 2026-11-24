@@ -2089,7 +2089,7 @@ class DataSourceDB(Base):
     source_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
 
     # Source configuration (JSON)
-    # For file_upload: {"filename": "...", "size_bytes": ..., "sheet_name": "..."}
+    # For file_upload: {"filename": "...", "file_path": "...", "size_bytes": ..., "sheet_name": "..."}
     # For url: {"url": "...", "sheet_name": "...", "header_row": 0}
     # For portal_api: {"portal": "otodom", "city": "Warsaw", "filters": {...}}
     config: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
