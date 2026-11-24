@@ -1489,3 +1489,28 @@ async def test_update_preserves_unmodified_fields(
     assert body["name"] == "Only Name Changed"
     assert body["source_type"] == original["source_type"]
     assert body["config"] == original["config"]
+
+
+# ---------------------------------------------------------------------------
+# The suffix a downloaded document is read under
+# ---------------------------------------------------------------------------
+
+
+def test_the_url_suffix_wins_over_the_content_type() -> None:
+    """A url that ends in .csv is a csv document, whatever the server says."""
+    assert (
+        data_sources._suffix_for("https://example.com/listings.csv", "application/json") == ".csv"
+    )
+
+
+def test_the_content_type_answers_when_the_url_says_nothing() -> None:
+    """A url without a suffix is read under the format the server names."""
+    assert data_sources._suffix_for("https://example.com/listings", "text/csv") == ".csv"
+    assert data_sources._suffix_for("https://example.com/listings", "application/json") == ".json"
+
+
+def test_a_content_type_that_names_no_format_says_nothing() -> None:
+    """A guess would hand an .xls to the loader under the suffix of another format."""
+    assert data_sources._format_suffix("application/vnd.ms-excel") == ".xls"
+    assert data_sources._format_suffix("application/octet-stream") == ""
+    assert data_sources._format_suffix("text/plain; charset=utf-8") == ""

@@ -133,11 +133,35 @@ def save_imported_properties(
     into the vector store, so an import that did not write here would load
     rows the product never shows.
 
-    Returns the number of properties that landed.
+    The collection is a set of listings, not a log of imports: a listing that
+    is already in it - one that carries an id - is left as it is, and the
+    one that came in is not added beside it. The vector store holds the same
+    rule (it skips an id it already has), so the cache and the store carry
+    the same listings with the same data; a cache that replaced a listing the
+    store kept would make a reindex show something the product never showed.
+    A listing without an id cannot be recognised, so it is added beside the
+    others.
+
+    The catalogue is keyed by id, the way the vector store is: a listing of
+    another source that carries the same id is the same listing of the
+    catalogue, and the one that was there first stays.
+
+    Returns the number of properties that were added to the collection - the
+    ones the collection did not hold yet.
     """
     existing = load_collection()
     merged = list(existing.properties) if existing else []
-    merged.extend(properties)
+
+    known = {p.id for p in merged if p.id}
+    added: list[Property] = []
+    for prop in properties:
+        if prop.id and prop.id in known:
+            continue
+        if prop.id:
+            known.add(prop.id)
+        added.append(prop)
+    merged.extend(added)
+
     save_collection(
         PropertyCollection(
             properties=merged,
@@ -146,4 +170,4 @@ def save_imported_properties(
             source_type=source_type,
         )
     )
-    return len(properties)
+    return len(added)

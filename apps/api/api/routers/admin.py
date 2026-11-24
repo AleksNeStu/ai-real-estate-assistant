@@ -62,7 +62,6 @@ async def _invalidate_response_cache(request: Request) -> None:
 
 # File upload constants
 _READ_CHUNK_BYTES = 1024 * 1024  # 1MB chunks
-_MAX_UPLOAD_FILE_BYTES = 25 * 1024 * 1024  # 25MB max file size
 
 
 async def _read_upload_file_limited(file: UploadFile, max_bytes: int) -> tuple[bytes, bool]:
@@ -282,11 +281,11 @@ async def get_excel_sheets_upload(
         )
 
     # Read file with size limit
-    data, too_large = await _read_upload_file_limited(file, _MAX_UPLOAD_FILE_BYTES)
+    data, too_large = await _read_upload_file_limited(file, settings.max_upload_bytes)
     if too_large:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"File too large (max {_MAX_UPLOAD_FILE_BYTES} bytes)",
+            detail=f"File too large (max {settings.max_upload_bytes} bytes)",
         )
 
     # Save to temp file for processing
@@ -366,11 +365,11 @@ async def ingest_file_upload(
         )
 
     # Read file with size limit
-    data, too_large = await _read_upload_file_limited(file, _MAX_UPLOAD_FILE_BYTES)
+    data, too_large = await _read_upload_file_limited(file, settings.max_upload_bytes)
     if too_large:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"File too large (max {_MAX_UPLOAD_FILE_BYTES} bytes)",
+            detail=f"File too large (max {settings.max_upload_bytes} bytes)",
         )
 
     # Save to temp file for processing

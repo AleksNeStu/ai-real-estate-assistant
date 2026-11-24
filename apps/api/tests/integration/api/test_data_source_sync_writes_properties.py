@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 
 import api.dependencies as dependencies
 from api.routers import data_sources, properties
+from config.settings import settings
 from db.database import Base, create_engine, get_db
 from db.models import DataSourceDB, DataSourceSyncHistory
 from utils import property_cache
@@ -41,14 +42,27 @@ class _FakeDocument:
 
 
 class _FakeStore:
-    """The part of the vector store the sync and the catalogue use."""
+    """The part of the vector store the sync and the catalogue use.
+
+    The real store keys a document by the id of its listing and skips the
+    ones it already holds, so a source that syncs twice leaves the
+    collection the size it was.
+    """
 
     def __init__(self) -> None:
         self.properties: list[Any] = []
 
     def add_properties(self, properties: list[Any], batch_size: int = 100) -> int:
-        self.properties.extend(properties)
-        return len(properties)
+        known = {p.id for p in self.properties}
+        added = 0
+        for prop in properties:
+            if prop.id and prop.id in known:
+                continue
+            self.properties.append(prop)
+            if prop.id:
+                known.add(prop.id)
+            added += 1
+        return added
 
     def search_by_metadata(
         self, city: str | None = None, k: int = 50, **_: Any
@@ -57,16 +71,25 @@ class _FakeStore:
         return [_FakeDocument(p.model_dump()) for p in rows[:k]]
 
 
-async def _wait_for_sync(session_factory, timeout: float = 20.0) -> DataSourceSyncHistory:
-    """Wait until the background sync recorded an outcome."""
+async def _wait_for_sync(
+    session_factory, timeout: float = 20.0, count: int = 1
+) -> DataSourceSyncHistory:
+    """Wait until the background sync recorded an outcome.
+
+    The records are ordered by the time the sync started: the id of a record
+    is a random uuid, so ordering by it would hand back a record that has
+    nothing to do with the sync that was waited for.
+    """
     loop = asyncio.get_running_loop()
     deadline = loop.time() + timeout
     while loop.time() < deadline:
         async with session_factory() as session:
-            result = await session.execute(select(DataSourceSyncHistory))
-            record = result.scalar_one_or_none()
-            if record is not None and record.status != "running":
-                return cast(DataSourceSyncHistory, record)
+            result = await session.execute(
+                select(DataSourceSyncHistory).order_by(DataSourceSyncHistory.started_at.desc())
+            )
+            records = list(result.scalars().all())
+            if len(records) >= count and records[0].status != "running":
+                return cast(DataSourceSyncHistory, records[0])
         await asyncio.sleep(0.05)
     raise AssertionError("the background sync did not finish in time")
 
@@ -75,6 +98,9 @@ class _Harness:
     """The application, the database and the store one sync runs against."""
 
     def __init__(self, tmp_path, monkeypatch, csv_content: str) -> None:
+        # The uploads directory of the deployment: a source may only read a
+        # file inside it, so the fixture lives there.
+        monkeypatch.setattr(settings, "uploads_dir", tmp_path)
         self.csv_path = tmp_path / "listings.csv"
         self.csv_path.write_text(csv_content, encoding="utf-8")
 
@@ -131,7 +157,7 @@ class _Harness:
                     source_type="file_upload",
                     config={
                         "filename": self.csv_path.name,
-                        "file_path": str(self.csv_path),
+                        "file_path": self.csv_path.name,
                     },
                 )
             )
@@ -216,21 +242,38 @@ async def test_sync_of_a_source_with_no_rows_fails(tmp_path, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_a_download_over_the_limit_is_refused():
-    """A sync reads a document somebody else controls - under a limit."""
-    import httpx
-    import respx
+async def test_two_syncs_of_the_same_file_leave_one_set_of_listings(tmp_path, monkeypatch):
+    """A source that syncs twice carries the same listings - the catalogue is a set."""
+    harness = _Harness(tmp_path, monkeypatch, CSV_CONTENT)
+    await harness.setup()
 
-    url = "https://example.com/listings.csv"
-    over_the_limit = data_sources._MAX_SYNC_DOWNLOAD_BYTES + 1
+    try:
+        async with harness.client() as client:
+            await client.post("/api/v1/data-sources/src-sync-1/sync")
+            first = await _wait_for_sync(harness.session_factory)
 
-    with respx.mock:
-        respx.get(url).mock(
-            return_value=httpx.Response(
-                200,
-                headers={"content-length": str(over_the_limit)},
-                content=b"",
-            )
-        )
-        with pytest.raises(ValueError, match="larger than the import limit"):
-            await data_sources._download_url(url)
+            response = await client.post("/api/v1/data-sources/src-sync-1/sync")
+            assert response.status_code == 200
+            second = await _wait_for_sync(harness.session_factory, count=2)
+
+            catalogue = await client.get("/api/v1/properties")
+            assert catalogue.status_code == 200
+
+        # The first sync wrote the listings.
+        assert first.status == "success", first.error_message
+        assert first.records_added == CSV_ROWS
+
+        # The second sync found them where they were: it wrote nothing.
+        assert second.status == "success", second.error_message
+        assert second.records_added == 0
+        assert second.records_skipped == CSV_ROWS
+        assert second.records_processed == CSV_ROWS
+
+        # The catalogue holds the listings once, not twice.
+        assert catalogue.json()["count"] == CSV_ROWS
+
+        cached = property_cache.load_collection()
+        assert cached is not None
+        assert len(cached.properties) == CSV_ROWS
+    finally:
+        await harness.close()

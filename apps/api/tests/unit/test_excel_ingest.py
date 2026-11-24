@@ -148,6 +148,8 @@ class TestFileUploadEndpoint:
 
         mock_get_settings.return_value = MagicMock(api_access_key="test-key")
         mock_settings.max_properties = 1000
+        # The upload limit is a setting like the others: the mock carries it.
+        mock_settings.max_upload_bytes = 25 * 1024 * 1024
 
         # Create test Excel file
         p = tmp_path / "test.xlsx"
@@ -197,6 +199,8 @@ class TestFileUploadEndpoint:
 
         mock_get_settings.return_value = MagicMock(api_access_key="test-key")
         mock_settings.max_properties = 1000
+        # The upload limit is a setting like the others: the mock carries it.
+        mock_settings.max_upload_bytes = 25 * 1024 * 1024
 
         p = tmp_path / "test.csv"
         df = pd.DataFrame(

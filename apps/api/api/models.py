@@ -1113,7 +1113,8 @@ class DataSourceCreate(BaseModel):
     config: Dict[str, Any] = Field(
         ...,
         description=(
-            "Source configuration. For file_upload: {filename, size_bytes}. "
+            "Source configuration. For file_upload: {filename, size_bytes, file_path?} "
+            "- a file_path names a file of the uploads directory of the deployment. "
             "For url: {url, sheet_name?, header_row?}. "
             "For portal_api: {portal, city, filters?}"
         ),

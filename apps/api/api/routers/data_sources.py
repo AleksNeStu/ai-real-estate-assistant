@@ -5,8 +5,10 @@ CRUD operations for managing property data sources with sync tracking.
 
 import asyncio
 import logging
+import os
 import tempfile
 import uuid
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Annotated, Any, Optional
@@ -42,8 +44,9 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/data-sources", tags=["Data Sources"])
 
-# The size limit a sync downloads under - the same limit the upload carries.
-_MAX_SYNC_DOWNLOAD_BYTES = 25 * 1024 * 1024
+# The time a whole download may take - the httpx timeout is per read, so a
+# server that sends a byte at a time would keep the sync open forever.
+_MAX_SYNC_DOWNLOAD_SECONDS = 60
 
 
 def _datasource_to_response(ds: DataSourceDB) -> DataSourceResponse:
@@ -299,8 +302,9 @@ async def _run_sync(source_id: str, sync_id: str, db_url: str) -> None:
 
     The properties the source carries are written to the vector store (the
     place the product reads from) and to the JSON cache (the place
-    ``/admin/reindex`` reads from), and ``total_records`` counts the records
-    that landed - not the records that were read.
+    ``/admin/reindex`` reads from), and ``total_records`` counts the
+    listings the source carries - not the records that were read, and not a
+    running total of the syncs.
     """
     from sqlalchemy.ext.asyncio import async_sessionmaker
 
@@ -339,20 +343,33 @@ async def _run_sync(source_id: str, sync_id: str, db_url: str) -> None:
 
             # The vector store is what the product reads, so it is written
             # first; the cache is what a later reindex reads.
-            landed = int(store.add_properties(properties))
+            added = store.add_properties(properties)
             save_imported_properties(properties, ds.name, ds.source_type)
+
+            # The count is the number of listings the source carries, not a
+            # running total of the syncs: the catalogue is a set of listings,
+            # so a source that syncs twice still carries the same listings.
+            # A listing the catalogue already held under the same id is that
+            # same listing - it is not written twice and it is not counted
+            # twice either.
+            carried = len(properties)
 
             # Update sync history as completed
             sync_record.status = "success"
             sync_record.completed_at = datetime.now(timezone.utc)
-            sync_record.records_processed = landed
+            sync_record.records_processed = carried
+            # The catalogue holds a listing it already has, so a second sync
+            # of the same source adds nothing new - the listings are there,
+            # they were not written twice.
+            sync_record.records_added = added
+            sync_record.records_skipped = carried - added
             ds.status = "active"
             ds.last_sync_at = datetime.now(timezone.utc)
             ds.last_sync_status = "success"
             ds.health_score = _recalculate_health_score(ds)
             ds.consecutive_failures = 0
-            ds.total_records = (ds.total_records or 0) + landed
-            ds.last_records_synced = landed
+            ds.total_records = carried
+            ds.last_records_synced = carried
 
         except Exception as e:
             logger.error(
@@ -388,17 +405,16 @@ async def _collect_properties(ds: DataSourceDB) -> list[Property]:
         path = config.get("file_path") or config.get("filename")
         if not path:
             raise ValueError("a file_upload source needs 'file_path' in its config")
-        source_path = Path(str(path))
-        if not source_path.is_file():
-            raise ValueError(f"the file of the source is not there: {source_path.name}")
-        properties, _errors = load_properties(
-            str(source_path),
-            sheet_name=config.get("sheet_name"),
-            header_row=int(config.get("header_row") or 0),
-            max_rows=settings.max_properties,
-            source_name=ds.name,
-            source_type="file_upload",
-        )
+        source_path = _resolve_source_file(str(path))
+        with _read_source_file(source_path) as readable:
+            properties, _errors = load_properties(
+                readable,
+                sheet_name=config.get("sheet_name"),
+                header_row=int(config.get("header_row") or 0),
+                max_rows=settings.max_properties,
+                source_name=ds.name,
+                source_type="file_upload",
+            )
         return properties
 
     if source_type == "url":
@@ -407,7 +423,7 @@ async def _collect_properties(ds: DataSourceDB) -> list[Property]:
             raise ValueError("a url source needs 'url' in its config")
         _validate_url_no_ssrf(url)
         payload, content_type = await _download_url(url)
-        suffix = _format_suffix(content_type) or source_suffix(url)
+        suffix = _suffix_for(url, content_type)
         if suffix == ".json":
             return properties_from_records(
                 _records_from_payload(_parse_json(payload)),
@@ -442,6 +458,76 @@ async def _collect_properties(ds: DataSourceDB) -> list[Property]:
     raise ValueError(f"unsupported source type '{source_type}'")
 
 
+def _resolve_source_file(path: str) -> Path:
+    """The file of a source - inside the directory the uploads live in.
+
+    The config of a source is written by an operator, but the path in it
+    names a file of the machine. A source may only read a file of the
+    uploads directory: without that, the config is a way to ask the
+    deployment whether a file is there, and to read one that is not.
+
+    The directory is resolved against the working directory of the process,
+    which is where the other upload paths of the application live
+    (``uploads/avatars``, ``uploads/documents``). The boundary it draws is
+    the boundary of the deployment: a source that names a file outside it
+    has to be moved into it.
+    """
+    root = Path(settings.uploads_dir).expanduser().resolve()
+    candidate = Path(path).expanduser()
+    if not candidate.is_absolute():
+        candidate = root / candidate
+    resolved = candidate.resolve()
+    if not resolved.is_relative_to(root):
+        raise ValueError(
+            "the file of the source is outside the uploads directory - "
+            "put it in the uploads directory of the deployment"
+        )
+    if not resolved.is_file():
+        raise ValueError(f"the file of the source is not there: {resolved.name}")
+    return resolved
+
+
+@contextmanager
+def _read_source_file(path: Path):
+    """The file of a source, read through a handle that cannot be swapped.
+
+    The path was checked against the uploads directory a moment ago; a file
+    that is replaced by a symlink between the check and the read would point
+    somewhere else. The file is therefore opened without following a symlink
+    and read through that handle, and the loader reads a copy of it.
+
+    The copy is bounded by the same limit a download is bounded by: one
+    limit for every document that enters the catalogue.
+    """
+    limit = settings.max_upload_bytes
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        handle = os.open(str(path), flags)
+    except OSError as e:
+        raise ValueError(f"the file of the source could not be read: {path.name}") from e
+
+    try:
+        with os.fdopen(handle, "rb") as source:
+            payload = source.read(limit + 1)
+    except OSError as e:
+        raise ValueError(f"the file of the source could not be read: {path.name}") from e
+
+    if len(payload) > limit:
+        raise ValueError(f"the document is larger than the import limit ({limit} bytes)")
+
+    tmp_path: str | None = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=path.suffix, delete=False) as tmp:
+            tmp_path = tmp.name
+            tmp.write(payload)
+        yield tmp_path
+    finally:
+        # The copy does not outlive the read - not even when the write of the
+        # copy itself failed.
+        if tmp_path:
+            Path(tmp_path).unlink(missing_ok=True)
+
+
 def _load_downloaded_file(payload: bytes, suffix: str, ds: DataSourceDB) -> list[Property]:
     """Read a downloaded document through the loaders."""
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
@@ -470,45 +556,80 @@ def _parse_json(payload: bytes) -> Any:
         raise ValueError("the document at the url is not JSON") from e
 
 
+# The content types that name a format the loaders read. A type that is not
+# here says nothing: a guess would hand a .xls or an .ods to the loader under
+# the suffix of another format.
+_CONTENT_TYPE_SUFFIXES = {
+    "application/json": ".json",
+    "text/csv": ".csv",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
+    "application/vnd.ms-excel": ".xls",
+    "application/vnd.oasis.opendocument.spreadsheet": ".ods",
+}
+
+
+def _suffix_for(url: str, content_type: str) -> str:
+    """The suffix a downloaded document is read under.
+
+    The url says what it is; the content type is what the server says it
+    serves. The url wins: a url that ends in .csv is a csv document, and a
+    server that calls a csv document json does not make it one.
+    """
+    return source_suffix(url) or _format_suffix(content_type)
+
+
 def _format_suffix(content_type: str) -> str:
-    """The file suffix a content type stands for - empty when it says nothing."""
-    lowered = content_type.lower()
-    if "json" in lowered:
-        return ".json"
-    if "csv" in lowered:
-        return ".csv"
-    if "spreadsheet" in lowered or "excel" in lowered:
-        return ".xlsx"
-    return ""
+    """The file suffix a content type names - empty when it names none.
+
+    The content type is the fallback of the url suffix, not its rival: a url
+    that ends in .csv is a csv document whatever the server says it serves.
+    """
+    return _CONTENT_TYPE_SUFFIXES.get(content_type.split(";")[0].strip().lower(), "")
+
+
+def _check_download_size(declared: str | None, received: int) -> None:
+    """Refuse a document that is over the limit.
+
+    The limit is the one the upload carries. A document that declares its
+    size is refused on the declaration; one that does not is refused while
+    it comes in.
+    """
+    limit = settings.max_upload_bytes
+    if declared and declared.isdigit() and int(declared) > limit:
+        raise ValueError(f"the document is larger than the import limit ({limit} bytes)")
+    if received > limit:
+        raise ValueError(f"the document is larger than the import limit ({limit} bytes)")
 
 
 async def _download_url(url: str) -> tuple[bytes, str]:
-    """Download a document, with the same size limit the upload carries.
+    """Download a document, under the size limit and the time limit.
 
     A sync runs against a url somebody else controls, so the download is
-    bounded: a document bigger than the limit is refused rather than read
-    into the memory of the deployment.
+    bounded twice: a document bigger than the limit is refused rather than
+    read into the memory of the deployment, and a download that keeps
+    trickling is cut off rather than held open.
     """
     import httpx
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        async with client.stream("GET", url) as response:
-            response.raise_for_status()
-            declared = response.headers.get("content-length")
-            if declared and declared.isdigit() and int(declared) > _MAX_SYNC_DOWNLOAD_BYTES:
-                raise ValueError(
-                    f"the document is larger than the import limit "
-                    f"({_MAX_SYNC_DOWNLOAD_BYTES} bytes)"
-                )
-            payload = bytearray()
-            async for chunk in response.aiter_bytes():
-                payload.extend(chunk)
-                if len(payload) > _MAX_SYNC_DOWNLOAD_BYTES:
-                    raise ValueError(
-                        f"the document is larger than the import limit "
-                        f"({_MAX_SYNC_DOWNLOAD_BYTES} bytes)"
-                    )
-            return bytes(payload), response.headers.get("content-type", "")
+    try:
+        async with asyncio.timeout(_MAX_SYNC_DOWNLOAD_SECONDS):
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                async with client.stream("GET", url) as response:
+                    response.raise_for_status()
+                    declared = response.headers.get("content-length")
+                    _check_download_size(declared, 0)
+                    payload = bytearray()
+                    async for chunk in response.aiter_bytes():
+                        # The chunk is measured before it is taken in, so a
+                        # single large chunk never sits in the memory of the
+                        # deployment before it is refused.
+                        _check_download_size(None, len(payload) + len(chunk))
+                        payload.extend(chunk)
+                    return bytes(payload), response.headers.get("content-type", "")
+    except TimeoutError as e:
+        raise ValueError(
+            f"the document took longer than {_MAX_SYNC_DOWNLOAD_SECONDS} seconds to arrive"
+        ) from e
 
 
 def _records_from_payload(payload: Any) -> list[dict[str, Any]]:

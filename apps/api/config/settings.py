@@ -57,6 +57,10 @@ class AppSettings(BaseModel):
     data_dir: Path = Field(default_factory=lambda: Path("./data"))
     chroma_dir: Path = Field(default_factory=lambda: Path("./chroma_db"))
     assets_dir: Path = Field(default_factory=lambda: Path("./assets"))
+    # The directory the files an operator hands the deployment are kept in.
+    # A source may only read a file of this directory: the config of a source
+    # is written by a person, and the path in it names a file of the machine.
+    uploads_dir: Path = Field(default_factory=lambda: Path("./uploads"))
 
     # API Keys (loaded from environment)
     openai_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("OPENAI_API_KEY"))
@@ -525,6 +529,16 @@ class AppSettings(BaseModel):
     request_max_upload_size_mb: int = Field(
         default_factory=lambda: int(os.getenv("REQUEST_MAX_UPLOAD_SIZE_MB", "25"))
     )
+
+    @property
+    def max_upload_bytes(self) -> int:
+        """The size limit an upload carries, in bytes.
+
+        One value for the upload and for the sync that downloads a file:
+        two copies of the same limit drift apart, and then one of them is
+        the wrong one.
+        """
+        return self.request_max_upload_size_mb * 1024 * 1024
 
     # Response Caching (TASK-017: Production Deployment Optimization)
     cache_enabled: bool = Field(

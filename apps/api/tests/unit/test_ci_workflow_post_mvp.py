@@ -43,6 +43,7 @@ EXPECTED_WORKFLOWS = {
     "dependabot-auto-merge.yml",
     "llm-costs.yml",
     "publish-ghcr.yml",
+    "quality-gate.yml",
 }
 
 # Names of the studio's own infrastructure. This repository deploys its own
