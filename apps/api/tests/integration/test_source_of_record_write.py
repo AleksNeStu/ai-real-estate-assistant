@@ -56,8 +56,16 @@ def store(tmp_path, monkeypatch) -> ChromaPropertyStore:
     embedding is forced on, because the store keeps its distance from the
     fastembed model on Windows otherwise, and a test that behaves differently
     on two platforms is a test that proves nothing.
+
+    The persistence is forced on for the same reason. Without it the store
+    falls back to an in-memory collection, and every store in the process
+    shares that one collection - so the deed the previous test wrote is
+    still in it when this test starts, and the test reads the previous
+    test's price instead of the one it wrote. The directory of the test is
+    the collection's own, so each test reads and writes its own catalogue.
     """
     monkeypatch.setenv("CHROMA_FORCE_FASTEMBED", "1")
+    monkeypatch.setenv("CHROMA_FORCE_PERSIST", "1")
     fake_embeddings = MagicMock()
     fake_embeddings.embed_documents.side_effect = lambda texts: [[0.1] * 384 for _ in texts]
     fake_embeddings.embed_query.return_value = [0.1] * 384
