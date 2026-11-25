@@ -22,6 +22,24 @@ from sqlalchemy.orm import Mapped, backref, mapped_column, relationship
 from db.database import Base
 
 
+def _is_expired(expires_at: datetime) -> bool:
+    """Whether a stored expiry lies in the past.
+
+    SQLite keeps no time zone. A ``DateTime(timezone=True)`` column on
+    SQLite stores the value as it was written - UTC - and hands it back
+    **without** a zone, so comparing it with ``datetime.now(UTC)`` raises
+    ``TypeError: can't compare offset-naive and offset-aware datetimes``
+    and the request that asked dies with a 500.
+
+    The stored value is UTC - that is what was written - so a value that
+    arrives without a zone is read as UTC. Postgres keeps the zone and is
+    unaffected.
+    """
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=UTC)
+    return datetime.now(UTC) >= expires_at
+
+
 class User(Base):
     """User model for authentication."""
 
@@ -121,7 +139,7 @@ class RefreshToken(Base):
     @property
     def is_expired(self) -> bool:
         """Check if token is expired."""
-        return datetime.now(UTC) >= self.expires_at
+        return _is_expired(self.expires_at)
 
     @property
     def is_valid(self) -> bool:
@@ -184,9 +202,7 @@ class PasswordResetToken(Base):
     @property
     def is_expired(self) -> bool:
         """Check if token is expired."""
-        from datetime import UTC, datetime
-
-        return datetime.now(UTC) >= self.expires_at
+        return _is_expired(self.expires_at)
 
     @property
     def is_valid(self) -> bool:
@@ -221,9 +237,7 @@ class EmailVerificationToken(Base):
     @property
     def is_expired(self) -> bool:
         """Check if token is expired."""
-        from datetime import UTC, datetime
-
-        return datetime.now(UTC) >= self.expires_at
+        return _is_expired(self.expires_at)
 
     @property
     def is_valid(self) -> bool:
