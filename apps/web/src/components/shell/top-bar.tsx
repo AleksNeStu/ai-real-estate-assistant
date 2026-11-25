@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { InstallButton } from '@/components/pwa/install-button';
-import { withUtm } from '@/lib/utm';
 
 const THEME_STORAGE_KEY = 'theme';
 
@@ -86,9 +85,9 @@ export function TopBar() {
   const landingLinks = [
     { href: '#features', label: t('landing.features') },
     { href: '#data', label: t('landing.data') },
-    { href: '#open', label: t('landing.openSource') },
     { href: '#compare', label: t('landing.compare') },
     { href: '#faq', label: t('landing.faq') },
+    { href: '#open', label: t('landing.openSource') },
   ];
 
   const toggleTheme = () => {
@@ -97,12 +96,6 @@ export function TopBar() {
     window.localStorage.setItem(THEME_STORAGE_KEY, next);
     document.documentElement.classList.toggle('dark', !isDark);
   };
-
-  const githubUrl = withUtm('https://github.com/AleksNeStu/ai-real-estate-assistant', {
-    medium: 'landing',
-    campaign: 'oss',
-    content: 'nav_github',
-  });
 
   return (
     <header className="sticky top-0 z-40 h-14 border-b border-border bg-background">
@@ -183,15 +176,6 @@ export function TopBar() {
 
           {isLanding ? (
             <>
-              <a
-                href={githubUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden h-8 items-center gap-2 rounded-md border border-border px-3 text-[13px] font-medium text-foreground transition-colors hover:bg-accent sm:inline-flex"
-              >
-                <GithubIcon className="size-[15px]" />
-                {t('github')}
-              </a>
               <Link
                 href="/search"
                 className="hidden h-8 items-center rounded-md border border-border px-3 text-[13px] font-medium text-foreground transition-colors hover:bg-accent sm:inline-flex"
@@ -389,26 +373,6 @@ function ChevronIcon({ className }: { className?: string }) {
       aria-hidden="true"
     >
       <path d="m6 9 6 6 6-6" />
-    </svg>
-  );
-}
-
-function GithubIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-      <path d="M9 18c-4.51 2-5-2-7-2" />
     </svg>
   );
 }

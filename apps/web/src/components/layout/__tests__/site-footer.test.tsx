@@ -11,6 +11,7 @@ jest.mock('next-intl', () => ({
 
 jest.mock('@/lib/visitor-tracking', () => ({
   getOrCreateVisitorId: jest.fn(() => 'visitor-uuid-1234'),
+  currentLocale: jest.fn(() => 'en'),
 }));
 
 const mockFetch = global.fetch as unknown as jest.Mock;
@@ -19,7 +20,7 @@ const mockFetch = global.fetch as unknown as jest.Mock;
 const capabilitiesBody = {
   auth: { jwt_enabled: false, oauth: { google: false, apple: false } },
   email: { enabled: false, provider: 'dummy' },
-  llm: { demo_mode: true, default_provider: 'zai' },
+  llm: { demo_llm_mode: true, default_provider: 'zai' },
   observability: { error_tracking: false },
 };
 
@@ -72,10 +73,37 @@ describe('SiteFooter', () => {
     expect(screen.getByText('t:studioNote')).toBeInTheDocument();
 
     const studioLink = screen.getByRole('link', { name: 't:studioLink' });
-    expect(studioLink).toHaveAttribute('href', 'https://nestlab.tech');
+    // The link carries the campaign of the click, so the studio can tell
+    // which surface carried the visitor away.
+    expect(studioLink).toHaveAttribute(
+      'href',
+      'https://nestlab.tech?utm_source=realty.kittray.com&utm_medium=app&utm_campaign=studio&utm_content=footer'
+    );
     expect(studioLink).toHaveAttribute('rel', expect.stringContaining('noopener'));
 
     expect(await screen.findByText('t:demoNotice')).toBeInTheDocument();
+  });
+
+  it('reports the click on the studio link', async () => {
+    render(<SiteFooter />);
+
+    const studioLink = screen.getByRole('link', { name: 't:studioLink' });
+    fireEvent.click(studioLink);
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/v1/analytics/outbound',
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+
+    const outboundCall = mockFetch.mock.calls.find((call) =>
+      String(call[0]).includes('/analytics/outbound')
+    ) as [string, RequestInit];
+    const body = JSON.parse(outboundCall[1].body as string);
+    expect(body.target).toBe('nestlab.tech');
+    expect(body.campaign).toBe('studio');
+    expect(body.slot).toBe('footer');
   });
 
   it('posts the email to the visitor lead endpoint', async () => {

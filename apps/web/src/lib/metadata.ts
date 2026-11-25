@@ -74,7 +74,7 @@ export function languageAlternates(path: string = '/'): Record<string, string> {
   for (const locale of LOCALES) {
     languages[locale] = absoluteUrl(`/${locale}${suffix}`);
   }
-  languages['x-default'] = absoluteUrl(`/pl${suffix}`);
+  languages['x-default'] = absoluteUrl(`/en${suffix}`);
   return languages;
 }
 

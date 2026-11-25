@@ -3041,9 +3041,10 @@
         "import": {
           "title": "Daten importieren",
           "fileUrl": "Datei-URL",
-          "fileUrlHint": "Unterstützt CSV (.csv) und Excel (.xlsx, .xls, .ods)",
+          "fileUrlHint": "Unterstützt {formats} Dateien",
           "selectFile": "Datei auswählen",
-          "fileHint": "Maximale Dateigröße: 25 MB. Unterstützt: .xlsx, .xls, .ods, .csv",
+          "fileHint": "Maximale Dateigröße: 25 MB.",
+          "fileFormats": "Unterstützt: {formats}",
           "selected": "Ausgewählt:",
           "fileSize": "{size} MB",
           "sourceName": "Quellenname (optional)",
@@ -3388,21 +3389,14 @@
   },
   "landing": {
     "hero": {
-      "title": "Frag in normaler Sprache. Bekomme passende Angebote.",
-      "body": "Ein Open-Source-Assistent für Immobiliensuche, Finanzanalyse und Marktkenntnis. Beschreibe die Wohnung, die du willst; er extrahiert die Filter, durchsucht den Katalog nach Bedeutung, zeigt die Treffer auf einer Karte und rechnet im Chat die Zahlen.",
       "placeholder": "Beschreibe die Immobilie, die du suchst",
       "ctaSearch": "Live-Demo durchsuchen",
       "ctaAssistant": "Den Assistenten fragen",
-      "ctaGithub": "Auf GitHub einen Stern vergeben",
       "demoNote": "Die Demo antwortet mit einem Modell, für das wir zahlen, das Herumprobieren kostet nichts — keine Anmeldung, keine Schlüssel.",
-      "statLicence": "MIT",
-      "statLicenceLabel": "Lizenz",
       "statLanguages": "9",
       "statLanguagesLabel": "Oberflächensprachen",
       "statProviders": "17 + Ollama",
       "statProvidersLabel": "LLM-Anbieter",
-      "statDeploy": "1 Datei",
-      "statDeployLabel": "docker compose up",
       "instrumentParsed": "ausgewertet",
       "instrumentOpenAll": "Alle {count} öffnen",
       "instrumentNote": "Geseedeter Demo-Katalog, keine echten Angebote · ein Modell, für das wir zahlen, keine Schlüssel",
@@ -3494,8 +3488,6 @@
       }
     },
     "exits": {
-      "title": "Selbst betreiben, auf die gehostete Stufe wechseln oder etwas Ähnliches mit uns bauen.",
-      "body": "Das ist Open Source — Zusammenarbeit, keine verschlossene Tür. Das Repository bleibt vollständig genug, um es zu betreiben, zu lesen, zu erweitern und deinen eigenen Nutzern vorzustellen. Jeder Weg unten startet vom selben MIT-Code.",
       "run": {
         "badge": "MIT · kostenlos",
         "title": "Selbst betreiben",

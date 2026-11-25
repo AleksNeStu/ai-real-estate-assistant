@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { OutboundLink } from '@/components/shell/outbound-link';
 import { LANDING_SLOTS, withUtm } from '@/lib/utm';
 
 /**
@@ -17,7 +18,10 @@ export async function Faq() {
       <div className="grid grid-cols-1 gap-14 lg:grid-cols-[360px_minmax(0,1fr)]">
         <div className="flex flex-col gap-3">
           <h2 className="text-section font-semibold">{t('faq.title')}</h2>
-          <a
+          <OutboundLink
+            outboundTarget="github"
+            campaign="oss"
+            slot={LANDING_SLOTS.faqAsk}
             href={withUtm('https://github.com/AleksNeStu/ai-real-estate-assistant/discussions', {
               medium: 'landing',
               campaign: 'oss',
@@ -28,7 +32,7 @@ export async function Faq() {
             className="text-[14px] font-medium text-foreground hover:underline"
           >
             {t('faq.ask')} →
-          </a>
+          </OutboundLink>
         </div>
 
         <div className="border-t border-foreground">

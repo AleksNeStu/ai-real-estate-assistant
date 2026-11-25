@@ -3041,9 +3041,10 @@
         "import": {
           "title": "Importar datos",
           "fileUrl": "URL del archivo",
-          "fileUrlHint": "Admite archivos CSV (.csv) y Excel (.xlsx, .xls, .ods)",
+          "fileUrlHint": "Admite archivos {formats}",
           "selectFile": "Seleccionar archivo",
-          "fileHint": "Tamaño máximo: 25 MB. Admite: .xlsx, .xls, .ods, .csv",
+          "fileHint": "Tamaño máximo: 25 MB.",
+          "fileFormats": "Admite: {formats}",
           "selected": "Seleccionado:",
           "fileSize": "{size} MB",
           "sourceName": "Nombre de la fuente (opcional)",
@@ -3388,21 +3389,14 @@
   },
   "landing": {
     "hero": {
-      "title": "Pregunta en lenguaje natural. Obtén anuncios que encajan.",
-      "body": "Un asistente de código abierto para buscar inmuebles, analizar finanzas y entender el mercado. Escribe el piso que buscas: extrae los filtros, busca el catálogo por significado, coloca las coincidencias en un mapa y hace las cuentas en el chat.",
       "placeholder": "Describe el inmueble que buscas",
       "ctaSearch": "Buscar en la demo en vivo",
       "ctaAssistant": "Pregunta al asistente",
-      "ctaGithub": "Dale una estrella en GitHub",
       "demoNote": "La demo responde con un modelo que pagamos nosotros, así que explorar no cuesta nada: sin registro y sin claves.",
-      "statLicence": "MIT",
-      "statLicenceLabel": "licencia",
       "statLanguages": "9",
       "statLanguagesLabel": "idiomas de la interfaz",
       "statProviders": "17 + Ollama",
       "statProvidersLabel": "proveedores de LLM",
-      "statDeploy": "1 archivo",
-      "statDeployLabel": "docker compose up",
       "instrumentParsed": "analizado",
       "instrumentOpenAll": "Abrir los {count}",
       "instrumentNote": "Catálogo de demo con datos sembrados, no anuncios reales · un modelo que pagamos nosotros, sin claves",
@@ -3494,8 +3488,6 @@
       }
     },
     "exits": {
-      "title": "Ejecútalo tú, pasa al plan alojado o construye algo parecido con nosotros.",
-      "body": "Esto es código abierto: colaboración, no una puerta cerrada. El repositorio se mantiene lo bastante completo para ejecutarlo, leerlo, extenderlo y ponerlo delante de tus propios usuarios. Todos los caminos siguientes parten del mismo código MIT.",
       "run": {
         "badge": "MIT · gratis",
         "title": "Ejecútalo tú",

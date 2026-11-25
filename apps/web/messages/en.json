@@ -3593,9 +3593,10 @@
         "import": {
           "title": "Import Data",
           "fileUrl": "File URL",
-          "fileUrlHint": "Supports CSV (.csv) and Excel (.xlsx, .xls, .ods) files",
+          "fileUrlHint": "Supports {formats} files",
           "selectFile": "Select File",
-          "fileHint": "Max file size: 25MB. Supports: .xlsx, .xls, .ods, .csv",
+          "fileHint": "Max file size: 25MB.",
+          "fileFormats": "Supports: {formats}",
           "selected": "Selected:",
           "fileSize": "{size} MB",
           "sourceName": "Source Name (optional)",
@@ -3643,6 +3644,9 @@
           "city": "City * (required)",
           "cityPlaceholder": "e.g., Kraków",
           "cityHint": "The city the register is read for. The prices it publishes are the prices that were paid.",
+          "unknownAnswer": "The deployment has not said whether it holds the register.",
+          "holdsIt": "The deployment holds sales of the register.",
+          "holdsNone": "The deployment holds no sale of the register yet - the ingest has to run first.",
           "sourceNamePlaceholder": "e.g., Kraków price register",
           "defaultName": "{city} price register",
           "created": "The source {name} is registered. Sync it to read the register.",
@@ -4036,21 +4040,22 @@
   },
   "landing": {
     "hero": {
-      "title": "Ask in natural language. Get matched listings.",
-      "body": "An open-source assistant for property search, financial analysis and market insight. Type the flat you want; it extracts the filters, searches the catalogue by meaning, puts the matches on a map and runs the numbers in the chat.",
+      "title": "Find the flat you want — and the numbers.",
+      "body": "A live assistant for property search, financial analysis and market insight. Describe the home you want — it reads the filters out of the sentence, searches the catalogue by meaning, puts the matches on a map and runs the numbers in the chat.",
       "placeholder": "Describe the property you are looking for",
       "ctaSearch": "Search the live demo",
       "ctaAssistant": "Ask the assistant",
-      "ctaGithub": "Star it on GitHub",
+      "ctaHosted": "Get the hosted version",
+      "ctaTalk": "Talk to us",
       "demoNote": "The demo answers with a model we pay for, so exploring costs nothing — no signup, no keys.",
-      "statLicence": "MIT",
-      "statLicenceLabel": "licence",
       "statLanguages": "9",
       "statLanguagesLabel": "interface languages",
       "statProviders": "17 + Ollama",
       "statProvidersLabel": "LLM providers",
-      "statDeploy": "1 file",
-      "statDeployLabel": "docker compose up",
+      "statLive": "live",
+      "statLiveLabel": "assistant, no signup",
+      "statNoKeys": "0",
+      "statNoKeysLabel": "keys to try it",
       "instrumentParsed": "parsed",
       "instrumentOpenAll": "Open all {count}",
       "instrumentNote": "Seeded demo catalogue, not real listings · a model we pay for, no keys",
@@ -4149,8 +4154,6 @@
       }
     },
     "exits": {
-      "title": "Run it yourself, move to the hosted tier, or build something like it with us.",
-      "body": "This is open source — collaboration, not a locked door. The repository stays complete enough to run, read, extend and put in front of your own users. Every path below starts from the same MIT code.",
       "run": {
         "badge": "MIT · free",
         "title": "Run it yourself",
@@ -4190,6 +4193,10 @@
         "ctaTalk": "Talk to the studio",
         "ctaDiscussion": "Or open a [Commercial] Discussion"
       }
+    },
+    "opensource": {
+      "title": "Open source, and who is behind it.",
+      "body": "Collaboration, not a locked door. The repository stays complete enough to run, read, extend and put in front of your own users, and the backlog is public — suggestions are read and used."
     },
     "compare": {
       "title": "What is in this repository, and what the hosted tier adds.",

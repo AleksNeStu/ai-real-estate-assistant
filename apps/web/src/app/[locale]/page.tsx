@@ -7,11 +7,12 @@ import { absoluteUrl } from '@/lib/site';
 import { CompareTable } from '@/components/landing/compare-table';
 import { DataCoverage } from '@/components/landing/data-coverage';
 import { DemoSection } from '@/components/landing/demo-section';
-import { ExitCards } from '@/components/landing/exit-cards';
+import { HostedTier } from '@/components/landing/hosted-tier';
 import { Faq } from '@/components/landing/faq';
 import { LandingFooter } from '@/components/landing/footer';
 import { FeatureLedger } from '@/components/landing/feature-ledger';
 import { Hero } from '@/components/landing/hero';
+import { OpenSource } from '@/components/landing/open-source';
 import { StudioStrip } from '@/components/landing/studio-strip';
 
 /**
@@ -96,10 +97,11 @@ export default async function Home({
         </div>
       </section>
 
-      <ExitCards />
+      <HostedTier />
       <CompareTable />
-      <StudioStrip />
       <Faq />
+      <OpenSource />
+      <StudioStrip />
       <LandingFooter locale={locale} />
     </div>
   );

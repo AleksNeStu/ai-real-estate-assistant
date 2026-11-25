@@ -1,7 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 
 import { BuildMetadata } from '@/components/layout/build-metadata';
-import { LANDING_SLOTS, withSlot, withUtm } from '@/lib/utm';
+import { OutboundLink } from '@/components/shell/outbound-link';
+import { LANDING_SLOTS, type UtmCampaign, withSlot, withUtm } from '@/lib/utm';
 
 /**
  * The footer of the landing.
@@ -9,18 +10,32 @@ import { LANDING_SLOTS, withSlot, withUtm } from '@/lib/utm';
  * Four columns: what this is, where to use it, where the code is, and who
  * stands behind it. The studio column carries the two products that exist -
  * the hosted version and the studio.
+ *
+ * A link that leaves the site reports its click: the outbound link carries
+ * the destination, the slot and the campaign, so the funnel can say which
+ * line of the footer carried the visitor away. A link that stays on the site
+ * carries no outbound target - it is an arrival, not a departure.
  */
+type FooterLink = {
+  label: string;
+  href: string;
+  external?: boolean;
+  /** The destination the click is reported under. Absent for a same-site link. */
+  outboundTarget?: string;
+  campaign?: UtmCampaign;
+};
+
 export async function LandingFooter({ locale }: { locale: string }) {
   const t = await getTranslations('landing');
 
-  const product = [
+  const product: FooterLink[] = [
     { label: t('footer.productLiveDemo'), href: withSlot(`/${locale}/search`, 'footer') },
     { label: t('footer.productAssistant'), href: withSlot(`/${locale}/chat`, 'footer') },
     { label: t('footer.productCityOverview'), href: withSlot(`/${locale}/city-overview`, 'footer') },
     { label: t('footer.productAgents'), href: withSlot(`/${locale}/agents`, 'footer') },
   ];
 
-  const openSource = [
+  const openSource: FooterLink[] = [
     {
       label: t('footer.openSourceGithub'),
       href: withUtm('https://github.com/AleksNeStu/ai-real-estate-assistant', {
@@ -29,6 +44,8 @@ export async function LandingFooter({ locale }: { locale: string }) {
         content: LANDING_SLOTS.footer,
       }),
       external: true,
+      outboundTarget: 'github.com',
+      campaign: 'oss' as const,
     },
     {
       label: t('footer.openSourceDocs'),
@@ -37,6 +54,8 @@ export async function LandingFooter({ locale }: { locale: string }) {
         { medium: 'landing', campaign: 'oss', content: 'footer_docs' }
       ),
       external: true,
+      outboundTarget: 'github.com',
+      campaign: 'oss' as const,
     },
     {
       label: t('footer.openSourceDiscussions'),
@@ -46,10 +65,12 @@ export async function LandingFooter({ locale }: { locale: string }) {
         content: 'footer',
       }),
       external: true,
+      outboundTarget: 'github.com',
+      campaign: 'oss' as const,
     },
   ];
 
-  const studio = [
+  const studio: FooterLink[] = [
     {
       label: t('footer.studioPropVector'),
       href: withUtm('https://propvectorai.com/', {
@@ -58,6 +79,8 @@ export async function LandingFooter({ locale }: { locale: string }) {
         content: 'footer',
       }),
       external: true,
+      outboundTarget: 'propvectorai.com',
+      campaign: 'propvector' as const,
     },
     {
       label: t('footer.studioNestLab'),
@@ -67,6 +90,8 @@ export async function LandingFooter({ locale }: { locale: string }) {
         content: 'footer',
       }),
       external: true,
+      outboundTarget: 'nestlab.tech',
+      campaign: 'studio' as const,
     },
     {
       label: t('footer.studioServices'),
@@ -76,10 +101,12 @@ export async function LandingFooter({ locale }: { locale: string }) {
         content: 'footer',
       }),
       external: true,
+      outboundTarget: 'nestlab.tech',
+      campaign: 'studio' as const,
     },
   ];
 
-  const legal = [
+  const legal: FooterLink[] = [
     { label: t('footer.privacy'), href: withSlot(`/${locale}/privacy`, 'footer') },
     { label: t('footer.terms'), href: withSlot(`/${locale}/terms`, 'footer') },
   ];
@@ -106,18 +133,29 @@ export async function LandingFooter({ locale }: { locale: string }) {
         {columns.map((column) => (
           <div key={column.title} className="flex flex-col gap-1.5">
             <span className="mb-1 font-semibold">{column.title}</span>
-            {column.links.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                {...('external' in link && link.external
-                  ? { target: '_blank', rel: 'noreferrer' }
-                  : {})}
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {link.label}
-              </a>
-            ))}
+            {column.links.map((link) =>
+              link.outboundTarget ? (
+                <OutboundLink
+                  key={link.label}
+                  outboundTarget={link.outboundTarget}
+                  campaign={link.campaign}
+                  slot={LANDING_SLOTS.footer}
+                  href={link.href}
+                  {...(link.external ? { target: '_blank', rel: 'noreferrer' } : {})}
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {link.label}
+                </OutboundLink>
+              ) : (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {link.label}
+                </a>
+              )
+            )}
           </div>
         ))}
       </div>

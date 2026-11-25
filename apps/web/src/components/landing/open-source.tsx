@@ -1,16 +1,18 @@
 import { getTranslations } from 'next-intl/server';
 
-import { WaitlistForm } from '@/components/landing/waitlist-form';
+import { OutboundLink } from '@/components/shell/outbound-link';
 import { LANDING_SLOTS, withUtm } from '@/lib/utm';
 
 /**
- * The three exits.
+ * The open-source section.
  *
- * The repository stays open, so the page offers three honest ways forward and
- * none of them is a dead end: run it yourself, move to the hosted tier, or
- * build something like it with the studio.
+ * The material that speaks about the code rather than about the product: the
+ * licence, the fork, the two commands that start it and the studio that
+ * maintains it. It sits at the bottom of the landing on purpose - it is real
+ * information a buyer deserves, but it is not what the first screen has to
+ * answer.
  */
-export async function ExitCards() {
+export async function OpenSource() {
   const t = await getTranslations('landing');
 
   const code = [t('exits.run.code1'), t('exits.run.code2'), t('exits.run.code3'), t('exits.run.code4')];
@@ -18,11 +20,11 @@ export async function ExitCards() {
   return (
     <section id="open" className="mx-auto max-w-[1248px] scroll-mt-16 px-6 pt-24">
       <div className="mb-8 flex max-w-[760px] flex-col gap-3">
-        <h2 className="text-section font-semibold">{t('exits.title')}</h2>
-        <p className="text-muted-foreground">{t('exits.body')}</p>
+        <h2 className="text-section font-semibold">{t('opensource.title')}</h2>
+        <p className="text-muted-foreground">{t('opensource.body')}</p>
       </div>
 
-      <div className="grid grid-cols-1 overflow-hidden rounded-lg border border-border bg-muted lg:grid-cols-[1.15fr_1fr_1fr]">
+      <div className="grid grid-cols-1 overflow-hidden rounded-lg border border-border bg-muted lg:grid-cols-2">
         <div className="flex flex-col gap-3.5 p-6">
           <div className="flex items-baseline justify-between gap-3">
             <h3 className="text-h3 font-semibold">{t('exits.run.title')}</h3>
@@ -43,7 +45,10 @@ export async function ExitCards() {
           <p className="text-[14px] leading-[22px] text-muted-foreground">{t('exits.run.body')}</p>
 
           <div className="mt-auto flex flex-col items-start gap-2">
-            <a
+            <OutboundLink
+              outboundTarget="github"
+              campaign="oss"
+              slot={LANDING_SLOTS.exitFork}
               href={withUtm('https://github.com/AleksNeStu/ai-real-estate-assistant/fork', {
                 medium: 'landing',
                 campaign: 'oss',
@@ -54,8 +59,11 @@ export async function ExitCards() {
               className="inline-flex h-10 items-center rounded-md bg-foreground px-4 text-[14px] font-medium text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {t('exits.run.ctaFork')}
-            </a>
-            <a
+            </OutboundLink>
+            <OutboundLink
+              outboundTarget="github"
+              campaign="oss"
+              slot={LANDING_SLOTS.exitIssue}
               href={withUtm('https://github.com/AleksNeStu/ai-real-estate-assistant/issues', {
                 medium: 'landing',
                 campaign: 'oss',
@@ -66,49 +74,7 @@ export async function ExitCards() {
               className="text-[13px] font-medium text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {t('exits.run.ctaSuggest')} →
-            </a>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-3.5 border-t border-border p-6 lg:border-l lg:border-t-0">
-          <div className="flex items-baseline justify-between gap-3">
-            <h3 className="text-h3 font-semibold">{t('exits.hosted.title')}</h3>
-            <span className="font-mono text-[12px] font-medium text-warning">
-              {t('exits.hosted.badge')}
-            </span>
-          </div>
-
-          <p className="text-[14px] leading-[22px] text-muted-foreground">{t('exits.hosted.body')}</p>
-
-          <table className="text-[13px]">
-            <tbody>
-              {[
-                [t('exits.hosted.priceFree'), t('exits.hosted.priceFreeValue')],
-                [t('exits.hosted.pricePro'), t('exits.hosted.priceProValue')],
-                [t('exits.hosted.priceEnterprise'), t('exits.hosted.priceEnterpriseValue')],
-              ].map(([label, value], index) => (
-                <tr key={label} className={index === 2 ? 'border-y border-border' : 'border-t border-border'}>
-                  <td className="py-[7px]">{label}</td>
-                  <td className="py-[7px] text-right font-mono text-[13px] font-semibold">{value}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div className="mt-auto flex flex-col items-start gap-1.5">
-            <WaitlistForm />
-            <a
-              href={withUtm('https://propvectorai.com/', {
-                medium: 'landing',
-                campaign: 'propvector',
-                content: LANDING_SLOTS.exitHosted,
-              })}
-              target="_blank"
-              rel="noreferrer"
-              className="text-[13px] font-medium text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            >
-              {t('exits.hosted.link')} ↗
-            </a>
+            </OutboundLink>
           </div>
         </div>
 
@@ -124,7 +90,10 @@ export async function ExitCards() {
           <p className="text-[14px] leading-[22px]">{t('exits.studio.body2')}</p>
 
           <div className="mt-auto flex flex-col items-start gap-2">
-            <a
+            <OutboundLink
+              outboundTarget="nestlab"
+              campaign="studio"
+              slot={LANDING_SLOTS.exitStudio}
               href={withUtm('https://nestlab.tech/services', {
                 medium: 'landing',
                 campaign: 'studio',
@@ -135,8 +104,11 @@ export async function ExitCards() {
               className="inline-flex h-10 items-center rounded-md bg-foreground px-4 text-[14px] font-medium text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {t('exits.studio.ctaTalk')}
-            </a>
-            <a
+            </OutboundLink>
+            <OutboundLink
+              outboundTarget="github"
+              campaign="studio"
+              slot={LANDING_SLOTS.exitDiscussion}
               href={withUtm('https://github.com/AleksNeStu/ai-real-estate-assistant/discussions', {
                 medium: 'landing',
                 campaign: 'studio',
@@ -147,7 +119,7 @@ export async function ExitCards() {
               className="text-[13px] font-medium text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {t('exits.studio.ctaDiscussion')} →
-            </a>
+            </OutboundLink>
           </div>
         </div>
       </div>

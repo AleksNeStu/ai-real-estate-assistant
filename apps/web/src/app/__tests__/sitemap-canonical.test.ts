@@ -29,7 +29,7 @@ import { routing } from '@/i18n/routing';
 jest.mock('@/i18n/routing', () => ({
   routing: {
     locales: ['pl', 'en', 'ru', 'de', 'es', 'it', 'pt', 'tr', 'uk'],
-    defaultLocale: 'pl',
+    defaultLocale: 'en',
     localePrefix: 'always',
     alternateLinks: false,
   },
@@ -141,7 +141,7 @@ describe('the sitemap holds one entry per path', () => {
     expect(urls).toContain(`${ORIGIN}/${routing.defaultLocale}`);
     expect(urls).toContain(`${ORIGIN}/${routing.defaultLocale}/search`);
     // The other eight are the alternates of the entry, not entries of their own.
-    expect(urls).not.toContain(`${ORIGIN}/en/search`);
+    expect(urls).not.toContain(`${ORIGIN}/pl/search`);
   });
 
   it('carries every locale version of the path beside the entry', async () => {

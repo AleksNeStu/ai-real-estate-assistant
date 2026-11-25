@@ -45,8 +45,8 @@ describe('i18n config', () => {
   });
 
   describe('defaultLocale', () => {
-    it('should be Polish', () => {
-      expect(defaultLocale).toBe('pl');
+    it('should be English', () => {
+      expect(defaultLocale).toBe('en');
     });
 
     it('should be one of the valid locales', () => {

@@ -20,11 +20,11 @@ const cache = new Map<string, Messages>();
 /**
  * The merged catalogue of a locale.
  *
- * An unknown locale falls back to Polish, the same way the request config
+ * An unknown locale falls back to English, the same way the request config
  * resolves one.
  */
 export async function catalogueFor(locale: string): Promise<Messages> {
-  const key = isValidLocale(locale) ? locale : 'pl';
+  const key = isValidLocale(locale) ? locale : 'en';
 
   const cached = cache.get(key);
   if (cached) return cached;

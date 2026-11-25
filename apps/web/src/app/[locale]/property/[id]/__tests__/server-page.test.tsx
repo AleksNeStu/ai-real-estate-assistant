@@ -99,7 +99,7 @@ describe('the metadata of a listing', () => {
     // home pages.
     expect(alternates.languages?.pl).toBe('https://realty.kittray.com/pl/property/listing-1');
     expect(alternates.languages?.['x-default']).toBe(
-      'https://realty.kittray.com/pl/property/listing-1',
+      'https://realty.kittray.com/en/property/listing-1',
     );
   });
 

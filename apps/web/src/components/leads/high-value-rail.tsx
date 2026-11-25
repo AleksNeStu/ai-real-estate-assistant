@@ -2,8 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 
-import { MonoAnnotation } from '@/components/ui/mono-annotation';
 import { leadInterestParts } from '@/components/leads/lead-format';
+import { OutboundLink } from '@/components/shell/outbound-link';
+import { APP_SLOTS, withUtm } from '@/lib/utm';
 import { cn } from '@/lib/utils';
 import type { LeadWithScore } from '@/lib/types';
 
@@ -84,14 +85,21 @@ export function HighValueRail({
 
       <p className="rounded-md bg-muted p-3 text-[12px] leading-[18px] text-muted-foreground">
         {t('note')}{' '}
-        <a
-          href="https://propvectorai.com/?utm_source=realty.kittray.com&utm_medium=app&utm_campaign=propvector&utm_content=leads"
+        <OutboundLink
+          outboundTarget="propvectorai.com"
+          campaign="propvector"
+          slot={APP_SLOTS.leadsNote}
+          href={withUtm('https://propvectorai.com/', {
+            medium: 'app',
+            campaign: 'propvector',
+            content: APP_SLOTS.leadsNote,
+          })}
           className="font-medium text-foreground hover:underline"
           target="_blank"
           rel="noreferrer"
         >
           {t('noteLink')}
-        </a>
+        </OutboundLink>
       </p>
     </aside>
   );

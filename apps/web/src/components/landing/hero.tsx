@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { Search } from 'lucide-react';
 
 import { HeroInstrument } from '@/components/landing/hero-instrument';
+import { OutboundLink } from '@/components/shell/outbound-link';
 import { LANDING_SLOTS, withSlot, withUtm } from '@/lib/utm';
 
 /**
@@ -10,6 +11,11 @@ import { LANDING_SLOTS, withSlot, withUtm } from '@/lib/utm';
  * Two columns: the promise and the instrument. The instrument is not a
  * picture of the product - it is the product, running the demo query against
  * the live catalogue.
+ *
+ * The first screen answers three questions and no more: what this is, how to
+ * try it now, and where the paid version is. The open-source material (the
+ * licence, the fork, the commands) belongs further down the page, where the
+ * open-source section carries it.
  */
 export async function Hero({ locale }: { locale: string }) {
   const t = await getTranslations('landing');
@@ -20,10 +26,10 @@ export async function Hero({ locale }: { locale: string }) {
   }));
 
   const stats = [
-    { value: t('hero.statLicence'), label: t('hero.statLicenceLabel') },
     { value: t('hero.statLanguages'), label: t('hero.statLanguagesLabel') },
     { value: t('hero.statProviders'), label: t('hero.statProvidersLabel') },
-    { value: t('hero.statDeploy'), label: t('hero.statDeployLabel') },
+    { value: t('hero.statLive'), label: t('hero.statLiveLabel') },
+    { value: t('hero.statNoKeys'), label: t('hero.statNoKeysLabel') },
   ];
 
   return (
@@ -59,25 +65,24 @@ export async function Hero({ locale }: { locale: string }) {
             </form>
 
             <div className="flex items-center gap-[18px] text-[14px] font-medium">
-              <a
-                href={withSlot(`/${locale}/chat`, LANDING_SLOTS.heroAssistant)}
-                className="text-foreground hover:underline"
-              >
-                {t('hero.ctaAssistant')} →
+              <a href="#hosted" className="text-foreground hover:underline">
+                {t('hero.ctaHosted')} →
               </a>
-              <a
-                href={withUtm('https://github.com/AleksNeStu/ai-real-estate-assistant', {
+              <OutboundLink
+                outboundTarget="nestlab"
+                campaign="studio"
+                slot={LANDING_SLOTS.heroTalk}
+                href={withUtm('https://nestlab.tech/services', {
                   medium: 'landing',
-                  campaign: 'oss',
-                  content: LANDING_SLOTS.heroStar,
+                  campaign: 'studio',
+                  content: LANDING_SLOTS.heroTalk,
                 })}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-foreground hover:underline"
+                className="text-foreground hover:underline"
               >
-                <GitHubMark className="h-4 w-4" aria-hidden="true" />
-                {t('hero.ctaGithub')}
-              </a>
+                {t('hero.ctaTalk')} →
+              </OutboundLink>
             </div>
 
             <div className="mt-auto grid grid-cols-4 gap-7 border-t border-border pt-5">
@@ -107,14 +112,5 @@ export async function Hero({ locale }: { locale: string }) {
         </div>
       </section>
     </>
-  );
-}
-
-/** The GitHub mark. Lucide dropped the brand icons, so the mark is inline. */
-function GitHubMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 16 16" className={className} fill="currentColor" aria-hidden="true">
-      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
-    </svg>
   );
 }

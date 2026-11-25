@@ -87,7 +87,7 @@ export default function HeroMap({
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        url="/api/tiles/{z}/{x}/{y}"
       />
       <FitBounds bounds={bounds} />
       <MapTileTheme />

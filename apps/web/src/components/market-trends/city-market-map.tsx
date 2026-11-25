@@ -77,7 +77,7 @@ export function CityMarketMap({ cities, selected, onSelect, className }: CityMar
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            url="/api/tiles/{z}/{x}/{y}"
           />
           <MapTileTheme />
           {cities.map((city) => (

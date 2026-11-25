@@ -6,7 +6,7 @@ import { routing } from '@/i18n/routing';
 jest.mock('@/i18n/routing', () => ({
   routing: {
     locales: ['pl', 'en', 'ru', 'de', 'es', 'it', 'pt', 'tr', 'uk'],
-    defaultLocale: 'pl',
+    defaultLocale: 'en',
     localePrefix: 'always',
     alternateLinks: false,
   },
@@ -128,22 +128,22 @@ describe('the sitemap', () => {
     const entries = await sitemap();
     const urls = entries.map((entry) => entry.url);
 
-    expect(urls).toContain('https://realty.kittray.com/pl/search');
-    expect(urls).not.toContain('https://realty.kittray.com/en/search');
+    expect(urls).toContain('https://realty.kittray.com/en/search');
+    expect(urls).not.toContain('https://realty.kittray.com/pl/search');
     expect(new Set(urls).size).toBe(urls.length);
   });
 
   it('points the cluster of a page at that page in every language', async () => {
     mockCatalogue([]);
     const entries = await sitemap();
-    const search = entries.find((entry) => entry.url.endsWith('/pl/search'));
+    const search = entries.find((entry) => entry.url.endsWith('/en/search'));
 
     expect(search).toBeDefined();
     const languages = search?.alternates?.languages ?? {};
     // The home pages are NOT the translations of the search page.
     expect(languages.pl).toMatch(/\/pl\/search$/);
     expect(languages.en).toMatch(/\/en\/search$/);
-    expect(languages['x-default']).toMatch(/\/pl\/search$/);
+    expect(languages['x-default']).toMatch(/\/en\/search$/);
   });
 
   it('still answers with the routes when the catalogue is unreachable', async () => {

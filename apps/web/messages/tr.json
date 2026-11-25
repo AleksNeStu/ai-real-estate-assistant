@@ -3041,9 +3041,10 @@
         "import": {
           "title": "Veri içe aktar",
           "fileUrl": "Dosya URL'si",
-          "fileUrlHint": "CSV (.csv) ve Excel (.xlsx, .xls, .ods) dosyaları desteklenir",
+          "fileUrlHint": "{formats} dosyaları desteklenir",
           "selectFile": "Dosya seç",
-          "fileHint": "Maksimum dosya boyutu: 25 MB. Desteklenen: .xlsx, .xls, .ods, .csv",
+          "fileHint": "Maksimum dosya boyutu: 25 MB.",
+          "fileFormats": "Desteklenen: {formats}",
           "selected": "Seçilen:",
           "fileSize": "{size} MB",
           "sourceName": "Kaynak adı (isteğe bağlı)",
@@ -3388,21 +3389,14 @@
   },
   "landing": {
     "hero": {
-      "title": "Doğal dilde sorun. Eşleşen ilanları alın.",
-      "body": "Emlak araması, finansal analiz ve piyasa içgörüsü için açık kaynak bir asistan. İstediğiniz daireyi yazın; filtreleri çıkarır, katalogu anlama göre arar, eşleşmeleri haritaya koyar ve sayıları sohbette hesaplar.",
       "placeholder": "Aradığınız emlağı tanımlayın",
       "ctaSearch": "Canlı demoda arama yapın",
       "ctaAssistant": "Asistana sorun",
-      "ctaGithub": "GitHub'da yıldızlayın",
       "demoNote": "Demo bizim ödediğimiz bir modelle yanıt verir, keşfetmek hiçbir şeye mal olmaz — kayıt yok, anahtar yok.",
-      "statLicence": "MIT",
-      "statLicenceLabel": "lisans",
       "statLanguages": "9",
       "statLanguagesLabel": "arayüz dili",
       "statProviders": "17 + Ollama",
       "statProvidersLabel": "LLM sağlayıcısı",
-      "statDeploy": "1 dosya",
-      "statDeployLabel": "docker compose up",
       "instrumentParsed": "işlendi",
       "instrumentOpenAll": "Tümünü aç ({count})",
       "instrumentNote": "Örnek verili demo kataloğu, gerçek ilanlar değil · bizim ödediğimiz bir model, anahtar yok",
@@ -3494,8 +3488,6 @@
       }
     },
     "exits": {
-      "title": "Kendiniz çalıştırın, barındırılan pakete geçin ya da bizimle benzerini geliştirin.",
-      "body": "Bu açık kaynaktır — iş birliği, kapalı bir kapı değil. Depo; çalıştırmaya, okumaya, genişletmeye ve kendi kullanıcılarınızın önüne koymaya yetecek kadar eksiksiz kalır. Aşağıdaki her yol aynı MIT kodundan başlar.",
       "run": {
         "badge": "MIT · ücretsiz",
         "title": "Kendiniz çalıştırın",

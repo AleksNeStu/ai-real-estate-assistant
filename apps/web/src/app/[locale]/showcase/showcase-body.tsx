@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { MonoAnnotation } from '@/components/ui/mono-annotation';
+import { OutboundLink } from '@/components/shell/outbound-link';
+import { APP_SLOTS, withUtm } from '@/lib/utm';
 
 /**
  * The showcase body.
@@ -140,14 +142,21 @@ export function ShowcaseBody({ locale }: ShowcaseBodyProps) {
           >
             {t('ctaTryDemo')}
           </Link>
-          <a
-            href="https://github.com/AleksNeStu/ai-real-estate-assistant?utm_source=realty.kittray.com&utm_medium=app&utm_campaign=oss&utm_content=showcase_star"
+          <OutboundLink
+            outboundTarget="github.com"
+            campaign="oss"
+            slot={APP_SLOTS.showcaseStar}
+            href={withUtm('https://github.com/AleksNeStu/ai-real-estate-assistant', {
+              medium: 'app',
+              campaign: 'oss',
+              content: APP_SLOTS.showcaseStar,
+            })}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex h-[38px] items-center rounded-md border border-border px-4 text-[14px] font-medium text-foreground hover:bg-muted"
           >
             {t('ctaStar')}
-          </a>
+          </OutboundLink>
         </div>
       </div>
     </div>

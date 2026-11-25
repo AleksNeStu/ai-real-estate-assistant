@@ -3593,9 +3593,10 @@
         "import": {
           "title": "Import danych",
           "fileUrl": "Adres URL pliku",
-          "fileUrlHint": "Obsługuje pliki CSV (.csv) i Excel (.xlsx, .xls, .ods)",
+          "fileUrlHint": "Obsługuje pliki {formats}",
           "selectFile": "Wybierz plik",
-          "fileHint": "Maksymalny rozmiar pliku: 25 MB. Obsługuje: .xlsx, .xls, .ods, .csv",
+          "fileHint": "Maksymalny rozmiar pliku: 25 MB.",
+          "fileFormats": "Obsługuje: {formats}",
           "selected": "Wybrano:",
           "fileSize": "{size} MB",
           "sourceName": "Nazwa źródła (opcjonalnie)",
@@ -3643,6 +3644,9 @@
           "city": "Miasto * (wymagane)",
           "cityPlaceholder": "np. Kraków",
           "cityHint": "Miasto, dla którego czytany jest rejestr. Publikowane ceny to ceny, które zapłacono.",
+          "unknownAnswer": "Wdrożenie nie powiedziało jeszcze, czy zawiera rejestr.",
+          "holdsIt": "Wdrożenie zawiera sprzedaże z rejestru.",
+          "holdsNone": "Wdrożenie nie zawiera jeszcze sprzedaży z rejestru - najpierw należy zaimportować dane.",
           "sourceNamePlaceholder": "np. rejestr cen Kraków",
           "defaultName": "rejestr cen — {city}",
           "created": "Źródło {name} jest zarejestrowane. Uruchom synchronizację, aby odczytać rejestr.",
@@ -4036,21 +4040,22 @@
   },
   "landing": {
     "hero": {
-      "title": "Pytaj po ludzku. Otrzymuj dopasowane oferty.",
-      "body": "Asystent open source do wyszukiwania nieruchomości, analizy finansowej i rynku. Opisz mieszkanie, które chcesz — wyciągnie filtry, przeszuka katalog według znaczenia, pokaże dopasowania na mapie i policzy liczby w czacie.",
+      "title": "Znajdź mieszkanie, które chcesz — i liczby za nim.",
+      "body": "Asystent do wyszukiwania nieruchomości, analizy finansowej i rynku. Opisz mieszkanie, które chcesz — wyciągnie z niego filtry, przeszuka katalog według znaczenia, pokaże dopasowania na mapie i policzy liczby w czacie.",
       "placeholder": "Opisz nieruchomość, której szukasz",
       "ctaSearch": "Przeszukaj działające demo",
       "ctaAssistant": "Zapytaj asystenta",
-      "ctaGithub": "Oceń na GitHubie",
+      "ctaHosted": "Przejdź na wersję hostowaną",
+      "ctaTalk": "Porozmawiajmy",
       "demoNote": "Demo odpowiada modelem, za który płacimy my, więc przeglądanie nic nie kosztuje — bez rejestracji, bez kluczy.",
-      "statLicence": "MIT",
-      "statLicenceLabel": "licencja",
       "statLanguages": "9",
       "statLanguagesLabel": "języków interfejsu",
       "statProviders": "17 + Ollama",
       "statProvidersLabel": "dostawców LLM",
-      "statDeploy": "1 plik",
-      "statDeployLabel": "docker compose up",
+      "statLive": "na żywo",
+      "statLiveLabel": "asystent, bez rejestracji",
+      "statNoKeys": "0",
+      "statNoKeysLabel": "kluczy na start",
       "instrumentParsed": "przetworzone",
       "instrumentOpenAll": "Otwórz wszystkie ({count})",
       "instrumentNote": "Zasiany katalog demo, nie prawdziwe oferty · model, za który płacimy my, bez kluczy",
@@ -4149,8 +4154,6 @@
       }
     },
     "exits": {
-      "title": "Uruchom sam, przejdź na wersję hostowaną albo zbuduj coś podobnego razem z nami.",
-      "body": "To jest open source — współpraca, nie zamknięte drzwi. Repozytorium zostaje na tyle kompletne, żeby je uruchomić, przeczytać, rozbudować i pokazać własnym użytkownikom. Każda z tych dróg zaczyna się od tego samego kodu na licencji MIT.",
       "run": {
         "badge": "MIT · bezpłatnie",
         "title": "Uruchom sam",
@@ -4190,6 +4193,10 @@
         "ctaTalk": "Porozmawiaj ze studiem",
         "ctaDiscussion": "Albo otwórz dyskusję [Commercial]"
       }
+    },
+    "opensource": {
+      "title": "Open source i to, kto za tym stoi.",
+      "body": "Współpraca, nie zamknięte drzwi. Repozytorium zostaje kompletne na tyle, by uruchomić je, przeczytać, rozbudować i postawić przed własnymi użytkownikami, a backlog jest publiczny — propozycje są czytane i wykorzystywane."
     },
     "compare": {
       "title": "Co jest w tym repozytorium, a co dokłada wersja hostowana.",

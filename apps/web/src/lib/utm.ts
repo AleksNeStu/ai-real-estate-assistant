@@ -21,16 +21,21 @@ export type UtmCampaign = 'oss' | 'propvector' | 'studio';
 
 /** The slots of the landing, in the order they appear. */
 export const LANDING_SLOTS = {
-  heroSearch: 'hero_search',
-  heroAssistant: 'hero_assistant',
-  heroStar: 'hero_star',
+  // The hero carries one outbound link (the studio) and two same-site ones
+  // (the instrument and the chips), so the slots are the ones that are
+  // actually written down. A slot nobody writes is a number the funnel
+  // never sees.
+  heroTalk: 'hero_talk',
   chips: 'landing_chips',
   instrument: 'landing_instrument',
   features: 'landing_features',
   exitFork: 'exit_fork',
   exitIssue: 'exit_issue',
-  exitHosted: 'exit_card',
-  exitStudio: 'exit_card',
+  // The hosted tier and the studio are two different destinations: they
+  // carry two different campaigns and they are read apart in the funnel.
+  // One slot for both would make the two clicks one number.
+  exitHosted: 'exit_hosted',
+  exitStudio: 'exit_studio',
   exitDiscussion: 'exit_discussion',
   waitlist: 'exit_waitlist',
   studioStrip: 'studio_strip',
@@ -39,6 +44,22 @@ export const LANDING_SLOTS = {
 } as const;
 
 export type LandingSlot = (typeof LANDING_SLOTS)[keyof typeof LANDING_SLOTS];
+
+/**
+ * The slots of the surfaces inside the application.
+ *
+ * The landing has its own set; the pages a visitor reaches from it - the
+ * showcase, the chat banner, the leads board - have theirs. A click on one of
+ * them is a click of the application, and the medium says so: `app`, not
+ * `landing`.
+ */
+export const APP_SLOTS = {
+  showcaseStar: 'showcase_star',
+  chatBanner: 'chat_banner',
+  leadsNote: 'leads',
+} as const;
+
+export type AppSlot = (typeof APP_SLOTS)[keyof typeof APP_SLOTS];
 
 /**
  * Build an outbound URL with the campaign parameters attached.

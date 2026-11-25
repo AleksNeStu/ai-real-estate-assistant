@@ -1,17 +1,17 @@
 export const locales = ['pl', 'en', 'ru', 'de', 'es', 'it', 'pt', 'tr', 'uk'] as const;
-export const defaultLocale = 'pl' as const;
+export const defaultLocale = 'en' as const;
 
 export type Locale = (typeof locales)[number];
 
 /**
  * The locales the interface is maintained in.
  *
- * English, Polish and Russian are the set the product is written for. Polish is
- * the home market — the demo catalogue, the currency and the x-default come from
- * it — and English is the language every provider, every partner and every AI
- * reader understands. Russian was brought back to the maintained set on
- * 2026-11-24 (Task #63): it now carries every key, so a new key lands in these
- * three catalogues only.
+ * English, Polish and Russian are the set the product is written for. English is
+ * the default the site opens in — the language every provider, every partner
+ * and every AI reader understands — while Polish stays the home market: the
+ * demo catalogue and the currency still come from it. Russian was brought back
+ * to the maintained set on 2026-11-24 (Task #63): it now carries every key, so
+ * a new key lands in these three catalogues only.
  *
  * The other six keep the wording they were given. They still ship: their
  * URLs, their hreflang entries and the language switcher stay, and the merge

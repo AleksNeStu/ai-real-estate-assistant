@@ -2,7 +2,7 @@ import { defineRouting } from 'next-intl/routing';
 
 export const routing = defineRouting({
   locales: ['pl', 'en', 'ru', 'de', 'es', 'it', 'pt', 'tr', 'uk'],
-  defaultLocale: 'pl',
+  defaultLocale: 'en',
   localePrefix: 'always',
   /**
    * The middleware's own hreflang header is switched off on purpose.

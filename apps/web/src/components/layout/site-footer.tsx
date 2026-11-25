@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { BuildMetadata } from '@/components/layout/build-metadata';
 import { getOrCreateVisitorId } from '@/lib/visitor-tracking';
 import { getCapabilities } from '@/lib/api';
+import { OutboundLink } from '@/components/shell/outbound-link';
+import { LANDING_SLOTS, withUtm } from '@/lib/utm';
 
 type SubmitState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -163,14 +165,21 @@ export function SiteFooter() {
 
           <p className="mt-6 text-xs text-muted-foreground">
             {t('studioNote')}{' '}
-            <a
-              href="https://nestlab.tech"
+            <OutboundLink
+              outboundTarget="nestlab.tech"
+              campaign="studio"
+              slot={LANDING_SLOTS.footer}
+              href={withUtm('https://nestlab.tech', {
+                medium: 'app',
+                campaign: 'studio',
+                content: LANDING_SLOTS.footer,
+              })}
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium text-foreground underline underline-offset-4 hover:no-underline"
             >
               {t('studioLink')}
-            </a>
+            </OutboundLink>
           </p>
 
           <div className="mt-3">

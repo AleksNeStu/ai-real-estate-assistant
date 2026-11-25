@@ -2,6 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 
+import { OutboundLink } from '@/components/shell/outbound-link';
+import { APP_SLOTS, withUtm } from '@/lib/utm';
+
 /**
  * The strip under the top bar of the application.
  *
@@ -31,12 +34,18 @@ export function DemoStrip() {
         <span className="font-medium text-foreground">{t('demoPill')}.</span>{' '}
         {t('demoStrip.note')}
       </span>
-      <a
-        href="https://github.com/AleksNeStu/ai-real-estate-assistant#quick-start?utm_source=realty.kittray.com&utm_medium=app&utm_campaign=oss&utm_content=chat_banner"
+      <OutboundLink
+        outboundTarget="github.com"
+        campaign="oss"
+        slot={APP_SLOTS.chatBanner}
+        href={withUtm(
+          'https://github.com/AleksNeStu/ai-real-estate-assistant#quick-start',
+          { medium: 'app', campaign: 'oss', content: APP_SLOTS.chatBanner }
+        )}
         className="hidden shrink-0 text-foreground transition-colors hover:underline sm:inline"
       >
         {t('demoStrip.cta')}
-      </a>
+      </OutboundLink>
     </div>
   );
 }

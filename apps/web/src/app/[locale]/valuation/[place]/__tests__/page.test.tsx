@@ -103,7 +103,7 @@ describe('the metadata of a valuation', () => {
       'https://realty.kittray.com/pl/valuation/krakow~mysliwska~60~3',
     );
     expect(alternates.languages?.['x-default']).toBe(
-      'https://realty.kittray.com/pl/valuation/krakow~mysliwska~60~3',
+      'https://realty.kittray.com/en/valuation/krakow~mysliwska~60~3',
     );
   });
 
