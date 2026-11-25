@@ -152,7 +152,7 @@ async def create_data_source(
 ) -> DataSourceResponse:
     """Create a new data source configuration."""
     # Validate source_type specific config
-    _validate_config(data.source_type.value, data.config)
+    _refuse_unusable_config(data.source_type.value, data.config)
 
     # Create new data source
     ds = DataSourceDB(
@@ -211,10 +211,10 @@ async def update_data_source(
 
     # Validate config if provided
     if "config" in update_data:
-        _validate_config(ds.source_type, update_data["config"])
+        _refuse_unusable_config(ds.source_type, update_data["config"])
 
     if "source_type" in update_data:
-        _validate_config(update_data["source_type"], update_data.get("config", ds.config))
+        _refuse_unusable_config(update_data["source_type"], update_data.get("config", ds.config))
 
     for key, value in update_data.items():
         setattr(ds, key, value)
@@ -816,7 +816,7 @@ async def test_data_source(
 ) -> DataSourceTestResponse:
     """Test a data source connection without saving."""
     try:
-        _validate_config(data.source_type.value, data.config)
+        _refuse_unusable_config(data.source_type.value, data.config)
 
         # Test based on source type
         if data.source_type.value == "url":
@@ -911,8 +911,22 @@ async def get_sync_history(
     )
 
 
+def _refuse_unusable_config(source_type: str, config: dict[str, Any]) -> None:
+    """Refuse a config the product cannot use, and say why.
+
+    A config is written by an operator, so the answer belongs to them: the
+    request is refused with 422 and the reason - the city the site does not
+    know, the url that is not a url - instead of the 500 that said
+    "Internal server error" and left the operator to guess.
+    """
+    try:
+        _validate_config(source_type, config)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
 def _validate_config(source_type: str, config: dict[str, Any]) -> None:
-    """Validate configuration based on source type."""
+    """The rules a config has to answer to."""
     if source_type == "url":
         if "url" not in config:
             raise ValueError("URL source requires 'url' in config")

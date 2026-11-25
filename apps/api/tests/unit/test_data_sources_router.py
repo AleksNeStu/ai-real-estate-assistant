@@ -185,6 +185,16 @@ def _make_portal_source(**overrides) -> dict:
     return payload
 
 
+def _make_register_source(**overrides) -> dict:
+    payload = {
+        "name": "Test Register Source",
+        "source_type": "register",
+        "config": {"city": "Krakow"},
+    }
+    payload.update(overrides)
+    return payload
+
+
 # ===========================================================================
 # Tests: list_data_sources (GET /data-sources)
 # ===========================================================================
@@ -353,43 +363,55 @@ async def test_create_source_with_auto_sync(client: AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_create_url_source_missing_url(client: AsyncClient) -> None:
-    """Validation fails when URL source has no url in config -- raises ValueError (500)."""
+    """A URL source with no url in its config is refused with the reason."""
     payload = _make_url_source(config={"not_url": "value"})
     resp = await client.post("/api/v1/data-sources", json=payload)
     # _validate_config raises ValueError which becomes 500
-    assert resp.status_code == 500
+    assert resp.status_code == 422
 
 
 @pytest.mark.asyncio
 async def test_create_url_source_invalid_url(client: AsyncClient) -> None:
-    """Validation fails when URL does not start with http:// or https://."""
+    """A url that is not a url is refused with the reason."""
     payload = _make_url_source(config={"url": "ftp://example.com/data"})
     resp = await client.post("/api/v1/data-sources", json=payload)
-    assert resp.status_code == 500
+    assert resp.status_code == 422
 
 
 @pytest.mark.asyncio
 async def test_create_portal_source_missing_portal(client: AsyncClient) -> None:
-    """Validation fails when portal_api source has no portal in config."""
+    """A portal source with no portal in its config is refused with the reason."""
     payload = _make_portal_source(config={"not_portal": "value"})
     resp = await client.post("/api/v1/data-sources", json=payload)
-    assert resp.status_code == 500
+    assert resp.status_code == 422
 
 
 @pytest.mark.asyncio
 async def test_create_json_source_missing_data_and_url(client: AsyncClient) -> None:
-    """Validation fails when JSON source has neither data nor url."""
+    """A JSON source with neither data nor url is refused with the reason."""
     payload = _make_json_source(config={"not_data": "value"})
     resp = await client.post("/api/v1/data-sources", json=payload)
-    assert resp.status_code == 500
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_create_register_source_with_a_city_the_site_does_not_know(
+    client: AsyncClient,
+) -> None:
+    """The answer names the city, so the operator knows what to correct."""
+    payload = _make_register_source(config={"city": "Atlantis"})
+    resp = await client.post("/api/v1/data-sources", json=payload)
+
+    assert resp.status_code == 422
+    assert "Atlantis" in resp.json()["detail"]
 
 
 @pytest.mark.asyncio
 async def test_create_file_upload_source_missing_filename(client: AsyncClient) -> None:
-    """Validation fails when file_upload source has no filename in config."""
+    """A file source with no filename in its config is refused with the reason."""
     payload = _make_file_source(config={"not_filename": "value"})
     resp = await client.post("/api/v1/data-sources", json=payload)
-    assert resp.status_code == 500
+    assert resp.status_code == 422
 
 
 # ===========================================================================
@@ -460,12 +482,12 @@ async def test_update_data_source_config_url_validation(
     client: AsyncClient,
     sample_active_source: DataSourceDB,
 ) -> None:
-    """Update config with invalid URL raises ValueError (500)."""
+    """An update with a url that is not a url is refused with the reason."""
     resp = await client.patch(
         f"/api/v1/data-sources/{sample_active_source.id}",
         json={"config": {"url": "not-a-valid-url"}},
     )
-    assert resp.status_code == 500
+    assert resp.status_code == 422
 
 
 @pytest.mark.asyncio
