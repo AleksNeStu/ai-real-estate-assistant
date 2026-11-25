@@ -15,24 +15,26 @@ it is created, and the sync reads that file.
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
+from datetime import UTC, datetime
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from api.routers import admin as admin_router
-from api.routers.data_sources import _collect_properties
+from api.routers.data_sources import _collect_properties, _run_sync
 from config.settings import settings
 from data.uploaded_sources import (
     register_file_upload_source,
     safe_source_filename,
     store_uploaded_source_file,
 )
-from db.database import get_db
-from db.models import DataSourceDB
+from db.database import create_engine, get_db
+from db.models import Base, DataSourceDB, DataSourceSyncHistory
 
 CSV_BODY = b"city,price,rooms\nKrakow,500000,2\nGdansk,300000,1\n"
 
@@ -213,3 +215,84 @@ class TestTheUploadCreatesTheSource:
 
         rows = (await db_session.execute(_all_file_upload_sources())).scalars().all()
         assert rows == []
+
+
+class TestTheSyncOfTheSource:
+    """The rows of the file land in the catalogue, and the source counts them."""
+
+    @pytest.mark.asyncio
+    async def test_the_sync_reads_the_file_and_counts_the_rows(self, tmp_path: Path) -> None:
+        db_url, session = await _a_database_on_disk(tmp_path)
+
+        uploads = tmp_path / "uploads"
+        with (
+            patch.object(settings, "uploads_dir", uploads),
+            patch("api.routers.admin.save_collection"),
+        ):
+            source = await register_file_upload_source(
+                session,
+                name="Krakow listings",
+                filename="listings.csv",
+                file_path=store_uploaded_source_file(
+                    CSV_BODY, uploads_root=uploads, name="Krakow listings", suffix=".csv"
+                ),
+                sheet_name=None,
+                header_row=0,
+                size_bytes=len(CSV_BODY),
+                records=2,
+            )
+            await session.commit()
+
+        sync = DataSourceSyncHistory(
+            data_source_id=source.id,
+            started_at=datetime.now(UTC),
+            status="running",
+        )
+        session.add(sync)
+        await session.commit()
+
+        store = MagicMock()
+        with (
+            patch.object(settings, "uploads_dir", uploads),
+            patch("api.dependencies.get_vector_store", return_value=store),
+            patch(
+                "api.routers.data_sources.save_imported_properties",
+                return_value=2,
+            ),
+        ):
+            await _run_sync(source.id, sync.id, db_url)
+
+        written = store.add_properties.call_args.args[0]
+        assert len(written) == 2
+        assert {prop.city for prop in written} == {"Krakow", "Gdansk"}
+
+        # The sync ran on a session of its own, so the row is read back
+        # from the database rather than from this session's memory of it.
+        read_back = (
+            await session.execute(
+                select(DataSourceDB)
+                .where(DataSourceDB.id == source.id)
+                .execution_options(populate_existing=True)
+            )
+        ).scalar_one()
+        assert read_back.status == "active"
+        assert read_back.last_sync_status == "success"
+        # The count is the number of rows the file carried.
+        assert read_back.total_records == 2
+        await session.close()
+
+
+async def _a_database_on_disk(tmp_path: Path) -> tuple[str, AsyncSession]:
+    """A database on disk, with a session on it.
+
+    The sync opens a session of its own on the url it is given, so a
+    database in memory would be a different database for it.
+    """
+    db_path = tmp_path / "sources.db"
+    url = f"sqlite+aiosqlite:///{db_path}"
+    engine = create_engine(url)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    factory = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+    session = factory()
+    return url, session
