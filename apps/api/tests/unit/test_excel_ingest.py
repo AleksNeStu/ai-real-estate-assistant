@@ -43,7 +43,7 @@ class _StubSession:
     """
 
     def __init__(self) -> None:
-        self.added = []
+        self.added: list[object] = []
 
     async def execute(self, *args, **kwargs):
         return _EmptyResult()

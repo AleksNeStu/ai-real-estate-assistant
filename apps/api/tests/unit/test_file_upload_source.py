@@ -14,7 +14,7 @@ it is created, and the sync reads that file.
 
 from __future__ import annotations
 
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -66,7 +66,8 @@ async def _upload(client: AsyncClient, name: str | None = "Krakow listings") -> 
         data=data,
     )
     assert response.status_code == 200, response.text
-    return response.json()
+    body: dict = response.json()
+    return body
 
 
 class TestTheFileIsKeptWhereASourceCanReadIt:
@@ -149,7 +150,9 @@ class TestTheSourceIsCreated:
 
         assert first.id == second.id
 
-        rows = (await db_session.execute(_all_file_upload_sources())).scalars().all()
+        rows: Sequence[DataSourceDB] = (
+            (await db_session.execute(_all_file_upload_sources())).scalars().all()
+        )
         assert [row.name for row in rows] == ["Krakow listings"]
 
 
@@ -213,7 +216,9 @@ class TestTheUploadCreatesTheSource:
         assert body["data_source_error"]
         assert "the disk is full" in body["data_source_error"]
 
-        rows = (await db_session.execute(_all_file_upload_sources())).scalars().all()
+        rows: Sequence[DataSourceDB] = (
+            (await db_session.execute(_all_file_upload_sources())).scalars().all()
+        )
         assert rows == []
 
 
