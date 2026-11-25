@@ -7400,6 +7400,39 @@
               }
             ],
             "title": "Source Type"
+          },
+          "data_source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Source Id"
+          },
+          "data_source_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Source Name"
+          },
+          "data_source_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Source Error"
           }
         },
         "required": [
@@ -18964,7 +18997,7 @@
     },
     "/api/v1/admin/ingest/upload": {
       "post": {
-        "description": "Upload and ingest property data from Excel/CSV files.\n\nSupports: .xlsx, .xls, .ods, .csv files.\nMaximum file size: 25MB.\nDoes NOT automatically reindex vector store (call /reindex for that).",
+        "description": "Upload and ingest property data from Excel/CSV files.\n\nSupports: .xlsx, .xls, .ods, .csv files.\nMaximum file size: 25MB.\nDoes NOT automatically reindex vector store (call /reindex for that).\n\nThe file is kept where a data source can read it again, and the source\nthat names it is created: an upload is the creation of a source, not a\nside effect of one. The answer carries the id and the name of that\nsource - or, when the file could not be kept, the reason why there is\nnone.",
         "operationId": "ingest_file_upload_api_v1_admin_ingest_upload_post",
         "requestBody": {
           "content": {

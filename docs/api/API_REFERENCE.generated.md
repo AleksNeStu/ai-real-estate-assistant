@@ -107,7 +107,7 @@ Trigger data ingestion from URLs. Downloads CSV/Excel files, processes them, and
 
 **Tags**: Admin
 
-Upload and ingest property data from Excel/CSV files. Supports: .xlsx, .xls, .ods, .csv files. Maximum file size: 25MB. Does NOT automatically reindex vector store (call /reindex for that).
+Upload and ingest property data from Excel/CSV files. Supports: .xlsx, .xls, .ods, .csv files. Maximum file size: 25MB. Does NOT automatically reindex vector store (call /reindex for that). The file is kept where a data source can read it again, and the source that names it is created: an upload is the creation of a source, not a side effect of one. The answer carries the id and the name of that source - or, when the file could not be kept, the reason why there is none.
 
 **Request Body**
 
