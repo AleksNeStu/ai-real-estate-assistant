@@ -25,6 +25,7 @@ from collections.abc import AsyncGenerator
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 # Ensure test environment before any app imports
 os.environ.setdefault("ENVIRONMENT", "test")
@@ -51,7 +52,53 @@ def anyio_backend():
 
 
 @pytest.fixture
-async def e2e_client() -> AsyncGenerator[AsyncClient, None]:
+async def e2e_database() -> AsyncGenerator[async_sessionmaker, None]:
+    """
+    A database with the schema of the product, for the in-process suite.
+
+    A deployment has a database: the tables exist, they are empty until
+    something is written into them, and a route that reads one answers
+    "nothing yet" rather than "broken". The in-process suite ran without
+    one, and every route that reads a table answered 500 - the tables were
+    not there at all. That is a broken deployment, and a test of the public
+    journey against a broken deployment proves nothing about the journey.
+
+    So the in-process suite gets the schema, and an empty database: the
+    register holds no sale, the catalogue holds no listing, and the routes
+    answer the way they answer on a fresh deployment.
+
+    The scope is the function, the way the session of the rest of the tests
+    is: the database is in the memory, and a database in the memory belongs
+    to the loop that opened it.
+    """
+    from db import models  # noqa: F401 - importing the models registers them
+    from db.database import Base, create_engine
+
+    engine = create_engine(
+        "sqlite+aiosqlite:///:memory:",
+        echo=False,
+        connect_args={"check_same_thread": False},
+    )
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    factory = async_sessionmaker(
+        bind=engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+        autocommit=False,
+        autoflush=False,
+    )
+    try:
+        yield factory
+    finally:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.drop_all)
+        await engine.dispose()
+
+
+@pytest.fixture
+async def e2e_client(e2e_database) -> AsyncGenerator[AsyncClient, None]:
     """
     The client the suite talks to.
 
@@ -60,8 +107,9 @@ async def e2e_client() -> AsyncGenerator[AsyncClient, None]:
     that the test runner has already closed - which fails the teardown of
     every test that used it.
 
-    Overrides only external services (LLM, vector store) to avoid
-    hitting real APIs while keeping auth, middleware, and routing intact.
+    Overrides only external services (LLM, vector store, the database) to
+    avoid hitting real APIs while keeping auth, middleware, and routing
+    intact.
     """
     if E2E_BASE_URL:
         # A running backend: the application under test is the deployed one,
@@ -74,6 +122,7 @@ async def e2e_client() -> AsyncGenerator[AsyncClient, None]:
 
     from api.dependencies import get_llm, get_optional_llm_with_details, get_vector_store
     from api.main import app
+    from db.database import get_db
 
     # Mock vector store
     mock_store = MagicMock()
@@ -94,6 +143,17 @@ async def e2e_client() -> AsyncGenerator[AsyncClient, None]:
         "mock",
         "mock-model",
     )
+
+    # The database of the deployment under test: the schema of the product,
+    # empty. The session is the one the request would have had - it is
+    # committed at the end of the request, the way the real dependency
+    # commits it.
+    async def override_get_db():
+        async with e2e_database() as session:
+            yield session
+            await session.commit()
+
+    app.dependency_overrides[get_db] = override_get_db
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:

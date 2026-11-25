@@ -104,7 +104,7 @@ class _EmptyRetriever(BaseRetriever):
 
 
 @pytest_asyncio.fixture(autouse=True)
-async def local_deployment(e2e_client):
+async def local_deployment(e2e_client, monkeypatch):
     """
     In-process, the suite answers the way the deployment answers.
 
@@ -115,6 +115,12 @@ async def local_deployment(e2e_client):
     real chat model, with no key and no network) and the retriever is a real
     one with nothing in it, so the chat answers 200 the way the deployment
     answers it.
+
+    The free chat is a second boundary: it resolves its own provider from the
+    cascade of the free tier, and that resolution is a call, not a dependency
+    - so the demo model is put in its place as well. Without that, the free
+    chat answers 503 on a machine that holds no provider key, and the suite
+    would be asserting the keyring of the machine it runs on.
 
     Against a running backend nothing is replaced: the deployment answers with
     the model it is configured with.
@@ -127,6 +133,7 @@ async def local_deployment(e2e_client):
 
     from api.dependencies import get_llm, get_optional_llm_with_details, get_vector_store
     from api.main import app
+    from api.routers import chat as chat_router
     from core.demo import get_demo_llm
 
     model = get_demo_llm()
@@ -148,6 +155,7 @@ async def local_deployment(e2e_client):
         "demo-mock",
         "demo-mock",
     )
+    monkeypatch.setattr(chat_router, "get_llm_for_free_user", lambda: model)
     try:
         yield
     finally:
