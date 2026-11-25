@@ -28,7 +28,7 @@ from api.routers import data_sources, properties
 from config.settings import settings
 from data.rcn.rcn_ingest import ingest_voivodeship
 from db.database import Base, create_engine, get_db
-from db.models import DataSourceDB, DataSourceSyncHistory
+from db.models import DataSourceDB, DataSourceSyncHistory, PropertyTransaction
 from tests.fixtures import recorded_rcn_export
 from utils import property_cache
 
@@ -42,6 +42,24 @@ INGESTED_ROWS = 54
 
 # The band the answer is read in: nine of the recorded sales fall in it.
 PRICE_BAND = (700_000.0, 800_000.0)
+
+# One deed of the recorded export, the price the register published for it
+# and the price the starosta corrects it to.
+DEED_REFERENCE = "18806/2026"
+REGISTERED_PRICE = 790_000.0
+CORRECTED_PRICE = 812_500.0
+
+
+def _the_deed_listing(properties: list[Any]) -> Any:
+    """The one listing of the catalogue that carries the deed.
+
+    The deed is one sale, so the catalogue holds one listing for it. The
+    listing is found by its deed and not by its place in the list, so the
+    test reads the same listing whatever order the catalogue is in.
+    """
+    found = [p for p in properties if DEED_REFERENCE in (p.description or "")]
+    assert len(found) == 1, f"the deed is not one listing: {len(found)}"
+    return found[0]
 
 
 class _FakeDocument:
@@ -60,6 +78,11 @@ class _FakeStore:
     that runs twice leaves the collection the size it was - and the test
     below runs the sync twice to hold that rule.
 
+    A source of record is the one exception: it writes the newer listing
+    under the id of the listing the collection already holds, so a deed the
+    register corrects reaches the catalogue. This stand-in holds that rule
+    too.
+
     What this stand-in proves is the shape of the exchange: which listings
     are handed to the collection and which come back out of it. The real
     store is held by the tests of the vector store itself.
@@ -68,11 +91,18 @@ class _FakeStore:
     def __init__(self) -> None:
         self.properties: list[Any] = []
 
-    def add_properties(self, properties: list[Any], batch_size: int = 100) -> int:
+    def add_properties(
+        self, properties: list[Any], batch_size: int = 100, refresh: bool = False
+    ) -> int:
         known = {p.id for p in self.properties}
         added = 0
         for prop in properties:
             if prop.id and prop.id in known:
+                # A source of record writes the newer listing under the id of
+                # the one the collection holds; every other source leaves it.
+                if refresh:
+                    index = next(i for i, p in enumerate(self.properties) if p.id == prop.id)
+                    self.properties[index] = prop
                 continue
             self.properties.append(prop)
             if prop.id:
@@ -280,6 +310,75 @@ async def test_the_register_becomes_the_catalogue(tmp_path, monkeypatch):
         cached_again = property_cache.load_collection()
         assert cached_again is not None
         assert len(cached_again.properties) == INGESTED_ROWS
+    finally:
+        await harness.close()
+
+
+@pytest.mark.asyncio
+async def test_a_deed_the_register_corrects_replaces_the_listing(tmp_path, monkeypatch):
+    """The starosta corrects a deed in place - the catalogue carries the new price.
+
+    The register publishes weekly and the starosta corrects a deed where it
+    stands, so the register publishes the same flat again with the price it
+    was registered under. The catalogue is a set of listings keyed by the id
+    of the flat, so the listing that is already there has to be refreshed -
+    a listing that kept the old price would say the flat was sold for a
+    price the register no longer publishes.
+    """
+    harness = _Harness(tmp_path, monkeypatch)
+    await harness.setup(tmp_path, monkeypatch)
+
+    try:
+        async with harness.client() as client:
+            await client.post("/api/v1/data-sources/src-register-1/sync")
+            first = await _wait_for_sync(harness.session_factory)
+
+        assert first.status == "success", first.error_message
+
+        # The catalogue publishes the price the register published.
+        listing = _the_deed_listing(harness.store.properties)
+        assert listing.price == REGISTERED_PRICE
+
+        # The starosta corrects the deed where it stands.
+        async with harness.session_factory() as session:
+            result = await session.execute(
+                select(PropertyTransaction)
+                .where(
+                    PropertyTransaction.deed_reference.like(f"%{DEED_REFERENCE}%"),
+                    PropertyTransaction.price_brutto == REGISTERED_PRICE,
+                )
+                # The row is chosen by its own order, so the test reads the same
+                # deed whatever order the database hands the rows in.
+                .order_by(PropertyTransaction.external_id)
+            )
+            deeds = result.scalars().all()
+            assert len(deeds) == 1, f"the deed is not one row: {len(deeds)}"
+            deed = deeds[0]
+            deed.price_brutto = CORRECTED_PRICE
+            await session.commit()
+
+        async with harness.client() as client:
+            await client.post("/api/v1/data-sources/src-register-1/sync")
+            second = await _wait_for_sync(harness.session_factory, count=2)
+
+        assert second.status == "success", second.error_message
+
+        # The collection carries the corrected price.
+        corrected = _the_deed_listing(harness.store.properties)
+        assert corrected.price == CORRECTED_PRICE
+
+        # The cache carries it too: the two are one catalogue.
+        cached = property_cache.load_collection()
+        assert cached is not None
+        cached_listing = _the_deed_listing(cached.properties)
+        assert cached_listing.price == CORRECTED_PRICE
+
+        # The catalogue is still a set of listings: the corrected deed did not
+        # add a listing, it corrected the one that was there.
+        assert len(harness.store.properties) == INGESTED_ROWS
+        assert len(cached.properties) == INGESTED_ROWS
+        assert second.records_added == 0
+        assert second.records_skipped == INGESTED_ROWS
     finally:
         await harness.close()
 

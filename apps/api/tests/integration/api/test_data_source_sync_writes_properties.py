@@ -52,11 +52,18 @@ class _FakeStore:
     def __init__(self) -> None:
         self.properties: list[Any] = []
 
-    def add_properties(self, properties: list[Any], batch_size: int = 100) -> int:
+    def add_properties(
+        self, properties: list[Any], batch_size: int = 100, refresh: bool = False
+    ) -> int:
         known = {p.id for p in self.properties}
         added = 0
         for prop in properties:
             if prop.id and prop.id in known:
+                # A source of record writes the newer listing under the id of
+                # the one the collection holds; every other source leaves it.
+                if refresh:
+                    index = next(i for i, p in enumerate(self.properties) if p.id == prop.id)
+                    self.properties[index] = prop
                 continue
             self.properties.append(prop)
             if prop.id:

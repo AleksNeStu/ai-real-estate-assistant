@@ -126,12 +126,13 @@ def save_imported_properties(
     properties: list[Property],
     source_name: Optional[str],
     source_type: Optional[str],
+    refresh: bool = False,
 ) -> int:
     """Add the imported properties to the cached collection.
 
-    The cache is what the product reads and what ``/admin/reindex`` re-indexes
-    into the vector store, so an import that did not write here would load
-    rows the product never shows.
+    The cache is what ``/admin/reindex`` re-indexes into the collection the
+    product reads, so an import that did not write here would leave the
+    product showing rows the import never brought in.
 
     The collection is a set of listings, not a log of imports: a listing that
     is already in it - one that carries an id - is left as it is, and the
@@ -146,21 +147,55 @@ def save_imported_properties(
     another source that carries the same id is the same listing of the
     catalogue, and the one that was there first stays.
 
+    A source of record is the exception. The register publishes the prices
+    people paid, and the starosta corrects a deed where it stands, so the
+    register publishes the same flat again with the price it was registered
+    under. A source that is of record therefore refreshes the listing it
+    already published: the newer listing takes the place of the one that was
+    there, under the same id, so the catalogue says what the register says.
+    The number that comes back is still the number of listings that were not
+    there before - a listing that was refreshed is not a new listing.
+
     Returns the number of properties that were added to the collection - the
     ones the collection did not hold yet.
+
+    The number is the catalogue's own answer, and the cache is the
+    catalogue's record: the cache is what a reindex re-indexes, so it knows
+    what the catalogue held before the sync and what the sync added to it.
+    The count is therefore the same in a deployment that restarted since the
+    last sync - it comes from the cache and not from the memory of the
+    process.
     """
     existing = load_collection()
     merged = list(existing.properties) if existing else []
 
-    known = {p.id for p in merged if p.id}
-    added: list[Property] = []
+    # Where the catalogue holds a listing: the id of the listing is its key,
+    # so the place of a listing is looked up once and not looked for again.
+    positions = {prop.id: index for index, prop in enumerate(merged) if prop.id}
+    known = set(positions)
+
+    added = 0
+    seen: set[str] = set()
     for prop in properties:
+        if prop.id and prop.id in seen:
+            # The same listing came in twice. The register reads its sales
+            # most recent first, so the first one of the two is the listing
+            # and the second one is the same listing again.
+            continue
+        if prop.id:
+            seen.add(prop.id)
         if prop.id and prop.id in known:
+            # The catalogue holds this listing already. A source of record
+            # publishes the newer listing in its place; every other source
+            # leaves the listing as it is.
+            if refresh:
+                merged[positions[prop.id]] = prop
             continue
         if prop.id:
             known.add(prop.id)
-        added.append(prop)
-    merged.extend(added)
+            positions[prop.id] = len(merged)
+        merged.append(prop)
+        added += 1
 
     save_collection(
         PropertyCollection(
@@ -170,4 +205,4 @@ def save_imported_properties(
             source_type=source_type,
         )
     )
-    return len(added)
+    return added

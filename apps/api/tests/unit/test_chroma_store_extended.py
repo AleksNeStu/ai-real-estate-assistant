@@ -604,6 +604,185 @@ class TestAddPropertiesWithVectorStore:
 
 
 # ===================================================================
+# add_properties() with a source of record
+# ===================================================================
+
+
+class TestAddPropertiesRefresh:
+    """A source of record refreshes the listings it already published.
+
+    The register publishes the prices people paid and the starosta corrects
+    a deed where it stands, so the store has to take the newer listing under
+    the id of the one it holds - a store that kept the old listing would
+    offer a price the register no longer publishes.
+    """
+
+    def test_the_newer_listing_is_written_under_the_same_id(self, tmp_path):
+        vs = _mock_vector_store()
+        vs._collection.get.return_value = {"ids": ["p1"]}
+        store = _make_store(tmp_path, embeddings=_mock_embeddings(), vector_store=vs)
+
+        store.add_properties([make_property("p1", "Krakow", 950)], refresh=True)
+
+        vs._collection.upsert.assert_called_once()
+        call_kw = vs._collection.upsert.call_args.kwargs
+        assert call_kw["ids"] == ["p1"]
+        assert call_kw["metadatas"][0]["price"] == 950.0
+
+    def test_a_refreshed_listing_is_not_a_new_one(self, tmp_path):
+        vs = _mock_vector_store()
+        vs._collection.get.return_value = {"ids": []}
+        store = _make_store(tmp_path, embeddings=_mock_embeddings(), vector_store=vs)
+
+        # The store takes the listing in.
+        assert store.add_properties([make_property("p1", "Krakow", 900)]) == 1
+        # The source publishes it again with another price: the listing was
+        # there before, so it is not a new one.
+        assert store.add_properties([make_property("p1", "Krakow", 950)], refresh=True) == 0
+
+    def test_a_listing_that_is_not_refreshed_is_left_as_it_is(self, tmp_path):
+        vs = _mock_vector_store()
+        vs._collection.get.return_value = {"ids": ["p1"]}
+        store = _make_store(tmp_path, embeddings=_mock_embeddings(), vector_store=vs)
+
+        store.add_properties([make_property("p1", "Krakow", 950)])
+
+        vs._collection.upsert.assert_not_called()
+        vs._collection.add.assert_not_called()
+
+    def test_the_first_of_two_listings_of_the_same_id_is_the_listing(self, tmp_path):
+        """The register reads its sales most recent first."""
+        vs = _mock_vector_store()
+        vs._collection.get.return_value = {"ids": ["p1"]}
+        store = _make_store(tmp_path, embeddings=_mock_embeddings(), vector_store=vs)
+
+        store.add_properties(
+            [
+                make_property("p1", "Krakow", 950),
+                make_property("p1", "Krakow", 500),
+            ],
+            refresh=True,
+        )
+
+        call_kw = vs._collection.upsert.call_args.kwargs
+        assert call_kw["ids"] == ["p1"]
+        assert len(call_kw["documents"]) == 1
+        assert call_kw["metadatas"][0]["price"] == 950.0
+
+    def test_two_listings_without_an_id_of_their_own_are_one_listing(self, tmp_path):
+        """A listing without an identity cannot be told from another one."""
+        vs = _mock_vector_store()
+        vs._collection.get.return_value = {"ids": []}
+        store = _make_store(tmp_path, embeddings=_mock_embeddings(), vector_store=vs)
+
+        first = Property(city="Krakow", price=900.0, description="A flat without an id")
+        second = Property(city="Krakow", price=950.0, description="Another flat without an id")
+
+        store.add_properties([first, second], refresh=True)
+
+        # The first one of the two is the listing: a listing without an id of
+        # its own cannot be recognised, so the write carries one of them and
+        # not both - two of them would be two writes under one id.
+        call_kw = vs._collection.upsert.call_args.kwargs
+        assert len(call_kw["documents"]) == 1
+        assert call_kw["metadatas"][0]["price"] == 900.0
+
+    def test_the_fallback_cache_carries_the_refreshed_listing(self, tmp_path):
+        """The cache is what the store reads when the collection is away."""
+        store = _make_store(tmp_path, embeddings=None, vector_store=None)
+
+        store.add_properties([make_property("p1", "Krakow", 900)])
+        store.add_properties([make_property("p1", "Krakow", 950)], refresh=True)
+
+        assert len(store._documents) == 1
+        assert store._documents[0].metadata["price"] == 950.0
+
+    def test_a_write_that_fails_leaves_the_listing_the_cache_had(self, tmp_path):
+        """The cache and the collection do not say different things about a listing."""
+        vs = _mock_vector_store()
+        vs._collection.get.return_value = {"ids": []}
+        store = _make_store(tmp_path, embeddings=_mock_embeddings(), vector_store=vs)
+
+        store.add_properties([make_property("p1", "Krakow", 900)])
+        # The collection refuses the write.
+        vs._collection.upsert.side_effect = RuntimeError("the collection is away")
+
+        store.add_properties([make_property("p1", "Krakow", 950)], refresh=True)
+
+        # The cache keeps the listing it had, so the price the product shows
+        # is the price the collection holds.
+        assert store._documents[0].metadata["price"] == 900.0
+
+    def test_a_listing_put_in_the_cache_by_another_road_is_found(self, tmp_path):
+        """A listing the index does not name is found by its id."""
+        store = _make_store(tmp_path, embeddings=None, vector_store=None)
+        store.add_properties([make_property("p1", "Krakow", 900)])
+        # The index of the cache does not know where the listing sits.
+        store._doc_positions.clear()
+
+        store.add_properties([make_property("p1", "Krakow", 950)], refresh=True)
+
+        assert store._documents[0].metadata["price"] == 950.0
+        assert store._doc_positions["p1"] == 0
+
+    def test_a_place_that_names_another_listing_is_not_used(self, tmp_path):
+        """The index does not point at another listing by mistake."""
+        store = _make_store(tmp_path, embeddings=None, vector_store=None)
+        store.add_properties([make_property("p1", "Krakow", 900)])
+        # The place of the listing names another listing.
+        store._doc_positions["p1"] = 5
+
+        store.add_properties([make_property("p1", "Krakow", 950)], refresh=True)
+
+        assert store._documents[0].metadata["price"] == 950.0
+        assert len(store._documents) == 1
+
+    def test_the_collection_without_embeddings_takes_the_newer_listing(self, tmp_path):
+        """The write of the collection is an upsert, so the listing is replaced."""
+        vs = _mock_vector_store()
+        vs._collection.get.return_value = {"ids": []}
+        store = _make_store(tmp_path, embeddings=None, vector_store=vs)
+
+        store.add_properties([make_property("p1", "Krakow", 900)])
+        store.add_properties([make_property("p1", "Krakow", 950)], refresh=True)
+
+        vs.add_documents.assert_called()
+        assert store._documents[0].metadata["price"] == 950.0
+
+    def test_a_listing_the_cache_holds_the_id_of_but_not_the_listing_is_left_alone(self, tmp_path):
+        """A listing the cache does not hold is not replaced by nothing."""
+        store = _make_store(tmp_path, embeddings=None, vector_store=None)
+        # The cache knows the id of the listing but does not hold it.
+        store._doc_ids.add("p1")
+
+        store.add_properties([make_property("p1", "Krakow", 950)], refresh=True)
+
+        assert store._documents == []
+
+    def test_clearing_the_store_forgets_the_places_of_the_listings(self, tmp_path):
+        """A store that was cleared holds no listing, so it knows no place."""
+        store = _make_store(tmp_path, embeddings=None, vector_store=None)
+        store.add_properties([make_property("p1", "Krakow", 900)])
+        assert store._doc_positions
+
+        store.clear()
+
+        assert store._doc_positions == {}
+        assert store._documents == []
+
+    def test_a_store_that_could_not_be_cleared_forgets_the_places_too(self, tmp_path):
+        """Even a clear that failed leaves no place behind."""
+        store = _make_store(tmp_path, embeddings=None, vector_store=None)
+        store.add_properties([make_property("p1", "Krakow", 900)])
+        store._get_vector_store = MagicMock(side_effect=RuntimeError("the collection is away"))
+
+        store.clear()
+
+        assert store._doc_positions == {}
+        assert store._documents == []
+
+
+# ===================================================================
 # search_by_metadata()
 # ===================================================================
 

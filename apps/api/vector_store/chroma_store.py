@@ -15,7 +15,7 @@ import uuid
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Union, cast
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Union, cast
 
 import pandas as pd
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
@@ -143,6 +143,9 @@ class ChromaPropertyStore:
         self._documents: List[Document] = []
         # We no longer load all IDs into memory to avoid startup freeze
         self._doc_ids: Set[str] = set()
+        # Where a listing sits in the cache above, so a listing that was
+        # refreshed can be put in its place instead of beside it.
+        self._doc_positions: Dict[str, int] = {}
         self._cache_lock = threading.Lock()
         self._vector_lock = threading.Lock()
         self._indexing_event = threading.Event()
@@ -414,13 +417,21 @@ class ChromaPropertyStore:
             logger.error("Error retrieving properties by IDs: %s", sanitize_for_log(e))
             return []
 
-    def add_properties(self, properties: List[Property], batch_size: int = 100) -> int:
+    def add_properties(
+        self, properties: List[Property], batch_size: int = 100, refresh: bool = False
+    ) -> int:
         """
         Add properties to the vector store.
 
         Args:
             properties: List of Property instances
             batch_size: Number of properties to process at once
+            refresh: When True, a listing the store already holds is written
+                again under its own id - the newer listing of a listing of
+                record replaces the one that was there. The number that comes
+                back is the number of listings this store took into its cache,
+                so a listing that was already in the cache is not counted as
+                a new one.
 
         Returns:
             Number of properties added
@@ -441,19 +452,39 @@ class ChromaPropertyStore:
             logger.warning("No valid documents to add")
             return 0
 
+        # One listing is one id. A listing that came in twice is one listing,
+        # and the first one of the two is the listing - the register reads its
+        # sales most recent first.
+        batch_items: List[Tuple[Document, str]] = []
+        seen: Set[str] = set()
+        for index, doc in enumerate(documents):
+            # The catalogue is keyed by the id of the listing. A listing that
+            # carries no id of its own is keyed by the name the collection
+            # gives it, so two listings without an id are one listing - and
+            # the first one of them is the listing. A key that is empty is no
+            # key at all, so a listing that somehow carries none is keyed by
+            # its place in the batch.
+            doc_id = str(doc.metadata.get("id", "")) or f"doc-{index}"
+            if doc_id in seen:
+                continue
+            seen.add(doc_id)
+            batch_items.append((doc, doc_id))
+
         vector_store = self._get_vector_store()
 
         # If vector store is unavailable, keep documents in fallback cache only
         if vector_store is None:
             total_cached = 0
             with self._cache_lock:
-                for doc in documents:
-                    doc_id = str(doc.metadata.get("id", ""))
+                for doc, doc_id in batch_items:
                     if doc_id and doc_id in self._doc_ids:
+                        if refresh:
+                            self._replace_cached_document(doc_id, doc)
                         continue
                     self._documents.append(doc)
                     if doc_id:
                         self._doc_ids.add(doc_id)
+                        self._doc_positions[doc_id] = len(self._documents) - 1
                     total_cached += 1
             logger.info(
                 "Vector store disabled; cached %s properties in memory",
@@ -464,44 +495,58 @@ class ChromaPropertyStore:
         # Add documents in batches
         total_cached = 0
         total_indexed = 0
-        for i in range(0, len(documents), batch_size):
-            batch = documents[i : i + batch_size]
-            batch_ids = [str(d.metadata.get("id", f"doc-{i + j}")) for j, d in enumerate(batch)]
+        for i in range(0, len(batch_items), batch_size):
+            batch = batch_items[i : i + batch_size]
+            batch_docs = [doc for doc, _ in batch]
+            batch_ids = [doc_id for _, doc_id in batch]
+
+            # A listing of record is written to the collection first. The
+            # cache takes the newer listing only once the collection holds
+            # it, so the two never say different things about the price of
+            # the same listing.
+            pending: List[Tuple[str, Document]] = []
 
             with self._cache_lock:
-                for doc, doc_id in zip(batch, batch_ids, strict=False):
+                for doc, doc_id in batch:
                     if doc_id and doc_id in self._doc_ids:
+                        if refresh:
+                            pending.append((doc_id, doc))
                         continue
                     self._documents.append(doc)
                     if doc_id:
                         self._doc_ids.add(doc_id)
+                        self._doc_positions[doc_id] = len(self._documents) - 1
                     total_cached += 1
 
-            # 1. Filter duplicates (check against DB)
-            try:
-                if vector_store:
-                    existing = vector_store._collection.get(ids=batch_ids, include=[])
-                    existing_ids = set(existing.get("ids", []))
+            # 1. Filter duplicates (check against DB). A source of record
+            # writes its listings again under their own id, so nothing is
+            # filtered out - the newer listing takes the place of the one
+            # that was there.
+            if not refresh:
+                try:
+                    if vector_store:
+                        existing = vector_store._collection.get(ids=batch_ids, include=[])
+                        existing_ids = set(existing.get("ids", []))
 
-                    new_batch = []
-                    new_ids = []
-                    for doc, doc_id in zip(batch, batch_ids, strict=False):
-                        if doc_id not in existing_ids:
-                            new_batch.append(doc)
-                            new_ids.append(doc_id)
+                        new_batch = []
+                        new_ids = []
+                        for doc, doc_id in batch:
+                            if doc_id not in existing_ids:
+                                new_batch.append(doc)
+                                new_ids.append(doc_id)
 
-                    if not new_batch:
-                        continue
+                        if not new_batch:
+                            continue
 
-                    batch = new_batch
-                    batch_ids = new_ids
-            except Exception as e:
-                logger.warning("Error checking duplicates: %s", sanitize_for_log(e))
+                        batch_docs = new_batch
+                        batch_ids = new_ids
+                except Exception as e:
+                    logger.warning("Error checking duplicates: %s", sanitize_for_log(e))
 
             try:
                 # 2. Generate Embeddings (CPU/Network) - WITHOUT LOCK
-                texts = [d.page_content for d in batch]
-                metadatas = [d.metadata for d in batch]
+                texts = [d.page_content for d in batch_docs]
+                metadatas = [d.metadata for d in batch_docs]
 
                 embeddings = None
                 if self.embeddings:
@@ -531,15 +576,32 @@ class ChromaPropertyStore:
                             metadatas_for_chroma.append(_sanitize_metadata(md))
 
                         # Direct add to collection to avoid re-embedding
-                        vector_store._collection.add(
-                            ids=batch_ids,
-                            embeddings=embeddings_for_chroma,
-                            metadatas=cast(Any, metadatas_for_chroma),
-                            documents=texts,
-                        )
+                        if refresh:
+                            # A listing of record: the newer listing is
+                            # written under the id of the one the store
+                            # holds, so the store carries the data that came
+                            # in and not the data that was there.
+                            vector_store._collection.upsert(
+                                ids=batch_ids,
+                                embeddings=embeddings_for_chroma,
+                                metadatas=cast(Any, metadatas_for_chroma),
+                                documents=texts,
+                            )
+                        else:
+                            vector_store._collection.add(
+                                ids=batch_ids,
+                                embeddings=embeddings_for_chroma,
+                                metadatas=cast(Any, metadatas_for_chroma),
+                                documents=texts,
+                            )
                     else:
-                        # Fallback if no embeddings (rare)
-                        vector_store.add_documents(batch, ids=batch_ids)
+                        # Fallback if no embeddings (rare). The write of the
+                        # collection is an upsert, so a listing of record
+                        # takes the place of the listing that was there in
+                        # one write: the listing is not taken away and then
+                        # put back, so a write that fails leaves the listing
+                        # that was there where it was.
+                        vector_store.add_documents(batch_docs, ids=batch_ids)
 
                 # Update local cache for fallback search (if we want to keep it sync)
                 # Note: We don't load initial docs, so this cache is partial.
@@ -547,16 +609,26 @@ class ChromaPropertyStore:
                 # with self._cache_lock:
                 #    self._documents.extend(batch)
 
-                total_indexed += len(batch)
+                total_indexed += len(batch_docs)
                 logger.info(
                     "Added batch %s: %s properties",
                     sanitize_for_log(i // batch_size + 1),
-                    len(batch),
+                    len(batch_docs),
                 )
 
             except Exception as e:
                 logger.error("Error adding batch: %s", sanitize_for_log(e))
+                # The write failed, so the cache keeps the listing it had: a
+                # listing of record is not refreshed in the cache before the
+                # collection carries it. The next sync writes it again.
                 continue
+
+            # The collection holds the batch, so the cache takes the newer
+            # listing of a source of record.
+            if pending:
+                with self._cache_lock:
+                    for doc_id, doc in pending:
+                        self._replace_cached_document(doc_id, doc)
 
         if total_indexed > 0:
             logger.info(
@@ -564,6 +636,33 @@ class ChromaPropertyStore:
             )
 
         return total_cached
+
+    def _replace_cached_document(self, doc_id: str, doc: Document) -> None:
+        """Replace the cached copy of a listing the store already holds.
+
+        The cache is what the store falls back to when the collection is
+        unavailable, so a listing that was refreshed has to be refreshed in
+        it too: a cache that kept the old listing would offer a price the
+        source no longer publishes.
+        """
+        position = self._doc_positions.get(doc_id)
+        if position is not None and (
+            position >= len(self._documents)
+            or str(self._documents[position].metadata.get("id", "")) != doc_id
+        ):
+            # The place the index names is not this listing any more.
+            position = None
+        if position is None:
+            # A listing that was put in the cache by another road: it is
+            # found by its id, and its place is remembered for next time.
+            for index, cached in enumerate(self._documents):
+                if str(cached.metadata.get("id", "")) == doc_id:
+                    position = index
+                    self._doc_positions[doc_id] = index
+                    break
+        if position is None or position >= len(self._documents):
+            return
+        self._documents[position] = doc
 
     def add_property_collection(
         self,
@@ -1228,12 +1327,14 @@ class ChromaPropertyStore:
             with self._cache_lock:
                 self._documents = []
                 self._doc_ids = set()
+                self._doc_positions = {}
             logger.info("Vector store cleared")
 
         except Exception as e:
             logger.error("Error clearing vector store: %s", sanitize_for_log(e))
             with self._cache_lock:
                 self._documents = []
+                self._doc_positions = {}
 
     def get_stats(self) -> Dict[str, Any]:
         """

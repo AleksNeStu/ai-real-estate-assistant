@@ -59,6 +59,15 @@ _MAX_SYNC_DOWNLOAD_SECONDS = 60
 # is bounded, and a source that asks for more is told so when it is written.
 _MAX_REGISTER_SALES = 10_000
 
+# The source kinds whose listings the catalogue takes from the source itself.
+# The register is the source of record: the starosta corrects a deed where it
+# stands and the register publishes the flat again with the price it was
+# registered under, so a listing the register already published is refreshed
+# by the newer one instead of being left as it is. Every other source
+# publishes a snapshot of what it held when it was read, and a listing it
+# already published stays as it is.
+SOURCE_KINDS_OF_RECORD = frozenset({"register"})
+
 
 def _datasource_to_response(ds: DataSourceDB) -> DataSourceResponse:
     """Convert DataSourceDB to DataSourceResponse."""
@@ -353,16 +362,26 @@ async def _run_sync(source_id: str, sync_id: str, db_url: str) -> None:
                 raise RuntimeError("the vector store is unavailable")
 
             # The vector store is what the product reads, so it is written
-            # first; the cache is what a later reindex reads.
-            added = store.add_properties(properties)
-            save_imported_properties(properties, ds.name, ds.source_type)
+            # first; the cache is what a later reindex reads. A source of
+            # record refreshes the listings it already published, so a deed
+            # the register corrects reaches the catalogue.
+            refresh = ds.source_type in SOURCE_KINDS_OF_RECORD
+            store.add_properties(properties, refresh=refresh)
+            # The count is the catalogue's own answer, and the cache is the
+            # catalogue's record: it knows what the catalogue held before the
+            # sync - and what the sync added to it. The store's own count is
+            # what this process holds in memory, so a deployment that
+            # restarted since the last sync would count every listing as a
+            # new one.
+            added = save_imported_properties(properties, ds.name, ds.source_type, refresh=refresh)
 
             # The count is the number of listings the source carries, not a
             # running total of the syncs: the catalogue is a set of listings,
             # so a source that syncs twice still carries the same listings.
             # A listing the catalogue already held under the same id is that
             # same listing - it is not written twice and it is not counted
-            # twice either.
+            # twice either. A listing that was refreshed was there before,
+            # so it is not counted as a new one either.
             carried = len(properties)
 
             # Update sync history as completed
