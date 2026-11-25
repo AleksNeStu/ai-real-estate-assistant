@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.7.0] - 2026-11-25
 
-Twenty-two commits since v5.6.0. The theme: **the demo is a product, not a
+Twenty-seven commits since v5.6.0. The theme: **the demo is a product, not a
 screenshot**. It answers without a login, its catalogue is built from the
 register of notarial deeds, its calls to action are measured, its
 capabilities tell the truth about what the deployment can do, and the sheet
