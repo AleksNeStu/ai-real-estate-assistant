@@ -8,6 +8,7 @@ Covers:
 - ChromaPropertyStore delete_by_source_type
 """
 
+from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -17,6 +18,63 @@ import pytest
 from data.csv_loader import DataLoaderExcel
 from data.excel_loader import reader_installed
 from data.schemas import Property, PropertyCollection
+
+
+class _EmptyResult:
+    """The answer of a database that holds no source of that name."""
+
+    def scalars(self):
+        return self
+
+    def first(self):
+        return None
+
+    def all(self):
+        return []
+
+
+class _StubSession:
+    """A session that stores nothing.
+
+    The upload endpoint creates the data source that reads the uploaded
+    file. These tests are about the upload itself, so the database is
+    answered with a stub - the endpoint's own behaviour is covered by
+    ``test_file_upload_source.py``.
+    """
+
+    def __init__(self) -> None:
+        self.added = []
+
+    async def execute(self, *args, **kwargs):
+        return _EmptyResult()
+
+    def add(self, obj) -> None:
+        self.added.append(obj)
+
+    async def flush(self) -> None:
+        pass
+
+    async def commit(self) -> None:
+        pass
+
+
+@contextmanager
+def _stub_database():
+    """Answer the database of the upload endpoint with a stub.
+
+    The endpoint is served by the application itself, so the override is
+    put on that application and taken away again afterwards.
+    """
+    from api.main import app
+    from db.database import get_db
+
+    stub = _StubSession()
+    app.dependency_overrides[get_db] = lambda: stub
+    try:
+        yield stub
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
 
 # ============================================================================
 # DataLoaderExcel Edge Case Tests
@@ -151,6 +209,9 @@ class TestFileUploadEndpoint:
         mock_settings.max_properties = 1000
         # The upload limit is a setting like the others: the mock carries it.
         mock_settings.max_upload_bytes = 25 * 1024 * 1024
+        # The upload keeps the file it read, so the directory it keeps it
+        # in is a directory of this test.
+        mock_settings.uploads_dir = tmp_path / "uploads"
 
         # Create test Excel file
         p = tmp_path / "test.xlsx"
@@ -176,11 +237,12 @@ class TestFileUploadEndpoint:
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
             }
-            response = client.post(
-                "/api/v1/admin/ingest/upload",
-                files=files,
-                headers=headers,
-            )
+            with _stub_database():
+                response = client.post(
+                    "/api/v1/admin/ingest/upload",
+                    files=files,
+                    headers=headers,
+                )
 
         assert response.status_code == 200
         data = response.json()
@@ -202,6 +264,9 @@ class TestFileUploadEndpoint:
         mock_settings.max_properties = 1000
         # The upload limit is a setting like the others: the mock carries it.
         mock_settings.max_upload_bytes = 25 * 1024 * 1024
+        # The upload keeps the file it read, so the directory it keeps it
+        # in is a directory of this test.
+        mock_settings.uploads_dir = tmp_path / "uploads"
 
         p = tmp_path / "test.csv"
         df = pd.DataFrame(
@@ -219,11 +284,12 @@ class TestFileUploadEndpoint:
 
         with open(p, "rb") as f:
             files = {"file": ("test.csv", f, "text/csv")}
-            response = client.post(
-                "/api/v1/admin/ingest/upload",
-                files=files,
-                headers=headers,
-            )
+            with _stub_database():
+                response = client.post(
+                    "/api/v1/admin/ingest/upload",
+                    files=files,
+                    headers=headers,
+                )
 
         assert response.status_code == 200
         data = response.json()

@@ -3669,6 +3669,8 @@
           "propertiesProcessed": "Properties processed: {count}",
           "sourceType": "Source type: {type}",
           "sourceName": "Source name: {name}",
+          "dataSourceCreated": "Data source: {name}",
+          "dataSourceFailed": "No data source was created: {reason}",
           "warnings": "Warnings ({count})"
         },
         "editDialog": {

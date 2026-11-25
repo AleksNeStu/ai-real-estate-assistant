@@ -288,6 +288,13 @@ class IngestResponse(BaseModel):
     errors: List[str] = []
     source_type: Optional[str] = None
     source_name: Optional[str] = None
+    # The data source that reads the file of an upload. The id and the name
+    # are there when the file was kept; the error is there when it was not,
+    # because a source that names a file that is not there is worse than no
+    # source at all - so the failure is never silent.
+    data_source_id: Optional[str] = None
+    data_source_name: Optional[str] = None
+    data_source_error: Optional[str] = None
 
 
 class ExcelSheetsRequest(BaseModel):

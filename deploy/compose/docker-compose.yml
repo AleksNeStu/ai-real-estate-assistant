@@ -89,6 +89,11 @@ services:
       - ./.preferences:/app/.preferences
       - ./.notifications:/app/.notifications
       - ./.sessions:/app/.sessions
+      # The files an operator hands the deployment are kept here: the upload
+      # keeps the sheet it read, and the data source that reads it points at
+      # that copy. Without the mount the copy dies with the container, and
+      # the source is left naming a file that is not there.
+      - ./uploads:/app/uploads
     restart: unless-stopped
     depends_on:
       redis:

@@ -6,6 +6,7 @@ import {
   fetchFromPortal,
   getExcelSheets,
   ingestData,
+  ingestFileUpload,
   listPortals,
   listDataSources,
 } from '@/lib/api';
@@ -456,6 +457,80 @@ describe('DataSourcesPage', () => {
 
     expect(screen.getByRole('button', { name: 'Upload File' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Price Register' })).toBeInTheDocument();
+  });
+
+  it('names the data source the upload created', async () => {
+    // The upload is the creation of a source: the panel has to say which
+    // source now reads the file, or the operator does not know that there
+    // is one.
+    (ingestFileUpload as jest.Mock).mockResolvedValueOnce({
+      message: 'Ingestion successful',
+      properties_processed: 2,
+      errors: [],
+      source_type: 'file',
+      source_name: 'Krakow listings',
+      data_source_id: 'source-1',
+      data_source_name: 'Krakow listings',
+    });
+
+    render(<DataSourcesPage />);
+
+    const [importTab] = getImportButtons();
+    fireEvent.click(importTab);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Upload File' }));
+
+    const file = new File(['city,price\nKrakow,500000\n'], 'listings.csv', {
+      type: 'text/csv',
+    });
+    fireEvent.change(screen.getByLabelText('Select File'), { target: { files: [file] } });
+
+    fireEvent.change(screen.getByLabelText(/Source Name/), {
+      target: { value: 'Krakow listings' },
+    });
+
+    const [, importButton] = getImportButtons();
+    fireEvent.click(importButton);
+
+    await waitFor(() => expect(ingestFileUpload).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(screen.getByText('Data source: Krakow listings')).toBeInTheDocument()
+    );
+  });
+
+  it('says why there is no data source when the file could not be kept', async () => {
+    (ingestFileUpload as jest.Mock).mockResolvedValueOnce({
+      message: 'Ingestion successful',
+      properties_processed: 2,
+      errors: [],
+      source_type: 'file',
+      source_name: 'Krakow listings',
+      data_source_id: null,
+      data_source_name: null,
+      data_source_error: 'the disk is full',
+    });
+
+    render(<DataSourcesPage />);
+
+    const [importTab] = getImportButtons();
+    fireEvent.click(importTab);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Upload File' }));
+
+    const file = new File(['city,price\nKrakow,500000\n'], 'listings.csv', {
+      type: 'text/csv',
+    });
+    fireEvent.change(screen.getByLabelText('Select File'), { target: { files: [file] } });
+
+    const [, importButton] = getImportButtons();
+    fireEvent.click(importButton);
+
+    await waitFor(() => expect(ingestFileUpload).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(
+        screen.getByText('No data source was created: the disk is full')
+      ).toBeInTheDocument()
+    );
   });
 
 });

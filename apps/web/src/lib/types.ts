@@ -453,6 +453,11 @@ export interface IngestResponse {
   errors: string[];
   source_type?: string;
   source_name?: string;
+  /** The data source that reads the file of the upload, when it was kept. */
+  data_source_id?: string;
+  data_source_name?: string;
+  /** Why there is no data source, when the file could not be kept. */
+  data_source_error?: string;
 }
 
 export interface ExcelSheetsRequest {

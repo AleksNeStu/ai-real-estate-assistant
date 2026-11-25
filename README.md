@@ -496,6 +496,13 @@ curl -X POST "http://localhost:8082/api/v1/admin/ingest/upload" \
   -F "source_name=sample sheet"
 ```
 
+The upload is the creation of a data source: the deployment keeps the file it
+read under `uploads/sources/`, and the ledger carries a source that reads it —
+so the same sheet can be synced again later. A second upload of the same name
+replaces that source's file rather than piling up another one. A deployment
+whose uploads directory does not outlive its container loses the file, and the
+source says so instead of failing quietly.
+
 The header names the schema fields, so the loader maps them without guessing:
 
 | Column | Meaning |

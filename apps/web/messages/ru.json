@@ -3664,6 +3664,8 @@
           "propertiesProcessed": "Обработано объектов: {count}",
           "sourceType": "Тип источника: {type}",
           "sourceName": "Название источника: {name}",
+          "dataSourceCreated": "Источник данных: {name}",
+          "dataSourceFailed": "Источник данных не создан: {reason}",
           "warnings": "Предупреждения ({count})"
         },
         "editDialog": {

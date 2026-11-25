@@ -509,6 +509,16 @@ export default function DataSourcesPage() {
                 {t('result.sourceName', { name: result.source_name })}
               </MonoAnnotation>
             ) : null}
+            {result.data_source_name ? (
+              <MonoAnnotation className="mt-0.5 block">
+                {t('result.dataSourceCreated', { name: result.data_source_name })}
+              </MonoAnnotation>
+            ) : null}
+            {result.data_source_error ? (
+              <MonoAnnotation className="mt-0.5 block">
+                {t('result.dataSourceFailed', { reason: result.data_source_error })}
+              </MonoAnnotation>
+            ) : null}
           </div>
           <button
             type="button"

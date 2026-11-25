@@ -56,6 +56,7 @@ last.md
 .test_alerts/
 chroma_db/
 deploy/compose/data/audit/
+deploy/compose/uploads/
 
 # Local research and private materials (do not commit)
 docs/research/

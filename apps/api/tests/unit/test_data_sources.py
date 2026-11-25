@@ -280,32 +280,34 @@ class TestCreateDataSource:
     @pytest.mark.asyncio
     async def test_create_url_source_missing_url(self, client: AsyncClient, auth_headers: dict):
         """Test validation fails when URL is missing."""
-        # Router raises ValueError from service layer for missing URL config
-        with pytest.raises(ValueError, match="URL source requires"):
-            await client.post(
-                "/api/v1/data-sources",
-                headers=auth_headers,
-                json={
-                    "name": "Bad URL Source",
-                    "source_type": "url",
-                    "config": {},
-                },
-            )
+        # The router refuses the config and names the reason: the answer is
+        # for the operator who wrote it.
+        response = await client.post(
+            "/api/v1/data-sources",
+            headers=auth_headers,
+            json={
+                "name": "Bad URL Source",
+                "source_type": "url",
+                "config": {},
+            },
+        )
+        assert response.status_code == 422
+        assert "URL source requires" in response.json()["detail"]
 
     @pytest.mark.asyncio
     async def test_create_url_source_invalid_url(self, client: AsyncClient, auth_headers: dict):
         """Test validation fails for invalid URL format."""
-        # Router raises ValueError from service layer for invalid URL
-        with pytest.raises(ValueError, match="URL must start with"):
-            await client.post(
-                "/api/v1/data-sources",
-                headers=auth_headers,
-                json={
-                    "name": "Bad URL",
-                    "source_type": "url",
-                    "config": {"url": "not-a-valid-url"},
-                },
-            )
+        response = await client.post(
+            "/api/v1/data-sources",
+            headers=auth_headers,
+            json={
+                "name": "Bad URL",
+                "source_type": "url",
+                "config": {"url": "not-a-valid-url"},
+            },
+        )
+        assert response.status_code == 422
+        assert "URL must start with" in response.json()["detail"]
 
 
 class TestGetDataSource:

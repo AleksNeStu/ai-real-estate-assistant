@@ -3669,6 +3669,8 @@
           "propertiesProcessed": "Przetworzono nieruchomości: {count}",
           "sourceType": "Typ źródła: {type}",
           "sourceName": "Nazwa źródła: {name}",
+          "dataSourceCreated": "Źródło danych: {name}",
+          "dataSourceFailed": "Nie utworzono źródła danych: {reason}",
           "warnings": "Ostrzeżenia ({count})"
         },
         "editDialog": {

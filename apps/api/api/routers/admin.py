@@ -31,6 +31,7 @@ from core.security_utils import sanitize_for_log
 from data.csv_loader import DataLoaderCsv, DataLoaderExcel
 from data.excel_loader import ExcelDataLoader
 from data.schemas import Property, PropertyCollection
+from data.uploaded_sources import register_file_upload_source, store_uploaded_source_file
 from db.database import get_db
 from db.schemas import ChainVerificationResponse
 from notifications.alert_storage_stats import load_alert_storage_summary
@@ -345,6 +346,7 @@ async def ingest_file_upload(
     sheet_name: Optional[str] = Form(None, description="Sheet name for Excel files"),
     header_row: int = Form(0, ge=0, description="Header row (0-indexed)"),
     source_name: Optional[str] = Form(None, description="Source identifier"),
+    session: AsyncSession = Depends(get_db),
 ):
     """
     Upload and ingest property data from Excel/CSV files.
@@ -352,6 +354,12 @@ async def ingest_file_upload(
     Supports: .xlsx, .xls, .ods, .csv files.
     Maximum file size: 25MB.
     Does NOT automatically reindex vector store (call /reindex for that).
+
+    The file is kept where a data source can read it again, and the source
+    that names it is created: an upload is the creation of a source, not a
+    side effect of one. The answer carries the id and the name of that
+    source - or, when the file could not be kept, the reason why there is
+    none.
     """
     if not file.filename:
         raise HTTPException(status_code=400, detail="No filename provided")
@@ -442,12 +450,48 @@ async def ingest_file_upload(
         if len(all_properties) >= max_properties:
             message += f" (reached maximum property limit of {max_properties})"
 
+        # The file is kept where a data source can read it again, and the
+        # source that names it is created. The ingest has already succeeded
+        # by now, so a file that cannot be kept does not turn a successful
+        # upload into a failure - the answer says that there is no source
+        # and why.
+        source_id: Optional[str] = None
+        source_error: Optional[str] = None
+        try:
+            relative_path = store_uploaded_source_file(
+                data,
+                uploads_root=Path(settings.uploads_dir),
+                name=source_name_val,
+                suffix=suffix,
+            )
+            source = await register_file_upload_source(
+                session,
+                name=source_name_val,
+                filename=file.filename,
+                file_path=relative_path,
+                sheet_name=sheet_name,
+                header_row=header_row,
+                size_bytes=len(data),
+                records=len(all_properties),
+            )
+            source_id = source.id
+            message += f" - the data source '{source_name_val}' reads that file"
+        except Exception as e:
+            source_error = str(e)[:200]
+            logger.warning(
+                "The upload was ingested but no data source was created: %s",
+                sanitize_for_log(e),
+            )
+
         return IngestResponse(
             message=message,
             properties_processed=len(all_properties),
             errors=errors,
             source_type=source_type,
             source_name=source_name_val,
+            data_source_id=source_id,
+            data_source_name=source_name_val if source_id else None,
+            data_source_error=source_error,
         )
     except HTTPException:
         raise
