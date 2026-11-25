@@ -16,7 +16,7 @@ function capabilitiesBody(build?: Record<string, string>) {
   return {
     auth: { jwt_enabled: false, oauth: { google: false, apple: false } },
     email: { enabled: false, provider: 'dummy' },
-    llm: { demo_mode: true, default_provider: 'zai' },
+    llm: { demo_llm_mode: true, default_provider: 'zai' },
     observability: { error_tracking: false },
     ...(build ? { build } : {}),
   };

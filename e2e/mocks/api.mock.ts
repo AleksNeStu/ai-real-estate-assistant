@@ -313,7 +313,9 @@ export async function mockLandingApis(page: import('@playwright/test').Page): Pr
       body: JSON.stringify({
         auth: { jwt_enabled: true, demo_user_bypass: false, oauth: { google: false, apple: false } },
         email: { enabled: false, provider: 'dummy' },
-        llm: { demo_mode: true, mode: 'local-model', provider: 'minimax', model: 'MiniMax-M3.1-Flash' },
+        llm: { demo_llm_mode: true, mode: 'local-model', provider: 'minimax', model: 'MiniMax-M3.1-Flash' },
+        data: { demo_data_mode: true },
+        ingest: { formats: ['.xlsx', '.xls', '.ods', '.csv'], excel: true, register: false },
         lead_capture: { waitlist_enabled: false },
         observability: { error_tracking: false },
       }),

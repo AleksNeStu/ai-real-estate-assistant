@@ -1796,7 +1796,7 @@ Cancel a running bulk job. Only jobs in 'pending' or 'running' status can be can
 
 **Tags**: Capabilities
 
-Reports the enabled authentication providers, whether e-mail is really sent, and whether error tracking is configured. The frontend uses it to hide features the deployment cannot serve. A caller on the deployment's privileged list also gets the build it is talking to.
+Reports the enabled authentication providers, whether e-mail is really sent, and whether error tracking is configured. The demo flags are published split - the canned model, the seeded catalogue - so a deployment that answers with a real model never reads as a demo. The ingestion keys say which file formats the deployment can read and whether it holds the official register - true when it holds it, false when it holds none, and null when the deployment could not be asked. The frontend uses it to hide features the deployment cannot serve. A caller on the deployment's privileged list also gets the build it is talking to.
 
 **Responses**
 

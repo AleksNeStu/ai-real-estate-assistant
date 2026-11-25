@@ -15,6 +15,7 @@ import pandas as pd
 import pytest
 
 from data.csv_loader import DataLoaderExcel
+from data.excel_loader import reader_installed
 from data.schemas import Property, PropertyCollection
 
 # ============================================================================
@@ -406,3 +407,57 @@ class TestPropertyCollectionSourceTracking:
 
         assert len(filtered.properties) == 1
         assert filtered.properties[0].source_platform == "csv"
+
+
+class TestReaderInstalled:
+    """The loader has to be able to answer whether a reader is installed.
+
+    The capability endpoint publishes the formats the deployment can read, and
+    it asks this question - so a reader that cannot even be looked up is an
+    answer (no), and never a crash.
+    """
+
+    def test_an_installed_reader_is_found(self):
+        # The question is whether an installed module is found, so the
+        # module is one every Python carries: the machine that runs the
+        # test does not decide the answer.
+        assert reader_installed("json") is True
+
+    def test_a_reader_that_cannot_be_looked_up_is_not_installed(self):
+        # find_spec raises when the parent package is missing, and a missing
+        # reader must be an answer the endpoint can publish.
+        assert reader_installed("no_such_package.reader") is False
+
+
+class TestTheLoaderRefusesAFormatItCannotRead:
+    """The loader and the capability endpoint have to say the same thing.
+
+    The endpoint publishes the formats the deployment can read, so a file of
+    a format the deployment cannot read is refused by name - and not by a
+    failure of pandas that says nothing about the cause.
+    """
+
+    def test_a_format_whose_reader_is_missing_is_refused_by_name(self, tmp_path, monkeypatch):
+        from data.excel_loader import ExcelDataLoader
+
+        path = tmp_path / "catalogue.xls"
+        path.write_bytes(b"not really a spreadsheet")
+
+        # The deployment has no reader for the old binary format.
+        monkeypatch.setattr("data.excel_loader.reader_installed", lambda module: module != "xlrd")
+
+        loader = ExcelDataLoader(str(path))
+        with pytest.raises(ImportError, match="xlrd"):
+            loader.load()
+
+    def test_a_format_whose_reader_is_there_is_read(self, tmp_path, monkeypatch):
+        pytest.importorskip("openpyxl")
+        from data.excel_loader import ExcelDataLoader
+
+        path = tmp_path / "catalogue.xlsx"
+        pd.DataFrame({"city": ["Krakow"], "price": [1000]}).to_excel(path, index=False)
+
+        loader = ExcelDataLoader(str(path))
+        frame = loader.load()
+
+        assert len(frame) == 1

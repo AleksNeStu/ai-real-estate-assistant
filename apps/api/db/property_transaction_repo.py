@@ -150,6 +150,32 @@ async def count_transactions(
     return int(result.scalar() or 0)
 
 
+async def has_sales_of_cities(
+    session: AsyncSession,
+    city_norms: Sequence[str],
+    until: Optional[date] = None,
+) -> bool:
+    """True when the register holds a sale of one of the given cities.
+
+    The question is whether the register can be read at all, so the read stops
+    at the first row: it asks for the existence of a sale, not for the sales
+    themselves. The bound is today, for the same reason the other reads carry
+    it - a deed dated in the future is a typo, not a sale.
+    """
+    if not city_norms:
+        return False
+    query = (
+        select(PropertyTransaction.id)
+        .where(
+            PropertyTransaction.city_norm.in_(list(city_norms)),
+            PropertyTransaction.transaction_date <= (until or date.today()),
+        )
+        .limit(1)
+    )
+    result = await session.execute(query)
+    return result.first() is not None
+
+
 async def usable_sales_by_city_street(
     session: AsyncSession,
     since: Optional[date] = None,

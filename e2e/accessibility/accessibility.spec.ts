@@ -73,7 +73,9 @@ async function mockEmptyApi(page: Page): Promise<void> {
           ? {
               auth: { jwt_enabled: true, demo_user_bypass: false, oauth: { google: false } },
               email: { enabled: false, provider: 'dummy' },
-              llm: { demo_mode: true, mode: 'local-model', provider: 'minimax', model: 'demo' },
+              llm: { demo_llm_mode: true, mode: 'local-model', provider: 'minimax', model: 'demo' },
+              data: { demo_data_mode: true },
+              ingest: { formats: ['.xlsx', '.xls', '.ods', '.csv'], excel: true, register: false },
               lead_capture: { waitlist_enabled: false },
             }
           : url.includes('/search')

@@ -3,11 +3,37 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 
 import AgentsPage from '../page';
 import * as api from '@/lib/api';
+import { useCapabilities } from '@/hooks/useCapabilities';
 import type { AgentProfile } from '@/lib/types';
 
 jest.mock('@/lib/api', () => ({
   getAgents: jest.fn(),
 }));
+
+jest.mock('@/hooks/useCapabilities', () => ({
+  useCapabilities: jest.fn(),
+}));
+
+/**
+ * What the deployment holds.
+ *
+ * The agents of a demo deployment are the seeded ones, and the deployment
+ * says so - the build-time flag said it for every deployment that was built
+ * with it, seeded or not.
+ */
+const CAPABILITIES = {
+  auth: {
+    jwt_enabled: true,
+    demo_user_bypass: false,
+    oauth: { google: false, apple: false },
+  },
+  email: { enabled: false, provider: 'dummy' },
+  llm: { demo_llm_mode: false, mode: 'provider' as const, provider: 'zai', model: 'test' },
+  data: { demo_data_mode: false },
+  ingest: { formats: ['.csv'], excel: false, register: false },
+  lead_capture: { waitlist_enabled: false },
+  observability: { error_tracking: false },
+};
 
 const mockAgents: AgentProfile[] = [
   {
@@ -60,6 +86,33 @@ describe('AgentsPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (api.getAgents as jest.Mock).mockResolvedValue(mockAgentsResponse);
+    (useCapabilities as jest.Mock).mockReturnValue({
+      capabilities: CAPABILITIES,
+      loading: false,
+    });
+  });
+
+  it('says the agents are demo data when the deployment says so', async () => {
+    (useCapabilities as jest.Mock).mockReturnValue({
+      capabilities: { ...CAPABILITIES, data: { demo_data_mode: true } },
+      loading: false,
+    });
+
+    render(<AgentsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('demo data')).toBeInTheDocument();
+    });
+  });
+
+  it('does not say it when the deployment holds a real catalogue', async () => {
+    render(<AgentsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('2 agents')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('demo data')).not.toBeInTheDocument();
   });
 
   it('renders the agents page heading', async () => {

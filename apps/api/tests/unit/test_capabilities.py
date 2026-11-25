@@ -30,6 +30,7 @@ def _settings(**overrides):
     settings.demo_user_bypass = False
     settings.demo_mode = False
     settings.demo_llm_mode = False
+    settings.demo_data_mode = False
     settings.default_provider = "minimax"
     settings.default_model = "MiniMax-M3.1-Flash"
     settings.sentry_dsn = None

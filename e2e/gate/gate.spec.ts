@@ -23,7 +23,9 @@ function capabilities(emailEnabled = false) {
       oauth: { google: false, apple: false },
     },
     email: { enabled: emailEnabled, provider: emailEnabled ? 'smtp' : 'dummy' },
-    llm: { demo_mode: true, mode: 'local-model', provider: 'ollama', model: 'demo' },
+    llm: { demo_llm_mode: true, mode: 'local-model', provider: 'ollama', model: 'demo' },
+    data: { demo_data_mode: true },
+    ingest: { formats: ['.xlsx', '.xls', '.ods', '.csv'], excel: true, register: false },
     lead_capture: { waitlist_enabled: emailEnabled },
     observability: { error_tracking: false },
   };

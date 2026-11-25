@@ -9,6 +9,32 @@ import {
   listPortals,
   listDataSources,
 } from '@/lib/api';
+import { useCapabilities } from '@/hooks/useCapabilities';
+
+/**
+ * What the deployment can read.
+ *
+ * The panel offers what the backend says the deployment can read, so the
+ * test starts from a deployment that reads everything and changes the
+ * answer per test.
+ */
+const CAPABILITIES = {
+  auth: {
+    jwt_enabled: true,
+    demo_user_bypass: false,
+    oauth: { google: false, apple: false },
+  },
+  email: { enabled: false, provider: 'dummy' },
+  llm: { demo_llm_mode: false, mode: 'provider' as const, provider: 'zai', model: 'test' },
+  data: { demo_data_mode: false },
+  ingest: { formats: ['.xlsx', '.xls', '.ods', '.csv'], excel: true, register: true },
+  lead_capture: { waitlist_enabled: false },
+  observability: { error_tracking: false },
+};
+
+jest.mock('@/hooks/useCapabilities', () => ({
+  useCapabilities: jest.fn(),
+}));
 
 /**
  * The sources the deployment has, as the mock remembers them. A source the
@@ -113,6 +139,10 @@ describe('DataSourcesPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCreatedSources.length = 0;
+    (useCapabilities as jest.Mock).mockReturnValue({
+      capabilities: CAPABILITIES,
+      loading: false,
+    });
   });
 
   it('loads the configured data sources on mount', async () => {
@@ -236,4 +266,196 @@ describe('DataSourcesPage', () => {
     // The ledger carries the new row, and the row names its kind.
     await waitFor(() => expect(screen.getByText('Official Price Register')).toBeInTheDocument());
   });
+
+  it('offers only the formats the deployment can read', async () => {
+    // The reader of .xls and .ods is an extra: a deployment without it
+    // fails at the read, so the file input must not offer those files.
+    (useCapabilities as jest.Mock).mockReturnValue({
+      capabilities: {
+        ...CAPABILITIES,
+        ingest: { formats: ['.csv'], excel: false, register: true },
+      },
+      loading: false,
+    });
+
+    render(<DataSourcesPage />);
+
+    const [importTab] = getImportButtons();
+    fireEvent.click(importTab);
+    fireEvent.click(screen.getByRole('button', { name: 'Upload File' }));
+
+    const input = screen.getByLabelText('Select File') as HTMLInputElement;
+    expect(input.getAttribute('accept')).toBe('.csv');
+    expect(screen.getByText('Supports: .csv')).toBeInTheDocument();
+  });
+
+  it('does not offer a file the deployment cannot read at all', async () => {
+    // The deployment answered that it reads no format at all: the import
+    // chain is broken in that deployment, so the picker is not offered.
+    (useCapabilities as jest.Mock).mockReturnValue({
+      capabilities: {
+        ...CAPABILITIES,
+        ingest: { formats: [], excel: false, register: true },
+      },
+      loading: false,
+    });
+
+    render(<DataSourcesPage />);
+
+    const [importTab] = getImportButtons();
+    fireEvent.click(importTab);
+
+    // The URL import reads the same formats through the same chain, so it
+    // is not offered either.
+    expect(screen.queryByRole('button', { name: 'Upload File' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'From URL' })).not.toBeInTheDocument();
+    // The form itself is not rendered either: the mode that was open when
+    // the answer arrived is not a way into the import.
+    expect(screen.queryByLabelText('File URL')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Select File')).not.toBeInTheDocument();
+    // The panel opens on the register - the source that is always offered
+    // - and not on a mode that has no form.
+    expect(screen.getByRole('button', { name: 'Price Register' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Price Register' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+  });
+
+  it('keeps the import when the deployment has not answered', async () => {
+    // The capabilities endpoint is public and every page reads it: a
+    // transient failure of it must not take the import away.
+    (useCapabilities as jest.Mock).mockReturnValue({
+      capabilities: null,
+      loading: false,
+    });
+
+    render(<DataSourcesPage />);
+
+    const [importTab] = getImportButtons();
+    fireEvent.click(importTab);
+
+    expect(screen.getByRole('button', { name: 'Upload File' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Price Register' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Upload File' }));
+
+    const input = screen.getByLabelText('Select File') as HTMLInputElement;
+    // The deployment has not named a format, so the picker filters to the
+    // formats the import chain accepts - and the panel names none of them,
+    // because it has not been told.
+    expect(input.getAttribute('accept')).toBe('.xlsx,.xls,.ods,.csv');
+    expect(screen.queryByText(/Supports/)).not.toBeInTheDocument();
+  });
+
+  it('says that the deployment has not said whether it holds the register', async () => {
+    // The deployment could not be asked: the source is still offered, and
+    // the panel says that the deployment has not said.
+    (useCapabilities as jest.Mock).mockReturnValue({
+      capabilities: null,
+      loading: false,
+    });
+
+    render(<DataSourcesPage />);
+
+    const [importTab] = getImportButtons();
+    fireEvent.click(importTab);
+    fireEvent.click(screen.getByRole('button', { name: 'Price Register' }));
+
+    expect(
+      screen.getByText('The deployment has not said whether it holds the register.')
+    ).toBeInTheDocument();
+  });
+
+  it('says that the deployment holds no register yet', async () => {
+    // The source is offered whatever the deployment holds: registering the
+    // source is how the register gets into the deployment. The panel says
+    // what the deployment holds today, so the operator knows what a sync
+    // will find.
+    (useCapabilities as jest.Mock).mockReturnValue({
+      capabilities: {
+        ...CAPABILITIES,
+        ingest: { formats: ['.csv'], excel: false, register: false },
+      },
+      loading: false,
+    });
+
+    render(<DataSourcesPage />);
+
+    const [importTab] = getImportButtons();
+    fireEvent.click(importTab);
+
+    expect(screen.getByRole('button', { name: 'Price Register' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Price Register' }));
+
+    expect(
+      screen.getByText('The deployment holds no sale of the register yet - the ingest has to run first.')
+    ).toBeInTheDocument();
+  });
+
+  it('says that the deployment holds the register', async () => {
+    // The register is read from the sales the ingest stored: a deployment
+    // that stored them holds the register, and the panel says so.
+    (useCapabilities as jest.Mock).mockReturnValue({
+      capabilities: {
+        ...CAPABILITIES,
+        ingest: { formats: ['.csv'], excel: false, register: true },
+      },
+      loading: false,
+    });
+
+    render(<DataSourcesPage />);
+
+    const [importTab] = getImportButtons();
+    fireEvent.click(importTab);
+    fireEvent.click(screen.getByRole('button', { name: 'Price Register' }));
+
+    expect(screen.getByText('The deployment holds sales of the register.')).toBeInTheDocument();
+  });
+
+  it('keeps the register when the deployment could not be asked about it', async () => {
+    // A deployment that could not be read is not a deployment that holds no
+    // register: the source stays offered, and the panel says that the
+    // deployment has not said.
+    (useCapabilities as jest.Mock).mockReturnValue({
+      capabilities: {
+        ...CAPABILITIES,
+        ingest: { formats: ['.csv'], excel: false, register: null },
+      },
+      loading: false,
+    });
+
+    render(<DataSourcesPage />);
+
+    const [importTab] = getImportButtons();
+    fireEvent.click(importTab);
+
+    expect(screen.getByRole('button', { name: 'Price Register' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Price Register' }));
+
+    expect(
+      screen.getByText('The deployment has not said whether it holds the register.')
+    ).toBeInTheDocument();
+  });
+
+  it('survives a payload that does not carry the ingestion keys', async () => {
+    // A deployment that answers without the ingestion keys must not take
+    // the panel down with it - and it has not said about the register
+    // either, so the register stays offered.
+    (useCapabilities as jest.Mock).mockReturnValue({
+      capabilities: { ...CAPABILITIES, ingest: undefined },
+      loading: false,
+    });
+
+    render(<DataSourcesPage />);
+
+    const [importTab] = getImportButtons();
+    fireEvent.click(importTab);
+
+    expect(screen.getByRole('button', { name: 'Upload File' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Price Register' })).toBeInTheDocument();
+  });
+
 });

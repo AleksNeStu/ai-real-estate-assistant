@@ -17,6 +17,7 @@ import {
 import { AgentLedger } from '@/components/agents/agent-ledger';
 
 import { getAgents } from '@/lib/api';
+import { useCapabilities } from '@/hooks/useCapabilities';
 import type { AgentProfile } from '@/lib/types';
 
 /**
@@ -38,6 +39,10 @@ const CATALOGUE_SIZE = 100;
 
 export default function AgentsPage() {
   const tPage = useTranslations('pages.agents');
+  // The agents of a demo deployment are the seeded ones. The deployment says
+  // so - the build-time flag said it for every deployment that was built
+  // with it, whether the catalogue was seeded or not.
+  const { capabilities } = useCapabilities();
   const tAgents = useTranslations('agents');
   const tCommon = useTranslations('common');
   const locale = useLocale();
@@ -103,7 +108,7 @@ export default function AgentsPage() {
           <MonoAnnotation>
             {tAgents('directory.count', { count: rows.length })}
           </MonoAnnotation>
-          {process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? (
+          {capabilities?.data?.demo_data_mode ? (
             <MonoAnnotation>{tAgents('directory.demoNote')}</MonoAnnotation>
           ) : null}
         </div>

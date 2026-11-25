@@ -30,7 +30,7 @@ function capabilities(overrides: Record<string, unknown> = {}) {
     capabilities: {
       auth: { jwt_enabled: true, demo_user_bypass: false, oauth: { google: false, apple: false } },
       email: { enabled: false, provider: 'dummy' },
-      llm: { demo_mode: true, mode: 'provider', provider: 'minimax', model: 'MiniMax-M3.1-Flash' },
+      llm: { demo_llm_mode: true, mode: 'provider', provider: 'minimax', model: 'MiniMax-M3.1-Flash' },
       lead_capture: { waitlist_enabled: false },
       observability: { error_tracking: false },
       ...overrides,

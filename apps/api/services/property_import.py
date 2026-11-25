@@ -13,13 +13,16 @@ from urllib.parse import urlparse
 
 import pandas as pd
 
+from data.excel_loader import EXCEL_EXTENSIONS
 from data.schemas import Property, PropertyCollection
 from utils.property_cache import load_collection, save_collection
 
 logger = logging.getLogger(__name__)
 
-# The spreadsheet formats the loaders read.
-EXCEL_SUFFIXES = {".xlsx", ".xls", ".ods"}
+# The spreadsheet formats the loaders read. They are the formats the loader
+# itself names - the loader owns them, because the loader is what reads them
+# - so the chain and the loader cannot drift apart.
+EXCEL_SUFFIXES = set(EXCEL_EXTENSIONS)
 
 # The formats an import accepts. Anything else is counted as a failed source
 # instead of being handed to the loaders.

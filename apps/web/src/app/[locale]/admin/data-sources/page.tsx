@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 
 import { PortalLedger, SourceLedger } from '@/components/admin/source-ledger';
+import { useCapabilities } from '@/hooks/useCapabilities';
 import {
   DeleteConfirmDialog,
   EditDataSourceDialog,
@@ -57,10 +58,45 @@ interface SheetInfo {
  * below it - a portal that is not configured is a different thing from a
  * source, and the two are read separately.
  */
+// The formats the import chain accepts. Until the deployment has answered,
+// the picker filters to these: the deployment may read fewer of them, and
+// the server refuses what it cannot read - but the picker must not let
+// every file of the disk through.
+const CHAIN_SUFFIXES = ['.xlsx', '.xls', '.ods', '.csv'];
+
 export default function DataSourcesPage() {
   const t = useTranslations('pages.admin.dataSources');
   const tLedger = useTranslations('pages.admin.dataSources.ledger');
   const tCommon = useTranslations('common');
+
+  // What this deployment can read. The backend says it, so the panel never
+  // offers a file the deployment would refuse.
+  //
+  // Until the backend has answered, the panel promises no format at all:
+  // the import stays available, the formats are not named, and the server
+  // answers for the rest. A public endpoint that hiccups must not take the
+  // import away from the operator.
+  const { capabilities } = useCapabilities();
+  const readableFormats = capabilities?.ingest?.formats ?? [];
+  const formatsNamed = readableFormats.length > 0;
+  // The deployment answered about the formats. When it answered that it
+  // reads none at all, the import chain is broken in that deployment and
+  // the picker is not offered; when it did not answer, the import stays
+  // and the panel promises no format.
+  const formatsAnswered = capabilities?.ingest !== undefined;
+  const deploymentReadsNothing = formatsAnswered && !formatsNamed;
+  const fileImportOffered = !deploymentReadsNothing;
+  // What the deployment says about the register. The source is offered
+  // whatever the answer is - registering the source is how the register
+  // gets into the deployment - and the panel says what the deployment holds
+  // today, so the operator knows what a sync will find.
+  const registerAnswer = capabilities?.ingest?.register;
+  const registerAnswerKnown = typeof registerAnswer === 'boolean';
+  const registerNote = registerAnswerKnown
+    ? registerAnswer
+      ? 'holdsIt'
+      : 'holdsNone'
+    : 'unknownAnswer';
 
   const [sources, setSources] = useState<DataSource[]>([]);
   const [loadingSources, setLoadingSources] = useState(true);
@@ -77,6 +113,14 @@ export default function DataSourcesPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const [importMode, setImportMode] = useState<'url' | 'file' | 'portal' | 'register'>('url');
+  // The mode that is open. The file import is not offered when the
+  // deployment reads no format at all, so the panel opens on the register
+  // - the source that is always offered - instead of on a mode that has
+  // no form.
+  const openMode: 'url' | 'file' | 'portal' | 'register' =
+    !fileImportOffered && (importMode === 'url' || importMode === 'file')
+      ? 'register'
+      : importMode;
   const [fileUrl, setFileUrl] = useState<string>('');
   const [sourceName, setSourceName] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -286,7 +330,7 @@ export default function DataSourcesPage() {
   };
 
   const onIngest = async () => {
-    if (importMode === 'file') {
+    if (openMode === 'file') {
       if (!uploadFile) {
         setError({ message: t('errors.fileToUpload') });
         return;
@@ -480,43 +524,56 @@ export default function DataSourcesPage() {
       {panelOpen ? (
         <section className="flex flex-col gap-4 rounded-lg border border-border p-4">
           <div className="flex flex-wrap gap-2">
-            {(['url', 'file', 'portal', 'register'] as const).map((mode) => (
-              <button
-                type="button"
-                key={mode}
-                onClick={() => {
-                  setImportMode(mode);
-                  setSheets([]);
-                  setSelectedSheet('');
-                  // The register keeps its own city and its own name: a name
-                  // typed for a file import is not the name of a register.
-                  // Clicking the mode that is already open changes nothing.
-                  if (mode !== importMode) {
-                    setRegisterCity('');
-                    setRegisterSourceName('');
-                    setRegisteredName('');
-                  }
-                }}
-                aria-pressed={importMode === mode}
-                className={`h-[34px] rounded-md border px-3 text-[13px] font-medium transition-colors ${
-                  importMode === mode
-                    ? 'border-foreground bg-foreground text-background'
-                    : 'border-border bg-transparent text-foreground hover:bg-muted'
-                }`}
-              >
-                {t(`importMode.${mode}`)}
-              </button>
-            ))}
+            {(['url', 'file', 'portal', 'register'] as const)
+              // The deployment decides what the panel offers: a deployment
+              // that reads no format at all has no file to offer. The
+              // register is always offered - registering the source is how
+              // the register gets into the deployment - and the panel says
+              // what the deployment holds today.
+              .filter((mode) => {
+                // The URL import reads the same formats through the same
+                // chain, so a deployment that reads no format at all is
+                // offered neither.
+                if (mode === 'file' || mode === 'url') return fileImportOffered;
+                return true;
+              })
+              .map((mode) => (
+                <button
+                  type="button"
+                  key={mode}
+                  onClick={() => {
+                    setImportMode(mode);
+                    setSheets([]);
+                    setSelectedSheet('');
+                    // The register keeps its own city and its own name: a name
+                    // typed for a file import is not the name of a register.
+                    // Clicking the mode that is already open changes nothing.
+                    if (mode !== openMode) {
+                      setRegisterCity('');
+                      setRegisterSourceName('');
+                      setRegisteredName('');
+                    }
+                  }}
+                  aria-pressed={openMode === mode}
+                  className={`h-[34px] rounded-md border px-3 text-[13px] font-medium transition-colors ${
+                    openMode === mode
+                      ? 'border-foreground bg-foreground text-background'
+                      : 'border-border bg-transparent text-foreground hover:bg-muted'
+                  }`}
+                >
+                  {t(`importMode.${mode}`)}
+                </button>
+              ))}
           </div>
 
-          {importMode === 'url' || importMode === 'file' ? (
+          {openMode === 'url' || openMode === 'file' ? (
             <div className="flex flex-col gap-4">
               <h2 className="m-0 flex items-center gap-2 text-app font-semibold text-foreground">
                 <FileUp className="size-4" aria-hidden="true" />
                 {t('import.title')}
               </h2>
 
-              {importMode === 'url' ? (
+              {openMode === 'url' ? (
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="fileUrl" className="text-app font-medium text-foreground">
                     {t('import.fileUrl')}
@@ -530,7 +587,11 @@ export default function DataSourcesPage() {
                     onChange={(e) => setFileUrl(e.target.value)}
                     disabled={loading}
                   />
-                  <MonoAnnotation>{t('import.fileUrlHint')}</MonoAnnotation>
+                  {formatsNamed ? (
+                    <MonoAnnotation>
+                      {t('import.fileUrlHint', { formats: readableFormats.join(', ') })}
+                    </MonoAnnotation>
+                  ) : null}
                 </div>
               ) : (
                 <div className="flex flex-col gap-1.5">
@@ -541,7 +602,7 @@ export default function DataSourcesPage() {
                     id="fileUpload"
                     className="rounded-md border border-border bg-background px-3 py-2 text-app"
                     type="file"
-                    accept=".xlsx,.xls,.ods,.csv"
+                    accept={(formatsNamed ? readableFormats : CHAIN_SUFFIXES).join(',')}
                     onChange={(e) => {
                       setUploadFile(e.target.files?.[0] || null);
                       setSheets([]);
@@ -550,6 +611,17 @@ export default function DataSourcesPage() {
                     disabled={loading}
                   />
                   <MonoAnnotation>{t('import.fileHint')}</MonoAnnotation>
+                  {formatsNamed ? (
+                    <MonoAnnotation>
+                      {t('import.fileFormats', { formats: readableFormats.join(', ') })}
+                    </MonoAnnotation>
+                  ) : null}
+                  {/* The sheet that ships with the repository. A path and
+                      nothing else: the panel has no catalogue of its own for
+                      it, and the README is where the sheet is explained. */}
+                  <MonoAnnotation className="mt-1 block">
+                    samples/properties-sample.xlsx
+                  </MonoAnnotation>
                   {uploadFile ? (
                     <MonoAnnotation className="mt-1 block">
                       {t('import.selected')} {uploadFile.name} (
@@ -577,8 +649,8 @@ export default function DataSourcesPage() {
                 />
               </div>
 
-              {((importMode === 'url' && isExcelFile(fileUrl)) ||
-                (importMode === 'file' && isExcelFileObj(uploadFile))) && (
+              {((openMode === 'url' && isExcelFile(fileUrl)) ||
+                (openMode === 'file' && isExcelFileObj(uploadFile))) && (
                 <div className="flex flex-col gap-4 border-t border-border pt-4">
                   <h3 className="m-0 flex items-center gap-2 text-app font-semibold text-foreground">
                     <Table className="size-4" aria-hidden="true" />
@@ -589,7 +661,7 @@ export default function DataSourcesPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={importMode === 'url' ? onLoadSheets : onLoadSheetsUpload}
+                      onClick={openMode === 'url' ? onLoadSheets : onLoadSheetsUpload}
                       disabled={loadingSheets || loading}
                     >
                       {loadingSheets ? (
@@ -662,7 +734,7 @@ export default function DataSourcesPage() {
             </div>
           ) : null}
 
-          {importMode === 'portal' ? (
+          {openMode === 'portal' ? (
             <div className="flex flex-col gap-4">
               <h2 className="m-0 flex items-center gap-2 text-app font-semibold text-foreground">
                 <Globe className="size-4" aria-hidden="true" />
@@ -874,7 +946,7 @@ export default function DataSourcesPage() {
             </div>
           ) : null}
 
-          {importMode === 'register' ? (
+          {openMode === 'register' ? (
             <div className="flex flex-col gap-4">
               <h2 className="m-0 flex items-center gap-2 text-app font-semibold text-foreground">
                 <FileText className="size-4" aria-hidden="true" />
@@ -896,6 +968,8 @@ export default function DataSourcesPage() {
                 />
                 <MonoAnnotation>{t('register.cityHint')}</MonoAnnotation>
               </div>
+
+              <MonoAnnotation>{t(`register.${registerNote}`)}</MonoAnnotation>
 
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="registerSourceName" className="text-app font-medium text-foreground">

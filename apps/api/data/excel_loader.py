@@ -14,6 +14,7 @@ Provides:
 import logging
 import os
 import tempfile
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, List, Optional, Union
 from urllib.parse import urlparse
@@ -26,8 +27,40 @@ from data.schemas import PropertyCollection
 
 logger = logging.getLogger(__name__)
 
-# Supported Excel extensions
-EXCEL_EXTENSIONS = {".xlsx", ".xls", ".ods"}
+# The engine that reads each spreadsheet format, and the module that has to
+# be installed for it. Only ``.xlsx`` is a runtime dependency; ``.xls`` and
+# ``.ods`` are extras, so a deployment without them cannot read those files.
+# The capability endpoint publishes the formats the deployment can read, so
+# the mapping lives with the loader that reads it.
+EXCEL_ENGINES = {".xlsx": "openpyxl", ".xls": "xlrd", ".ods": "odf"}
+
+# The supported Excel extensions are the formats the map names, so the set
+# and the map cannot drift apart. Everything else that reads a spreadsheet
+# - the import chain, the capability endpoint - takes its formats from here.
+EXCEL_EXTENSIONS = set(EXCEL_ENGINES)
+
+
+@lru_cache(maxsize=None)
+def reader_installed(module: str) -> bool:
+    """True when the module that reads a spreadsheet format is installed.
+
+    A format whose reader is missing fails at the read, not at the upload, so
+    the deployment has to be able to answer the question before the interface
+    offers the file.
+
+    The answer is remembered: a reader is installed or it is not, and the
+    question is asked on every answer of the capability endpoint. A
+    deployment installs its readers when it is built, so the answer is the
+    same for the life of the process - and a test that needs another answer
+    lets the memory go with ``reader_installed.cache_clear()``.
+    """
+    import importlib.util
+
+    try:
+        return importlib.util.find_spec(module) is not None
+    except (ImportError, ValueError):
+        return False
+
 
 # Default allowed base directories for local Excel files. Allow override via
 # the EXCEL_ALLOWED_BASE_DIR env var (comma-separated list of absolute paths).
@@ -245,25 +278,11 @@ class ExcelDataLoader:
 
         kwargs["header"] = self.header_row
 
-        # Engine selection
-        if suffix == ".xlsx":
-            kwargs["engine"] = "openpyxl"
-        elif suffix == ".xls":
-            try:
-                import importlib.util
-
-                if importlib.util.find_spec("xlrd"):
-                    kwargs["engine"] = "xlrd"
-            except Exception:
-                pass
-        elif suffix == ".ods":
-            try:
-                import importlib.util
-
-                if importlib.util.find_spec("odf"):
-                    kwargs["engine"] = "odf"
-            except Exception:
-                pass
+        # Engine selection. The engine that reads the format is the one the
+        # mapping names; `load` has already refused a format whose reader is
+        # not installed, so the reader is there.
+        if suffix in EXCEL_ENGINES:
+            kwargs["engine"] = EXCEL_ENGINES[suffix]
 
         return kwargs
 
@@ -284,6 +303,17 @@ class ExcelDataLoader:
             raise ValueError(
                 f"Unsupported file format: {suffix}. "
                 f"Excel loader supports: {', '.join(sorted(EXCEL_EXTENSIONS))}"
+            )
+
+        # The reader of the format has to be there. The capability endpoint
+        # publishes the formats this deployment can read, so a file of a
+        # format the deployment cannot read is refused by name - and not by
+        # a failure of pandas that says nothing about the cause.
+        engine = EXCEL_ENGINES.get(suffix)
+        if engine is not None and not reader_installed(engine):
+            raise ImportError(
+                f"The reader for {suffix} files is not installed ({engine}). "
+                f"Install it, or give the catalogue a file this deployment can read."
             )
 
         kwargs = self._read_kwargs()
