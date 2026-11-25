@@ -1,6 +1,7 @@
 import createMiddleware from 'next-intl/middleware';
 import { NextResponse, type NextRequest } from 'next/server';
 import { applyIndexingGuard } from '@/lib/indexing';
+import { classifyRoute } from '@/lib/public-routes';
 import { routing } from './i18n/routing';
 
 const { locales: routingLocales, defaultLocale } = routing;
@@ -13,17 +14,17 @@ const { locales: routingLocales, defaultLocale } = routing;
  *
  * This proxy:
  * 1. Handles locale detection and redirection
- * 2. Protects routes that require authentication
+ * 2. Decides what a visitor without an account may reach
  *
- * Public routes (accessible without authentication):
- * - /{locale}/auth/* - Authentication pages
- * - /api/v1/auth/* - Auth API endpoints
+ * The routes are classified in `src/lib/public-routes.ts`: the public ones,
+ * the ones that belong to an account, and the sign-in itself. A route that
+ * belongs to none of them is sent to the sign-in page.
+ *
+ * Not the proxy's business:
+ * - /api/* - the API has its own authentication
  * - /_next/* - Next.js internals
  * - /static/* - Static files
  * - /favicon.ico - Favicon
- *
- * Protected routes (require authentication):
- * - All other routes under /{locale}/*
  */
 
 // Create the next-intl middleware
@@ -60,56 +61,15 @@ async function handleRequest(request: NextRequest) {
   // Get the path without locale prefix for route checking
   const pathWithoutLocale = hasLocalePrefix ? '/' + pathSegments.slice(1).join('/') : pathname;
 
-  // Check if this is a public route (auth pages + demo-accessible pages)
-  const isAuthRoute = pathWithoutLocale.startsWith('/auth/') || pathWithoutLocale === '/auth';
+  // The routes the visitor may reach without an account, the routes that
+  // belong to an account, and the sign-in itself are one list in one place -
+  // `src/lib/public-routes.ts` - so a test can read the same names the proxy
+  // reads. A route that belongs to none of them is a route that needs an
+  // account it should not need, and the test that reads the routes of the
+  // tree fails when that happens.
+  const routeClass = classifyRoute(pathWithoutLocale);
 
-  // Routes accessible without authentication (demo mode)
-  const demoRoutes = [
-    '/',
-    '/search',
-    '/property',
-    '/city-overview',
-    '/knowledge',
-    '/analytics',
-    '/market-trends',
-    '/cma',
-    '/tools',
-    '/chat',
-    '/agents',
-    '/valuation',
-    '/showcase',
-  ];
-  const isDemoRoute =
-    pathWithoutLocale === '/' ||
-    demoRoutes.some(
-      (r) => r !== '/' && (pathWithoutLocale === r || pathWithoutLocale.startsWith(r + '/'))
-    );
-
-  /**
-   * The routes that belong to an account.
-   *
-   * These are not redirected to the login page. The redirect threw away the
-   * context: a visitor who opened `/favorites` was told to sign in without
-   * ever hearing what a favourite is. Instead the route renders and the
-   * `AccountGate` layout explains what the account gives, offering the two
-   * ways in. The gate decides from the backend's capabilities whether an
-   * account is needed at all.
-   */
-  const gatedRoutes = [
-    '/favorites',
-    '/saved-searches',
-    '/documents',
-    '/settings',
-    '/leads',
-    '/agent-analytics',
-    '/usage',
-    '/admin',
-  ];
-  const isGatedRoute = gatedRoutes.some(
-    (r) => pathWithoutLocale === r || pathWithoutLocale.startsWith(r + '/')
-  );
-
-  if (isAuthRoute || isDemoRoute || isGatedRoute) {
+  if (routeClass !== 'unknown') {
     return intlResponse;
   }
 
