@@ -203,14 +203,36 @@ Every release publishes both images to GitHub Container Registry, multi-arch
 (amd64 and arm64):
 
 ```bash
-docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/backend:5.6.0
-docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/frontend:5.6.0
+docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/backend:5.7.0
+docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/frontend:5.7.0
 ```
 
 The full guide — the memory footprint per setup, the published tags and the
 Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.md).
 
 ## What's new
+
+**`v5.7.0`** — the demo is a product, not a screenshot.
+
+- **The catalogue is built from the official register** — the register of
+  notarial deeds is open data, free by law and needs no key, so the demo
+  answers with real flats that really changed hands; the panel registers the
+  register itself.
+- **The demo answers without a login** — every route on the public journey
+  is proved by a test that carries no token, so the promise the landing page
+  makes cannot regress.
+- **An uploaded file becomes a source you can sync again** — the sheet you
+  hand the admin panel is kept where the sync can read it, and the panel
+  names the source it created.
+- **The calls to action are measurable** — every outbound link on the
+  landing page and in the footer reports the click it caused, so the funnel
+  is read from the same numbers the product writes.
+- **The deployment says what it can do** — the capabilities endpoint tells
+  the truth about the model and the data, and the panel offers exactly the
+  formats the deployment can read.
+- **The login flow is proved against the running deployment** — register,
+  login, refresh, rotation and logout, checked against the live address by a
+  script that prints no credential.
 
 **`v5.6.0`** — the answers the product gives are the ones it measured.
 
@@ -372,7 +394,7 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
 - **335 dependency alerts closed** — every critical and high advisory resolved,
   the floors pinned in both the lock file and the project file.
 
-Full notes: [v5.6.0 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.6.0) ·
+Full notes: [v5.7.0 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.7.0) ·
 [changelog](CHANGELOG.md).
 
 ## What it does

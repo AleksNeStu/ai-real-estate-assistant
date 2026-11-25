@@ -1,6 +1,6 @@
 {
   "name": "ai-real-estate-assistant-monorepo",
-  "version": "5.6.0",
+  "version": "5.7.0",
   "description": "Open-source AI real estate assistant with RAG, vector search, multi-provider LLM routing, FastAPI, Next.js, and ChromaDB.",
   "private": true,
   "directories": {
