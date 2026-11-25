@@ -79,6 +79,30 @@ except ImportError:
 # Configure logger
 logger = logging.getLogger(__name__)
 
+
+class VectorStoreWriteError(RuntimeError):
+    """The catalogue could not be written.
+
+    A batch that fails to reach the collection used to be logged and skipped,
+    so a write that landed only in part was read as a write that landed. The
+    caller could not tell "the catalogue holds nothing" from "the catalogue
+    could not be written", and a test that read a listing back saw an empty
+    collection instead of a failure. The failure is the answer now: the
+    listings that did land are in the cache, and the caller is told that the
+    rest did not.
+    """
+
+
+class VectorStoreUnavailable(RuntimeError):
+    """The catalogue could not be read.
+
+    The read used to answer an empty list when the collection failed, which
+    is the same answer the collection gives when it holds nothing. A caller
+    that cannot tell the two apart offers a visitor an empty catalogue and
+    calls it the truth.
+    """
+
+
 _INDEXING_EXECUTOR: Optional[ThreadPoolExecutor] = None
 
 
@@ -415,7 +439,21 @@ class ChromaPropertyStore:
             return documents
         except Exception as e:
             logger.error("Error retrieving properties by IDs: %s", sanitize_for_log(e))
-            return []
+            # The cache is what the store falls back to when the collection
+            # is not there at all, so it is what it falls back to when the
+            # collection fails. A cache that answers is the truth the store
+            # holds; a cache that cannot answer means the catalogue could
+            # not be read, and that is not the same answer as an empty
+            # catalogue.
+            with self._cache_lock:
+                cached = [
+                    doc for doc in self._documents if str(doc.metadata.get("id")) in property_ids
+                ]
+            if cached:
+                return cached
+            raise VectorStoreUnavailable(
+                f"the catalogue could not be read: {sanitize_for_log(e)}"
+            ) from e
 
     def add_properties(
         self, properties: List[Property], batch_size: int = 100, refresh: bool = False
@@ -495,6 +533,13 @@ class ChromaPropertyStore:
         # Add documents in batches
         total_cached = 0
         total_indexed = 0
+        # The batches that did not reach the collection, and the listings
+        # they carried. A batch that fails is not a batch that did not
+        # happen: the caller has to be told that the catalogue is missing
+        # them.
+        failed_batches: List[int] = []
+        failed_listings = 0
+        total_batches = 0
         for i in range(0, len(batch_items), batch_size):
             batch = batch_items[i : i + batch_size]
             batch_docs = [doc for doc, _ in batch]
@@ -542,6 +587,9 @@ class ChromaPropertyStore:
                         batch_ids = new_ids
                 except Exception as e:
                     logger.warning("Error checking duplicates: %s", sanitize_for_log(e))
+
+            # The batch is written from here on, so it counts as one.
+            total_batches += 1
 
             try:
                 # 2. Generate Embeddings (CPU/Network) - WITHOUT LOCK
@@ -621,6 +669,8 @@ class ChromaPropertyStore:
                 # The write failed, so the cache keeps the listing it had: a
                 # listing of record is not refreshed in the cache before the
                 # collection carries it. The next sync writes it again.
+                failed_batches.append(i // batch_size + 1)
+                failed_listings += len(batch_docs)
                 continue
 
             # The collection holds the batch, so the cache takes the newer
@@ -633,6 +683,16 @@ class ChromaPropertyStore:
         if total_indexed > 0:
             logger.info(
                 "Total properties added to vector store: %s", sanitize_for_log(total_indexed)
+            )
+
+        if failed_batches:
+            # The write landed only in part, and a write that landed in part
+            # is a failure of the catalogue - not a catalogue that holds
+            # what was not written. The caller is told, and the next sync
+            # writes the rest again.
+            raise VectorStoreWriteError(
+                f"the catalogue could not be written: {len(failed_batches)} of "
+                f"{total_batches} batches failed ({failed_listings} listings did not land)"
             )
 
         return total_cached

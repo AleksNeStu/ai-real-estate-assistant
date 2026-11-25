@@ -11,10 +11,15 @@ get_retriever(), __repr__(), get_vector_store() module function.
 from concurrent.futures import Future
 from unittest.mock import MagicMock, patch
 
+import pytest
 from langchain_core.documents import Document
 
 from data.schemas import Property, PropertyCollection, PropertyType
-from vector_store.chroma_store import ChromaPropertyStore
+from vector_store.chroma_store import (
+    ChromaPropertyStore,
+    VectorStoreUnavailable,
+    VectorStoreWriteError,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -343,13 +348,14 @@ class TestGetPropertiesByIds:
         assert len(results) == 1
         assert results[0].metadata["id"] == "p1"
 
-    def test_returns_empty_on_chroma_error(self, tmp_path):
+    def test_a_read_that_cannot_be_answered_is_not_an_empty_one(self, tmp_path):
+        """An empty catalogue and an unreadable one are not the same answer."""
         vs = _mock_vector_store()
         vs._collection.get.side_effect = Exception("chroma error")
         store = _make_store(tmp_path, embeddings=_mock_embeddings(), vector_store=vs)
 
-        results = store.get_properties_by_ids(["p1"])
-        assert results == []
+        with pytest.raises(VectorStoreUnavailable):
+            store.get_properties_by_ids(["p1"])
 
     def test_handles_empty_chroma_response(self, tmp_path):
         vs = _mock_vector_store()
@@ -707,7 +713,10 @@ class TestAddPropertiesRefresh:
         # The collection refuses the write.
         vs._collection.upsert.side_effect = RuntimeError("the collection is away")
 
-        store.add_properties([make_property("p1", "Krakow", 950)], refresh=True)
+        # The write that did not land is reported as a failure - a catalogue
+        # that could not be written is not a catalogue that holds nothing.
+        with pytest.raises(VectorStoreWriteError):
+            store.add_properties([make_property("p1", "Krakow", 950)], refresh=True)
 
         # The cache keeps the listing it had, so the price the product shows
         # is the price the collection holds.

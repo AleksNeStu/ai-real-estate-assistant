@@ -60,7 +60,7 @@ class TestDataPipelineIntegration:
         fake_embeddings = MagicMock()
         fake_embeddings.embed_documents.side_effect = lambda texts: [[0.1] * 384 for _ in texts]
 
-        with patch("vector_store.chroma_store._FastEmbedEmbeddings", return_value=fake_embeddings):
+        with patch.object(ChromaPropertyStore, "_create_embeddings", return_value=fake_embeddings):
             # We also need to patch where it's instantiated inside the class if it's not passed
             # Actually ChromaPropertyStore creates it internally: self.embeddings = FastEmbedEmbeddings(...)
             # So we patch the class.
@@ -107,7 +107,7 @@ class TestDataPipelineIntegration:
         fake_embeddings.embed_documents.side_effect = slow_embed
         fake_embeddings.embed_query.return_value = [0.1] * 384
 
-        with patch("vector_store.chroma_store._FastEmbedEmbeddings", return_value=fake_embeddings):
+        with patch.object(ChromaPropertyStore, "_create_embeddings", return_value=fake_embeddings):
             store = ChromaPropertyStore(persist_directory=str(tmp_path / "chroma_async_db"))
 
             # Start async add
