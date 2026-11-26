@@ -396,8 +396,14 @@ async def _run_sync(source_id: str, sync_id: str, db_url: str) -> None:
             ds.status = "active"
             ds.last_sync_at = datetime.now(timezone.utc)
             ds.last_sync_status = "success"
-            ds.health_score = _recalculate_health_score(ds)
+            # The error of the failed run is cleared and the counter of the
+            # failures is reset BEFORE the health is calculated. The score is
+            # computed from those two, so calculating it first left a source
+            # that had just recovered looking unhealthy for one more cycle,
+            # with the message of a failure that no longer describes it.
+            ds.last_error = None
             ds.consecutive_failures = 0
+            ds.health_score = _recalculate_health_score(ds)
             ds.total_records = carried
             ds.last_records_synced = carried
 

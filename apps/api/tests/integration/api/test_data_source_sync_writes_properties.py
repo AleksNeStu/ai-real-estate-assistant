@@ -284,3 +284,52 @@ async def test_two_syncs_of_the_same_file_leave_one_set_of_listings(tmp_path, mo
         assert len(cached.properties) == CSV_ROWS
     finally:
         await harness.close()
+
+
+@pytest.mark.asyncio
+async def test_a_source_that_recovers_is_healthy_again(tmp_path, monkeypatch):
+    """A source that failed and then synced says so.
+
+    The health of a source is computed from the failures it has had. The
+    counter is reset by a successful sync, and the error of the failed run
+    is cleared by it too - a source that recovered carries neither, so the
+    panel shows a healthy source instead of a healthy source with the
+    message of a failure that no longer describes it.
+    """
+    harness = _Harness(tmp_path, monkeypatch, CSV_WITHOUT_ROWS)
+    await harness.setup()
+
+    try:
+        async with harness.client() as client:
+            await client.post("/api/v1/data-sources/src-sync-1/sync")
+            failed = await _wait_for_sync(harness.session_factory)
+
+            assert failed.status == "failed"
+
+            async with harness.session_factory() as read:
+                broken = await read.get(DataSourceDB, "src-sync-1")
+                assert broken is not None
+                assert broken.status == "error"
+                assert broken.last_error
+                assert broken.consecutive_failures == 1
+
+            # The source has something to read now.
+            harness.csv_path.write_text(CSV_CONTENT, encoding="utf-8")
+
+            await client.post("/api/v1/data-sources/src-sync-1/sync")
+            await _wait_for_sync(harness.session_factory, count=2)
+
+        async with harness.session_factory() as read:
+            source = await read.get(DataSourceDB, "src-sync-1")
+            assert source is not None
+
+            assert source.status == "active"
+            assert source.last_sync_status == "success"
+            # The failure it recovered from is not a part of it any more.
+            assert source.last_error is None
+            assert source.consecutive_failures == 0
+            # The health is computed from the counter and the last outcome,
+            # so a source that recovered is healthy - not healthy in a cycle.
+            assert source.health_score == 100.0
+    finally:
+        await harness.close()
