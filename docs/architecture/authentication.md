@@ -435,7 +435,35 @@ audit_logger.log(
 | `/api/v1/favorites` | JWT | User |
 | `/api/v1/saved-searches` | JWT | User |
 | `/api/v1/auth/*` | Mixed | Auth |
-| `/api/v1/admin/*` | JWT + Admin role | Admin |
+| `/api/v1/admin/*` | Admin identity (role `admin`, or an e-mail in `ADMIN_EMAILS`) | Admin |
+
+## The admin API
+
+`/api/v1/admin/*`, `/api/v1/data-sources/*`, `/api/v1/bulk-jobs/*` and the
+MCP admin routes are the operator's own surface: the ingestion, the
+reindex, the audit log, the internal metrics. They are gated by an
+**identity**, not by the API key.
+
+The API key cannot be the gate. The Next.js proxy injects `X-API-Key` for
+every path it forwards, and a deployment that runs with `DEMO_MODE` does
+not even check it. A route that asks only for the key is a public route.
+
+The gate (`api/deps/auth.py:require_admin_access`):
+
+| The request | The answer |
+|---|---|
+| carries a token for an account with the role `admin`, or an account whose e-mail is in `ADMIN_EMAILS` | allowed |
+| carries a token for any other account | 403 - and the key is not offered as a way in |
+| carries no token, and the deployment HAS an administrator (an admin-role account, or an e-mail in `ADMIN_EMAILS`) | 403 |
+| carries no token, and the deployment has no administrator at all | the API key opens it - the self-hoster who has not created an admin account yet |
+
+The synthetic demo user is deliberately not consulted: on a demo
+deployment it stands in for every anonymous visitor, and it carries the
+admin role.
+
+`ADMIN_EMAILS` is what lets a Google sign-in reach the admin panel: the
+account does not have to be an administrator in the database, it has to be
+on the list.
 
 ## File Locations
 

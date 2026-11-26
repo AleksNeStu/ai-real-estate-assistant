@@ -75,7 +75,7 @@ python scripts/api/openapi_diff.py --update-baseline
 | [Collections](favorites.md#collections) | Organize favorites into collections | JWT |
 | [Saved Searches](favorites.md#saved-searches) | Save searches with alert settings | JWT |
 | [Tools](properties.md#calculation-tools) | Mortgage, investment, TCO calculators | API Key |
-| [Admin](properties.md#administration) | Data ingestion and reindexing | API Key |
+| [Admin](properties.md#administration) | Data ingestion and reindexing | Admin identity |
 | [Export](properties.md#data-export) | Export properties to various formats | API Key |
 
 ## Rate Limiting
