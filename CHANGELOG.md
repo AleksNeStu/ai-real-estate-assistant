@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.7.2] - 2026-11-26
+
+Since v5.7.1: **the account page saves again**, and an audit entry no longer
+leaves a connection behind.
+
+### Fixed
+- **The profile of an account can be saved again** — the profile router took
+  its database session from a context manager where FastAPI expects a
+  dependency, so the route was handed the context manager instead of a
+  session and every write to the profile answered with a server error. The
+  router takes its session from the dependency the rest of the application
+  uses, and a test proves the write without the dependency being faked — the
+  tests that faked it are what hid the defect.
+- **An audit entry no longer leaves a connection behind** — a request that
+  failed rolled its transaction back and closed its session before the entry
+  was written, and the entry went into that closed session: the write opened
+  a connection that nothing returned to the pool, and the garbage collector
+  had to terminate it. The session is published only while it is open, the
+  entry of a failed request goes on a session of its own, and the request's
+  own session waits for its entry before it commits.
+
 ## [5.7.1] - 2026-11-26
 
 Since v5.7.0: **the panel tells the truth about the source it holds**, the

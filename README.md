@@ -203,14 +203,23 @@ Every release publishes both images to GitHub Container Registry, multi-arch
 (amd64 and arm64):
 
 ```bash
-docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/backend:5.7.1
-docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/frontend:5.7.1
+docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/backend:5.7.2
+docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/frontend:5.7.2
 ```
 
 The full guide — the memory footprint per setup, the published tags and the
 Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.md).
 
 ## What's new
+
+**`v5.7.2`** — the account page saves again.
+
+- **The profile of an account can be saved again** — the profile router took
+  its database session from a context manager where FastAPI expects a
+  dependency, so every write to the profile answered with a server error.
+- **An audit entry no longer leaves a connection behind** — the entry of a
+  request that failed was written into a session that was already closed, so
+  the connection it opened was never returned to the pool.
 
 **`v5.7.1`** — the panel tells the truth about the source it holds.
 
@@ -400,7 +409,7 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
 - **335 dependency alerts closed** — every critical and high advisory resolved,
   the floors pinned in both the lock file and the project file.
 
-Full notes: [v5.7.1 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.7.1) ·
+Full notes: [v5.7.2 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.7.2) ·
 [changelog](CHANGELOG.md).
 
 ## What it does
