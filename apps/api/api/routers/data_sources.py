@@ -9,7 +9,7 @@ import math
 import os
 import tempfile
 import uuid
-from contextlib import contextmanager
+from contextlib import AsyncExitStack, contextmanager
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Annotated, Any, Optional
@@ -334,7 +334,17 @@ async def _run_sync(source_id: str, sync_id: str, db_url: str) -> None:
     engine = create_engine(db_url)
     session_factory = async_sessionmaker(engine, expire_on_commit=False)
 
-    async with session_factory() as session:
+    # The engine is disposed AFTER the session is closed. An engine that is
+    # disposed while a session still holds a connection terminates that
+    # connection instead of returning it to the pool, and the garbage
+    # collector complains about it - once per sync, in the log of a
+    # deployment that syncs on a schedule.
+    #
+    # The exit stack unwinds in reverse: the session leaves first, the
+    # engine is disposed second.
+    async with AsyncExitStack() as stack:
+        stack.push_async_callback(engine.dispose)
+        session = await stack.enter_async_context(session_factory())
         source_result = await session.execute(
             select(DataSourceDB).where(DataSourceDB.id == source_id)
         )
@@ -349,7 +359,6 @@ async def _run_sync(source_id: str, sync_id: str, db_url: str) -> None:
                 "Sync %s has no data source to run against",
                 sanitize_for_log(sync_id),
             )
-            await engine.dispose()
             return
 
         try:
@@ -425,7 +434,6 @@ async def _run_sync(source_id: str, sync_id: str, db_url: str) -> None:
         finally:
             ds.updated_at = datetime.now(timezone.utc)
             await session.commit()
-            await engine.dispose()
 
 
 async def _collect_properties(

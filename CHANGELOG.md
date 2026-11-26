@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.7.1] - 2026-11-26
 
-Two commits since v5.7.0. The theme: **the panel tells the truth about the
+Three commits since v5.7.0. The theme: **the panel tells the truth about the
 source it holds**, and the login flow is proved against the build that is
 running.
 
@@ -20,6 +20,11 @@ running.
   half healthy, and it carried the message of a failure that no longer
   described it. The error of the failed run is cleared by the successful one
   and the health is computed from the counter that was just reset.
+- **A sync disposes its engine after it closes its session** — the engine of
+  a background sync was disposed while the session still held a connection,
+  so the connection was terminated instead of returned to the pool. The
+  garbage collector warned about it in the log of the deployment, once per
+  sync. The session is closed first now, and the engine goes away second.
 
 ### Verified
 - **The login flow against the released build** — the walk of the

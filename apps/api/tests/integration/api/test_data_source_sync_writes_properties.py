@@ -333,3 +333,85 @@ async def test_a_source_that_recovers_is_healthy_again(tmp_path, monkeypatch):
             assert source.health_score == 100.0
     finally:
         await harness.close()
+
+
+@pytest.mark.asyncio
+async def test_the_engine_is_disposed_after_the_session_is_closed(tmp_path, monkeypatch):
+    """The sync disposes its engine when the session is already closed.
+
+    An engine that is disposed while a session still holds a connection
+    terminates that connection instead of returning it to the pool. The
+    garbage collector then complains about it in the log of the deployment
+    - once per sync, in a demo that syncs on a schedule.
+    """
+    import sqlalchemy.ext.asyncio as sa_asyncio
+    from sqlalchemy.ext.asyncio.engine import AsyncEngine
+
+    import db.database as database
+
+    harness = _Harness(tmp_path, monkeypatch, CSV_CONTENT)
+    await harness.setup()
+
+    sessions: list[Any] = []
+
+    class _TrackedSession(sa_asyncio.AsyncSession):
+        """A session that says whether it has been closed."""
+
+        marked_closed = False
+
+        async def close(self) -> None:
+            self.marked_closed = True
+            await super().close()
+
+    real_factory = sa_asyncio.async_sessionmaker
+
+    def tracked_factory(*args: Any, **kwargs: Any):
+        kwargs.setdefault("class_", _TrackedSession)
+        factory = real_factory(*args, **kwargs)
+
+        def make(*a: Any, **kw: Any) -> _TrackedSession:
+            session = factory(*a, **kw)
+            sessions.append(session)
+            return session
+
+        return make
+
+    # The engines the sync opens are the ones this records. The engine of
+    # the harness was opened before the patch, so it is not among them.
+    opened: list[Any] = []
+    real_create_engine = database.create_engine
+
+    def create_engine(*args: Any, **kwargs: Any):
+        engine = real_create_engine(*args, **kwargs)
+        opened.append(engine)
+        return engine
+
+    open_at_dispose: list[Any] = []
+    disposed = asyncio.Event()
+    real_dispose = AsyncEngine.dispose
+
+    async def dispose(self, *args: Any, **kwargs: Any) -> None:
+        if self in opened:
+            open_at_dispose.extend([s for s in sessions if not s.marked_closed])
+        await real_dispose(self, *args, **kwargs)
+        if self in opened:
+            disposed.set()
+
+    monkeypatch.setattr(AsyncEngine, "dispose", dispose)
+    monkeypatch.setattr(database, "create_engine", create_engine)
+    monkeypatch.setattr(sa_asyncio, "async_sessionmaker", tracked_factory)
+
+    try:
+        async with harness.client() as client:
+            response = await client.post("/api/v1/data-sources/src-sync-1/sync")
+            assert response.status_code == 200
+
+            await _wait_for_sync(harness.session_factory)
+            # The record is written before the engine is disposed, so the
+            # wait for the record is not the wait for the disposal.
+            await asyncio.wait_for(disposed.wait(), timeout=20)
+
+        # The session was closed before the engine went away.
+        assert open_at_dispose == []
+    finally:
+        await harness.close()
