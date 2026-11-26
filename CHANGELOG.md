@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.7.1] - 2026-11-26
 
-Three commits since v5.7.0. The theme: **the panel tells the truth about the
-source it holds**, and the login flow is proved against the build that is
-running.
+Since v5.7.0: **the panel tells the truth about the source it holds**, the
+login flow is proved against the build that is running, and a background sync
+stops leaking the connection it holds.
 
 ### Fixed
 - **A data source that recovered is healthy again** — the panel computed the
