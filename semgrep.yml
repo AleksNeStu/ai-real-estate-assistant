@@ -73,6 +73,39 @@ rules:
     severity: WARNING
     languages: [python]
 
+  # LangChain: untrusted data must not ride the system role (Task #151)
+  #
+  # A system message is an INSTRUCTION to the model. Data the model did not
+  # author - the buyer's memory, a listing title, a tool's output - belongs in
+  # a human message, labelled as data. The rule names the class, so the next
+  # place that reaches for the system role is caught before it ships.
+  - id: langchain.system-role-untrusted-data
+    languages: [python]
+    severity: ERROR
+    message: >-
+      Untrusted data must not be placed in a system message - a system message is an
+      instruction to the model. Put the data in a human message and label it as data
+      (the buyer's record, a listing text, a tool output).
+    paths:
+      include:
+        - apps/api/agents/**
+    patterns:
+      - pattern: $T.from_messages([..., ("system", $X), ...])
+      # A literal at the system role is the agent's own prompt.
+      - pattern-not: $T.from_messages([..., ("system", "..."), ...])
+      # A variable that was assigned a literal in the same function is the
+      # agent's own prompt, not data that came from outside.
+      - pattern-not-inside: |
+          def $F(...):
+              ...
+              $X = "..."
+              ...
+      - pattern-not-inside: |
+          def $F(...):
+              ...
+              $X = f"..."
+              ...
+
   # ===== JavaScript/TypeScript Security Rules =====
 
   # eval in JavaScript

@@ -43,7 +43,12 @@ from agents.classification_metrics import (
     init_metrics_db,
     log_classification_metrics,
 )
-from agents.intent_prompts import BUYER_MEMORY_MAX_CHARS, get_system_prompt_for_intent
+from agents.intent_prompts import (
+    BUYER_MEMORY_MAX_CHARS,
+    BUYER_RECORD_CLOSE,
+    BUYER_RECORD_OPEN,
+    get_system_prompt_for_intent,
+)
 from agents.query_analyzer import (
     Complexity,
     QueryAnalysis,
@@ -161,23 +166,31 @@ class HybridPropertyAgent:
     @staticmethod
     def _memory_section(buyer_memory: Optional[str]) -> str:
         """
-        The buyer's memory block, capped so it can never crowd the listings.
+        The buyer's memory as a fenced record, capped so it can never crowd the listings.
+
+        The fence is what makes the record read as DATA: the buyer's own words
+        travel between two markers, so the model sees quoted material instead
+        of the latest thing it was told.
 
         Args:
             buyer_memory: The already-assembled block, or nothing.
 
         Returns:
-            The block, or an empty string when there is no memory.
+            The fenced record, or an empty string when there is no memory.
         """
         if not buyer_memory:
             return ""
-        block = buyer_memory[:BUYER_MEMORY_MAX_CHARS]
-        if len(buyer_memory) > BUYER_MEMORY_MAX_CHARS:
+        if buyer_memory.startswith(BUYER_RECORD_OPEN):
+            # Already fenced - the block travels through here more than once.
+            return buyer_memory
+        room = BUYER_MEMORY_MAX_CHARS - len(BUYER_RECORD_OPEN) - len(BUYER_RECORD_CLOSE) - 2
+        block = buyer_memory[:room]
+        if len(buyer_memory) > room:
             # Never leave half a fact behind.
             cut = block.rfind("\n")
             if cut > 0:
                 block = block[:cut]
-        return block
+        return f"{BUYER_RECORD_OPEN}\n{block}\n{BUYER_RECORD_CLOSE}"
 
     def _rag_chain_for(self, buyer_memory: Optional[str]):
         """
@@ -215,6 +228,10 @@ class HybridPropertyAgent:
         """
         A copy of the chain's prompt with the buyer's memory added to it.
 
+        The record goes in as a HUMAN message, never as a system one: a
+        system message is an instruction to the model, and the record is the
+        buyer's own words - which a hostile listing title can plant.
+
         Args:
             prompt: The prompt the chain owns.
             memory: The buyer's memory block.
@@ -228,11 +245,12 @@ class HybridPropertyAgent:
         # whole answer down with it.
         safe_memory = memory.replace("{", "{{").replace("}", "}}")
         if isinstance(prompt, ChatPromptTemplate):
-            return ChatPromptTemplate.from_messages([*prompt.messages, ("system", safe_memory)])
+            return ChatPromptTemplate.from_messages([*prompt.messages, ("human", safe_memory)])
         if isinstance(prompt, PromptTemplate):
-            # The memory becomes part of the template, so its braces are escaped.
+            # The record is appended AFTER the body: the instruction the prompt
+            # was written to carry comes first, the quoted data last.
             return PromptTemplate(
-                template=f"{safe_memory}\n\n{prompt.template}",
+                template=f"{prompt.template}\n\n{safe_memory}",
                 input_variables=list(prompt.input_variables),
                 partial_variables=dict(prompt.partial_variables),
             )

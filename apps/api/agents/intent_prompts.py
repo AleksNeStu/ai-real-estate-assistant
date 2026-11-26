@@ -7,6 +7,7 @@ query intent, optimized for each type of user interaction.
 
 from typing import Any, Dict, Iterable, Optional
 
+from agents.memory_guard import screen_fact
 from agents.query_analyzer import QueryIntent
 
 # System prompts tailored for each intent type
@@ -108,6 +109,12 @@ BUYER_MEMORY_HEADER = (
 BUYER_MEMORY_MAX_FACTS = 10
 BUYER_MEMORY_MAX_CHARS = 2000
 
+# The fence around the record. The buyer's words travel inside these
+# markers, so the model reads them as a quoted record instead of as the
+# latest thing it was told.
+BUYER_RECORD_OPEN = "<<<BUYER RECORD>>>"
+BUYER_RECORD_CLOSE = "<<<END BUYER RECORD>>>"
+
 
 def build_buyer_memory_block(facts: Optional[Iterable[Any]]) -> str:
     """
@@ -115,6 +122,10 @@ def build_buyer_memory_block(facts: Optional[Iterable[Any]]) -> str:
 
     A fact is anything carrying a `kind` and a `content` - a
     BuyerMemoryFact, or anything shaped like one.
+
+    Every fact is screened AGAIN here, on the way back into the prompt:
+    the rows written before the screen existed are still in the store, and
+    a poisoned one must not reach the model because it is old.
 
     Args:
         facts: The buyer's facts, newest and most relevant first.
@@ -136,7 +147,10 @@ def build_buyer_memory_block(facts: Optional[Iterable[Any]]) -> str:
         content = str(getattr(fact, "content", "") or "").strip()
         if not content:
             continue
-        lines.append(f"- {kind}: {content}" if kind else f"- {content}")
+        screened = screen_fact(kind, content)
+        if screened is None:
+            continue
+        lines.append(f"- {kind}: {screened}" if kind else f"- {screened}")
 
     if not lines:
         return ""

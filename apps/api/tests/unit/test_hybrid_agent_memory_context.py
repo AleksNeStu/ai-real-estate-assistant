@@ -21,6 +21,8 @@ from agents.intent_prompts import (
     BUYER_MEMORY_HEADER,
     BUYER_MEMORY_MAX_CHARS,
     BUYER_MEMORY_MAX_FACTS,
+    BUYER_RECORD_CLOSE,
+    BUYER_RECORD_OPEN,
     build_buyer_memory_block,
 )
 from agents.query_analyzer import Complexity, QueryAnalysis, QueryIntent
@@ -391,6 +393,53 @@ class TestTheMemoryIsDataNotATemplate:
 
         assert "error" not in result
         assert "KeyError" not in result["answer"]
+
+
+class TestTheRecordIsNeverAnInstruction:
+    """The buyer's record is data, so it never rides the system role (Task #151)."""
+
+    def test_the_record_reaches_the_prompt_in_a_human_message(self, chain_agent, memory_block):
+        analysis = QueryAnalysis(
+            query="q",
+            intent=QueryIntent.SIMPLE_RETRIEVAL,
+            complexity=Complexity.SIMPLE,
+            extracted_filters={},
+        )
+
+        chain_agent._process_with_rag("q", analysis, buyer_memory=memory_block)
+
+        messages = chain_agent.llm.recorded[-1]
+        system_text = "\n".join(str(m.content) for m in messages if m.type == "system")
+        human_text = "\n".join(str(m.content) for m in messages if m.type == "human")
+
+        # The system message is the chain's own instruction. The record is
+        # the buyer's own words, so it goes in as a human message - fenced,
+        # so the model reads it as quoted data.
+        assert "up to 500000 EUR" not in system_text
+        assert "up to 500000 EUR" in human_text
+        assert BUYER_RECORD_OPEN in human_text
+        assert BUYER_RECORD_CLOSE in human_text
+
+    def test_the_record_is_fenced_in_the_plain_prompt(self):
+        prompt = PromptTemplate(template="Context:\n{context}\n\nQuestion: {question}")
+
+        new_prompt = HybridPropertyAgent._prompt_with_memory(prompt, BRACED_MEMORY)
+
+        text = new_prompt.format(context="ctx", question="q")
+        assert "flat {2 bedrooms}" in text
+        # The body comes first, the quoted record last.
+        assert text.index("Question: q") < text.index("flat {2 bedrooms}")
+
+    def test_the_agent_fences_the_record_it_is_handed(self, agent):
+        record = agent._memory_section("What the buyer has already told us:\n- budget: 500000")
+
+        assert record.startswith(BUYER_RECORD_OPEN)
+        assert record.endswith(BUYER_RECORD_CLOSE)
+
+    def test_the_fence_is_not_added_twice(self, agent):
+        record = agent._memory_section("- budget: 500000")
+
+        assert agent._memory_section(record) == record
 
 
 class TestTheStreamingPathsChangeNothingWithoutMemory:
