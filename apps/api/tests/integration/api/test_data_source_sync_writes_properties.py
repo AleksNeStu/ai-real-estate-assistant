@@ -370,7 +370,7 @@ async def test_the_engine_is_disposed_after_the_session_is_closed(tmp_path, monk
         factory = real_factory(*args, **kwargs)
 
         def make(*a: Any, **kw: Any) -> _TrackedSession:
-            session = factory(*a, **kw)
+            session = cast(_TrackedSession, factory(*a, **kw))
             sessions.append(session)
             return session
 
