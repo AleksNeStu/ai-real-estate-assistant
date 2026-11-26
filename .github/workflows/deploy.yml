@@ -156,9 +156,17 @@ jobs:
               sleep 30
               continue
             fi
+            # A check run that already carries a conclusion HAS settled, whatever
+            # its status still says. GitHub leaves a finished job in
+            # `in_progress` from time to time - the conclusion is written, the
+            # status never flips. Such a run is read here as pending forever,
+            # and the wait below spins for twenty minutes and then fails the
+            # deploy: a zombie check run can block every later attempt on that
+            # commit. A running job carries no conclusion, so it is still
+            # read as pending - only a finished one is let through.
             STATE=$(echo "$RAW" | jq --arg run "$THIS_RUN_ID" --arg own "$OWN_RUNS"               '[.check_runs[] | select((.html_url // "") | test("/runs/(" + $run + "|" + $own + ")/") | not)]
-               | {pending: [.[] | select(.status != "completed") | .name],
-                  failed:  [.[] | select(.status == "completed" and (.conclusion != "success") and (.conclusion != "skipped")) | .name]}')
+               | {pending: [.[] | select(.status != "completed" and (.conclusion == null)) | .name],
+                  failed:  [.[] | select((.conclusion != null) and (.conclusion != "success") and (.conclusion != "skipped")) | .name]}')
             PENDING=$(echo "$STATE" | jq -r '.pending | length' 2>/dev/null || echo "")
             FAILED=$(echo "$STATE" | jq -r '.failed | length' 2>/dev/null || echo "")
             if [ "$PENDING" = "0" ] && [ "$FAILED" = "0" ]; then
