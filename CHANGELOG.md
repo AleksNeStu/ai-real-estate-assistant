@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.7.3] - 2026-11-26
+
+Since v5.7.2: **the admin API is closed to everybody who is not the operator**.
+
+### Security
+- **The admin API is no longer reachable with the API key alone** — the web
+  app's proxy injects `X-API-Key` into every path it forwards, and a demo
+  deployment did not check the key at all, so any visitor could read the
+  audit log (with the e-mail addresses and the user agents of the
+  registered accounts), the internal metrics and the dashboard, and could
+  reach the ingestion routes. The operator's own routes — `/api/v1/admin/*`,
+  `/api/v1/data-sources/*`, `/api/v1/bulk-jobs/*` and the MCP admin routes —
+  now require an administrator: an account with the role `admin`, or an
+  e-mail on the deployment's admin list (the variable is named in the
+  authentication guide). A deployment that has no administrator at all keeps
+  the old way in, so a self-hoster is not locked out of their own panel.
+
 ## [5.7.2] - 2026-11-26
 
 Since v5.7.1: **the account page saves again**, and an audit entry no longer

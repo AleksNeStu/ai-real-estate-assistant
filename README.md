@@ -203,8 +203,8 @@ Every release publishes both images to GitHub Container Registry, multi-arch
 (amd64 and arm64):
 
 ```bash
-docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/backend:5.7.2
-docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/frontend:5.7.2
+docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/backend:5.7.3
+docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/frontend:5.7.3
 ```
 
 The full guide — the memory footprint per setup, the published tags and the
@@ -212,9 +212,14 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
 
 ## What's new
 
-**`v5.7.2`** — the account page saves again.
+**`v5.7.3`** — the admin API is closed to everybody who is not the operator.
 
-- **The profile of an account can be saved again** — the profile router took
+- **The admin API is no longer reachable with the API key alone** — the web
+  app's proxy injects the key into every path it forwards, so the audit log,
+  the internal metrics and the ingestion routes were reachable by any
+  visitor. They now need an administrator: the role `admin`, or an e-mail
+  listed in `ADMIN_EMAILS`.
+- **The account page saves again** — the profile router took
   its database session from a context manager where FastAPI expects a
   dependency, so every write to the profile answered with a server error.
 - **An audit entry no longer leaves a connection behind** — the entry of a
@@ -409,7 +414,7 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
 - **335 dependency alerts closed** — every critical and high advisory resolved,
   the floors pinned in both the lock file and the project file.
 
-Full notes: [v5.7.2 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.7.2) ·
+Full notes: [v5.7.3 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.7.3) ·
 [changelog](CHANGELOG.md).
 
 ## What it does
