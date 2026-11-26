@@ -18814,9 +18814,22 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -18824,6 +18837,24 @@
         "summary": "Admin Dashboard",
         "tags": [
           "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -18865,12 +18896,33 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
         "summary": "Get Excel Sheets",
         "tags": [
           "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -18912,12 +18964,33 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
         "summary": "Get Excel Sheets Upload",
         "tags": [
           "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -18935,9 +19008,22 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -18945,6 +19031,24 @@
         "summary": "Admin Health Check",
         "tags": [
           "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -18986,12 +19090,33 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
         "summary": "Ingest Data",
         "tags": [
           "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -19033,12 +19158,33 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
         "summary": "Ingest File Upload",
         "tags": [
           "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -19048,9 +19194,8 @@
         "operationId": "list_audit_entries_api_v1_admin_mcp_audit_get",
         "parameters": [
           {
-            "description": "Filter by connector name",
-            "in": "query",
             "name": "connector_name",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
@@ -19063,12 +19208,12 @@
               ],
               "description": "Filter by connector name",
               "title": "Connector Name"
-            }
+            },
+            "description": "Filter by connector name"
           },
           {
-            "description": "Filter by operation",
-            "in": "query",
             "name": "operation",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
@@ -19081,12 +19226,12 @@
               ],
               "description": "Filter by operation",
               "title": "Operation"
-            }
+            },
+            "description": "Filter by operation"
           },
           {
-            "description": "Filter by status (success, failure, error)",
-            "in": "query",
             "name": "status",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
@@ -19099,12 +19244,12 @@
               ],
               "description": "Filter by status (success, failure, error)",
               "title": "Status"
-            }
+            },
+            "description": "Filter by status (success, failure, error)"
           },
           {
-            "description": "Filter by request ID",
-            "in": "query",
             "name": "request_id",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
@@ -19117,18 +19262,18 @@
               ],
               "description": "Filter by request ID",
               "title": "Request Id"
-            }
+            },
+            "description": "Filter by request ID"
           },
           {
-            "description": "Filter by start date (ISO 8601)",
-            "in": "query",
             "name": "start_date",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
                 {
-                  "format": "date-time",
-                  "type": "string"
+                  "type": "string",
+                  "format": "date-time"
                 },
                 {
                   "type": "null"
@@ -19136,18 +19281,18 @@
               ],
               "description": "Filter by start date (ISO 8601)",
               "title": "Start Date"
-            }
+            },
+            "description": "Filter by start date (ISO 8601)"
           },
           {
-            "description": "Filter by end date (ISO 8601)",
-            "in": "query",
             "name": "end_date",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
                 {
-                  "format": "date-time",
-                  "type": "string"
+                  "type": "string",
+                  "format": "date-time"
                 },
                 {
                   "type": "null"
@@ -19155,33 +19300,50 @@
               ],
               "description": "Filter by end date (ISO 8601)",
               "title": "End Date"
-            }
+            },
+            "description": "Filter by end date (ISO 8601)"
           },
           {
-            "description": "Maximum results to return",
-            "in": "query",
             "name": "limit",
+            "in": "query",
             "required": false,
             "schema": {
-              "default": 100,
-              "description": "Maximum results to return",
+              "type": "integer",
               "maximum": 1000,
               "minimum": 1,
-              "title": "Limit",
-              "type": "integer"
-            }
+              "description": "Maximum results to return",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum results to return"
           },
           {
-            "description": "Offset for pagination",
-            "in": "query",
             "name": "offset",
+            "in": "query",
             "required": false,
             "schema": {
-              "default": 0,
-              "description": "Offset for pagination",
+              "type": "integer",
               "minimum": 0,
-              "title": "Offset",
-              "type": "integer"
+              "description": "Offset for pagination",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Offset for pagination"
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -19208,6 +19370,9 @@
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -19256,12 +19421,33 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
         "summary": "Run Cleanup",
         "tags": [
           "MCP Audit"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -19271,35 +19457,51 @@
         "operationId": "get_entries_by_connector_api_v1_admin_mcp_audit_connector__connector_name__get",
         "parameters": [
           {
-            "in": "path",
             "name": "connector_name",
+            "in": "path",
             "required": true,
             "schema": {
-              "title": "Connector Name",
-              "type": "string"
+              "type": "string",
+              "title": "Connector Name"
             }
           },
           {
-            "in": "query",
             "name": "limit",
+            "in": "query",
             "required": false,
             "schema": {
-              "default": 100,
+              "type": "integer",
               "maximum": 1000,
               "minimum": 1,
-              "title": "Limit",
-              "type": "integer"
+              "default": 100,
+              "title": "Limit"
             }
           },
           {
-            "in": "query",
             "name": "offset",
+            "in": "query",
             "required": false,
             "schema": {
-              "default": 0,
+              "type": "integer",
               "minimum": 0,
-              "title": "Offset",
-              "type": "integer"
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -19327,6 +19529,9 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
@@ -19342,12 +19547,28 @@
         "operationId": "get_entries_by_request_id_api_v1_admin_mcp_audit_request__request_id__get",
         "parameters": [
           {
-            "in": "path",
             "name": "request_id",
+            "in": "path",
             "required": true,
             "schema": {
-              "title": "Request Id",
-              "type": "string"
+              "type": "string",
+              "title": "Request Id"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -19380,6 +19601,9 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
@@ -19403,9 +19627,22 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -19413,6 +19650,24 @@
         "summary": "Get Storage Metrics",
         "tags": [
           "MCP Audit"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -19432,9 +19687,22 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -19442,6 +19710,24 @@
         "summary": "Admin Metrics",
         "tags": [
           "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -19461,9 +19747,22 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -19471,6 +19770,24 @@
         "summary": "Admin Latency Metrics",
         "tags": [
           "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -19487,9 +19804,22 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -19497,6 +19827,24 @@
         "summary": "Admin Notifications Stats",
         "tags": [
           "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -19514,9 +19862,22 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -19524,6 +19885,24 @@
         "summary": "List Portals",
         "tags": [
           "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -19565,12 +19944,33 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
         "summary": "Fetch From Portal",
         "tags": [
           "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -19612,12 +20012,33 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
         "summary": "Reindex Data",
         "tags": [
           "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -19634,9 +20055,22 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -19644,6 +20078,24 @@
         "summary": "Admin Version Info",
         "tags": [
           "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -21890,8 +22342,8 @@
         "operationId": "list_audit_logs_api_v1_audit_get",
         "parameters": [
           {
-            "in": "query",
             "name": "action",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
@@ -21906,8 +22358,8 @@
             }
           },
           {
-            "in": "query",
             "name": "actor_id",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
@@ -21922,8 +22374,8 @@
             }
           },
           {
-            "in": "query",
             "name": "resource",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
@@ -21938,8 +22390,8 @@
             }
           },
           {
-            "in": "query",
             "name": "request_id",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
@@ -21954,8 +22406,8 @@
             }
           },
           {
-            "in": "query",
             "name": "start_time",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
@@ -21970,8 +22422,8 @@
             }
           },
           {
-            "in": "query",
             "name": "end_time",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
@@ -21986,23 +22438,39 @@
             }
           },
           {
-            "in": "query",
             "name": "limit",
+            "in": "query",
             "required": false,
             "schema": {
+              "type": "integer",
               "default": 100,
-              "title": "Limit",
-              "type": "integer"
+              "title": "Limit"
             }
           },
           {
-            "in": "query",
             "name": "offset",
+            "in": "query",
             "required": false,
             "schema": {
+              "type": "integer",
               "default": 0,
-              "title": "Offset",
-              "type": "integer"
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -22028,6 +22496,9 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
@@ -22044,13 +22515,29 @@
         "operationId": "verify_audit_chain_api_v1_audit_verify_get",
         "parameters": [
           {
-            "in": "query",
             "name": "limit",
+            "in": "query",
             "required": false,
             "schema": {
+              "type": "integer",
               "default": 1000,
-              "title": "Limit",
-              "type": "integer"
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -22078,6 +22565,9 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
@@ -22094,12 +22584,28 @@
         "operationId": "get_audit_entry_api_v1_audit__entry_id__get",
         "parameters": [
           {
-            "in": "path",
             "name": "entry_id",
+            "in": "path",
             "required": true,
             "schema": {
-              "title": "Entry Id",
-              "type": "string"
+              "type": "string",
+              "title": "Entry Id"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -22124,6 +22630,9 @@
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -22896,31 +23405,31 @@
         "operationId": "list_bulk_jobs_api_v1_bulk_jobs_get",
         "parameters": [
           {
-            "in": "query",
             "name": "page",
+            "in": "query",
             "required": false,
             "schema": {
-              "default": 1,
+              "type": "integer",
               "minimum": 1,
-              "title": "Page",
-              "type": "integer"
+              "default": 1,
+              "title": "Page"
             }
           },
           {
-            "in": "query",
             "name": "page_size",
+            "in": "query",
             "required": false,
             "schema": {
-              "default": 20,
+              "type": "integer",
               "maximum": 100,
               "minimum": 1,
-              "title": "Page Size",
-              "type": "integer"
+              "default": 20,
+              "title": "Page Size"
             }
           },
           {
-            "in": "query",
             "name": "job_type",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
@@ -22935,8 +23444,8 @@
             }
           },
           {
-            "in": "query",
             "name": "status",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
@@ -22951,8 +23460,8 @@
             }
           },
           {
-            "in": "query",
             "name": "source_type",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
@@ -22964,6 +23473,22 @@
                 }
               ],
               "title": "Source Type"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -22990,6 +23515,9 @@
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -23038,12 +23566,33 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
         "summary": "Create Export Job",
         "tags": [
           "Bulk Jobs"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -23085,12 +23634,33 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
         "summary": "Create Import Job",
         "tags": [
           "Bulk Jobs"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -23100,12 +23670,28 @@
         "operationId": "delete_bulk_job_api_v1_bulk_jobs__job_id__delete",
         "parameters": [
           {
-            "in": "path",
             "name": "job_id",
+            "in": "path",
             "required": true,
             "schema": {
-              "title": "Job Id",
-              "type": "string"
+              "type": "string",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -23126,6 +23712,9 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
@@ -23139,12 +23728,28 @@
         "operationId": "get_bulk_job_api_v1_bulk_jobs__job_id__get",
         "parameters": [
           {
-            "in": "path",
             "name": "job_id",
+            "in": "path",
             "required": true,
             "schema": {
-              "title": "Job Id",
-              "type": "string"
+              "type": "string",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -23171,6 +23776,9 @@
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -23187,12 +23795,28 @@
         "operationId": "cancel_bulk_job_api_v1_bulk_jobs__job_id__cancel_post",
         "parameters": [
           {
-            "in": "path",
             "name": "job_id",
+            "in": "path",
             "required": true,
             "schema": {
-              "title": "Job Id",
-              "type": "string"
+              "type": "string",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -23219,6 +23843,9 @@
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -24200,31 +24827,31 @@
         "operationId": "list_data_sources_api_v1_data_sources_get",
         "parameters": [
           {
-            "in": "query",
             "name": "page",
+            "in": "query",
             "required": false,
             "schema": {
-              "default": 1,
+              "type": "integer",
               "minimum": 1,
-              "title": "Page",
-              "type": "integer"
+              "default": 1,
+              "title": "Page"
             }
           },
           {
-            "in": "query",
             "name": "page_size",
+            "in": "query",
             "required": false,
             "schema": {
-              "default": 20,
+              "type": "integer",
               "maximum": 100,
               "minimum": 1,
-              "title": "Page Size",
-              "type": "integer"
+              "default": 20,
+              "title": "Page Size"
             }
           },
           {
-            "in": "query",
             "name": "status",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
@@ -24239,8 +24866,8 @@
             }
           },
           {
-            "in": "query",
             "name": "source_type",
+            "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
@@ -24252,6 +24879,22 @@
                 }
               ],
               "title": "Source Type"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -24278,6 +24921,9 @@
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -24324,12 +24970,33 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
         "summary": "Create Data Source",
         "tags": [
           "Data Sources"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -24371,12 +25038,33 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
         "summary": "Test Data Source",
         "tags": [
           "Data Sources"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -24386,22 +25074,38 @@
         "operationId": "delete_data_source_api_v1_data_sources__source_id__delete",
         "parameters": [
           {
-            "in": "path",
             "name": "source_id",
+            "in": "path",
             "required": true,
             "schema": {
-              "title": "Source Id",
-              "type": "string"
+              "type": "string",
+              "title": "Source Id"
             }
           },
           {
-            "in": "query",
             "name": "confirm",
+            "in": "query",
             "required": false,
             "schema": {
+              "type": "boolean",
               "default": false,
-              "title": "Confirm",
-              "type": "boolean"
+              "title": "Confirm"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -24422,6 +25126,9 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
@@ -24435,12 +25142,28 @@
         "operationId": "get_data_source_api_v1_data_sources__source_id__get",
         "parameters": [
           {
-            "in": "path",
             "name": "source_id",
+            "in": "path",
             "required": true,
             "schema": {
-              "title": "Source Id",
-              "type": "string"
+              "type": "string",
+              "title": "Source Id"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -24468,6 +25191,9 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
@@ -24481,12 +25207,28 @@
         "operationId": "update_data_source_api_v1_data_sources__source_id__patch",
         "parameters": [
           {
-            "in": "path",
             "name": "source_id",
+            "in": "path",
             "required": true,
             "schema": {
-              "title": "Source Id",
-              "type": "string"
+              "type": "string",
+              "title": "Source Id"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -24524,6 +25266,9 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
@@ -24539,35 +25284,51 @@
         "operationId": "get_sync_history_api_v1_data_sources__source_id__history_get",
         "parameters": [
           {
-            "in": "path",
             "name": "source_id",
+            "in": "path",
             "required": true,
             "schema": {
-              "title": "Source Id",
-              "type": "string"
+              "type": "string",
+              "title": "Source Id"
             }
           },
           {
-            "in": "query",
             "name": "page",
+            "in": "query",
             "required": false,
             "schema": {
-              "default": 1,
+              "type": "integer",
               "minimum": 1,
-              "title": "Page",
-              "type": "integer"
+              "default": 1,
+              "title": "Page"
             }
           },
           {
-            "in": "query",
             "name": "page_size",
+            "in": "query",
             "required": false,
             "schema": {
-              "default": 20,
+              "type": "integer",
               "maximum": 100,
               "minimum": 1,
-              "title": "Page Size",
-              "type": "integer"
+              "default": 20,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -24595,6 +25356,9 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
@@ -24610,12 +25374,28 @@
         "operationId": "sync_data_source_api_v1_data_sources__source_id__sync_post",
         "parameters": [
           {
-            "in": "path",
             "name": "source_id",
+            "in": "path",
             "required": true,
             "schema": {
-              "title": "Source Id",
-              "type": "string"
+              "type": "string",
+              "title": "Source Id"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -24642,6 +25422,9 @@
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -28374,9 +29157,22 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -28384,6 +29180,24 @@
         "summary": "Get Allowlist",
         "tags": [
           "MCP Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       },
       "post": {
@@ -28423,12 +29237,33 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
         "summary": "Add To Allowlist",
         "tags": [
           "MCP Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -28446,9 +29281,22 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -28456,6 +29304,24 @@
         "summary": "Reload Allowlist",
         "tags": [
           "MCP Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -28466,9 +29332,22 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -28476,6 +29355,24 @@
         "summary": "Clear Violations",
         "tags": [
           "MCP Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       },
       "get": {
@@ -28491,9 +29388,22 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -28501,6 +29411,24 @@
         "summary": "Get Violations",
         "tags": [
           "MCP Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -28510,12 +29438,28 @@
         "operationId": "remove_from_allowlist_api_v1_mcp_allowlist__name__delete",
         "parameters": [
           {
-            "in": "path",
             "name": "name",
+            "in": "path",
             "required": true,
             "schema": {
-              "title": "Name",
-              "type": "string"
+              "type": "string",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -28535,6 +29479,9 @@
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -28559,9 +29506,22 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -28569,6 +29529,24 @@
         "summary": "List Connectors",
         "tags": [
           "MCP Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },
@@ -28578,12 +29556,28 @@
         "operationId": "get_connector_details_api_v1_mcp_connectors__name__get",
         "parameters": [
           {
-            "in": "path",
             "name": "name",
+            "in": "path",
             "required": true,
             "schema": {
-              "title": "Name",
-              "type": "string"
+              "type": "string",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -28614,6 +29608,9 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
@@ -28629,12 +29626,28 @@
         "operationId": "health_check_connector_api_v1_mcp_connectors__name__health_get",
         "parameters": [
           {
-            "in": "path",
             "name": "name",
+            "in": "path",
             "required": true,
             "schema": {
-              "title": "Name",
-              "type": "string"
+              "type": "string",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -28668,6 +29681,9 @@
         },
         "security": [
           {
+            "HTTPBearer": []
+          },
+          {
             "APIKeyHeader": []
           }
         ],
@@ -28691,9 +29707,22 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         },
         "security": [
+          {
+            "HTTPBearer": []
+          },
           {
             "APIKeyHeader": []
           }
@@ -28701,6 +29730,24 @@
         "summary": "Health Check",
         "tags": [
           "MCP Admin"
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
         ]
       }
     },

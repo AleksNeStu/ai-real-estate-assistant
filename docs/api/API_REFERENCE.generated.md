@@ -21,11 +21,18 @@ python scripts\docs\generate_api_reference.py
 
 Aggregated admin dashboard endpoint (Task #67). Combines health, cache, latency, vector store, and system stats into a single JSON response for frontend admin panel consumption.
 
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
 **Responses**
 
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | object |
+| 422 | Validation Error | HTTPValidationError |
 
 ## POST /api/v1/admin/excel/sheets
 
@@ -34,6 +41,12 @@ Aggregated admin dashboard endpoint (Task #67). Combines health, cache, latency,
 **Tags**: Admin
 
 Get sheet names from an Excel file. Returns available sheets and their row counts for sheet selection UI.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -55,6 +68,12 @@ Get sheet names from an Excel file. Returns available sheets and their row count
 
 Get sheet names from an uploaded Excel file. Returns available sheets and their row counts for sheet selection UI. Supports: .xlsx, .xls, .ods files.
 
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
 **Request Body**
 
 - Required: yes
@@ -75,11 +94,18 @@ Get sheet names from an uploaded Excel file. Returns available sheets and their 
 
 Detailed health check for admin.
 
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
 **Responses**
 
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | HealthCheck |
+| 422 | Validation Error | HTTPValidationError |
 
 ## POST /api/v1/admin/ingest
 
@@ -88,6 +114,12 @@ Detailed health check for admin.
 **Tags**: Admin
 
 Trigger data ingestion from URLs. Downloads CSV/Excel files, processes them, and saves to local cache. Does NOT automatically reindex vector store (call /reindex for that). Enforces max_properties limit from settings.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -108,6 +140,12 @@ Trigger data ingestion from URLs. Downloads CSV/Excel files, processes them, and
 **Tags**: Admin
 
 Upload and ingest property data from Excel/CSV files. Supports: .xlsx, .xls, .ods, .csv files. Maximum file size: 25MB. Does NOT automatically reindex vector store (call /reindex for that). The file is kept where a data source can read it again, and the source that names it is created: an upload is the creation of a source, not a side effect of one. The answer carries the id and the name of that source - or, when the file could not be kept, the reason why there is none.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -141,6 +179,7 @@ Query MCP audit logs with filters. Requires API key authentication. Returns pagi
 | end_date | query | string \| null | no | Filter by end date (ISO 8601) |
 | limit | query | integer | no | Maximum results to return |
 | offset | query | integer | no | Offset for pagination |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -156,6 +195,12 @@ Query MCP audit logs with filters. Requires API key authentication. Returns pagi
 **Tags**: MCP Audit
 
 Run cleanup of expired MCP audit logs. Requires API key authentication. By default, runs in dry-run mode (no files deleted). Set dry_run=false to actually delete files.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -184,6 +229,7 @@ Get audit entries for a specific connector. Requires API key authentication. Ret
 | connector_name | path | string | yes |  |
 | limit | query | integer | no |  |
 | offset | query | integer | no |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -205,6 +251,7 @@ Get all audit entries for a specific request ID. Requires API key authentication
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
 | request_id | path | string | yes |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -221,11 +268,18 @@ Get all audit entries for a specific request ID. Requires API key authentication
 
 Get storage metrics for MCP audit logs. Requires API key authentication. Returns information about log file storage including: - Number of files - Total size - Date range - Expired files count
 
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
 **Responses**
 
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | StorageMetricsResponse |
+| 422 | Validation Error | HTTPValidationError |
 
 ## GET /api/v1/admin/metrics
 
@@ -235,11 +289,18 @@ Get storage metrics for MCP audit logs. Requires API key authentication. Returns
 
 Return comprehensive API metrics for monitoring dashboard.
 
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
 **Responses**
 
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | object |
+| 422 | Validation Error | HTTPValidationError |
 
 ## GET /api/v1/admin/metrics/latency
 
@@ -249,11 +310,18 @@ Return comprehensive API metrics for monitoring dashboard.
 
 Return p95 latency metrics for search and chat endpoints (Task #120). SLA targets: - search: p95 < 2000 ms - chat: p95 < 8000 ms
 
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
 **Responses**
 
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | object |
+| 422 | Validation Error | HTTPValidationError |
 
 ## GET /api/v1/admin/notifications-stats
 
@@ -261,11 +329,18 @@ Return p95 latency metrics for search and chat endpoints (Task #120). SLA target
 
 **Tags**: Admin
 
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
 **Responses**
 
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | NotificationsAdminStats |
+| 422 | Validation Error | HTTPValidationError |
 
 ## GET /api/v1/admin/portals
 
@@ -275,11 +350,18 @@ Return p95 latency metrics for search and chat endpoints (Task #120). SLA target
 
 List all available portal adapters. Returns information about each portal including: - Whether it's configured (has API key if required) - Rate limit information
 
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
 **Responses**
 
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | PortalAdaptersResponse |
+| 422 | Validation Error | HTTPValidationError |
 
 ## POST /api/v1/admin/portals/fetch
 
@@ -288,6 +370,12 @@ List all available portal adapters. Returns information about each portal includ
 **Tags**: Admin
 
 Fetch property data from an external portal. Uses the specified portal adapter to fetch properties based on filters. The fetched data is automatically ingested into the property cache.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -309,6 +397,12 @@ Fetch property data from an external portal. Uses the specified portal adapter t
 
 Reindex data from cache to vector store.
 
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
 **Request Body**
 
 - Required: yes
@@ -327,11 +421,18 @@ Reindex data from cache to vector store.
 
 **Tags**: Admin
 
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
 **Responses**
 
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | AdminVersionInfo |
+| 422 | Validation Error | HTTPValidationError |
 
 ## GET /api/v1/agent-analytics/deals
 
@@ -1051,6 +1152,7 @@ Query audit log entries with filters and pagination.
 | end_time | query | string \| null | no |  |
 | limit | query | integer | no |  |
 | offset | query | integer | no |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -1072,6 +1174,7 @@ Verify hash-chain integrity of the audit log. Three verdicts: `valid` says the c
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
 | limit | query | integer | no |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -1093,6 +1196,7 @@ Get a single audit log entry by ID.
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
 | entry_id | path | string | yes |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -1433,6 +1537,7 @@ List bulk jobs with pagination and filtering. Supports filtering by: - job_type:
 | job_type | query | string \| null | no |  |
 | status | query | string \| null | no |  |
 | source_type | query | string \| null | no |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -1448,6 +1553,12 @@ List bulk jobs with pagination and filtering. Supports filtering by: - job_type:
 **Tags**: Bulk Jobs
 
 Start a new bulk export job. The export runs in the background using FastAPI BackgroundTasks. Use GET /bulk-jobs/{job_id} to check progress and get download URL.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -1468,6 +1579,12 @@ Start a new bulk export job. The export runs in the background using FastAPI Bac
 **Tags**: Bulk Jobs
 
 Start a new bulk import job. The import runs in the background using FastAPI BackgroundTasks. Use GET /bulk-jobs/{job_id} to check progress.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -1494,6 +1611,7 @@ Get details and status of a specific bulk job.
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
 | job_id | path | string | yes |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -1515,6 +1633,7 @@ Delete a bulk job record. Only completed, failed, or cancelled jobs can be delet
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
 | job_id | path | string | yes |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -1536,6 +1655,7 @@ Cancel a running bulk job. Only jobs in 'pending' or 'running' status can be can
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
 | job_id | path | string | yes |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -1921,6 +2041,7 @@ List all data sources with pagination and filtering.
 | page_size | query | integer | no |  |
 | status | query | string \| null | no |  |
 | source_type | query | string \| null | no |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -1936,6 +2057,12 @@ List all data sources with pagination and filtering.
 **Tags**: Data Sources
 
 Create a new data source configuration.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -1956,6 +2083,12 @@ Create a new data source configuration.
 **Tags**: Data Sources
 
 Test a data source connection without saving.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -1982,6 +2115,7 @@ Get a specific data source by ID.
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
 | source_id | path | string | yes |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -2003,6 +2137,7 @@ Update a data source configuration.
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
 | source_id | path | string | yes |  |
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -2030,6 +2165,7 @@ Delete a data source. Requires confirm=true to prevent accidental deletion.
 |---|---|---|---|---|
 | source_id | path | string | yes |  |
 | confirm | query | boolean | no |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -2053,6 +2189,7 @@ Get sync history for a data source.
 | source_id | path | string | yes |  |
 | page | query | integer | no |  |
 | page_size | query | integer | no |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -2074,6 +2211,7 @@ Trigger a manual sync for a data source.
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
 | source_id | path | string | yes |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -3306,11 +3444,18 @@ Get average prices by city/district over time.
 
 Get current MCP connector allowlist configuration. Returns the full allowlist including: - Current edition - Allowlisted connectors (CE accessible) - Restricted connectors (PRO/Enterprise only)
 
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
 **Responses**
 
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | MCPAllowlistResponse |
+| 422 | Validation Error | HTTPValidationError |
 
 ## POST /api/v1/mcp/allowlist
 
@@ -3319,6 +3464,12 @@ Get current MCP connector allowlist configuration. Returns the full allowlist in
 **Tags**: MCP Admin
 
 Add a connector to the allowlist at runtime. Note: This modifies the in-memory config only. For persistence, update the YAML file directly.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -3340,11 +3491,18 @@ Add a connector to the allowlist at runtime. Note: This modifies the in-memory c
 
 Reload allowlist configuration from YAML file. Use this after updating the YAML file to apply changes without restarting the application.
 
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
 **Responses**
 
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | MCPReloadResponse |
+| 422 | Validation Error | HTTPValidationError |
 
 ## GET /api/v1/mcp/allowlist/violations
 
@@ -3354,11 +3512,18 @@ Reload allowlist configuration from YAML file. Use this after updating the YAML 
 
 Get all logged allowlist violations for audit. Returns violation records including: - Timestamp - Connector name - Operation attempted - Context and edition info
 
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
 **Responses**
 
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | MCPViolationsListResponse |
+| 422 | Validation Error | HTTPValidationError |
 
 ## DELETE /api/v1/mcp/allowlist/violations
 
@@ -3368,11 +3533,18 @@ Get all logged allowlist violations for audit. Returns violation records includi
 
 Clear all logged allowlist violations. Use with caution - this removes audit trail.
 
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
 **Responses**
 
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 204 | Successful Response |  |
+| 422 | Validation Error | HTTPValidationError |
 
 ## DELETE /api/v1/mcp/allowlist/{name}
 
@@ -3387,6 +3559,7 @@ Remove a connector from the allowlist. Note: This modifies the in-memory config 
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
 | name | path | string | yes |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -3403,11 +3576,18 @@ Remove a connector from the allowlist. Note: This modifies the in-memory config 
 
 List all connectors with status. Returns all registered connectors with their current status: - **active**: Connector is connected and healthy - **disabled**: Connector is configured but not enabled - **error**: Connector has connection/health issues - **not_instantiated**: Connector registered but no instance Combines information from: - Allowlist config (YAML) - Registry (registered connectors)
 
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
 **Responses**
 
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | MCPConnectorsListResponse |
+| 422 | Validation Error | HTTPValidationError |
 
 ## GET /api/v1/mcp/connectors/{name}
 
@@ -3422,6 +3602,7 @@ Get detailed information about a specific connector. Returns comprehensive conne
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
 | name | path | string | yes |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -3444,6 +3625,7 @@ Perform health check on a specific connector. Returns health status including: -
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
 | name | path | string | yes |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -3462,11 +3644,18 @@ Perform health check on a specific connector. Returns health status including: -
 
 Health check for MCP connector system. Returns: - Overall status (healthy/degraded/unhealthy) - Health check results for each instantiated connector
 
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
+
 **Responses**
 
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | MCPHealthResponse |
+| 422 | Validation Error | HTTPValidationError |
 
 ## GET /api/v1/me/buyer-memory
 
