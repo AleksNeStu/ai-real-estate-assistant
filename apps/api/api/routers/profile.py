@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.deps.auth import get_current_active_user
 from core.security_utils import sanitize_for_log
-from db.database import get_db_context
+from db.database import get_db
 from db.models import User
 
 logger = logging.getLogger(__name__)
@@ -157,7 +157,7 @@ async def get_profile(
 async def update_profile(
     profile_update: ProfileUpdate,
     user: User = Depends(get_current_active_user),
-    session: AsyncSession = Depends(get_db_context),
+    session: AsyncSession = Depends(get_db),
 ):
     """Update current user's profile (partial update)."""
     update_data = profile_update.model_dump(exclude_unset=True)
@@ -180,7 +180,7 @@ async def update_profile(
 async def upload_avatar(
     file: UploadFile = File(...),
     user: User = Depends(get_current_active_user),
-    session: AsyncSession = Depends(get_db_context),
+    session: AsyncSession = Depends(get_db),
 ):
     """Upload avatar image."""
     # Validate file type
@@ -246,7 +246,7 @@ async def upload_avatar(
 @router.delete("/avatar")
 async def delete_avatar(
     user: User = Depends(get_current_active_user),
-    session: AsyncSession = Depends(get_db_context),
+    session: AsyncSession = Depends(get_db),
 ):
     """Delete user's avatar."""
     if not user.avatar_url:
@@ -271,7 +271,7 @@ async def delete_avatar(
 async def update_privacy_settings(
     privacy_settings: PrivacySettings,
     user: User = Depends(get_current_active_user),
-    session: AsyncSession = Depends(get_db_context),
+    session: AsyncSession = Depends(get_db),
 ):
     """Update privacy settings."""
     user.privacy_settings = privacy_settings.model_dump()
@@ -287,7 +287,7 @@ async def request_data_export(
     export_request: DataExportRequest,
     background_tasks: BackgroundTasks,
     user: User = Depends(get_current_active_user),
-    session: AsyncSession = Depends(get_db_context),
+    session: AsyncSession = Depends(get_db),
 ):
     """Request GDPR data export (async processing)."""
     # Check rate limit (1 export per day per user)

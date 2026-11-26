@@ -110,3 +110,40 @@ class TestProfileAPI:
     async def test_empty_update_returns_profile(self, client):
         resp = await client.put("/api/v1/profile", json={})
         assert resp.status_code == 200
+
+
+class TestProfileSessionDependency:
+    """The router must take its session from a FastAPI dependency.
+
+    The fixture above overrides ``get_db_context``, which hides the defect it
+    exists to find: ``get_db_context`` is an ``@asynccontextmanager``, so
+    FastAPI hands the route the context manager itself instead of a session,
+    and every write in the router fails with an AttributeError. The fixture
+    below overrides only ``get_db`` - the dependency the router really uses.
+    """
+
+    @pytest.fixture
+    async def unoverridden_client(self, db_session):
+        app = FastAPI()
+        app.include_router(profile.router, prefix="/api/v1")
+
+        user = await _create_test_user(db_session)
+
+        async def override_get_db():
+            yield db_session
+
+        async def override_get_current_user():
+            return user
+
+        app.dependency_overrides[get_db] = override_get_db
+        app.dependency_overrides[get_current_active_user] = override_get_current_user
+
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as c:
+            yield c
+
+    @pytest.mark.asyncio
+    async def test_update_profile_writes_the_change(self, unoverridden_client):
+        resp = await unoverridden_client.put("/api/v1/profile", json={"full_name": "Written"})
+        assert resp.status_code == 200
+        assert resp.json()["full_name"] == "Written"

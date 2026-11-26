@@ -10,7 +10,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.routers import profile
-from db.database import get_db_context
+from db.database import get_db
 from db.models import User
 
 
@@ -54,7 +54,7 @@ async def profile_client(db_session: AsyncSession):
     async def override_get_current_user():
         return test_user
 
-    test_app.dependency_overrides[get_db_context] = override_get_db
+    test_app.dependency_overrides[get_db] = override_get_db
     test_app.dependency_overrides[get_current_active_user] = override_get_current_user
 
     transport = ASGITransport(app=test_app)

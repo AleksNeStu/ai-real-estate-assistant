@@ -11,7 +11,7 @@ from httpx import ASGITransport, AsyncClient
 
 from api.deps.auth import get_current_active_user
 from api.routers import profile
-from db.database import get_db_context as get_db_dep
+from db.database import get_db as get_db_dep
 
 _test_app = FastAPI()
 _test_app.include_router(profile.router)
