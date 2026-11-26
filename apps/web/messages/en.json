@@ -313,6 +313,7 @@
       "noResults": "No Results Found",
       "noResultsHint": "Try adjusting your search terms or filters.",
       "showingResults": "Showing {count} {count, plural, one {property} other {properties}}",
+      "loadMore": "Show more",
       "exportResults": "Export Results",
       "summarySort": "sorted by {sort}"
     },
@@ -376,6 +377,8 @@
     "map": {
       "noMappableResults": "No mappable results",
       "noMappableResultsHint": "These listings do not include latitude/longitude coordinates.",
+      "noResultsToMap": "Nothing to draw on the map",
+      "noResultsToMapHint": "The listings the search returns are drawn here, with the price on every pin.",
       "shown": "{shown} of {total} shown on the map",
       "filteredByArea": "(filtered by area)",
       "enhanced": "Enhanced Map",
@@ -4063,7 +4066,8 @@
       "instrumentNote": "Seeded demo catalogue, not real listings · a model we pay for, no keys",
       "instrumentPerMonth": "≈{amount}/mo",
       "instrumentPerSqm": "{amount} {currency}/m²",
-      "matches": "{count} matches"
+      "matches": "{count} matches",
+    "mapLabel": "The matches on the map"
     },
     "chips": {
       "label": "Try one of these:",

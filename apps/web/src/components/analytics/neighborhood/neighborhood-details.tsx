@@ -145,7 +145,7 @@ export function NeighborhoodDetails({
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList>
           <TabsTrigger value="overview">{t('details.overview')}</TabsTrigger>
           <TabsTrigger value="factors">{t('details.allFactors')}</TabsTrigger>
           <TabsTrigger value="extended">{t('details.extended')}</TabsTrigger>

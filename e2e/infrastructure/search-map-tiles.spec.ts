@@ -6,9 +6,12 @@
  * tiles at all - and a map that asks for nothing is an empty rectangle that
  * looks like a broken page.
  *
- * The tiles are the free OpenStreetMap ones: the map needs no key, and the
- * request goes from the browser to the tile host. That host is a third party,
- * so the suite separates the two failures:
+ * The tiles are the free OpenStreetMap ones: the map needs no key. The
+ * browser does not fetch them itself any more - it asks THIS origin for a
+ * tile and the application asks the tile host, because the direct
+ * browser-to-CDN path answers a share of the requests with 408 and leaves
+ * the visitor with a grey rectangle. The route says in the `X-Tile-Cache`
+ * header what the answer was, so the suite separates the two failures:
  *
  *   - the map did not ask for tiles          -> the product is broken
  *   - the map asked and the host refused     -> the network is broken, and the
@@ -29,8 +32,8 @@ const API_ACCESS_KEY = process.env.API_ACCESS_KEY || '';
 
 test.skip(process.env.E2E_STACK !== 'true', 'needs the Docker Compose stack (E2E_STACK=true)');
 
-/** The free tiles the map asks for. */
-const TILE_HOST = /tile\.openstreetmap\.org/;
+/** The route the browser asks for a tile. */
+const TILE_ROUTE = /\/api\/tiles\/\d+\/\d+\/\d+/;
 
 function apiHeaders(): Record<string, string> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -74,13 +77,20 @@ test.describe('The map of the search page', () => {
 
   test('the map asks for its tiles, and the tiles arrive', async ({ page }) => {
     const requested: string[] = [];
-    const refused: string[] = [];
+    const failed: string[] = [];
+    const fallbacks: string[] = [];
 
     page.on('request', (request) => {
-      if (TILE_HOST.test(request.url())) requested.push(request.url());
+      if (TILE_ROUTE.test(request.url())) requested.push(request.url());
     });
     page.on('requestfailed', (request) => {
-      if (TILE_HOST.test(request.url())) refused.push(request.url());
+      if (TILE_ROUTE.test(request.url())) failed.push(request.url());
+    });
+    page.on('response', (response) => {
+      if (!TILE_ROUTE.test(response.url())) return;
+      // The route answers with the transparent tile and says so in the
+      // header when the tile host did not answer.
+      if (response.headers()['x-tile-cache'] === 'FALLBACK') fallbacks.push(response.url());
     });
 
     await page.goto(`${FRONTEND_URL}/search?q=apartment%20in%20Krakow`);
@@ -119,13 +129,16 @@ test.describe('The map of the search page', () => {
       'the map asked for no tiles at all, so it drew no map'
     ).toBeGreaterThan(0);
 
+    // The tile route is ours. If it failed outright, the map is broken.
+    expect(failed.length, `the tile route failed outright: ${failed.join(', ')}`).toBe(0);
+
     // The tiles came back. If the tile host refused them, the network is
     // broken, not the map: the suite says so and does not fail the gate for
     // a third party's outage.
-    if (painted === 0) {
+    if (fallbacks.length > 0 && fallbacks.length === requested.length) {
       test.skip(
         true,
-        `the tile host refused every tile (${refused.length} failed requests) - the map asked, the network did not answer`
+        `the tile host refused every tile (${fallbacks.length} fallbacks) - the map asked, the network did not answer`
       );
     }
 

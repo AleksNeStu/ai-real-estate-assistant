@@ -1823,6 +1823,7 @@
       "noResults": "Результаты не найдены",
       "noResultsHint": "Попробуйте изменить условия поиска.",
       "showingResults": "Найдено {count} {count, plural, one {объект} few {объекта} other {объектов}}",
+      "loadMore": "Показать ещё",
       "exportResults": "Экспорт результатов",
       "summarySort": "сортировка: {sort}"
     },
@@ -1879,6 +1880,8 @@
     "map": {
       "noMappableResults": "Нет результатов с координатами",
       "noMappableResultsHint": "В этих объявлениях нет координат.",
+      "noResultsToMap": "На карте пока нет меток",
+      "noResultsToMapHint": "Объявления, которые вернёт поиск, наносятся здесь, с ценой на каждой метке.",
       "shown": "На карте: {shown} из {total}",
       "filteredByArea": "(отфильтровано по области)",
       "enhanced": "Расширенная карта",
@@ -4058,7 +4061,8 @@
       "instrumentNote": "Заполненный каталог демо, не настоящие объявления · модель, за которую платим мы, без ключей",
       "instrumentPerMonth": "≈{amount}/mo",
       "instrumentPerSqm": "{amount} {currency}/м²",
-      "matches": "{count} совпадений"
+      "matches": "{count} совпадений",
+      "mapLabel": "Совпадения на карте"
     },
     "chips": {
       "label": "Попробуйте один из запросов:",

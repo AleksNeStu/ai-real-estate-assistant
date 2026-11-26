@@ -91,7 +91,7 @@ export function AnalyticsConsole() {
       <div
         role="tablist"
         aria-label={t('tools.label')}
-        className="flex flex-wrap gap-x-6 gap-y-1 border-b border-border"
+        className="flex flex-wrap gap-x-6 border-b border-border"
       >
         {tools.map((tool) => {
           const isActive = tool.id === active;
@@ -105,7 +105,7 @@ export function AnalyticsConsole() {
               aria-controls="analytics-tool"
               onClick={() => setActive(tool.id)}
               className={[
-                '-mb-px border-b-2 py-2.5 text-[14px] font-medium transition-colors',
+                '-mb-px shrink-0 whitespace-nowrap border-b-2 py-2.5 text-[14px] font-medium transition-colors',
                 isActive
                   ? 'border-foreground text-foreground'
                   : 'border-transparent text-muted-foreground hover:text-foreground',

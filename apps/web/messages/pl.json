@@ -1823,6 +1823,7 @@
       "noResults": "Brak wyników",
       "noResultsHint": "Spróbuj zmienić kryteria wyszukiwania lub filtry.",
       "showingResults": "Wyświetlam {count} {count, plural, one {nieruchomość} few {nieruchomości} other {nieruchomości}}",
+      "loadMore": "Pokaż więcej",
       "exportResults": "Eksportuj wyniki",
       "summarySort": "sortowanie: {sort}"
     },
@@ -1879,6 +1880,8 @@
     "map": {
       "noMappableResults": "Brak wyników z lokalizacją",
       "noMappableResultsHint": "Te oferty nie zawierają współrzędnych.",
+      "noResultsToMap": "Na mapie nie ma jeszcze punktów",
+      "noResultsToMapHint": "Oferty, które zwróci wyszukiwarka, są nanoszone tutaj, z ceną na każdej pinezce.",
       "shown": "Na mapie: {shown} z {total}",
       "filteredByArea": "(filtrowane według obszaru)",
       "enhanced": "Rozszerzona mapa",
@@ -4063,7 +4066,8 @@
       "instrumentNote": "Zasiany katalog demo, nie prawdziwe oferty · model, za który płacimy my, bez kluczy",
       "instrumentPerMonth": "≈{amount}/mies.",
       "instrumentPerSqm": "{amount} {currency}/m²",
-      "matches": "{count} dopasowań"
+      "matches": "{count} dopasowań",
+      "mapLabel": "Dopasowania na mapie"
     },
     "chips": {
       "label": "Spróbuj jednego z tych:",

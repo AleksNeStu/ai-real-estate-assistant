@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import {
@@ -60,6 +60,26 @@ const CONTROL_CLASS =
 const MONO_CONTROL_CLASS = `${CONTROL_CLASS} font-mono`;
 const LABEL_CLASS = 'text-[12px] font-medium text-foreground';
 
+/**
+ * How many results one page of the ledger holds.
+ *
+ * The search is a ranked list, so "the next page" is "more of the same
+ * ranking": asking for a longer list answers with the rows the short list
+ * left out. The page starts at twenty rows and grows by twenty at a time,
+ * up to the ceiling - a catalogue of a hundred thousand deeds is not read
+ * in one screen, and the visitor is never asked to.
+ */
+const RESULTS_PAGE_SIZE = 20;
+const RESULTS_MAX = 100;
+
+/**
+ * The width at which the panes stand side by side.
+ *
+ * The same breakpoint the layout uses (`lg`): under it the panes are one
+ * column, over it they are three.
+ */
+const DESKTOP_WIDTH = 1024;
+
 function SearchPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -95,6 +115,7 @@ function SearchPageContent() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResultItem[]>([]);
   const [total, setTotal] = useState(0);
+  const [limit, setLimit] = useState(RESULTS_PAGE_SIZE);
   const [error, setError] = useState<string | null>(null);
   const [requestId, setRequestId] = useState<string | undefined>();
   const [hasSearched, setHasSearched] = useState(false);
@@ -123,6 +144,11 @@ function SearchPageContent() {
   // The map is a pane of its own, next to the results - so the map is what
   // the route opens on. The switch narrows the route to the list.
   const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
+  // The pane that holds the map, so a narrow screen can be brought to it.
+  const mapPaneRef = useRef<HTMLElement | null>(null);
+  // The first run of the view is not a change: the page did not scroll
+  // itself on arrival.
+  const firstViewRun = useRef(true);
   const [filtersOpen, setFiltersOpen] = useState(false);
   // The enhanced map is Mapbox GL, and Mapbox asks for an access token. A
   // deployment without one (the public demo, a self-hoster) must not be
@@ -318,7 +344,7 @@ function SearchPageContent() {
     return { filters: Object.keys(filters).length ? filters : undefined };
   };
 
-  const handleSearch = async (e?: React.FormEvent) => {
+  const handleSearch = async (e?: React.FormEvent, nextLimit?: number) => {
     e?.preventDefault();
     setLoading(true);
     setError(null);
@@ -347,14 +373,17 @@ function SearchPageContent() {
         // Tracking must never break the search.
       }
 
+      const wanted = nextLimit ?? limit;
       const response = await searchProperties({
         query,
+        limit: wanted,
         sort_by: sortBy as 'relevance' | 'price' | 'price_per_sqm' | 'area_sqm' | 'year_built',
         sort_order: sortOrder as 'asc' | 'desc',
         filters,
       });
       setResults(response.results);
       setTotal(response.count ?? response.results.length);
+      setLimit(wanted);
     } catch (err) {
       setResults([]);
       setTotal(0);
@@ -452,9 +481,46 @@ function SearchPageContent() {
     setSortOrder('desc');
   };
 
+  /**
+   * The next page of the ledger.
+   *
+   * The search is a ranking, so the next page is more of the same ranking:
+   * the request asks for a longer list and the rows the short list left
+   * out arrive in it.
+   */
+  const loadMore = () => {
+    void handleSearch(undefined, Math.min(limit + RESULTS_PAGE_SIZE, RESULTS_MAX));
+  };
+
   const sortLabel = t(SORT_LABEL_KEY[sortBy] ?? 'sortOptions.relevance');
   const shownCount = drawnPolygon ? filteredByPolygon.length : filteredMapPoints.length;
+  /**
+   * The points the map draws.
+   *
+   * The pane shows what the map shows: a filter that hides every point
+   * leaves an empty map, and the pane says so instead of drawing a map
+   * with nothing on it.
+   */
+  const shownMapPoints = drawnPolygon ? filteredByPolygon : filteredMapPoints;
   const showMap = viewMode === 'map';
+
+  /**
+   * The narrow screen is brought to the map when the visitor asks for it.
+   *
+   * On a desktop the map is a column that is always on the screen, so
+   * nothing is scrolled. On a phone it stands under the rows, and the
+   * visitor who pressed "Map" is answered by seeing the map.
+   */
+  useEffect(() => {
+    if (firstViewRun.current) {
+      firstViewRun.current = false;
+      return;
+    }
+    if (!showMap) return;
+    if (typeof window === 'undefined') return;
+    if (window.innerWidth >= DESKTOP_WIDTH) return;
+    mapPaneRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [showMap]);
 
   return (
     <div className="flex min-h-full flex-col bg-background" aria-live="polite">
@@ -803,7 +869,7 @@ function SearchPageContent() {
         {/* The results: a ledger of prices. */}
         <section
           data-testid="search-results"
-          className="order-3 flex flex-col lg:order-2 lg:border-r lg:border-border"
+          className="order-2 flex flex-col lg:border-r lg:border-border"
         >
           <div className="flex flex-col gap-2 border-b border-border px-6 py-2.5">
             <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
@@ -959,18 +1025,45 @@ function SearchPageContent() {
             {!loading && hasSearched && !error && (
               <ResultsLedger results={results} query={query} />
             )}
+
+            {/* The next page of the ledger. The ranking is the same one -
+                the page asks for more of the list the search already
+                ranked, so the rows that were left out arrive here. */}
+            {hasSearched && !error && results.length > 0 && results.length >= limit && (
+              <div className="flex justify-center border-t border-border px-6 py-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={loadMore}
+                  disabled={loading || limit >= RESULTS_MAX}
+                  data-testid="search-load-more"
+                  className="rounded-full px-5"
+                >
+                  {t('results.loadMore')}
+                </Button>
+              </div>
+            )}
           </div>
         </section>
 
-        {/* The map, with the area analytics over it. */}
+        {/* The map, with the area analytics over it. The map is the last
+            pane at every width: on a desktop it stands beside the results,
+            on a phone it stands under them. The two widths show the same
+            panes in the same order, so the toggle means the same thing in
+            both - and a phone visitor is not pushed under a map to reach
+            the results. */}
         {showMap ? (
-          <section data-testid="search-map" className="relative order-2 lg:order-3">
+          <section
+            data-testid="search-map"
+            ref={mapPaneRef}
+            className="relative order-3"
+          >
             <div className="lg:sticky lg:top-0">
-              {mapPoints.length ? (
+              {shownMapPoints.length ? (
                 useMapbox && canUseMapbox ? (
                   <>
                     <PropertyMapboxMap
-                      points={drawnPolygon ? filteredByPolygon : filteredMapPoints}
+                      points={shownMapPoints}
                       mapboxToken={mapboxToken}
                       showHeatmap={mapFilterOptions.showHeatmap}
                       heatmapIntensity={mapFilterOptions.heatmapIntensity}
@@ -1004,8 +1097,14 @@ function SearchPageContent() {
                 <div className="flex h-[420px] items-center justify-center border-b border-border bg-muted/40 px-6">
                   <EmptyState
                     icon={MapPin}
-                    title={t('map.noMappableResults')}
-                    description={t('map.noMappableResultsHint')}
+                    title={
+                      results.length ? t('map.noMappableResults') : t('map.noResultsToMap')
+                    }
+                    description={
+                      results.length
+                        ? t('map.noMappableResultsHint')
+                        : t('map.noResultsToMapHint')
+                    }
                     className="w-full"
                   />
                 </div>
@@ -1013,7 +1112,7 @@ function SearchPageContent() {
 
               {results.length > 0 ? <AreaAnalyticsCard results={results} /> : null}
 
-              {mapPoints.length ? (
+              {shownMapPoints.length ? (
                 <div className="absolute right-4 top-4 z-[1000] flex items-center gap-2 rounded-lg border border-border bg-background px-2.5 py-1.5">
                   {canUseMapbox ? (
                     <label className="flex items-center gap-2 text-[12px] text-foreground">

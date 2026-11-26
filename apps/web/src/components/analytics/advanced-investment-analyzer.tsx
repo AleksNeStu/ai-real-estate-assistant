@@ -620,7 +620,7 @@ export function AdvancedInvestmentAnalyzer() {
 
             {/* Detailed Results Tabs */}
             <Tabs defaultValue="cashflow" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList>
                 <TabsTrigger value="cashflow">{t('tabs.cashFlow')}</TabsTrigger>
                 <TabsTrigger value="scenarios">{t('tabs.scenarios')}</TabsTrigger>
                 <TabsTrigger value="tax">{t('tabs.tax')}</TabsTrigger>

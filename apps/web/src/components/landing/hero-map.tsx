@@ -3,9 +3,11 @@
 import { useEffect, useMemo } from 'react';
 import { type LatLngBoundsExpression } from 'leaflet';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
+import { useTranslations } from 'next-intl';
 
 import { MapTileTheme } from '@/components/ui/map-tile-theme';
 import { pinLabel, pricePin } from '@/lib/map-pin';
+import { cn } from '@/lib/utils';
 
 /**
  * The map of the hero instrument: the matches, on the map they sit on.
@@ -51,6 +53,7 @@ export default function HeroMap({
   points: HeroMapPoint[];
   className?: string;
 }) {
+  const t = useTranslations('landing.hero');
   const center = useMemo<[number, number]>(() => {
     if (points.length === 0) return [50.0614, 19.9366]; // Kraków, the demo's city
     const lat = points.reduce((sum, p) => sum + p.lat, 0) / points.length;
@@ -77,23 +80,27 @@ export default function HeroMap({
   );
 
   return (
-    <MapContainer
-      center={center}
-      zoom={12}
-      scrollWheelZoom={false}
-      zoomControl={false}
-      attributionControl={false}
-      className={className}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="/api/tiles/{z}/{x}/{y}"
-      />
-      <FitBounds bounds={bounds} />
-      <MapTileTheme />
-      {points.map((point, index) => (
-        <Marker key={point.id} position={[point.lat, point.lon]} icon={icons[index]} />
-      ))}
-    </MapContainer>
+    // The same role and the same name the other two maps of the product
+    // carry, so a screen reader is told what this is in every place.
+    <div className={cn('h-full w-full', className)} role="application" aria-label={t('mapLabel')}>
+      <MapContainer
+        center={center}
+        zoom={12}
+        scrollWheelZoom={false}
+        zoomControl={false}
+        attributionControl={false}
+        className="h-full w-full"
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="/api/tiles/{z}/{x}/{y}"
+        />
+        <FitBounds bounds={bounds} />
+        <MapTileTheme />
+        {points.map((point, index) => (
+          <Marker key={point.id} position={[point.lat, point.lon]} icon={icons[index]} />
+        ))}
+      </MapContainer>
+    </div>
   );
 }

@@ -28,7 +28,7 @@ export function AdminTabs({ className }: { className?: string }) {
   return (
     <nav
       aria-label={t('title')}
-      className={cn('flex gap-6 overflow-x-auto border-b border-border', className)}
+      className={cn('flex flex-wrap gap-x-6 border-b border-border', className)}
     >
       {ADMIN_TABS.map((tab) => {
         const href = `/admin/${tab.slug}`;
@@ -39,7 +39,10 @@ export function AdminTabs({ className }: { className?: string }) {
             href={href}
             aria-current={active ? 'page' : undefined}
             className={cn(
-              'shrink-0 border-b-2 pb-2.5 pt-2 text-app font-medium transition-colors',
+              // The same tab as the other bars of the product: the rule of
+              // the active tab sits on the rule of the bar, and the row
+              // wraps instead of scrolling - one behaviour at every width.
+              '-mb-px shrink-0 whitespace-nowrap border-b-2 py-2.5 text-[14px] font-medium transition-colors',
               active
                 ? 'border-foreground text-foreground'
                 : 'border-transparent text-muted-foreground hover:text-foreground'

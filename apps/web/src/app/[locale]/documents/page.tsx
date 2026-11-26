@@ -159,7 +159,10 @@ export default function DocumentsPage() {
 
   const tabClass = (active: boolean) =>
     [
-      'inline-flex items-center gap-1.5 border-0 border-b-2 bg-transparent px-0 pb-2 pt-1 text-[14px] leading-5 transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50',
+      // The same tab as the other bars of the product: the rule of the
+      // active tab sits on the rule of the bar, the row wraps instead of
+      // scrolling, and a label is never squeezed.
+      '-mb-px inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 bg-transparent px-0 py-2.5 text-[14px] leading-5 transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50',
       active
         ? 'border-foreground font-medium text-foreground'
         : 'border-transparent text-muted-foreground hover:text-foreground',
@@ -197,11 +200,13 @@ export default function DocumentsPage() {
 
       {/* The tabs of the vault. */}
       <div className="px-6 pt-4">
-        <div className="flex gap-5 border-b border-border" role="tablist">
+        <div className="flex flex-wrap gap-x-6 border-b border-border" role="tablist">
           <button
             type="button"
             role="tab"
+            id="documents-tab-all"
             aria-selected={tab === 'all'}
+            aria-controls="documents-panel"
             onClick={() => setTab('all')}
             className={tabClass(tab === 'all')}
           >
@@ -210,7 +215,9 @@ export default function DocumentsPage() {
           <button
             type="button"
             role="tab"
+            id="documents-tab-expiring"
             aria-selected={tab === 'expiring'}
+            aria-controls="documents-panel"
             onClick={() => setTab('expiring')}
             className={tabClass(tab === 'expiring')}
           >
@@ -222,7 +229,12 @@ export default function DocumentsPage() {
         </div>
       </div>
 
-      <main className="px-6 py-5">
+      <main
+        id="documents-panel"
+        role="tabpanel"
+        aria-labelledby={`documents-tab-${tab}`}
+        className="px-6 py-5"
+      >
         {listed.length === 0 && !loading ? (
           <EmptyState
             icon={FileText}

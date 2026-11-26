@@ -81,12 +81,14 @@ test.describe('The landing', () => {
     // in half.
     expect(await clippedWidth(rows.first())).toBeLessThanOrEqual(1);
 
-    // The exit controls.
-    const strip = page.locator('#open');
+    // The exit controls. The landing was rebuilt: the waitlist sits in the
+    // hosted tier now and the open-source material in its own section.
+    const open = page.locator('#open');
+    const hosted = page.locator('#hosted');
     for (const control of [
-      strip.getByRole('link', { name: 'Fork it on GitHub' }),
-      strip.getByRole('button', { name: 'Notify me' }),
-      strip.getByRole('link', { name: 'Talk to the studio' }),
+      open.getByRole('link', { name: 'Fork it on GitHub' }),
+      hosted.getByRole('button', { name: 'Notify me' }),
+      open.getByRole('link', { name: 'Talk to the studio' }),
     ]) {
       await expect(control).toBeVisible({ timeout: 15000 });
     }
@@ -98,6 +100,50 @@ test.describe('The landing', () => {
 });
 
 test.describe('The search page', () => {
+  test('the map stands after the results at every width', async ({ page }) => {
+    await page.route('**/api/v1/search*', mockSearchSuccess);
+    await page.route('**/api/v1/properties*', mockSearchSuccess);
+
+    await page.goto('/en/search');
+
+    const map = page.getByTestId('search-map');
+    const results = page.getByTestId('search-results');
+    await expect(map).toBeVisible({ timeout: 20000 });
+    await expect(results).toBeVisible({ timeout: 20000 });
+
+    // The two panes stand in the same order at every width: the results
+    // first, the map after them. On a desktop that is two columns; on a
+    // phone it is one column with the same order. The map used to stand
+    // BEFORE the results on a phone, so the visitor met a map where the
+    // results should have been - and the toggle meant two different things
+    // depending on the width.
+    const boxes = await page.evaluate(() => {
+      const mapBox = document.querySelector('[data-testid="search-map"]')?.getBoundingClientRect();
+      const resultsBox = document
+        .querySelector('[data-testid="search-results"]')
+        ?.getBoundingClientRect();
+      if (!mapBox || !resultsBox) return null;
+      return {
+        mapX: mapBox.x,
+        mapY: mapBox.y,
+        resultsX: resultsBox.x,
+        resultsY: resultsBox.y,
+        width: window.innerWidth,
+      };
+    });
+
+    expect(boxes).not.toBeNull();
+    const { mapX, mapY, resultsX, resultsY, width } = boxes!;
+
+    if (width >= 1024) {
+      // The desktop: the map is the third column, on the right of the results.
+      expect(mapX).toBeGreaterThan(resultsX);
+    } else {
+      // The phone: the map is under the results, not over them.
+      expect(mapY).toBeGreaterThan(resultsY);
+    }
+  });
+
   test('the map and the filters fit the width', async ({ page }, testInfo) => {
     await page.route('**/api/v1/search*', mockSearchSuccess);
     await page.route('**/api/v1/properties*', mockSearchSuccess);

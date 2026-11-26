@@ -153,7 +153,7 @@ export default function SettingsPage() {
         <div
           role="tablist"
           aria-label={t('tabs.label')}
-          className="flex flex-wrap gap-x-6 gap-y-1 border-b border-border"
+          className="flex flex-wrap gap-x-6 border-b border-border"
         >
           {TABS.map((id) => {
             const isActive = id === tab;
@@ -167,7 +167,7 @@ export default function SettingsPage() {
                 aria-controls="settings-panel"
                 onClick={() => setTab(id)}
                 className={[
-                  '-mb-px border-b-2 py-2.5 text-[14px] font-medium transition-colors',
+                  '-mb-px shrink-0 whitespace-nowrap border-b-2 py-2.5 text-[14px] font-medium transition-colors',
                   isActive
                     ? 'border-foreground text-foreground'
                     : 'border-transparent text-muted-foreground hover:text-foreground',

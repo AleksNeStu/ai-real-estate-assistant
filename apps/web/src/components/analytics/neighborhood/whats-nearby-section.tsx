@@ -239,7 +239,7 @@ export function WhatsNearbySection({
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList>
             {categories.map((cat) => {
               const count = nearbyPois[cat.key]?.length || 0;
               return (
@@ -250,7 +250,7 @@ export function WhatsNearbySection({
                   disabled={count === 0}
                 >
                   {cat.icon}
-                  <span className="hidden sm:inline">{cat.label}</span>
+                  <span>{cat.label}</span>
                   {count > 0 && (
                     <span className="ml-1 text-xs bg-muted px-1.5 py-0.5 rounded-full">
                       {count}

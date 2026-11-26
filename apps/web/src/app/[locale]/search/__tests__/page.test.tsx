@@ -248,6 +248,7 @@ describe('SearchPage', () => {
     await waitFor(() => {
       expect(mockSearchProperties).toHaveBeenCalledWith({
         query: 'Test',
+        limit: 20,
         sort_by: 'price',
         sort_order: 'asc',
         filters: {
@@ -520,5 +521,112 @@ describe('SearchPage', () => {
         process.env.NEXT_PUBLIC_MAPBOX_TOKEN = previous;
       }
     }
+  });
+
+  it('puts the map after the results, so both widths show the same order', async () => {
+    mockSearchProperties.mockResolvedValueOnce({
+      results: [
+        {
+          property: {
+            id: '1',
+            title: 'Modern Apartment',
+            price: 500000,
+            city: 'Downtown',
+            country: 'US',
+            rooms: 2,
+            bathrooms: 2,
+            latitude: 40.0,
+            longitude: -74.0,
+          },
+          score: 0.9,
+        },
+      ],
+      count: 1,
+    });
+
+    render(<SearchPage />);
+    fireEvent.change(screen.getByLabelText('Search query'), {
+      target: { value: 'Downtown' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /search/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('property-map')).toBeInTheDocument();
+    });
+
+    // The map is the last pane: on a desktop it is the third column, on a
+    // phone it stands under the results. The order is the same in both, so
+    // the toggle means the same thing at every width.
+    const results = screen.getByTestId('search-results');
+    const map = screen.getByTestId('search-map');
+    expect(results.compareDocumentPosition(map) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('offers the next page of the ledger and asks for more of the ranking', async () => {
+    const page = Array.from({ length: 20 }, (_, index) => ({
+      property: {
+        id: String(index),
+        title: `Flat ${index}`,
+        price: 1000 + index,
+        city: 'Downtown',
+        country: 'US',
+      },
+      score: 0.5,
+    }));
+    mockSearchProperties.mockResolvedValue({ results: page, count: page.length });
+
+    render(<SearchPage />);
+    fireEvent.change(screen.getByLabelText('Search query'), {
+      target: { value: 'Downtown' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /search/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Flat 0')).toBeInTheDocument();
+    });
+
+    // The ledger holds twenty rows to a page.
+    expect(mockSearchProperties).toHaveBeenCalledWith(
+      expect.objectContaining({ limit: 20 })
+    );
+
+    // The page is full, so there may be more of the ranking.
+    fireEvent.click(screen.getByTestId('search-load-more'));
+
+    await waitFor(() => {
+      expect(mockSearchProperties).toHaveBeenLastCalledWith(
+        expect.objectContaining({ limit: 40 })
+      );
+    });
+  });
+
+  it('offers no next page when the ranking is exhausted', async () => {
+    mockSearchProperties.mockResolvedValueOnce({
+      results: [
+        {
+          property: {
+            id: '1',
+            title: 'Modern Apartment',
+            price: 500000,
+            city: 'Downtown',
+            country: 'US',
+          },
+          score: 0.9,
+        },
+      ],
+      count: 1,
+    });
+
+    render(<SearchPage />);
+    fireEvent.change(screen.getByLabelText('Search query'), {
+      target: { value: 'Downtown' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /search/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Modern Apartment')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByTestId('search-load-more')).not.toBeInTheDocument();
   });
 });
