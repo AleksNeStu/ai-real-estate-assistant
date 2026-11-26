@@ -203,14 +203,20 @@ Every release publishes both images to GitHub Container Registry, multi-arch
 (amd64 and arm64):
 
 ```bash
-docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/backend:5.7.0
-docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/frontend:5.7.0
+docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/backend:5.7.1
+docker pull ghcr.io/aleksnestu/ai-real-estate-assistant/frontend:5.7.1
 ```
 
 The full guide — the memory footprint per setup, the published tags and the
 Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.md).
 
 ## What's new
+
+**`v5.7.1`** — the panel tells the truth about the source it holds.
+
+- **A source that recovered is healthy again** — the health of a data source
+  is computed from the failures it has had, and a successful sync clears the
+  counter and the message of the failure it recovered from.
 
 **`v5.7.0`** — the demo is a product, not a screenshot.
 
@@ -394,7 +400,7 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
 - **335 dependency alerts closed** — every critical and high advisory resolved,
   the floors pinned in both the lock file and the project file.
 
-Full notes: [v5.7.0 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.7.0) ·
+Full notes: [v5.7.1 release](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.7.1) ·
 [changelog](CHANGELOG.md).
 
 ## What it does

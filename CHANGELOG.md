@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.7.1] - 2026-11-26
+
+Two commits since v5.7.0. The theme: **the panel tells the truth about the
+source it holds**, and the login flow is proved against the build that is
+running.
+
+### Fixed
+- **A data source that recovered is healthy again** — the panel computed the
+  health of a source from the counter of its failures before the counter was
+  reset, so a source that had failed once and had synced since still read as
+  half healthy, and it carried the message of a failure that no longer
+  described it. The error of the failed run is cleared by the successful one
+  and the health is computed from the counter that was just reset.
+
+### Verified
+- **The login flow against the released build** — the walk of the
+  authentication flow was run again against `5.7.0` and passed every step:
+  the refresh issues a new access token, rotates the refresh token, and the
+  old refresh token is refused. The run and its result are in
+  `docs/operations/2026-11-25-live-auth-flow-verification.md`.
+
 ## [5.7.0] - 2026-11-25
 
 Twenty-nine commits since v5.6.0. The theme: **the demo is a product, not a
