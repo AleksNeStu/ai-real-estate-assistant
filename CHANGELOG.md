@@ -9,13 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.7.0] - 2026-11-25
 
-Twenty-seven commits since v5.6.0. The theme: **the demo is a product, not a
+Twenty-nine commits since v5.6.0. The theme: **the demo is a product, not a
 screenshot**. It answers without a login, its catalogue is built from the
 register of notarial deeds, its calls to action are measured, its
 capabilities tell the truth about what the deployment can do, and the sheet
 you hand it stays a source you can sync again.
 
 ### Added
+- **The ledger has a next page** — the search asked for ten rows and showed
+  ten rows, while the catalogue held hundreds of them and the visitor had no
+  way to reach the rest. The page holds twenty rows to a page and offers the
+  next one: the same ranking, asked for longer.
 - **The catalogue can be built from the official register** — the register of
   notarial deeds (RCN) is open data, free by law and needs no key, so the
   demo can answer with real flats that really changed hands instead of the
@@ -85,6 +89,29 @@ you hand it stays a source you can sync again.
   the loaders with keyword arguments they do not accept. The test that
   proved it passed stubbed the missing module into `sys.modules`; it now
   proves the real path with a real workbook.
+- **The map's tiles come from this origin, not from the CDN** — the browser
+  asked the tile host itself and the host answered a share of the requests
+  with a timeout, so the visitor got a grey rectangle where the map was. The
+  application asks the tile host now and serves the tile itself, and the
+  answer says in its header whether it was a real tile, a cached one or the
+  transparent fallback. A map that cannot draw says so instead of pretending
+  to be empty.
+- **The map stands after the results at every width** — on a wide screen the
+  map stood beside the ledger and on a narrow one it stood above it, so the
+  same search read in two different orders. The order is the same everywhere
+  now: the filters, the rows, the map. A narrow screen opens on the rows,
+  because the map stands under them, and the visitor who asks for the map is
+  carried to it.
+- **The tab bars behave the same at every width** — some of them took the
+  full width of their container and some took only what their labels needed,
+  and the pill rows squeezed a label into a column too narrow for it. Every
+  tab bar is now the width of its container, scrolls sideways when the labels
+  do not fit and never squeezes a label. The two families — the pill row and
+  the underlined row — behave the same way at every width.
+- **The map says why it is empty** — a search that found rows but no rows it
+  could put on the map was shown the message for a search that found
+  nothing. The two are told apart now, and the map names what it is waiting
+  for.
 
 ## [5.6.0] - 2026-11-24
 
