@@ -1,5 +1,7 @@
 """SQLAlchemy async database setup."""
 
+import asyncio
+import logging
 import os
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
@@ -11,6 +13,13 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 
 from config.settings import get_settings
+
+logger = logging.getLogger(__name__)
+
+# How long a request waits for its audit entry to be written into its own
+# transaction before it commits without it. The write is a single row; the
+# wait exists so the session is not closed under the write.
+_AUDIT_WRITE_TIMEOUT_SECONDS = 5.0
 
 # Naming convention for constraints
 convention = {
@@ -150,6 +159,14 @@ def get_session_factory():
 async def get_db(request: Request) -> AsyncGenerator[AsyncSession, None]:
     """Dependency for getting async database sessions."""
     factory = get_session_factory()
+    # The audit entry for a mutating request is written into this request's
+    # own transaction, after the route has returned: the response is already
+    # on the wire, but the transaction is not committed yet. The commit below
+    # waits for that write, or the session would be closed under it - and a
+    # write on a closed session opens a connection that nothing returns to
+    # the pool.
+    audit_written = asyncio.Event()
+    request.state.db_audit_written = audit_written
     async with factory() as session:
         # The audit entry is written in this request's own transaction.
         # SQLite has one writer, and a second transaction would be a second
@@ -158,10 +175,24 @@ async def get_db(request: Request) -> AsyncGenerator[AsyncSession, None]:
         request.state.db_session = session
         try:
             yield session
+            if getattr(request.state, "db_audit_pending", False):
+                try:
+                    await asyncio.wait_for(
+                        audit_written.wait(), timeout=_AUDIT_WRITE_TIMEOUT_SECONDS
+                    )
+                except TimeoutError:
+                    logger.warning(
+                        "the audit entry for %s was not written in time", request.url.path
+                    )
             await session.commit()
         except Exception:
             await session.rollback()
             raise
+        finally:
+            # The session is on its way out. Whoever comes after this point
+            # has to use a session of its own: writing into this one would
+            # open a connection that never goes back to the pool.
+            request.state.db_session = None
 
 
 @asynccontextmanager

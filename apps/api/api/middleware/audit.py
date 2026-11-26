@@ -15,7 +15,6 @@ import logging
 from typing import Any, Awaitable, Callable
 
 from fastapi import FastAPI, Request, Response
-from starlette.background import BackgroundTask
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from db.database import get_session_factory
@@ -47,15 +46,20 @@ class AuditMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
+        path = request.url.path
+        audited = request.method in ("POST", "PUT", "PATCH", "DELETE") and not any(
+            path.startswith(prefix) for prefix in _EXCLUDED_PREFIXES
+        )
+        if audited:
+            # The entry is written into the request's own transaction, after
+            # the route has returned. The request's commit waits for that
+            # write, so the session cannot be closed under it.
+            request.state.db_audit_pending = True
+
         response: Response = await call_next(request)
 
         # Only audit mutating methods
-        if request.method not in ("POST", "PUT", "PATCH", "DELETE"):
-            return response
-
-        # Skip excluded paths
-        path = request.url.path
-        if any(path.startswith(prefix) for prefix in _EXCLUDED_PREFIXES):
+        if not audited:
             return response
 
         # Extract actor info from JWT state if available
@@ -81,8 +85,9 @@ class AuditMiddleware(BaseHTTPMiddleware):
         # The request's own session is the request's own transaction, and
         # SQLite has one writer. The entry rides with it: no second writer,
         # no deadlock on the write lock, and the request's commit carries
-        # the entry. A request without a session gets the entry afterwards,
-        # on its own session, so the response is not held up by it.
+        # the entry. The session is published only while it is open - a
+        # request that failed rolled its transaction back and closed it
+        # before the response was built.
         session = getattr(request.state, "db_session", None)
         if session is not None:
             try:
@@ -90,23 +95,26 @@ class AuditMiddleware(BaseHTTPMiddleware):
                 await service.log(commit=False, **entry)
             except Exception:
                 logger.exception("Audit middleware failed for %s", entry.get("action"))
+            finally:
+                self._signal_audit_written(request)
             return response
 
-        # The write happens after the response is on the wire. A task the
-        # route set itself still runs - the audit entry does not replace it.
-        existing = response.background
-        audit = BackgroundTask(self._write_entry, entry)
-        if existing is None:
-            response.background = audit
-        else:
-
-            async def write_audit_after_the_route() -> None:
-                await existing()
-                await audit()
-
-            response.background = BackgroundTask(write_audit_after_the_route)
+        # The request has no session of its own, or its session is already
+        # closed - a request that failed. The entry goes on a session of its
+        # own, and it is written here rather than in a background task: the
+        # response was already sent by the time this middleware is handed
+        # it, so a task attached to it would never run.
+        await self._write_entry(entry)
+        self._signal_audit_written(request)
 
         return response
+
+    @staticmethod
+    def _signal_audit_written(request: Request) -> None:
+        """Tell the request's session that the audit entry has been written."""
+        audit_written = getattr(request.state, "db_audit_written", None)
+        if audit_written is not None:
+            audit_written.set()
 
     async def _write_entry(self, entry: dict[str, Any]) -> None:
         """Write one audit entry, on its own session."""
