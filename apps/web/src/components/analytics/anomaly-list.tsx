@@ -151,10 +151,10 @@ export function AnomalyList() {
               placeholder={t('anomalies.searchPlaceholder')}
               value={filters.search}
               onChange={(e) => handleFilterChange('search', e.target.value)}
-              className="pl-10 pr-4 text-sm text-muted"
+              className="pl-10 pr-4 text-sm text-muted-foreground"
               aria-label={t('anomalies.searchLabel')}
             />
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted" aria-hidden="true" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden="true" />
           </div>
 
           {/* Severity Filter */}
@@ -204,7 +204,7 @@ export function AnomalyList() {
         <div className="flex justify-center py-8" role="status" aria-live="polite">
           <div className="animate-pulse flex flex-col items-center gap-2">
             <div className="h-4 w-4 bg-muted rounded-full"></div>
-            <p className="text-sm text-muted">{t('anomalies.loading')}</p>
+            <p className="text-sm text-muted-foreground">{t('anomalies.loading')}</p>
           </div>
         </div>
       )}
@@ -242,7 +242,7 @@ export function AnomalyList() {
                     })}
                     <AnomalyBadge severity={anomaly.severity} />
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-muted">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" aria-hidden="true" />
                     <span>{formatTimestamp(anomaly.detected_at)}</span>
                   </div>
@@ -251,7 +251,7 @@ export function AnomalyList() {
                 {/* Type and Scope */}
                 <div className="flex items-center gap-2 mt-2">
                   <AnomalyTypeBadge type={anomaly.anomaly_type} />
-                  <span className="text-sm text-muted">
+                  <span className="text-sm text-muted-foreground">
                     {getScopeLabel(anomaly.scope_type, anomaly.scope_id)}
                   </span>
                 </div>
@@ -259,11 +259,11 @@ export function AnomalyList() {
                 {/* Metric Details */}
                 <div className="mt-3 space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted">{t('anomalies.metric')}</span>
+                    <span className="text-muted-foreground">{t('anomalies.metric')}</span>
                     <span className="font-medium">{anomaly.metric_name}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted">{t('anomalies.expected')}</span>
+                    <span className="text-muted-foreground">{t('anomalies.expected')}</span>
                     <span className="font-medium">
                       {typeof anomaly.expected_value === 'number'
                         ? anomaly.expected_value.toLocaleString()
@@ -271,7 +271,7 @@ export function AnomalyList() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted">{t('anomalies.actual')}</span>
+                    <span className="text-muted-foreground">{t('anomalies.actual')}</span>
                     <span
                       className={cn(
                         'font-medium',
@@ -310,7 +310,7 @@ export function AnomalyList() {
                 {/* Z-Score (if available) */}
                 {anomaly.z_score !== undefined && anomaly.z_score !== null && (
                   <div className="mt-2 flex items-center justify-between text-xs">
-                    <span className="text-muted">{t('anomalies.zScore')}</span>
+                    <span className="text-muted-foreground">{t('anomalies.zScore')}</span>
                     <span
                       className={cn(
                         'font-medium',

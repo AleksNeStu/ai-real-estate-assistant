@@ -123,12 +123,12 @@ export function OnboardingTour() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground">{current.title}</p>
-              <p className="text-xs text-muted mt-1 leading-relaxed">{current.body}</p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{current.body}</p>
             </div>
             <button
               type="button"
               onClick={dismiss}
-              className="flex-shrink-0 text-muted hover:text-foreground transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
+              className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-ring/50"
               aria-label={t('closeAria')}
             >
               <X className="h-4 w-4" />

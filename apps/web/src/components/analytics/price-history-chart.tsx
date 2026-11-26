@@ -213,7 +213,7 @@ export function PriceHistoryChart({
                           })}
                         </p>
                         {data.pricePerSqm && (
-                          <p className="text-xs text-muted">
+                          <p className="text-xs text-muted-foreground">
                             {tInv('priceHistoryChart.pricePerSqmLabel', {
                               price: `$${data.pricePerSqm?.toLocaleString()}`,
                             })}
