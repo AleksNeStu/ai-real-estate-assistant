@@ -686,7 +686,7 @@ class TestStreamingErrors:
     async def test_streaming_exception_emits_error_event(self, chat_client, mock_agent):
         async def mock_astream(*args, **kwargs):
             raise RuntimeError("Stream processing error")
-            yield  # make this an async generator  # noqa: unreachable
+            yield  # make this an async generator
 
         mock_agent.astream_query = mock_astream
 

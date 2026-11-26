@@ -296,7 +296,7 @@ def test_get_settings_returns_500_on_unhandled_error(mock_get_settings):
     @asynccontextmanager
     async def _failing_ctx():
         raise RuntimeError("boom")
-        yield  # noqa: unreachable
+        yield  # the yield makes this an async generator; the raise is what happens
 
     with patch("api.routers.settings.get_db_context", _failing_ctx):
         response = client.get("/api/v1/settings/notifications", headers=HEADERS)
@@ -313,7 +313,7 @@ def test_update_settings_returns_500_on_unhandled_error(mock_get_settings):
     @asynccontextmanager
     async def _failing_ctx():
         raise RuntimeError("boom")
-        yield  # noqa: unreachable
+        yield  # the yield makes this an async generator; the raise is what happens
 
     with patch("api.routers.settings.get_db_context", _failing_ctx):
         response = client.put(

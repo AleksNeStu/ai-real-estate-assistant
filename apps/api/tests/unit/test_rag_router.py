@@ -801,7 +801,7 @@ class TestRagQaStreaming:
         # Make astream raise an error
         async def _failing_stream(prompt):
             raise RuntimeError("Stream crashed")
-            yield  # noqa: unreachable - makes this an async generator
+            yield  # makes this an async generator
 
         mock_llm.astream = MagicMock(return_value=_failing_stream(""))
 
