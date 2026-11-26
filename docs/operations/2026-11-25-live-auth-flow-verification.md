@@ -4,8 +4,10 @@ TaskMaster #138 — "the login flow is verified against the running deployment".
 
 > **Update — 2026-11-26.** The flow was walked again against the released build
 > (`5.7.0`) and **passed every step**: `VERDICT: PASS`, 14 passed, 0 failed.
-> See "The re-run on the released build" below. The run this file originally
-> records failed on one step, and the failure is kept here with its cause.
+> It was walked a third time against `5.7.2`, with the profile write proved on
+> the same deployment, and passed again. See "The re-run on the released build"
+> and "The re-run on 5.7.2" below. The run this file originally records failed
+> on one step, and the failure is kept here with its cause.
 
 ## What was checked
 
@@ -264,6 +266,45 @@ reports it instead of demanding a `401`.
 The credentials of the test account live in the **OS User environment**
 (`AIRE_TEST_EMAIL`, `AIRE_TEST_PASSWORD`), never in this file, never in a
 command line and never in the repository.
+
+## The re-run on 5.7.2 — 2026-11-26
+
+The flow was walked again against the deployment that carries `v5.7.2` — the
+build that fixes the profile write and the audit entry.
+
+| | |
+|---|---|
+| Address | `https://realty.kittray.com` |
+| Backend image | `ghcr.io/aleksnestu/ai-real-estate-assistant/backend:5.7.2` |
+| Build SHA | `06cfa18c27bbd42351c260f314e322e488c300b8` |
+| Built at | `26.11.2026 05:03` |
+| Deploy run | `45759002336` |
+| `ENVIRONMENT` | `staging` (the CSRF middleware only enforces in `production`) |
+
+**VERDICT: PASS** — 14 passed, 0 failed, the script exited `0`. The whole
+output is the block quoted above: the public routes answer without a login, the
+account routes answer `401` without a token, the Google entry point is offered,
+the account registers, logs in, calls an authenticated route, **rotates** the
+refresh token, refuses the old one and refuses the token of a closed session.
+
+### The profile write, on the live build
+
+The round's other fix was proved on the same deployment, with the same neutral
+test account: `GET /api/v1/profile` answered `200`, `PUT /api/v1/profile` with
+a new `full_name` answered `200`, and the next `GET` carried the new name
+back. Before the fix the `PUT` answered with a server error.
+
+The log of the deployment carries **no** SQLAlchemy warning about a connection
+that was never returned to the pool, and no traceback, over the whole run.
+
+### One observation: the edge answers 403 for a bare `Python-urllib` agent
+
+A probe that identifies itself with urllib's default `User-Agent` is answered
+with `403` **at the edge** — the request never reaches the application, and no
+line of it appears in the backend log. The same request with a named
+`User-Agent` is answered by the application as usual. The check script sets
+one; a probe that does not will read the `403` as an application defect, and it
+is not one.
 
 ## Notes
 
