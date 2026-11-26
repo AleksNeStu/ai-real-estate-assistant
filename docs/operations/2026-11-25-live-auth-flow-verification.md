@@ -2,6 +2,11 @@
 
 TaskMaster #138 — "the login flow is verified against the running deployment".
 
+> **Update — 2026-11-26.** The flow was walked again against the released build
+> (`5.7.0`) and **passed every step**: `VERDICT: PASS`, 14 passed, 0 failed.
+> See "The re-run on the released build" below. The run this file originally
+> records failed on one step, and the failure is kept here with its cause.
+
 ## What was checked
 
 The authentication flow was walked end to end against the **running public demo**
@@ -185,6 +190,80 @@ this deployment rolls it back.
 fresh alias, once against the account that already existed) and the backend
 answered every request. The hang did not come back, so its cause is still
 **unknown** — it is recorded here as an observation, not as a diagnosed defect.
+
+## The re-run on the released build — 2026-11-26
+
+The same script, the same command and the same neutral test alias were run
+again against the deployment that carries the fix (`5.7.0`, the build that
+followed the release of this repository's `v5.7.0` tag).
+
+| | |
+|---|---|
+| Address | `https://realty.kittray.com` |
+| Backend image | `ghcr.io/aleksnestu/ai-real-estate-assistant/backend:5.7.0` |
+| Build SHA | `0ead8e51855448ed18555cefb042b9c505c72cbd` |
+| Built at | `26.11.2026 01:31` |
+| Deploy run | `45736259715` |
+| `ENVIRONMENT` | `staging` (the CSRF middleware only enforces in `production`) |
+
+```
+=== Public routes answer without a login
+PASS  GET /api/v1/capabilities -> 200
+PASS  GET /api/v1/properties -> 200
+
+=== Account routes answer 401 without a token
+PASS  GET /api/v1/favorites -> 401
+PASS  GET /api/v1/saved-searches -> 401
+
+=== Google OAuth is offered as an entry point
+PASS  the authorize endpoint is accounts.google.com (the flow was not followed)
+
+=== Register the test account
+PASS  POST /api/v1/auth/register -> 201
+
+=== Log in and receive a JWT
+PASS  POST /api/v1/auth/login -> 200, token_type=bearer
+
+=== Call an authenticated endpoint with the token
+PASS  GET /api/v1/favorites with the bearer token -> 200
+PASS  GET /api/v1/auth/me with the bearer token -> 200
+
+=== Refresh the token
+PASS  POST /api/v1/auth/refresh -> 200, a new access token was issued
+PASS  the refresh token was rotated
+PASS  the refresh token before the rotation is refused -> 401
+
+=== Log out
+PASS  POST /api/v1/auth/logout -> 200
+PASS  the refresh token of the live session is refused -> 401
+
+=== The access token after the logout
+INFO  the access token still answers -> 200 (a stateless JWT is not revoked by the logout; the refresh token is)
+
+--- summary ---
+passed: 14
+failed: 0
+skipped: 0
+
+VERDICT: PASS
+```
+
+**VERDICT: PASS** — 14 steps passed, 0 failed, and the script exited `0`.
+
+The step that failed on 2026-11-25 now passes in full: the refresh answers
+`200`, issues a new access token, **rotates** the refresh token, and the old
+refresh token is refused with a `401`. The rotation is the part that was broken
+— before the fix the endpoint raised, so nothing was rotated and no new access
+token was issued.
+
+The `INFO` line about the access token after the logout is the design, not a
+defect: a stateless JWT carries no revocation list, so the logout revokes the
+refresh token and not the access token that was already issued. The script
+reports it instead of demanding a `401`.
+
+The credentials of the test account live in the **OS User environment**
+(`AIRE_TEST_EMAIL`, `AIRE_TEST_PASSWORD`), never in this file, never in a
+command line and never in the repository.
 
 ## Notes
 
