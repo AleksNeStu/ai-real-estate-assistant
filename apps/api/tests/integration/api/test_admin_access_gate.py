@@ -173,8 +173,37 @@ class TestAdminAccessGate:
         assert response.status_code == 403
 
 
+def _iter_route_dependants(routes):
+    """Yield ``(path, dependant)`` for every route, flattening included routers.
+
+    FastAPI >= 0.163 nests the result of ``include_router`` behind an
+    ``_IncludedRouter`` wrapper instead of copying the routes onto the app, so
+    a flat scan of ``app.routes`` sees the wrapper and no route at all - the
+    gate would look absent from every path. The wrapper's effective route
+    contexts carry the merged dependant, the one that holds the include-level
+    ``dependencies=[...]``; the routes it holds do not.
+
+    On an older FastAPI the flat scan already sees every route, with the
+    include-level dependencies merged into the route's own dependant.
+    """
+    for route in routes:
+        contexts = getattr(route, "effective_route_contexts", None)
+        if contexts is not None:
+            for context in contexts():
+                yield context.path, getattr(context, "dependant", None)
+            continue
+
+        yield getattr(route, "path", None), getattr(route, "dependant", None)
+
+
 class TestTheMountsCarryTheGate:
     """The gate is only worth what main.py mounts behind it."""
+
+    @staticmethod
+    def _all_paths() -> set[str]:
+        from api.main import app
+
+        return {path for path, _ in _iter_route_dependants(app.routes) if path is not None}
 
     @staticmethod
     def _gated_paths() -> set[str]:
@@ -182,14 +211,26 @@ class TestTheMountsCarryTheGate:
         from api.main import app
 
         gated = set()
-        for route in app.routes:
-            dependant = getattr(route, "dependant", None)
-            if dependant is None:
+        for path, dependant in _iter_route_dependants(app.routes):
+            if path is None or dependant is None:
                 continue
             for dependency in dependant.dependencies:
                 if dependency.call is require_admin_access:
-                    gated.add(route.path)
+                    gated.add(path)
+                    break
         return gated
+
+    def test_the_enumeration_sees_the_routes(self):
+        """A flattening that finds nothing would call every route public.
+
+        The gate is only worth the routes it is found on, so the flattening
+        itself is pinned: the routes are there before anything is checked
+        about them.
+        """
+        paths = self._all_paths()
+
+        assert "/api/v1/admin/version" in paths
+        assert "/api/v1/search" in paths
 
     def test_the_operator_routes_are_mounted_behind_the_gate(self):
         gated = self._gated_paths()
