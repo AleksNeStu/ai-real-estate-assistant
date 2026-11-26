@@ -19,6 +19,7 @@ services:
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - API_ACCESS_KEY=${API_ACCESS_KEY:-dev-secret-key}
+      - ADMIN_EMAILS=${ADMIN_EMAILS:-}
       - DEFAULT_PROVIDER=${DEFAULT_PROVIDER:-minimax}
       - OLLAMA_DEFAULT_MODEL=${OLLAMA_DEFAULT_MODEL:-llama3.2:3b}
       - INTERNET_ENABLED=${INTERNET_ENABLED:-false}
@@ -227,7 +228,7 @@ services:
     volumes:
       - ../../apps/api/config/searxng:/etc/searxng:rw
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- --header='X-Forwarded-For: 1.1.1.1' --header='X-Real-IP: 1.1.1.1' http://localhost:8080/ >/dev/null 2>&1"]
+      test: ["CMD-SHELL", "wget -qO- --header='X-Forwarded-For: 192.0.2.1' --header='X-Real-IP: 192.0.2.1' http://localhost:8080/ >/dev/null 2>&1"]
       interval: 30s
       timeout: 10s
       retries: 10
