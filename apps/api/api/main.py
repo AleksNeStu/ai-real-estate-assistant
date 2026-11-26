@@ -28,6 +28,7 @@ from fastapi.responses import JSONResponse
 
 from api.auth import get_api_key, get_optional_api_key
 from api.dependencies import get_vector_store
+from api.deps.auth import require_admin_access
 from api.health import HealthStatus, get_git_info, get_health_status
 from api.middleware.csrf import add_csrf_middleware
 from api.middleware.error_handler import add_error_handlers
@@ -580,13 +581,19 @@ app.include_router(places.router, prefix="/api/v1", dependencies=[Depends(get_ap
 # v5.1: AI valuation endpoints (price forecast + neighborhood summary)
 app.include_router(valuation.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(prompt_templates.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
-app.include_router(admin.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
+app.include_router(admin.router, prefix="/api/v1", dependencies=[Depends(require_admin_access)])
 # Task #79: Data Sources Dashboard
-app.include_router(data_sources.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
+app.include_router(
+    data_sources.router, prefix="/api/v1", dependencies=[Depends(require_admin_access)]
+)
 # Task #80: Import/Export Data API
-app.include_router(bulk_jobs.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
-app.include_router(mcp_admin.router, prefix="/api/v1")  # Task #68: MCP Admin (has own auth)
-app.include_router(mcp_audit.router, prefix="/api/v1")  # Task #69: MCP Audit (has own auth)
+app.include_router(bulk_jobs.router, prefix="/api/v1", dependencies=[Depends(require_admin_access)])
+app.include_router(
+    mcp_admin.router, prefix="/api/v1", dependencies=[Depends(require_admin_access)]
+)  # Task #68: MCP Admin (has own auth)
+app.include_router(
+    mcp_audit.router, prefix="/api/v1", dependencies=[Depends(require_admin_access)]
+)  # Task #69: MCP Audit (has own auth)
 app.include_router(exports.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(auth.router, prefix="/api/v1")
 # Task #34: the frontend reads this to hide features the deployment cannot serve

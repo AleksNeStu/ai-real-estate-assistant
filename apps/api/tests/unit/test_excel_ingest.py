@@ -20,6 +20,11 @@ from data.excel_loader import reader_installed
 from data.schemas import Property, PropertyCollection
 
 
+@pytest.fixture(autouse=True)
+def _open_the_admin_gate(open_admin_gate):
+    """The upload endpoint sits behind the admin gate; these tests are about the upload."""
+
+
 class _EmptyResult:
     """The answer of a database that holds no source of that name."""
 
@@ -31,6 +36,9 @@ class _EmptyResult:
 
     def all(self):
         return []
+
+    def scalar(self):
+        return 0
 
 
 class _StubSession:

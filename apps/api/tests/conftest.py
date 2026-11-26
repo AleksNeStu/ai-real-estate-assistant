@@ -376,6 +376,24 @@ def auth_headers() -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
 
 
+@pytest.fixture
+def open_admin_gate():
+    """Open the gate that protects the operator's own routes.
+
+    `/api/v1/admin/*`, `/api/v1/data-sources/*`, `/api/v1/bulk-jobs/*` and
+    the MCP admin routes need an administrator identity - the gate has its
+    own tests (tests/integration/api/test_admin_access_gate.py). The tests
+    that exercise the handlers behind it are not about the gate, so the
+    gate is opened for them.
+    """
+    from api.deps.auth import require_admin_access
+    from api.main import app
+
+    app.dependency_overrides[require_admin_access] = lambda: None
+    yield
+    app.dependency_overrides.pop(require_admin_access, None)
+
+
 @pytest.fixture(scope="function")
 async def unauth_client() -> AsyncGenerator[AsyncClient, None]:
     """Create an unauthenticated async HTTP client for testing auth

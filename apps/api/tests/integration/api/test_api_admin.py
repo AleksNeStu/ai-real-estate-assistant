@@ -1,7 +1,7 @@
 import json
 import re
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pandas as pd
 import pytest
@@ -10,6 +10,12 @@ from fastapi.testclient import TestClient
 from api.dependencies import get_vector_store
 from api.main import app
 from data.schemas import Property, PropertyCollection
+
+
+@pytest.fixture(autouse=True)
+def _open_the_admin_gate(open_admin_gate):
+    """These tests exercise the handlers behind the gate, not the gate."""
+
 
 client = TestClient(app)
 
@@ -107,18 +113,34 @@ def test_admin_reindex(valid_headers, mock_vector_store):
     app.dependency_overrides = {}
 
 
-def test_admin_endpoints_unauthorized():
-    response = client.get("/api/v1/admin/health")
-    assert response.status_code == 401
+def test_admin_endpoints_unauthorized(open_admin_gate):
+    """Without the key and without an identity the request is refused.
 
-    response = client.get("/api/v1/admin/version")
-    assert response.status_code == 401
+    The gate is closed for this one test: the module opens it for the tests
+    that exercise the handlers behind it.
+    """
+    from api.deps.auth import require_admin_access
 
-    response = client.post("/api/v1/admin/ingest", json={})
-    assert response.status_code == 401
+    app.dependency_overrides.pop(require_admin_access, None)
 
-    response = client.post("/api/v1/admin/reindex", json={})
-    assert response.status_code == 401
+    deployment = MagicMock(admin_emails=[], demo_api_key_bypass=False)
+    key = MagicMock(api_access_key="dev-secret-key", api_access_keys=[], demo_api_key_bypass=False)
+    with (
+        patch("api.deps.auth.get_settings", return_value=deployment),
+        patch("api.deps.auth._has_admin_account", new=AsyncMock(return_value=False)),
+        patch("api.auth.get_settings", return_value=key),
+    ):
+        response = client.get("/api/v1/admin/health")
+        assert response.status_code == 401
+
+        response = client.get("/api/v1/admin/version")
+        assert response.status_code == 401
+
+        response = client.post("/api/v1/admin/ingest", json={})
+        assert response.status_code == 401
+
+        response = client.post("/api/v1/admin/reindex", json={})
+        assert response.status_code == 401
 
 
 def test_admin_reindex_no_cache_returns_404(valid_headers, mock_vector_store):

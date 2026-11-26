@@ -89,6 +89,7 @@ _mcp_original = sys.modules.get("mcp")
 sys.modules["mcp"] = _mcp_stub
 
 from api.auth import get_api_key  # noqa: E402
+from api.deps.auth import require_admin_access  # noqa: E402
 from api.routers import mcp_admin  # noqa: E402
 
 # Restore original mcp module immediately after importing the router,
@@ -169,6 +170,9 @@ def test_app():
         return "test-key"
 
     app.dependency_overrides[get_api_key] = override_get_api_key
+    # The operator's routes are gated by an identity; the gate has its own
+    # tests. These ones exercise the handlers behind it.
+    app.dependency_overrides[require_admin_access] = lambda: None
     return app
 
 

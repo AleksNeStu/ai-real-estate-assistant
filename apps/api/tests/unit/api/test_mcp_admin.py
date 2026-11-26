@@ -17,6 +17,12 @@ from fastapi.testclient import TestClient
 from api.main import app
 from mcp import MCPConnectorResult
 
+
+@pytest.fixture(autouse=True)
+def _open_the_admin_gate(open_admin_gate):
+    """These tests exercise the handlers behind the gate, not the gate."""
+
+
 client = TestClient(app)
 
 CSRF_TOKEN = "test-csrf-token"

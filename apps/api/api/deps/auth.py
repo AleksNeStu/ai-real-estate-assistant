@@ -3,10 +3,13 @@
 from typing import Optional, Set
 
 import jwt
-from fastapi import Cookie, Depends, HTTPException, Request, status
+from fastapi import Cookie, Depends, HTTPException, Request, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.auth import api_key_header as api_key_header_param
+from api.auth import get_api_key
 from api.rbac import ROLE_PERMISSIONS, Permission, Role
 from config.settings import get_settings
 from core.jwt import verify_access_token
@@ -431,6 +434,99 @@ def require_roles(required_roles: list[str]):
         return credentials
 
     return roles_checker
+
+
+def _is_admin_identity(user: User) -> bool:
+    """Is this account an administrator of the deployment?
+
+    Two answers count: the account carries the admin role in the database,
+    or the deployment lists its e-mail in ADMIN_EMAILS. The second one is
+    what lets a Google sign-in reach the admin panel without anyone
+    editing the database by hand.
+    """
+    if (user.role or "").strip().lower() == "admin":
+        return True
+    admin_emails = {part.lower() for part in get_settings().admin_emails}
+    return bool(admin_emails) and (user.email or "").strip().lower() in admin_emails
+
+
+async def _has_admin_account(session: AsyncSession) -> bool:
+    """Does the database hold an account with the admin role?"""
+    result = await session.execute(
+        select(func.count()).select_from(User).where(func.lower(User.role) == "admin")
+    )
+    return int(result.scalar() or 0) > 0
+
+
+async def require_admin_access(
+    request: Request,
+    access_token: Optional[str] = Cookie(default=None, alias="access_token"),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_security),
+    api_key: Optional[str] = Security(api_key_header_param),
+    session: AsyncSession = Depends(get_db),
+) -> Optional[User]:
+    """Gate the operator's own endpoints - the admin panel, the ingestion
+    routes, the audit log.
+
+    The admin API used to be reachable by anybody who knew the API key,
+    and the key is injected by the frontend proxy for every path. On a
+    deployment that runs in demo mode the key was not even checked. The
+    gate is therefore an identity, not a key:
+
+    - a signed-in account with the admin role, or an account whose e-mail
+      is in ADMIN_EMAILS, is an administrator;
+    - a signed-in account without that role is refused, and is not offered
+      the key as a way in;
+    - a request without any identity is refused as soon as the deployment
+      HAS an administrator - one account with the admin role in the
+      database, or one e-mail in ADMIN_EMAILS;
+    - only a deployment that has no administrator at all keeps the old
+      behaviour, where the API key is the way in. That is the self-hoster
+      who has not created an admin account yet.
+
+    The synthetic demo user is deliberately NOT consulted here: on a demo
+    deployment it stands in for every anonymous visitor, and it carries the
+    admin role.
+    """
+    settings = get_settings()
+
+    token = await _extract_token(request, access_token, credentials)
+    if token:
+        try:
+            user, _ = await _get_user_from_token(token, session)
+        except HTTPException as exc:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials",
+            ) from exc
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User account is deactivated",
+            )
+        if _is_admin_identity(user):
+            return user
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator role required",
+        )
+
+    if settings.demo_api_key_bypass:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator role required",
+        )
+
+    if settings.admin_emails or await _has_admin_account(session):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator role required",
+        )
+
+    # No administrator exists on this deployment yet: the API key stays
+    # the way in, so a self-hoster can still work with the admin panel.
+    await get_api_key(request, api_key or "")
+    return None
 
 
 def require_permission(required_permission: Permission):

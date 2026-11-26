@@ -1,7 +1,13 @@
+import pytest
 from fastapi.testclient import TestClient
 
 from api.main import app
 from config.settings import get_settings
+
+
+@pytest.fixture(autouse=True)
+def _open_the_admin_gate(open_admin_gate):
+    """These tests exercise the handlers behind the gate, not the gate."""
 
 
 def test_metrics_counts_increment():

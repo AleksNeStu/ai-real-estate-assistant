@@ -14,7 +14,7 @@ from typing import Any, Optional
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 
-from api.auth import get_api_key as require_api_key
+from api.deps.auth import require_admin_access
 from mcp.audit import MCPAuditLogger, get_mcp_audit_logger
 from mcp.retention import MCPAuditRetention, get_retention_manager
 
@@ -111,7 +111,7 @@ async def list_audit_entries(
     end_date: Optional[datetime] = Query(None, description="Filter by end date (ISO 8601)"),
     limit: int = Query(100, ge=1, le=1000, description="Maximum results to return"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    _: None = Depends(require_api_key),
+    _: None = Depends(require_admin_access),
     audit_logger: MCPAuditLogger = Depends(get_audit_logger),
 ) -> AuditListResponse:
     """
@@ -147,7 +147,7 @@ async def list_audit_entries(
 
 @router.get("/storage", response_model=StorageMetricsResponse)
 async def get_storage_metrics(
-    _: None = Depends(require_api_key),
+    _: None = Depends(require_admin_access),
     retention: MCPAuditRetention = Depends(get_retention),
 ) -> StorageMetricsResponse:
     """
@@ -168,7 +168,7 @@ async def get_storage_metrics(
 @router.post("/cleanup", response_model=CleanupResponse)
 async def run_cleanup(
     request: CleanupRequest,
-    _: None = Depends(require_api_key),
+    _: None = Depends(require_admin_access),
     retention: MCPAuditRetention = Depends(get_retention),
 ) -> CleanupResponse:
     """
@@ -186,7 +186,7 @@ async def run_cleanup(
 @router.get("/request/{request_id}")
 async def get_entries_by_request_id(
     request_id: str,
-    _: None = Depends(require_api_key),
+    _: None = Depends(require_admin_access),
     audit_logger: MCPAuditLogger = Depends(get_audit_logger),
 ) -> list[dict[str, Any]]:
     """
@@ -205,7 +205,7 @@ async def get_entries_by_connector(
     connector_name: str,
     limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
-    _: None = Depends(require_api_key),
+    _: None = Depends(require_admin_access),
     audit_logger: MCPAuditLogger = Depends(get_audit_logger),
 ) -> AuditListResponse:
     """

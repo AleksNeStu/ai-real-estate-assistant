@@ -3,11 +3,18 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
+import pytest
 from fastapi.testclient import TestClient
 
 from api.dependencies import get_vector_store
 from api.main import app
 from data.adapters.base import PortalFetchResult
+
+
+@pytest.fixture(autouse=True)
+def _open_the_admin_gate(open_admin_gate):
+    """These tests exercise the handlers behind the gate, not the gate."""
+
 
 client = TestClient(app)
 

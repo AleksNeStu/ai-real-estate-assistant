@@ -390,6 +390,14 @@ class AppSettings(BaseModel):
         ),
         description="Enable Apple Sign-In",
     )
+    admin_emails: list[str] = Field(
+        default_factory=lambda: [
+            part.strip().lower()
+            for part in os.getenv("ADMIN_EMAILS", "").split(",")
+            if part.strip()
+        ],
+        description="Accounts that may reach the admin API (comma-separated e-mails)",
+    )
 
     # Model Defaults
     default_provider: str = Field(

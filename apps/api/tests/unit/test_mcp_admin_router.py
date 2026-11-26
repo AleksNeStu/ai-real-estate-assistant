@@ -25,7 +25,9 @@ from fastapi import FastAPI, status
 from httpx import ASGITransport, AsyncClient
 
 from api.auth import get_api_key
+from api.deps.auth import require_admin_access
 from api.routers.mcp_admin import router as mcp_admin_router
+from db.database import get_db
 from mcp import (
     AllowlistConfig,
     AllowlistEntry,
@@ -130,6 +132,10 @@ async def mcp_client(mock_validator):
 
     test_app.dependency_overrides[get_api_key] = override_get_api_key
 
+    # The admin routes sit behind the admin gate (an identity, not the API
+    # key). These tests are about the routes themselves, so the gate is open.
+    test_app.dependency_overrides[require_admin_access] = lambda: None
+
     with patch("api.routers.mcp_admin.get_allowlist_validator", return_value=mock_validator):
         transport = ASGITransport(app=test_app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
@@ -148,6 +154,19 @@ async def unauth_mcp_client():
     """Create a client without API key override to test auth requirement."""
     test_app = FastAPI()
     test_app.include_router(mcp_admin_router, prefix="/api/v1")
+
+    # The gate asks the database whether the deployment holds an administrator.
+    # A deployment without one keeps the API key as the way in, so the answer
+    # here is "no administrator" - and the request then stops at the missing key.
+    class _NoAdminResult:
+        def scalar(self):
+            return 0
+
+    class _NoAdminSession:
+        async def execute(self, *args, **kwargs):
+            return _NoAdminResult()
+
+    test_app.dependency_overrides[get_db] = lambda: _NoAdminSession()
 
     transport = ASGITransport(app=test_app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
