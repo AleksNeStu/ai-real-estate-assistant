@@ -11,7 +11,7 @@ from typing import Any, Dict, Iterable, Optional
 
 from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 
-from agents.memory_guard import is_an_instruction, screen_fact
+from agents.memory_guard import is_an_instruction, screen_fact, strip_fence_markers
 from agents.query_analyzer import QueryIntent
 
 logger = logging.getLogger(__name__)
@@ -209,8 +209,13 @@ def strip_listing_fence(text: str) -> str:
     The fence is closed by the code, not by the text: a listing that carries
     the closing marker itself must not be able to step out of the fence and
     turn the rest of the context into an order.
+
+    EVERY marker goes, not only this fence's own pair. The fence grammar is
+    one grammar: a listing that carries the RECORD's markers would make the
+    model read the listing as the buyer's record, and the buyer's real
+    record would fall outside the fence.
     """
-    return text.replace(RETRIEVED_LISTINGS_OPEN, "").replace(RETRIEVED_LISTINGS_CLOSE, "")
+    return strip_fence_markers(text)
 
 
 def retrieved_listings_block(text: str) -> str:
@@ -251,8 +256,12 @@ def strip_document_fence(text: str) -> str:
     The fence is closed by the code, not by the text: an uploaded document
     that carries the closing marker itself must not be able to step out of
     the fence and turn the rest of the prompt into an order.
+
+    EVERY marker goes, not only this fence's own pair - the grammar is one
+    grammar, so a document that carries another channel's markers can forge
+    that channel's fence.
     """
-    return text.replace(RETRIEVED_DOCUMENTS_OPEN, "").replace(RETRIEVED_DOCUMENTS_CLOSE, "")
+    return strip_fence_markers(text)
 
 
 def retrieved_documents_block(text: str) -> str:
@@ -394,15 +403,20 @@ def strip_web_fence(text: str) -> str:
     closing marker itself must not be able to step out of the fence and turn
     the rest of the prompt into an order.
 
+    EVERY marker goes, not only the web fences' own pair. The fence grammar
+    is one grammar: a page that carries the RECORD's markers would make the
+    model read the page as the buyer's record - and the next task puts the
+    record into this very prompt, so the page must not be able to write it.
+
     Args:
         text: The untrusted text.
 
     Returns:
-        The text without the markers of the web fences.
+        The text without the markers.
     """
     if not isinstance(text, str):
         return ""
-    return _WEB_FENCE_RE.sub("", text)
+    return strip_fence_markers(_WEB_FENCE_RE.sub("", text))
 
 
 def _marker_safe(text: str) -> str:

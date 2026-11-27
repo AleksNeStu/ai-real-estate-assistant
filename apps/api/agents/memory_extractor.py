@@ -34,7 +34,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any, Optional
 
-from agents.memory_guard import screen_fact
+from agents.memory_guard import screen_fact, strip_fence_markers
 
 logger = logging.getLogger(__name__)
 
@@ -137,6 +137,11 @@ def build_extraction_prompt(
     cannot open with "ignore the previous instructions" and be read as an
     order.
 
+    The quoted text carries no fence marker of its own. The fence grammar is
+    one grammar: a listing that carries the delimiters of another fence -
+    the buyer's record, say - would write that fence, and the extractor
+    would read a record of the buyer that the buyer never gave.
+
     Args:
         messages: The conversation so far - dicts or objects with a role and content.
         answer: The assistant's answer for this turn.
@@ -148,18 +153,18 @@ def build_extraction_prompt(
     lines = [_EXTRACTION_PROMPT]
 
     transcript = [_message_text(message) for message in _tail(messages)]
-    transcript = [line for line in transcript if line]
+    transcript = [strip_fence_markers(line) for line in transcript if line]
     lines.append("<<<CONVERSATION>>>")
     lines.extend(transcript or ["(empty)"])
     lines.append("<<<END CONVERSATION>>>")
 
-    answer_text = _as_text(answer)
+    answer_text = strip_fence_markers(_as_text(answer))
     lines.append("<<<ASSISTANT ANSWER>>>")
     lines.append(answer_text or "(empty)")
     lines.append("<<<END ASSISTANT ANSWER>>>")
 
     listing_lines = [_listing_line(listing) for listing in listings or ()]
-    listing_lines = [line for line in listing_lines if line]
+    listing_lines = [strip_fence_markers(line) for line in listing_lines if line]
     lines.append("<<<LISTINGS SHOWN>>>")
     lines.extend(listing_lines or ["(none)"])
     lines.append("<<<END LISTINGS SHOWN>>>")

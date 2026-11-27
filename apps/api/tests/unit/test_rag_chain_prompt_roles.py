@@ -28,6 +28,7 @@ from agents.intent_prompts import (
     RETRIEVED_LISTINGS_OPEN,
     build_rag_combine_prompt,
 )
+from agents.memory_guard import strip_fence_markers
 from agents.query_analyzer import Complexity, QueryAnalysis, QueryIntent
 from ai.app_services import create_conversation_chain
 from ai.context_manager import (
@@ -184,7 +185,11 @@ class TestTheChainSendsTheListingsAsData:
         system_text, human_text = split_roles(llm.recorded[-1])
         assert content not in system_text
         # The listing still reaches the model - quoted as data, not dropped.
-        assert content in human_text
+        # A payload that carries a fence marker arrives without the marker:
+        # the fence grammar is one grammar, and the code owns it. The human
+        # text therefore holds exactly the two markers the code wrote.
+        assert strip_fence_markers(content) in human_text
+        assert human_text.count("<<<") == 2
 
 
 class TestEveryChainCarriesTheRepoPrompt:

@@ -20,6 +20,7 @@ from langchain_core.messages import (
     SystemMessage,
 )
 
+from agents.memory_guard import strip_fence_markers
 from ai.context_metrics import (
     ContextUsageMetrics,
     init_context_metrics_db,
@@ -57,13 +58,18 @@ def build_conversation_summary_message(summary: str) -> str:
     The fence is closed by the code, not by the text: a summary that carries
     the closing marker itself must not be able to step out of the fence.
 
+    EVERY marker goes, not only this fence's own pair. The fence grammar is
+    one grammar: a summary that carries the RECORD's markers would make the
+    model read the summary as the buyer's record, and the summary and the
+    record reach the model in the same conversation.
+
     Args:
         summary: The summary the model wrote.
 
     Returns:
         The block, ready to travel as the content of a human message.
     """
-    body = summary.replace(CONVERSATION_SUMMARY_OPEN, "").replace(CONVERSATION_SUMMARY_CLOSE, "")
+    body = strip_fence_markers(summary)
     return (
         f"{CONVERSATION_SUMMARY_LABEL}\n{CONVERSATION_SUMMARY_OPEN}\n"
         f"{body}\n{CONVERSATION_SUMMARY_CLOSE}"

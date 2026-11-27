@@ -27,6 +27,7 @@ from httpx import ASGITransport, AsyncClient
 from langchain_core.documents import Document
 
 from agents.intent_prompts import RETRIEVED_DOCUMENTS_CLOSE, RETRIEVED_DOCUMENTS_OPEN
+from agents.memory_guard import strip_fence_markers
 from api.dependencies import get_knowledge_store, get_rag_qa_llm_details
 from api.routers.rag import router as rag_router
 from tests.unit.test_prompt_injection_corpus import INJECTION_PAYLOADS
@@ -1024,10 +1025,12 @@ class TestTheRetrievedDocumentsAreQuotedData:
             await rag_client.post("/api/v1/rag/qa", json={"question": "What is available?"})
 
         prompt = mock_llm.invoke.call_args[0][0]
-        assert content in prompt
         # Quoted, not dropped - and quoted inside the fence the code closes.
+        # A payload that carries a fence marker arrives without the marker:
+        # the fence grammar is one grammar, and only the code writes it.
         body = prompt.split(RETRIEVED_DOCUMENTS_OPEN)[1].split(RETRIEVED_DOCUMENTS_CLOSE)[0]
-        assert content in body
+        assert strip_fence_markers(content) in body
+        assert body.count("<<<") == 0
 
     @pytest.mark.asyncio
     async def test_a_document_cannot_close_the_fence(self, rag_client, mock_store, mock_llm):

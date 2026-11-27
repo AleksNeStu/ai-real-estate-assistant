@@ -51,6 +51,7 @@ from agents.intent_prompts import (
     rag_combine_chain_kwargs,
     retrieved_listings_block,
 )
+from agents.memory_guard import strip_fence_markers
 from agents.query_analyzer import (
     Complexity,
     QueryAnalysis,
@@ -186,6 +187,10 @@ class HybridPropertyAgent:
         travel between two markers, so the model sees quoted material instead
         of the latest thing it was told.
 
+        The fence is closed by the CODE (Task #157): a marker that reaches the
+        record is removed from it, so the record cannot step out of its own
+        fence and put the rest of the prompt outside it.
+
         Args:
             buyer_memory: The already-assembled block, or nothing.
 
@@ -196,7 +201,13 @@ class HybridPropertyAgent:
             return ""
         if buyer_memory.startswith(BUYER_RECORD_OPEN):
             # Already fenced - the block travels through here more than once.
-            return buyer_memory
+            # The markers of the fence itself are the code's; only the body is
+            # cleaned, so a marker inside the record cannot close it early.
+            body = buyer_memory[len(BUYER_RECORD_OPEN) :]
+            if body.endswith(BUYER_RECORD_CLOSE):
+                body = body[: -len(BUYER_RECORD_CLOSE)]
+            body = strip_fence_markers(body).strip()
+            return f"{BUYER_RECORD_OPEN}\n{body}\n{BUYER_RECORD_CLOSE}"
         room = BUYER_MEMORY_MAX_CHARS - len(BUYER_RECORD_OPEN) - len(BUYER_RECORD_CLOSE) - 2
         block = buyer_memory[:room]
         if len(buyer_memory) > room:
@@ -204,6 +215,7 @@ class HybridPropertyAgent:
             cut = block.rfind("\n")
             if cut > 0:
                 block = block[:cut]
+        block = strip_fence_markers(block)
         return f"{BUYER_RECORD_OPEN}\n{block}\n{BUYER_RECORD_CLOSE}"
 
     def _rag_chain_for(self, buyer_memory: Optional[str]):
