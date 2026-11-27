@@ -214,6 +214,12 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+# Timestamped copies of an environment file (escape *.bak because of the
+# -<UTC>-<label> suffix the backups carry). The installer writes
+# .env.backup-<stamp>; an operator's rotation writes .env.bak-<stamp>-<label>.
+# Both hold the live secrets, so neither may ever be committed.
+*.bak-*
+*.backup-*
 
 # Spyder project settings
 .spyderproject
