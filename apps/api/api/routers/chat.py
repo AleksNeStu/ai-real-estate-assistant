@@ -83,6 +83,8 @@ def _answer_text_of(chunk: str) -> str:
 
     Returns:
         The answer's text. A chunk that is not an envelope travels as it is.
+        An error envelope carries no prose: the failure is not something the
+        buyer's memory should learn.
     """
     try:
         payload = json.loads(chunk)
@@ -92,6 +94,8 @@ def _answer_text_of(chunk: str) -> str:
         content = payload.get("content")
         if isinstance(content, str):
             return content
+        if payload.get("error"):
+            return ""
     return chunk
 
 
@@ -134,6 +138,24 @@ def _request_is_anonymous(req: Request) -> bool:
         return False
 
     return True
+
+
+def _raise_if_the_model_failed(result: Any) -> None:
+    """A model that failed is not an answer.
+
+    The agent reports the failure in the `error` field; the API answers 503
+    with a sentence the reader can act on. The provider's own error text stays
+    in the log: it names the account, the quota and the request id, and none of
+    that is the visitor's business.
+    """
+    failure = result.get("error") if isinstance(result, dict) else None
+    if not failure:
+        return
+    logger.error("The model could not answer: %s", failure)
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail="The assistant is temporarily unavailable. Please try again in a moment.",
+    )
 
 
 def _build_agent_and_process(
@@ -388,12 +410,22 @@ async def chat_endpoint(
     settings = get_settings()
     request_id = getattr(req.state, "request_id", None) or str(uuid.uuid4())
 
-    if _request_is_anonymous(req):
+    is_anonymous = _request_is_anonymous(req)
+    if is_anonymous:
         await _check_free_tier_rate_limit(req)
 
     # An anonymous visitor has no account: no memory is read and none is
     # written, and the prompt is exactly the prompt of before the memory.
-    memory_user = None if user is None or _request_is_anonymous(req) else user
+    memory_user = None if user is None or is_anonymous else user
+
+    # An open deployment must not depend on ONE account. The cascade walks the
+    # free providers and hands the request over when one of them cannot answer
+    # - a depleted plan on the first provider is a fact of the day, not a fact
+    # of the deployment. A private deployment keeps its own provider.
+    if is_anonymous:
+        cascade_llm = get_llm_for_free_user()
+        if cascade_llm is not None:
+            llm = cascade_llm
 
     try:
         agent, sanitized_message, session_id = _build_agent_and_process(request, req, llm, store)
@@ -455,6 +487,24 @@ async def chat_endpoint(
                             result = await _process_with_memory(
                                 agent, sanitized_message, memory_block
                             )
+                            # A web research that failed is not an answer: the
+                            # stream carries an error event, not the failure
+                            # dressed as the answer.
+                            failure = result.get("error") if isinstance(result, dict) else None
+                            if failure:
+                                logger.error("The web research could not answer: %s", failure)
+                                stream_metrics.record_error()
+                                error_payload = {
+                                    "error": (
+                                        "The assistant is temporarily unavailable. "
+                                        "Please retry in a moment."
+                                    ),
+                                    "request_id": request_id,
+                                }
+                                yield "event: error\n"
+                                yield f"data: {json.dumps(error_payload)}\n\n"
+                                yield "data: [DONE]\n\n"
+                                return
                             raw_answer = result.get("answer", "")
                             answer_text = content_to_text(raw_answer)
                             if answer_text:
@@ -587,7 +637,12 @@ async def chat_endpoint(
                     # Log error and send error event for client recovery
                     stream_metrics.record_error()
                     logger.error(f"Stream error (request_id={request_id}): {e}")
-                    error_payload = {"error": str(e), "request_id": request_id}
+                    # The client gets a sentence it can show; the provider's own
+                    # error text stays in the log.
+                    error_payload = {
+                        "error": "The assistant is temporarily unavailable. Please retry in a moment.",
+                        "request_id": request_id,
+                    }
                     yield "event: error\n"
                     yield f"data: {json.dumps(error_payload)}\n\n"
                     yield "data: [DONE]\n\n"
@@ -610,6 +665,7 @@ async def chat_endpoint(
             )
 
         result = await _process_with_memory(agent, sanitized_message, memory_block)
+        _raise_if_the_model_failed(result)
 
         answer = content_to_text(result.get("answer", ""))
         if "sources" in result and isinstance(result.get("sources"), list):
@@ -749,6 +805,7 @@ async def chat_free_endpoint(
         sources_max_total_bytes = max(0, int(settings.chat_sources_max_total_bytes))
 
         result = await _process_with_memory(agent, sanitized_message, memory_block)
+        _raise_if_the_model_failed(result)
 
         answer = content_to_text(result.get("answer", ""))
         sources, sources_truncated = serialize_chat_sources(

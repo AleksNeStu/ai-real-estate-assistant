@@ -65,6 +65,11 @@ from utils.tool_calls import build_tool_call
 
 logger = logging.getLogger(__name__)
 
+# What a failed stream says. The chunk travels to the browser, so it carries
+# a sentence a reader can act on - never the provider's own error text, which
+# names the quota, the account and the request id.
+STREAM_FAILURE_MESSAGE = "The assistant is temporarily unavailable. Please retry in a moment."
+
 
 class HybridPropertyAgent:
     """
@@ -815,8 +820,15 @@ Thought: {agent_scratchpad}"""
             }
 
         except Exception as e:
+            # A model that failed is not an answer. The raw provider error
+            # stays in the log and in the `error` field - the router turns that
+            # into a 503 - and the answer says what a reader can act on.
+            logger.error("The RAG query failed: %s", e, exc_info=True)
             return {
-                "answer": f"Error processing query with RAG: {str(e)}",
+                "answer": (
+                    "I could not answer that right now: the model is temporarily "
+                    "unavailable. Please try again in a moment."
+                ),
                 "source_documents": [],
                 "method": "rag",
                 "error": str(e),
@@ -827,6 +839,7 @@ Thought: {agent_scratchpad}"""
         query: str,
         analysis: QueryAnalysis,
     ) -> Dict[str, Any]:
+        failure: Optional[str] = None
         try:
             cfg = WebResearchConfig(
                 searxng_url=self.searxng_url,
@@ -841,9 +854,17 @@ Thought: {agent_scratchpad}"""
             sources = list(result.get("sources") or [])
             intermediate_steps = list(result.get("intermediate_steps") or [])
         except Exception as e:
-            content = f"Error processing query with web search: {str(e)}"
+            # A web research that failed is not an answer either: the raw
+            # provider error goes to the log and to the `error` field, and the
+            # router answers 503 instead of passing an error text as a reply.
+            logger.error("The web research query failed: %s", e, exc_info=True)
+            content = (
+                "I could not answer that right now: the model is temporarily "
+                "unavailable. Please try again in a moment."
+            )
             sources = []
             intermediate_steps = []
+            failure = str(e)
 
         try:
             self.memory.save_context({"input": query}, {"answer": content})
@@ -857,6 +878,7 @@ Thought: {agent_scratchpad}"""
             "method": "web_search",
             "intent": analysis.intent.value,
             "intermediate_steps": intermediate_steps,
+            **({"error": failure} if failure else {}),
         }
 
     def _process_with_agent(
@@ -916,8 +938,15 @@ Thought: {agent_scratchpad}"""
             }
 
         except Exception as e:
+            # A model that failed is not an answer: the raw provider error
+            # goes to the log and to the `error` field, and the answer says
+            # what a reader can act on.
+            logger.error("The agent query failed: %s", e, exc_info=True)
             return {
-                "answer": f"Error processing query with agent: {str(e)}",
+                "answer": (
+                    "I could not answer that right now: the model is temporarily "
+                    "unavailable. Please try again in a moment."
+                ),
                 "source_documents": [],
                 "method": "agent",
                 "error": str(e),
@@ -1034,7 +1063,10 @@ Thought: {agent_scratchpad}"""
                     return
             except Exception as fallback_error:
                 logger.error("Streaming fallback failed: %s", sanitize_for_log(fallback_error))
-            yield json.dumps({"error": str(e)})
+            # The chunk travels to the browser, so it carries a sentence a
+            # reader can act on. The provider's own error text - the quota,
+            # the account, the request id - stays in the log above.
+            yield json.dumps({"error": STREAM_FAILURE_MESSAGE})
 
     async def _astream_with_rag(
         self,
@@ -1199,8 +1231,15 @@ class SimpleRAGAgent:
             }
 
         except Exception as e:
+            # A model that failed is not an answer: the raw provider error
+            # goes to the log and to the `error` field, and the answer says
+            # what a reader can act on.
+            logger.error("The RAG-only query failed: %s", e, exc_info=True)
             return {
-                "answer": f"Error: {str(e)}",
+                "answer": (
+                    "I could not answer that right now: the model is temporarily "
+                    "unavailable. Please try again in a moment."
+                ),
                 "source_documents": [],
                 "method": "rag_only",
                 "error": str(e),

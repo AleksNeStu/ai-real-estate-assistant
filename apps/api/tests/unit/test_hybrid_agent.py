@@ -305,7 +305,12 @@ class TestHybridPropertyAgent:
         with patch("agents.hybrid_agent.logger") as mock_logger:
             with patch.object(agent, "_astream_with_agent", new=failing_stream):
                 chunks = [chunk async for chunk in agent.astream_query("q")]
-                assert chunks == ['{"error": "boom"}']
+                # The chunk travels to the browser, so it carries a sentence a
+                # reader can act on - never the provider's own error text.
+                assert chunks == [
+                    '{"error": "The assistant is temporarily unavailable. Please retry in a moment."}'
+                ]
+                assert "boom" not in chunks[0]
             assert mock_logger.error.call_count >= 2
 
     @pytest.mark.asyncio

@@ -546,10 +546,13 @@ class TestRagQaNonStreaming:
         assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
 
     @pytest.mark.asyncio
-    async def test_qa_llm_invoke_failure_falls_back_to_context(
-        self, rag_client, mock_store, mock_llm
-    ):
-        """LLM invoke exception should fall back to context snippet."""
+    async def test_qa_llm_invoke_failure_answers_503(self, rag_client, mock_store, mock_llm):
+        """A model that failed is not an answer - the request fails with 503.
+
+        The retrieved text is the MATERIAL the answer would have been built
+        from; handing it back as the answer with a 200 tells the reader the
+        model answered when it did not.
+        """
         docs = _sample_docs(2)
         mock_store.similarity_search_with_score.return_value = docs
         mock_llm.invoke.side_effect = RuntimeError("API timeout")
@@ -560,11 +563,11 @@ class TestRagQaNonStreaming:
                 json={"question": "What is available?"},
             )
 
-        assert response.status_code == status.HTTP_200_OK
-        data = response.json()
-        assert data["llm_used"] is False
-        assert "answer" in data
-        assert len(data["answer"]) <= 500
+        assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
+        detail = response.json()["detail"]
+        assert "temporarily unavailable" in detail
+        # The provider's own error text is the server's business.
+        assert "API timeout" not in response.text
 
     @pytest.mark.asyncio
     async def test_qa_with_query_params(self, rag_client, mock_store, mock_llm):

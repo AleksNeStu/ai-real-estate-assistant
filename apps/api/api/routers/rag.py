@@ -338,7 +338,12 @@ async def rag_qa(
                     sanitize_for_log(request_id),
                     sanitize_for_log(e),
                 )
-                error_payload = {"error": str(e), "request_id": request_id}
+                # The client gets a sentence it can show; the provider's own
+                # error text stays in the log.
+                error_payload = {
+                    "error": "The assistant is temporarily unavailable. Please retry in a moment.",
+                    "request_id": request_id,
+                }
                 yield "event: error\n"
                 yield f"data: {json.dumps(error_payload)}\n\n"
                 yield "data: [DONE]\n\n"
@@ -372,9 +377,20 @@ async def rag_qa(
                 await cache.set(req, data=base_response, status_code=200, body_hash=body_hash)
             return base_response
         except Exception as e:
-            logger.warning("LLM invocation failed: %s", e)
+            # A model that failed is not an answer. The retrieved text is not
+            # an answer either - it is the material the answer would have been
+            # built from - so the request fails with a sentence the reader can
+            # act on. The provider's own error text stays in the log: it
+            # names the quota, the account and the request id, and none of
+            # that is the reader's business.
+            logger.error("The RAG query failed: %s", sanitize_for_log(e))
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=("The assistant is temporarily unavailable. Please try again in a moment."),
+            ) from None
 
-    # Fallback: return context snippet
+    # No model at all: the deployment answers from the retrieved text and
+    # says so (`llm_used` is False), so the reader knows what they got.
     snippet = context[:500]
     base_response["answer"] = snippet
     base_response["llm_used"] = False

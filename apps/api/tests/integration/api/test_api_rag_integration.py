@@ -13,10 +13,25 @@ from vector_store.knowledge_store import KnowledgeStore
 client = TestClient(app)
 
 
+class _Msg:
+    def __init__(self, content: str):
+        self.content = content
+
+
+class _Llm:
+    """A model that answers, so the test does not depend on a live provider."""
+
+    def invoke(self, _prompt: str):
+        return _Msg("ok")
+
+
 def test_rag_end_to_end_text_upload_and_qa(monkeypatch, tmp_path):
     monkeypatch.setattr("vector_store.knowledge_store._create_embeddings", lambda: None)
     store = KnowledgeStore(persist_directory=str(tmp_path), collection_name="knowledge-test")
     app.dependency_overrides[get_knowledge_store] = lambda: store
+    # The flow is what this test is about, so the model is a stub: a live
+    # provider would make the test depend on a network call.
+    app.dependency_overrides[get_rag_qa_llm_details] = lambda: (_Llm(), "openai", "m1")
 
     try:
         content = "Krakow is a city in Poland. It is known for Wawel Castle."
@@ -36,6 +51,7 @@ def test_rag_end_to_end_text_upload_and_qa(monkeypatch, tmp_path):
         assert len(payload["citations"]) >= 1
         assert isinstance(payload["llm_used"], bool)
     finally:
+        app.dependency_overrides.pop(get_rag_qa_llm_details, None)
         app.dependency_overrides.pop(get_knowledge_store, None)
 
 
@@ -56,6 +72,7 @@ def test_rag_end_to_end_pdf_upload_citations_include_page_number(monkeypatch, tm
             self.pages = [_Page("alpha"), _Page("beta")]
 
     monkeypatch.setitem(sys.modules, "pypdf", types.SimpleNamespace(PdfReader=_Reader))
+    app.dependency_overrides[get_rag_qa_llm_details] = lambda: (_Llm(), "openai", "m1")
 
     try:
         files = {"files": ("doc.pdf", b"%PDF-", "application/pdf")}
@@ -74,6 +91,7 @@ def test_rag_end_to_end_pdf_upload_citations_include_page_number(monkeypatch, tm
         assert payload["citations"] != []
         assert any(c.get("page_number") == 2 for c in payload["citations"])
     finally:
+        app.dependency_overrides.pop(get_rag_qa_llm_details, None)
         app.dependency_overrides.pop(get_knowledge_store, None)
 
 
@@ -133,14 +151,6 @@ def test_rag_qa_llm_success_returns_llm_answer(monkeypatch, tmp_path):
     monkeypatch.setattr("vector_store.knowledge_store._create_embeddings", lambda: None)
     store = KnowledgeStore(persist_directory=str(tmp_path), collection_name="knowledge-test")
     app.dependency_overrides[get_knowledge_store] = lambda: store
-
-    class _Msg:
-        def __init__(self, content: str):
-            self.content = content
-
-    class _Llm:
-        def invoke(self, _prompt: str):
-            return _Msg("ok")
 
     app.dependency_overrides[get_rag_qa_llm_details] = lambda: (_Llm(), "openai", "m1")
 

@@ -271,6 +271,18 @@ def test_rag_qa_returns_citations(monkeypatch, tmp_path):
     store = _make_store(monkeypatch, tmp_path)
     _override_store(store)
 
+    class _Msg:
+        def __init__(self, content: str):
+            self.content = content
+
+    class _Llm:
+        def invoke(self, _prompt: str):
+            return _Msg("Warsaw.")
+
+    # The citation shape is what this test is about, so the model is a stub:
+    # a live provider would make the test depend on a network call.
+    app.dependency_overrides[get_rag_qa_llm_details] = lambda: (_Llm(), "openai", "m1")
+
     try:
         store.ingest_text("The capital of Poland is Warsaw.", source="facts.md")
 
@@ -285,6 +297,7 @@ def test_rag_qa_returns_citations(monkeypatch, tmp_path):
         assert data["citations"] != []
         assert isinstance(data["llm_used"], bool)
     finally:
+        app.dependency_overrides.pop(get_rag_qa_llm_details, None)
         app.dependency_overrides.pop(get_knowledge_store, None)
 
 
@@ -327,7 +340,13 @@ def test_rag_qa_llm_unavailable(monkeypatch, tmp_path):
         app.dependency_overrides.pop(get_rag_qa_llm_details, None)
 
 
-def test_rag_qa_llm_failure_falls_back_to_snippet(monkeypatch, tmp_path):
+def test_rag_qa_llm_failure_answers_503(monkeypatch, tmp_path):
+    """A model that failed is not an answer - the request fails with 503.
+
+    The retrieved text is the MATERIAL the answer would have been built
+    from; handing it back as the answer with a 200 tells the reader the
+    model answered when it did not.
+    """
     store = _make_store(monkeypatch, tmp_path)
     _override_store(store)
 
@@ -343,11 +362,10 @@ def test_rag_qa_llm_failure_falls_back_to_snippet(monkeypatch, tmp_path):
             json={"question": "answer", "top_k": 1},
             headers={"X-API-Key": "dev-secret-key"},
         )
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["answer"] != ""
-        assert data["citations"] != []
-        assert data["llm_used"] is False
+        assert resp.status_code == 503
+        assert "temporarily unavailable" in resp.json()["detail"]
+        # The provider's own error text is the server's business.
+        assert "llm down" not in resp.text
     finally:
         app.dependency_overrides.pop(get_knowledge_store, None)
         app.dependency_overrides.pop(get_rag_qa_llm_details, None)

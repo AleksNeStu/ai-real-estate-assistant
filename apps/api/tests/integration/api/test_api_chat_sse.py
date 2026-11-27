@@ -117,7 +117,10 @@ def test_chat_sse_error_event_on_streaming_failure():
             # Check that error event is sent with request_id
             assert "event: error" in body
             assert f'"request_id": "{test_request_id}"' in body
-            assert "streaming failed" in body
+            # The reader gets a sentence they can act on; the provider's own
+            # error text stays in the log.
+            assert "temporarily unavailable" in body
+            assert "streaming failed" not in body
             # Stream should still terminate properly
             assert "data: [DONE]" in body
 
