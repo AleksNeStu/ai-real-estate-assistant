@@ -117,7 +117,7 @@ def screen_fact(kind: str, content: str) -> Optional[str]:
     if not text:
         return None
 
-    if _is_an_instruction(text):
+    if is_an_instruction(text):
         logger.warning("Buyer memory: dropping a fact that talks to the assistant")
         return None
 
@@ -130,6 +130,19 @@ def screen_fact(kind: str, content: str) -> Optional[str]:
         text = text[:cap].rstrip()
 
     return text
+
+
+def is_an_instruction(text: str) -> bool:
+    """
+    Whether the text is addressed at the assistant rather than at a subject.
+
+    This is the ONE definition of the threat in the repo: the buyer's memory
+    and the web research ask the same question, so a payload one screen
+    misses is a payload the other one misses too.
+    """
+    if not isinstance(text, str):
+        return False
+    return _is_an_instruction(_clean(text))
 
 
 def _is_an_instruction(text: str) -> bool:
