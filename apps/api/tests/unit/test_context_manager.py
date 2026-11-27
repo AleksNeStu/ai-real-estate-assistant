@@ -21,6 +21,7 @@ from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, System
 
 from ai.context_manager import (
     CHARS_PER_TOKEN_ESTIMATE,
+    CONVERSATION_SUMMARY_OPEN,
     DEFAULT_CONTEXT_WINDOWS,
     ContextCompressor,
     ContextManager,
@@ -910,7 +911,16 @@ class TestOptimizeContext:
 
         assert metrics is not None
         assert metrics.summarization_applied is True
-        assert any("[Previous conversation summary:" in str(m.content) for m in result)
+        # The summary is the model's own text, so it rides as a HUMAN
+        # message, fenced and labelled as a record of what was said.
+        summaries = [m for m in result if CONVERSATION_SUMMARY_OPEN in str(m.content)]
+        assert summaries
+        assert all(isinstance(m, HumanMessage) for m in summaries)
+        assert not [
+            m
+            for m in result
+            if isinstance(m, SystemMessage) and "summary" in str(m.content).lower()
+        ]
 
     def test_no_summarization_without_llm(self) -> None:
         """Without LLM, summarization step is skipped even if over limit."""

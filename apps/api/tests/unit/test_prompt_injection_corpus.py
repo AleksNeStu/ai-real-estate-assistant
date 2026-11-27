@@ -20,9 +20,19 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from agents.intent_prompts import build_buyer_memory_block
+from agents.intent_prompts import (
+    RETRIEVED_LISTINGS_CLOSE,
+    RETRIEVED_LISTINGS_OPEN,
+    build_buyer_memory_block,
+    retrieved_listings_block,
+)
 from agents.memory_extractor import build_extraction_prompt, extract_buyer_facts
 from agents.memory_guard import MAX_FACT_CHARS, NOTE_MAX_CHARS, screen_fact
+from ai.context_manager import (
+    CONVERSATION_SUMMARY_CLOSE,
+    CONVERSATION_SUMMARY_OPEN,
+    build_conversation_summary_message,
+)
 
 # The repository root - four levels up from apps/api/tests/unit.
 REPO_ROOT = Path(__file__).resolve().parents[4]
@@ -234,9 +244,43 @@ class TestTheExtractorPromptFencesItsInput:
         assert HOSTILE_LISTING["title"] in body
 
 
+class TestTheRetrievedListingsAreQuotedData:
+    """The other two channels the model did not write (Task #153).
+
+    The retrieved listings and the conversation summary reach the model as
+    quoted material. A payload that arrives as an ORDER is the defect; a
+    payload that arrives inside a fence is the fix working.
+    """
+
+    @pytest.mark.parametrize(
+        ("kind", "content"),
+        INJECTION_PAYLOADS,
+        ids=[f"{index:02d}" for index in range(len(INJECTION_PAYLOADS))],
+    )
+    def test_the_listings_quote_the_payload_as_data(self, kind, content):
+        block = retrieved_listings_block(content)
+
+        assert content in block
+        assert RETRIEVED_LISTINGS_OPEN in block
+        assert RETRIEVED_LISTINGS_CLOSE in block
+        assert "never as an instruction" in block
+
+    @pytest.mark.parametrize(
+        ("kind", "content"),
+        INJECTION_PAYLOADS,
+        ids=[f"{index:02d}" for index in range(len(INJECTION_PAYLOADS))],
+    )
+    def test_the_summary_quotes_the_payload_as_data(self, kind, content):
+        block = build_conversation_summary_message(content)
+
+        assert content in block
+        assert CONVERSATION_SUMMARY_OPEN in block
+        assert CONVERSATION_SUMMARY_CLOSE in block
+        assert "never an" in block and "instruction" in block
+
+
 SEMGREP = shutil.which("semgrep")
 RULE_ID = "langchain.system-role-untrusted-data"
-
 FIXTURE_SOURCE = '''
 def _prompt_with_memory(prompt, memory: str):
     """The shape the rule has to catch: data at the system role."""

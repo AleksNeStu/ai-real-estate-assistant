@@ -13,6 +13,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.retrievers import BaseRetriever
 
 from agents.hybrid_agent import create_hybrid_agent
+from agents.intent_prompts import rag_combine_chain_kwargs
 from ai.buffer_memory import ConversationBufferMemory
 from models.provider_factory import ModelProviderFactory
 from vector_store.hybrid_retriever import create_retriever
@@ -119,6 +120,7 @@ def create_conversation_chain(
         memory=memory,
         return_source_documents=True,
         verbose=verbose,
+        combine_docs_chain_kwargs=rag_combine_chain_kwargs(),
     )
 
 

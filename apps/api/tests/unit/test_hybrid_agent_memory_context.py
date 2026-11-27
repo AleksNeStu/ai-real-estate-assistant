@@ -23,7 +23,11 @@ from agents.intent_prompts import (
     BUYER_MEMORY_MAX_FACTS,
     BUYER_RECORD_CLOSE,
     BUYER_RECORD_OPEN,
+    RETRIEVED_LISTINGS_CLOSE,
+    RETRIEVED_LISTINGS_LABEL,
+    RETRIEVED_LISTINGS_OPEN,
     build_buyer_memory_block,
+    rag_combine_chain_kwargs,
 )
 from agents.query_analyzer import Complexity, QueryAnalysis, QueryIntent
 
@@ -126,6 +130,7 @@ def chain_agent(recording_llm):
         retriever=retriever,
         memory=agent.memory,
         return_source_documents=True,
+        combine_docs_chain_kwargs=rag_combine_chain_kwargs(),
     )
     return agent
 
@@ -262,7 +267,9 @@ class TestTheEmptyMemoryChangesNothing:
         )
         expected = (
             "Answer the question based only on the following context:\n\n"
-            "Filtered Listing A\n\n"
+            f"{RETRIEVED_LISTINGS_LABEL}\n{RETRIEVED_LISTINGS_OPEN}\n"
+            "Filtered Listing A\n"
+            f"{RETRIEVED_LISTINGS_CLOSE}\n\n"
             "Question: apartment in Krakow under 500k"
         )
 
@@ -470,7 +477,12 @@ class TestTheStreamingPathsChangeNothingWithoutMemory:
 
         assert len(captured) == 2
         assert captured[0] == captured[1]
-        assert captured[0] == "q\n\nRelevant properties:\nProperty 1: Listing A..."
+        assert captured[0] == (
+            "q\n\nRelevant properties:\n"
+            f"{RETRIEVED_LISTINGS_LABEL}\n{RETRIEVED_LISTINGS_OPEN}\n"
+            "Property 1: Listing A...\n"
+            f"{RETRIEVED_LISTINGS_CLOSE}"
+        )
 
     @pytest.mark.asyncio
     async def test_the_streaming_hybrid_prompt_is_byte_for_byte_the_same(self, chain_agent):

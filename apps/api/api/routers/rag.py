@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, stat
 from fastapi.responses import StreamingResponse
 from langchain_core.language_models import BaseChatModel
 
+from agents.intent_prompts import retrieved_documents_block
 from api.dependencies import get_knowledge_store, get_rag_qa_llm_details, parse_rag_qa_request
 from api.models import RagQaRequest, RagQaResponse, RagResetResponse
 from config.settings import get_settings
@@ -44,6 +45,23 @@ async def _read_upload_file_limited(file: UploadFile, max_bytes: int) -> tuple[b
         if len(buf) + len(chunk) > max_bytes:
             return bytes(buf), True
         buf.extend(chunk)
+
+
+def _build_qa_prompt(context: str, question: str) -> str:
+    """
+    The prompt the QA route sends to the model.
+
+    The retrieved context is what the buyer uploaded, so it is as writable
+    as a listing's: it is quoted as data, fenced between two markers the
+    CODE closes, and the prompt says what the block IS. A document that
+    carries an order therefore arrives as quoted material.
+    """
+    return (
+        "Answer the question based only on the context quoted below.\n\n"
+        f"{retrieved_documents_block(context)}\n\n"
+        f"Question: {question}\n\n"
+        "If the answer cannot be found in the context, say you don't know."
+    )
 
 
 @router.post("/rag/upload", tags=["RAG"])
@@ -284,11 +302,7 @@ async def rag_qa(
 
                 if llm:
                     # Stream LLM response
-                    prompt = (
-                        "Answer the question based only on the following context.\n\n"
-                        f"{context}\n\nQuestion: {rag_request.question}\n\n"
-                        "If the answer cannot be found in the context, say you don't know."
-                    )
+                    prompt = _build_qa_prompt(context, rag_request.question)
 
                     # Check if LLM supports streaming
                     if hasattr(llm, "astream"):
@@ -363,11 +377,7 @@ async def rag_qa(
     # Non-streaming path
     if llm:
         try:
-            prompt = (
-                "Answer the question based only on the following context.\n\n"
-                f"{context}\n\nQuestion: {rag_request.question}\n\n"
-                "If the answer cannot be found in the context, say you don't know."
-            )
+            prompt = _build_qa_prompt(context, rag_request.question)
             msg = llm.invoke(prompt)
             content = getattr(msg, "content", str(msg))
             base_response["answer"] = content

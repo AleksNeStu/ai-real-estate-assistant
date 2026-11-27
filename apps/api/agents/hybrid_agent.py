@@ -48,6 +48,8 @@ from agents.intent_prompts import (
     BUYER_RECORD_CLOSE,
     BUYER_RECORD_OPEN,
     get_system_prompt_for_intent,
+    rag_combine_chain_kwargs,
+    retrieved_listings_block,
 )
 from agents.query_analyzer import (
     Complexity,
@@ -149,13 +151,20 @@ class HybridPropertyAgent:
         self.tool_agent = self._create_tool_agent()
 
     def _create_rag_chain(self) -> ConversationalRetrievalChain:
-        """Create RAG chain for simple queries."""
+        """Create RAG chain for simple queries.
+
+        The chain carries the repo's own combine prompt: the deployment's own
+        words at the system role, the retrieved listings quoted as data at the
+        human role. The langchain default puts the retrieved text in a SYSTEM
+        message, which turns every listing into an instruction.
+        """
         return ConversationalRetrievalChain.from_llm(
             llm=self.llm,
             retriever=self.retriever,
             memory=self.memory,
             return_source_documents=True,
             verbose=self.verbose,
+            combine_docs_chain_kwargs=rag_combine_chain_kwargs(),
         )
 
     @staticmethod
@@ -777,7 +786,8 @@ Thought: {agent_scratchpad}"""
                 # Simple generation without history rephrasing for now
                 # (Or we could implement rephrasing if needed)
                 prompt = self._join_prompt_sections(
-                    f"Answer the question based only on the following context:\n\n{context_text}",
+                    "Answer the question based only on the following context:",
+                    retrieved_listings_block(context_text),
                     memory_block,
                     f"Question: {query}",
                 )
@@ -918,7 +928,7 @@ Thought: {agent_scratchpad}"""
                 enhanced_query = self._join_prompt_sections(
                     memory_block,
                     query,
-                    f"Relevant properties:\n{context_text}",
+                    f"Relevant properties:\n{retrieved_listings_block(context_text)}",
                 )
             elif memory_block:
                 enhanced_query = self._join_prompt_sections(memory_block, query)
@@ -1108,7 +1118,7 @@ Thought: {agent_scratchpad}"""
         if rag_context:
             input_text = self._join_prompt_sections(
                 memory_block,
-                f"Based on this information about properties:\n\n{rag_context}",
+                f"Based on this information about properties:\n\n{retrieved_listings_block(rag_context)}",
                 f"Now answer this: {query}",
             )
         elif analysis.intent not in [QueryIntent.CALCULATION, QueryIntent.GENERAL_QUESTION]:
@@ -1129,7 +1139,7 @@ Thought: {agent_scratchpad}"""
                     input_text = self._join_prompt_sections(
                         memory_block,
                         query,
-                        f"Relevant properties:\n{context_text}",
+                        f"Relevant properties:\n{retrieved_listings_block(context_text)}",
                     )
             except Exception as e:
                 logger.warning("Retrieval failed in stream: %s", sanitize_for_log(e))
@@ -1217,6 +1227,7 @@ class SimpleRAGAgent:
             memory=self.memory,
             return_source_documents=True,
             verbose=verbose,
+            combine_docs_chain_kwargs=rag_combine_chain_kwargs(),
         )
 
     def process_query(self, query: str) -> Dict[str, Any]:
