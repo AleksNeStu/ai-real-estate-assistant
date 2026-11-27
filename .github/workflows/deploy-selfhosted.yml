@@ -455,6 +455,43 @@ jobs:
             fi
           fi
 
+          # The pin: the deployment's own .env names the version the stack is
+          # on, and compose reads that file on every start. Without this step
+          # the roll leaves the pin on the previous version, and the next
+          # manual `docker compose up -d` rolls the deployment BACK to it.
+          # It is the difference between a restart that keeps the release and
+          # one that undoes it.
+          #
+          # The write is best-effort ON PURPOSE: a deployment whose .env the
+          # deploy user may not write must still be rolled onto the images
+          # that were just published. A failure here is reported and the roll
+          # goes on - the operator is told the pin has to be corrected by hand.
+          PIN_FILE="$DEPLOY_PATH/.env"
+          if [ -f "$PIN_FILE" ]; then
+            PIN_BACKUP="$PIN_FILE.bak-$(date -u +%Y%m%dT%H%M%SZ)-pre-$IMAGE_TAG"
+            if cp -p "$PIN_FILE" "$PIN_BACKUP" 2>/dev/null; then
+              echo "the previous .env is backed up at $PIN_BACKUP"
+            else
+              echo "WARNING: the previous .env could not be backed up" >&2
+            fi
+            if grep -q '^AIRE_IMAGE_TAG=' "$PIN_FILE" 2>/dev/null; then
+              sed -i "s|^AIRE_IMAGE_TAG=.*|AIRE_IMAGE_TAG=$IMAGE_TAG|" "$PIN_FILE" 2>/dev/null \
+                || sudo sed -i "s|^AIRE_IMAGE_TAG=.*|AIRE_IMAGE_TAG=$IMAGE_TAG|" "$PIN_FILE" 2>/dev/null \
+                || echo "WARNING: the pin in $PIN_FILE could not be updated - a later restart rolls the deployment back" >&2
+            else
+              printf 'AIRE_IMAGE_TAG=%s\n' "$IMAGE_TAG" >> "$PIN_FILE" 2>/dev/null \
+                || sudo sh -c "printf 'AIRE_IMAGE_TAG=%s\n' '$IMAGE_TAG' >> '$PIN_FILE'" 2>/dev/null \
+                || echo "WARNING: the pin could not be written to $PIN_FILE - a later restart rolls the deployment back" >&2
+            fi
+            if grep -q "^AIRE_IMAGE_TAG=$IMAGE_TAG\$" "$PIN_FILE" 2>/dev/null; then
+              echo "the deployment's pin now names $IMAGE_TAG"
+            else
+              echo "WARNING: the pin in $PIN_FILE does not name $IMAGE_TAG - a manual restart would roll the deployment back" >&2
+            fi
+          else
+            echo "WARNING: $PIN_FILE does not exist - the deployment keeps no pin" >&2
+          fi
+
           docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
 
           if [ -n "$DEPLOY_HEALTH_URL" ]; then
