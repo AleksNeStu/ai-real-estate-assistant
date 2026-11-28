@@ -44,14 +44,11 @@ from agents.classification_metrics import (
     log_classification_metrics,
 )
 from agents.intent_prompts import (
-    BUYER_MEMORY_MAX_CHARS,
-    BUYER_RECORD_CLOSE,
-    BUYER_RECORD_OPEN,
+    buyer_record_block,
     get_system_prompt_for_intent,
     rag_combine_chain_kwargs,
     retrieved_listings_block,
 )
-from agents.memory_guard import strip_fence_markers
 from agents.query_analyzer import (
     Complexity,
     QueryAnalysis,
@@ -191,32 +188,17 @@ class HybridPropertyAgent:
         record is removed from it, so the record cannot step out of its own
         fence and put the rest of the prompt outside it.
 
+        The fence itself is built in ONE place - agents.intent_prompts -
+        because the web research quotes the same record (Task #158), and a
+        fence that holds in one prompt has to hold in the other.
+
         Args:
             buyer_memory: The already-assembled block, or nothing.
 
         Returns:
             The fenced record, or an empty string when there is no memory.
         """
-        if not buyer_memory:
-            return ""
-        if buyer_memory.startswith(BUYER_RECORD_OPEN):
-            # Already fenced - the block travels through here more than once.
-            # The markers of the fence itself are the code's; only the body is
-            # cleaned, so a marker inside the record cannot close it early.
-            body = buyer_memory[len(BUYER_RECORD_OPEN) :]
-            if body.endswith(BUYER_RECORD_CLOSE):
-                body = body[: -len(BUYER_RECORD_CLOSE)]
-            body = strip_fence_markers(body).strip()
-            return f"{BUYER_RECORD_OPEN}\n{body}\n{BUYER_RECORD_CLOSE}"
-        room = BUYER_MEMORY_MAX_CHARS - len(BUYER_RECORD_OPEN) - len(BUYER_RECORD_CLOSE) - 2
-        block = buyer_memory[:room]
-        if len(buyer_memory) > room:
-            # Never leave half a fact behind.
-            cut = block.rfind("\n")
-            if cut > 0:
-                block = block[:cut]
-        block = strip_fence_markers(block)
-        return f"{BUYER_RECORD_OPEN}\n{block}\n{BUYER_RECORD_CLOSE}"
+        return buyer_record_block(buyer_memory)
 
     def _rag_chain_for(self, buyer_memory: Optional[str]):
         """
@@ -578,7 +560,7 @@ Thought: {agent_scratchpad}"""
         if self.internet_enabled and (
             analysis.requires_external_data or Tool.WEB_SEARCH in analysis.tools_needed
         ):
-            result = self._process_with_web_search(query, analysis)
+            result = self._process_with_web_search(query, analysis, buyer_memory=buyer_memory)
             if return_analysis:
                 result["analysis"] = analysis.dict()
             self._log_metrics(
@@ -860,7 +842,28 @@ Thought: {agent_scratchpad}"""
         self,
         query: str,
         analysis: QueryAnalysis,
+        buyer_memory: Optional[str] = None,
     ) -> Dict[str, Any]:
+        """
+        Answer through the web, with the buyer's record in the answer.
+
+        The record is the buyer's own words - the budget, the ruled-out
+        areas, the liked listings. The web branch used to drop it, so a buyer
+        who had told the assistant what they wanted was answered as if they
+        had told it nothing (Task #158). The record reaches the research as
+        DATA: it is fenced by the same builder the other branches use, and a
+        page that carries the record's markers cannot forge them - the page
+        text is stripped of every marker before it is quoted.
+
+        Args:
+            query: The buyer's question.
+            analysis: The analysis of that question.
+            buyer_memory: The already-assembled block of what the buyer has
+                told us, or nothing.
+
+        Returns:
+            The answer, its sources and the steps the research took.
+        """
         failure: Optional[str] = None
         try:
             cfg = WebResearchConfig(
@@ -871,7 +874,7 @@ Thought: {agent_scratchpad}"""
                 web_allowlist_domains=self.web_allowlist_domains,
             )
             agent = WebResearchAgent(llm=self.llm, config=cfg)
-            result = agent.research(query)
+            result = agent.research(query, buyer_memory=buyer_memory)
             content = str(result.get("answer") or "")
             sources = list(result.get("sources") or [])
             intermediate_steps = list(result.get("intermediate_steps") or [])

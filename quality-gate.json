@@ -33,7 +33,8 @@
       "p/typescript",
       "p/react",
       "p/nextjs",
-      "p/python"
+      "p/python",
+      "semgrep.yml"
     ],
     "targets": [
       "apps/api",

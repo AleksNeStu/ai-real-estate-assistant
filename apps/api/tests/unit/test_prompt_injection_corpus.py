@@ -302,19 +302,47 @@ def _prompt_with_memory(prompt, memory: str):
     return ChatPromptTemplate.from_messages([*prompt.messages, ("system", memory)])
 '''
 
+# The shape the rule could not see before Task #158: a system message built
+# directly, with a variable in it. The old pattern only matched the
+# from_messages([... ("system", X) ...]) spelling.
+SYSTEM_MESSAGE_FIXTURE = '''
+from langchain_core.messages import SystemMessage
+
+
+def _system_prompt(memory: str):
+    """The shape the rule has to catch: data at the system role."""
+    return SystemMessage(content=memory)
+'''
+
+
+def _backend_source_dirs() -> list[str]:
+    """
+    The backend's own source directories - not the tests, not the virtualenv.
+
+    The rule reads the whole backend, so the test has to as well. The tests
+    and the vendored virtualenv are left out: the tests write the bad shape
+    on purpose (they are the fixture), and the virtualenv is not this
+    repository's code.
+    """
+    root = REPO_ROOT / "apps" / "api"
+    dirs: list[str] = []
+    for entry in sorted(root.iterdir()):
+        if not entry.is_dir():
+            continue
+        if entry.name == "tests" or entry.name.startswith(".venv"):
+            continue
+        dirs.append(f"apps/api/{entry.name}")
+    return dirs
+
 
 @pytest.mark.skipif(SEMGREP is None, reason="semgrep is not installed in this environment")
 class TestTheSemgrepRule:
     """The rule is the guard rail for the class, not only for this fix."""
 
-    def test_the_rule_flags_a_deliberate_fixture(self, tmp_path):
+    def _report(self, cwd, *targets):
+        """Run the repo's ruleset over the targets and return the report."""
         semgrep = SEMGREP
         assert semgrep is not None
-        agents_dir = tmp_path / "apps" / "api" / "agents"
-        agents_dir.mkdir(parents=True)
-        shutil.copy(REPO_ROOT / "semgrep.yml", tmp_path / "semgrep.yml")
-        (agents_dir / "_fixture.py").write_text(FIXTURE_SOURCE, encoding="utf-8")
-
         result = subprocess.run(
             [
                 semgrep,
@@ -323,29 +351,61 @@ class TestTheSemgrepRule:
                 "--project-root",
                 ".",
                 "--json",
-                "apps/api/agents",
+                *targets,
             ],
-            cwd=tmp_path,
+            cwd=cwd,
             capture_output=True,
             text=True,
         )
 
         assert result.returncode == 0, result.stderr
-        report = json.loads(result.stdout)
-        flagged = [f for f in report["results"] if RULE_ID in f["check_id"]]
-        assert flagged, "the rule did not flag the deliberate fixture"
+        return json.loads(result.stdout)
+
+    def _flagged(self, report):
+        """The findings of THIS rule - the other rules are not the point."""
+        return [f for f in report["results"] if RULE_ID in f["check_id"]]
+
+    def _tree_with_a_fixture(self, tmp_path, relative_dir, source):
+        """A tree with the ruleset and one deliberate violation in it."""
+        directory = tmp_path / relative_dir
+        directory.mkdir(parents=True, exist_ok=True)
+        shutil.copy(REPO_ROOT / "semgrep.yml", tmp_path / "semgrep.yml")
+        (directory / "_fixture.py").write_text(source, encoding="utf-8")
+        return directory
+
+    def test_the_rule_flags_a_deliberate_fixture(self, tmp_path):
+        self._tree_with_a_fixture(tmp_path, Path("apps/api/agents"), FIXTURE_SOURCE)
+
+        report = self._report(tmp_path, "apps/api/agents")
+
+        assert self._flagged(report), "the rule did not flag the deliberate fixture"
+
+    def test_the_rule_flags_a_fixture_outside_the_agents_directory(self, tmp_path):
+        """The rule used to read only apps/api/agents/** (Task #158)."""
+        self._tree_with_a_fixture(tmp_path, Path("apps/api/ai"), FIXTURE_SOURCE)
+
+        report = self._report(tmp_path, "apps/api/ai")
+
+        assert self._flagged(report), "the rule did not flag the fixture in apps/api/ai"
+
+    def test_the_rule_flags_a_fixture_in_the_routers(self, tmp_path):
+        """The other half of the backend the rule could not see."""
+        self._tree_with_a_fixture(tmp_path, Path("apps/api/api/routers"), FIXTURE_SOURCE)
+
+        report = self._report(tmp_path, "apps/api/api/routers")
+
+        assert self._flagged(report), "the rule did not flag the fixture in the routers"
+
+    def test_the_rule_flags_a_system_message_built_directly(self, tmp_path):
+        """The shape the pattern could not see before Task #158."""
+        self._tree_with_a_fixture(tmp_path, Path("apps/api/ai"), SYSTEM_MESSAGE_FIXTURE)
+
+        report = self._report(tmp_path, "apps/api/ai")
+
+        assert self._flagged(report), "the rule did not flag the SystemMessage fixture"
 
     def test_the_fixed_code_passes(self):
-        semgrep = SEMGREP
-        assert semgrep is not None
-        result = subprocess.run(
-            [semgrep, "--config", "semgrep.yml", "--json", "apps/api/agents"],
-            cwd=REPO_ROOT,
-            capture_output=True,
-            text=True,
-        )
+        """The whole backend - not only the directory the rule used to read."""
+        report = self._report(REPO_ROOT, *_backend_source_dirs())
 
-        assert result.returncode == 0, result.stderr
-        report = json.loads(result.stdout)
-        flagged = [f for f in report["results"] if RULE_ID in f["check_id"]]
-        assert flagged == []
+        assert self._flagged(report) == []

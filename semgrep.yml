@@ -79,6 +79,11 @@ rules:
   # author - the buyer's memory, a listing title, a tool's output - belongs in
   # a human message, labelled as data. The rule names the class, so the next
   # place that reaches for the system role is caught before it ships.
+  #
+  # The rule reads the WHOLE backend (Task #158). It used to read only
+  # apps/api/agents/**, so it could not see the places that build a prompt
+  # outside that directory - ai/context_manager.py and api/routers/** - and
+  # those are exactly where a system role sneaks back in.
   - id: langchain.system-role-untrusted-data
     languages: [python]
     severity: ERROR
@@ -88,11 +93,27 @@ rules:
       (the buyer's record, a listing text, a tool output).
     paths:
       include:
-        - apps/api/agents/**
+        - apps/api/**
+      exclude:
+        # A test that writes the bad shape on purpose is the FIXTURE the rule
+        # needs, not a violation of it. The shipped code is what the rule is
+        # about.
+        - apps/api/tests/**
+        # The virtualenvs live INSIDE apps/api, so the include would swallow
+        # them - and the vendored langchain builds its own prompts with a
+        # variable at the system role. The rule is about THIS repository's
+        # code, not about the libraries it installs.
+        - "**/.venv*/**"
+        - "**/site-packages/**"
     patterns:
-      - pattern: $T.from_messages([..., ("system", $X), ...])
-      # A literal at the system role is the agent's own prompt.
+      - pattern-either:
+          - pattern: $T.from_messages([..., ("system", $X), ...])
+          - pattern: SystemMessage(content=$X)
+      # A literal at the system role is the agent's own prompt. Two entries
+      # because the two shapes are spelled differently - and because
+      # pattern-not-either is not an operator semgrep has.
       - pattern-not: $T.from_messages([..., ("system", "..."), ...])
+      - pattern-not: SystemMessage(content="...")
       # A variable that was assigned a literal in the same function is the
       # agent's own prompt, not data that came from outside.
       - pattern-not-inside: |
@@ -104,6 +125,15 @@ rules:
           def $F(...):
               ...
               $X = f"..."
+              ...
+      # The context compressor rewrites a message IN PLACE: a system message
+      # stays a system message and keeps ITS OWN content, compressed. That
+      # content is the code's own prompt, not data that came from outside -
+      # so this is the one place that may build a system message out of a
+      # variable. The carve-out names the method, so a rename re-arms the
+      # rule instead of quietly disarming it.
+      - pattern-not-inside: |
+          def _create_message_with_content(self, ...):
               ...
 
   # ===== JavaScript/TypeScript Security Rules =====

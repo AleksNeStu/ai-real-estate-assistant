@@ -122,6 +122,51 @@ BUYER_RECORD_OPEN = "<<<BUYER RECORD>>>"
 BUYER_RECORD_CLOSE = "<<<END BUYER RECORD>>>"
 
 
+def buyer_record_block(buyer_memory: Optional[str]) -> str:
+    """
+    The buyer's memory as a fenced record, capped so it can never crowd the listings.
+
+    The fence is what makes the record read as DATA: the buyer's own words
+    travel between two markers, so the model sees quoted material instead of
+    the latest thing it was told.
+
+    The fence is closed by the CODE (Task #157): a marker that reaches the
+    record is removed from it, so the record cannot step out of its own
+    fence and put the rest of the prompt outside it.
+
+    This is the ONE definition of the record's fence. Every prompt that
+    carries the record builds it here - the agent's own branches and the web
+    research alike - so a fence that holds in one place holds in the other
+    (Task #158).
+
+    Args:
+        buyer_memory: The already-assembled block, or nothing.
+
+    Returns:
+        The fenced record, or an empty string when there is no memory.
+    """
+    if not buyer_memory:
+        return ""
+    if buyer_memory.startswith(BUYER_RECORD_OPEN):
+        # Already fenced - the block travels through here more than once.
+        # The markers of the fence itself are the code's; only the body is
+        # cleaned, so a marker inside the record cannot close it early.
+        body = buyer_memory[len(BUYER_RECORD_OPEN) :]
+        if body.endswith(BUYER_RECORD_CLOSE):
+            body = body[: -len(BUYER_RECORD_CLOSE)]
+        body = strip_fence_markers(body).strip()
+        return f"{BUYER_RECORD_OPEN}\n{body}\n{BUYER_RECORD_CLOSE}"
+    room = BUYER_MEMORY_MAX_CHARS - len(BUYER_RECORD_OPEN) - len(BUYER_RECORD_CLOSE) - 2
+    block = buyer_memory[:room]
+    if len(buyer_memory) > room:
+        # Never leave half a fact behind.
+        cut = block.rfind("\n")
+        if cut > 0:
+            block = block[:cut]
+    block = strip_fence_markers(block)
+    return f"{BUYER_RECORD_OPEN}\n{block}\n{BUYER_RECORD_CLOSE}"
+
+
 def build_buyer_memory_block(facts: Optional[Iterable[Any]]) -> str:
     """
     Assemble the buyer's memory into a prompt block.

@@ -5,6 +5,7 @@ The invariant under test: a buyer with no facts gets EXACTLY the prompt they
 got before the memory existed - not nearly, not a prompt with an empty header.
 """
 
+import json
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
@@ -30,6 +31,7 @@ from agents.intent_prompts import (
     rag_combine_chain_kwargs,
 )
 from agents.query_analyzer import Complexity, QueryAnalysis, QueryIntent
+from agents.web_research_agent import WebResearchAgent as RealWebResearchAgent
 
 try:
     from langchain.chains import ConversationalRetrievalChain
@@ -508,3 +510,111 @@ class TestTheStreamingPathsChangeNothingWithoutMemory:
         assert "What the buyer has already told us" not in "\n".join(
             str(m.content) for m in without_memory
         )
+
+
+class _StubSearch:
+    """A search engine that returns the one result it was given."""
+
+    def __init__(self, results):
+        self._results = results
+
+    def run(self, _query):
+        return json.dumps({"provider": "stub", "results": self._results})
+
+
+class _StubOpen:
+    """A fetcher that returns the page it was given for an address."""
+
+    def __init__(self, pages):
+        self._pages = pages
+
+    def run(self, url):
+        text = self._pages.get(url, "")
+        return json.dumps({"url": url, "ok": bool(text), "text": text})
+
+
+# The one result the stubbed engine returns, and the page it serves.
+WEB_RESULTS = [
+    {
+        "id": 1,
+        "title": "Flat on Orla",
+        "url": "https://example.com/orla",
+        "snippet": "65 m2 in Krakow",
+    }
+]
+WEB_PAGE = "Flat on Orla, Krakow: 65 m2, 3 rooms, 850000 PLN.\n"
+
+
+class TestTheWebBranchCarriesTheRecord:
+    """The web branch used to drop the buyer's record (Task #158).
+
+    `_process_with_web_search` took no buyer_memory, so the record the router
+    passed down never reached the research - a buyer who had told the
+    assistant what they wanted was answered as if they had told it nothing.
+
+    The test drives the REAL branch: the real web research agent, with the
+    two tools that reach the network stubbed. What it asserts is that the
+    record is in the prompt the model was asked to answer from.
+    """
+
+    @staticmethod
+    def _factory(pages, monkeypatch):
+        """Build the real web research agent, with its tools stubbed."""
+
+        def _make(*, llm, config):
+            agent = RealWebResearchAgent(llm=llm, config=config)
+            monkeypatch.setattr(agent, "web_search", _StubSearch(WEB_RESULTS))
+            monkeypatch.setattr(agent, "open_url", _StubOpen(pages))
+            return agent
+
+        return _make
+
+    def _prompts(self, mock_llm):
+        """Every prompt the model was given, as text."""
+        return [str(call.args[0]) for call in mock_llm.invoke.call_args_list if call.args]
+
+    def test_the_record_reaches_the_web_prompt(
+        self, agent, mock_llm, memory_block, filtered_analysis, monkeypatch
+    ):
+        monkeypatch.setattr(
+            "agents.hybrid_agent.WebResearchAgent",
+            self._factory({"https://example.com/orla": WEB_PAGE}, monkeypatch),
+        )
+
+        agent._process_with_web_search(
+            "What is on offer?", filtered_analysis, buyer_memory=memory_block
+        )
+
+        prompts = self._prompts(mock_llm)
+        assert prompts, "the model was never asked anything"
+        assert any(BUYER_RECORD_OPEN in prompt for prompt in prompts)
+        assert any("up to 500000 EUR" in prompt for prompt in prompts)
+
+    def test_the_record_travels_inside_its_own_fence(
+        self, agent, mock_llm, memory_block, filtered_analysis, monkeypatch
+    ):
+        monkeypatch.setattr(
+            "agents.hybrid_agent.WebResearchAgent",
+            self._factory({"https://example.com/orla": WEB_PAGE}, monkeypatch),
+        )
+
+        agent._process_with_web_search(
+            "What is on offer?", filtered_analysis, buyer_memory=memory_block
+        )
+
+        prompt = next(p for p in self._prompts(mock_llm) if BUYER_RECORD_OPEN in p)
+        body = prompt.split(BUYER_RECORD_OPEN, 1)[1].split(BUYER_RECORD_CLOSE, 1)[0]
+        assert "up to 500000 EUR" in body
+
+    def test_a_buyer_with_no_record_gets_the_prompt_it_got_before(
+        self, agent, mock_llm, filtered_analysis, monkeypatch
+    ):
+        monkeypatch.setattr(
+            "agents.hybrid_agent.WebResearchAgent",
+            self._factory({"https://example.com/orla": WEB_PAGE}, monkeypatch),
+        )
+
+        agent._process_with_web_search("What is on offer?", filtered_analysis)
+
+        for prompt in self._prompts(mock_llm):
+            assert BUYER_RECORD_OPEN not in prompt
