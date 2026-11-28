@@ -92,13 +92,48 @@ rules:
       instruction to the model. Put the data in a human message and label it as data
       (the buyer's record, a listing text, a tool output).
     paths:
+      # The scope of the rule has to hold in EVERY shape a scan can take.
+      #
+      # Semgrep matches these patterns against the path RELATIVE TO THE
+      # PROJECT ROOT, and the project root of a scan is the common ancestor
+      # of its targets. For a FILE target that ancestor is the file's own
+      # directory, so the path that is matched is the bare filename - and a
+      # scope written as `apps/api/**` can never match it. Measured
+      # 2026-11-28 with the scope as it stood:
+      #
+      #   - a file target (the pre-push hook passes the changed files): the
+      #     rule never fires;
+      #   - a directory target rooted at apps/api (the CI gate scans the
+      #     directories it declares): the rule never fires;
+      #   - a directory target with --project-root .: the rule fires.
+      #
+      # So the guard the operator believes runs at push time did not run, and
+      # neither did the one in CI. The scope is therefore written in a shape
+      # that holds everywhere: the include matches every Python file, and the
+      # excludes name the tests by the names pytest collects them under, so a
+      # test is pruned whether the scan reaches it as a directory or as a
+      # single file.
+      #
+      # The include is broader than the backend on purpose. The rule matches
+      # a Python file that builds a system message and nothing else, and the
+      # repository's own source outside apps/api holds none (measured
+      # 2026-11-28).
       include:
-        - apps/api/**
+        - "**/*.py"
       exclude:
         # A test that writes the bad shape on purpose is the FIXTURE the rule
         # needs, not a violation of it. The shipped code is what the rule is
         # about.
-        - apps/api/tests/**
+        #
+        # The names are the ones pytest collects a test under, because a
+        # DIRECTORY alone does not survive a file target: the directory of a
+        # changed test file is collapsed away, and only the file's own name
+        # is left to match. `tests/**` covers the tree when the scan reaches
+        # it as a directory.
+        - "**/tests/**"
+        - "**/test_*.py"
+        - "**/*_test.py"
+        - "**/conftest.py"
         # The virtualenvs live INSIDE apps/api, so the include would swallow
         # them - and the vendored langchain builds its own prompts with a
         # variable at the system role. The rule is about THIS repository's
