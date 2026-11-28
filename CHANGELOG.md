@@ -76,6 +76,12 @@ nothing the model fetched can give it orders.**
   for favourites, collections, market trends and price history carried a
   pre-refactor response shape, so their assertions read fields the response
   never carries and the suite was green while guarding nothing.
+- **The latency test measures the wait with a clock that can be trusted** —
+  the web-scraper stub test read the elapsed time from the wall clock and
+  demanded the full 100 ms with no margin, so on a loaded machine the event
+  loop crossed the deadline half a clock step early and the suite failed at
+  99.46 ms. It now proves the delay the stub asked for and floors the
+  measured wait at the latency minus the platform clock step.
 
 ## [5.7.2] - 2026-11-26
 
