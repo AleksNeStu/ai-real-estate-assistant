@@ -26,7 +26,11 @@ const FORWARDED_REQUEST_HEADERS = [
   'content-type',
   'cookie',
   'user-agent',
-  'x-user-email',
+  // `x-user-email` is deliberately NOT here. A browser could put any
+  // address in it, so it was an assertion, not an identity: the backend
+  // resolves the account behind the session token instead. Forwarding it
+  // would let a caller put a name on the request; not forwarding it means
+  // the name never reaches the backend at all.
   'x-request-id',
   // The double-submit half of the CSRF protection: the backend compares
   // this header with the csrf_token cookie, and both have to reach it.

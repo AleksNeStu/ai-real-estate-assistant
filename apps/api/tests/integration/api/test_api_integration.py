@@ -1,13 +1,31 @@
+from contextlib import contextmanager
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 from langchain_core.documents import Document
 
 from api.dependencies import get_vector_store
+from api.deps.auth import get_proven_user_email
 from api.main import app
 from config.settings import get_settings
 
 client = TestClient(app)
+
+
+@contextmanager
+def _proven_identity(email: str):
+    """The request proves this identity - not the header it carries."""
+    previous = app.dependency_overrides.get(get_proven_user_email)
+    app.dependency_overrides[get_proven_user_email] = lambda: email
+    try:
+        yield
+    finally:
+        # The override lives on the shared application: what was there
+        # before this request goes back, or nothing does.
+        if previous is None:
+            app.dependency_overrides.pop(get_proven_user_email, None)
+        else:
+            app.dependency_overrides[get_proven_user_email] = previous
 
 
 def test_health_check():
@@ -237,33 +255,37 @@ def test_notification_settings_are_scoped_by_user_email():
     test_ctx, engine = _make_test_db_ctx()
 
     with patch("api.routers.settings.get_db_context", test_ctx):
-        user1_headers = {"X-API-Key": key, "X-User-Email": "user1@example.com"}
-        user2_headers = {"X-API-Key": key, "X-User-Email": "user2@example.com"}
+        user1_headers = {"X-API-Key": key}
+        user2_headers = {"X-API-Key": key}
 
-        r1 = client.put(
-            "/api/v1/settings/notifications",
-            json={
-                "alert_frequency": "daily",
-                "expert_mode": True,
-                "marketing_emails": False,
-            },
-            headers=user1_headers,
-        )
-        assert r1.status_code == 200
+        with _proven_identity("user1@example.com"):
+            r1 = client.put(
+                "/api/v1/settings/notifications",
+                json={
+                    "alert_frequency": "daily",
+                    "expert_mode": True,
+                    "marketing_emails": False,
+                },
+                headers=user1_headers,
+            )
+            assert r1.status_code == 200
 
-        r2 = client.put(
-            "/api/v1/settings/notifications",
-            json={
-                "alert_frequency": "weekly",
-                "expert_mode": False,
-                "marketing_emails": True,
-            },
-            headers=user2_headers,
-        )
-        assert r2.status_code == 200
+        with _proven_identity("user2@example.com"):
+            r2 = client.put(
+                "/api/v1/settings/notifications",
+                json={
+                    "alert_frequency": "weekly",
+                    "expert_mode": False,
+                    "marketing_emails": True,
+                },
+                headers=user2_headers,
+            )
+            assert r2.status_code == 200
 
-        g1 = client.get("/api/v1/settings/notifications", headers=user1_headers)
-        g2 = client.get("/api/v1/settings/notifications", headers=user2_headers)
+        with _proven_identity("user1@example.com"):
+            g1 = client.get("/api/v1/settings/notifications", headers=user1_headers)
+        with _proven_identity("user2@example.com"):
+            g2 = client.get("/api/v1/settings/notifications", headers=user2_headers)
 
         assert g1.status_code == 200
         assert g2.status_code == 200
@@ -284,16 +306,16 @@ def test_notification_settings_are_scoped_by_user_email():
     asyncio.run(engine.dispose())
 
 
-def test_notification_settings_requires_user_email():
+def test_notification_settings_requires_a_proven_identity():
     settings = get_settings()
     key = settings.api_access_key
 
-    # _resolve_user_email runs before any DB access, so no DB mock needed
+    # The identity is resolved before any DB access, so no DB mock needed
     headers = {"X-API-Key": key}
 
     r_get = client.get("/api/v1/settings/notifications", headers=headers)
-    assert r_get.status_code == 400
-    assert r_get.json()["detail"] == "Missing user email"
+    assert r_get.status_code == 401
+    assert r_get.json()["detail"] == "Not authenticated"
 
     r_put = client.put(
         "/api/v1/settings/notifications",
@@ -304,8 +326,8 @@ def test_notification_settings_requires_user_email():
         },
         headers=headers,
     )
-    assert r_put.status_code == 400
-    assert r_put.json()["detail"] == "Missing user email"
+    assert r_put.status_code == 401
+    assert r_put.json()["detail"] == "Not authenticated"
 
 
 def test_model_catalog_lists_providers_and_models():
@@ -358,25 +380,29 @@ def test_model_preferences_are_scoped_by_user_email(tmp_path):
         openai_model = openai["models"][0]["id"]
         ollama_model = ollama["models"][0]["id"]
 
-        user1_headers = {"X-API-Key": key, "X-User-Email": "u1@example.com"}
-        user2_headers = {"X-API-Key": key, "X-User-Email": "u2@example.com"}
+        user1_headers = {"X-API-Key": key}
+        user2_headers = {"X-API-Key": key}
 
-        r1 = client.put(
-            "/api/v1/settings/model-preferences",
-            json={"preferred_provider": "openai", "preferred_model": openai_model},
-            headers=user1_headers,
-        )
-        assert r1.status_code == 200
+        with _proven_identity("u1@example.com"):
+            r1 = client.put(
+                "/api/v1/settings/model-preferences",
+                json={"preferred_provider": "openai", "preferred_model": openai_model},
+                headers=user1_headers,
+            )
+            assert r1.status_code == 200
 
-        r2 = client.put(
-            "/api/v1/settings/model-preferences",
-            json={"preferred_provider": "ollama", "preferred_model": ollama_model},
-            headers=user2_headers,
-        )
-        assert r2.status_code == 200
+        with _proven_identity("u2@example.com"):
+            r2 = client.put(
+                "/api/v1/settings/model-preferences",
+                json={"preferred_provider": "ollama", "preferred_model": ollama_model},
+                headers=user2_headers,
+            )
+            assert r2.status_code == 200
 
-        g1 = client.get("/api/v1/settings/model-preferences", headers=user1_headers)
-        g2 = client.get("/api/v1/settings/model-preferences", headers=user2_headers)
+        with _proven_identity("u1@example.com"):
+            g1 = client.get("/api/v1/settings/model-preferences", headers=user1_headers)
+        with _proven_identity("u2@example.com"):
+            g2 = client.get("/api/v1/settings/model-preferences", headers=user2_headers)
         assert g1.status_code == 200
         assert g2.status_code == 200
 
@@ -432,11 +458,12 @@ def test_chat_uses_user_model_preferences(tmp_path):
             with patch("api.routers.chat.create_hybrid_agent", lambda **_kwargs: FakeAgent()):
                 app.dependency_overrides[get_vector_store] = lambda: FakeStore()
 
-                r = client.post(
-                    "/api/v1/chat",
-                    json={"message": "hello", "stream": False},
-                    headers={"X-API-Key": key, "X-User-Email": "u1@example.com"},
-                )
+                with _proven_identity("u1@example.com"):
+                    r = client.post(
+                        "/api/v1/chat",
+                        json={"message": "hello", "stream": False},
+                        headers={"X-API-Key": key},
+                    )
                 assert r.status_code == 200
                 assert created and created[0]["model_id"] == "pref-b"
 

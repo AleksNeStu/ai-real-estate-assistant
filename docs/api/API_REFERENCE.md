@@ -1950,7 +1950,6 @@ Process a chat message using the hybrid agent with session persistence. Requires
 
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
-| X-User-Email | header | string \| null | no |  |
 | access_token | cookie | string \| null | no |  |
 
 **Request Body**
@@ -4574,7 +4573,7 @@ Simple QA over uploaded knowledge with citations. If LLM is unavailable, returns
 | top_k | query | integer | no |  |
 | provider | query | string \| null | no |  |
 | model | query | string \| null | no |  |
-| X-User-Email | header | string \| null | no |  |
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -5007,8 +5006,7 @@ Set demo mode preference (stored in session for demo purposes). This endpoint al
 
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
-| user_email | query | string \| null | no |  |
-| X-User-Email | header | string \| null | no |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -5027,8 +5025,7 @@ Set demo mode preference (stored in session for demo purposes). This endpoint al
 
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
-| user_email | query | string \| null | no |  |
-| X-User-Email | header | string \| null | no |  |
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -5068,8 +5065,7 @@ Get notification settings for the current user (Task #86).
 
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
-| user_email | query | string \| null | no |  |
-| X-User-Email | header | string \| null | no |  |
+| access_token | cookie | string \| null | no |  |
 
 **Responses**
 
@@ -5090,8 +5086,7 @@ Update notification settings for the current user (Task #86).
 
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
-| user_email | query | string \| null | no |  |
-| X-User-Email | header | string \| null | no |  |
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -5117,8 +5112,7 @@ Send a test notification to verify settings (Task #86).
 
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
-| user_email | query | string \| null | no |  |
-| X-User-Email | header | string \| null | no |  |
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -5597,7 +5591,7 @@ Generate AI-powered listing content for a property. Generates: - Property descri
 
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
-| X-User-Email | header | string \| null | no |  |
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -5739,7 +5733,7 @@ Return a 2-3 sentence AI summary of a neighborhood.
 
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
-| X-User-Email | header | string \| null | no |  |
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -5803,7 +5797,7 @@ Estimate current value and project value at the requested horizons. Either `prop
 
 | Name | In | Type | Required | Description |
 |---|---|---|---|---|
-| X-User-Email | header | string \| null | no |  |
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 

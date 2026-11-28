@@ -113,12 +113,6 @@ export function getApiUrl(): string {
   return process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 }
 
-export function getUserEmail(): string | undefined {
-  if (typeof window === 'undefined') return undefined;
-  const email = window.localStorage.getItem('userEmail');
-  return email && email.trim() ? email.trim() : undefined;
-}
-
 /**
  * The CSRF token the backend set at sign-in, read back from the cookie.
  *
@@ -136,8 +130,11 @@ export function getCsrfToken(): string | undefined {
 export function buildAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = {};
 
-  const userEmail = getUserEmail();
-  if (userEmail) headers['X-User-Email'] = userEmail;
+  // The identity of the caller is NOT a header. It is the session cookie:
+  // the backend reads the token, resolves the account behind it, and scopes
+  // the request to that account. A header that named the account would be an
+  // assertion - anybody could put any address in it - so the browser does
+  // not send one, and the proxy does not forward one.
 
   // The CSRF double-submit: the backend compares this header with the
   // csrf_token cookie it set at sign-in. Without the header, a deployment

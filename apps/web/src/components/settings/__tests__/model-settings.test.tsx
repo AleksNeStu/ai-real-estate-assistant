@@ -69,11 +69,11 @@ describe("ModelSettings", () => {
     window.localStorage.clear();
   });
 
-  it("prompts to set email when userEmail is missing", async () => {
+  it("asks for a session when there is no account", async () => {
     (getModelPreferences as jest.Mock).mockResolvedValue({ preferred_provider: null, preferred_model: null });
     render(<ModelSettings catalog={catalog} userEmail={null} />);
     await waitFor(() => {
-      expect(screen.getByText(/Set an email in Identity settings/i)).toBeInTheDocument();
+      expect(screen.getByText(/Sign in to choose a default model/i)).toBeInTheDocument();
     });
   });
 

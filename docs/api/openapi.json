@@ -23862,22 +23862,6 @@
         "operationId": "chat_endpoint_api_v1_chat_post",
         "parameters": [
           {
-            "name": "X-User-Email",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-User-Email"
-            }
-          },
-          {
             "name": "access_token",
             "in": "cookie",
             "required": false,
@@ -31064,8 +31048,8 @@
             }
           },
           {
-            "in": "header",
-            "name": "X-User-Email",
+            "in": "cookie",
+            "name": "access_token",
             "required": false,
             "schema": {
               "anyOf": [
@@ -31076,7 +31060,7 @@
                   "type": "null"
                 }
               ],
-              "title": "X-User-Email"
+              "title": "Access Token"
             }
           }
         ],
@@ -31122,6 +31106,9 @@
         "security": [
           {
             "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "summary": "Rag Qa",
@@ -32129,8 +32116,8 @@
         "operationId": "get_model_preferences_api_v1_settings_model_preferences_get",
         "parameters": [
           {
-            "in": "query",
-            "name": "user_email",
+            "name": "access_token",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -32141,23 +32128,7 @@
                   "type": "null"
                 }
               ],
-              "title": "User Email"
-            }
-          },
-          {
-            "in": "header",
-            "name": "X-User-Email",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-User-Email"
+              "title": "Access Token"
             }
           }
         ],
@@ -32186,6 +32157,9 @@
         "security": [
           {
             "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "summary": "Get Model Preferences",
@@ -32197,8 +32171,8 @@
         "operationId": "update_model_preferences_api_v1_settings_model_preferences_put",
         "parameters": [
           {
-            "in": "query",
-            "name": "user_email",
+            "name": "access_token",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -32209,23 +32183,7 @@
                   "type": "null"
                 }
               ],
-              "title": "User Email"
-            }
-          },
-          {
-            "in": "header",
-            "name": "X-User-Email",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-User-Email"
+              "title": "Access Token"
             }
           }
         ],
@@ -32264,6 +32222,9 @@
         "security": [
           {
             "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "summary": "Update Model Preferences",
@@ -32309,8 +32270,8 @@
         "operationId": "get_notification_settings_api_v1_settings_notifications_get",
         "parameters": [
           {
-            "in": "query",
-            "name": "user_email",
+            "name": "access_token",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -32321,23 +32282,7 @@
                   "type": "null"
                 }
               ],
-              "title": "User Email"
-            }
-          },
-          {
-            "in": "header",
-            "name": "X-User-Email",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-User-Email"
+              "title": "Access Token"
             }
           }
         ],
@@ -32366,6 +32311,9 @@
         "security": [
           {
             "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "summary": "Get Notification Settings",
@@ -32378,8 +32326,8 @@
         "operationId": "update_notification_settings_api_v1_settings_notifications_put",
         "parameters": [
           {
-            "in": "query",
-            "name": "user_email",
+            "name": "access_token",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -32390,23 +32338,7 @@
                   "type": "null"
                 }
               ],
-              "title": "User Email"
-            }
-          },
-          {
-            "in": "header",
-            "name": "X-User-Email",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-User-Email"
+              "title": "Access Token"
             }
           }
         ],
@@ -32445,6 +32377,9 @@
         "security": [
           {
             "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "summary": "Update Notification Settings",
@@ -32459,8 +32394,8 @@
         "operationId": "send_notification_preview_api_v1_settings_notifications_preview_post",
         "parameters": [
           {
-            "in": "query",
-            "name": "user_email",
+            "name": "access_token",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -32471,23 +32406,7 @@
                   "type": "null"
                 }
               ],
-              "title": "User Email"
-            }
-          },
-          {
-            "in": "header",
-            "name": "X-User-Email",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-User-Email"
+              "title": "Access Token"
             }
           }
         ],
@@ -32526,6 +32445,9 @@
         "security": [
           {
             "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "summary": "Send Notification Preview",
@@ -33875,6 +33797,9 @@
         "security": [
           {
             "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "summary": "Generate Listing",
@@ -33884,8 +33809,8 @@
         ],
         "parameters": [
           {
-            "name": "X-User-Email",
-            "in": "header",
+            "name": "access_token",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -33896,7 +33821,7 @@
                   "type": "null"
                 }
               ],
-              "title": "X-User-Email"
+              "title": "Access Token"
             }
           }
         ]
@@ -34194,8 +34119,8 @@
         "operationId": "neighborhood_summary_api_v1_tools_neighborhood_summary_post",
         "parameters": [
           {
-            "in": "header",
-            "name": "X-User-Email",
+            "in": "cookie",
+            "name": "access_token",
             "required": false,
             "schema": {
               "anyOf": [
@@ -34206,7 +34131,7 @@
                   "type": "null"
                 }
               ],
-              "title": "X-User-Email"
+              "title": "Access Token"
             }
           }
         ],
@@ -34245,6 +34170,9 @@
         "security": [
           {
             "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "summary": "Neighborhood Summary",
@@ -34355,8 +34283,8 @@
         "operationId": "price_forecast_api_v1_tools_price_forecast_post",
         "parameters": [
           {
-            "in": "header",
-            "name": "X-User-Email",
+            "in": "cookie",
+            "name": "access_token",
             "required": false,
             "schema": {
               "anyOf": [
@@ -34367,7 +34295,7 @@
                   "type": "null"
                 }
               ],
-              "title": "X-User-Email"
+              "title": "Access Token"
             }
           }
         ],
@@ -34406,6 +34334,9 @@
         "security": [
           {
             "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "summary": "Price Forecast",

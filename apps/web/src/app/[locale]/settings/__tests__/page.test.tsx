@@ -23,6 +23,24 @@ jest.mock('@/components/shell/gate', () => ({
   AccountGate: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+// The account the page scopes the account-scoped panels by is the one the
+// session proved. Both lanes are mocked here: the session is another lane,
+// and the deployment's own capabilities answer from the backend.
+let mockAuthUser: { email: string } | null = null;
+
+jest.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => ({ user: mockAuthUser, isAuthenticated: mockAuthUser !== null }),
+}));
+
+jest.mock('@/hooks/useCapabilities', () => ({
+  useCapabilities: () => ({
+    capabilities: {
+      auth: { jwt_enabled: true, demo_user_bypass: false, oauth: { google: false, apple: false } },
+    },
+    loading: false,
+  }),
+}));
+
 // Mock child component to simplify integration test
 jest.mock('@/components/settings/notification-settings', () => ({
   NotificationSettings: () => (
@@ -71,7 +89,25 @@ describe('SettingsPage', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockAuthUser = null;
     mockGetModelsCatalog.mockImplementation(() => new Promise(() => {}));
+  });
+
+  it('shows the account the session proved on the identity tab', () => {
+    mockAuthUser = { email: 'u1@example.com' };
+    render(<SettingsPage />);
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Identity' }));
+
+    expect(screen.getByText('u1@example.com')).toBeInTheDocument();
+  });
+
+  it('says that nobody is signed in when there is no session', () => {
+    render(<SettingsPage />);
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Identity' }));
+
+    expect(screen.getByText('You are not signed in.')).toBeInTheDocument();
   });
 
   it('renders page title and description', () => {

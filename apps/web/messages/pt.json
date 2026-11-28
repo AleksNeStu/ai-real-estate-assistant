@@ -2025,7 +2025,7 @@
       "loadFailed": "Não foi possível carregar o catálogo de modelos. Tente novamente.",
       "defaultModelDescription": "Escolha o fornecedor e o modelo usados nas respostas do Assistente. As preferências são guardadas por endereço de e-mail.",
       "loading": "A carregar as preferências de modelo...",
-      "needsEmail": "Defina um e-mail nas definições de identidade para ativar as preferências de modelo por utilizador.",
+      "needsEmail": "Inicie sessão para escolher um modelo predefinido. A escolha pertence à sua conta.",
       "noCatalog": "O catálogo de modelos não está disponível. Atualize a página para tentar de novo.",
       "selectProvider": "Selecione um fornecedor",
       "selectModel": "Selecione um modelo",
@@ -2044,7 +2044,7 @@
     },
     "saved": "Configurações salvas com sucesso.",
     "error": "Falha ao salvar as configurações.",
-    "emailRequired": "Defina um e-mail nas definições de identidade acima para aceder a esta secção.",
+    "emailRequired": "Esta secção pertence a uma conta. Inicie sessão para a gerir.",
     "profile": {
       "loadingProfile": "A carregar o perfil...",
       "email": "E-mail",

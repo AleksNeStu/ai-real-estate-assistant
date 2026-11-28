@@ -40,7 +40,7 @@ describe("API Client", () => {
       marketing_emails: false,
     };
 
-    it("omits user identity header when no user email", async () => {
+    it("never sends an asserted identity - the session names the account", async () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
         json: async () => mockSettings,
@@ -62,7 +62,7 @@ describe("API Client", () => {
       expect(options.headers["X-User-Email"]).toBeUndefined();
     });
 
-    it("omits user email header when running without window", async () => {
+    it("sends no identity header when running without window", async () => {
       const globalWithWindow = globalThis as unknown as { window?: unknown };
       const originalWindow = globalWithWindow.window;
       delete globalWithWindow.window;
@@ -81,8 +81,6 @@ describe("API Client", () => {
     });
 
     it("fetches settings", async () => {
-      window.localStorage.setItem("userEmail", "user@example.com");
-
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
         json: async () => mockSettings,
@@ -94,17 +92,12 @@ describe("API Client", () => {
         expect.stringContaining("/settings/notifications"),
         expect.objectContaining({
           method: "GET",
-          headers: expect.objectContaining({
-            "X-User-Email": "user@example.com",
-          }),
         })
       );
       expect(result).toEqual(mockSettings);
     });
 
     it("updates settings", async () => {
-      window.localStorage.setItem("userEmail", "user@example.com");
-
       const newSettings = { ...mockSettings, frequency: "daily" as const };
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
@@ -117,9 +110,6 @@ describe("API Client", () => {
         expect.stringContaining("/settings/notifications"),
         expect.objectContaining({
           method: "PUT",
-          headers: expect.objectContaining({
-            "X-User-Email": "user@example.com",
-          }),
           body: JSON.stringify(newSettings),
         })
       );
@@ -165,8 +155,6 @@ describe("API Client", () => {
 
   describe("getModelsCatalog", () => {
     it("calls /settings/models endpoint", async () => {
-      window.localStorage.setItem("userEmail", "user@example.com");
-
       const mockCatalog: ModelProviderCatalog[] = [
         {
           name: "openai",
@@ -188,9 +176,6 @@ describe("API Client", () => {
         expect.stringContaining("/settings/models"),
         expect.objectContaining({
           method: "GET",
-          headers: expect.objectContaining({
-            "X-User-Email": "user@example.com",
-          }),
         })
       );
       expect(result).toEqual(mockCatalog);
@@ -329,8 +314,6 @@ describe("API Client", () => {
 
   describe("RAG", () => {
     it("uploads files without forcing JSON content type", async () => {
-      window.localStorage.setItem("userEmail", "user@example.com");
-
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ message: "Upload processed", chunks_indexed: 1, errors: [] }),
@@ -347,7 +330,7 @@ describe("API Client", () => {
       );
 
       const [, options] = (global.fetch as jest.Mock).mock.calls[0];
-      expect(options.headers["X-User-Email"]).toBe("user@example.com");
+      expect(options.headers["X-User-Email"]).toBeUndefined();
       expect(options.headers["Content-Type"]).toBeUndefined();
 
       const body = options.body as FormData;

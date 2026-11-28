@@ -928,7 +928,7 @@ class TestGetLlmForTask:
             SYSTEM_DEFAULTS["chat"] = {"provider": "openai", "model_name": "gpt-4o"}
 
         try:
-            result = await get_llm_for_task("chat", x_user_email=None, session=None)
+            result = await get_llm_for_task("chat", proven_email=None, session=None)
             assert result is not None
         finally:
             SYSTEM_DEFAULTS.clear()
@@ -954,7 +954,7 @@ class TestGetLlmForTask:
         SYSTEM_DEFAULTS.clear()
 
         try:
-            result = await get_llm_for_task("unknown_task", x_user_email=None, session=None)
+            result = await get_llm_for_task("unknown_task", proven_email=None, session=None)
             assert result is not None
         finally:
             SYSTEM_DEFAULTS.clear()
@@ -986,7 +986,7 @@ class TestGetLlmForTask:
         SYSTEM_DEFAULTS.clear()
 
         try:
-            result = await get_llm_for_task("chat", x_user_email="user@test.com", session=None)
+            result = await get_llm_for_task("chat", proven_email="user@test.com", session=None)
             assert result is not None
         finally:
             SYSTEM_DEFAULTS.clear()
@@ -1018,7 +1018,7 @@ class TestGetLlmForTask:
         SYSTEM_DEFAULTS.clear()
 
         try:
-            result = await get_llm_for_task("chat", x_user_email=None, session=None)
+            result = await get_llm_for_task("chat", proven_email=None, session=None)
             assert result is not None
             assert ollama.created
             assert ollama.created[0]["model_id"] == "llama3.2:3b"
@@ -1051,7 +1051,7 @@ class TestGetLlmForTask:
 
         try:
             with pytest.raises(RuntimeError, match="Could not initialize LLM"):
-                await get_llm_for_task("chat", x_user_email=None, session=None)
+                await get_llm_for_task("chat", proven_email=None, session=None)
         finally:
             SYSTEM_DEFAULTS.clear()
             SYSTEM_DEFAULTS.update(original_defaults)
@@ -1067,7 +1067,7 @@ class TestGetOptionalLlmForTask:
 
     @pytest.mark.asyncio
     async def test_returns_none_when_llm_unavailable(self, monkeypatch):
-        async def _failing_task(task_type, x_user_email=None, session=None):
+        async def _failing_task(task_type, proven_email=None, session=None):
             raise RuntimeError("no LLM")
 
         monkeypatch.setattr(deps, "get_llm_for_task", _failing_task)
@@ -1079,7 +1079,7 @@ class TestGetOptionalLlmForTask:
     async def test_returns_llm_when_available(self, monkeypatch):
         mock_llm = types.SimpleNamespace(model="test")
 
-        async def _working_task(task_type, x_user_email=None, session=None):
+        async def _working_task(task_type, proven_email=None, session=None):
             return mock_llm
 
         monkeypatch.setattr(deps, "get_llm_for_task", _working_task)
@@ -1116,7 +1116,7 @@ class TestGetOptionalLlmWithDetailsAdditional:
 
         # No overrides, no user preferences → primary fails → ollama fallback
         llm, provider, model = get_optional_llm_with_details(
-            x_user_email=None,
+            proven_email=None,
             provider_override=None,
             model_override=None,
         )
@@ -1141,7 +1141,7 @@ class TestGetOptionalLlmWithDetailsAdditional:
         monkeypatch.setattr(ModelProviderFactory, "get_provider", _get_provider)
 
         llm, provider, model = get_optional_llm_with_details(
-            x_user_email=None,
+            proven_email=None,
             provider_override=None,
             model_override=None,
         )
@@ -1160,7 +1160,7 @@ class TestGetOptionalLlmWithDetailsAdditional:
         )
 
         llm, provider, model = get_optional_llm_with_details(
-            x_user_email=None,
+            proven_email=None,
             provider_override=None,
             model_override="custom-model",
         )
@@ -1180,7 +1180,7 @@ class TestGetOptionalLlmWithDetailsAdditional:
         )
 
         llm, provider, model = get_optional_llm_with_details(
-            x_user_email=None,
+            proven_email=None,
             provider_override="anthropic",
             model_override=None,
         )
@@ -1201,7 +1201,7 @@ class TestGetOptionalLlmWithDetailsAdditional:
         )
 
         llm, provider, model = get_optional_llm_with_details(
-            x_user_email=None,
+            proven_email=None,
             provider_override="  openai  ",
             model_override="  model-x  ",
         )
@@ -1220,7 +1220,7 @@ class TestGetOptionalLlmWithDetailsAdditional:
         )
 
         llm, provider, model = get_optional_llm_with_details(
-            x_user_email=None,
+            proven_email=None,
             provider_override="   ",
             model_override="   ",
         )
@@ -1250,7 +1250,7 @@ class TestGetOptionalLlmWithDetailsAdditional:
         monkeypatch.setattr(deps.user_model_preferences, "MODEL_PREFS_MANAGER", _Mgr())
 
         llm, provider, model = get_optional_llm_with_details(
-            x_user_email="user@test.com",
+            proven_email="user@test.com",
             provider_override=None,
             model_override=None,
         )
@@ -1308,7 +1308,7 @@ class TestGetLlmEdgeCases:
             lambda name, config=None, use_cache=True: fake,
         )
 
-        result = await get_llm(x_user_email="   ")
+        result = await get_llm(proven_email="   ")
         assert result is not None
         # Should not have attempted preference lookup for whitespace-only email
         assert fake.created[0]["model_id"] == "fake-model"
@@ -1332,7 +1332,7 @@ class TestGetLlmEdgeCases:
 
         monkeypatch.setattr(deps.user_model_preferences, "MODEL_PREFS_MANAGER", _FailMgr())
 
-        result = await get_llm(x_user_email="user@test.com")
+        result = await get_llm(proven_email="user@test.com")
         assert result is not None
         # Falls back to default provider
         assert fake.created[0]["model_id"] == "fake-model"

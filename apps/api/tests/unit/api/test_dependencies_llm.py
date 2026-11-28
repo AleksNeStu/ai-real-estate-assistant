@@ -81,7 +81,7 @@ async def test_get_llm_uses_user_model_preferences(monkeypatch):
             return _Prefs()
 
     monkeypatch.setattr(deps.user_model_preferences, "MODEL_PREFS_MANAGER", _Mgr())
-    llm = await deps.get_llm(x_user_email="u1@example.com")
+    llm = await deps.get_llm(proven_email="u1@example.com")
     assert getattr(llm, "model_id", None) == "model-b"
     assert fake.created and fake.created[0]["model_id"] == "model-b"
 
@@ -118,7 +118,7 @@ async def test_get_llm_falls_back_when_preferred_model_fails(monkeypatch):
             return _Prefs()
 
     monkeypatch.setattr(deps.user_model_preferences, "MODEL_PREFS_MANAGER", _Mgr())
-    llm = await deps.get_llm(x_user_email="u1@example.com")
+    llm = await deps.get_llm(proven_email="u1@example.com")
     assert getattr(llm, "model_id", None) == "model-a"
     assert created and created[0]["model_id"] == "model-a"
 
@@ -175,7 +175,7 @@ def test_create_llm_with_resolved_model_id_uses_ollama_default_model_when_missin
 
 
 async def test_get_optional_llm_returns_none_on_error(monkeypatch):
-    async def _fail(x_user_email=None):
+    async def _fail(proven_email=None):
         raise RuntimeError("no llm")
 
     monkeypatch.setattr(deps, "get_llm", _fail)
@@ -183,7 +183,7 @@ async def test_get_optional_llm_returns_none_on_error(monkeypatch):
 
 
 async def test_get_optional_llm_returns_llm_when_available(monkeypatch):
-    async def _ok(x_user_email=None):
+    async def _ok(proven_email=None):
         return types.SimpleNamespace(model_id="m1")
 
     monkeypatch.setattr(deps, "get_llm", _ok)
@@ -228,7 +228,7 @@ def test_get_optional_llm_with_details_uses_explicit_overrides(monkeypatch):
         ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake
     )
     llm, provider, model = deps.get_optional_llm_with_details(
-        x_user_email=None,
+        proven_email=None,
         provider_override="openai",
         model_override="model-b",
     )
@@ -252,7 +252,7 @@ def test_get_optional_llm_with_details_ignores_preferences_on_exception(monkeypa
     monkeypatch.setattr(deps.user_model_preferences, "MODEL_PREFS_MANAGER", _Mgr())
 
     llm, provider, model = deps.get_optional_llm_with_details(
-        x_user_email="u1@example.com",
+        proven_email="u1@example.com",
         provider_override=None,
         model_override=None,
     )
@@ -284,7 +284,7 @@ def test_get_optional_llm_with_details_uses_preferred_provider_when_model_overri
     monkeypatch.setattr(deps.user_model_preferences, "MODEL_PREFS_MANAGER", _Mgr())
 
     llm, provider, model = deps.get_optional_llm_with_details(
-        x_user_email="u1@example.com",
+        proven_email="u1@example.com",
         provider_override=None,
         model_override="model-b",
     )
@@ -306,7 +306,7 @@ def test_get_optional_llm_with_details_returns_none_on_explicit_failure(monkeypa
     )
 
     llm, provider, model = deps.get_optional_llm_with_details(
-        x_user_email=None,
+        proven_email=None,
         provider_override="openai",
         model_override="model-b",
     )
@@ -342,7 +342,7 @@ def test_get_optional_llm_with_details_falls_back_when_preferred_model_fails(mon
     monkeypatch.setattr(deps.user_model_preferences, "MODEL_PREFS_MANAGER", _Mgr())
 
     llm, provider, model = deps.get_optional_llm_with_details(
-        x_user_email="u1@example.com",
+        proven_email="u1@example.com",
         provider_override=None,
         model_override=None,
     )

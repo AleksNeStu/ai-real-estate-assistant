@@ -88,7 +88,7 @@ describe('api.ts Core Utility Functions', () => {
       expect(headers).toHaveProperty('Content-Type', 'application/json');
     });
 
-    it('includes X-User-Email header when user email is set in localStorage', async () => {
+    it('never sends an asserted identity - the session names the account', async () => {
       window.localStorage.setItem('userEmail', 'test@example.com');
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
@@ -101,28 +101,12 @@ describe('api.ts Core Utility Functions', () => {
       const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
       const headers = fetchCall[1]?.headers;
 
-      expect(headers).toHaveProperty('X-User-Email', 'test@example.com');
+      // The browser does not name the account: the backend resolves it from
+      // the session token, and a header would only ever be an assertion.
+      expect(headers).not.toHaveProperty('X-User-Email');
     });
 
-    it('trims whitespace from user email in localStorage', async () => {
-      window.localStorage.setItem('userEmail', '  test@example.com  ');
-
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ results: [], count: 0 }),
-      });
-
-      await searchProperties({ query: 'test' });
-
-      const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
-      const headers = fetchCall[1]?.headers;
-
-      expect(headers).toHaveProperty('X-User-Email', 'test@example.com');
-    });
-
-    it('omits X-User-Email header when email is empty string', async () => {
-      window.localStorage.setItem('userEmail', '   ');
-
+    it('sends no identity header at all when the browser holds no address', async () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ results: [], count: 0 }),

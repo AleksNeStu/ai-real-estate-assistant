@@ -13,7 +13,6 @@ export type { DeploymentCapabilities } from './capabilities';
 export {
   ApiError,
   getApiUrl,
-  getUserEmail,
   buildAuthHeaders,
   buildHeaders,
   buildMultipartHeaders,

@@ -85,10 +85,10 @@ describe('NotificationSettings Component', () => {
     jest.resetAllMocks();
   });
 
-  it('prompts for an email when no user email is set', () => {
+  it('asks for a session when there is no account', () => {
     render(<NotificationSettings userEmail={null} />);
     expect(
-      screen.getByText('Set an email in Identity settings above to access this section.')
+      screen.getByText('This section belongs to an account. Sign in to manage it.')
     ).toBeInTheDocument();
   });
 

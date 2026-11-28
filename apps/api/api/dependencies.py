@@ -5,7 +5,7 @@ import os
 from functools import lru_cache
 from typing import TYPE_CHECKING, Annotated, Any, Optional
 
-from fastapi import Body, Depends, Header, HTTPException, Query, status
+from fastapi import Body, Depends, HTTPException, Query, status
 from langchain_core.language_models import BaseChatModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,6 +20,7 @@ from agents.services.valuation import (
     SimpleValuationProvider,
     ValuationProvider,
 )
+from api.deps.auth import get_proven_user_email
 from api.models import RagQaRequest
 from config.settings import settings
 from db.database import get_db
@@ -293,13 +294,18 @@ async def _create_llm_with_multi_key_fallback(
 
 
 async def get_llm(
-    x_user_email: Annotated[str | None, Header(alias="X-User-Email")] = None,
+    proven_email: Annotated[Optional[str], Depends(get_proven_user_email)] = None,
 ) -> BaseChatModel:
     """
     Get Language Model instance.
     Uses settings to determine provider and model.
     Supports multi-key and multi-provider fallback when enabled.
     Returns MockLLM when DEMO_MODE is enabled.
+
+    The preferences are read for the identity the request proved - the row
+    behind a verified token. An `X-User-Email` header is an assertion, not an
+    identity, so it is never read here: a request that proves nothing gets
+    the deployment default.
     """
     if settings.demo_llm_mode:
         from core.demo import get_demo_llm
@@ -311,9 +317,9 @@ async def get_llm(
 
     preferred_provider: Optional[str] = None
     preferred_model: Optional[str] = None
-    if x_user_email and x_user_email.strip():
+    if proven_email and proven_email.strip():
         try:
-            prefs = user_model_preferences.MODEL_PREFS_MANAGER.get_preferences(x_user_email.strip())
+            prefs = user_model_preferences.MODEL_PREFS_MANAGER.get_preferences(proven_email.strip())
             preferred_provider = prefs.preferred_provider
             preferred_model = prefs.preferred_model
         except Exception as e:
@@ -370,10 +376,10 @@ async def get_llm(
 
 
 async def get_optional_llm(
-    x_user_email: Annotated[str | None, Header(alias="X-User-Email")] = None,
+    proven_email: Annotated[Optional[str], Depends(get_proven_user_email)] = None,
 ) -> Optional[BaseChatModel]:
     try:
-        return await get_llm(x_user_email=x_user_email)
+        return await get_llm(proven_email=proven_email)
     except Exception as e:
         logger.warning("LLM unavailable: %s", e)
         return None
@@ -413,7 +419,7 @@ def clear_knowledge_store_cache() -> None:
 
 async def get_llm_for_task(
     task_type: str,
-    x_user_email: str | None = None,
+    proven_email: str | None = None,
     session: AsyncSession | None = None,
 ) -> BaseChatModel:
     """
@@ -429,7 +435,8 @@ async def get_llm_for_task(
 
     Args:
         task_type: Task type (chat, search, tools, analysis, embedding)
-        x_user_email: User email for preference lookup
+        proven_email: The email of the identity the request proved. Never an
+            asserted one - the caller resolves it from a verified token.
         session: Database session for preference queries
 
     Returns:
@@ -444,9 +451,9 @@ async def get_llm_for_task(
     primary_model: Optional[str] = None
 
     # 1. Try task-specific preference from database
-    if x_user_email and x_user_email.strip() and session:
+    if proven_email and proven_email.strip() and session:
         try:
-            user_query = select(User.id).where(User.email == x_user_email.strip())
+            user_query = select(User.id).where(User.email == proven_email.strip())
             user_result = await session.execute(user_query)
             user_id = user_result.scalar_one_or_none()
 
@@ -466,9 +473,9 @@ async def get_llm_for_task(
             logger.warning("Failed to load task-specific model preferences: %s", e)
 
     # 2. Fall back to legacy global preferences
-    if not primary_provider and x_user_email and x_user_email.strip():
+    if not primary_provider and proven_email and proven_email.strip():
         try:
-            prefs = user_model_preferences.MODEL_PREFS_MANAGER.get_preferences(x_user_email.strip())
+            prefs = user_model_preferences.MODEL_PREFS_MANAGER.get_preferences(proven_email.strip())
             if prefs.preferred_provider:
                 primary_provider = prefs.preferred_provider
                 primary_model = prefs.preferred_model
@@ -529,12 +536,12 @@ async def get_llm_for_task(
 
 async def get_optional_llm_for_task(
     task_type: str,
-    x_user_email: str | None = None,
+    proven_email: str | None = None,
     session: AsyncSession | None = None,
 ) -> Optional[BaseChatModel]:
     """Get LLM for task, returning None if unavailable."""
     try:
-        return await get_llm_for_task(task_type, x_user_email, session)
+        return await get_llm_for_task(task_type, proven_email, session)
     except Exception as e:
         logger.warning("LLM unavailable for task %s: %s", task_type, e)
         return None
@@ -542,7 +549,7 @@ async def get_optional_llm_for_task(
 
 def get_optional_llm_with_details(
     *,
-    x_user_email: str | None,
+    proven_email: str | None,
     provider_override: str | None,
     model_override: str | None,
 ) -> tuple[Optional[BaseChatModel], Optional[str], Optional[str]]:
@@ -556,9 +563,9 @@ def get_optional_llm_with_details(
 
     preferred_provider: Optional[str] = None
     preferred_model: Optional[str] = None
-    if x_user_email and x_user_email.strip():
+    if proven_email and proven_email.strip():
         try:
-            prefs = user_model_preferences.MODEL_PREFS_MANAGER.get_preferences(x_user_email.strip())
+            prefs = user_model_preferences.MODEL_PREFS_MANAGER.get_preferences(proven_email.strip())
             preferred_provider = prefs.preferred_provider
             preferred_model = prefs.preferred_model
         except Exception as e:
@@ -647,10 +654,10 @@ def parse_rag_qa_request(
 
 def get_rag_qa_llm_details(
     rag_request: Annotated[RagQaRequest, Depends(parse_rag_qa_request)],
-    x_user_email: Annotated[str | None, Header(alias="X-User-Email")] = None,
+    proven_email: Annotated[Optional[str], Depends(get_proven_user_email)] = None,
 ) -> tuple[Optional[BaseChatModel], Optional[str], Optional[str]]:
     return get_optional_llm_with_details(
-        x_user_email=x_user_email,
+        proven_email=proven_email,
         provider_override=rag_request.provider,
         model_override=rag_request.model,
     )

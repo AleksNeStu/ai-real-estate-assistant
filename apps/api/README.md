@@ -91,7 +91,7 @@ alembic upgrade head
 ## Key Features
 
 - **Conversational AI**: Property search via natural language with query routing (RAG / Hybrid / Agent+Tools)
-- **Multi-tenancy**: User-isolated data via `X-User-Email` header → per-user preferences
+- **Multi-tenancy**: User-isolated data via the account behind a verified JWT → per-user preferences (an asserted `X-User-Email` header is ignored)
 - **Vector Search**: ChromaDB-backed semantic property search with reranking
 - **LLM Provider Cascade**: Per-user, per-task model preferences with system defaults and Ollama fallback
 - **Auth Dual-Mode**: API Key for backend access, JWT for user features (favorites, saved searches, market, leads)

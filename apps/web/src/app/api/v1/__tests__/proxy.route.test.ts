@@ -63,8 +63,11 @@ describe("API v1 proxy route", () => {
 
     const headers = init.headers as Headers;
     expect(headers.get("X-API-Key")).toBe("server-secret-key");
-    expect(headers.get("X-User-Email")).toBe("user@example.com");
     expect(headers.get("Content-Type")).toBe("application/json");
+    // An asserted identity never reaches the backend: a browser can put any
+    // address in the header, so the proxy drops it and the backend resolves
+    // the account behind the session token instead.
+    expect(headers.get("X-User-Email")).toBeNull();
 
     expect(response.status).toBe(200);
     expect(response.headers.get("X-Request-ID")).toBe("req-1");

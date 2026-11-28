@@ -1,10 +1,11 @@
 import logging
 import os
-from typing import Optional
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, Body, Header, HTTPException, Query, Request
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 
 import models.user_model_preferences as user_model_preferences
+from api.deps.auth import get_proven_user_email
 from api.models import (
     ModelCatalogItem,
     ModelPreferences,
@@ -30,22 +31,28 @@ router = APIRouter(tags=["Settings"])
 _DEMO_MODE_SESSIONS: dict[str, bool] = {}
 
 
-def _resolve_user_email(user_email: str | None, x_user_email: str | None) -> str:
-    resolved = (user_email or x_user_email or "").strip()
-    if not resolved:
-        raise HTTPException(status_code=400, detail="Missing user email")
-    return resolved
+async def _require_proven_email(
+    proven_email: Annotated[Optional[str], Depends(get_proven_user_email)] = None,
+) -> str:
+    """The account the request proved.
+
+    These routes read and write one account's settings, so the account has to
+    be a proven one: the row behind a verified token. An `X-User-Email` header
+    and a `?user_email=` parameter are assertions - a browser can put any
+    address in either - and a request that proves nothing gets no account at
+    all.
+    """
+    if not proven_email:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return proven_email
 
 
 @router.get("/settings/notifications", response_model=NotificationSettings)
 async def get_notification_settings(
-    user_email: str | None = Query(default=None),
-    x_user_email: str | None = Header(default=None, alias="X-User-Email"),
+    resolved_user_email: str = Depends(_require_proven_email),
 ):
     """Get notification settings for the current user (Task #86)."""
     try:
-        resolved_user_email = _resolve_user_email(user_email, x_user_email)
-
         async with get_db_context() as session:
             user_repo = UserRepository(session)
             user = await user_repo.get_by_email(resolved_user_email)
@@ -85,13 +92,10 @@ async def get_notification_settings(
 @router.put("/settings/notifications", response_model=NotificationSettings)
 async def update_notification_settings(
     settings: NotificationSettingsUpdate,
-    user_email: str | None = Query(default=None),
-    x_user_email: str | None = Header(default=None, alias="X-User-Email"),
+    resolved_user_email: str = Depends(_require_proven_email),
 ):
     """Update notification settings for the current user (Task #86)."""
     try:
-        resolved_user_email = _resolve_user_email(user_email, x_user_email)
-
         async with get_db_context() as session:
             user_repo = UserRepository(session)
             user = await user_repo.get_by_email(resolved_user_email)
@@ -136,13 +140,10 @@ async def update_notification_settings(
 @router.post("/settings/notifications/preview", response_model=NotificationPreviewResponse)
 async def send_notification_preview(
     request: NotificationPreviewRequest,
-    user_email: str | None = Query(default=None),
-    x_user_email: str | None = Header(default=None, alias="X-User-Email"),
+    resolved_user_email: str = Depends(_require_proven_email),
 ):
     """Send a test notification to verify settings (Task #86)."""
     try:
-        resolved_user_email = _resolve_user_email(user_email, x_user_email)
-
         async with get_db_context() as session:
             user_repo = UserRepository(session)
             user = await user_repo.get_by_email(resolved_user_email)
@@ -329,11 +330,9 @@ async def test_runtime(provider: str = Query(...)):
 
 @router.get("/settings/model-preferences", response_model=ModelPreferences)
 async def get_model_preferences(
-    user_email: str | None = Query(default=None),
-    x_user_email: str | None = Header(default=None, alias="X-User-Email"),
+    resolved_user_email: str = Depends(_require_proven_email),
 ):
     try:
-        resolved_user_email = _resolve_user_email(user_email, x_user_email)
         prefs = user_model_preferences.MODEL_PREFS_MANAGER.get_preferences(resolved_user_email)
         return ModelPreferences(
             preferred_provider=prefs.preferred_provider,
@@ -351,11 +350,9 @@ async def get_model_preferences(
 @router.put("/settings/model-preferences", response_model=ModelPreferences)
 async def update_model_preferences(
     payload: ModelPreferencesUpdate,
-    user_email: str | None = Query(default=None),
-    x_user_email: str | None = Header(default=None, alias="X-User-Email"),
+    resolved_user_email: str = Depends(_require_proven_email),
 ):
     try:
-        resolved_user_email = _resolve_user_email(user_email, x_user_email)
         existing = user_model_preferences.MODEL_PREFS_MANAGER.get_preferences(resolved_user_email)
 
         incoming_provider = payload.preferred_provider

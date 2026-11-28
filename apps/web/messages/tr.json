@@ -2025,7 +2025,7 @@
       "loadFailed": "Model kataloğu yüklenemedi. Lütfen tekrar deneyin.",
       "defaultModelDescription": "Asistan yanıtları için kullanılacak sağlayıcıyı ve modeli seçin. Tercihler e-posta adresi başına kaydedilir.",
       "loading": "Model tercihleri yükleniyor...",
-      "needsEmail": "Kullanıcı başına model tercihlerini etkinleştirmek için Kimlik ayarlarında bir e-posta girin.",
+      "needsEmail": "Varsayılan bir model seçmek için giriş yapın. Seçim hesabınıza aittir.",
       "noCatalog": "Model kataloğu kullanılamıyor. Yeniden denemek için sayfayı yenileyin.",
       "selectProvider": "Bir sağlayıcı seçin",
       "selectModel": "Bir model seçin",
@@ -2044,7 +2044,7 @@
     },
     "saved": "Ayarlar başarıyla kaydedildi.",
     "error": "Ayarlar kaydedilemedi.",
-    "emailRequired": "Bu bölüme erişmek için yukarıdaki Kimlik ayarlarında bir e-posta girin.",
+    "emailRequired": "Bu bölüm bir hesaba aittir. Yönetmek için giriş yapın.",
     "profile": {
       "loadingProfile": "Profil yükleniyor...",
       "email": "E-posta",

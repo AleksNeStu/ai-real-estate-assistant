@@ -6,10 +6,19 @@ import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
+from api.deps.auth import get_proven_user_email
 from api.routers import settings as settings_mod
 
 _test_app = FastAPI()
 _test_app.include_router(settings_mod.router)
+
+
+def _proven_identity() -> str:
+    """The account the request proves."""
+    return "test@test.com"
+
+
+_test_app.dependency_overrides[get_proven_user_email] = _proven_identity
 
 
 def _make_user(user_id="user-1", email="test@test.com"):
@@ -47,28 +56,81 @@ def _make_prefs(**overrides):
     return prefs
 
 
-class TestResolveUserEmail:
-    def test_from_query(self):
-        assert settings_mod._resolve_user_email("a@b.com", None) == "a@b.com"
+class TestProvenIdentity:
+    """The account is the one the request proved, never the one it claimed."""
 
-    def test_from_header(self):
-        assert settings_mod._resolve_user_email(None, "a@b.com") == "a@b.com"
+    @pytest.mark.asyncio
+    async def test_a_header_cannot_select_another_account(self):
+        user = _make_user()
+        prefs = _make_prefs()
+        with (
+            patch("api.routers.settings.get_db_context") as mock_db_ctx,
+            patch("api.routers.settings.UserRepository") as mock_user_repo_cls,
+            patch("api.routers.settings.NotificationPreferenceRepository") as mock_prefs_repo_cls,
+        ):
+            mock_session = AsyncMock()
+            mock_db_ctx.return_value.__aenter__ = AsyncMock(return_value=mock_session)
+            mock_db_ctx.return_value.__aexit__ = AsyncMock(return_value=False)
 
-    def test_query_priority(self):
-        assert settings_mod._resolve_user_email("query@b.com", "header@b.com") == "query@b.com"
+            mock_user_repo = MagicMock()
+            mock_user_repo.get_by_email = AsyncMock(return_value=user)
+            mock_user_repo_cls.return_value = mock_user_repo
 
-    def test_header_fallback(self):
-        assert settings_mod._resolve_user_email(None, "header@b.com") == "header@b.com"
+            mock_prefs_repo = MagicMock()
+            mock_prefs_repo.get_or_create = AsyncMock(return_value=prefs)
+            mock_prefs_repo_cls.return_value = mock_prefs_repo
 
-    def test_missing_raises_400(self):
-        from fastapi import HTTPException
+            transport = ASGITransport(app=_test_app)
+            async with AsyncClient(transport=transport, base_url="http://test") as c:
+                resp = await c.get(
+                    "/settings/notifications",
+                    headers={"X-User-Email": "victim@example.com"},
+                )
+                assert resp.status_code == 200
+                # The proven account, not the one the header named.
+                mock_user_repo.get_by_email.assert_called_once_with("test@test.com")
 
-        with pytest.raises(HTTPException) as exc_info:
-            settings_mod._resolve_user_email(None, None)
-        assert exc_info.value.status_code == 400
+    @pytest.mark.asyncio
+    async def test_a_query_parameter_cannot_select_another_account(self):
+        user = _make_user()
+        prefs = _make_prefs()
+        with (
+            patch("api.routers.settings.get_db_context") as mock_db_ctx,
+            patch("api.routers.settings.UserRepository") as mock_user_repo_cls,
+            patch("api.routers.settings.NotificationPreferenceRepository") as mock_prefs_repo_cls,
+        ):
+            mock_session = AsyncMock()
+            mock_db_ctx.return_value.__aenter__ = AsyncMock(return_value=mock_session)
+            mock_db_ctx.return_value.__aexit__ = AsyncMock(return_value=False)
 
-    def test_whitespace_stripped(self):
-        assert settings_mod._resolve_user_email("  a@b.com  ", None) == "a@b.com"
+            mock_user_repo = MagicMock()
+            mock_user_repo.get_by_email = AsyncMock(return_value=user)
+            mock_user_repo_cls.return_value = mock_user_repo
+
+            mock_prefs_repo = MagicMock()
+            mock_prefs_repo.get_or_create = AsyncMock(return_value=prefs)
+            mock_prefs_repo_cls.return_value = mock_prefs_repo
+
+            transport = ASGITransport(app=_test_app)
+            async with AsyncClient(transport=transport, base_url="http://test") as c:
+                resp = await c.get("/settings/notifications?user_email=victim@example.com")
+                assert resp.status_code == 200
+                mock_user_repo.get_by_email.assert_called_once_with("test@test.com")
+
+    @pytest.mark.asyncio
+    async def test_without_a_proven_identity_the_route_is_401(self):
+        transport = ASGITransport(app=_test_app)
+        async with AsyncClient(transport=transport, base_url="http://test") as c:
+            _test_app.dependency_overrides.pop(get_proven_user_email, None)
+            try:
+                resp = await c.get(
+                    "/settings/notifications",
+                    headers={"X-User-Email": "test@test.com"},
+                )
+            finally:
+                _test_app.dependency_overrides[get_proven_user_email] = _proven_identity
+        assert resp.status_code == 401
+        assert resp.json()["detail"] == "Not authenticated"
 
 
 class TestGetNotificationSettings:
@@ -95,7 +157,7 @@ class TestGetNotificationSettings:
 
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as c:
-                resp = await c.get("/settings/notifications?user_email=test@test.com")
+                resp = await c.get("/settings/notifications")
                 assert resp.status_code == 200
                 data = resp.json()
                 assert data["email_enabled"] is True
@@ -117,11 +179,11 @@ class TestGetNotificationSettings:
 
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as c:
-                resp = await c.get("/settings/notifications?user_email=nobody@test.com")
+                resp = await c.get("/settings/notifications")
                 assert resp.status_code == 404
 
     @pytest.mark.asyncio
-    async def test_get_settings_via_header(self):
+    async def test_get_settings_with_a_header(self):
         user = _make_user()
         prefs = _make_prefs()
         with (
@@ -150,11 +212,15 @@ class TestGetNotificationSettings:
                 assert resp.status_code == 200
 
     @pytest.mark.asyncio
-    async def test_get_settings_no_email_400(self):
+    async def test_get_settings_without_a_proven_identity_401(self):
         transport = ASGITransport(app=_test_app)
         async with AsyncClient(transport=transport, base_url="http://test") as c:
-            resp = await c.get("/settings/notifications")
-            assert resp.status_code == 400
+            _test_app.dependency_overrides.pop(get_proven_user_email, None)
+            try:
+                resp = await c.get("/settings/notifications")
+            finally:
+                _test_app.dependency_overrides[get_proven_user_email] = _proven_identity
+        assert resp.status_code == 401
 
     @pytest.mark.asyncio
     async def test_get_settings_internal_error(self):
@@ -172,7 +238,7 @@ class TestGetNotificationSettings:
 
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as c:
-                resp = await c.get("/settings/notifications?user_email=test@test.com")
+                resp = await c.get("/settings/notifications")
                 assert resp.status_code == 500
 
 
@@ -202,7 +268,7 @@ class TestUpdateNotificationSettings:
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as c:
                 resp = await c.put(
-                    "/settings/notifications?user_email=test@test.com",
+                    "/settings/notifications",
                     json={"email_enabled": False},
                 )
                 assert resp.status_code == 200
@@ -224,7 +290,7 @@ class TestUpdateNotificationSettings:
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as c:
                 resp = await c.put(
-                    "/settings/notifications?user_email=nobody@test.com",
+                    "/settings/notifications",
                     json={"email_enabled": True},
                 )
                 assert resp.status_code == 404
@@ -255,7 +321,7 @@ class TestSendNotificationPreview:
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as c:
                 resp = await c.post(
-                    "/settings/notifications/preview?user_email=test@test.com",
+                    "/settings/notifications/preview",
                     json={"channel": "email", "notification_type": "price_alert"},
                 )
                 assert resp.status_code == 200
@@ -285,7 +351,7 @@ class TestSendNotificationPreview:
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as c:
                 resp = await c.post(
-                    "/settings/notifications/preview?user_email=test@test.com",
+                    "/settings/notifications/preview",
                     json={"channel": "push", "notification_type": "price_alert"},
                 )
                 assert resp.status_code == 200
@@ -532,7 +598,7 @@ class TestModelPreferences:
 
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as c:
-                resp = await c.get("/settings/model-preferences?user_email=test@test.com")
+                resp = await c.get("/settings/model-preferences")
                 assert resp.status_code == 200
                 assert resp.json()["preferred_provider"] == "openai"
 
@@ -563,7 +629,7 @@ class TestModelPreferences:
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as c:
                 resp = await c.put(
-                    "/settings/model-preferences?user_email=test@test.com",
+                    "/settings/model-preferences",
                     json={"preferred_provider": "anthropic", "preferred_model": "claude-3"},
                 )
                 assert resp.status_code == 200
@@ -586,7 +652,7 @@ class TestModelPreferences:
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as c:
                 resp = await c.put(
-                    "/settings/model-preferences?user_email=test@test.com",
+                    "/settings/model-preferences",
                     json={"preferred_provider": "", "preferred_model": ""},
                 )
                 assert resp.status_code == 200
@@ -603,7 +669,7 @@ class TestModelPreferences:
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as c:
                 resp = await c.put(
-                    "/settings/model-preferences?user_email=test@test.com",
+                    "/settings/model-preferences",
                     json={"preferred_model": "gpt-4"},
                 )
                 assert resp.status_code == 400
@@ -624,7 +690,7 @@ class TestModelPreferences:
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as c:
                 resp = await c.put(
-                    "/settings/model-preferences?user_email=test@test.com",
+                    "/settings/model-preferences",
                     json={"preferred_provider": "nonexistent"},
                 )
                 assert resp.status_code == 400
@@ -649,7 +715,7 @@ class TestModelPreferences:
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as c:
                 resp = await c.put(
-                    "/settings/model-preferences?user_email=test@test.com",
+                    "/settings/model-preferences",
                     json={"preferred_provider": "openai", "preferred_model": "nonexistent"},
                 )
                 assert resp.status_code == 400
@@ -681,7 +747,7 @@ class TestModelPreferences:
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as c:
                 resp = await c.put(
-                    "/settings/model-preferences?user_email=test@test.com",
+                    "/settings/model-preferences",
                     json={"preferred_provider": "openai"},
                 )
                 assert resp.status_code == 200

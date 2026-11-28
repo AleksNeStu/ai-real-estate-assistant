@@ -1,15 +1,41 @@
 from contextlib import asynccontextmanager
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from fastapi.testclient import TestClient
 
+from api.deps.auth import get_proven_user_email
 from api.main import app
 
 client = TestClient(app)
 
 # Mock API Key
-HEADERS = {"X-API-Key": "test-key", "X-User-Email": "u1@example.com"}
+HEADERS = {"X-API-Key": "test-key"}
 HEADERS_NO_USER = {"X-API-Key": "test-key"}
+
+
+def _proven_identity() -> str:
+    """The account the request proves."""
+    return "u1@example.com"
+
+
+@pytest.fixture(autouse=True)
+def _every_request_proves_an_account():
+    """The account the requests of this module carry.
+
+    The override lives on the shared application, so it is installed per
+    test: a module that cleans up after itself must not leave this one
+    without an account, and the route would answer 401 for every request.
+    """
+    previous = app.dependency_overrides.get(get_proven_user_email)
+    app.dependency_overrides[get_proven_user_email] = _proven_identity
+    try:
+        yield
+    finally:
+        if previous is None:
+            app.dependency_overrides.pop(get_proven_user_email, None)
+        else:
+            app.dependency_overrides[get_proven_user_email] = previous
 
 
 def _make_mock_prefs(**overrides):
@@ -115,7 +141,8 @@ def test_update_settings(mock_get_settings):
 
 
 @patch("api.auth.get_settings")
-def test_settings_query_user_email_overrides_header(mock_get_settings):
+def test_settings_header_cannot_select_another_account(mock_get_settings):
+    """A header is an assertion. The account is the one the request proved."""
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
@@ -128,44 +155,74 @@ def test_settings_query_user_email_overrides_header(mock_get_settings):
 
     with patch("api.routers.settings.get_db_context", ctx):
         response = client.get(
-            "/api/v1/settings/notifications?user_email=u2@example.com",
+            "/api/v1/settings/notifications",
+            headers={**HEADERS, "X-User-Email": "victim@example.com"},
+        )
+
+    assert response.status_code == 200
+    mock_user_repo.get_by_email.assert_called_once_with("u1@example.com")
+
+
+@patch("api.auth.get_settings")
+def test_settings_query_parameter_cannot_select_another_account(mock_get_settings):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    mock_user = MagicMock()
+    mock_user.id = "user-2"
+    mock_prefs = _make_mock_prefs()
+
+    ctx, mock_user_repo, _ = _mock_db_context(mock_user, mock_prefs)
+
+    with patch("api.routers.settings.get_db_context", ctx):
+        response = client.get(
+            "/api/v1/settings/notifications?user_email=victim@example.com",
             headers=HEADERS,
         )
 
     assert response.status_code == 200
-    mock_user_repo.get_by_email.assert_called_once_with("u2@example.com")
+    mock_user_repo.get_by_email.assert_called_once_with("u1@example.com")
 
 
 @patch("api.auth.get_settings")
-def test_get_settings_missing_user_email_returns_400(mock_get_settings):
+def test_get_settings_without_a_proven_identity_returns_401(mock_get_settings):
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
 
-    response = client.get("/api/v1/settings/notifications", headers=HEADERS_NO_USER)
+    app.dependency_overrides.pop(get_proven_user_email, None)
+    try:
+        response = client.get("/api/v1/settings/notifications", headers=HEADERS_NO_USER)
+    finally:
+        app.dependency_overrides[get_proven_user_email] = _proven_identity
 
-    assert response.status_code == 400
-    assert response.json()["detail"] == "Missing user email"
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
 
 
 @patch("api.auth.get_settings")
-def test_update_settings_missing_user_email_returns_400(mock_get_settings):
+def test_update_settings_without_a_proven_identity_returns_401(mock_get_settings):
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
 
-    response = client.put(
-        "/api/v1/settings/notifications",
-        json={
-            "alert_frequency": "daily",
-            "expert_mode": False,
-            "marketing_emails": False,
-        },
-        headers=HEADERS_NO_USER,
-    )
+    app.dependency_overrides.pop(get_proven_user_email, None)
+    try:
+        response = client.put(
+            "/api/v1/settings/notifications",
+            json={
+                "alert_frequency": "daily",
+                "expert_mode": False,
+                "marketing_emails": False,
+            },
+            headers=HEADERS_NO_USER,
+        )
+    finally:
+        app.dependency_overrides[get_proven_user_email] = _proven_identity
 
-    assert response.status_code == 400
-    assert response.json()["detail"] == "Missing user email"
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
 
 
 @patch("api.routers.settings.ModelProviderFactory")
@@ -557,16 +614,21 @@ def test_update_model_preferences_requires_provider_when_setting_model(
 
 @patch("api.routers.settings.user_model_preferences.MODEL_PREFS_MANAGER")
 @patch("api.auth.get_settings")
-def test_get_model_preferences_missing_user_email_returns_400(
+def test_get_model_preferences_without_a_proven_identity_returns_401(
     mock_get_settings, mock_model_prefs_manager
 ):
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
 
-    response = client.get("/api/v1/settings/model-preferences", headers=HEADERS_NO_USER)
-    assert response.status_code == 400
-    assert response.json()["detail"] == "Missing user email"
+    app.dependency_overrides.pop(get_proven_user_email, None)
+    try:
+        response = client.get("/api/v1/settings/model-preferences", headers=HEADERS_NO_USER)
+    finally:
+        app.dependency_overrides[get_proven_user_email] = _proven_identity
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
     assert not mock_model_prefs_manager.get_preferences.called
 
 

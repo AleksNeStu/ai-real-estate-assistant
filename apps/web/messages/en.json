@@ -1180,7 +1180,7 @@
   "settings": {
     "title": "Settings",
     "description": "Manage your account settings and preferences.",
-    "emailRequired": "Set an email in Identity settings above to access this section.",
+    "emailRequired": "This section belongs to an account. Sign in to manage it.",
     "tabs": {
       "identity": "Identity",
       "notifications": "Notifications",
@@ -1308,7 +1308,7 @@
       "loadFailed": "Failed to load model catalog. Please try again.",
       "defaultModelDescription": "Choose the provider and model used for Assistant responses. Preferences are saved per email address.",
       "loading": "Loading model preferences...",
-      "needsEmail": "Set an email in Identity settings to enable per-user model preferences.",
+      "needsEmail": "Sign in to choose a default model. The choice belongs to your account.",
       "noCatalog": "Model catalog is not available. Refresh the page to retry.",
       "selectProvider": "Select a provider",
       "selectModel": "Select a model",
@@ -2746,13 +2746,10 @@
       },
       "identity": {
         "title": "Identity",
-        "description": "How you sign in, and the address this deployment scopes the account by.",
-        "emailLabel": "Email",
-        "hint": "Stored locally in your browser and sent as {header}.",
-        "save": "Save",
-        "saved": "Email saved.",
-        "cleared": "Email cleared.",
-        "invalidEmail": "Please enter a valid email address.",
+        "description": "The account this deployment scopes your settings by, and the ways it lets you in.",
+        "emailLabel": "Account",
+        "hint": "The account behind your session. It is read from the sign-in, not typed in.",
+        "notSignedIn": "You are not signed in.",
         "methodsLabel": "Sign-in methods",
         "methodsDesc": "The ways this deployment lets you in. The methods themselves live on the auth side.",
         "methodPassword": "E-mail + password"
@@ -2828,7 +2825,7 @@
         "perTask": {
           "title": "Model per task",
           "description": "Each task can run on a different model. The keys stay on the server.",
-          "needsEmail": "Set an email in Identity to enable per-task model preferences.",
+          "needsEmail": "Sign in to enable per-task model preferences.",
           "loading": "Loading preferences...",
           "loadFailed": "Failed to load preferences.",
           "selectBoth": "Please select both a provider and a model.",
@@ -4067,7 +4064,7 @@
       "instrumentPerMonth": "≈{amount}/mo",
       "instrumentPerSqm": "{amount} {currency}/m²",
       "matches": "{count} matches",
-    "mapLabel": "The matches on the map"
+      "mapLabel": "The matches on the map"
     },
     "chips": {
       "label": "Try one of these:",

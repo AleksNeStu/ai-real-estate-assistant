@@ -350,6 +350,33 @@ async def get_optional_user(
         return None
 
 
+async def get_proven_user_email(
+    request: Request,
+    user: Optional[User] = Depends(get_optional_user),
+) -> Optional[str]:
+    """
+    The e-mail the request proved - never the e-mail it claimed.
+
+    A request may carry an ``X-User-Email`` header, and a browser may put
+    any address in it. The header is an assertion, so it is not read here at
+    all: the identity is the row behind a verified token.
+
+    Returns None for an anonymous request - and for a request whose token is
+    expired or invalid, which proves nothing either. A caller that wants an
+    account (a settings route, say) turns that into a 401; a caller that
+    only wants a preference falls back to the deployment default, and a stale
+    cookie must not turn a public route into an error.
+
+    The address is also written to ``request.state.user_email``, which is
+    where the audit middleware reads the actor from.
+    """
+    if user is None:
+        return None
+
+    request.state.user_email = user.email
+    return user.email
+
+
 async def get_auth_credentials(
     request: Request,
     access_token: Optional[str] = Cookie(default=None, alias="access_token"),

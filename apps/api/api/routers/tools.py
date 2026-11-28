@@ -1,10 +1,11 @@
 from typing import Annotated, List, Optional
 import statistics
 
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
 from agents.services.valuation import RcnValuationProvider
+from api.deps.auth import get_proven_user_email
 from api.dependencies import (
     get_crm_connector,
     get_data_enrichment_service,
@@ -1134,7 +1135,7 @@ class ListingGenerationResponse(BaseModel):
 async def generate_listing(
     request: ListingGenerationRequest,
     store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
-    x_user_email: Annotated[Optional[str], Header(alias="X-User-Email")] = None,
+    proven_email: Annotated[Optional[str], Depends(get_proven_user_email)] = None,
 ):
     """
     Generate AI-powered listing content for a property.
@@ -1239,7 +1240,7 @@ async def generate_listing(
     # that holds no provider key at all. The dependency raised before the
     # handler ever ran, so the endpoint answered 500 for a mistake in the
     # request - and the tests of the endpoint needed a key to run.
-    llm = await get_optional_llm(x_user_email=x_user_email)
+    llm = await get_optional_llm(proven_email=proven_email)
     if llm is None:
         # The tools resolve the model themselves when they get none: the
         # mock model of a demo deployment, the configured provider

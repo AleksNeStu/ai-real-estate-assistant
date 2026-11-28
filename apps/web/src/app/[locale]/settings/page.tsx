@@ -15,6 +15,8 @@ import { NotificationSettings } from '@/components/settings/notification-setting
 import { ProfileSettings } from '@/components/settings/profile-settings';
 import { PrivacySettings } from '@/components/settings/privacy-settings';
 import { BuyerMemorySettings } from '@/components/settings/buyer-memory-settings';
+import { useAuth } from '@/contexts/AuthContext';
+import { useCapabilities } from '@/hooks/useCapabilities';
 import { getModelsCatalog, ApiError } from '@/lib/api';
 import type { ModelProviderCatalog } from '@/lib/types';
 
@@ -36,13 +38,27 @@ type Tab = (typeof TABS)[number];
 export default function SettingsPage() {
   const t = useTranslations('pages.settings');
   const tCommon = useTranslations('common');
+  const { user, isAuthenticated } = useAuth();
+  const { capabilities } = useCapabilities();
   const [tab, setTab] = useState<Tab>('models');
-  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [catalog, setCatalog] = useState<ModelProviderCatalog[] | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [catalogRefreshing, setCatalogRefreshing] = useState(false);
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [requestId, setRequestId] = useState<string | undefined>(undefined);
+
+  /**
+   * The account the session proved.
+   *
+   * The identity is the row behind the session token - the backend resolves
+   * it from the token on every request, so the browser never asserts one.
+   * A deployment that hands every visitor a synthetic user has no account to
+   * scope (the synthetic user is shared by everybody), so there the rows
+   * that need an account are not offered: the backend would answer 401 for
+   * them.
+   */
+  const userEmail =
+    isAuthenticated && capabilities?.auth.demo_user_bypass !== true ? (user?.email ?? null) : null;
 
   const fetchCatalog = async (mode: 'initial' | 'refresh' = 'initial') => {
     if (mode === 'initial') {
@@ -81,15 +97,13 @@ export default function SettingsPage() {
   };
 
   useEffect(() => {
-    const email = window.localStorage.getItem('userEmail');
-    setUserEmail(email && email.trim() ? email.trim() : null);
     fetchCatalog('initial');
   }, []);
 
   const renderPanel = () => {
     switch (tab) {
       case 'identity':
-        return <IdentitySettings onChange={(email) => setUserEmail(email)} />;
+        return <IdentitySettings userEmail={userEmail} />;
       case 'models':
         return (
           <div className="flex flex-col gap-8">

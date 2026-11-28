@@ -2026,7 +2026,7 @@
       "loadFailed": "Der Modellkatalog konnte nicht geladen werden. Bitte erneut versuchen.",
       "defaultModelDescription": "Wähle Anbieter und Modell für die Antworten des Assistenten. Die Einstellungen werden je E-Mail-Adresse gespeichert.",
       "loading": "Modelleinstellungen werden geladen...",
-      "needsEmail": "Lege eine E-Mail in den Identitätseinstellungen fest, um Modelleinstellungen pro Nutzer zu aktivieren.",
+      "needsEmail": "Melden Sie sich an, um ein Standardmodell zu wählen. Die Wahl gehört zu Ihrem Konto.",
       "noCatalog": "Der Modellkatalog ist nicht verfügbar. Lade die Seite neu, um es erneut zu versuchen.",
       "selectProvider": "Anbieter auswählen",
       "selectModel": "Modell auswählen",
@@ -2044,7 +2044,7 @@
     },
     "saved": "Einstellungen erfolgreich gespeichert.",
     "error": "Einstellungen konnten nicht gespeichert werden.",
-    "emailRequired": "Lege oben eine E-Mail in den Identitätseinstellungen fest, um auf diesen Abschnitt zuzugreifen.",
+    "emailRequired": "Dieser Abschnitt gehört zu einem Konto. Melden Sie sich an, um ihn zu verwalten.",
     "profile": {
       "loadingProfile": "Profil wird geladen...",
       "email": "E-Mail",
