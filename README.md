@@ -212,13 +212,31 @@ Kubernetes variant — is in the [deployment guide](docs/deployment/DEPLOYMENT.m
 
 ## What's new
 
-**`v5.7.3`** — the admin API is closed to everybody who is not the operator.
+**`v5.7.3`** — the admin API is closed to everybody who is not the operator, the
+identity that reaches a preference is the one the request proved, and nothing
+the model fetched can give it orders.
 
 - **The admin API is no longer reachable with the API key alone** — the web
   app's proxy injects the key into every path it forwards, so the audit log,
   the internal metrics and the ingestion routes were reachable by any
   visitor. They now need an administrator: the role `admin`, or an e-mail
   listed in `ADMIN_EMAILS`.
+- **A caller can no longer name somebody else's account** — the identity came
+  from a header the browser filled in, so any holder of the API key could
+  name another account and inherit their model, read their notification
+  settings and rewrite their preferences. It now comes from the row behind a
+  verified token, and the account-scoped routes answer 401 without one.
+- **Nothing the model fetched can become an instruction** — a scraped page, a
+  retrieved text and a model-written summary all reached the model inside the
+  system role, so a page that said "ignore your instructions" was read as an
+  instruction. Everything from outside the request now rides as fenced data,
+  in one grammar.
+- **A failed model answers 503 and the visitor is not told why** — the
+  provider's own error text used to reach the visitor.
+- **A rotated provider key reaches the next request** — the caches were keyed
+  by the provider alone, so a key rotated in the running process was answered
+  with the instance that still held the old one, and the rotation only took
+  effect after a restart.
 - **The account page saves again** — the profile router took
   its database session from a context manager where FastAPI expects a
   dependency, so every write to the profile answered with a server error.

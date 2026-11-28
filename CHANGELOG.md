@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [5.7.3] - 2026-11-26
+## [5.7.3] - 2026-11-28
 
-Since v5.7.2: **the admin API is closed to everybody who is not the operator**.
+Since v5.7.2: **the admin API is closed to everybody who is not the operator,
+the identity that reaches a preference is the one the request proved, and
+nothing the model fetched can give it orders.**
 
 ### Security
 - **The admin API is no longer reachable with the API key alone** — the web
@@ -23,6 +25,57 @@ Since v5.7.2: **the admin API is closed to everybody who is not the operator**.
   e-mail on the deployment's admin list (the variable is named in the
   authentication guide). A deployment that has no administrator at all keeps
   the old way in, so a self-hoster is not locked out of their own panel.
+- **A caller can no longer name somebody else's account** — the web app read
+  the identity from `localStorage` and sent it as the `X-User-Email` header,
+  and the backend took it at face value, so any holder of the API key could
+  name another account and inherit their model, read their notification
+  settings and rewrite their model preferences. The identity now comes from
+  the row behind a verified token and the header is not read at all: a
+  request that proves nothing gets the deployment default, and the
+  account-scoped settings routes answer 401 without a proven identity.
+- **Nothing the model fetched can become an instruction** — a scraped page, a
+  retrieved text and a model-written summary all reached the model inside the
+  system role, where a page that said "ignore your instructions" was read as
+  an instruction. Everything that arrives from outside the request now rides
+  as fenced data, in one grammar, and the buyer's own memory is fenced the
+  same way.
+- **The buyer's record reaches the web research too** — the chat route's web
+  branch dropped the record of what the buyer had said, so a buyer who had
+  given a budget and ruled out areas was answered by the web research as if
+  they had said nothing. The record travels as data, through one fence
+  builder that every branch quotes it through, and a scraped page cannot
+  forge its markers.
+- **The guard that keeps untrusted data out of the system role now runs where
+  it runs** — semgrep matches a rule's scope against the path relative to
+  the project root, and a scan over file targets collapses that root to the
+  file's own directory, so the rule the operator believed ran at push time
+  could never fire on this machine. The scope now holds in every shape and
+  on every platform, and the rule reads the whole backend instead of one
+  directory of it.
+
+### Fixed
+- **A failed model answers 503 and the visitor is not told why** — the
+  provider's own error text reached the visitor, which carried the provider,
+  the model and the reason onto the public surface.
+- **A rotated provider key reaches the next request** — the provider-instance
+  cache was keyed by the provider name alone and the chat-model cache by the
+  provider and the model id, so a key rotated in the running process was
+  answered with the instance that still held the old one and the rotation
+  only took effect after a restart. Both caches now carry the fingerprint of
+  the key the object was built with.
+- **The release chain moves the deployment's own pin** — the tag-driven roll
+  put the new image up but left `AIRE_IMAGE_TAG` naming the previous version,
+  and compose reads that file on every start, so the next manual restart
+  rolled the deployment back to the version before the release.
+- **A secret-bearing env backup can never be committed** — the backup of an
+  environment file holds the secrets it protects, and it is now excluded from
+  the repository by the tooling that writes it.
+- **The onboarding tour's body text is legible again** — the tour painted its
+  body text in a colour that failed the contrast floor.
+- **The frontend API tests mock the contract the API answers** — the tests
+  for favourites, collections, market trends and price history carried a
+  pre-refactor response shape, so their assertions read fields the response
+  never carries and the suite was green while guarding nothing.
 
 ## [5.7.2] - 2026-11-26
 
