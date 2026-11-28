@@ -214,17 +214,32 @@ class TestWebScraperStubConnectorAsync:
         assert "Random failure" in str(result.errors)
 
     @pytest.mark.asyncio
-    async def test_latency_simulation(self, stub):
+    async def test_latency_simulation(self, stub, monkeypatch):
         """Test latency simulation adds delay."""
+        import asyncio
         import time
 
         stub.set_latency(100)  # 100ms latency
 
-        start = time.time()
-        await stub.execute("scrape", {"url": "https://example.com/test"})
-        elapsed = time.time() - start
+        # The delay the stub asked for is the deterministic half of the
+        # assertion; the wall-clock half only proves that the wait happened.
+        requested: list[float] = []
+        real_sleep = asyncio.sleep
 
-        assert elapsed >= 0.1  # At least 100ms
+        async def _record(delay: float, *args, **kwargs):
+            requested.append(delay)
+            return await real_sleep(delay, *args, **kwargs)
+
+        monkeypatch.setattr(asyncio, "sleep", _record)
+
+        start = time.perf_counter()
+        await stub.execute("scrape", {"url": "https://example.com/test"})
+        elapsed_ms = (time.perf_counter() - start) * 1000
+
+        assert requested == [0.1]
+        # The floor is the latency minus the coarsest step of the platform
+        # clock (15.6 ms), so the assertion survives a loaded machine.
+        assert elapsed_ms >= 80
 
     @pytest.mark.asyncio
     async def test_reset_clears_state(self, stub):
