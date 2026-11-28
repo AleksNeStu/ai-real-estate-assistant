@@ -25,7 +25,11 @@ from api.models import RagQaRequest
 from config.settings import settings
 from db.database import get_db
 from db.models import User
-from models.provider_factory import ModelProviderFactory
+from models.provider_factory import (
+    PROVIDER_ENV_VARS,
+    ModelProviderFactory,
+    provider_key_fingerprint,
+)
 from services.buyer_memory_service import BuyerMemoryService
 from services.model_preference_service import SYSTEM_DEFAULTS, ModelPreferenceService
 from utils.circuit import get_circuit_breaker_manager
@@ -72,22 +76,11 @@ def get_vector_store() -> Optional[ChromaPropertyStore]:
         return None
 
 
-PROVIDER_ENV_VAR_MAP = {
-    "openai": "OPENAI_API_KEY",
-    "anthropic": "ANTHROPIC_API_KEY",
-    "google": "GOOGLE_API_KEY",
-    "grok": "XAI_API_KEY",
-    "deepseek": "DEEPSEEK_API_KEY",
-    "openrouter": "OPENROUTER_API_KEY",
-    "opencode": "OPENCODE_API_KEY",
-    "zai": "ZHIPUAI_API_KEY",
-    "moonshot": "MOONSHOT_API_KEY",
-    "groq": "GROQ_API_KEY",
-    "mistral": "MISTRAL_API_KEY",
-    "qwen": "DASHSCOPE_API_KEY",
-    "together": "TOGETHER_API_KEY",
-    "fireworks": "FIREWORKS_API_KEY",
-    "huggingface": "HUGGINGFACE_API_KEY",
+# The environment variable that carries a provider's key. Derived from the
+# factory's canonical map, so the failover writes the variable the factory
+# reads - one name for one thing.
+PROVIDER_ENV_VAR_MAP: dict[str, str] = {
+    provider: env_vars[0] for provider, env_vars in PROVIDER_ENV_VARS.items()
 }
 
 
@@ -99,9 +92,15 @@ def _create_llm(provider_name: str, model_id: Optional[str]) -> BaseChatModel:
 
 
 @lru_cache(maxsize=16)
-def _create_llm_with_resolved_model_id(
-    provider_name: str, model_id: Optional[str]
+def _create_llm_with_resolved_model_id_for_key(
+    provider_name: str, model_id: Optional[str], key_fingerprint: str
 ) -> tuple[BaseChatModel, str]:
+    """The model for this provider and model id, built with a given key.
+
+    `key_fingerprint` is part of the cache key and is not read here: the same
+    provider under a different key is a different model, so a rotated key
+    never reads the stale one.
+    """
     # The mock answer belongs to the LLM flag alone. DEMO_MODE still carries
     # the seeded catalogue and the API-key bypass, so a deployment that
     # answers with a real model runs with DEMO_MODE=true and
@@ -138,6 +137,21 @@ def _create_llm_with_resolved_model_id(
         max_tokens=settings.default_max_tokens,
     )
     return llm, resolved_model_id
+
+
+def _create_llm_with_resolved_model_id(
+    provider_name: str, model_id: Optional[str]
+) -> tuple[BaseChatModel, str]:
+    """The model for this provider and model id, built with the key the
+    provider carries right now.
+
+    The fingerprint of that key is part of the cache key, so a key rotated in
+    the running process produces a NEW model instead of the stale one - no
+    restart, no manual cache clear.
+    """
+    return _create_llm_with_resolved_model_id_for_key(
+        provider_name, model_id, provider_key_fingerprint(provider_name)
+    )
 
 
 async def _create_llm_with_api_key(
@@ -391,7 +405,7 @@ def clear_llm_cache() -> None:
     Useful for testing to ensure fresh state between tests.
     Clears both the LLM function cache and the ModelProviderFactory cache.
     """
-    _create_llm_with_resolved_model_id.cache_clear()
+    _create_llm_with_resolved_model_id_for_key.cache_clear()
     ModelProviderFactory.clear_cache()
 
 

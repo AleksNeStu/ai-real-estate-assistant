@@ -19,10 +19,11 @@ on other PaaS providers the eager path is preserved (no behavior change, no
 surprise in tests or local dev).
 """
 
+import hashlib
 import importlib
 import logging
 import os
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Tuple, Type
 
 from langchain_core.language_models import BaseChatModel
 
@@ -156,6 +157,86 @@ _PROVIDER_KEY_SETTINGS: Dict[str, str] = {
     "minimax": "minimax_api_key",
 }
 
+# Provider slug -> the environment variables that carry its API key, in the
+# order the provider module itself reads them. This is the one place the
+# FACTORY names them: the deployment sets the variable, the provider module
+# reads it, and the factory resolves it live - so a key rotated in the running
+# process is picked up without a restart.
+PROVIDER_ENV_VARS: Dict[str, Tuple[str, ...]] = {
+    "openai": ("OPENAI_API_KEY",),
+    "anthropic": ("ANTHROPIC_API_KEY",),
+    "google": ("GOOGLE_API_KEY",),
+    "grok": ("XAI_API_KEY", "GROK_API_KEY"),
+    "deepseek": ("DEEPSEEK_API_KEY",),
+    "openrouter": ("OPENROUTER_API_KEY",),
+    "groq": ("GROQ_API_KEY",),
+    "mistral": ("MISTRAL_API_KEY",),
+    "qwen": ("DASHSCOPE_API_KEY",),
+    "zai": ("ZHIPUAI_API_KEY", "ZAI_API_KEY"),
+    "moonshot": ("MOONSHOT_API_KEY",),
+    "opencode": ("OPENCODE_API_KEY",),
+    "together": ("TOGETHER_API_KEY",),
+    "fireworks": ("FIREWORKS_API_KEY",),
+    "huggingface": ("HUGGINGFACE_API_KEY",),
+    "minimax": ("REALT_MINIMAX_API_KEY", "MINIMAX_API_KEY"),
+}
+
+# The values the settings were built with. A settings value that DIFFERS from
+# this snapshot was written at runtime (`update_api_key`, or a caller that
+# patched the settings) and is therefore the newer value; a settings value
+# that still matches it is only the environment as it was at startup.
+_PROVIDER_KEY_SNAPSHOT: Dict[str, Optional[str]] = dict(_PROVIDER_KEY_MAP)
+
+
+def key_fingerprint(api_key: Optional[str]) -> str:
+    """A short, non-reversible fingerprint of an API key.
+
+    The caches key on this, never on the key itself: a fingerprint says
+    "the same key" without the key being readable in a cache key, a log line
+    or a failure message. Compare two keys by their fingerprints, never by
+    their values.
+    """
+    if not isinstance(api_key, str) or not api_key:
+        return ""
+    return hashlib.sha256(api_key.encode("utf-8")).hexdigest()[:16]
+
+
+def resolve_api_key(provider_name: str) -> Optional[str]:
+    """The API key this provider carries right now.
+
+    The environment is read at call time, so a key rotated in the running
+    process - a failover rotating to the next key, an operator writing the
+    variable - is picked up without a restart. The settings object is a
+    snapshot of the environment taken when the process started; where it
+    holds a DIFFERENT value than it was built with, something wrote it at
+    runtime and that value is the newer one, so it wins.
+    """
+    attribute = _PROVIDER_KEY_SETTINGS.get(provider_name)
+    settings_value = getattr(settings, attribute, None) if attribute else None
+    if not isinstance(settings_value, str):
+        settings_value = None
+
+    if settings_value and settings_value != _PROVIDER_KEY_SNAPSHOT.get(provider_name):
+        return settings_value
+
+    for env_var in PROVIDER_ENV_VARS.get(provider_name, ()):
+        env_value = os.getenv(env_var)
+        if env_value:
+            return env_value
+
+    if settings_value:
+        return settings_value
+    return _PROVIDER_KEY_MAP.get(provider_name)
+
+
+def provider_key_fingerprint(provider_name: str) -> str:
+    """The fingerprint of the key this provider carries right now.
+
+    It is the second half of every cache key that holds a provider or a
+    model: the same provider under a different key is a different object.
+    """
+    return key_fingerprint(resolve_api_key(provider_name))
+
 
 def _bootstrap_providers_eager() -> None:
     """Pre-import every provider module. Used when the host is not memory-capped."""
@@ -167,8 +248,10 @@ def _bootstrap_providers_eager() -> None:
 # a memory-capped host, lazily on the first `get_provider` call there.
 _PROVIDERS: Dict[str, Type[ModelProvider]] = {}
 
-# Cache of instantiated providers
-_instances: Dict[str, ModelProvider] = {}
+# Cache of instantiated providers, keyed by (provider name, key fingerprint).
+# The fingerprint is part of the key: the same provider under a different key
+# is a different object, and a rotated key never reads the stale one.
+_instances: Dict[Tuple[str, str], ModelProvider] = {}
 
 
 # Eager load only when the host is not memory-capped. Local dev / CI / other PaaS
@@ -274,28 +357,32 @@ class ModelProviderFactory:
                 f"Unknown provider '{provider_name}'. Available providers: {available}"
             )
 
-        # Check cache
-        if use_cache and provider_name in _instances:
-            # If config is provided, we might want to update the cached instance or create a new one.
-            # For now, we assume cached instances are reused unless explicit new config is needed.
-            # If config is passed, we skip cache to ensure config is applied.
-            if config is None:
-                return _instances[provider_name]
+        # The cache is keyed on the provider AND on the fingerprint of the key
+        # the instance carries. A key rotated in the running process must not
+        # be answered with the instance that holds the old one.
+        explicit_config = config is not None
 
         # Prepare config with defaults from settings
         if config is None:
             config = {}
 
-        # Inject API key from settings if not present. The settings are read
-        # live; the import-time snapshot is the fallback for a provider whose
-        # settings carry no such attribute.
+        # Inject API key if not present. The key is resolved live: the
+        # environment is read now, so a rotated key is picked up without a
+        # restart. The import-time snapshot is the fallback for a provider
+        # whose settings carry no such attribute.
         if "api_key" not in config:
-            attribute = _PROVIDER_KEY_SETTINGS.get(provider_name)
-            api_key = getattr(settings, attribute, None) if attribute else None
-            if not api_key:
-                api_key = _PROVIDER_KEY_MAP.get(provider_name)
+            api_key = resolve_api_key(provider_name)
             if api_key:
                 config["api_key"] = api_key
+
+        cache_key = (provider_name, key_fingerprint(config.get("api_key")))
+
+        # An explicit config is honoured as given, so it never reads the
+        # cache; without one the cached instance is reused.
+        if use_cache and not explicit_config:
+            cached = _instances.get(cache_key)
+            if cached is not None:
+                return cached
 
         # Create new instance (triggers the lazy module load on a
         # memory-capped host)
@@ -304,7 +391,7 @@ class ModelProviderFactory:
 
         # Cache if requested
         if use_cache:
-            _instances[provider_name] = provider
+            _instances[cache_key] = provider
 
         return provider
 
@@ -463,9 +550,10 @@ class ModelProviderFactory:
 
         _PROVIDERS[name] = provider_class
 
-        # Clear cache for this provider if it exists
-        if name in _instances:
-            del _instances[name]
+        # Clear the cache for this provider - every entry it holds, whatever
+        # key it was built with.
+        for cache_key in [key for key in _instances if key[0] == name]:
+            del _instances[cache_key]
         return None
 
     @classmethod

@@ -53,10 +53,9 @@ def test_create_model_uses_defaults(mock_settings):
     # Patch the registry. The factory's lazy-load path also looks up
     # the module in _PROVIDER_MODULES before resolving a class, so
     # both need to be patched for the mock to win.
-    with patch.dict(
-        ModelProviderFactory._PROVIDER_MODULES, {"openai": "fake.module"}, clear=True
-    ), patch.dict(
-        ModelProviderFactory._PROVIDERS, {"openai": mock_provider_class}
+    with (
+        patch.dict(ModelProviderFactory._PROVIDER_MODULES, {"openai": "fake.module"}, clear=True),
+        patch.dict(ModelProviderFactory._PROVIDERS, {"openai": mock_provider_class}),
     ):
         # Call create_model without temp/tokens
         ModelProviderFactory.create_model("gpt-4o", provider_name="openai")
@@ -73,10 +72,9 @@ def test_create_model_manual_overrides_defaults(mock_settings):
     mock_provider_instance = MagicMock()
     mock_provider_class = MagicMock(return_value=mock_provider_instance)
 
-    with patch.dict(
-        ModelProviderFactory._PROVIDER_MODULES, {"openai": "fake.module"}, clear=True
-    ), patch.dict(
-        ModelProviderFactory._PROVIDERS, {"openai": mock_provider_class}
+    with (
+        patch.dict(ModelProviderFactory._PROVIDER_MODULES, {"openai": "fake.module"}, clear=True),
+        patch.dict(ModelProviderFactory._PROVIDERS, {"openai": mock_provider_class}),
     ):
         # Call create_model WITH explicit temp/tokens
         ModelProviderFactory.create_model(
@@ -143,8 +141,10 @@ def test_get_provider_uses_cache_when_config_none(mock_settings):
     stub_ctor = MagicMock(return_value=_StubProvider(config={"api_key": "k"}, name="p1"))
     # The factory checks _PROVIDER_MODULES first (lazy-load registry);
     # the test's mock provider needs to be registered in both dicts.
-    with patch.dict(ModelProviderFactory._PROVIDER_MODULES, {"p1": "fake.module"}, clear=True), \
-         patch.dict(ModelProviderFactory._PROVIDERS, {"p1": stub_ctor}, clear=True):
+    with (
+        patch.dict(ModelProviderFactory._PROVIDER_MODULES, {"p1": "fake.module"}, clear=True),
+        patch.dict(ModelProviderFactory._PROVIDERS, {"p1": stub_ctor}, clear=True),
+    ):
         p_first = ModelProviderFactory.get_provider("p1", use_cache=True)
         p_second = ModelProviderFactory.get_provider("p1", use_cache=True)
         assert p_first is p_second
@@ -154,8 +154,10 @@ def test_get_provider_uses_cache_when_config_none(mock_settings):
 def test_get_provider_bypasses_cache_when_config_provided(mock_settings):
     ModelProviderFactory.clear_cache()
     stub_ctor = MagicMock(side_effect=lambda config=None: _StubProvider(config=config, name="p1"))
-    with patch.dict(ModelProviderFactory._PROVIDER_MODULES, {"p1": "fake.module"}, clear=True), \
-         patch.dict(ModelProviderFactory._PROVIDERS, {"p1": stub_ctor}, clear=True):
+    with (
+        patch.dict(ModelProviderFactory._PROVIDER_MODULES, {"p1": "fake.module"}, clear=True),
+        patch.dict(ModelProviderFactory._PROVIDERS, {"p1": stub_ctor}, clear=True),
+    ):
         p_cached = ModelProviderFactory.get_provider("p1", use_cache=True)
         p_new = ModelProviderFactory.get_provider("p1", config={"api_key": "other"}, use_cache=True)
         assert p_new is not p_cached
@@ -256,29 +258,45 @@ def test_register_provider_requires_modelprovider_subclass(mock_settings):
         ModelProviderFactory.register_provider("x", object)  # type: ignore[arg-type]
 
 
+def _cached_instance(provider_name):
+    """The cached instance for a provider, whatever key it was built with.
+
+    The cache is keyed by (provider name, key fingerprint), so a provider
+    can hold more than one entry - one per key it was built with.
+    """
+    for (name, _fingerprint), instance in ModelProviderFactory._instances.items():
+        if name == provider_name:
+            return instance
+    return None
+
+
 def test_register_provider_adds_provider_and_clears_instance_cache(mock_settings):
     ModelProviderFactory.clear_cache()
     stub_ctor = MagicMock(return_value=_StubProvider(name="custom"))
-    with patch.dict(ModelProviderFactory._PROVIDER_MODULES, {"custom": "fake.module"}, clear=True), \
-         patch.dict(ModelProviderFactory._PROVIDERS, {"custom": stub_ctor}, clear=True):
+    with (
+        patch.dict(ModelProviderFactory._PROVIDER_MODULES, {"custom": "fake.module"}, clear=True),
+        patch.dict(ModelProviderFactory._PROVIDERS, {"custom": stub_ctor}, clear=True),
+    ):
         cached = ModelProviderFactory.get_provider("custom", use_cache=True)
-        assert cached is ModelProviderFactory._instances["custom"]
+        assert cached is _cached_instance("custom")
 
         class _CustomProvider(_StubProvider):
             pass
 
         ModelProviderFactory.register_provider("custom", _CustomProvider)
         assert "custom" in ModelProviderFactory._PROVIDERS
-        assert "custom" not in ModelProviderFactory._instances
+        assert _cached_instance("custom") is None
 
 
 def test_clear_cache_removes_cached_instances(mock_settings):
     ModelProviderFactory.clear_cache()
     stub_ctor = MagicMock(return_value=_StubProvider(name="p1"))
-    with patch.dict(ModelProviderFactory._PROVIDER_MODULES, {"p1": "fake.module"}, clear=True), \
-         patch.dict(ModelProviderFactory._PROVIDERS, {"p1": stub_ctor}, clear=True):
+    with (
+        patch.dict(ModelProviderFactory._PROVIDER_MODULES, {"p1": "fake.module"}, clear=True),
+        patch.dict(ModelProviderFactory._PROVIDERS, {"p1": stub_ctor}, clear=True),
+    ):
         ModelProviderFactory.get_provider("p1", use_cache=True)
-        assert "p1" in ModelProviderFactory._instances
+        assert _cached_instance("p1") is not None
         ModelProviderFactory.clear_cache()
         assert ModelProviderFactory._instances == {}
 

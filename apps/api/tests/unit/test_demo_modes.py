@@ -115,11 +115,11 @@ class TestTheMockFollowsTheLlmFlag:
 
         self._stub_provider(monkeypatch)
         monkeypatch.setattr(dependencies.settings, "demo_llm_mode", False)
-        dependencies._create_llm_with_resolved_model_id.cache_clear()
+        dependencies.clear_llm_cache()
         try:
             llm, model_id = dependencies._create_llm_with_resolved_model_id("stub", None)
         finally:
-            dependencies._create_llm_with_resolved_model_id.cache_clear()
+            dependencies.clear_llm_cache()
 
         assert model_id == "stub-model"
         assert "Mock" not in type(llm).__name__
@@ -131,11 +131,11 @@ class TestTheMockFollowsTheLlmFlag:
 
         self._stub_provider(monkeypatch)
         monkeypatch.setattr(dependencies.settings, "demo_llm_mode", True)
-        dependencies._create_llm_with_resolved_model_id.cache_clear()
+        dependencies.clear_llm_cache()
         try:
             llm, model_id = dependencies._create_llm_with_resolved_model_id("stub", None)
         finally:
-            dependencies._create_llm_with_resolved_model_id.cache_clear()
+            dependencies.clear_llm_cache()
 
         assert model_id == "demo-mock"
         assert "Mock" in type(llm).__name__

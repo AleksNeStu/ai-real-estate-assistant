@@ -1114,13 +1114,8 @@ def update_api_key(provider: str, api_key: str) -> None:
         settings.huggingface_api_key = api_key
         os.environ["HUGGINGFACE_API_KEY"] = api_key
 
-    # Clear provider cache to pick up new API key
-    from models.provider_factory import ModelProviderFactory
+    # Clear the provider and the LLM caches so the new key takes effect
+    from api.dependencies import clear_llm_cache
 
-    ModelProviderFactory.clear_cache()
-
-    # Clear LLM instance cache so new keys take effect
-    from api.dependencies import _create_llm_with_resolved_model_id
-
-    _create_llm_with_resolved_model_id.cache_clear()
+    clear_llm_cache()
     return None
