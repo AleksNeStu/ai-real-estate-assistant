@@ -443,9 +443,10 @@ describe('Market Analytics API', () => {
   describe('getMarketTrends', () => {
     it('fetches market trends without parameters', async () => {
       const mockTrends: MarketTrends = {
-        period_start: '2024-01-01',
-        period_end: '2024-12-31',
+        interval: 'month',
         data_points: [],
+        trend_direction: 'insufficient_data',
+        confidence: 'low',
       };
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
@@ -463,7 +464,12 @@ describe('Market Analytics API', () => {
     it('includes city in query parameters', async () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ period_start: '', period_end: '', data_points: [] }),
+        json: async () => ({
+          interval: 'month',
+          data_points: [],
+          trend_direction: 'stable',
+          confidence: 'medium',
+        }),
       });
 
       await getMarketTrends({ city: 'Berlin' });
@@ -475,7 +481,12 @@ describe('Market Analytics API', () => {
     it('includes multiple query parameters', async () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ period_start: '', period_end: '', data_points: [] }),
+        json: async () => ({
+          interval: 'month',
+          data_points: [],
+          trend_direction: 'stable',
+          confidence: 'medium',
+        }),
       });
 
       await getMarketTrends({
@@ -494,12 +505,27 @@ describe('Market Analytics API', () => {
 
     it('returns market trends data', async () => {
       const mockTrends: MarketTrends = {
-        period_start: '2024-01-01',
-        period_end: '2024-12-31',
+        interval: 'month',
         data_points: [
-          { date: '2024-01', avg_price: 500000, count: 100 },
-          { date: '2024-02', avg_price: 510000, count: 95 },
+          {
+            period: '2024-01',
+            start_date: '2024-01-01',
+            end_date: '2024-01-31',
+            average_price: 500000,
+            median_price: 495000,
+            volume: 100,
+          },
+          {
+            period: '2024-02',
+            start_date: '2024-02-01',
+            end_date: '2024-02-29',
+            average_price: 510000,
+            median_price: 505000,
+            volume: 95,
+          },
         ],
+        trend_direction: 'increasing',
+        confidence: 'high',
       };
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
@@ -510,7 +536,7 @@ describe('Market Analytics API', () => {
       const result = await getMarketTrends({ city: 'Berlin' });
 
       expect(result.data_points).toHaveLength(2);
-      expect(result.data_points[0].avg_price).toBe(500000);
+      expect(result.data_points[0].average_price).toBe(500000);
     });
   });
 
@@ -518,7 +544,9 @@ describe('Market Analytics API', () => {
     it('fetches price history for a property', async () => {
       const mockHistory: PriceHistory = {
         property_id: 'prop-123',
-        history: [],
+        snapshots: [],
+        total: 0,
+        trend: 'insufficient_data',
       };
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
@@ -536,7 +564,12 @@ describe('Market Analytics API', () => {
     it('includes limit parameter', async () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ property_id: 'prop-123', history: [] }),
+        json: async () => ({
+          property_id: 'prop-123',
+          snapshots: [],
+          total: 0,
+          trend: 'insufficient_data',
+        }),
       });
 
       await getPriceHistory('prop-123', 50);
@@ -548,11 +581,29 @@ describe('Market Analytics API', () => {
     it('returns price history data', async () => {
       const mockHistory: PriceHistory = {
         property_id: 'prop-123',
-        history: [
-          { date: '2024-01-01', price: 450000 },
-          { date: '2024-06-01', price: 475000 },
-          { date: '2024-12-01', price: 500000 },
+        snapshots: [
+          {
+            id: 'snap-1',
+            property_id: 'prop-123',
+            price: 450000,
+            recorded_at: '2024-01-01T00:00:00Z',
+          },
+          {
+            id: 'snap-2',
+            property_id: 'prop-123',
+            price: 475000,
+            recorded_at: '2024-06-01T00:00:00Z',
+          },
+          {
+            id: 'snap-3',
+            property_id: 'prop-123',
+            price: 500000,
+            recorded_at: '2024-12-01T00:00:00Z',
+          },
         ],
+        total: 3,
+        current_price: 500000,
+        trend: 'increasing',
       };
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
@@ -562,8 +613,8 @@ describe('Market Analytics API', () => {
 
       const result = await getPriceHistory('prop-123');
 
-      expect(result.history).toHaveLength(3);
-      expect(result.history[2].price).toBe(500000);
+      expect(result.snapshots).toHaveLength(3);
+      expect(result.snapshots[2].price).toBe(500000);
     });
   });
 });
@@ -886,7 +937,7 @@ describe('Favorites API', () => {
   describe('checkFavorite', () => {
     it('checks if property is favorited', async () => {
       const mockCheck: FavoriteCheckResponse = {
-        is_favorite: true,
+        is_favorited: true,
         favorite_id: 'fav-123',
       };
 
@@ -897,20 +948,20 @@ describe('Favorites API', () => {
 
       const result = await checkFavorite('prop-123');
 
-      expect(result.is_favorite).toBe(true);
+      expect(result.is_favorited).toBe(true);
       expect(result.favorite_id).toBe('fav-123');
     });
 
     it('returns false for non-favorited property', async () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ is_favorite: false, favorite_id: null }),
+        json: async () => ({ is_favorited: false }),
       });
 
       const result = await checkFavorite('prop-456');
 
-      expect(result.is_favorite).toBe(false);
-      expect(result.favorite_id).toBeNull();
+      expect(result.is_favorited).toBe(false);
+      expect(result.favorite_id).toBeUndefined();
     });
 
     it('sends request to correct endpoint', async () => {
