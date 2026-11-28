@@ -726,8 +726,9 @@ describe('Favorites API', () => {
   describe('getFavorites', () => {
     it('fetches favorites without parameters', async () => {
       const mockResponse: FavoriteListResponse = {
-        favorites: [],
+        items: [],
         total: 0,
+        unavailable_count: 0,
       };
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
@@ -745,7 +746,7 @@ describe('Favorites API', () => {
     it('includes collection ID in query parameters', async () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ favorites: [], total: 0 }),
+        json: async () => ({ items: [], total: 0, unavailable_count: 0 }),
       });
 
       await getFavorites('collection-123');
@@ -757,7 +758,7 @@ describe('Favorites API', () => {
     it('includes limit and offset parameters', async () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ favorites: [], total: 0 }),
+        json: async () => ({ items: [], total: 0, unavailable_count: 0 }),
       });
 
       await getFavorites(undefined, 25, 50);
@@ -769,14 +770,18 @@ describe('Favorites API', () => {
 
     it('returns favorites with total count', async () => {
       const mockFavorites: FavoriteListResponse = {
-        favorites: [
+        items: [
           {
             id: 'fav-1',
+            user_id: 'user-1',
             property_id: 'prop-1',
             created_at: '2024-01-01T00:00:00Z',
+            updated_at: '2024-01-01T00:00:00Z',
+            is_available: true,
           },
         ],
         total: 1,
+        unavailable_count: 0,
       };
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
@@ -786,8 +791,9 @@ describe('Favorites API', () => {
 
       const result = await getFavorites();
 
-      expect(result.favorites).toHaveLength(1);
+      expect(result.items).toHaveLength(1);
       expect(result.total).toBe(1);
+      expect(result.unavailable_count).toBe(0);
     });
   });
 
@@ -930,7 +936,7 @@ describe('Collections API', () => {
   describe('getCollections', () => {
     it('fetches all collections', async () => {
       const mockCollections: CollectionListResponse = {
-        collections: [],
+        items: [],
         total: 0,
       };
 
@@ -948,12 +954,15 @@ describe('Collections API', () => {
 
     it('returns collections with total count', async () => {
       const mockCollections: CollectionListResponse = {
-        collections: [
+        items: [
           {
             id: 'col-1',
+            user_id: 'user-1',
             name: 'My Favorites',
             is_default: true,
             created_at: '2024-01-01T00:00:00Z',
+            updated_at: '2024-01-01T00:00:00Z',
+            favorite_count: 0,
           },
         ],
         total: 1,
@@ -966,8 +975,8 @@ describe('Collections API', () => {
 
       const result = await getCollections();
 
-      expect(result.collections).toHaveLength(1);
-      expect(result.collections[0].name).toBe('My Favorites');
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].name).toBe('My Favorites');
       expect(result.total).toBe(1);
     });
   });
